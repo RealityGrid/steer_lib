@@ -792,14 +792,69 @@ int Emit_start(int               IOType,
 	       int               SeqNum,
 	       REG_IOHandleType *IOHandle)
 {
+  int index;
+  int i;
 
-  return REG_SUCCESS;
+  /* Check that steering is enabled */
+  if(!ReG_SteeringEnabled) return REG_SUCCESS;
+
+  /* Can only call this function if steering lib initialised */
+  if (!ReG_SteeringInit) return REG_FAILURE;
+
+  /* Find corresponding entry in table of IOtypes */
+  index = IOdef_index_from_handle(&IOTypes_table, IOType);
+  if(index == REG_IODEF_HANDLE_NOTSET){
+    fprintf(stderr, "Emit_start: failed to find matching IOType\n");
+    return REG_FAILURE;
+  }
+
+  /* Find a free input channel and initialise it */
+  for(i=0; i<REG_INITIAL_NUM_IOTYPES; i++){
+
+    if(IO_channel[i].buffer == NULL){
+
+      IO_channel[i].buffer = (void *)malloc(REG_IO_BUFSIZE);
+
+      if(IO_channel[i].buffer == NULL){
+        return REG_FAILURE;
+      }
+      *IOHandle = (REG_IOHandleType)i;
+#if DEBUG
+      fprintf(stderr, "Emit_start: IOHandle = %d\n", (int)*IOHandle);
+#endif
+
+      /* ARPDBG - need code to actually enable a physical IO channel
+	 (eg file or socket) here... */
+
+      return REG_SUCCESS;
+    }
+  }
+
+  return REG_FAILURE;
 }
 
 /*----------------------------------------------------------------*/
 
 int Emit_stop(REG_IOHandleType *IOHandle)
 {
+  int index;
+
+  /* Check that steering is enabled */
+  if(!ReG_SteeringEnabled) return REG_SUCCESS;
+
+  /* Can only call this function if steering lib initialised */
+  if (!ReG_SteeringInit) return REG_FAILURE;
+
+  index = (int)(*IOHandle);
+
+  /* Free memory associated with channel */
+  if( IO_channel[index].buffer ){
+    free(IO_channel[index].buffer);
+    IO_channel[index].buffer = NULL;
+  }
+
+  /* Reset handle associated with channel */
+  *IOHandle = (REG_IOHandleType) REG_IODEF_HANDLE_NOTSET;
 
   return REG_SUCCESS;
 }
@@ -812,6 +867,12 @@ int Emit_data_slice(REG_IOHandleType  IOHandle,
 		    void             *pData)
 {
   int return_status = REG_SUCCESS;
+
+  /* Check that steering is enabled */
+  if(!ReG_SteeringEnabled) return REG_SUCCESS;
+
+  /* Can only call this function if steering lib initialised */
+  if (!ReG_SteeringInit) return REG_FAILURE;
 
   return return_status;
 }
@@ -1970,9 +2031,29 @@ int Make_vtk_buffer(char  *header,
   double b2 = 0.3*0.3;
   double c2 = 0.1*0.1;
   float *fptr;
+  char  *pchar;
+  char   text[64];
 
   /* Make ASCII header to describe data to vtk */
 
+  pchar = header;
+  pchar += sprintf(pchar, "%-128s", "# AVS field file\n");
+  pchar += sprintf(pchar, "%-128s", "ndim=3\n");
+  sprintf(text, "dim1= %d\n", nx);
+  pchar += sprintf(pchar, "%-128s", text);
+  sprintf(text, "dim2= %d\n", ny);
+  pchar += sprintf(pchar, "%-128s", text);
+  sprintf(text, "dim3= %d\n", nz);
+  pchar += sprintf(pchar, "%-128s", text);
+  pchar += sprintf(pchar, "%-128s", "nspace=3\n");
+  pchar += sprintf(pchar, "%-128s", "field=uniform\n");
+  pchar += sprintf(pchar, "%-128s", "veclen=1\n");
+  pchar += sprintf(pchar, "%-128s", "data=xdr_float\n");
+  pchar += sprintf(pchar, "%-128s", "variable 1 filetype=binary "
+  		   "skip=0000000 stride=2\n");
+  pchar += sprintf(pchar, "%-128s", "variable 2 filetype=binary "
+  		   "skip=0000008 stride=2\n");
+  pchar += sprintf(pchar, "%-128s", "END_OF_HEADER\n");
 
   /* Make an array of data */
   fptr = array;
