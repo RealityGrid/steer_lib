@@ -75,8 +75,8 @@ char *APP_NAME_SDE       = "SGS:Application_name";
 int Initialize_steering_connection_soap(int  NumSupportedCmds,
 					int *SupportedCmds)
 {
-  struct tns__setServiceDataResponse setSDE_response;
-  struct tns__AppStartResponse       appStart_response;
+  struct sgs__setServiceDataResponse setSDE_response;
+  struct sgs__AppStartResponse       appStart_response;
   char                              *pchar;
   char                               query_buf[REG_MAX_MSG_SIZE];
 
@@ -126,8 +126,8 @@ int Initialize_steering_connection_soap(int  NumSupportedCmds,
     }
   }
 
-  appStart_response._result = NULL;
-  if (soap_call_tns__AppStart(&soap, Steerer_connection.SGS_address, "", 
+  appStart_response._AppStartReturn = NULL;
+  if (soap_call_sgs__AppStart(&soap, Steerer_connection.SGS_address, "", 
 			      &appStart_response)){
 
     fprintf(stderr, "Initialize_steering_connection_soap: failed to attach to SGS\n");
@@ -135,7 +135,7 @@ int Initialize_steering_connection_soap(int  NumSupportedCmds,
     return REG_FAILURE;
   }
 
-  if(!appStart_response._result || strstr(appStart_response._result, REG_SGS_ERROR)){
+  if(!appStart_response._AppStartReturn || strstr(appStart_response._AppStartReturn, REG_SGS_ERROR)){
 
     fprintf(stderr, "Initialize_steering_connection_soap: AppStart returned error\n");
     return REG_FAILURE;
@@ -145,7 +145,7 @@ int Initialize_steering_connection_soap(int  NumSupportedCmds,
   Make_supp_cmds_msg(NumSupportedCmds, SupportedCmds, 
 		     Steerer_connection.supp_cmds);
 
-  setSDE_response._result = NULL;
+  setSDE_response._setServiceDataReturn = NULL;
 
   /* Strip off any xml version declaration */
   pchar = strstr(Steerer_connection.supp_cmds,"<ReG_steer_message");
@@ -154,7 +154,7 @@ int Initialize_steering_connection_soap(int  NumSupportedCmds,
 	   "<ogsi:setByServiceDataNames><%s>%s</%s></ogsi:setByServiceDataNames>", 
 	  SUPPORTED_CMDS_SDE, pchar, SUPPORTED_CMDS_SDE);
 
-  if (soap_call_tns__setServiceData(&soap, 
+  if (soap_call_sgs__setServiceData(&soap, 
 				    Steerer_connection.SGS_address, "", 
 				    query_buf, 
 				    &setSDE_response)){
@@ -165,9 +165,9 @@ int Initialize_steering_connection_soap(int  NumSupportedCmds,
   }
 
 #if REG_DEBUG
-  if(setSDE_response._result){
+  if(setSDE_response._setServiceDataReturn){
     fprintf(stderr, "Initialize_steering_connection_soap: setServiceData "
-	    "returned: %s\n", setSDE_response._result);
+	    "returned: %s\n", setSDE_response._setServiceDataReturn);
   }
   else{
     fprintf(stderr, "Initialize_steering_connection_soap: setServiceData "
@@ -184,7 +184,7 @@ int Initialize_steering_connection_soap(int  NumSupportedCmds,
 	   MACHINE_ADDRESS_SDE, ReG_Hostname, MACHINE_ADDRESS_SDE,
 	   APP_NAME_SDE, ReG_AppName, APP_NAME_SDE);
 
-  if (soap_call_tns__setServiceData(&soap, 
+  if (soap_call_sgs__setServiceData(&soap, 
 				    Steerer_connection.SGS_address, "", 
 				    query_buf, 
 				    &setSDE_response)){
@@ -195,9 +195,9 @@ int Initialize_steering_connection_soap(int  NumSupportedCmds,
   }
 
 #if REG_DEBUG
-  if(setSDE_response._result){
+  if(setSDE_response._setServiceDataReturn){
     fprintf(stderr, "Initialize_steering_connection_soap: setServiceData "
-	    "returned: %s\n", setSDE_response._result);
+	    "returned: %s\n", setSDE_response._setServiceDataReturn);
   }
   else{
     fprintf(stderr, "Initialize_steering_connection_soap: setServiceData "
@@ -212,10 +212,10 @@ int Initialize_steering_connection_soap(int  NumSupportedCmds,
 
 int Detach_from_steerer_soap()
 {
-  struct tns__AppDetachResponse appDetach_response;
+  struct sgs__AppDetachResponse appDetach_response;
 
-  appDetach_response._result = NULL;
-  if(soap_call_tns__AppDetach(&soap, Steerer_connection.SGS_address, 
+  appDetach_response._AppDetachReturn = NULL;
+  if(soap_call_sgs__AppDetach(&soap, Steerer_connection.SGS_address, 
 			      "", &appDetach_response )){
 
     fprintf(stderr, "Detach_from_steerer_soap: AppDetach failed:\n");
@@ -224,8 +224,8 @@ int Detach_from_steerer_soap()
     return REG_FAILURE;
   }
 
-  if(appDetach_response._result && 
-     strstr(appDetach_response._result, "SGS_SUCCESS")){
+  if(appDetach_response._AppDetachReturn && 
+     strstr(appDetach_response._AppDetachReturn, "SGS_SUCCESS")){
 
     return REG_SUCCESS;
   }
@@ -237,14 +237,14 @@ int Detach_from_steerer_soap()
 
 int Steerer_connected_soap()
 {
-  struct tns__findServiceDataResponse  findServiceData_response;
+  struct sgs__findServiceDataResponse  findServiceData_response;
   char                                 query_buf[REG_MAX_STRING_LENGTH];
 
-  findServiceData_response._result = NULL;
+  findServiceData_response._findServiceDataReturn = NULL;
   snprintf(query_buf, REG_MAX_STRING_LENGTH, 
 	   "<ogsi:queryByServiceDataNames names=\"%s\"/>", 
 	   STEER_STATUS_SDE );
-  if(soap_call_tns__findServiceData(&soap, Steerer_connection.SGS_address, 
+  if(soap_call_sgs__findServiceData(&soap, Steerer_connection.SGS_address, 
 				    "", query_buf, 
 				    &findServiceData_response )){
 
@@ -255,21 +255,21 @@ int Steerer_connected_soap()
   }
 
 #if REG_DEBUG
-  if(findServiceData_response._result){
+  if(findServiceData_response._findServiceDataReturn){
     fprintf(stderr, "Steerer_connected_soap: findServiceData returned: %s\n", 
-	    findServiceData_response._result);
+	    findServiceData_response._findServiceDataReturn);
   }
   else{
     fprintf(stderr, "Steerer_connected_soap: findServiceData returned null\n");
   }
 #endif
 
-  if(findServiceData_response._result && 
-     strstr(findServiceData_response._result, "ATTACHED")){
+  if(findServiceData_response._findServiceDataReturn && 
+     strstr(findServiceData_response._findServiceDataReturn, "ATTACHED")){
     return REG_SUCCESS;
   }
-  else if(findServiceData_response._result && 
-	  strstr(findServiceData_response._result, "DETACHING")){
+  else if(findServiceData_response._findServiceDataReturn && 
+	  strstr(findServiceData_response._findServiceDataReturn, "DETACHING")){
     /* Steerer has attached and detached without us noticing and thus SGS
        is in 'detaching' state.  We have to 'detach' properly now to reset.*/
     Detach_from_steerer_soap();
@@ -284,8 +284,8 @@ int Steerer_connected_soap()
 
 int Send_status_msg_soap(char* msg)
 {
-  struct tns__PutStatusResponse       putStatus_response;
-  struct tns__setServiceDataResponse  setSDE_response;
+  struct sgs__PutStatusResponse       putStatus_response;
+  struct sgs__setServiceDataResponse  setSDE_response;
   char                               *sde_name;
   char                                query_buf[REG_MAX_MSG_SIZE];
   int                                 nbytes;
@@ -296,8 +296,8 @@ int Send_status_msg_soap(char* msg)
   /* Status & log messages are both sent as 'status' messages */
   if(strstr(msg, "<App_status>") || strstr(msg, "<Steer_log>")){
 
-    putStatus_response._result = NULL;
-    if(soap_call_tns__PutStatus(&soap, Steerer_connection.SGS_address, 
+    putStatus_response._PutStatusReturn = NULL;
+    if(soap_call_sgs__PutStatus(&soap, Steerer_connection.SGS_address, 
 				"", msg, &putStatus_response )){
       soap_print_fault(&soap, stderr);
 
@@ -305,17 +305,17 @@ int Send_status_msg_soap(char* msg)
     }
 
 #if REG_DEBUG
-    if(putStatus_response._result){
+    if(putStatus_response._PutStatusReturn){
       fprintf(stderr, "Send_status_msg_soap: PutStatus returned: %s\n", 
-	      putStatus_response._result);
+	      putStatus_response._PutStatusReturn);
     }
     else{
       fprintf(stderr, "Send_status_msg_soap: PutStatus returned null\n");
     }
 #endif
 
-    if(!putStatus_response._result ||
-       strstr(putStatus_response._result, REG_SGS_ERROR)){
+    if(!putStatus_response._PutStatusReturn ||
+       strstr(putStatus_response._PutStatusReturn, REG_SGS_ERROR)){
       return REG_FAILURE;
     }
   }
@@ -338,7 +338,7 @@ int Send_status_msg_soap(char* msg)
       sde_name = CHKTYPE_DEFS_SDE;
     }
 
-    setSDE_response._result = NULL;
+    setSDE_response._setServiceDataReturn = NULL;
     nbytes = snprintf(query_buf, REG_MAX_MSG_SIZE, 
 		      "<ogsi:setByServiceDataNames>" 
 		      "<%s>%s</%s></ogsi:setByServiceDataNames>", 
@@ -367,7 +367,7 @@ int Send_status_msg_soap(char* msg)
 	fprintf(stderr, "Send_status_msg_soap: ERROR - msg truncated\n");
 	return REG_FAILURE;
       }
-      status = soap_call_tns__setServiceData(&soap, 
+      status = soap_call_sgs__setServiceData(&soap, 
 					     Steerer_connection.SGS_address, 
 					     "", pbuf,  
 					     &setSDE_response);
@@ -375,7 +375,7 @@ int Send_status_msg_soap(char* msg)
       pbuf = NULL;
     }
     else {
-      status = soap_call_tns__setServiceData(&soap, 
+      status = soap_call_sgs__setServiceData(&soap, 
 					     Steerer_connection.SGS_address,
 					     "", query_buf,  
 					     &setSDE_response);
@@ -387,8 +387,8 @@ int Send_status_msg_soap(char* msg)
       return REG_FAILURE;
     }
 
-    if(!setSDE_response._result || 
-       strstr(setSDE_response._result, REG_SGS_ERROR)){
+    if(!setSDE_response._setServiceDataReturn || 
+       strstr(setSDE_response._setServiceDataReturn, REG_SGS_ERROR)){
       return REG_FAILURE;
     }
   }
@@ -400,43 +400,43 @@ int Send_status_msg_soap(char* msg)
 
 struct msg_struct *Get_control_msg_soap()
 {
-  struct tns__GetControlResponse getControl_response;
+  struct sgs__GetControlResponse getControl_response;
   struct msg_struct *msg = NULL;
 
 #if REG_DEBUG
     fprintf(stderr, "Get_control_msg_soap: address = %s\n", 
 	    Steerer_connection.SGS_address);
 #endif
-    getControl_response._result = NULL;
-  if(soap_call_tns__GetControl(&soap, Steerer_connection.SGS_address, 
+    getControl_response._GetControlReturn = NULL;
+  if(soap_call_sgs__GetControl(&soap, Steerer_connection.SGS_address, 
 			       "",  &getControl_response)){
     soap_print_fault(&soap, stderr);
     return NULL;
   }
 
 #if REG_DEBUG
-  if(getControl_response._result){
+  if(getControl_response._GetControlReturn){
     fprintf(stderr, "Get_control_msg_soap: GetControl returned: %s\n", 
-	    getControl_response._result);
+	    getControl_response._GetControlReturn);
   }
   else{
     fprintf(stderr, "Get_control_msg_soap: GetControl returned null\n");
   }
 #endif
 
-  if(getControl_response._result && 
-     !strstr(getControl_response._result, REG_SGS_ERROR)){
+  if(getControl_response._GetControlReturn && 
+     !strstr(getControl_response._GetControlReturn, REG_SGS_ERROR)){
     msg = New_msg_struct();
 
-    if(Parse_xml_buf(getControl_response._result, 
-		     strlen(getControl_response._result), msg) != REG_SUCCESS){
+    if(Parse_xml_buf(getControl_response._GetControlReturn, 
+		     strlen(getControl_response._GetControlReturn), msg) != REG_SUCCESS){
 
       Delete_msg_struct(msg);
       msg = NULL;
     }
 #if REG_LOG_STEERING
     else{
-      Log_control_msg(getControl_response._result);
+      Log_control_msg(getControl_response._GetControlReturn);
     }
 #endif
   }
@@ -448,19 +448,19 @@ struct msg_struct *Get_control_msg_soap()
 
 int Finalize_steering_connection_soap()
 {
-  struct tns__AppStopResponse appStop_response;
+  struct sgs__AppStopResponse appStop_response;
 
   /* Tell the SGS to die - could use Destroy here but that doesn't 
      provide any opportunites for clean-up */
-  appStop_response._result = NULL;
-  if(soap_call_tns__AppStop(&soap, Steerer_connection.SGS_address, 
+  appStop_response._AppStopReturn = NULL;
+  if(soap_call_sgs__AppStop(&soap, Steerer_connection.SGS_address, 
 			    "",  &appStop_response)){
     soap_print_fault(&soap, stderr);
     return REG_FAILURE;
   }
 
-  if(appStop_response._result && 
-     !strstr(appStop_response._result, REG_SGS_ERROR)){
+  if(appStop_response._AppStopReturn && 
+     !strstr(appStop_response._AppStopReturn, REG_SGS_ERROR)){
 
     soap_end(&soap);
     return REG_SUCCESS;
@@ -479,14 +479,14 @@ int Get_data_source_address_soap(int   index,
 {
   char  *pchar;
   char   index_string[10];
-  struct tns__GetNthDataSourceResponse getNthDataSource_response;
+  struct sgs__GetNthDataSourceResponse getNthDataSource_response;
 
   /* Port returned as zero on failure */
   *port = 0;
 
   sprintf(index_string, "%d", index);
-  getNthDataSource_response._result = NULL;
-  if(soap_call_tns__GetNthDataSource(&soap, Steerer_connection.SGS_address, 
+  getNthDataSource_response._GetNthDataSourceReturn = NULL;
+  if(soap_call_sgs__GetNthDataSource(&soap, Steerer_connection.SGS_address, 
 				     "", index_string,  
 				     &getNthDataSource_response)){
     fprintf(stderr, "Get_data_source_address_soap: soap call failed:\n");
@@ -495,10 +495,10 @@ int Get_data_source_address_soap(int   index,
   }
 
 #if REG_DEBUG
-  if(getNthDataSource_response._result){
+  if(getNthDataSource_response._GetNthDataSourceReturn){
     fprintf(stderr, "Get_data_source_address_soap: GetNthDataSource "
 	    "(for n=%d)\nreturned: >>%s<<\n", 
-	    index, getNthDataSource_response._result);
+	    index, getNthDataSource_response._GetNthDataSourceReturn);
   }
   else{
     fprintf(stderr, "Get_data_source_address_soap: GetNthDataSource "
@@ -506,10 +506,10 @@ int Get_data_source_address_soap(int   index,
   }
 #endif
 
-  if(getNthDataSource_response._result && 
-     !strstr(getNthDataSource_response._result, REG_SGS_ERROR)){
+  if(getNthDataSource_response._GetNthDataSourceReturn && 
+     !strstr(getNthDataSource_response._GetNthDataSourceReturn, REG_SGS_ERROR)){
 
-    if(pchar = strtok(getNthDataSource_response._result, ":")){
+    if(pchar = strtok(getNthDataSource_response._GetNthDataSourceReturn, ":")){
 
       strcpy(hostname, pchar);
       if(pchar = strtok(NULL, ":")){
@@ -620,10 +620,10 @@ int Log_control_msg(char *msg_txt)
 int Record_checkpoint_set_soap(char *chk_data,
 			       char *node_data)
 {
-  struct tns__AppRecordChkpointResponse AppRecordChkpoint_response;
+  struct sgs__AppRecordChkpointResponse AppRecordChkpoint_response;
 
-  AppRecordChkpoint_response._result = NULL;
-  if(soap_call_tns__AppRecordChkpoint(&soap, 
+  AppRecordChkpoint_response._AppRecordChkpointReturn = NULL;
+  if(soap_call_sgs__AppRecordChkpoint(&soap, 
 					Steerer_connection.SGS_address, 
 					"", chk_data, node_data,  
 					&AppRecordChkpoint_response)){
@@ -633,10 +633,10 @@ int Record_checkpoint_set_soap(char *chk_data,
   }
 
 #if REG_DEBUG
-  if(AppRecordChkpoint_response._result){
+  if(AppRecordChkpoint_response._AppRecordChkpointReturn){
     fprintf(stderr, "Record_checkpoint_set_soap: "
 	    "AppRecordChkpoint returned: >>%s<<\n", 
-	    AppRecordChkpoint_response._result);
+	    AppRecordChkpoint_response._AppRecordChkpointReturn);
   }
   else{
     fprintf(stderr, "Record_checkpoint_set_soap: AppRecordChkpoint "
@@ -644,8 +644,8 @@ int Record_checkpoint_set_soap(char *chk_data,
   }
 #endif
 
-  if(AppRecordChkpoint_response._result && 
-     strstr(AppRecordChkpoint_response._result, REG_SGS_SUCCESS)){
+  if(AppRecordChkpoint_response._AppRecordChkpointReturn && 
+     strstr(AppRecordChkpoint_response._AppRecordChkpointReturn, REG_SGS_SUCCESS)){
 
     return REG_SUCCESS;
   }
