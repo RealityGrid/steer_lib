@@ -668,11 +668,6 @@ INT_KIND_1_DECL(Status);
   int   i;
   int   found = 0;
 
-#if REG_DEBUG
-  fprintf(stderr, "register_string_param_f: Entered routine, "
-	  "string = %s\n", STRING_PTR(StringParam));
-#endif
-
   if(STRING_LEN(ParamLabel) > REG_MAX_STRING_LENGTH){
 
     fprintf(stderr, "register_string_param_f: ERROR - length of label "
