@@ -38,7 +38,18 @@
 #include "ReG_Steer_Appside.h"
 #include "ReG_Steer_Appside_internal.h"
 
+/* Allow value of 'DEBUG' to propagate down from Reg_steer_types.h if
+   it has been set there */
+#ifndef DEBUG
 #define DEBUG 0
+#endif
+
+/* UNICORE_DEMO must be defined in order to produce a steering lib
+   compatible with the UNICORE steering demonstration framework.
+   Only consequence is that the status files emitted by the application
+   are all called 'steer_status' and not indexed - i.e. output will 
+   be lost if the status files are not consumed sufficiently rapidly */
+/* #define UNICORE_DEMO */
 
 /*---------------- Global data structures --------------------*/
 
@@ -92,6 +103,9 @@ int Steering_initialize(int  NumSupportedCmds,
   /* Actually defined in ReG_Steer_Common.c because both steerer
      and steered have a variable of this name */
   extern char ReG_Steer_Schema_Locn[REG_MAX_STRING_LENGTH];
+
+  /* Don't do anything if steering is not enabled */
+  if (!ReG_SteeringEnabled) return REG_SUCCESS;
 
   /* Set the location of the file containing the schema describing all 
      steering communication */
@@ -1053,6 +1067,14 @@ int Consume_control(int    *NumCommands,
 
 int Generate_status_filename(char* filename)
 {
+
+#ifdef UNICORE_DEMO
+
+  /* Always just output <path>/steer_status for UNICORE demo */
+  sprintf(filename, "%ssteer_status", Steerer_connection.file_root);
+
+#else /* Not UNICORE demo - use full, indexed filenames */
+
   static int output_file_index = 0;
 
   /* Generate next filename in sequence for sending data to
@@ -1064,6 +1086,8 @@ int Generate_status_filename(char* filename)
   /* Wrap counter if no. of distinct files exceeded */
 
   if(output_file_index == REG_MAX_NUM_FILES) output_file_index = 0;
+
+#endif /* UNICORE_DEMO */
 
   return REG_SUCCESS;
 }

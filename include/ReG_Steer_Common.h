@@ -32,7 +32,7 @@ typedef struct {
 typedef struct {
 
   int               cmd_id;
-  Param_table_type *cmd_params;
+  Param_table_type  cmd_params;
 
 }supp_cmd_entry;
 
@@ -103,7 +103,6 @@ typedef struct {
 	CMD_PARAM
   }                    field_type;
 
-  param_xml_struct    *param_struct;
   Supp_cmd_table_type *table;
 
 } supp_cmds_xml_struct;

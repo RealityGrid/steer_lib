@@ -38,7 +38,9 @@
 #include "ReG_Steer_types.h"
 #include "ReG_Steer_Common.h"
 
+#ifndef DEBUG
 #define DEBUG 0
+#endif
 
 /* Location of file specifying the schema/namespace to which all
    steering messages should belong.  Set in Steerer_initialize or
@@ -525,17 +527,23 @@ void endElement(void *userData, const char *name)
 
       if(supp_cmds_struct->field_type == CMD_PARAM){
 
+	/* Command parameters not currently implemented..
+
 	if(supp_cmds_struct->param_struct->field_type != PARAM_NOTSET){
 
-	  /* End of a parameter sub-element */
+	  / End of a parameter sub-element /
 	  supp_cmds_struct->param_struct->field_type = PARAM_NOTSET;
 	}
 	else{
 
-	  /* Have reached end of a parameter element */
+	  / Have reached end of a parameter element /
 	  Increment_param_registered(supp_cmds_struct->param_struct->table);
-	  supp_cmds_struct->field_type = CMD_NOTSET;
+ 	  supp_cmds_struct->field_type = CMD_NOTSET;
 	}
+
+	...just flag section as ended... */
+
+	supp_cmds_struct->field_type = CMD_NOTSET;
       }
       else{
 
@@ -841,6 +849,7 @@ void Store_status_field_value(void *ptr, char *buf)
 void Store_param_field_value(void *ptr, char *buf)
 {
   int               index;
+  int               nitem;
   param_xml_struct *param_struct;
 
   param_struct = (param_xml_struct *)(ptr);
@@ -861,15 +870,15 @@ void Store_param_field_value(void *ptr, char *buf)
     break;
 
   case STRABLE:
-    sscanf(buf , "%d", &(param_struct->table->param[index].steerable) );
+    nitem = sscanf(buf , "%d", &(param_struct->table->param[index].steerable));
     break;
 
   case TYPE:
-    sscanf(buf , "%d", &(param_struct->table->param[index].type) );
+    nitem = sscanf(buf , "%d", &(param_struct->table->param[index].type) );
     break;
 
   case HANDLE:
-    sscanf(buf , "%d", &(param_struct->table->param[index].handle) );
+    nitem = sscanf(buf , "%d", &(param_struct->table->param[index].handle) );
     break;
 
   case VALUE:
@@ -916,7 +925,9 @@ void Store_supp_cmds_field_value(void *ptr, char *buf)
     break;
 
   case CMD_PARAM:
+    /* Command parameters not currently implemented... 
     Store_param_field_value((void*)cmd_struct->param_struct, buf);
+    */
     break;
 
   default:

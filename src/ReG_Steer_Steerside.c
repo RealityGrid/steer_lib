@@ -39,7 +39,9 @@
 #include "ReG_Steer_Steerside.h"
 #include "ReG_Steer_Steerside_internal.h"
 
+#ifndef DEBUG
 #define DEBUG 0
+#endif
 
 /*----------- Data structures ---------------*/
 
@@ -770,13 +772,12 @@ int Consume_status(int   SimHandle,
 		   int  *NumCmds,
 		   int  *Commands)
 {
-  FILE               *fp;
-  int                 i;
-  int                 j;
-  int                 index;
-  int                 return_status;
-  int                 NumParams;
-  char                filename[REG_MAX_STRING_LENGTH];
+  FILE                *fp;
+  int                  i, j;
+  int                  index;
+  int                  return_status;
+  int                  NumParams;
+  char                 filename[REG_MAX_STRING_LENGTH];
 
   /* For XML parser */
 
@@ -833,6 +834,30 @@ int Consume_status(int   SimHandle,
     printf("Consume_status: failed to allocate memory");
     free(recvd_params.param);
     return REG_MEM_FAIL;
+  }
+
+  /* Each command may have parameters associated with it so prepare
+     appropriate structures */
+
+  for(i=0; i<recvd_cmds.max_entries; i++){
+
+    recvd_cmds.cmd[i].cmd_params.num_registered = 0;
+    recvd_cmds.cmd[i].cmd_params.max_entries    = REG_INITIAL_NUM_PARAMS;
+
+    recvd_cmds.cmd[i].cmd_params.param = 
+      (param_entry *)malloc(REG_INITIAL_NUM_PARAMS*sizeof(param_entry));
+
+    if(recvd_cmds.cmd[i].cmd_params.param == NULL){
+
+      for(j=i-1; j>-1; j--){
+
+	free(recvd_cmds.cmd[j].cmd_params.param);
+      }
+      free(recvd_cmds.cmd);
+      free(recvd_params.param);
+
+      return REG_MEM_FAIL;
+    }
   }
 
   /* Set pointers to structures to fill */

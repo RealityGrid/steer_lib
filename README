@@ -40,9 +40,17 @@ really just to give an idea - its functionality is truly primitive and
 often hard-wired. 'mini_app2' is similar to 'mini_app' but implemented
 in F90 instead of C.
 
+UNICORE demonstrator:
+
+In order to produce a steering library suitable for use with the UNICORE
+demonstrator, the line containing "#define UNICORE_DEMO" in 
+Reg_Steer_Appside.c should be uncommented.
+
+
 Any comments, enquiries or pleas for explanation should be sent to:
 
 Andrew Porter                Andrew.Porter@man.ac.uk
+SVE Group
 Manchester Computing
 University of Manchester
 
