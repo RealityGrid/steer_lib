@@ -1579,21 +1579,22 @@ int Emit_retrieve_param_log_cmd(int SimHandle, int ParamHandle)
 
     /* Get all of the log entries cached on the SGS */
     fprintf(stderr, "ARPDBG, calling Get_param_log_soap...\n");
-    Get_param_log_soap(&(Sim_table.sim[index]), ParamHandle);
+    return Get_param_log_soap(&(Sim_table.sim[index]), ParamHandle);
   }
-  
-  /* Now send command to app to emit the rest of them (this will
-     mean all of them for file-based steering) */
-  SysCommands[0] = REG_STR_EMIT_PARAM_LOG;
+  else{
+    /* Alternatively, send command to app to emit all of them since
+       we have no cache on an SGS */
+    SysCommands[0] = REG_STR_EMIT_PARAM_LOG;
 
-  /* Which parameter to get the log of */
-  if(!CommandParams) CommandParams = Alloc_string_array(32, 1);
-  sprintf(CommandParams[0], "%d", ParamHandle);
+    /* Which parameter to get the log of */
+    if(!CommandParams) CommandParams = Alloc_string_array(32, 1);
+    sprintf(CommandParams[0], "%d", ParamHandle);
 
-  return Emit_control(SimHandle,
-		      1,
-		      SysCommands,
-		      CommandParams);
+    return Emit_control(SimHandle,
+			1,
+			SysCommands,
+			CommandParams);
+  }
 }
 
 /*----------------------------------------------------------*/

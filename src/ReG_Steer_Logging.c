@@ -57,6 +57,10 @@ extern char Global_scratch_buffer[];
 
 extern Param_table_type Params_table;
 
+/* Whether or not a client is currently attached - declared in
+   ReG_Steer_Appside.c */
+extern int ReG_SteeringActive;
+
 /*----------------------------------------------------------------*/
 
 int Initialize_log(Chk_log_type *log)
@@ -66,12 +70,11 @@ int Initialize_log(Chk_log_type *log)
   log->num_entries 	= 0;
   log->max_entries 	= REG_INITIAL_CHK_LOG_SIZE;
   log->num_unsent  	= 0;
+  log->send_all    	= REG_TRUE;
 #if REG_SOAP_STEERING
-  /* logs cached on SGS so we don't need to send everything
-     if/when we get a request */
-    log->send_all    	= REG_FALSE;
-#else
-    log->send_all    	= REG_TRUE;
+  if(log->log_type == PARAM){
+      log->send_all    	= REG_FALSE;
+  }
 #endif
   log->emit_in_progress = REG_FALSE;
   log->file_content     = NULL;
@@ -179,9 +182,10 @@ int Save_log(Chk_log_type *log)
     }
     else{
     
-       /* 4th argument says we want all entries - not just those that
-	  haven't already been sent to the steerer */
-      status = Log_to_xml(log, &buf, &len, REG_FALSE);
+       /* 5th argument says we want all entries - not just those that
+	  haven't already been sent to the steerer.  2nd (handle)
+          argument isn't used for checkpoint logs */
+      status = Log_to_xml(log, 0, &buf, &len, REG_FALSE);
     }
 
     if(status == REG_SUCCESS){
@@ -204,8 +208,8 @@ int Save_log(Chk_log_type *log)
 
 /*----------------------------------------------------------------*/
 
-int Log_to_xml(Chk_log_type *log, char **pchar, int *count, 
-	       const int not_sent_only)
+int Log_to_xml(Chk_log_type *log, int handle, char **pchar, 
+	       int *count, const int not_sent_only)
 {
   int   size = BUFSIZ;
 
@@ -218,7 +222,7 @@ int Log_to_xml(Chk_log_type *log, char **pchar, int *count,
   *count = 0;
 
   if(log->log_type == PARAM){
-    return Param_log_to_xml(log, pchar, count, not_sent_only);
+    return Param_log_to_xml(log, handle, pchar, count, not_sent_only);
   }
   else if(log->log_type == CHKPT){
     return Chk_log_to_xml(log, pchar, count, not_sent_only);
@@ -348,8 +352,8 @@ int Chk_log_to_xml(Chk_log_type *log, char **pchar, int *count,
 
 /*----------------------------------------------------------------*/
 
-int Param_log_to_xml(Chk_log_type *log, char **pchar, int *count, 
-		     const int not_sent_only)
+int Param_log_to_xml(Chk_log_type *log, int handle, char **pchar, 
+		     int *count, const int not_sent_only)
 {
   int   i, j, len;
   char  entry[BUFSIZ];
@@ -390,25 +394,31 @@ int Param_log_to_xml(Chk_log_type *log, char **pchar, int *count,
        loop over the no. of params that this entry has */
     for(j=0; j<log->entry[i].num_param; j++){
 
-      nbytes = snprintf(pentry, bytes_left, "<Param_log_entry>"
-			"<Handle>%d</Handle>" 
-			"<Value>%s</Value>"
-			"</Param_log_entry>\n", 
-		        log->entry[i].param[j].handle,
-		        log->entry[i].param[j].value);
+      if(log->entry[i].param[j].handle == handle){
+
+	nbytes = snprintf(pentry, bytes_left, "<Param_log_entry>"
+			  "<Handle>%d</Handle>" 
+			  "<Value>%s</Value>"
+			  "</Param_log_entry>\n", 
+			  log->entry[i].param[j].handle,
+			  log->entry[i].param[j].value);
 
 #if REG_DEBUG
-      /* Check for truncation of message */
-      if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
-	fprintf(stderr, "Param_log_to_xml: message size "
-		"exceeds BUFSIZ (%d)\n", BUFSIZ);
-	free(*pchar);
-	*pchar = NULL;
-	return REG_FAILURE;
-      }
+	/* Check for truncation of message */
+	if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
+	  fprintf(stderr, "Param_log_to_xml: message size "
+		  "exceeds BUFSIZ (%d)\n", BUFSIZ);
+	  free(*pchar);
+	  *pchar = NULL;
+	  return REG_FAILURE;
+	}
 #endif
-      bytes_left -= nbytes;
-      pentry += nbytes;
+	bytes_left -= nbytes;
+	pentry += nbytes;
+
+	/* We only want the parameter with the specified handle */
+	break;
+      }
     }
     
     nbytes = snprintf(pentry, bytes_left, "</Log_entry>\n");
@@ -674,7 +684,6 @@ int Log_param_values()
      two fields */
   sprintf(Param_log.entry[Param_log.num_entries].chk_tag, "REG_PARAM_LOG");
   Param_log.entry[Param_log.num_entries].chk_handle      = -99;
-  Param_log.entry[Param_log.num_entries].sent_to_steerer = REG_FALSE;
   count = 0;
 
   for(index = 0; index<Params_table.max_entries; index++){
@@ -698,7 +707,7 @@ int Log_param_values()
     /* Save this value */
     strcpy(Param_log.entry[Param_log.num_entries].param[count].value,
            Params_table.param[index].value);
-    
+
     /* Storage for params associated with log entry is static */
     if(++count >= REG_MAX_NUM_STR_PARAMS)break;  
   }
@@ -706,8 +715,14 @@ int Log_param_values()
   /* Store the no. of params this entry has */
   Param_log.entry[Param_log.num_entries].num_param = count;
 
-  /* Keep a count of entries that we have yet to send to steerer */
-  Param_log.num_unsent++;
+
+  /* Since we send status messages containing parameter values to 
+     attached client, we need only flag an entry as not being sent
+     to steerer if no steerer is currently attached */
+  Param_log.entry[Param_log.num_entries].sent_to_steerer = ReG_SteeringActive;
+
+    /* Keep a count of entries that we have yet to send to steerer */
+  if(ReG_SteeringActive != REG_TRUE)Param_log.num_unsent++;
 
   Param_log.num_entries++;
 
@@ -719,7 +734,7 @@ int Log_param_values()
 int Emit_log(Chk_log_type *log, int handle)
 {
   char  filename[REG_MAX_STRING_LENGTH];
-  int   size;
+  int   size = 0;
   int   return_status = REG_SUCCESS;
 
   if(log->emit_in_progress == REG_TRUE){
@@ -734,7 +749,7 @@ int Emit_log(Chk_log_type *log, int handle)
 
     /* Now send the entries that we have stored in memory - 
        need to send all current log entries to the steerer */
-    if(Log_to_xml(log, &(log->file_content), &size, 
+    if(Log_to_xml(log, handle, &(log->file_content), &size, 
 		  REG_FALSE) != REG_SUCCESS){
 
       return REG_FAILURE;
@@ -753,7 +768,7 @@ int Emit_log(Chk_log_type *log, int handle)
     if(log->log_type == CHKPT){
       return_status = Read_file(log->filename, &(log->file_content), 
 				&size, REG_FALSE);
-     }
+    }
     else if(log->log_type == PARAM){
       return_status = Read_file(log->filename, &(log->file_content), 
 				&size, REG_TRUE);
@@ -765,7 +780,7 @@ int Emit_log(Chk_log_type *log, int handle)
       return REG_FAILURE;
     }
 
-     if (size > 0) Emit_log_entries(log, log->file_content);
+    if (size > 0) Emit_log_entries(log, log->file_content);
 
     /* Re-open log-file for future buffering */
     if( Open_log_file(log) != REG_SUCCESS){
@@ -789,7 +804,8 @@ int Emit_log(Chk_log_type *log, int handle)
 
     /* Now send the entries that we have stored in memory - 
        need to send all current log entries to the steerer */
-    if(Log_to_xml(log, &(log->file_content), &size, REG_FALSE) != REG_SUCCESS){
+    if(Log_to_xml(log, handle, &(log->file_content), &size, 
+		  REG_FALSE) != REG_SUCCESS){
 
       return REG_FAILURE;
     }
@@ -800,10 +816,10 @@ int Emit_log(Chk_log_type *log, int handle)
 #if REG_DEBUG_FULL
     fprintf(stderr, "Emit_log: sending unsent log entries...\n");
 #endif
-    /* Fourth argument specifies that we only want those entries that haven't
+    /* Fifth argument specifies that we only want those entries that haven't
        already been sent to the steerer */
-    if(Log_to_xml(log, &(log->file_content), &size, REG_TRUE) != REG_SUCCESS){
-
+    if(Log_to_xml(log, handle, &(log->file_content), 
+		  &size, REG_TRUE) != REG_SUCCESS){
       return REG_FAILURE;
     }
   }

@@ -96,7 +96,7 @@ static int ReG_IOTypesChanged  = REG_FALSE;
 /* Whether the set of registered Chk types has changed */
 static int ReG_ChkTypesChanged = REG_FALSE;
 /* Whether app. is currently being steered */
-static int ReG_SteeringActive  = REG_FALSE;
+       int ReG_SteeringActive  = REG_FALSE;
 /* Whether steering library has been initialised */
 static int ReG_SteeringInit    = REG_FALSE;
 /* Whether steering lib is being called from F90 */
@@ -2630,6 +2630,11 @@ int Steering_control(int     SeqNum,
 #if REG_DEBUG
 	fprintf(stderr, "Steering_control: steerer has connected\n");
 #endif
+	/* Save-out parameter log when steerer attaches - this forces
+	   an update of the cache of log entries on the SGS (if we're
+	   using SOAP-based steering) so that it contains _all_
+	   entries prior to this moment */
+	Save_log(&Param_log);
       }
     }
   }
@@ -2769,7 +2774,7 @@ int Steering_control(int     SeqNum,
 
 	/* Emit the requested parameter log */
 	if(sscanf(SteerCmdParams[i], "%d", &status) != 1)break;
-
+	printf("ARPDBG: calling emit_log for param %d\n", status);
 	if( Emit_log(&Param_log, status) != REG_SUCCESS ){
 
 	  fprintf(stderr, "Steering_control: Emit param log failed\n");
@@ -3788,7 +3793,11 @@ int Detach_from_steerer()
      another one attaches later on) */
   Chk_log.send_all           = REG_TRUE;
   Chk_log.emit_in_progress   = REG_FALSE;
+#if REG_SOAP_STEERING
+  Param_log.send_all         = REG_FALSE;
+#else
   Param_log.send_all         = REG_TRUE;
+#endif
   Param_log.emit_in_progress = REG_FALSE;
   ReG_SteeringActive 	     = REG_FALSE;
   ReG_IOTypesChanged 	     = REG_TRUE;

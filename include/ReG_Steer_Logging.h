@@ -66,17 +66,20 @@ int Save_log(Chk_log_type *log);
    Length of buffer is returned in count. The memory pointed to by
    *pchar must be free()'d by the caller once finished.  If
    not_sent_only == REG_TRUE then only those entries not already returned
-   to the steering client are retrieved */
-int Log_to_xml(Chk_log_type *log, char **pchar, int *count, 
-		      const int not_sent_only);
+   to the steering client are retrieved.  For parameter logs, the
+   handle argument specifies which parameter to get the log for. */
+int Log_to_xml(Chk_log_type *log, int handle, char **pchar, int *count, 
+	       const int not_sent_only);
 
 /* Called from Log_to_xml for Checkpoint logs */
 int Chk_log_to_xml(Chk_log_type *log, char **pchar, int *count, 
 		   const int not_sent_only);
 
-/* Called from Log_to_xml for Parameter logs */
-int Param_log_to_xml(Chk_log_type *log, char **pchar, int *count, 
-		     const int not_sent_only);
+/* Called from Log_to_xml for Parameter logs.  'handle' specifies which
+   parameter to get the log for and, on return, pchar points to a buffer
+   holding the xml representation.  This buffer is count bytes long. */
+int Param_log_to_xml(Chk_log_type *log, int handle, char **pchar, 
+		     int *count, const int not_sent_only);
 
 /* As for Log_to_xml except log is stored in columnar format - for
    storing parameter histories. */
