@@ -32,6 +32,11 @@
   Authors........: Andrew Porter
 
 ---------------------------------------------------------------------------*/
+
+/** @file ReG_Steer_Browser.c
+    @brief Source file for routines to do registry look-up
+  */
+
 #include "ReG_Steer_types.h"
 #include "ReG_Steer_Browser.h"
 #include "ReG_Steer_XML.h"

@@ -38,6 +38,10 @@
 #include "ReG_Steer_types.h"
 #include "ReG_Steer_Appside_internal.h"
 
+/** @file ReG_Steer_Appside_File.c
+    @brief Source file for file-related Appside routines
+  */
+
 #ifndef WIN32
 #else
 #define snprintf _snprintf
@@ -49,15 +53,17 @@
 #define REG_DEBUG 1
 #endif
 
-/* The table holding details of our communication channel with the
+/** 
+   The table holding details of our communication channel with the
    steering client - defined in ReG_Steer_Appside.c */
 extern Steerer_connection_table_type Steerer_connection;
 
-/* The table holding details of the registered IOTypes for this
+/**
+   The table holding details of the registered IOTypes for this
    application - defined in ReG_Steer_Appside.c */
 extern IOdef_table_type IOTypes_table;
 
-/* Global scratch buffer - declared in ReG_Steer_Appside.c */
+/** Global scratch buffer - declared in ReG_Steer_Appside.c */
 extern char Global_scratch_buffer[];
 
 /*-----------------------------------------------------------------------*/

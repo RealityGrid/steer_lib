@@ -35,6 +35,10 @@
 
 ---------------------------------------------------------------------------*/
 
+/** @file ReG_Steer_Steerside.c
+    @brief Source file for steering-client routines
+  */
+
 #include "ReG_Steer_Steerside.h"
 #include "ReG_Steer_Steerside_internal.h"
 #include "ReG_Steer_Proxy_utils.h"
@@ -50,16 +54,19 @@
 
 /*--------------------- Data structures -------------------*/
 
-/* Main table used to record all simulations currently
+/** 
+   Main table used to record all simulations currently
    being steered */
 Sim_table_type Sim_table;
 
-/* Structure holding details of the main (java) proxy
+/**
+   Structure holding details of the main (java) proxy
    that is always associated with the steerer (if not steering
    via files or SOAP over http) */
 Proxy_table_type Proxy;
 
-/* This function's prototype is in ReG_Steer_Appside.c 'cos it's
+/**
+   This function's prototype is in ReG_Steer_Appside.c 'cos it's
    a utility that may be used by an application developer too */
 extern char** Alloc_string_array(int, int);
 

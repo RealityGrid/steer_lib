@@ -36,6 +36,10 @@
 #include "ReG_Steer_Steerside_internal.h"
 #include "ReG_Steer_Steerside_Soap.h"
 
+/** @file ReG_Steer_Steerside_Soap.c
+    @brief Code for SOAP communications for the steering client.
+  */
+
 /*-------------------------------------------------------------------------*/
 
 int Sim_attach_soap(Sim_entry_type *sim, char *SimID)

@@ -33,6 +33,10 @@
 
 -----------------------------------------------------------------------*/
 
+/** @file ReG_Steer_Appside_Sockets.c
+    @brief Source file for socket-related routines
+  */
+
 #if REG_SOCKET_SAMPLES
 
 #include "ReG_Steer_Common.h"
