@@ -527,10 +527,12 @@ int dns_lookup(char* hostname) {
 
 #if REG_DEBUG
   fprintf(stderr, "DNS lookup: host: %s\n", host->h_name);
-  fprintf(stderr, "            IP:   %s\n", (char*) inet_ntoa(*((struct in_addr*) host->h_addr)));
+  fprintf(stderr, "            IP:   %s\n", inet_ntoa(*((struct in_addr*) host->h_addr)));
 #endif
 
-  strcpy(hostname, (char*) inet_ntoa(*((struct in_addr*) host->h_addr)));
+  /* This next bit must be done with a sprintf for AIX...
+   * It can be done with a strcpy on Linux or IRIX...      */
+  sprintf(hostname, "%s", inet_ntoa(*((struct in_addr*) host->h_addr)));
   return REG_SUCCESS;
 }
 
@@ -1055,6 +1057,9 @@ int Consume_start_data_check_sockets(const int index) {
   while(!(pstart = strstr(buffer, REG_DATA_HEADER))) {
 
 #ifdef _AIX
+    /* So it looks like AIX doesn't block by default... But that might not 
+     * be the case in reality so this next line may need to be wrapped in
+     * calls to fcntl()... Linux and IRIX understand the MSG_DONTWAIT flag */
     if((nbytes = recv(sock_info->connector_handle, buffer, REG_PACKET_SIZE, 0)) <= 0) {
 #else
     if((nbytes = recv(sock_info->connector_handle, buffer, REG_PACKET_SIZE, MSG_DONTWAIT)) <= 0) {
