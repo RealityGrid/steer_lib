@@ -36,6 +36,9 @@
 
 int main(){
 
+  /* No. of 'simulation' loops to do */
+  const int nloops = 30;
+
   /* For steering */
 
   int    input_iotype;
@@ -145,7 +148,7 @@ int main(){
 
   /* Enter main loop */
 
-  for(i=0; i<8; i++){
+  for(i=0; i<nloops; i++){
 
     system("sleep 3");
     printf("\ni = %d\n", i);
