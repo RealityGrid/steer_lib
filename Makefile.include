@@ -63,3 +63,23 @@ STEER_INCLUDES = -I${REG_STEER_HOME}/include \
                  -I${REG_XML_INCDIR}
 STEER_LIBS = -L${REG_STEER_HOME}/lib$(NBIT) \
              -L${REG_XML_LIBDIR}$(NBIT)
+
+#----------------------------------------------------------------
+
+# The globus_definitions file can be generated using the following globus command
+#  globus-makefile-header globus_io globus_common -flavor=gcc32dbg > globus_defintions
+# subsititue flavor appropriately for your globus installation but use only non-threaded flavour
+
+GLOBUS_INCLUDES=
+GLOBUS_PKG_LIBS=
+GLOBUS_LDFLAGS=
+
+# Either define GLOBUS_INCLUDES, GLOBUS_PKG_LIBS and GLOBUS_LDFLAGS, OR
+# uncomment this line if using Globus for sample AND/OR steering
+include ${REG_STEER_HOME}/globus_definitions
+
+# Set flag to 1 to use globus for iotype samples communication, 0 to not 
+REG_GLOBUS_SAMPLES_FLAG = 1
+
+# Set flag to 1 to use globus for steering communication, 0 to not 
+REG_GLOBUS_STEERING_FLAG = 1
