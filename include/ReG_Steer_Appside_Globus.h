@@ -35,18 +35,15 @@
 
     Initial version by:  S Ramsden, 18.2.2003       0.1               
 
----------------------------------------------------------------------------*/
+    Globus IO implementation note:
 
-/*----------------------------------------------------------------------------
-   Globus IO implementation note:
-
-   The Globus IO has only been tested using NON-threaded flavors of
-   Globus.  The socket_io_type structure has globus_mutex_t and
-   globus_cond_t members which are required should the code need to be
-   used with a threaded flavor of Globus.  However, only the callback
-   functions have been coded to use these.  Some effor would be
-   required to make the rest of the code threadsafe in order to use
-   threaded Globus.
+    The Globus IO has only been tested using NON-threaded flavors of
+    Globus.  The socket_io_type structure has globus_mutex_t and
+    globus_cond_t members which are required should the code need to be
+    used with a threaded flavor of Globus.  However, only the callback
+    functions have been coded to use these.  Some effor would be
+    required to make the rest of the code threadsafe in order to use
+    threaded Globus.
 
 ---------------------------------------------------------------------------*/
 
@@ -97,19 +94,23 @@ extern int Globus_io_activate(void);
 extern void Globus_io_deactivate(void);
 
 /* Initialise socket_io_type structure */
-extern int Globus_socket_info_init(socket_io_type * const socket_info);
+extern int Globus_socket_info_init(const int index);
 
 /* Cleanup members of socket_io_type structure */
-extern void Globus_socket_info_cleanup(socket_io_type * const socket_info);
-
-/* Kick the Globus callback mechanism */
-extern void Globus_callback_poll(socket_io_type * const socket_info);
-
+extern void Globus_socket_info_cleanup(const int index);
 
 /* Register listener callback function Globus_listener_callback on any
    available port (within GLOBUS_TCP_PORT_RANGE environment varaible
    if set) */
-extern int Globus_create_listener(socket_io_type * const socket_info);
+extern int Globus_create_listener(const int index);
+
+/* Register callback function Globus_connector_callback to attempt to
+   connect using globals connector_hostname and connector_port - use
+   of globals will be removed eventually */
+extern int Globus_create_connector(const int index);
+
+/* Kick the Globus callback mechanism */
+extern void Globus_callback_poll(const int index);
 
 /* The callback function called when connector connects to socket -
    this function registers an accept callback - callback functions are executed
@@ -125,27 +126,22 @@ extern void Globus_accept_callback (void	       *callback_arg,
 				    globus_io_handle_t *handle,
 				    globus_result_t	resultparam);
 
-/* Register callback function Globus_connector_callback to attempt to
-   connect using globals connector_hostname and connector_port - use
-   of globals will be removed eventually */
-extern int Globus_create_connector(socket_io_type * const socket_info);
-
 /* The connector callback function */
 extern void Globus_connector_callback (void               *callback_arg,
 				       globus_io_handle_t *handle,
 				       globus_result_t	   result);
 
 /* Close and clean up a listener connection */
-extern void Globus_cleanup_listener_connection(socket_io_type * const socket_info);
+extern void Globus_cleanup_listener_connection(const int index);
 
 /* Close and clean up a connector connection */
-extern void Globus_cleanup_connector_connection(socket_io_type * const socket_info);
+extern void Globus_cleanup_connector_connection(const int index);
 
 /* Call globus funtion close connections for the conn_handle */
-extern void Globus_close_conn_handle(socket_io_type * const	socket_info);
+extern void Globus_close_conn_handle(const int index);
 
 /* Call globus funtions to close listener handle */
-extern void Globus_close_listener_handle(socket_io_type * const socket_info);
+extern void Globus_close_listener_handle(const int index);
 
 /* Callback function for globus_io_register_close in
    Globus_close_conn_handle */
@@ -155,22 +151,22 @@ extern void Globus_close_callback (void			*callback_arg,
 
 /* Callback function for globus_io_register_close in
    Globus_close_listener_handle */
-void Globus_close_listener_callback (void			*callback_arg,
+void Globus_close_listener_callback (void		*callback_arg,
 				     globus_io_handle_t	*handle,
-				     globus_result_t		resultparam);
+				     globus_result_t	 resultparam);
 
 /* Call globus functions to accept pending connections */
-void Globus_attempt_listener_connect(socket_io_type * const socket_info);
+void Globus_attempt_listener_connect(const int index);
 
 
 /* Call globus functions to close failed socket and accept any pending connection attempts */
-extern void Globus_retry_accept_connect(socket_io_type * const socket_info);
+extern void Globus_retry_accept_connect(const int index);
 
 /* Call globus functions to attempt to connect */
-extern void Globus_attempt_connector_connect(socket_io_type * const socket_info);
+extern void Globus_attempt_connector_connect(int index);
 
 /* Call globus functions to close failed socket and retry to connect */
-extern void Globus_retry_connect(socket_io_type * const socket_info);
+extern void Globus_retry_connect(int index);
 
 /* Call globus function to print out detail about error when REG_DEBUG on*/
 extern void Globus_error_print(const globus_result_t result);
