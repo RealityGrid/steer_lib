@@ -150,6 +150,16 @@ typedef struct {
 
 /* Types and structures for reading IO types */
 
+typedef struct {
+
+  /* Whether array data is in F90 ordering */
+  int is_f90;
+  /* Extent of array */
+  int nx, ny, nz;
+  /* Origin of sub-array within whole */
+  int sx, sy, sz;
+
+} Array_type;
 
 typedef struct {
   char				label[REG_MAX_STRING_LENGTH];
@@ -176,8 +186,11 @@ typedef struct {
   /* How many bytes of xdr data to read (to avoid having to work-out/guess
      how many it will be from the type) */
   int                           num_xdr_bytes;
-  /* Whether array data is in F90 ordering */
-  int                           is_f90_array;
+  /* Details on incoming array (if available) */
+  Array_type                    array;
+  /* Whether or not (1 or 0) we'll need to convert the ordering of 
+     the array */
+  int                           convert_array_order;
 
 } IOdef_entry;
 
@@ -260,5 +273,9 @@ extern PREFIX int Read_file(char *filename, char **buf, int *size);
 /* Return the time since the epoch in seconds */
 extern PREFIX int Get_current_time_seconds(double *now);
 #endif
+
+extern PREFIX int Reorder_array(Array_type *array, 
+				int         type, 
+				void       *pData);
 
 #endif

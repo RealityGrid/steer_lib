@@ -577,6 +577,11 @@ INT_KIND_1_DECL(Status);
 
   *Status = INT_KIND_1_CAST( Consume_start((int)*IOType,
 	                                   (int *)IOHandle) );
+
+  if(*Status == REG_SUCCESS){
+    Set_f90_array_ordering((int)*IOHandle, TRUE);
+  }
+
   return;
 }
 

@@ -770,3 +770,194 @@ int Get_current_time_seconds(double *now)
 }
 
 #endif /* defined USE_REG_TIMING */
+
+/*----------------------------------------------------------------*/
+
+int Reorder_array(Array_type *array, 
+		  int         type, 
+		  void       *pData)
+{
+  int     i, j, k;
+  int     nslab, nrow;
+  size_t  nbytes;
+  int    *pi, *pi_old;
+  float  *pf, *pf_old;
+  double *pd, *pd_old;
+
+  if(array->nx == 0){
+
+    fprintf(stderr, "Reorder_array: array has zero dimension\n");
+    return REG_FAILURE;
+  }
+
+  switch(type){
+
+  case REG_INT:
+    nbytes = (array->nx)*(array->ny)*(array->nz)*sizeof(int);
+    if(!(pi = malloc(nbytes))){
+      
+      fprintf(stderr, "Reorder_array: malloc of %d bytes failed\n",
+	      (int)nbytes);
+      return REG_FAILURE;
+    }
+    pi_old = (int *)pData;
+
+    /* In this context, array->is_f90 flags whether we want to
+       convert _to_ an F90-style array */
+    if(array->is_f90 != TRUE){
+
+      /* Convert F90 array to C array */
+
+      nslab = (array->nz-1)*(array->ny-1);
+      nrow  = (array->nz-1);
+      /* Order loops so i,j,k vary as they should for an F90-style
+	 array ordered consecutively in memory */
+      for(k=0; k<(array->nz-1); k++){
+	for(j=0; j<(array->ny-1); j++){
+	  for(i=0; i<(array->nx-1); i++){
+	    /* Calculate position of (i,j,k)'th element in a C array 
+	       (where k varies most rapidly) and store value */
+	    pi[i*nslab + j*nrow + k] = *(++pi_old);
+	  }
+	}
+      }
+    }
+    else{
+      
+      /* Convert C array to F90 array */
+
+      nslab = (array->nx-1)*(array->ny-1);
+      nrow  = (array->nx-1);
+      /* Order loops so i,j,k vary as they should for a C-style
+	 array ordered consecutively in memory */
+      for(i=0; i<(array->nx-1); i++){
+	for(j=0; j<(array->ny-1); j++){
+	  for(k=0; k<(array->nz-1); k++){
+	    /* Calculate position of (i,j,k)'th element in an F90 array 
+	       (where i varies most rapidly) and store value */
+	    pi[k*nslab + j*nrow + i] = *(++pi_old);
+	  }
+	}
+      }
+    }
+
+    /* Copy re-ordered data back into original array */
+    memcpy(pData, pi, nbytes);
+    free(pi);
+    break;
+
+  case REG_FLOAT:
+    nbytes = (array->nx)*(array->ny)*(array->nz)*sizeof(float);
+    if(!(pf = malloc(nbytes))){
+
+      fprintf(stderr, "Reorder_array: malloc of %d bytes failed\n",
+	      (int)nbytes);
+      return REG_FAILURE;
+    }
+    pf_old = (float *)pData;
+
+    /* In this context, array->is_f90 flags whether we want to
+       convert _to_ an F90-style array */
+    if(array->is_f90 != TRUE){
+
+      /* Convert F90 array to C array */
+      
+      nslab = (array->nz-1)*(array->ny-1);
+      nrow  = (array->nz-1);
+      /* Order loops so i,j,k vary as they should for an F90-style
+	 array ordered consecutively in memory */
+      for(k=0; k<(array->nz-1); k++){
+	for(j=0; j<(array->ny-1); j++){
+	  for(i=0; i<(array->nx-1); i++){
+	    /* Calculate position of (i,j,k)'th element in a C array 
+	       (where k varies most rapidly) and store value */
+	    pf[i*nslab + j*nrow + k] = *(++pf_old);
+	  }
+	}
+      }
+    }
+    else{
+      
+      /* Convert C array to F90 array */
+
+      nslab = (array->nx-1)*(array->ny-1);
+      nrow  = (array->nx-1);
+      /* Order loops so i,j,k vary as they should for a C-style
+	 array ordered consecutively in memory */
+      for(i=0; i<(array->nx-1); i++){
+	for(j=0; j<(array->ny-1); j++){
+	  for(k=0; k<(array->nz-1); k++){
+	    /* Calculate position of (i,j,k)'th element in an F90 array 
+	       (where i varies most rapidly) and store value */
+	    pf[k*nslab + j*nrow + i] = *(++pf_old);
+	  }
+	}
+      }
+    }
+
+    /* Copy re-ordered data back into original array */
+    memcpy(pData, pf, nbytes);
+    free(pf);
+    break;
+
+  case REG_DBL:
+    
+    nbytes = (array->nx)*(array->ny)*(array->nz)*sizeof(double);
+    if(!(pd = malloc(nbytes))){
+
+      fprintf(stderr, "Reorder_array: malloc of %d bytes failed\n",
+	      (int)nbytes);
+      return REG_FAILURE;
+    }
+    pd_old = (double *)pData;
+
+    /* In this context, array->is_f90 flags whether we want to
+       convert _to_ an F90-style array */
+    if(array->is_f90 != TRUE){
+
+      /* Convert F90 array to C array */
+      
+      nslab = (array->nz-1)*(array->ny-1);
+      nrow  = (array->nz-1);
+      /* Order loops so i,j,k vary as they should for an F90-style
+	 array ordered consecutively in memory */
+      for(k=0; k<(array->nz-1); k++){
+	for(j=0; j<(array->ny-1); j++){
+	  for(i=0; i<(array->nx-1); i++){
+	    /* Calculate position of (i,j,k)'th element in a C array 
+	       (where k varies most rapidly) and store value */
+	    pd[i*nslab + j*nrow + k] = *(++pd_old);
+	  }
+	}
+      }
+    }
+    else{
+      
+      /* Convert C array to F90 array */
+      
+      nslab = (array->nx-1)*(array->ny-1);
+      nrow  = (array->nx-1);
+      /* Order loops so i,j,k vary as they should for a C-style
+	 array ordered consecutively in memory */
+      for(i=0; i<(array->nx-1); i++){
+	for(j=0; j<(array->ny-1); j++){
+	  for(k=0; k<(array->nz-1); k++){
+	    /* Calculate position of (i,j,k)'th element in an F90 array 
+	       (where i varies most rapidly) and store value */
+	    pd[k*nslab + j*nrow + i] = *(++pd_old);
+	  }
+	}
+      }
+    }
+
+    /* Copy re-ordered data back into original array */
+    memcpy(pData, pd, nbytes);
+    free(pd);
+    break;
+
+  default:
+    break;
+  }
+
+  return REG_SUCCESS;
+}

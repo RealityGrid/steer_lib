@@ -551,6 +551,14 @@ int Register_IOTypes(int    NumTypes,
     IOTypes_table.io_def[current].buffer_bytes = 0;
     IOTypes_table.io_def[current].use_xdr = FALSE;
     IOTypes_table.io_def[current].num_xdr_bytes = 0;
+    IOTypes_table.io_def[current].array.nx = 0;
+    IOTypes_table.io_def[current].array.ny = 0;
+    IOTypes_table.io_def[current].array.nz = 0;
+    IOTypes_table.io_def[current].array.sx = 0;
+    IOTypes_table.io_def[current].array.sy = 0;
+    IOTypes_table.io_def[current].array.sz = 0;
+    IOTypes_table.io_def[current].array.is_f90 = FALSE;
+    IOTypes_table.io_def[current].convert_array_order = FALSE;
 
     /* set up transport for sample data - eg sockets */
     return_status = Initialize_IOType_transport(direction[i], current);
@@ -605,7 +613,7 @@ int Set_f90_array_ordering(int IOTypeIndex, int flag){
     return REG_FAILURE;
   }
 
-  IOTypes_table.io_def[IOTypeIndex].is_f90_array = flag;
+  IOTypes_table.io_def[IOTypeIndex].array.is_f90 = flag;
 
   return REG_SUCCESS;
 }
@@ -1105,6 +1113,10 @@ int Consume_start(int  IOType,
     return REG_FAILURE;
   }
 
+  /* Initialise array-ordering flags */
+  IOTypes_table.io_def[*IOTypeIndex].array.is_f90 = FALSE;
+  IOTypes_table.io_def[*IOTypeIndex].convert_array_order = FALSE;
+
   return Consume_start_data_check(*IOTypeIndex);
 }
 
@@ -1112,7 +1124,7 @@ int Consume_start(int  IOType,
 
 int Consume_stop(int *IOTypeIndex)
 {
-  int             return_status = REG_SUCCESS;
+  int return_status = REG_SUCCESS;
 
   /* Check that steering is enabled */
   if(!ReG_SteeringEnabled) return REG_SUCCESS;
@@ -1176,6 +1188,15 @@ int Consume_data_slice_header(int  IOTypeIndex,
 
   default:
     break;
+  }
+
+  /* Check whether or not we'll need to convert the array ordering */
+  if(IOTypes_table.io_def[IOTypeIndex].array.is_f90 != IsFortranArray){
+
+    IOTypes_table.io_def[IOTypeIndex].convert_array_order = TRUE;
+  }
+  else{
+    IOTypes_table.io_def[IOTypeIndex].convert_array_order = FALSE;
   }
 
   return REG_SUCCESS;
@@ -1286,6 +1307,12 @@ int Consume_data_slice(int    IOTypeIndex,
 	fprintf(stderr, "Consume_data_slice: xdr_vector decode failed\n");
 	return_status = REG_FAILURE;
       }
+
+      if(IOTypes_table.io_def[IOTypeIndex].convert_array_order == TRUE){
+
+	Reorder_array(&(IOTypes_table.io_def[IOTypeIndex].array), 
+		      REG_INT, pData);
+      }
       break;
 
     case REG_FLOAT:
@@ -1295,6 +1322,12 @@ int Consume_data_slice(int    IOTypeIndex,
 	fprintf(stderr, "Consume_data_slice: xdr_vector decode failed\n");
 	return_status = REG_FAILURE;
       }
+
+      if(IOTypes_table.io_def[IOTypeIndex].convert_array_order == TRUE){
+
+	Reorder_array(&(IOTypes_table.io_def[IOTypeIndex].array), 
+		      REG_FLOAT, pData);
+      }
       break;
 
     case REG_DBL:
@@ -1303,6 +1336,12 @@ int Consume_data_slice(int    IOTypeIndex,
 			 (unsigned int)sizeof(double), (xdrproc_t)xdr_double)){
 	fprintf(stderr, "Consume_data_slice: xdr_vector decode failed\n");
 	return_status = REG_FAILURE;
+      }
+
+      if(IOTypes_table.io_def[IOTypeIndex].convert_array_order == TRUE){
+
+	Reorder_array(&(IOTypes_table.io_def[IOTypeIndex].array), 
+		      REG_DBL, pData);
       }
       break;
 
@@ -1322,6 +1361,13 @@ int Consume_data_slice(int    IOTypeIndex,
   /* Reset use_xdr flag set as only valid on a per-slice basis */
   IOTypes_table.io_def[IOTypeIndex].use_xdr = FALSE;
   IOTypes_table.io_def[IOTypeIndex].num_xdr_bytes = 0;
+
+  /* Check whether or not this is a chunk header - if it is then we
+     need to extract the array dimensions */
+  if(DataType == REG_CHAR){
+
+    Parse_chunk_header(IOTypeIndex, (char*)pData);
+  }
 
   return return_status;
 }
@@ -1355,6 +1401,10 @@ int Emit_start(int  IOType,
 
   /* Set whether or not to encode as XDR */
   IOTypes_table.io_def[*IOTypeIndex].use_xdr = TRUE;
+
+  /* Initialise array-ordering flags */
+  IOTypes_table.io_def[*IOTypeIndex].array.is_f90 = FALSE;
+  IOTypes_table.io_def[*IOTypeIndex].convert_array_order = FALSE;
 
   if (Emit_header(*IOTypeIndex) == REG_SUCCESS){
 
@@ -1544,7 +1594,7 @@ int Emit_data_slice(int		      IOTypeIndex,
 			     datatype,
 			     actual_count,
 			     num_bytes_to_send,
-			     IOTypes_table.io_def[IOTypeIndex].is_f90_array)
+			     IOTypes_table.io_def[IOTypeIndex].array.is_f90)
       != REG_SUCCESS){
 
     return REG_FAILURE;
@@ -4425,6 +4475,37 @@ int Realloc_iotype_buffer(int index,
   }
 
   IOTypes_table.io_def[index].buffer_bytes = num_bytes;
+
+  return REG_SUCCESS;
+}
+
+/*----------------------------------------------------------------*/
+
+int Parse_chunk_header(int IOTypeIndex, char* pData)
+{
+  Array_type *ptr;
+
+  if(strstr(pData, "CHUNK_HDR")){
+
+    ptr = &(IOTypes_table.io_def[IOTypeIndex].array);
+
+    /* ARPDBG - would be much better to use XML for this header */
+    if( sscanf(pData, 
+	       "CHUNK_HDR\n"
+	       "ORIGIN %d %d %d\n"
+	       "EXTENT %d %d %d\n"
+	       "END_CHUNK_HDR\n", 
+	       &(ptr->sx), &(ptr->sy), &(ptr->sz), 
+	       &(ptr->nx), &(ptr->ny), &(ptr->nz)) != 6){
+
+      return REG_SUCCESS;
+    }
+  }
+
+  /* Flag that we don't have extent info. */
+  ptr->nx = 0;
+  ptr->ny = 0;
+  ptr->nz = 0;
 
   return REG_SUCCESS;
 }
