@@ -5,10 +5,16 @@ GLOBAL_FLAGS = G="-64 -g" NBIT=$(NBIT)
 LOCAL_BIN_DIR= ${HOME}/bin
 
 all:
+	make steerer
 	make app
 	make app_f90
 	make app_f90_parallel
-	make steerer
+
+lib$(NBIT)/libReG_Steer.a: include/*.h \
+ src/*.c \
+ src/*.m4 \
+ src/*.java
+	cd src; make ${GLOBAL_FLAGS}
 
 app: lib$(NBIT)/libReG_Steer.a \
  examples/mini_app/*.c
@@ -28,12 +34,6 @@ steerer: lib$(NBIT)/libReG_Steer.a \
  ${LOCAL_BIN_DIR}/ReG_Steer_Proxy.class \
  examples/mini_steerer/*.c
 	cd examples/mini_steerer; make ${GLOBAL_FLAGS}
-
-lib$(NBIT)/libReG_Steer.a: include/*.h \
- src/*.c \
- src/*.m4 \
- src/*.java
-	cd src; make ${GLOBAL_FLAGS}
 
 ${LOCAL_BIN_DIR}/ReG_Steer_Proxy.class: src/*.java
 	cd src; make  ${GLOBAL_FLAGS}
