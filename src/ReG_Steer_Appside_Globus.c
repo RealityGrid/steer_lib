@@ -682,7 +682,7 @@ int Disable_IOType_globus(int index)
 int Enable_IOType_globus(int index)
 {
   /* check index is valid */
-  if(index < 0 || index >= IOTypes_table.num_registered)return;
+  if(index < 0 || index >= IOTypes_table.num_registered)return REG_FAILURE;
 
   if(IOTypes_table.io_def[index].direction == REG_IO_OUT){
 
@@ -825,7 +825,7 @@ int Consume_start_data_check_globus(const int index)
 				  &nbytes);
       if(result != GLOBUS_SUCCESS || nbytes != nbytes1){
 	fprintf(stderr, "Consume_start_data_check_globus: failed to read"
-		" remaining %d bytes of header\n", nbytes1);
+		" remaining %d bytes of header\n", (int)nbytes1);
 	return REG_FAILURE;
       }
     }

@@ -750,6 +750,7 @@ int Enable_IOTypes_on_registration(int toggle){
   else{
     return REG_FAILURE;
   }
+  return REG_SUCCESS;
 }
 
 /*----------------------------------------------------------------*/
@@ -1046,6 +1047,7 @@ int Record_checkpoint_set(int   ChkType,
 			  char *ChkTag,
 			  char *Path)
 {
+#if REG_SOAP_STEERING
   int    nfiles;
   int    i, status;
   int    nbytes, bytes_left;
@@ -1054,6 +1056,7 @@ int Record_checkpoint_set(int   ChkType,
   char   node_data[REG_MAX_MSG_SIZE];
   char  *pchar;
   time_t time_now;
+#endif
 
   /* Can only call this function if steering lib initialised */
   if (!ReG_SteeringInit) return REG_FAILURE;
@@ -1927,7 +1930,7 @@ int Emit_data_slice(int		      IOTypeIndex,
     else{
       datatype = DataType;
       num_bytes_to_send = actual_count*sizeof(int);
-      out_ptr = pData;
+      out_ptr = (void *)pData;
     }
     break;
 
@@ -1959,7 +1962,7 @@ int Emit_data_slice(int		      IOTypeIndex,
     else{
       datatype = DataType;
       num_bytes_to_send = actual_count*sizeof(float);
-      out_ptr = pData;
+      out_ptr = (void *)pData;
     }
     break;
 
@@ -1992,7 +1995,7 @@ int Emit_data_slice(int		      IOTypeIndex,
     else{
       datatype = DataType;
       num_bytes_to_send = actual_count*sizeof(double);
-      out_ptr = pData;
+      out_ptr = (void *)pData;
     }
     break;
 
@@ -2008,7 +2011,7 @@ int Emit_data_slice(int		      IOTypeIndex,
       /* actual_count++; */
     }
     num_bytes_to_send = actual_count*sizeof(char);
-    out_ptr = pData;
+    out_ptr = (void *)pData;
     break;
 
   default:

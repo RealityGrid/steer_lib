@@ -958,8 +958,6 @@ int Emit_msg_header_globus(socket_io_type *sock_info,
   char  buffer[7*REG_PACKET_SIZE];
   char  tmp_buffer[REG_PACKET_SIZE];
   char *pchar;
-  globus_result_t  result;
-  globus_size_t    nbytes;
 
   pchar = buffer;
   pchar += sprintf(pchar, REG_PACKET_FORMAT, "<ReG_data_slice_header>");
@@ -1014,7 +1012,7 @@ int Write_globus(const globus_io_handle_t *handle,
   pchar = (char *)buffer;
 
   while(bytes_left > 0 && count < 10){
-    result = globus_io_try_write(handle, 
+    result = globus_io_try_write((globus_io_handle_t *)handle, 
 				 (globus_byte_t *)pchar, 
 				 bytes_left,
 				 &nbytes);
