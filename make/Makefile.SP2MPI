@@ -40,7 +40,7 @@ NBIT = 64
 
 # Location of C compiler and flags to use
 CC = xlc
-C_FLAGS = -O2 -q64 -qrtl -bdynamic
+C_FLAGS = -O2 -q64 -bdynamic 
 
 # Location of F90 compiler (if any) and flags to use
 F90 = xlf90
@@ -65,4 +65,4 @@ STEER_LIBS = -L${REG_STEER_HOME}/lib${NBIT} \
              -L${REG_XML_LIBDIR}${NBIT}
 
 # Libraries to link example applications against
-STEER_LDFLAGS = 
+STEER_LDFLAGS = -lm -liconv
