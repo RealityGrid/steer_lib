@@ -43,7 +43,6 @@
 #include <unistd.h>
 #include <time.h>
 #include <rpc/rpc.h>
-/* For testing of Consume_data_slice */
 #include <math.h>
 
 /* Allow value of 'DEBUG' to propagate down from Reg_steer_types.h if
@@ -783,6 +782,36 @@ int Consume_data_slice(REG_IOHandleType  IOHandle,
 
   /* ARPDBG */
   test_count_call++;
+
+  return return_status;
+}
+
+/*----------------------------------------------------------------*/
+
+int Emit_start(int               IOType,
+	       int               SeqNum,
+	       REG_IOHandleType *IOHandle)
+{
+
+  return REG_SUCCESS;
+}
+
+/*----------------------------------------------------------------*/
+
+int Emit_stop(REG_IOHandleType *IOHandle)
+{
+
+  return REG_SUCCESS;
+}
+
+/*----------------------------------------------------------------*/
+
+int Emit_data_slice(REG_IOHandleType  IOHandle,
+		    int               DataType,
+		    int               Count,
+		    void             *pData)
+{
+  int return_status = REG_SUCCESS;
 
   return return_status;
 }
@@ -1926,6 +1955,38 @@ void Steering_signal_handler(int aSignal)
   }
 
   exit(0);
+}
+
+/*--------------------------------------------------------------------*/
+
+int Make_vtk_buffer(char  *header,
+		    int    nx,
+		    int    ny,
+		    int    nz,
+		    float *array)
+{
+  int    i, j, k;
+  double a2 = 0.5*0.5;
+  double b2 = 0.3*0.3;
+  double c2 = 0.1*0.1;
+  float *fptr;
+
+  /* Make ASCII header to describe data to vtk */
+
+
+  /* Make an array of data */
+  fptr = array;
+
+  for(i=-nx/2; i<nx/2; i++){
+    for(j=-ny/2; j<ny/2; j++){
+      for(k=-nz/2; k<nz/2; k++){
+
+  	*(fptr++) = (float)sqrt((double)(i*i*a2 + j*j*b2 + k*k*c2));
+      }
+    }
+  }
+
+  return REG_SUCCESS;
 }
 
 
