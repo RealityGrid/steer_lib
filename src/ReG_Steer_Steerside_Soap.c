@@ -249,11 +249,14 @@ struct msg_struct *Get_service_data(Sim_entry_type *sim, char *sde_name)
 {
   struct tns__findServiceDataResponse  findServiceData_response;
   struct msg_struct                   *msg = NULL;
+  char   query_buf[REG_MAX_STRING_LENGTH];
+
 
   findServiceData_response._result = NULL;
+  sprintf(query_buf, "<ogsi:queryByServiceDataNames names=\"%s\"/>", 
+	  sde_name);
   if(soap_call_tns__findServiceData(&soap, sim->SGS_info.address, 
-				    "", "<ogsi:queryByServiceDataNames names=\"" 
-				    sde_name "\"/>", 
+				    "", query_buf, 
 				    &findServiceData_response )){
 
     fprintf(stderr, "Get_service_data: findServiceData failed:\n");

@@ -66,6 +66,7 @@ int Initialize_steering_connection_soap(int  NumSupportedCmds,
   struct tns__setServiceDataResponse setSDE_response;
   struct tns__AppStartResponse       appStart_response;
   char                              *pchar;
+  char                               query_buf[REG_MAX_MSG_SIZE];
 
   /* Get the address of the SGS for this application from an environment
      variable */
@@ -108,11 +109,12 @@ int Initialize_steering_connection_soap(int  NumSupportedCmds,
 		     Steerer_connection.supp_cmds);
 
   setSDE_response._result = NULL;
+  sprintf(query_buf, "<ogsi:setByServiceDataNames><%s>%s</%s></ogsi:setByServiceDataNames>", 
+	  SUPPORTED_CMDS_SDE, Steerer_connection.supp_cmds, SUPPORTED_CMDS_SDE);
+
   if (soap_call_tns__setServiceData(&soap, 
 				    Steerer_connection.SGS_address, "", 
-				    "<ogsi:setByServiceDataNames><" SUPPORTED_CMDS_SDE ">" 
-				    Steerer_connection.supp_cmds "</" SUPPORTED_CMDS_SDE 
-				    "></ogsi:setByServiceDataNames>", 
+				    query_buf, 
 				    &setSDE_response)){
 
     fprintf(stderr, "Initialize_steering_connection_soap: failure\n");
@@ -156,11 +158,13 @@ int Detach_from_steerer_soap()
 int Steerer_connected_soap()
 {
   struct tns__findServiceDataResponse  findServiceData_response;
+  char                                 query_buf[REG_MAX_STRING_LENGTH];
 
   findServiceData_response._result = NULL;
+  sprintf(query_buf, "<ogsi:queryByServiceDataNames names=\"%s\"/>", 
+	  STEER_STATUS_SDE );
   if(soap_call_tns__findServiceData(&soap, Steerer_connection.SGS_address, 
-				    "", "<ogsi:queryByServiceDataNames names=\"" 
-				    STEER_STATUS_SDE "\"/>", 
+				    "", query_buf, 
 				    &findServiceData_response )){
 
     fprintf(stderr, "Steerer_connected_soap: findServiceData failed:\n");
@@ -188,7 +192,8 @@ int Send_status_msg_soap(char* msg)
 {
   struct tns__PutStatusResponse       putStatus_response;
   struct tns__setServiceDataResponse  setSDE_response;
-  char *sde_name;
+  char                               *sde_name;
+  char                                query_buf[REG_MAX_MSG_SIZE];
 
   /* Status & log messages are both sent as 'status' messages */
   if(strstr(msg, "<App_status>") || strstr(msg, "<Steer_log>")){
@@ -231,10 +236,12 @@ int Send_status_msg_soap(char* msg)
     }
 
     setSDE_response._result = NULL;
+    sprintf(query_buf, "<ogsi:setByServiceDataNames>" 
+	    "<%s>%s</%s></ogsi:setByServiceDataNames>", 
+	    sde_name, msg, sde_name);
+
     if(soap_call_tns__setServiceData (&soap, Steerer_connection.SGS_address, "",
-				      "<ogsi:setByServiceDataNames><" sde_name ">" 
-				      msg "</" sde_name 
-				      "></ogsi:setByServiceDataNames>",  
+				      query_buf,  
 				      &setSDE_response)){
       fprintf(stderr, "Send_status_msg_soap: setServiceData failed:\n");
       soap_print_fault(&soap,stderr);
