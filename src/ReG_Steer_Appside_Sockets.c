@@ -274,7 +274,8 @@ int connect_connector(const int index) {
   if(return_status == REG_SUCCESS) {
     /* ...look up and then build remote address struct... */
     if(dns_lookup(IOTypes_table.io_def[index].socket_info.connector_hostname) == REG_FAILURE) {
-      fprintf(stderr, "Could not resolve hostname %s\n", IOTypes_table.io_def[index].socket_info.connector_hostname);
+      fprintf(stderr, "connect_connector: Could not resolve hostname <%s>\n", 
+	      IOTypes_table.io_def[index].socket_info.connector_hostname);
       return REG_FAILURE;
     }
 
