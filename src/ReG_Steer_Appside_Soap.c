@@ -32,6 +32,11 @@
   Authors........: Andrew Porter, Robert Haines
 
 ---------------------------------------------------------------------------*/
+
+/** @file ReG_Steer_Appside_Soap.c
+    @brief Source file for Soap-related Appside routines
+  */
+
 #include "ReG_Steer_types.h"
 #include "ReG_Steer_Appside_internal.h"
 #include "ReG_Steer_Appside_Soap.h"
@@ -64,17 +69,26 @@ extern char ReG_AppName[REG_MAX_STRING_LENGTH];
 extern char Global_scratch_buffer[];
 
 /* Soap-specific declarations */
+
+/** The gSoap environment structure */
 static struct soap soap;
 
-/* Names of the SGS' service data elements - MUST match those
-   used in SGS.pm (as launched by container) */
+/** Names of the SGS' service data elements - MUST match those
+    used in SGS.pm (as launched by container) */
 char *SUPPORTED_CMDS_SDE = "SGS:Supp_cmds";
+/** @see SUPPORTED_CMDS_SDE */
 char *PARAM_DEFS_SDE     = "SGS:Param_defs";
+/** @see SUPPORTED_CMDS_SDE */
 char *IOTYPE_DEFS_SDE    = "SGS:IOType_defs";
+/** @see SUPPORTED_CMDS_SDE */
 char *CHKTYPE_DEFS_SDE   = "SGS:ChkType_defs";
+/** @see SUPPORTED_CMDS_SDE */
 char *STEER_STATUS_SDE   = "SGS:Steerer_status";
+/** @see SUPPORTED_CMDS_SDE */
 char *MACHINE_ADDRESS_SDE= "SGS:Machine_address";
+/** @see SUPPORTED_CMDS_SDE */
 char *WORKING_DIR_SDE    = "SGS:Working_directory";
+/** @see SUPPORTED_CMDS_SDE */
 char *APP_NAME_SDE       = "SGS:Application_name";
 
 /*-------------------------------------------------------------------------*/
@@ -137,7 +151,8 @@ int Initialize_steering_connection_soap(int  NumSupportedCmds,
   if (soap_call_sgs__AppStart(&soap, Steerer_connection.SGS_address, "", 
 			      &appStart_response)){
 
-    fprintf(stderr, "Initialize_steering_connection_soap: failed to attach to SGS\n");
+    fprintf(stderr, "Initialize_steering_connection_soap: failed to "
+	    "attach to SGS: %s\n", Steerer_connection.SGS_address);
     soap_print_fault(&soap, stderr);
     return REG_FAILURE;
   }
