@@ -131,8 +131,7 @@ int Globus_socket_info_init(socket_io_type * const socket_info)
      REG_TCP_INTERFACE if it is set */
   if(Get_fully_qualified_hostname(&pchar, &ip_addr) == REG_SUCCESS){
 
-    /* Can't set interface to localhost so if that's what we've
-       got then don't bother */
+    /* If we only got localhost then don't bother */
     if(!strstr(ip_addr, "127.0.0.1")){
 
       result = globus_io_attr_set_tcp_interface(&socket_info->attr, 

@@ -1136,7 +1136,7 @@ int Get_fully_qualified_hostname(char **hostname, char **ip_addr_ptr)
   struct utsname  name;
   struct hostent *host;
   char           *pchar;
-  char            ip_addr[16];
+  static char     ip_addr[16];
 
   /* First check to see if we're using an interface other than the default */
   if(pchar = getenv("REG_TCP_INTERFACE")){
