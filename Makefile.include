@@ -38,14 +38,14 @@
 # Architecture of this platform.  Choose the most appropriate from
 # those listed in the src/conf directory. Make sure you don't leave
 # any SPACES at the end of this line!
-ARCH = SGI64
+ARCH = SGI
 # Edit the two following lines if 32-bit binaries are desired 
 # (NBIT = 32 and C_FLAGS=-n32).
-NBIT = 64
+NBIT = 32
 CC = cc
-C_FLAGS = ${CFLAGS} -64 -g
+C_FLAGS = ${CFLAGS} -n32 -g
 F90 = f90
-F90_FLAGS = -64 -g
+F90_FLAGS = -n32 -g
 # Location of java compiler - used to produce proxy binary
 JAVAC          = 
 # Location of the M4 macro processor (used to generate F90 wrappers)
@@ -70,28 +70,31 @@ STEER_LIBS = -L${REG_STEER_HOME}/lib$(NBIT) \
 
 # The globus_definitions file can be generated using the following 
 # globus command:
-# globus-makefile-header -flavor=gcc32dbg globus_io globus_common > globus_defintions
+# globus-makefile-header --flavor=gcc32dbg globus_io globus_common > globus_defintions
 # Subsititue flavor (sic) as appropriate for your globus installation 
 # but use only non-threaded flavours.
 
-GLOBUS_INCLUDES = -I/usr/local/globus2/include/vendorcc${NBIT}dbg
-GLOBUS_PKG_LIBS = -lglobus_io_vendorcc${NBIT}dbg \
-                  -lglobus_common_vendorcc${NBIT}dbg \
-                  -lglobus_gss_assist_vendorcc${NBIT}dbg \
-                  -lglobus_gssapi_gsi_vendorcc${NBIT}dbg \
-                  -lssl_vendorcc${NBIT}dbg \
-                  -lcrypto_vendorcc${NBIT}dbg
-GLOBUS_LDFLAGS = -L/usr/local/globus2/lib
+#GLOBUS_INCLUDES = -I/usr/local/globus2/include/vendorcc${NBIT}dbg
+#GLOBUS_PKG_LIBS = -lglobus_io_vendorcc${NBIT}dbg \
+#                  -lglobus_common_vendorcc${NBIT}dbg \
+#                  -lglobus_gss_assist_vendorcc${NBIT}dbg \
+#                  -lglobus_gssapi_gsi_vendorcc${NBIT}dbg \
+#                  -lssl_vendorcc${NBIT}dbg \
+#                  -lcrypto_vendorcc${NBIT}dbg
+#GLOBUS_LDFLAGS = -L/usr/local/globus2/lib
+GLOBUS_INCLUDES = 
+GLOBUS_PKG_LIBS = 
+GLOBUS_LDFLAGS = 
 
 # Either define GLOBUS_INCLUDES, GLOBUS_PKG_LIBS and GLOBUS_LDFLAGS, OR
 # uncomment this line if using Globus for sample AND/OR steering
 #include ${REG_STEER_HOME}/globus_definitions
 
 # Set flag to 1 to use globus for iotype samples communication, 0 to not 
-REG_GLOBUS_SAMPLES_FLAG = 1
+REG_GLOBUS_SAMPLES_FLAG = 0
 
 # Set flag to 1 to use globus for steering communication, 0 to not 
 REG_GLOBUS_STEERING_FLAG = 0
 
 # Set flag to 1 to use SOAP for steering communication, 0 to not 
-REG_SOAP_STEERING_FLAG = 1
+REG_SOAP_STEERING_FLAG = 0
