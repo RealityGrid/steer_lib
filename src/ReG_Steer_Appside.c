@@ -1258,7 +1258,6 @@ int Consume_data_slice(int    IOTypeIndex,
 
 int Emit_start(int  IOType,
 	       int  SeqNum,
-	       int  UseXDR,
 	       int *IOTypeIndex)
 {
   /* Check that steering is enabled */
@@ -1276,10 +1275,10 @@ int Emit_start(int  IOType,
   }
 
   /* Set whether or not to encode as XDR */
-  IOTypes_table.io_def[*IOTypeIndex].use_xdr = UseXDR;
+  IOTypes_table.io_def[*IOTypeIndex].use_xdr = TRUE;
 
   /* We'll need additional memory to perform conversion to XDR */
-  if(UseXDR){
+  if(IOTypes_table.io_def[*IOTypeIndex].use_xdr){
 
     IOTypes_table.io_def[*IOTypeIndex].buffer = (void *)malloc(REG_IO_BUFSIZE);
 
@@ -1297,7 +1296,8 @@ int Emit_start(int  IOType,
   else {
 
     /* free up memory as no guarantee Emit_stop will be called */
-    if(UseXDR && IOTypes_table.io_def[*IOTypeIndex].buffer){
+    if(IOTypes_table.io_def[*IOTypeIndex].use_xdr && 
+       IOTypes_table.io_def[*IOTypeIndex].buffer){
       free(IOTypes_table.io_def[*IOTypeIndex].buffer);
       IOTypes_table.io_def[*IOTypeIndex].buffer = NULL;
     }

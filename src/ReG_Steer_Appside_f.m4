@@ -632,11 +632,10 @@ INT_KIND_1_DECL(Status);
 
 /*----------------------------------------------------------------
 
-SUBROUTINE emit_start_f(IOType, SeqNum, UseXDR, IOHandle, Status)
+SUBROUTINE emit_start_f(IOType, SeqNum, IOHandle, Status)
 
   INTEGER(KIND=REG_SP_KIND), INTENT(in)  :: IOType
   INTEGER(KIND=REG_SP_KIND), INTENT(in)  :: SeqNum
-  INTEGER(KIND=REG_SP_KIND), INTENT(in)  :: UseXDR
   INTEGER(KIND=REG_SP_KIND), INTENT(out) :: IOHandle
   INTEGER(KIND=REG_SP_KIND), INTENT(out) :: Status
 
@@ -644,18 +643,15 @@ SUBROUTINE emit_start_f(IOType, SeqNum, UseXDR, IOHandle, Status)
 
 void FUNCTION(emit_start_f) ARGS(`IOType, 
                                 SeqNum, 
-                                UseXDR,
                                 IOHandle,
                                 Status')
 INT_KIND_1_DECL(IOType);
 INT_KIND_1_DECL(SeqNum);
-INT_KIND_1_DECL(UseXDR);
 INT_KIND_1_DECL(IOHandle);
 INT_KIND_1_DECL(Status);
 {
   *Status = INT_KIND_1_CAST( Emit_start((int)*IOType, 
                                         (int)*SeqNum, 
-                                        (int)*UseXDR, 
                                         (int *)IOHandle) );
   return;
 }

@@ -121,7 +121,6 @@ extern PREFIX int Steering_control(int     SeqNum,
    progress at this point. */
 extern PREFIX int Emit_start(int  IOType,
 			     int  SeqNum,
-			     int  UseXDR,
 			     int *IOTypeIndex);
 
 /* Must be called following a call to Emit_start.  Emits <Count> items
