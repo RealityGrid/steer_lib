@@ -205,6 +205,10 @@ sub Detach {
 
 	    return "SGS_SUCCESS";
 	}
+#	elsif($SGS::serviceData{$appStatusSDE} eq "STOPPING"){
+#
+#
+#	}
     }
     return "SGS_ERROR";
 }
@@ -393,12 +397,12 @@ sub PutControl {
             # Found one - store msg and set flag on buffer
 	    $SGS::ctrlMsgArray[$i] = $NEW_STATE;
 	    $SGS::ctrlMsgArrayFlags[$i] = 1;
-	    return $NEW_STATE;
+	    return "SGS_SUCCESS";
 	}
     }
 
-    # No free buffer found
-    return "";
+    # No free buffer found but that's not really an error
+    return " ";
   }
 
 #------------------------------
