@@ -252,12 +252,20 @@ static int Save_log();
    to the steering client are retrieved */
 static int Log_to_xml(char **pchar, int *count, const int not_sent_only);
 
-/* Attempt to realloc the buffer associated with the IOtype with index
-   'index' to num_bytes.  If this fails, the buffer is 'freed' and
-   num_buffer_bytes is zeroed, otherwise num_buffer_bytes is set to
-   num_bytes. */
+/* Wrapper for call to Realloc_IOdef_entry_buffer */
 static int Realloc_iotype_buffer(int index,
 				 int num_bytes);
+
+/* Wrapper for call to Realloc_IOdef_entry_buffer */
+static int Realloc_chktype_buffer(int index,
+				 int num_bytes);
+
+/* Attempt to realloc the buffer associated with the IOdef_entry to 
+   num_bytes.  If this fails, the buffer is 'freed' and
+   buffer_max_bytes is zeroed, otherwise buffer_max_bytes is set to
+   num_bytes. */
+static int Realloc_IOdef_entry_buffer(IOdef_entry *iodef, 
+				      int num_bytes);
 
 static int Log_control_msg(char *msg_txt);
 

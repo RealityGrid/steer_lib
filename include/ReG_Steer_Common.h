@@ -198,8 +198,10 @@ typedef struct {
 
   /* Pointer to buffer to hold data */
   void			       *buffer;
+  /* How much data there is currently in the buffer */
+  int                          buffer_bytes;
   /* Size of this buffer */
-  int				buffer_bytes;
+  int				buffer_max_bytes;
 #if REG_SOCKET_SAMPLES
   /* structure used to hold all socket information */
   socket_io_type		socket_info;

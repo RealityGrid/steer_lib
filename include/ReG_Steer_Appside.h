@@ -102,6 +102,9 @@ extern PREFIX int Record_checkpoint_set(int   ChkType,
 					char *ChkTag,
 					char *Path);
 
+extern PREFIX int Record_checkpoint_file(int   ChkType,
+					 char *filename);
+
 /* Register the specified parameters. Since labels are used to 
    identify parameters, they must be unique and not contain
    any white space. */
