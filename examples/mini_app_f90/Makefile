@@ -47,7 +47,7 @@ ${TARGET}: ${TARGET}.o ${REG_STEER_HOME}/include/reg_steer_f90.inc
 	-lReG_Steer ${STEER_LDFLAGS} ${GLOBUS_PKG_LIBS}
 
 mini_app2.o: mini_app2.f90
-	-${F90} ${F90_FLAGS} -C ${STEER_INCLUDES} ${GLOBUS_INCLUDES} -c $< -o $@
+	-${F90} ${F90_FLAGS} -C ${STEER_INCLUDES} ${GLOBUS_INCLUDES} -c mini_app2.f90 -o $@
 
 install:
 	-mv ${TARGET} ${LOCAL_BIN_DIR}/.

@@ -46,7 +46,7 @@ ${TARGET}: ${TARGET}.o ../../include/reg_steer_f90.inc
 	-lmpi -lReG_Steer ${STEER_LDFLAGS} ${GLOBUS_PKG_LIBS} 
 
 mini_app_para.o: mini_app_para.f90
-	-${F90} ${F90_FLAGS} ${STEER_INCLUDES} ${GLOBUS_INCLUDES} -c $< -o $@
+	-${F90} ${F90_FLAGS} ${STEER_INCLUDES} ${GLOBUS_INCLUDES} -c mini_app_para.f90 -o $@
 
 install:
 	-mv ${TARGET} ${LOCAL_BIN_DIR}/.
