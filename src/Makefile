@@ -41,7 +41,7 @@ include ../Makefile.include
 # taken from the PVM project.
 M4FILE = conf/${ARCH}.m4
 
-INCLUDE_PATH   = ${STEER_INCLUDES} ${GLOBUS_INCLUDES}
+INCLUDE_PATH   = ${STEER_INCLUDES} ${GLOBUS_INCLUDES} ${SOAP_INCLUDES}
 LIB_PATH       = ${REG_STEER_HOME}/lib$(NBIT)
 
 all:

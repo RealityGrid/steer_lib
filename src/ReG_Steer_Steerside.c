@@ -409,7 +409,7 @@ int Sim_attach(char *SimID,
 
   /* Now we actually connect to the application */
 
-  if( (strcmp(SimID, "DEFAULT") != 0) && Proxy.available){
+  if(Proxy.available){
 
     /* Use a proxy to interact with the 'grid' */
 #if DEBUG
@@ -429,6 +429,7 @@ int Sim_attach(char *SimID,
 
 #elif REG_SOAP_STEERING
 
+    /* Use SOAP (and Steering Grid Service) */
 #if DEBUG
     fprintf(stderr, "Sim_attach: calling Sim_attach_soap, "
 	    "current_sim = %d\n", current_sim);
@@ -436,14 +437,13 @@ int Sim_attach(char *SimID,
     return_status = Sim_attach_soap(&(Sim_table.sim[current_sim]), SimID);
 #else
 
-    /* Have no proxy so have no 'grid' - use local file system */
+    /* Use local file system */
 #if DEBUG
     fprintf(stderr, "Sim_attach: calling Sim_attach_local...\n");
 #endif
     return_status = Sim_attach_local(&(Sim_table.sim[current_sim]), SimID);
 
 #endif /* REG_GLOBUS_STEERING */
-
   }
 
   if(return_status == REG_SUCCESS){

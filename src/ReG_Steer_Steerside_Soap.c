@@ -71,7 +71,8 @@ int Sim_attach_soap(Sim_entry_type *sim, char *SimID)
   if(soap_call_tns__Attach(&soap, SimID, 
 			   "", &attach_response )){
 
-    fprintf(stderr, "Sim_attach_soap: Attach failed with message: \n");
+    fprintf(stderr, "Sim_attach_soap: Attach to %s failed with message: \n",
+	    SimID);
     soap_print_fault(&soap, stderr);
 
     return REG_FAILURE;
@@ -161,13 +162,15 @@ struct msg_struct *Get_status_msg_soap(Sim_entry_type *sim)
   char       *ptr;
   static char sde_names[10][REG_MAX_STRING_LENGTH];
   static int  sde_count = 0;
+  static int  sde_index = 0;
 
   fprintf(stderr, "Get_status_msg_soap: sde_count = %d\n", sde_count);
 
   /* Check for pending notifications first */
   if(sde_count > 0){
 
-    return Get_service_data(sim, sde_names[--sde_count]); 
+    sde_count--;
+    return Get_service_data(sim, sde_names[sde_index++]); 
   }
   fprintf(stderr, "Get_status_msg_soap: address = %s\n", sim->SGS_address);
 
@@ -181,6 +184,11 @@ struct msg_struct *Get_status_msg_soap(Sim_entry_type *sim)
     return NULL;
   }
   
+#if DEBUG
+  fprintf(stderr, "Get_status_msg_soap: GetNotifications returned >>%s<<\n",
+	  getNotifications_response._result);
+#endif
+
   /* GetNotifications returns a space-delimited list of the names of
      the SDE's that have changed since we last looked at them */
   if(ptr = strtok(getNotifications_response._result, " ")){
@@ -192,7 +200,12 @@ struct msg_struct *Get_status_msg_soap(Sim_entry_type *sim)
       ptr = strtok(NULL, " ");
     }
 
-    return Get_service_data(sim, sde_names[--sde_count]);
+    /* sde_index holds the index of the sde_name to use _next time_ 
+       we call Get_service_data - the zeroth sde_name is always
+       dealt with here. */
+    sde_index = 1;
+    sde_count--;
+    return Get_service_data(sim, sde_names[0]);
   }
 
   /* Only ask for a status msg if had no notifications */
