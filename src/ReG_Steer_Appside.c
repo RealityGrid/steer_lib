@@ -1107,7 +1107,7 @@ int Emit_status(int   SeqNum,
   int   pcount = 0;
   int   tot_pcount = 0;
   int   ccount = 0;
-  int   num_monitor;
+  int   num_param;
   int   cmddone   = FALSE;
   int   paramdone = FALSE;
   char  filename[REG_MAX_STRING_LENGTH];
@@ -1120,14 +1120,15 @@ int Emit_status(int   SeqNum,
 
   for(i=0; i<Params_table.max_entries; i++){
     
-    if( (Params_table.param[i].handle != REG_PARAM_HANDLE_NOTSET) && 
-		      (!Params_table.param[i].steerable) ) pcount++;
+    if(Params_table.param[i].handle != REG_PARAM_HANDLE_NOTSET) 
+	/* Want to output ALL params now - not just steerable ones */
+	/* && (!Params_table.param[i].steerable) ) */  pcount++;
   }
-  num_monitor = pcount;
+  num_param = pcount;
   pcount = 0;
 
   if(NumCommands == 0) cmddone = TRUE;
-  if(num_monitor == 0) paramdone = TRUE;
+  if(num_param == 0) paramdone = TRUE;
 
   /* Loop until all params and commands have been emitted */
 
@@ -1180,7 +1181,7 @@ int Emit_status(int   SeqNum,
 	/* Cumulative counter to move us through param table */
 	tot_pcount++;
 
-    	if(pcount >= num_monitor){
+    	if(pcount >= num_param){
  	  paramdone = TRUE;
  	  break;
     	}
