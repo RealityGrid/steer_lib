@@ -895,8 +895,6 @@ int Consume_ack_file(const int index)
   if(fp = fopen(Global_scratch_buffer, "r")){
 
     fclose(fp);
-    printf("ARPDBG: Consume_ack_file removing %s\n", 
-	   Global_scratch_buffer);
     remove(Global_scratch_buffer);
 
     return REG_SUCCESS;
