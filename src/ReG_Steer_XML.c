@@ -540,6 +540,9 @@ int parseLogEntry(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 	log->chk_log->next = New_chk_log_entry_struct();
 	log->chk_log = log->chk_log->next;
       }
+#if REG_DEBUG
+      fprintf(stderr, "parseLogEntry: calling parseChkLogEntry\n");
+#endif
       return_status = parseChkLogEntry(doc, ns, cur, log->chk_log);
     }
     else if( !xmlStrcmp(cur->name, (const xmlChar *)"Param") 
@@ -554,6 +557,9 @@ int parseLogEntry(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 	log->param_log = log->param_log->next;
       }
 
+#if REG_DEBUG
+      fprintf(stderr, "parseLogEntry: calling parseParam\n");
+#endif
       return_status = parseParam(doc, ns, cur, log->param_log);
     }
 
