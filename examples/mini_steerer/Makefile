@@ -36,7 +36,6 @@
 #---------------------------------------------------------------------
 #
 
-include ../../globus_definitions
 include ../../Makefile.include
 
 TARGET   = mini_steerer

@@ -35,7 +35,6 @@
 #    Initial version by: <name>
 #-----------------------------------------------------------------
 
-include ../../globus_definitions
 include ../../Makefile.include
 
 # G and NBIT are passed to make on cmd line
