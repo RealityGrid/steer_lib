@@ -243,4 +243,9 @@ typedef int REG_IOHandleType;
 #define REG_SGS_ERROR "SGS_ERROR"
 #define REG_SGS_SUCCESS "SGS_SUCCESS"
 
+/* Default minimum interval (integer no. of seconds) at which 
+   to poll for connection from steerer - overridden by 
+   REG_APP_POLL_INTERVAL environment variable if set */ 
+#define REG_APP_POLL_INTERVAL_DEFAULT 5
+
 #endif /* __REG_TYPES_INCLUDED defined */

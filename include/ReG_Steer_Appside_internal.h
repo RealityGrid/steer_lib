@@ -62,6 +62,10 @@ static IO_channel_table_type IO_channel[REG_INITIAL_NUM_IOTYPES];
    channel between the application and the steerer */
 typedef struct {
 
+  /* Interval in seconds between checks on whether steerer is
+     attached */
+  double                polling_interval;
+
   /* Where to write files for file-based steering */
   char			file_root[REG_MAX_STRING_LENGTH];
 
