@@ -46,6 +46,7 @@
 #include <rpc/rpc.h>
 #include <math.h>
 
+
 /* Allow value of 'DEBUG' to propagate down from Reg_steer_types.h if
    it has been set there */
 #ifndef DEBUG
@@ -1176,90 +1177,6 @@ int Consume_data_slice(int    IOTypeIndex,
     xdr_destroy(&xdrs);
   }
 
-  /* SMR XXX tmp tester code - just rcv HBT and send back ACK*
-  result = globus_io_read(&(IOTypes_table.io_def[IOTypeIndex].conn_handle), 
-			  buffer, 
-			  REG_MAX_LINE_LEN-1, 
-			  1, 
-			  &nbytes);
-
-  if (result == GLOBUS_SUCCESS ) {  
-    buffer[nbytes]='\0';
-    fprintf(stderr, "DBG TEST consume recvd '%s'\n", buffer);
-  }
-  else{
-    fprintf(stderr, "error globus_io_read\n");
-    err =  globus_error_get(result);
-
-    if (globus_object_type_match(GLOBUS_IO_ERROR_TYPE_NULL_PARAMETER,
-				 globus_object_get_type(err))) {
-     fprintf(stderr, " - globus error type: null parameter\n");
-    }
-    else if (globus_object_type_match(GLOBUS_IO_ERROR_TYPE_NOT_INITIALIZED,
-				      globus_object_get_type(err))) {
-     fprintf(stderr, " - globus error type: not initialised\n");
-    }
-    else if (globus_object_type_match(GLOBUS_IO_ERROR_TYPE_CLOSE_ALREADY_REGISTERED,
-				      globus_object_get_type(err))) {
-     fprintf(stderr, " - globus error type: close already registered\n");
-    }
-    else if (globus_object_type_match(GLOBUS_IO_ERROR_TYPE_READ_ALREADY_REGISTERED, 
-				      globus_object_get_type(err))) {
-     fprintf(stderr, " - globus error type: read already registered\n");
-    }
-    else if (globus_object_type_match(GLOBUS_ERROR_TYPE_TYPE_MISMATCH,
-				      globus_object_get_type(err))) {
-     fprintf(stderr, " - globus error type: type mismatch\n");
-    }
-    return REG_FAILURE;
-
-  }
-
-  fprintf(stderr, "DBG TEST repling with ACK\n");
-  sprintf(ack_buffer, "ACK");
-
-  result = globus_io_write(&(IOTypes_table.io_def[IOTypeIndex].conn_handle), 
-			   ack_buffer, 
-			   strlen(ack_buffer), 
-			   &nbytes);
-
-  if (result != GLOBUS_SUCCESS ) {
-    fprintf(stderr, "error globus_io_write\n");
-    err =  globus_error_get(result);
-
-    if (globus_object_type_match(GLOBUS_IO_ERROR_TYPE_NULL_PARAMETER,
-				 globus_object_get_type(err))) {
-     fprintf(stderr, " - globus error type: null parameter\n");
-    }
-    else if (globus_object_type_match(GLOBUS_IO_ERROR_TYPE_NOT_INITIALIZED,
-				      globus_object_get_type(err))) {
-     fprintf(stderr, " - globus error type: not initialised\n");
-    }
-    else if (globus_object_type_match(GLOBUS_IO_ERROR_TYPE_CLOSE_ALREADY_REGISTERED,
-				      globus_object_get_type(err))) {
-     fprintf(stderr, " - globus error type: close already registered\n");
-    }
-    else if (globus_object_type_match(GLOBUS_IO_ERROR_TYPE_WRITE_ALREADY_REGISTERED, 
-				      globus_object_get_type(err))) {
-     fprintf(stderr, " - globus error type: write already registered\n");
-    }
-    else if (globus_object_type_match(GLOBUS_ERROR_TYPE_TYPE_MISMATCH,
-				      globus_object_get_type(err))) {
-     fprintf(stderr, " - globus error type: type mismatch\n");
-    }
-    else if (globus_object_type_match(GLOBUS_IO_ERROR_TYPE_BAD_PROTECTION,
-				      globus_object_get_type(err))) {
-     fprintf(stderr, " - globus error type: bad protection\n");
-    }
-    else if (globus_object_type_match(GLOBUS_IO_ERROR_TYPE_SYSTEM_FAILURE,
-				      globus_object_get_type(err))) {
-     fprintf(stderr, " - globus error type: system failure\n");
-    }
-
-    return REG_FAILURE;
-  }
-
-  */
 
   /* Reset use_xdr flag set as only valid on a per-slice basis */
   IOTypes_table.io_def[IOTypeIndex].use_xdr = FALSE;
