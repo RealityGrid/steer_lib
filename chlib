@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #  Script to setup which incarnation of the RealityGrid Steering
 #   Library is used when using shared libs (*.so).
 #
