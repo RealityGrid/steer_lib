@@ -166,7 +166,8 @@ int Send_status_msg_file(char *buf)
 
   if( (fp = fopen(filename, "w")) == NULL){
 
-    fprintf(stderr, "Send_status_msg: failed to open file\n");
+    fprintf(stderr, "Send_status_msg: failed to open file <%s>\n",
+	    filename);
     return REG_FAILURE;
   }
 
