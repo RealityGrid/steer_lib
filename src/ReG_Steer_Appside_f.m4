@@ -389,6 +389,7 @@ void FUNCTION(make_vtk_buffer_f) ARGS(`STRING_ARG(header),
                                        nx, ny, nz, 
                                        array,
                                        Status')
+STRING_ARG_DECL(header);
 INT_KIND_1_DECL(nx);
 INT_KIND_1_DECL(ny);
 INT_KIND_1_DECL(nz);

@@ -691,8 +691,13 @@ int Consume_start(int  IOType,
 
     /* Check for data on socket */
 
-    result = globus_io_try_read(&(IOTypes_table.io_def[*IOTypeIndex].conn_handle), 
+/*     result = globus_io_try_read(&(IOTypes_table.io_def[*IOTypeIndex].conn_handle),  */
+/* 				buffer,  */
+/* 				REG_PACKET_SIZE,  */
+/* 				&nbytes); */
+    result = globus_io_read(&(IOTypes_table.io_def[*IOTypeIndex].conn_handle), 
 				buffer, 
+				REG_PACKET_SIZE, 
 				REG_PACKET_SIZE, 
 				&nbytes);
 
@@ -2849,8 +2854,8 @@ int Make_vtk_buffer(char  *header,
   pchar += sprintf(pchar, "%-128s", "data=xdr_float\n");
   pchar += sprintf(pchar, "%-128s", "variable 1 filetype=binary "
   		   "skip=0000000 stride=2\n");
-  pchar += sprintf(pchar, "%-128s", "variable 2 filetype=binary "
-  		   "skip=0000008 stride=2\n");
+/*   pchar += sprintf(pchar, "%-128s", "variable 2 filetype=binary " */
+/*   		   "skip=0000008 stride=2\n"); */
   pchar += sprintf(pchar, "%-128s", "END_OF_HEADER\n");
 
   /* Make an array of data */
