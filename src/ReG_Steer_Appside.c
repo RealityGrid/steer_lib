@@ -354,6 +354,8 @@ int Steering_initialize(int  NumSupportedCmds,
   }
 
   Chk_log.pSteer_cmds[0] = '\0';
+  /* pSteer_cmds_slot points to next free space in the buffer */
+  Chk_log.pSteer_cmds_slot = Chk_log.pSteer_cmds;
 
   for(i=0; i<Chk_log.max_entries; i++){
 
@@ -2907,59 +2909,6 @@ int Emit_ChkType_defs(){
   return REG_FAILURE;
 }
 
-/*----------------------------------------------------------------
-
-int Emit_steering_log(int seq_num)
-{
-  * Log the steering commands we've just acted upon and when
-     we did so (i.e. what sequence number) *
-  char *pchar = NULL;
-  char *ptr = NULL;
-  int   size  = BUFSIZ;
-  int   nbytes = 0;
-  int   bytes_left;
-
-  if( !(*pchar = (char *)malloc(size*sizeof(char))) ){
-
-    fprintf(stderr, "Emit_steering_log: malloc failed\n");
-    return REG_FAILURE;
-  }
-  bytes_left = size;
-  ptr = pchar;
-
-  nbytes = snprintf(ptr, bytes_left, "<ReG_steer_message>\n"
-		    "<Steer_log>\n");
-
-  bytes_left -= nbytes;
-  ptr += nbytes;
-
-  nbytes = snprintf(ptr, bytes_left, "<Log_entry>\n"
-		    "<SeqNum>%d</SeqNum>\n", seq_num);
-#if REG_DEBUG
-  * Check for truncation of message *
-  if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
-    fprintf(stderr, "Log_to_xml: message size exceeds BUFSIZ (%d)\n", 
-	    BUFSIZ);
-    free(*pchar);
-    *pchar = NULL;
-    return REG_FAILURE;
-  }
-#endif
-  bytes_left -= nbytes;
-  ptr += nbytes;
-
-  if(Steer_log.num_params > 0 || Steer_log.num_cmds > 0){
-
-
-
-  }
-
-  * Send to SGS *
-
-  return REG_SUCCESS;
-}
-*/
-
 /*----------------------------------------------------------------*/
 
 int Emit_log()
@@ -3043,6 +2992,7 @@ int Emit_log()
     fprintf(stderr, "Emit_log: logged commands >>%s<<\n", Chk_log.pSteer_cmds);
     Emit_log_entries(Chk_log.pSteer_cmds);
     Chk_log.pSteer_cmds[0]='\0';
+    Chk_log.pSteer_cmds_slot = Chk_log.pSteer_cmds;
   }
 
   if(return_status == REG_SUCCESS){
