@@ -596,6 +596,14 @@ int Register_IOTypes(int    NumTypes,
 
   for(i=0; i<NumTypes; i++){
 
+    if(String_contains_xml_chars(IOLabel[i]) == TRUE){
+
+      fprintf(stderr, "Register_IOTypes: ERROR: IO label contains "
+	      "reserved xml characters (<,>,&): %s\n"
+              "     - skipping this IOType.\n", IOLabel[i]);
+      continue;
+    }
+
     strncpy(IOTypes_table.io_def[current].label, IOLabel[i],
 	    REG_MAX_STRING_LENGTH);
 
@@ -895,6 +903,14 @@ int Register_ChkTypes(int    NumTypes,
   current = ChkTypes_table.num_registered;
 
   for(i=0; i<NumTypes; i++){
+
+    if(String_contains_xml_chars(ChkLabel[i]) == TRUE){
+
+      fprintf(stderr, "Register_ChkTypes: ERROR: Chk label contains "
+	      "reserved xml characters (<,>,&): %s\n"
+	      "     - skipping this ChkType.\n", ChkLabel[i]);
+      continue;
+    }
 
     strcpy(ChkTypes_table.io_def[current].label, ChkLabel[i]);
 
@@ -2113,6 +2129,14 @@ int Register_params(int    NumParams,
       fprintf(stderr, "Register_params: failed to find free "
 	      "param entry\n");
       return REG_FAILURE;
+    }
+
+    if(String_contains_xml_chars(ParamLabels[i]) == TRUE){
+
+      fprintf(stderr, "Register_params: ERROR: Param label "
+	      "contains reserved xml characters (<,>,&): %s\n"
+              "     - skipping this parameter.\n", ParamLabels[i]);
+      continue;
     }
 
     /* Store label */
