@@ -64,16 +64,6 @@ REG_DEBUG_FLAG = 0
 # Set flag to 1 to get additional debug output, 0 otherwise.
 REG_DEBUG_FULL_FLAG = 0
 
-#------------------------------------
-# If you want to wrap the steering library to work with other languages:
-#  *) Point REG_SWIG at your swig installation.
-#  *) Make REG_WRAP a list of the required wrappings.
-#     eg: REG_WRAP=python perl tcl java
-# Otherwise leave REG_WRAP=none
-REG_SWIG=/usr/local/bin/swig
-REG_WRAP=none
-#REG_WRAP=python perl tcl java
-
 #--------------------------------------------------------------------
 # Don't edit anything below this line
 
