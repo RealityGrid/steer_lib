@@ -420,11 +420,19 @@ int main(){
 		      data_type  = REG_CHAR;
 		      status = Emit_data_slice(iohandle, data_type, data_count, &
 					       header);
+		      if(status != REG_SUCCESS){
+			printf("Emit_data_slice failed - end emit\n");
+			break;
+		      }
 
 		      data_count = chunk_dim*ny*nz;
 		      data_type  = REG_FLOAT;
 		      status = Emit_data_slice(iohandle, data_type, data_count, 
 					       &(array[(ichunk*chunk_dim)*ny*nz]));
+		      if(status != REG_SUCCESS){
+			printf("Emit_data_slice failed - end emit\n");
+			break;
+		      }
 		    }
 
 		    Emit_stop(&iohandle);
