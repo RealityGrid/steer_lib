@@ -186,6 +186,35 @@ int main(){
       }
     }
 
+    /* Display the steerable parameters */
+
+    if(Get_param_number(sim_handle, TRUE, &num_params) != REG_FAILURE){
+
+      fprintf(stderr, "Have %d steerable parameters:\n", num_params);
+
+      /* This is simple cludge - should really realloc to make arrays
+	 big enough */
+      if(num_params > REG_INITIAL_NUM_PARAMS){
+	num_params = REG_INITIAL_NUM_PARAMS;
+      }
+      
+      if(Get_param_values(sim_handle, 
+			  TRUE,
+			  num_params,
+			  param_handles,
+			  param_labels,
+			  param_vals,
+			  param_types) != REG_FAILURE){
+
+	for(i=0; i<num_params; i++){
+
+	  fprintf(stderr, "Handle: %d, Label: %s, Value: %s, Type: %d\n", 
+		  param_handles[i], 
+		  param_labels[i], param_vals[i], param_types[i]);
+	}
+      }
+    }
+
     /* Wait for a command from the user */
 
     fprintf(stderr, "\nCommand: ");
