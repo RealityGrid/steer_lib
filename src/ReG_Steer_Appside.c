@@ -307,7 +307,7 @@ int Steering_initialize(int  NumSupportedCmds,
   Params_table.param[0].steerable = FALSE;
   Params_table.param[0].modified  = FALSE;
   Params_table.param[0].is_internal=FALSE;
-  sprintf(Params_table.param[0].label, "REG_SEQ_NUM");
+  sprintf(Params_table.param[0].label, "SEQUENCE_NUM");
   sprintf(Params_table.param[0].value, "-1");
   sprintf(Params_table.param[0].min_val, "-1");
   Params_table.param[0].min_val_valid = TRUE;
