@@ -40,6 +40,7 @@
 
 #include "ReG_Steer_Common.h"
 #include "ReG_Steer_XML.h"
+#include "soapH.h"
 
 /*---------------- Data structure definitions -----------------*/
 
@@ -74,6 +75,9 @@ typedef struct {
     /* Used to keep track of notifications that we've yet to process */
     int  sde_count;
     int  sde_index;
+    /* The stucture holding the gSOAP environment for this connection */
+    struct soap *soap;
+
   } SGS_info;
 
   /* Last status message received from this simulation - filled in

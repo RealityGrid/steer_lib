@@ -55,9 +55,6 @@ Sim_table_type Sim_table;
    via files or SOAP over http) */
 Proxy_table_type Proxy;
 
-/* Whether we have the option of steering via SOAP and SGS */
-int SOAP_available = TRUE;
-
 /*----- Routines to be used by the steering component ------*/
 
 int Steerer_initialize()
@@ -147,11 +144,6 @@ int Steerer_initialize()
   }
   */
 
-  if(Steerer_initialize_soap() != REG_SUCCESS){
-
-    SOAP_available = FALSE;
-  }
-
   return REG_SUCCESS;
 }
 
@@ -185,8 +177,6 @@ int Steerer_finalize()
     Proxy.available       = FALSE;
   }
 
-  Steerer_finalize_soap();
-
   return REG_SUCCESS;
 }
 
@@ -209,32 +199,29 @@ int Get_sim_list(int   *nSims,
 
   if(Proxy.available != TRUE){
 
-    if(SOAP_available){
+    /* ARPDBG - ultimately we will contact a registry here
+       and ask it for the location of any SGSs it knows of */
 
-      /* ARPDBG - ultimately we will contact a registry here
-	 and ask it for the location of any SGSs it knows of */
+    if(ptr = getenv("REG_SGS_ADDRESS")){
 
-      if(ptr = getenv("REG_SGS_ADDRESS")){
-
-	*nSims = 1;
-	sprintf(simName[0], "Simulation");
-	strcpy(simGSH[0], ptr);
-      }
-      else{
-
-	fprintf(stderr, "Get_sim_list: REG_SGS_ADDRESS environment variable "
-	      "is not set\n");
-	*nSims = 0;
-	sprintf(simName[0], " ");
-      }
-
-      return REG_SUCCESS;
+      *nSims = 1;
+      sprintf(simName[0], "Simulation");
+      strcpy(simGSH[0], ptr);
     }
     else{
 
-      fprintf(stderr, "Get_sim_list: no proxy and no SGS available\n");
-      return REG_FAILURE;
+      fprintf(stderr, "Get_sim_list: REG_SGS_ADDRESS environment variable "
+	      "is not set\n");
+      *nSims = 0;
+      sprintf(simName[0], " ");
     }
+
+    return REG_SUCCESS;
+  }
+  else{
+
+    fprintf(stderr, "Get_sim_list: no proxy and no SGS available\n");
+    return REG_FAILURE;
   }
 
   /* Get (space-delimited) list of steerable apps & associated
@@ -452,21 +439,19 @@ int Sim_attach(char *SimID,
 
     return_status = REG_FAILURE;
 
-    if(SOAP_available){
-      /* Try to use SOAP (and Steering Grid Service) - if this fails
-	 then SimID isn't a valid GSH so we revert to file-based steering */
+    /* Try to use SOAP (and Steering Grid Service) - if this fails
+       then SimID isn't a valid GSH so we revert to file-based steering */
 #if REG_DEBUG
-      fprintf(stderr, "Sim_attach: calling Sim_attach_soap, "
-	      "current_sim = %d\n", current_sim);
+    fprintf(stderr, "Sim_attach: calling Sim_attach_soap, "
+	    "current_sim = %d\n", current_sim);
 #endif
-      return_status = Sim_attach_soap(&(Sim_table.sim[current_sim]), SimID);
+    return_status = Sim_attach_soap(&(Sim_table.sim[current_sim]), SimID);
 
-      if(return_status == REG_SUCCESS){
-	Sim_table.sim[current_sim].SGS_info.active = TRUE;
-      }
-      else{
-	Sim_table.sim[current_sim].SGS_info.active = FALSE;
-      }
+    if(return_status == REG_SUCCESS){
+      Sim_table.sim[current_sim].SGS_info.active = TRUE;
+    }
+    else{
+      Sim_table.sim[current_sim].SGS_info.active = FALSE;
     }
 
     if(return_status == REG_FAILURE){
@@ -3166,9 +3151,10 @@ int Finalize_connection(Sim_entry_type *sim)
 
     if(sim->SGS_info.active){
 
-      /* Detaching from the SGS should be enough to take everything
-	 down */
-      return Send_detach_msg_soap(sim);
+      /* Detaching from the SGS and then clean up */
+      Send_detach_msg_soap(sim);
+
+      return Finalize_connection_soap(sim);
     }
 
     return Finalize_connection_file(sim);

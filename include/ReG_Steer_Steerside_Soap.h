@@ -42,10 +42,7 @@
 
 /*-------------------------------------------------------------------*/
 
-/* Initialise soap-specific structures etc. */
-int Steerer_initialize_soap();
-
-/* Attach to simulation via SOAP */
+/* Initialise soap-specific structures & attach to simulation via SOAP */
 int Sim_attach_soap(Sim_entry_type *sim, char *SimID);
 
 int Send_control_msg_soap(Sim_entry_type *sim, char* buf);
@@ -65,6 +62,6 @@ struct msg_struct *Get_service_data(Sim_entry_type *sim, char *sde_name);
 int Send_restart_msg_soap(Sim_entry_type *sim, char *chkGSH);
 
 /* Clean-up soap-specific structures */
-int Steerer_finalize_soap();
+int Finalize_connection_soap(Sim_entry_type *sim);
 
 #endif

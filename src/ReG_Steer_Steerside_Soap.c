@@ -35,21 +35,6 @@
 #include "ReG_Steer_Steerside.h"
 #include "ReG_Steer_Steerside_internal.h"
 #include "ReG_Steer_Steerside_Soap.h"
-#include "soapSGS.nsmap"
-
-static struct soap soap;
-
-/*-------------------------------------------------------------------------*/
-
-int Steerer_initialize_soap()
-{
-  /* soap_init(&soap); */
-  /* Use this form to turn-on keep-alive for both incoming and outgoing
-     http connections */
-  soap_init2(&soap, SOAP_IO_KEEPALIVE, SOAP_IO_KEEPALIVE);
-
-  return REG_SUCCESS;
-}
 
 /*-------------------------------------------------------------------------*/
 
@@ -62,14 +47,27 @@ int Sim_attach_soap(Sim_entry_type *sim, char *SimID)
   char *pchar = NULL;
   char *pchar1= NULL;
 
+  /* malloc memory for soap struct for this connection and then
+     initialise it */
+  sim->SGS_info.soap = (struct soap*)malloc(sizeof(struct soap));
+  if(!(sim->SGS_info.soap)){
+
+    fprintf(stderr, "Sim_attach_soap: failed to malloc memory for "
+	    "soap struct\n");
+    return REG_FAILURE;
+  }
+  /* Use this form to turn-on keep-alive for both incoming and outgoing
+     http connections */
+  soap_init2(sim->SGS_info.soap, SOAP_IO_KEEPALIVE, SOAP_IO_KEEPALIVE);
+
   /* SimID holds the address of the soap server of the SGS */
   attach_response._result = NULL;
-  if(soap_call_tns__Attach(&soap, SimID, 
+  if(soap_call_tns__Attach(sim->SGS_info.soap, SimID, 
 			   "", &attach_response )){
 
     fprintf(stderr, "Sim_attach_soap: Attach to %s failed with message: \n",
 	    SimID);
-    soap_print_fault(&soap, stderr);
+    soap_print_fault(sim->SGS_info.soap, stderr);
 
     return REG_FAILURE;
   }
@@ -152,11 +150,11 @@ int Send_control_msg_soap(Sim_entry_type *sim, char* buf)
 
   /* Send message */
   putControl_response._result = NULL;
-  if(soap_call_tns__PutControl(&soap, sim->SGS_info.address, 
+  if(soap_call_tns__PutControl(sim->SGS_info.soap, sim->SGS_info.address, 
 			       "", buf, &putControl_response )){
 
     fprintf(stderr, "Send_control_msg_soap: PutControl failed:\n");
-    soap_print_fault(&soap, stderr);
+    soap_print_fault(sim->SGS_info.soap, stderr);
 
     return REG_FAILURE;
   }
@@ -186,11 +184,11 @@ struct msg_struct *Get_status_msg_soap(Sim_entry_type *sim)
 
   /* Check SGS for new notifications */
   getNotifications_response._result = NULL;
-  if(soap_call_tns__GetNotifications(&soap, sim->SGS_info.address, 
+  if(soap_call_tns__GetNotifications(sim->SGS_info.soap, sim->SGS_info.address, 
 				     "", &getNotifications_response )){
 
     fprintf(stderr, "Get_status_msg_soap: GetNotifications failed:\n");
-    soap_print_fault(&soap, stderr);
+    soap_print_fault(sim->SGS_info.soap, stderr);
 
     return NULL;
   }
@@ -239,11 +237,11 @@ struct msg_struct *Get_status_msg_soap(Sim_entry_type *sim)
 
   /* Only ask for a status msg if had no notifications */
   getStatus_response._result = NULL;
-  if(soap_call_tns__GetStatus(&soap, sim->SGS_info.address, 
+  if(soap_call_tns__GetStatus(sim->SGS_info.soap, sim->SGS_info.address, 
 			       "", &getStatus_response )){
 
     fprintf(stderr, "Get_status_msg_soap: GetStatus failed:\n");
-    soap_print_fault(&soap, stderr);
+    soap_print_fault(sim->SGS_info.soap, stderr);
 
     return NULL;
   }
@@ -286,12 +284,12 @@ struct msg_struct *Get_service_data(Sim_entry_type *sim, char *sde_name)
   findServiceData_response._result = NULL;
   sprintf(query_buf, "<ogsi:queryByServiceDataNames names=\"%s\"/>", 
 	  sde_name);
-  if(soap_call_tns__findServiceData(&soap, sim->SGS_info.address, 
+  if(soap_call_tns__findServiceData(sim->SGS_info.soap, sim->SGS_info.address, 
 				    "", query_buf, 
 				    &findServiceData_response )){
 
     fprintf(stderr, "Get_service_data: findServiceData failed:\n");
-    soap_print_fault(&soap, stderr);
+    soap_print_fault(sim->SGS_info.soap, stderr);
 
     return NULL;
   }
@@ -374,11 +372,11 @@ int Send_pause_msg_soap(Sim_entry_type *sim)
   fprintf(stderr, "Send_pause_msg_soap: calling Pause...\n");
 #endif
   pause_response._result = NULL;
-  if(soap_call_tns__Pause(&soap, sim->SGS_info.address, 
+  if(soap_call_tns__Pause(sim->SGS_info.soap, sim->SGS_info.address, 
 			   "", &pause_response )){
 
     fprintf(stderr, "Send_pause_msg_soap: Pause failed:\n");
-    soap_print_fault(&soap, stderr);
+    soap_print_fault(sim->SGS_info.soap, stderr);
 
     return REG_FAILURE;
   }
@@ -401,11 +399,11 @@ int Send_resume_msg_soap(Sim_entry_type *sim)
   fprintf(stderr, "Send_resume_msg_soap: calling Resume...\n");
 #endif
   resume_response._result = NULL;
-  if(soap_call_tns__Resume(&soap, sim->SGS_info.address, 
+  if(soap_call_tns__Resume(sim->SGS_info.soap, sim->SGS_info.address, 
 			   "", &resume_response )){
 
     fprintf(stderr, "Send_resume_msg_soap: Resume failed:\n");
-    soap_print_fault(&soap, stderr);
+    soap_print_fault(sim->SGS_info.soap, stderr);
 
     return REG_FAILURE;
   }
@@ -428,11 +426,11 @@ int Send_detach_msg_soap(Sim_entry_type *sim)
   fprintf(stderr, "Send_detach_msg_soap: calling Detach...\n");
 #endif
   detach_response._result = NULL;
-  if(soap_call_tns__Detach(&soap, sim->SGS_info.address, 
+  if(soap_call_tns__Detach(sim->SGS_info.soap, sim->SGS_info.address, 
 			   "", &detach_response )){
 
     fprintf(stderr, "Send_detach_msg_soap: Detach failed:\n");
-    soap_print_fault(&soap, stderr);
+    soap_print_fault(sim->SGS_info.soap, stderr);
 
     return REG_FAILURE;
   }
@@ -455,11 +453,11 @@ int Send_stop_msg_soap(Sim_entry_type *sim)
   fprintf(stderr, "Send_stop_msg_soap: calling Stop...\n");
 #endif
   stop_response._result = NULL;
-  if(soap_call_tns__Stop(&soap, sim->SGS_info.address, 
+  if(soap_call_tns__Stop(sim->SGS_info.soap, sim->SGS_info.address, 
 			   "", &stop_response )){
 
     fprintf(stderr, "Send_stop_msg_soap: Stop failed:\n");
-    soap_print_fault(&soap, stderr);
+    soap_print_fault(sim->SGS_info.soap, stderr);
 
     return REG_FAILURE;
   }
@@ -479,11 +477,11 @@ int Send_restart_msg_soap(Sim_entry_type *sim, char *chkGSH)
   struct tns__RestartResponse  restart_response;
 
   restart_response._result = NULL;
-  if(soap_call_tns__Restart(&soap, sim->SGS_info.address, 
+  if(soap_call_tns__Restart(sim->SGS_info.soap, sim->SGS_info.address, 
 			   "", chkGSH, &restart_response )){
 
     fprintf(stderr, "Send_restart_msg_soap: Restart failed:\n");
-    soap_print_fault(&soap, stderr);
+    soap_print_fault(sim->SGS_info.soap, stderr);
 
     return REG_FAILURE;
   }
@@ -498,10 +496,13 @@ int Send_restart_msg_soap(Sim_entry_type *sim, char *chkGSH)
 
 /*-------------------------------------------------------------------------*/
 
-int Steerer_finalize_soap()
+int Finalize_connection_soap(Sim_entry_type *sim)
 {
   /* Release memory */
-  soap_end(&soap);
+  soap_end(sim->SGS_info.soap);
+  free(sim->SGS_info.soap);
+  sim->SGS_info.soap = NULL;
 
   return REG_SUCCESS;  
+
 }
