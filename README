@@ -1,10 +1,11 @@
 This software is an implementation of the steering API for the
 RealityGrid project, produced by the Supercomputing, Visualization &
 e-Science Group, Manchester Computing, University of Manchester.  It
-uses the expat XML parser which is copyright (c) 1998, 1999, 2000 Thai
-Open Source Software Center Ltd.
+uses libxml, the XML parser created by the Gnome Project.
 
 How to install:
+
+The XML parser.
 
 The steering library uses libxml, the XML C library for Gnome.  This is
 available from http://xmlsoft.org/downloads.html and should be installed 
@@ -24,7 +25,22 @@ location and don't want to have to set LD_LIBRARY64_PATH/LD_LIBRARYN32_PATH
 then you can also specify that you only want a static library by giving the
 --enable-shared=no flag.)
 
-The directory containing this file should also contain a file called
+UNICORE (grid-services related) stuff.
+
+In order to interface with the UNICORE framework, the steering library
+launches a Java proxy that communicates with the UNICORE framework (if
+available).  As a result, you will require GLUE from The Mind Electric
+installed on your system as well as the ReG-grid-service software
+(should be available from the same source as this library itself).
+
+You should make the additions to your CLASSPATH environment variable
+specified in the GLUE documentation.  The additions required for the
+ReG-grid-service are dealt with in the reg_steer_configure.csh file -
+you should edit these as appropriate.  More about this file below.
+
+The steering library.
+
+The directory containing this README file should also contain a file called
 reg_steer_configure.csh.  This sets some environment variables
 to configure the steering system:
 
@@ -70,7 +86,7 @@ functionality is truly primitive and often hard-wired. 'mini_app2' is
 similar to 'mini_app' but implemented in F90 instead of C. 'mini_app_para'
 is a parallel (F90 and MPI) example.
 
-UNICORE demonstrator:
+UNICORE ('Sheffield') demonstrator:
 
 In order to produce a steering library suitable for use with the UNICORE
 demonstrator, the line containing "#define UNICORE_DEMO" in 
