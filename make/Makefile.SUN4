@@ -36,7 +36,11 @@ NBIT = 64
 
 # Location of C compiler and flags to use
 CC = cc
-C_FLAGS = -xO2 -g
+C_FLAGS = -xO2 -g -d y -B dynamic
+LIB_C_FLAGS = ${C_FLAGS} -KPIC -I../include
+
+# Linker flags to use
+LD_FLAGS = -d y -B dynamic -G -L${REG_XML_LIBDIR} -lm -lz -lresolv -lnsl -lsocket -lxml2
 
 # Location of F90 compiler (if any) and flags to use
 F90 = mpf90
