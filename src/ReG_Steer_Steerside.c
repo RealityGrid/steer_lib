@@ -2104,7 +2104,21 @@ int Set_param_values(int    sim_handle,
 	  break;
 
 	case REG_CHAR:
-	  /* Limits not applicable to character strings */
+	  /* Max. value taken as maximum possible length of steered 
+	     character strings */
+	  if(Sim_table.sim[isim].Params_table.param[index].max_val_valid == TRUE){
+	    sscanf(Sim_table.sim[isim].Params_table.param[index].max_val, "%d",
+		   &imax);
+	    if (strlen(vals[i]) > imax) {
+
+	      fprintf(stderr, "Set_param_values: new string (%s) of %s exceeds\n"
+		      "maximum length (%s) - skipping...\n", 
+		      vals[i], 
+		      Sim_table.sim[isim].Params_table.param[index].label, 
+		      Sim_table.sim[isim].Params_table.param[index].max_val);
+	      continue;
+	    }
+	  }
 	  break;
 
 	default:
