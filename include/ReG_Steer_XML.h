@@ -153,6 +153,8 @@ int parseSteerLog(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 	          struct log_struct *log);
 int parseSteerLogEntry(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 	               struct log_entry_struct *log_entry);
+int Parse_registry_entries(char* buf, int size, int *num_entries, 
+			   struct registry_entry **entries);
 
 struct msg_struct       *New_msg_struct();
 struct status_struct    *New_status_struct();

@@ -39,6 +39,7 @@
 #include "ReG_Steer_Appside_internal.h"
 #include "ReG_Steer_Appside_Sockets.h"
 #include "ReG_Steer_Appside_File.h"
+#include "ReG_Steer_Appside_Soap.h"
 #include <string.h>
 #include <signal.h>
 #include <sys/time.h>
