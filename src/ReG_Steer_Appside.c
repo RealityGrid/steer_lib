@@ -1689,7 +1689,12 @@ int Steering_control(int     SeqNum,
   static clock_t previous_time = 0;
   static int     first_time    = TRUE;
 
+  /* For throttling the polling rate */
+  static time_t this_wc_time = (time_t)0, last_wc_time = (time_t)0;
+
 #ifdef USE_REG_TIMING
+  /* More accurate timing but less portable so only used
+     for analysis */
   static float  sim_time, steer_time;
   static double time0 = -1.0, time1 = -1.0;
 
@@ -1697,10 +1702,10 @@ int Steering_control(int     SeqNum,
 
   if(time1 > -1.0){
     sim_time = (float)(time0 - time1);
-    fprintf(stderr, "TIMING: Spent %.4f seconds working\n",
+    fprintf(stderr, "TIMING: Spent %.5f seconds working\n",
 	    sim_time);
     if(sim_time > REG_TOL_ZERO){
-      fprintf(stderr, "TIMING: Steering overhead = %.2f%%\n", 
+      fprintf(stderr, "TIMING: Steering overhead = %.3f%%\n", 
 	      100.0*(steer_time/sim_time));
     }
   }
@@ -1721,13 +1726,22 @@ int Steering_control(int     SeqNum,
 
   if(!ReG_SteeringActive){
 
-    if(Steerer_connected() == REG_SUCCESS){
+    /* To minimise steering overhead while no steerer is connected
+       we only check for a connection at intervals greater than
+       Steerer_connection.polling_interval seconds. */
+    this_wc_time = time(NULL);
+    if(difftime(this_wc_time, last_wc_time) > 
+       Steerer_connection.polling_interval){
 
-      ReG_SteeringActive = TRUE;
-      first_time = TRUE;
+      last_wc_time = this_wc_time;
+      if(Steerer_connected() == REG_SUCCESS){
+
+	ReG_SteeringActive = TRUE;
+	first_time = TRUE;
 #if REG_DEBUG
-      fprintf(stderr, "Steering_control: steerer has connected\n");
+	fprintf(stderr, "Steering_control: steerer has connected\n");
 #endif
+      }
     }
   }
 
@@ -1953,7 +1967,7 @@ int Steering_control(int     SeqNum,
   Get_current_time_seconds(&time1);
   steer_time = (float)(time1 - time0);
 
-  fprintf(stderr, "TIMING: Spent %.4f seconds in Steering_control\n",
+  fprintf(stderr, "TIMING: Spent %.5f seconds in Steering_control\n",
 	  steer_time);
 #endif
 
@@ -3747,6 +3761,24 @@ struct msg_struct *Get_control_msg_file()
 int Initialize_steering_connection(int  NumSupportedCmds,
 				   int *SupportedCmds)
 {
+  char *pchar;
+  int   interval;
+
+  /* Set-up the minimum interval (in seconds) between checks on
+     whether a steerer has connected */
+  Steerer_connection.polling_interval = REG_APP_POLL_INTERVAL_DEFAULT;
+
+  if(pchar = getenv("REG_APP_POLL_INTERVAL")){
+
+    if(sscanf(pchar, "%d", &interval) == 1){
+
+      Steerer_connection.polling_interval = (double)interval;
+    }
+  }
+#if REG_DEBUG
+  fprintf(stderr, "Initialize_steering_connection: polling "
+	  "interval = %d\n", (int)Steerer_connection.polling_interval);
+#endif
 
 #if REG_GLOBUS_STEERING
 
