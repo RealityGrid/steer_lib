@@ -1116,11 +1116,24 @@ int Emit_start(int  IOType,
 
     if(!IOTypes_table.io_def[*IOTypeIndex].buffer){
 
-      return REG_FAILURE;
+      return REG_FAILURE; 
     }
+
   }
 
-  return Emit_header(*IOTypeIndex);
+  if (Emit_header(*IOTypeIndex) == REG_SUCCESS)
+    return REG_SUCCESS;
+
+  else {
+
+    /* free up memory as no guarantee Emit_stop will be called */
+    if(UseXDR && IOTypes_table.io_def[*IOTypeIndex].buffer){
+      free(IOTypes_table.io_def[*IOTypeIndex].buffer);
+      IOTypes_table.io_def[*IOTypeIndex].buffer = NULL;
+    }
+
+    return REG_FAILURE;
+  }
 
 }
 
