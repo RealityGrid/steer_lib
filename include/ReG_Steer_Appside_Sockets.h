@@ -44,6 +44,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <netdb.h>
 
 #include "ReG_Steer_types.h"
 
@@ -55,6 +56,9 @@ typedef struct
   /* port range we can use */
   int min_port;
   int max_port;
+
+  /* default outward tcp interface */
+  char			tcp_interface[REG_MAX_STRING_LENGTH];
 
   /* info for socket connection ("server" end) */
   int			listener_handle;
@@ -133,6 +137,8 @@ void attempt_connector_connect(const int index);
 void retry_connect(const int index);
 
 void poll(const int index);
+
+int dns_lookup(char* hostname);
 
 #endif /* REG_SOCKET_SAMPLES */
 #endif /* __REG_STEER_SOCKETS_IO_H__ */
