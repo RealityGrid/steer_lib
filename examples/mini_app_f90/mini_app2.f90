@@ -60,10 +60,12 @@ PROGRAM mini_app
 
   INTEGER (KIND=REG_SP_KIND)                                  :: num_chk_types
   CHARACTER(LEN=40), DIMENSION(REG_INITIAL_NUM_IOTYPES)       :: chk_labels
+
   INTEGER (KIND=REG_SP_KIND), &
                            DIMENSION(REG_INITIAL_NUM_IOTYPES) :: chk_handles
   INTEGER (KIND=REG_SP_KIND), &
                            DIMENSION(REG_INITIAL_NUM_IOTYPES) :: chk_dirn
+  CHARACTER(LEN=40)                                           :: chk_tag
 
   INTEGER (KIND=REG_SP_KIND) :: output_freq = 5
   INTEGER (KIND=REG_SP_KIND) :: iohandle
@@ -132,7 +134,7 @@ PROGRAM mini_app
 
   io_labels(2) = "VTK_STRUCTURED_POINTS_OUTPUT"
   io_dirn(2) = REG_IO_OUT
-  io_freqs(2)  = 2
+  io_freqs(2)  = 1
   
   num_types = 2
 
@@ -155,7 +157,7 @@ PROGRAM mini_app
   ! Register a Checkpoint type
 
   CALL register_chktypes_f(num_chk_types, chk_labels, chk_dirn, &
-                           5, chk_handles(1), status)
+                           0, chk_handles(1), status)
 
   IF(status .ne. REG_SUCCESS)THEN
 
@@ -173,31 +175,31 @@ PROGRAM mini_app
   param_strbl = reg_true
 
   CALL register_param_f(param_label, param_strbl, dum_int, &
-                         param_type, "0", "256", status)
+                        param_type, "0", "256", status)
 
   ! Registration uses address of variable so use second 'dum_int' here
   ! rather than simply changing value of first one
   dum_int2 = 123
   param_label = "2nd_test_integer"
-  param_strbl = reg_true
+  param_strbl = reg_false
 
   CALL register_param_f(param_label, param_strbl, dum_int2, &
-                         param_type, "", "256", status)
+                        param_type, "", "256", status)
 
   dum_int3 = 123
   param_label = "3rd_test_integer"
   param_strbl = reg_true
 
   CALL register_param_f(param_label, param_strbl, dum_int3, &
-                         param_type, "", "", status)
+                        param_type, "", "", status)
 
   dum_real = 123.45
   param_label = "test_real"
   param_type  = REG_FLOAT
-  param_strbl = reg_true
+  param_strbl = reg_false
   
   CALL register_param_f(param_label, param_strbl, dum_real, &
-                         param_type, "-80.0", "", status)
+                        param_type, "-80.0", "", status)
 
   dum_real2 = -23.456
   param_label = "2nd_test_real"
@@ -205,7 +207,7 @@ PROGRAM mini_app
   param_strbl = reg_true
   
   CALL register_param_f(param_label, param_strbl, dum_real2, &
-                         param_type, "", "80.0", status)
+                        param_type, "", "80.0", status)
 
   dum_real3 = 26.456
   param_label = "3rd_test_real"
@@ -223,14 +225,14 @@ PROGRAM mini_app
   ! Getting a pointer to a string from F90 is a bit tricky so use
   ! string-specific function for their registration...
   CALL register_string_param_f(param_label, param_strbl, dum_str, status)
-
+  
   dum_dbl = 123.123d0
   param_label = "test_double"
   param_type  = REG_DBL
   param_strbl = reg_true
 
   CALL register_param_f(param_label, param_strbl, dum_dbl, &
-                         param_type, "0.0d0", "", status)
+                        param_type, "0.0d0", "", status)
 
   dum_dbl2 = 129.3d0
   param_label = "2nd_test_double"
@@ -238,7 +240,7 @@ PROGRAM mini_app
   param_strbl = reg_true
 
   CALL register_param_f(param_label, param_strbl, dum_dbl2, &
-                         param_type, "", "500.0d0", status)
+                        param_type, "", "500.0d0", status)
 
   dum_dbl3 = 209.3d0
   param_label = "3rd_test_double"
@@ -246,35 +248,35 @@ PROGRAM mini_app
   param_strbl = reg_true
 
   CALL register_param_f(param_label, param_strbl, dum_dbl3, &
-                         param_type, "", "", status)
+                        param_type, "", "", status)
 
   param_label = "veclen"
   param_type  = REG_INT
   param_strbl = reg_true
 
   CALL register_param_f(param_label, param_strbl, veclen, &
-                         param_type, "1", "3", status)
+                        param_type, "1", "3", status)
 
   param_label = "a_axis"
   param_type  = REG_DBL
   param_strbl = reg_true
 
   CALL register_param_f(param_label, param_strbl, aaxis, &
-                         param_type, "0.0d0", "10.0d0", status)
+                        param_type, "0.0d0", "10.0d0", status)
 
   param_label = "b_axis"
   param_type  = REG_DBL
   param_strbl = reg_true
 
   CALL register_param_f(param_label, param_strbl, baxis, &
-                         param_type, "0.0d0", "10.0d0", status)
+                        param_type, "0.0d0", "10.0d0", status)
 
   param_label = "c_axis"
   param_type  = REG_DBL
   param_strbl = reg_true
 
   CALL register_param_f(param_label, param_strbl, caxis, &
-                         param_type, "0.0d0", "10.0d0", status)
+                        param_type, "0.0d0", "10.0d0", status)
 
   IF(status .ne. REG_SUCCESS)THEN
 
@@ -458,7 +460,8 @@ PROGRAM mini_app
 
                IF(INDEX(recvd_cmd_params(icmd), "OUT") /= 0)THEN
                  ! Pretend that we took a checkpoint
-                 CALL record_chkpt_f(chk_handles(1), "Some_tag_or_filename",&
+                 WRITE (chk_tag, "(I)") iloop
+                 CALL record_chkpt_f(chk_handles(1), chk_tag, &
                                      status)
                END IF
              END IF
@@ -481,8 +484,8 @@ PROGRAM mini_app
     CALL steering_sleep_f()
 
     ! Adjust values of monitored variables
-    !dum_int2 = dum_int2 + 6
-    !dum_real = dum_real - 1.5
+    dum_int2 = dum_int2 + 6
+    dum_real = dum_real - 1.5
 
     ! Increment loop counter
     iloop = iloop + 1
