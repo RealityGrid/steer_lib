@@ -45,8 +45,8 @@
 #include "ReG_Steer_Globus_io.h"
 #include "ReG_Steer_Appside_Globus.h"
 
-#ifndef DEBUG
-#define DEBUG 0
+#ifndef REG_DEBUG
+#define REG_DEBUG 0
 #endif
 
 /* Need access to these tables which are actually declared in 
@@ -99,7 +99,7 @@ int Send_status_msg_globus(char *buf)
 
     if(result != GLOBUS_SUCCESS){
 
-#if DEBUG
+#if REG_DEBUG
       fprintf(stderr, "Send_status_msg_globus: globus_io_write "
 	      "failed\n");
 #endif
@@ -112,7 +112,7 @@ int Send_status_msg_globus(char *buf)
 		      REG_CHAR,
 		      strlen(buf)) != REG_SUCCESS){
 
-#if DEBUG
+#if REG_DEBUG
     fprintf(stderr, "Send_status_msg_globus: failed to send header\n");
 #endif
     return REG_FAILURE;
@@ -127,7 +127,7 @@ int Send_status_msg_globus(char *buf)
 
   if(result != GLOBUS_SUCCESS){
 
-#if DEBUG
+#if REG_DEBUG
     fprintf(stderr, "Send_status_msg_globus: failed to send message\n");
 #endif
     Globus_error_print(result);
@@ -149,7 +149,7 @@ int Send_status_msg_globus(char *buf)
 
   if(result != GLOBUS_SUCCESS){
 
-#if DEBUG
+#if REG_DEBUG
     fprintf(stderr, "Send_status_msg_globus: failed to send footer\n");
 #endif
     Globus_error_print(result);
@@ -188,7 +188,7 @@ struct msg_struct *Get_control_msg_globus()
 			      &nbytes);
 
   if (result != GLOBUS_SUCCESS){
-#if DEBUG
+#if REG_DEBUG
     fprintf(stderr, "Get_control_msg_globus: globus_io_try_read failed - "
 	    "try immediate reconnect\n");
 #endif
@@ -200,7 +200,7 @@ struct msg_struct *Get_control_msg_globus()
        data if it has */
     if (Steerer_connection.socket_info.comms_status != REG_COMMS_STATUS_CONNECTED) {
 
-#if DEBUG
+#if REG_DEBUG
       fprintf(stderr, "Get_control_msg_globus: reconnect failed\n");
 #endif
       return NULL;
@@ -213,7 +213,7 @@ struct msg_struct *Get_control_msg_globus()
 
     if (result != GLOBUS_SUCCESS){
 
-#if DEBUG
+#if REG_DEBUG
       fprintf(stderr, "Get_control_msg_globus: reconnect OK but "
 	      "globus_io_try_read failed\n");
 #endif
@@ -223,7 +223,7 @@ struct msg_struct *Get_control_msg_globus()
     }
   }
 
-#if DEBUG
+#if REG_DEBUG
   fprintf(stderr, "Get_control_msg_globus: read <%s> from socket\n", 
 	  Steerer_connection.msg_buffer);
 #endif
@@ -235,7 +235,7 @@ struct msg_struct *Get_control_msg_globus()
   if(strncmp(Steerer_connection.msg_buffer, REG_DATA_HEADER, 
 	     strlen(REG_DATA_HEADER))){
 
-#if DEBUG
+#if REG_DEBUG
     fprintf(stderr, "Get_control_msg_globus: unrecognised msg >>%s<<\n", 
 	    Steerer_connection.msg_buffer);
 #endif    
@@ -251,7 +251,7 @@ struct msg_struct *Get_control_msg_globus()
 
   if(type != REG_CHAR){
 
-#if DEBUG
+#if REG_DEBUG
     fprintf(stderr, "Get_control_msg_globus: error, wrong data type "
 	    "returned by Consume_msg_header\n");
 #endif
@@ -260,7 +260,7 @@ struct msg_struct *Get_control_msg_globus()
 
   if(count > REG_MAX_MSG_SIZE){
 
-#if DEBUG
+#if REG_DEBUG
     fprintf(stderr, "Get_control_msg_globus: error, control msg (%d "
 	    "chars) exceeds max. length of %d chars\n", count, 
 	    REG_MAX_MSG_SIZE);
@@ -277,7 +277,7 @@ struct msg_struct *Get_control_msg_globus()
 
   if(result != GLOBUS_SUCCESS){
 
-#if DEBUG
+#if REG_DEBUG
     fprintf(stderr, "Get_control_msg_globus: globus_io_read failed\n");
 #endif
     Globus_error_print(result);
@@ -285,14 +285,14 @@ struct msg_struct *Get_control_msg_globus()
     return NULL;
   }
 
-#if DEBUG
+#if REG_DEBUG
     fprintf(stderr, "Get_control_msg_globus: globus_io_read got:\n>>%s<<\n",
 	    Steerer_connection.msg_buffer);
 #endif
 
   if(count != nbytes){
 
-#if DEBUG
+#if REG_DEBUG
     fprintf(stderr, "Get_control_msg_globus: globus_io_read failed to read"
 	    " requested no. of bytes\n");
 #endif
@@ -303,7 +303,7 @@ struct msg_struct *Get_control_msg_globus()
 			 &type,
 			 &count) != REG_EOD){
 
-#if DEBUG
+#if REG_DEBUG
     fprintf(stderr, "Get_control_msg_globus: failed to get message footer\n");
 #endif
     return NULL;
@@ -353,7 +353,7 @@ int Initialize_steering_connection_globus(int  NumSupportedCmds,
 
   /* Set-up socket_info for callback */
   if (Globus_socket_info_init(&(Steerer_connection.socket_info)) != REG_SUCCESS){
-#if DEBUG
+#if REG_DEBUG
     fprintf(stderr, "Initialize_steering_connection_globus: failed to "
 	    "initialise socket info\n");
 #endif
@@ -363,7 +363,7 @@ int Initialize_steering_connection_globus(int  NumSupportedCmds,
 
     if(Globus_create_listener(&(Steerer_connection.socket_info)) != REG_SUCCESS){
 
-#if DEBUG
+#if REG_DEBUG
       fprintf(stderr, "Initialize_steering_connection_globus: failed to "
 	      "create listener for IOType\n");
 #endif
@@ -371,7 +371,7 @@ int Initialize_steering_connection_globus(int  NumSupportedCmds,
     }
     else{
 
-#if DEBUG
+#if REG_DEBUG
       fprintf(stderr, "Initialize_steering_connection_globus: Created "
 	      "listener on port %d\n", 
 	      Steerer_connection.socket_info.connector_port);
@@ -422,7 +422,7 @@ int Steerer_connected_globus()
       Globus_error_print(result);
 
       /* Try again in case steerer has dropped connection */
-#if DEBUG
+#if REG_DEBUG
       fprintf(stderr, "Steerer_connected_globus: globus_io_write failed "
 	      "- immediate retry connect\n");
 #endif
@@ -432,7 +432,7 @@ int Steerer_connected_globus()
       if (Steerer_connection.socket_info.comms_status 
 	  == REG_COMMS_STATUS_CONNECTED) {  
 
-#if DEBUG
+#if REG_DEBUG
 	fprintf(stderr, "Steerer_connected_globus: Sending >>%s<<\n", 
 		Steerer_connection.supp_cmds);
 #endif    
@@ -444,7 +444,7 @@ int Steerer_connected_globus()
 	
 	if(result != GLOBUS_SUCCESS){
 
-#if DEBUG
+#if REG_DEBUG
 	  fprintf(stderr, "Steerer_connected_globus: globus_io_write "
 		  "failed\n");
 #endif
@@ -492,7 +492,7 @@ int Initialize_IOType_transport_globus(const int direction,
   /* set up socket_info for callback */
   if (Globus_socket_info_init(&(IOTypes_table.io_def[index].socket_info)) 
       != REG_SUCCESS) {
-#if DEBUG
+#if REG_DEBUG
     fprintf(stderr, "Initialize_IOType_transport_globus: failed to "
 	    "initialise socket info for IOType\n");
 #endif
@@ -505,7 +505,7 @@ int Initialize_IOType_transport_globus(const int direction,
       /* open socket and register callback function to listen for and
 	 accept connections */
       if (Globus_create_listener(&(IOTypes_table.io_def[index].socket_info)) != REG_SUCCESS) {
-#if DEBUG
+#if REG_DEBUG
 	fprintf(stderr, "Initialize_IOType_transport_globus: failed to "
 		"create listener "
 		"for IOType\n");
@@ -514,7 +514,7 @@ int Initialize_IOType_transport_globus(const int direction,
       }
       else{
 	  
-#if DEBUG
+#if REG_DEBUG
 	fprintf(stderr, "Initialize_IOType_transport_globus: Created "
 		"listener on port %d, "
 		"index %d, label %s\n", 
@@ -568,7 +568,7 @@ int Initialize_IOType_transport_globus(const int direction,
       if (port_ok && hostname_ok) {
 	
 	if (Globus_create_connector(&(IOTypes_table.io_def[index].socket_info)) != REG_SUCCESS) {
-#if DEBUG
+#if REG_DEBUG
 	  fprintf(stderr, "Initialize_IOType_transport_globus: failed to "
 		  "register connector for IOType\n");
 #endif
@@ -576,7 +576,7 @@ int Initialize_IOType_transport_globus(const int direction,
 	}
 	else{
 
-#if DEBUG
+#if REG_DEBUG
 	  fprintf(stderr, "Initialize_IOType_transport_globus: registered"
 		  " connector on port %d, hostname = %s, index %d, "
 		  "label %s\n", 
@@ -640,7 +640,7 @@ int Consume_start_data_check_globus(const int index)
   if (IOTypes_table.io_def[index].socket_info.comms_status == 
       REG_COMMS_STATUS_CONNECTED) {
 
-#if DEBUG
+#if REG_DEBUG
     fprintf(stderr, "Consume_start_data_check_globus: socket status is connected, index = %d\n",
 	    index );
 #endif
@@ -653,7 +653,7 @@ int Consume_start_data_check_globus(const int index)
 				&nbytes);
 
     if (result != GLOBUS_SUCCESS){
-#if DEBUG
+#if REG_DEBUG
       fprintf(stderr, "Consume_start_data_check_globus: globus_io_try_read failed - "
 	      "try immediate reconnect for index %d\n", index);
 #endif
@@ -670,7 +670,7 @@ int Consume_start_data_check_globus(const int index)
 				    &nbytes);
       }
       else {
-#if DEBUG
+#if REG_DEBUG
 	fprintf(stderr, "Consume_start_data_check_globus: reconnect "
 		"attempt failed - socket is not connected status id %d\n", 
 		IOTypes_table.io_def[index].socket_info.comms_status);
@@ -681,15 +681,15 @@ int Consume_start_data_check_globus(const int index)
 
     if(result == GLOBUS_SUCCESS){
 
-#if DEBUG
+#if REG_DEBUG
       fprintf(stderr, "Consume_start_data_check_globus: read %d "
-	      "bytes from socket\n", nbytes);
+	      "bytes from socket\n", (int)nbytes);
 #endif
       /* ARPDBG - globus_io_try_read always returns 0 bytes if connection
 	 configugured to use GSSAPI or SSL data wrapping. */
       if(nbytes > 0){
 
-#if DEBUG
+#if REG_DEBUG
       fprintf(stderr, "Consume_start_data_check_globus: read >>%s<< "
 	      "from socket\n", buffer);
 #endif
@@ -707,7 +707,7 @@ int Consume_start_data_check_globus(const int index)
     }
     else {
     
-#if DEBUG
+#if REG_DEBUG
       fprintf(stderr, "Consume_start_data_check_globus: reconnect attempt success - but "
 	      "globus_io_try_read failed\n");
 #endif
@@ -718,7 +718,7 @@ int Consume_start_data_check_globus(const int index)
     return REG_FAILURE;
   }
   else {
-#if DEBUG
+#if REG_DEBUG
     fprintf(stderr, "Consume_start_data_check_globus: socket is NOT connected, index = "
 	    "%d\n",index );
 #endif
@@ -740,16 +740,16 @@ int Consume_data_read_globus(const int		index,
   globus_result_t  result;
   globus_size_t    nbytes;
 
-#ifdef USE_TIMING
+#ifdef USE_REG_TIMING
   double time0, time1;
 #endif
 
-#if DEBUG
+#if REG_DEBUG
   fprintf(stderr, "Consume_data_read_globus: calling globus_io_read "
           "for %d bytes\n", (int)num_bytes_to_read);
 #endif
 
-#ifdef USE_TIMING
+#ifdef USE_REG_TIMING
   Get_current_time_seconds(&time0);
 #endif
 
@@ -768,10 +768,10 @@ int Consume_data_read_globus(const int		index,
 			    &nbytes);
   }
 
-#if DEBUG
+#if REG_DEBUG
   fprintf(stderr, "Consume_data_read_globus: globus_io_read read %d bytes\n",
 	  (int) nbytes);
-#ifdef USE_TIMING
+#ifdef USE_REG_TIMING
   Get_current_time_seconds(&time1);
   fprintf(stderr, "                          in %.3f seconds\n", 
 	  (float)(time1-time0));
@@ -815,7 +815,7 @@ int Emit_header_globus(const int index)
   if (IOTypes_table.io_def[index].socket_info.comms_status 
       == REG_COMMS_STATUS_CONNECTED) {
 
-#if DEBUG
+#if REG_DEBUG
     fprintf(stderr, "Emit_header_globus: socket status is connected, "
 	    "index = %d\n", index );
 #endif
@@ -824,7 +824,7 @@ int Emit_header_globus(const int index)
     
     sprintf(buffer, REG_PACKET_FORMAT, REG_DATA_HEADER);
     buffer[REG_PACKET_SIZE-1] = '\0';
-#if DEBUG
+#if REG_DEBUG
     fprintf(stderr, "Emit_header_globus: Sending >>%s<<\n", buffer);
 #endif
 
@@ -835,14 +835,14 @@ int Emit_header_globus(const int index)
 
     if(result == GLOBUS_SUCCESS){
 
-#if DEBUG
-      fprintf(stderr, "Emit_header_globus: Sent %d bytes\n", nbytes);
+#if REG_DEBUG
+      fprintf(stderr, "Emit_header_globus: Sent %d bytes\n", (int)nbytes);
 #endif
       return REG_SUCCESS;
     }
     else{
 
-#if DEBUG
+#if REG_DEBUG
       fprintf(stderr, "Emit_header_globus: globus_io_write failed - "
 	      "immediate retry connect\n");
 #endif
@@ -853,7 +853,7 @@ int Emit_header_globus(const int index)
       if (IOTypes_table.io_def[index].socket_info.comms_status 
 	  == REG_COMMS_STATUS_CONNECTED) {  
 
-#if DEBUG
+#if REG_DEBUG
 	fprintf(stderr, "Emit_header_globus: Sending >>%s<<\n", buffer);
 #endif    
 	result = globus_io_write(&(IOTypes_table.io_def[index].socket_info.conn_handle), 
@@ -866,7 +866,7 @@ int Emit_header_globus(const int index)
 	  return REG_SUCCESS;
 	}
 	
-#if DEBUG
+#if REG_DEBUG
 	fprintf(stderr, "Emit_header_globus: globus_io_write failed\n");
 #endif
 	Globus_error_print(result);
@@ -877,7 +877,7 @@ int Emit_header_globus(const int index)
     }
   }
   else {
-#if DEBUG
+#if REG_DEBUG
     fprintf(stderr, "Emit_header_globus: socket not connected, index = %d\n",
 	    index );
 #endif
@@ -896,7 +896,7 @@ int Emit_footer_globus(const int index,
   globus_size_t   nbytes;
   globus_result_t result;
 
-#if DEBUG
+#if REG_DEBUG
   fprintf(stderr, "Emit_footer_globus: Sending >>%s<<\n", buffer);
 #endif
 
@@ -944,7 +944,7 @@ int Emit_data_globus(const int		index,
 			     &nbytes);
   }
 
-#if DEBUG
+#if REG_DEBUG
   fprintf(stderr, "Emit_data_globus: sent %d bytes...\n", (int)nbytes);
 #endif
 

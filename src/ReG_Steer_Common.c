@@ -41,8 +41,8 @@
 #include "ReG_Steer_Common.h"
 #include <sys/time.h>
 
-#ifndef DEBUG
-#define DEBUG 0
+#ifndef REG_DEBUG
+#define REG_DEBUG 0
 #endif
 
 /* Location of file specifying the schema/namespace to which all
@@ -158,7 +158,7 @@ FILE *Open_next_file(char* base_name)
 
     if(fp = fopen(filename1, "r")){
 
-#if DEBUG
+#if REG_DEBUG
       fprintf(stderr, "Open_next_file: opening %s\n", filename1);
 #endif
       /* Return the name of the file actually opened */
@@ -199,7 +199,7 @@ int Delete_file(char *filename)
 
   sprintf(long_filename, "%s.lock", filename);
 
-#if DEBUG
+#if REG_DEBUG
   fprintf(stderr, "Delete_file: removing %s\n", long_filename);
 #endif
 
@@ -215,7 +215,7 @@ int Delete_file(char *filename)
 
   /* Remove the data file */
 
-#if DEBUG
+#if REG_DEBUG
   fprintf(stderr, "Delete_file: removing %s\n", filename);
 #endif
 
@@ -237,7 +237,7 @@ int Remove_files(char* base_name)
 
   strcpy(filename, base_name);
 
-#if DEBUG
+#if REG_DEBUG
   fprintf(stderr, "Remove_files: looking for files beginning: %s\n", filename);
 #endif
 
@@ -247,7 +247,7 @@ int Remove_files(char* base_name)
 
     /* Remove lock file */
     sprintf(lock_name, "%s.lock", filename);
-#if DEBUG
+#if REG_DEBUG
     fprintf(stderr, "Remove_files: deleting %s\n", lock_name);
 #endif
     remove(lock_name);
@@ -258,7 +258,7 @@ int Remove_files(char* base_name)
 #endif
 
     /* Remove associated data file */
-#if DEBUG
+#if REG_DEBUG
     fprintf(stderr, "Remove_files: deleting %s\n", filename);
 #endif
     remove(filename);
@@ -305,9 +305,9 @@ REG_MsgType Get_message_type(const char *name)
   }
   else{
 
-#if DEBUG  
+#if REG_DEBUG  
     fprintf(stderr, "Get_message_type: unrecognised message type: %s\n", name);
-#endif /* DEBUG */
+#endif /* REG_DEBUG */
 
     return MSG_NOTSET;
   }
@@ -713,7 +713,7 @@ int Read_file(char *filename, char **buf, int *size)
   (*buf)[*size] = 0;
   fclose(fp);
 
-#if DEBUG
+#if REG_DEBUG
   fprintf(stderr, "Read file, length = %d\n", *size);
   /* fprintf(stderr, "Read file, content:\n>>%s<<\n", *buf); */
 #endif
@@ -723,7 +723,7 @@ int Read_file(char *filename, char **buf, int *size)
 
 /*----------------------------------------------------------------*/
 
-#ifdef USE_TIMING
+#ifdef USE_REG_TIMING
 
 int Get_current_time_seconds(double *now)
 {
@@ -734,10 +734,9 @@ int Get_current_time_seconds(double *now)
     return REG_FAILURE;
   }
 
-  *now = (double)(tv.tv_sec - tv.tv_sec);
-  *now += 1.0e-6*(double)(tv.tv_usec - tv.tv_usec);
+  *now = (double)(tv.tv_sec) + 1.0e-6*(double)(tv.tv_usec);
 
   return REG_SUCCESS;
 }
 
-#endif /* defined USE_TIMING */
+#endif /* defined USE_REG_TIMING */

@@ -40,8 +40,8 @@
 #include "ReG_Steer_types.h"
 #include "ReG_Steer_XML.h"
 
-#ifndef DEBUG
-#define DEBUG 1
+#ifndef REG_DEBUG
+#define REG_DEBUG 1
 #endif
 
 /*-----------------------------------------------------------------*/
@@ -131,7 +131,7 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg)
     /* Record the message type */
     msg->msg_type = Get_message_type((const char *)(cur->name));
 
-#if DEBUG
+#if REG_DEBUG
     fprintf(stderr, "Parse_xml: Calling parseStatus...\n");
 #endif
     msg->status = New_status_struct();
@@ -142,7 +142,7 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg)
     /* Record the message type */
     msg->msg_type = Get_message_type((const char *)(cur->name));
 
-#if DEBUG
+#if REG_DEBUG
     fprintf(stderr, "Parse_xml: Calling parseControl...\n");
 #endif
     msg->control = New_control_struct();
@@ -153,7 +153,7 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg)
     /* Record the message type */
     msg->msg_type = Get_message_type((const char *)(cur->name));
 
-#if DEBUG
+#if REG_DEBUG
     fprintf(stderr, "Parse_xml: Calling parseSuppCmd...\n");
 #endif
     msg->supp_cmd = New_supp_cmd_struct();
@@ -164,7 +164,7 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg)
     /* Record the message type */
     msg->msg_type = Get_message_type((const char *)(cur->name));
 
-#if DEBUG
+#if REG_DEBUG
     fprintf(stderr, "Parse_xml: Calling parseStatus...\n");
 #endif
     /* Use code for 'status' messages because one 
@@ -177,7 +177,7 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg)
     /* Record the message type */
     msg->msg_type = Get_message_type((const char *)(cur->name));
 
-#if DEBUG
+#if REG_DEBUG
     fprintf(stderr, "Parse_xml: Calling parseIOTypeDef...\n");
 #endif
     msg->io_def = New_io_def_struct();
@@ -188,7 +188,7 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg)
     /* Record the message type */
     msg->msg_type = Get_message_type((const char *)(cur->name));
 
-#if DEBUG
+#if REG_DEBUG
     fprintf(stderr, "Parse_xml: Calling parseChkTypeDef...\n");
 #endif
     msg->chk_def = New_io_def_struct();
@@ -199,7 +199,7 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg)
     /* Record the message type */
     msg->msg_type = Get_message_type((const char *)(cur->name));
 
-#if DEBUG
+#if REG_DEBUG
     fprintf(stderr, "Parse_xml: Calling parseSteerLog...\n");
 #endif
     msg->log = New_log_struct();
@@ -208,7 +208,7 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg)
 
   /* Print out what we've got */
 
-#if DEBUG
+#if REG_DEBUG
   fprintf(stderr, "Parse_xml: Calling Print_msg...\n");
   Print_msg(msg);
 #endif
@@ -245,7 +245,7 @@ int parseStatus(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
         status->param = status->param->next;
       }
 
-#if DEBUG
+#if REG_DEBUG
       fprintf(stderr, "Calling parseParam...\n");
 #endif
       parseParam(doc, ns, cur, status->param);
@@ -262,7 +262,7 @@ int parseStatus(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 	status->cmd = status->cmd->next;
       }
 
-#if DEBUG
+#if REG_DEBUG
       fprintf(stderr, "Calling parseCmd...\n");
 #endif
       parseCmd(doc, ns, cur, status->cmd);
@@ -298,7 +298,7 @@ int parseControl(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
         ctrl->param = ctrl->param->next;
       }
 
-#if DEBUG
+#if REG_DEBUG
       fprintf(stderr, "Calling parseParam...\n");
 #endif
       parseParam(doc, ns, cur, ctrl->param);
@@ -315,7 +315,7 @@ int parseControl(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 	ctrl->cmd = ctrl->cmd->next;
       }
 
-#if DEBUG
+#if REG_DEBUG
       fprintf(stderr, "Calling parseCmd...\n");
 #endif
       parseCmd(doc, ns, cur, ctrl->cmd);
@@ -354,7 +354,7 @@ int parseIOTypeDef(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 	io_def->io = io_def->io->next;
       }
 
-#if DEBUG
+#if REG_DEBUG
       fprintf(stderr, "parseIOTypeDef: Calling parseIOType...\n");
 #endif
       parseIOType(doc, ns, cur, io_def->io);
@@ -393,7 +393,7 @@ int parseChkTypeDef(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 	chk_def->io = chk_def->io->next;
       }
 
-#if DEBUG
+#if REG_DEBUG
       fprintf(stderr, "parseChkTypeDef: Calling parseIOType...\n");
 #endif
       parseIOType(doc, ns, cur, chk_def->io);
@@ -498,7 +498,7 @@ int parseSteerLog(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 	log->entry = log->entry->next;
       }
 
-#if DEBUG
+#if REG_DEBUG
       fprintf(stderr, "parseSteerLog: calling parseSteerLogEntry\n");
 #endif
       parseSteerLogEntry(doc, ns, cur, log->entry);

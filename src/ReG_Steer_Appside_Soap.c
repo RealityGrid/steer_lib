@@ -84,7 +84,7 @@ int Initialize_steering_connection_soap(int  NumSupportedCmds,
 
     snprintf(Steerer_connection.SGS_address, REG_MAX_STRING_LENGTH, 
 	     "%s", pchar);
-#if DEBUG
+#if REG_DEBUG
     fprintf(stderr, "Initialize_steering_connection_soap: SGS address = %s\n",
 	    Steerer_connection.SGS_address);
 #endif
@@ -188,7 +188,7 @@ int Steerer_connected_soap()
     return REG_FAILURE;
   }
 
-#if DEBUG
+#if REG_DEBUG
   fprintf(stderr, "Steerer_connected_soap: findServiceData returned: %s\n", 
 	  findServiceData_response._result);
 #endif
@@ -225,7 +225,7 @@ int Send_status_msg_soap(char* msg)
       return REG_FAILURE;
     }
 
-#if DEBUG
+#if REG_DEBUG
     fprintf(stderr, "Send_status_msg_soap: PutStatus returned: %s\n", 
 	    putStatus_response._result);
 #endif
@@ -319,7 +319,7 @@ struct msg_struct *Get_control_msg_soap()
   struct tns__GetControlResponse getControl_response;
   struct msg_struct *msg = NULL;
 
-#if DEBUG
+#if REG_DEBUG
     fprintf(stderr, "Get_control_msg_soap: address = %s\n", 
 	    Steerer_connection.SGS_address);
 #endif
@@ -330,7 +330,7 @@ struct msg_struct *Get_control_msg_soap()
     return NULL;
   }
 
-#if DEBUG
+#if REG_DEBUG
   fprintf(stderr, "Get_control_msg_soap: GetControl returned: %s\n", 
 	  getControl_response._result);
 #endif
@@ -396,7 +396,7 @@ int Get_data_source_address_soap(int   index,
     return REG_FAILURE;
   }
 
-#if DEBUG
+#if REG_DEBUG
   fprintf(stderr, "Get_data_source_address_soap: GetNthDataSource (for n=%d)\n"
 	  "returned: >>%s<<\n", index, getNthDataSource_response._result);
 #endif

@@ -79,7 +79,7 @@ int Sim_attach_soap(Sim_entry_type *sim, char *SimID)
   /* That worked OK so store address of SGS */
   sprintf(sim->SGS_info.address, SimID);
 
-#if DEBUG
+#if REG_DEBUG
   fprintf(stderr, "Sim_attach_soap: Attach returned:\n>>%s<<\n",
 	  attach_response._result);
 #endif
@@ -192,7 +192,7 @@ struct msg_struct *Get_status_msg_soap(Sim_entry_type *sim)
     return NULL;
   }
   
-#if DEBUG
+#if REG_DEBUG
   fprintf(stderr, "Get_status_msg_soap: GetNotifications returned >>%s<<\n",
 	  getNotifications_response._result);
 #endif
@@ -240,7 +240,7 @@ struct msg_struct *Get_status_msg_soap(Sim_entry_type *sim)
     return NULL;
   }
 
-#if DEBUG
+#if REG_DEBUG
   fprintf(stderr, "Get_status_msg_soap: response: %s\n", 
 	  getStatus_response._result);
 #endif
@@ -283,7 +283,7 @@ struct msg_struct *Get_service_data(Sim_entry_type *sim, char *sde_name)
     return NULL;
   }
 
-#if DEBUG
+#if REG_DEBUG
   fprintf(stderr, "Get_service_data: findServiceData returned: %s\n", 
 	  findServiceData_response._result);
 #endif
@@ -352,7 +352,7 @@ int Send_pause_msg_soap(Sim_entry_type *sim)
 {
   struct tns__PauseResponse  pause_response;
 
-#if DEBUG
+#if REG_DEBUG
   fprintf(stderr, "Send_pause_msg_soap: calling Pause...\n");
 #endif
   pause_response._result = NULL;
@@ -379,7 +379,7 @@ int Send_resume_msg_soap(Sim_entry_type *sim)
 {
   struct tns__ResumeResponse  resume_response;
 
-#if DEBUG
+#if REG_DEBUG
   fprintf(stderr, "Send_resume_msg_soap: calling Resume...\n");
 #endif
   resume_response._result = NULL;
@@ -406,7 +406,7 @@ int Send_detach_msg_soap(Sim_entry_type *sim)
 {
   struct tns__DetachResponse  detach_response;
 
-#if DEBUG
+#if REG_DEBUG
   fprintf(stderr, "Send_detach_msg_soap: calling Detach...\n");
 #endif
   detach_response._result = NULL;
@@ -433,7 +433,7 @@ int Send_stop_msg_soap(Sim_entry_type *sim)
 {
   struct tns__StopResponse  stop_response;
 
-#if DEBUG
+#if REG_DEBUG
   fprintf(stderr, "Send_stop_msg_soap: calling Stop...\n");
 #endif
   stop_response._result = NULL;

@@ -75,13 +75,13 @@ int Sim_attach_globus(Sim_entry_type *sim, char *SimID)
   if (port_ok && hostname_ok) {
     
     if (Globus_create_connector(&(sim->socket_info)) != REG_SUCCESS) {
-#if DEBUG
+#if REG_DEBUG
       fprintf(stderr, "Sim_attach_globus: failed to register connector\n");
 #endif
       return REG_FAILURE;
     }
 
-#if DEBUG
+#if REG_DEBUG
     fprintf(stderr, "Sim_attach_globus: registered connector on "
 	    "port %d, hostname = %s\n", 
 	    sim->socket_info.connector_port, 
@@ -176,7 +176,7 @@ int Send_control_msg_globus(Sim_entry_type *sim, char* buf)
 
     if(result != GLOBUS_SUCCESS){
 
-#if DEBUG
+#if REG_DEBUG
       fprintf(stderr, "Send_control_msg_globus: globus_io_write "
 	      "failed\n");
 #endif
@@ -189,7 +189,7 @@ int Send_control_msg_globus(Sim_entry_type *sim, char* buf)
 		      REG_CHAR,
 		      strlen(buf)) != REG_SUCCESS){
 
-#if DEBUG
+#if REG_DEBUG
     fprintf(stderr, "Send_control_msg_globus: failed to send header\n");
 #endif
     return REG_FAILURE;
@@ -204,7 +204,7 @@ int Send_control_msg_globus(Sim_entry_type *sim, char* buf)
 
   if(result != GLOBUS_SUCCESS){
 
-#if DEBUG
+#if REG_DEBUG
     fprintf(stderr, "Send_control_msg_globus: failed to send message\n");
 #endif
     Globus_error_print(result);
@@ -223,7 +223,7 @@ int Send_control_msg_globus(Sim_entry_type *sim, char* buf)
 
   if(result != GLOBUS_SUCCESS){
 
-#if DEBUG
+#if REG_DEBUG
     fprintf(stderr, "Send_control_msg_globus: failed to send footer\n");
 #endif
     Globus_error_print(result);
@@ -253,7 +253,7 @@ struct msg_struct *Get_status_msg_globus(Sim_entry_type *sim)
   /* check if socket connection has been made */
   if (sim->socket_info.comms_status != REG_COMMS_STATUS_CONNECTED) {
 
-#if DEBUG
+#if REG_DEBUG
     fprintf(stderr, "Get_status_msg_globus: no socket connection\n");
 #endif
     return NULL;
@@ -267,14 +267,14 @@ struct msg_struct *Get_status_msg_globus(Sim_entry_type *sim)
 
   if (result != GLOBUS_SUCCESS){
 
-#if DEBUG
+#if REG_DEBUG
     fprintf(stderr, "Get_status_msg_globus: globus_io_try_read failed\n");
 #endif
     Globus_error_print(result);
     return NULL;
   }
 
-#if DEBUG
+#if REG_DEBUG
   fprintf(stderr, "Get_status_msg_globus: read <%s> from socket\n", buffer);
 #endif
 
@@ -287,7 +287,7 @@ struct msg_struct *Get_status_msg_globus(Sim_entry_type *sim)
 
   if(strncmp(buffer, REG_DATA_HEADER, strlen(REG_DATA_HEADER))){
 
-#if DEBUG
+#if REG_DEBUG
     fprintf(stderr, "Get_status_msg_globus: unrecognised header\n");
 #endif
     return NULL;
@@ -297,7 +297,7 @@ struct msg_struct *Get_status_msg_globus(Sim_entry_type *sim)
 			&type,
 			&count) != REG_SUCCESS){
 
-#if DEBUG
+#if REG_DEBUG
     fprintf(stderr, "Get_status_msg_globus: failed to read msg header\n");
 #endif
     return NULL;
@@ -305,14 +305,14 @@ struct msg_struct *Get_status_msg_globus(Sim_entry_type *sim)
 
   if(type != REG_CHAR){
 
-#if DEBUG
+#if REG_DEBUG
     fprintf(stderr, "Get_status_msg_globus: message is of wrong "
 	    "data type\n");
 #endif
     return NULL;
   }
 
-#if DEBUG
+#if REG_DEBUG
   if(count > REG_MAX_MSG_SIZE){
 
     fprintf(stderr, "Get_status_msg_globus: message exceeds max. "
@@ -330,20 +330,20 @@ struct msg_struct *Get_status_msg_globus(Sim_entry_type *sim)
 
   if(result != GLOBUS_SUCCESS){
 
-#if DEBUG
+#if REG_DEBUG
     fprintf(stderr, "Get_status_msg_globus: error globus_io_read\n");
 #endif
     Globus_error_print(result);
     return NULL;
   }
 
-#if DEBUG
+#if REG_DEBUG
   fprintf(stderr, "Get_status_msg_globus: read:\n>>%s<<\n", buffer);
 #endif
 
   if(nbytes != (count+REG_PACKET_SIZE)){
 
-#if DEBUG
+#if REG_DEBUG
     fprintf(stderr, "Get_status_msg_globus: read %d bytes but expected "
 	    "to get %d\n", nbytes, (count+REG_PACKET_SIZE));
 #endif
@@ -354,7 +354,7 @@ struct msg_struct *Get_status_msg_globus(Sim_entry_type *sim)
 
   if(Parse_xml_buf(buffer, count, msg) != REG_SUCCESS){
 
-#if DEBUG
+#if REG_DEBUG
     fprintf(stderr, "Get_status_msg_globus: failed to parse message\n");
 #endif
     Delete_msg_struct(msg);

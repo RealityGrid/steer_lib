@@ -45,8 +45,8 @@
 #include "ReG_Steer_Steerside_Globus.h"
 #include "ReG_Steer_Steerside_Soap.h"
 
-#ifndef DEBUG
-#define DEBUG 0
+#ifndef REG_DEBUG
+#define REG_DEBUG 0
 #endif
 
 /*--------------------- Data structures -------------------*/
@@ -246,7 +246,7 @@ int Get_sim_list(int   *nSims,
   Get_proxy_message(Proxy.pipe_from_proxy, Proxy.buf, &nbytes);
 
   if(nbytes == 0){
-#if DEBUG
+#if REG_DEBUG
     fprintf(stderr, "Get_sim_list: no steerable apps available\n");
 #endif
     return REG_SUCCESS;
@@ -445,7 +445,7 @@ int Sim_attach(char *SimID,
   if(Proxy.available){
 
     /* Use a proxy to interact with the 'grid' */
-#if DEBUG
+#if REG_DEBUG
     fprintf(stderr, "Sim_attach: calling Sim_attach_proxy...\n");
 #endif
     return_status = Sim_attach_proxy(&(Sim_table.sim[current_sim]), SimID);
@@ -454,7 +454,7 @@ int Sim_attach(char *SimID,
 
 #if REG_GLOBUS_STEERING
     /* Use Globus */
-#if DEBUG
+#if REG_DEBUG
     fprintf(stderr, "Sim_attach: calling Sim_attach_globus...\n");
 #endif
     return_status = Sim_attach_globus(&(Sim_table.sim[current_sim]), SimID);
@@ -466,7 +466,7 @@ int Sim_attach(char *SimID,
     if(SGS_available == TRUE){
 
       /* Use SOAP (and Steering Grid Service) */
-#if DEBUG
+#if REG_DEBUG
       fprintf(stderr, "Sim_attach: calling Sim_attach_soap, "
 	      "current_sim = %d\n", current_sim);
 #endif
@@ -483,7 +483,7 @@ int Sim_attach(char *SimID,
     if(return_status == REG_FAILURE){
 
       /* Use local file system */
-#if DEBUG
+#if REG_DEBUG
       fprintf(stderr, "Sim_attach: calling Sim_attach_local...\n");
 #endif
       return_status = Sim_attach_local(&(Sim_table.sim[current_sim]), SimID);
@@ -1251,7 +1251,7 @@ int Consume_status(int   SimHandle,
 
   *NumCmds = count;
 
-#if DEBUG
+#if REG_DEBUG
   fprintf(stderr, "Consume_status: got %d commands\n", (*NumCmds));
 #endif
 
@@ -1521,7 +1521,7 @@ int Emit_control(int    SimHandle,
   /* No parameters or commands to send so we're done */
   if(count==0 && num_to_emit==0){
 
-#if DEBUG
+#if REG_DEBUG
     fprintf(stderr, "Emit_control: nothing to send\n");
 #endif
     return REG_SUCCESS;
@@ -1530,7 +1530,7 @@ int Emit_control(int    SimHandle,
   pbuf += sprintf(pbuf, "</Steer_control>\n");
   Write_xml_footer(&pbuf);
 
-#if DEBUG
+#if REG_DEBUG
   fprintf(stderr, "Emit_control: sending:\n>>%s<<\n", buf);
 #endif
 
@@ -2347,7 +2347,7 @@ int Set_iotype_freq(int sim_handle,
 
       if(i==Sim_table.sim[isim].IOdef_table.max_entries){
 
-#if DEBUG
+#if REG_DEBUG
 	fprintf(stderr, "Set_iotype_freq: failed to match iotype handle\n");
 #endif
 	return_status = REG_FAILURE;
@@ -2369,7 +2369,7 @@ int Set_iotype_freq(int sim_handle,
   }
   else{
 
-#if DEBUG
+#if REG_DEBUG
     fprintf(stderr, "Set_iotype_freq: failed to match sim_handle\n");
 #endif
     return_status = REG_FAILURE;
@@ -2474,7 +2474,7 @@ int Get_chktypes(int    sim_handle,
 			   "%d", &(chk_freqs[count]) );
 	    if(nitem != 1){
 
-#if DEBUG
+#if REG_DEBUG
 	      fprintf(stderr, "Get_chktypes: failed to retrieve freq value\n");
 #endif
 	      chk_freqs[count] = 0;
@@ -2482,7 +2482,7 @@ int Get_chktypes(int    sim_handle,
 	    }
 	  }
 	  else{
-#if DEBUG
+#if REG_DEBUG
 	    fprintf(stderr, "Get_chktypes: failed to match param handle\n");
 #endif
 	    chk_freqs[count] = 0;
@@ -2540,7 +2540,7 @@ int Set_chktype_freq(int  sim_handle,
 
       if(i==Sim_table.sim[isim].Chkdef_table.max_entries){
 
-#if DEBUG
+#if REG_DEBUG
 	fprintf(stderr, "Set_chktype_freq: failed to match iotype handle\n");
 #endif
 	return_status = REG_FAILURE;
@@ -2549,7 +2549,7 @@ int Set_chktype_freq(int  sim_handle,
 
       if(Sim_table.sim[isim].Chkdef_table.io_def[i].direction == REG_IO_IN){
 
-#if DEBUG
+#if REG_DEBUG
 	fprintf(stderr, "Set_chktype_freq: frequency ignored for ChkTypes"
 		"with direction 'IN'\n");
 #endif
@@ -2571,7 +2571,7 @@ int Set_chktype_freq(int  sim_handle,
   }
   else{
 
-#if DEBUG
+#if REG_DEBUG
     fprintf(stderr, "Set_chktype_freq: failed to match sim_handle\n");
 #endif
     return_status = REG_FAILURE;
@@ -2630,7 +2630,7 @@ int Command_supported(int sim_id,
     }
   }
   
-#if DEBUG
+#if REG_DEBUG
   if(return_status != REG_SUCCESS){
 
     fprintf(stderr, 

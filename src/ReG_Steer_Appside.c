@@ -50,10 +50,10 @@
 #include <math.h>
 #include <string.h>
 
-/* Allow value of 'DEBUG' to propagate down from Reg_steer_types.h if
+/* Allow value of 'REG_DEBUG' to propagate down from Reg_steer_types.h if
    it has been set there */
-#ifndef DEBUG
-#define DEBUG 1
+#ifndef REG_DEBUG
+#define REG_DEBUG 1
 #endif
 
 /* The table holding details of our communication channel with the
@@ -114,7 +114,7 @@ int Steering_initialize(int  NumSupportedCmds,
 
     i = strlen(pchar);
 
-#if DEBUG
+#if REG_DEBUG
     /* Check that path of schema location fits in the string we've
        put aside for it */
     if((i + strlen(schema_path) + 1) > REG_MAX_STRING_LENGTH){
@@ -525,7 +525,7 @@ int Register_IOTypes(int    NumTypes,
     }
     else{
 
-#if DEBUG
+#if REG_DEBUG
       fprintf(stderr, "Register_IOTypes: failed to get handle for param\n");
 #endif
       return_status = REG_FAILURE;
@@ -654,7 +654,7 @@ int Register_ChkTypes(int    NumTypes,
       ChkTypes_table.io_def[current].freq_param_handle = 
 	                                 Params_table.next_handle - 1;
 
-#if DEBUG
+#if REG_DEBUG
       fprintf(stderr, "Register_ChkTypes: handle of freq. param = %d\n",
 	      ChkTypes_table.io_def[current].freq_param_handle);
 #endif
@@ -667,7 +667,7 @@ int Register_ChkTypes(int    NumTypes,
         Params_table.param[iparam].is_internal = TRUE;
       }
       else{
-#if DEBUG
+#if REG_DEBUG
         fprintf(stderr, "Register_ChkTypes: failed to get handle for param\n");
 #endif
         return_status = REG_FAILURE;
@@ -899,7 +899,7 @@ int Log_to_xml(char **pchar, int *count, const int not_sent_only)
 		      Chk_log.entry[i].chk_handle, 
 		      Chk_log.entry[i].chk_tag);
 
-#if DEBUG
+#if REG_DEBUG
     /* Check for truncation of message */
     if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
       fprintf(stderr, "Log_to_xml: message size exceeds BUFSIZ (%d)\n", 
@@ -923,7 +923,7 @@ int Log_to_xml(char **pchar, int *count, const int not_sent_only)
 		        Chk_log.entry[i].param[j].handle,
 		        Chk_log.entry[i].param[j].value);
 
-#if DEBUG
+#if REG_DEBUG
       /* Check for truncation of message */
       if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
 	fprintf(stderr, "Log_to_xml: message size exceeds BUFSIZ (%d)\n", 
@@ -938,7 +938,7 @@ int Log_to_xml(char **pchar, int *count, const int not_sent_only)
     }
     
     nbytes = snprintf(pentry, bytes_left, "</Log_entry>\n");
-#if DEBUG
+#if REG_DEBUG
     /* Check for truncation of message */
     if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
       fprintf(stderr, "Log_to_xml: message size exceeds BUFSIZ (%d)\n", 
@@ -1022,7 +1022,7 @@ int Set_log_primary_key()
     old_ptr = ptr;
   }
 
-#if DEBUG
+#if REG_DEBUG
   fprintf(stderr, "Set_log_primary_key: last chunk = >>%s<<\n", old_ptr);
 #endif
 
@@ -1232,7 +1232,7 @@ int Consume_data_slice(int    IOTypeIndex,
 
   if(IOTypes_table.io_def[IOTypeIndex].use_xdr){
 
-#if DEBUG
+#if REG_DEBUG
     fprintf(stderr, "Consume_data_slice: doing XDR decode\n");
 #endif
 
@@ -1294,7 +1294,7 @@ int Consume_data_slice(int    IOTypeIndex,
     xdr_destroy(&xdrs);
   }
 
-#if DEBUG
+#if REG_DEBUG
   fprintf(stderr, "Consume_data_slice: done XDR decode\n");
 #endif
 
@@ -1689,7 +1689,7 @@ int Steering_control(int     SeqNum,
   static clock_t previous_time = 0;
   static int     first_time    = TRUE;
 
-#ifdef USE_TIMING
+#ifdef USE_REG_TIMING
   static float  sim_time, steer_time;
   static double time0 = -1.0, time1 = -1.0;
 
@@ -1699,8 +1699,10 @@ int Steering_control(int     SeqNum,
     sim_time = (float)(time0 - time1);
     fprintf(stderr, "TIMING: Spent %.4f seconds working\n",
 	    sim_time);
-    fprintf(stderr, "TIMING: Steering overhead = %.2f\%\n", 
-	    100.0*(steer_time/sim_time));
+    if(sim_time > REG_TOL_ZERO){
+      fprintf(stderr, "TIMING: Steering overhead = %.2f%%\n", 
+	      100.0*(steer_time/sim_time));
+    }
   }
 #endif
 
@@ -1723,7 +1725,7 @@ int Steering_control(int     SeqNum,
 
       ReG_SteeringActive = TRUE;
       first_time = TRUE;
-#if DEBUG
+#if REG_DEBUG
       fprintf(stderr, "Steering_control: steerer has connected\n");
 #endif
     }
@@ -1745,7 +1747,7 @@ int Steering_control(int     SeqNum,
 	fprintf(stderr, "Steering_control: Emit_param_defs "
 		"failed\n");
       }
-#if DEBUG
+#if REG_DEBUG
       fprintf(stderr, "Steering_control: done Emit_param_defs\n");
 #endif
       ReG_ParamsChanged  = FALSE;
@@ -1757,7 +1759,7 @@ int Steering_control(int     SeqNum,
 
       Emit_IOType_defs();
 
-#if DEBUG
+#if REG_DEBUG
       fprintf(stderr, "Steering_control: done Emit_IOType_defs\n");
 #endif
       ReG_IOTypesChanged = FALSE;
@@ -1769,7 +1771,7 @@ int Steering_control(int     SeqNum,
 
       Emit_ChkType_defs();
 
-#if DEBUG
+#if REG_DEBUG
       fprintf(stderr, "Steering_control: done Emit_ChkType_defs\n");
 #endif
       ReG_ChkTypesChanged = FALSE;
@@ -1815,7 +1817,7 @@ int Steering_control(int     SeqNum,
 
       fprintf(stderr, "Steering_control: Emit_log failed\n");
     }
-#if DEBUG
+#if REG_DEBUG
     else{
       fprintf(stderr, "Steering_control: done Emit_log\n");
     }
@@ -1831,7 +1833,7 @@ int Steering_control(int     SeqNum,
 
       return_status = REG_FAILURE;
 
-#if DEBUG
+#if REG_DEBUG
       fprintf(stderr, "Steering_control: call to Consume_control failed\n");
 #endif
     }
@@ -1844,7 +1846,7 @@ int Steering_control(int     SeqNum,
       strcpy(SteerParamLabels[i], param_labels[i]);
     }
 
-#if DEBUG
+#if REG_DEBUG
     fprintf(stderr, "Steering_control: done Consume_control\n");
 #endif
 
@@ -1859,7 +1861,7 @@ int Steering_control(int     SeqNum,
 
       case REG_STR_DETACH:
 
-#if DEBUG
+#if REG_DEBUG
         fprintf(stderr, "Steering_control: got detach command\n");
 #endif
 
@@ -1883,7 +1885,7 @@ int Steering_control(int     SeqNum,
 
       default:
 
-#if DEBUG
+#if REG_DEBUG
         fprintf(stderr, "Steering_control: got command %d\n", commands[i]);
 #endif
 
@@ -1947,7 +1949,7 @@ int Steering_control(int     SeqNum,
   /* Record how many commands we're going to pass back to caller */
   *NumSteerCommands = count;
 
-#ifdef USE_TIMING
+#ifdef USE_REG_TIMING
   Get_current_time_seconds(&time1);
   steer_time = (float)(time1 - time0);
 
@@ -2078,13 +2080,13 @@ int Steering_pause(int   *NumSteerParams,
 
       return_status = REG_FAILURE;
       paused = FALSE;
-#if DEBUG
+#if REG_DEBUG
       fprintf(stderr, "Steering_pause: call to Consume_control failed\n");
 #endif
     }
     else{
 
-#if DEBUG
+#if REG_DEBUG
       fprintf(stderr,"Steering_pause: got %d cmds and %d params\n", 
 	      num_commands,
 	      *NumSteerParams);
@@ -2418,7 +2420,7 @@ int Emit_IOType_defs(){
 			IOTypes_table.io_def[i].label, 
 			IOTypes_table.io_def[i].handle);
 
-#if DEBUG
+#if REG_DEBUG
       /* Check for truncation */
       if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
 
@@ -2441,7 +2443,7 @@ int Emit_IOType_defs(){
 	break;
 
       default:
-#if DEBUG
+#if REG_DEBUG
 	fprintf(stderr, 
 		"Emit_IOType_defs: Unrecognised IOType direction\n");
 #endif
@@ -2453,7 +2455,7 @@ int Emit_IOType_defs(){
 
       nbytes = snprintf(pbuf, bytes_left, "<Freq_handle>%d</Freq_handle>\n",
 			IOTypes_table.io_def[i].freq_param_handle);
-#if DEBUG
+#if REG_DEBUG
       /* Check for truncation */
       if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
 
@@ -2475,7 +2477,7 @@ int Emit_IOType_defs(){
 		     IOTypes_table.io_def[i].socket_info.listener_hostname,
 		     (int)(IOTypes_table.io_def[i].socket_info.listener_port));
 
-#if DEBUG
+#if REG_DEBUG
 	  /* Check for truncation */
 	  if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
 
@@ -2483,7 +2485,7 @@ int Emit_IOType_defs(){
 		    "msg. size of %d bytes\n", REG_MAX_MSG_SIZE);
 	    return REG_FAILURE;
 	  }
-#endif /* DEBUG */
+#endif /* REG_DEBUG */
 	  pbuf += nbytes;
 	  bytes_left -= nbytes;
 	}
@@ -2537,7 +2539,7 @@ int Emit_ChkType_defs(){
 		       "<Handle>%d</Handle>\n", 
 		       ChkTypes_table.io_def[i].label, 
 		       ChkTypes_table.io_def[i].handle);
-#if DEBUG
+#if REG_DEBUG
       /* Check for truncation */
       if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
 
@@ -2545,7 +2547,7 @@ int Emit_ChkType_defs(){
 		"msg. size of %d bytes\n", REG_MAX_MSG_SIZE);
 	return REG_FAILURE;
       }
-#endif /* DEBUG */
+#endif /* REG_DEBUG */
       pbuf += nbytes;
       bytes_left -= nbytes;
 
@@ -2565,14 +2567,14 @@ int Emit_ChkType_defs(){
 	break;
 
       default:
-#if DEBUG
+#if REG_DEBUG
 
 	fprintf(stderr, 
 		"Emit_ChkType_defs: Unrecognised ChkType direction\n");
-#endif /* DEBUG */
+#endif /* REG_DEBUG */
 	return REG_FAILURE;
       }
-#if DEBUG
+#if REG_DEBUG
       /* Check for truncation */
       if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
 
@@ -2580,7 +2582,7 @@ int Emit_ChkType_defs(){
 		"msg. size of %d bytes\n", REG_MAX_MSG_SIZE);
 	return REG_FAILURE;
       }
-#endif /* DEBUG */
+#endif /* REG_DEBUG */
       pbuf += nbytes;
       bytes_left -= nbytes;
 
@@ -2588,28 +2590,28 @@ int Emit_ChkType_defs(){
       nbytes = snprintf(pbuf,bytes_left,"<Freq_handle>%d</Freq_handle>\n"
 			"</ChkType>\n",
 			ChkTypes_table.io_def[i].freq_param_handle);
-#if DEBUG
+#if REG_DEBUG
       /* Check for truncation */
       if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
 	fprintf(stderr, "Emit_ChkType_defs: message exceeds max. "
 		"msg. size of %d bytes\n", REG_MAX_MSG_SIZE);
 	return REG_FAILURE;
       }
-#endif /* DEBUG */
+#endif /* REG_DEBUG */
       pbuf += nbytes;
       bytes_left -= nbytes;
     }
   }
   
   nbytes = snprintf(pbuf,bytes_left,"</ChkType_defs>\n");
-#if DEBUG
+#if REG_DEBUG
   /* Check for truncation */
   if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
     fprintf(stderr, "Emit_ChkType_defs: message exceeds max. "
 	    "msg. size of %d bytes\n", REG_MAX_MSG_SIZE);
     return REG_FAILURE;
   }
-#endif /* DEBUG */
+#endif /* REG_DEBUG */
   pbuf += nbytes;
   bytes_left -= nbytes;
 
@@ -2630,7 +2632,7 @@ int Emit_log()
 
   if(Chk_log.send_all == TRUE){
 
-#if DEBUG
+#if REG_DEBUG
     fprintf(stderr, "Emit_log: sending all saved log entries...\n");
 #endif
     /* Then we have to send any entries we've saved to file too... */
@@ -2655,7 +2657,7 @@ int Emit_log()
     /* Re-open log-file for future buffering */
     if( Open_log_file() != REG_SUCCESS){
 
-#if DEBUG
+#if REG_DEBUG
       fprintf(stderr, "Emit_log: Open_log_file failed\n");
 #endif
     }
@@ -2856,7 +2858,7 @@ int Consume_control(int    *NumCommands,
 
 	  sprintf(CommandParams[count], " ");
 	}
-#if DEBUG
+#if REG_DEBUG
 	fprintf(stderr, "Consume_control: cmd[%d] = %d\n", count,
 		Commands[count]);
 	fprintf(stderr, "                 params  = %s\n", 
@@ -2876,7 +2878,7 @@ int Consume_control(int    *NumCommands,
 
       *NumCommands = count;
 
-#if DEBUG
+#if REG_DEBUG
       fprintf(stderr, "Consume_control: received %d commands\n", 
 	      *NumCommands);
 #endif
@@ -2932,7 +2934,7 @@ int Consume_control(int    *NumCommands,
 	 some may be internal and are not passed up to the calling routine */
       *NumSteerParams = count;
 
-#if DEBUG
+#if REG_DEBUG
 	fprintf(stderr, "Consume_control: received %d params\n", 
 		*NumSteerParams);
 #endif
@@ -2951,7 +2953,7 @@ int Consume_control(int    *NumCommands,
   }
   else{
 
-#if DEBUG
+#if REG_DEBUG
     fprintf(stderr, "Consume_control: no message from steerer\n");
 #endif
 
@@ -3141,7 +3143,7 @@ int Emit_status(int   SeqNum,
 			    "</Param>\n", 
 			    Params_table.param[tot_pcount].handle, 
 			    Params_table.param[tot_pcount].value);
-#if DEBUG
+#if REG_DEBUG
 	  /* Check for truncation */
 	  if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
 
@@ -3149,7 +3151,7 @@ int Emit_status(int   SeqNum,
 		    "msg. size of %d bytes\n", REG_MAX_MSG_SIZE);
 	    return REG_FAILURE;
 	  }
-#endif /* DEBUG */
+#endif /* REG_DEBUG */
  
 	  pbuf += nbytes;
 	  bytes_left -= nbytes;
@@ -3171,7 +3173,7 @@ int Emit_status(int   SeqNum,
 
     if(!cmddone){
 
-#if DEBUG
+#if REG_DEBUG
       fprintf(stderr, "Emit_status: NumCommands = %d, ccount = %d\n", 
 	      NumCommands, ccount);
 #endif
@@ -3182,7 +3184,7 @@ int Emit_status(int   SeqNum,
 			  "<Cmd_id>%d</Cmd_id>\n"
 			  "</Command>\n", 
 			  Commands[ccount]);
-#if DEBUG
+#if REG_DEBUG
 	/* Check for truncation */
 	if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
 
@@ -3190,7 +3192,7 @@ int Emit_status(int   SeqNum,
 		  "msg. size of %d bytes\n", REG_MAX_MSG_SIZE);
 	  return REG_FAILURE;
 	}
-#endif /* DEBUG */
+#endif /* REG_DEBUG */
 	pbuf += nbytes;
 	bytes_left -= nbytes;
 
@@ -3447,7 +3449,7 @@ int Make_vtk_buffer(int    nx,
     return REG_FAILURE;
   }
 
-#if DEBUG
+#if REG_DEBUG
   fprintf(stderr, "Make_vtk_buffer: checksum = %f\n", sum/((float) count));
 #endif
 
@@ -3635,7 +3637,7 @@ int Steerer_connected_file()
 
 int Send_status_msg(char *buf)
 {
-#if DEBUG
+#if REG_DEBUG
   fprintf(stderr, "Send_status_msg: sending:\n>>%s<<\n", buf);
 #endif
 
@@ -3794,7 +3796,7 @@ int Initialize_steering_connection_file(int  NumSupportedCmds,
       fprintf(stderr, "Initialize_steering_connection_file: failed to "
 	      "remove %s\n",filename);
     }
-#if DEBUG
+#if REG_DEBUG
     else{
       fprintf(stderr, "Initialize_steering_connection_file: removed "
 	      "%s\n", filename);
@@ -3821,7 +3823,7 @@ int Initialize_steering_connection_file(int  NumSupportedCmds,
     return REG_FAILURE;
   }
 
-#if DEBUG
+#if REG_DEBUG
   fprintf(stderr, "Initialize_steering_connection_file: writing file: %s\n", 
 	  filename);
 #endif
@@ -3953,7 +3955,7 @@ int Finalize_steering_connection_file()
 {
   char sys_command[REG_MAX_STRING_LENGTH];
 
-#if DEBUG
+#if REG_DEBUG
   int  max, max1;
 
   max = strlen(APP_STEERABLE_FILENAME);

@@ -39,8 +39,8 @@
 
 #include "ReG_Steer_Proxy_utils.h"
 
-#ifndef DEBUG
-#define DEBUG 1
+#ifndef REG_DEBUG
+#define REG_DEBUG 1
 #endif
 
 /*----------------------------------------------------------*/
@@ -268,7 +268,7 @@ int Get_proxy_message(int pipe_from_proxy, char *buf, int *nbytes)
   memset(buf, 0, REG_MAX_MSG_SIZE);
 
   /* Block until message received */
-#if DEBUG
+#if REG_DEBUG
   fprintf(stderr, "Get_proxy_message: waiting for msg from proxy...\n");
 #endif
 
@@ -284,7 +284,7 @@ int Get_proxy_message(int pipe_from_proxy, char *buf, int *nbytes)
     return REG_FAILURE;
   }
 
-#if DEBUG
+#if REG_DEBUG
   fprintf(stderr, "Get_proxy_message: got: <%s>\n", line_buf);
   fprintf(stderr, "Get_proxy_message: len = %d\n", len);
 #endif
@@ -306,7 +306,7 @@ int Get_proxy_message(int pipe_from_proxy, char *buf, int *nbytes)
     /* Get the next line - exit if EOF or error */
     len = getline(line_buf, REG_MAX_LINE_LEN, pipe_from_proxy);
 
-#if DEBUG
+#if REG_DEBUG
     fprintf(stderr, "Get_proxy_message: got: <%s>\n", line_buf);
     fprintf(stderr, "Get_proxy_message: len = %d\n", len);
 #endif
@@ -331,7 +331,7 @@ int Get_proxy_message(int pipe_from_proxy, char *buf, int *nbytes)
 
   *nbytes = count;
 
-#if DEBUG
+#if REG_DEBUG
   fprintf(stderr, "Get_proxy_message: received: %s\n", buf);
 #endif
 
@@ -389,7 +389,7 @@ int Proxy_is_in_path(const char *class_path, const char *exec)
 
     if(stat(full_path, &stbuf) != -1){
 
-#if DEBUG
+#if REG_DEBUG
       fprintf(stderr, "Proxy_is_in_path: found >%s<\n", full_path);
 #endif
       return_status = REG_SUCCESS;

@@ -42,8 +42,8 @@
 #include "ReG_Steer_Appside.h"
 #include <unistd.h>
 
-#ifndef DEBUG
-#define DEBUG 1
+#ifndef REG_DEBUG
+#define REG_DEBUG 1
 #endif
 
 /*----------------------------------------------------------------
@@ -472,7 +472,7 @@ INT_KIND_1_DECL(Status);
   int   i;
   int   found = 0;
 
-#if DEBUG
+#if REG_DEBUG
   fprintf(stderr, "register_string_param_f: Entered routine, "
 	  "string = %s\n", STRING_PTR(StringParam));
 #endif
@@ -832,7 +832,7 @@ INT_KIND_1_DECL(Status);
     j++;
   }
 
-#if DEBUG
+#if REG_DEBUG
   fprintf(stderr, "steering_control_f: Calling Steering_control...\n");
 #endif
 
@@ -842,7 +842,7 @@ INT_KIND_1_DECL(Status);
 			     		      (int *)NumSteerCommands,
 			     		      (int *)SteerCommands,
                                               str_array_params) );
-#if DEBUG
+#if REG_DEBUG
   fprintf(stderr, 
           "steering_control_f: got %d params and %d cmds\n", 
           *NumSteerParams, *NumSteerCommands);
@@ -1010,14 +1010,14 @@ INT_KIND_1D0_DECL(ptr);
   /* Obtain a pointer to the supplied character string.  This is intended
      to be passed to register_params_f as type void*. */
 
-#if DEBUG
+#if REG_DEBUG
   fprintf(stderr, "steering_char_to_ptr_f: Entered routine, "
 	  "string = %s\n", STRING_PTR(string));
 #endif
 
   *ptr = INT_KIND_1D0_CAST(STRING_PTR(string));
 
-#if DEBUG
+#if REG_DEBUG
   fprintf(stderr, "steering_char_to_ptr_f: Leaving routine\n");
 #endif
 
