@@ -55,6 +55,29 @@
 #define DEBUG 1
 #endif
 
+/* The table holding details of our communication channel with the
+   steering client */
+Steerer_connection_table_type Steerer_connection;
+
+/* IOdef_table_type is declared in ReG_Steer_Common.h since it is 
+   used in both the steerer-side and app-side libraries */
+
+IOdef_table_type IOTypes_table;
+
+
+/* Table for registered checkpoint types */
+
+IOdef_table_type ChkTypes_table;
+
+/* Log of checkpoints taken */
+
+Chk_log_type Chk_log;
+
+/* Param_table_type is declared in ReG_Steer_Common.h since it is 
+   used in both the steerer-side and app-side libraries */
+
+Param_table_type Params_table;
+
 /*----------------------------------------------------------------*/
 
 void Steering_enable(const int EnableSteer)
@@ -2427,16 +2450,16 @@ int Consume_control(int    *NumCommands,
 	}
 	else if(cmd->name){
 
-	  if(strncmp(cmd->name, "STOP", 4) == 0){
+	  if(!xmlStrcmp(cmd->name, (const xmlChar *)"STOP")){
 	    Commands[count] = REG_STR_STOP;
 	  }
-	  else if(strncmp(cmd->name, "PAUSE", 5) == 0){
+	  else if(!xmlStrcmp(cmd->name, (const xmlChar *)"PAUSE")){
 	    Commands[count] = REG_STR_PAUSE;
 	  }
-	  else if(strncmp(cmd->name, "DETACH", 6) == 0){
+	  else if(!xmlStrcmp(cmd->name, (const xmlChar *)"DETACH")){
 	    Commands[count] = REG_STR_DETACH;
 	  }
-	  else if(strncmp(cmd->name, "RESUME", 6) == 0){
+	  else if(!xmlStrcmp(cmd->name, (const xmlChar *)"RESUME")){
 	    Commands[count] = REG_STR_RESUME;
 	  }
 	  else{

@@ -150,7 +150,6 @@ int Send_control_msg_soap(Sim_entry_type *sim, char* buf)
 
 struct msg_struct *Get_status_msg_soap(Sim_entry_type *sim)
 {
-  struct tns__FindServiceDataResponse  findServiceData_response;
   struct tns__GetNotificationsResponse getNotifications_response;
   struct tns__GetStatusResponse        getStatus_response;
   struct msg_struct                   *msg = NULL;

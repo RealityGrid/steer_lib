@@ -1139,16 +1139,16 @@ int Consume_status(int   SimHandle,
     }
     else if(cmd_ptr->name){
 
-	  if(strncmp(cmd_ptr->name, "STOP", 4) == 0){
+	  if(!xmlStrcmp(cmd_ptr->name, (const xmlChar *)"STOP")){
 	    Commands[count] = REG_STR_STOP;
 	  }
-	  else if(strncmp(cmd_ptr->name, "PAUSE", 5) == 0){
+	  else if(!xmlStrcmp(cmd_ptr->name, (const xmlChar *)"PAUSE")){
 	    Commands[count] = REG_STR_PAUSE;
 	  }
-	  else if(strncmp(cmd_ptr->name, "DETACH", 6) == 0){
+	  else if(!xmlStrcmp(cmd_ptr->name, (const xmlChar *)"DETACH")){
 	    Commands[count] = REG_STR_DETACH;
 	  }
-	  else if(strncmp(cmd_ptr->name, "RESUME", 6) == 0){
+	  else if(!xmlStrcmp(cmd_ptr->name, (const xmlChar *)"RESUME")){
 	    Commands[count] = REG_STR_RESUME;
 	  }
 	  else{

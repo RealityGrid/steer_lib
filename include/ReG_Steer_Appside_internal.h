@@ -58,6 +58,8 @@ typedef struct {
 
 static IO_channel_table_type IO_channel[REG_INITIAL_NUM_IOTYPES];
 
+/* Type definition for table used to hold details on the communication
+   channel between the application and the steerer */
 typedef struct {
 
   /* Where to write files for file-based steering */
@@ -82,26 +84,6 @@ typedef struct {
 
 } Steerer_connection_table_type;
 
-Steerer_connection_table_type Steerer_connection;
-
-/* IOdef_table_type is declared in ReG_Steer_Common.h since it is 
-   used in both the steerer-side and app-side libraries */
-
-IOdef_table_type IOTypes_table;
-
-
-/* Table for registered checkpoint types */
-
-IOdef_table_type ChkTypes_table;
-
-/* Log of checkpoints taken */
-
-Chk_log_type Chk_log;
-
-/* Param_table_type is declared in ReG_Steer_Common.h since it is 
-   used in both the steerer-side and app-side libraries */
-
-Param_table_type Params_table;
 
 /* Whether steering is enabled (set by user) */
 static int ReG_SteeringEnabled = FALSE;

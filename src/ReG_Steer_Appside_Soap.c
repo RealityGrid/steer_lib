@@ -43,7 +43,7 @@
 #include "soapSGS.nsmap"
 
 /* Need access to these tables which are actually declared in 
-   ReG_Steer_Appside_internal.h */
+   ReG_Steer_Appside_internal.h and ReG_Steer_Appside.c */
 extern IOdef_table_type IOTypes_table;
 
 extern Steerer_connection_table_type Steerer_connection;
@@ -217,12 +217,15 @@ int Send_status_msg_soap(char* msg)
       sde_name = CHKTYPE_DEFS_SDE;
     }
 
+    fprintf(stderr, "Send_status_msg_soap: doing SetServiceData\n");
+
     if(soap_call_tns__SetServiceData (&soap, Steerer_connection.SGS_address, "",
 				      sde_name, msg,  &setSDE_response)){
       soap_print_fault(&soap,stderr);
       return REG_FAILURE;
     }
     
+    fprintf(stderr, "Send_status_msg_soap: done SetServiceData\n");
   }
 
   return REG_SUCCESS;

@@ -139,6 +139,7 @@ struct tns__GetNotificationsResponse
 #define _SOAP_tns__DestroyResponse
 struct tns__DestroyResponse
 {
+  void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -154,6 +155,7 @@ struct tns__GetControlResponse
 #define _SOAP_tns__GetNotifications
 struct tns__GetNotifications
 {
+  void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -161,6 +163,7 @@ struct tns__GetNotifications
 #define _SOAP_tns__AppDetach
 struct tns__AppDetach
 {
+  void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -168,6 +171,7 @@ struct tns__AppDetach
 #define _SOAP_tns__Detach
 struct tns__Detach
 {
+  void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -175,6 +179,7 @@ struct tns__Detach
 #define _SOAP_tns__AppStop
 struct tns__AppStop
 {
+  void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -191,6 +196,7 @@ struct tns__SetServiceData
 #define _SOAP_tns__Pause
 struct tns__Pause
 {
+  void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -198,6 +204,7 @@ struct tns__Pause
 #define _SOAP_tns__Stop
 struct tns__Stop
 {
+  void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -213,6 +220,7 @@ struct tns__PutStatus
 #define _SOAP_tns__GetStatus
 struct tns__GetStatus
 {
+  void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -220,6 +228,7 @@ struct tns__GetStatus
 #define _SOAP_tns__Resume
 struct tns__Resume
 {
+  void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -235,6 +244,7 @@ struct tns__PutControl
 #define _SOAP_tns__Destroy
 struct tns__Destroy
 {
+  void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -242,6 +252,7 @@ struct tns__Destroy
 #define _SOAP_tns__AppStart
 struct tns__AppStart
 {
+  void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -265,6 +276,7 @@ struct tns__FindServiceData
 #define _SOAP_tns__Attach
 struct tns__Attach
 {
+  void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -272,6 +284,7 @@ struct tns__Attach
 #define _SOAP_tns__GetControl
 struct tns__GetControl
 {
+  void *rubbish; /* ARPDBG */
 };
 #endif
 

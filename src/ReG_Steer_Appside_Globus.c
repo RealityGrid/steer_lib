@@ -45,7 +45,9 @@
 #include "ReG_Steer_Globus_io.h"
 #include "ReG_Steer_Appside_Globus.h"
 
+#ifndef DEBUG
 #define DEBUG 0
+#endif
 
 /* Need access to these tables which are actually declared in 
    ReG_Steer_Appside_internal.h */
