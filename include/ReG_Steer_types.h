@@ -41,7 +41,8 @@
 
 #define __REG_TYPES_INCLUDED
 
-#define DEBUG 0
+/* Whether or not to use timing routines - these are not very portable */
+#define USE_TIMING
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -184,6 +185,11 @@
 #define REG_SEQ_NUM_HANDLE      -100
 /* Handle for the time-per-step parameter */
 #define REG_STEP_TIME_HANDLE    -99
+/* Handle for parameter holding time-stamp */
+#define REG_TIMESTAMP_HANDLE    -98
+/* Min value for an automatically generated parameter handle
+   - must be > than all special handles defined above */
+#define REG_MIN_PARAM_HANDLE     0
 
 /* Message tags */
 
