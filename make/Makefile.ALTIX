@@ -40,8 +40,9 @@ C_FLAGS = -O2
 
 # Location of F90 compiler (if any) and flags to use
 F90 = efc
+F90_MPI = efc
 F90_FLAGS = -O2
-MPI_FLAG = -lmpi
+MPI_FLAGS = -lmpi
 
 # Location of java compiler - used to produce proxy binary
 JAVAC = /usr/java/j2sdk1.4.2_03/bin/javac

@@ -39,9 +39,10 @@ CC = icc
 C_FLAGS = -O2
 
 # Location of F90 compiler (if any) and flags to use
-F90 = mpif90
-F90_FLAGS = 
-MPI_FLAG = -lmpich
+F90 = ifc
+F90_MPI = mpif90
+F90_FLAGS = -O2
+MPI_FLAGS = -lmpich
 
 # Location of java compiler - used to produce proxy binary
 JAVAC          = /usr/bin/javac
