@@ -1162,7 +1162,6 @@ int Consume_data_slice(int    IOTypeIndex,
 		       int    Count,
 		       void  *pData)
 {
-  int              i;
   int              return_status = REG_SUCCESS;
   size_t	   num_bytes_to_read;
   XDR              xdrs;
@@ -1270,7 +1269,7 @@ int Consume_data_slice(int    IOTypeIndex,
 	fprintf(stderr, "Consume_data_slice: xdr_vector decode failed\n");
 	return_status = REG_FAILURE;
       }
-     break;
+      break;
 
     case REG_DBL:
       
@@ -1373,7 +1372,6 @@ int Emit_data_slice(int		      IOTypeIndex,
 		    void             *pData)
 {
   int              datatype;
-  int              i;
   int              actual_count;
   size_t	   num_bytes_to_send;
   XDR              xdrs;

@@ -931,7 +931,6 @@ int Emit_data_globus(const int		index,
 {
   globus_result_t  result;
   globus_size_t    nbytes;
-  int sent;
 
   result = globus_io_write(&(IOTypes_table.io_def[index].socket_info.conn_handle), 
 			   pData, 
