@@ -42,8 +42,9 @@ this variable need not be set.
 -------------------------------
 <GLOBUS_TCP_PORT_RANGE   2566,2586>
 
-Used by both globus_io and gSOAP - specifies a range of ports that may
-be opened on the client machine.  Port chosen at random if not set.
+Used by both globus_io, sockets and gSOAP - specifies a range of ports
+that may be opened on the client machine.  Port chosen at random if
+not set.
 
 -------------------------------
 <REG_DATA_DIRECTORY>
@@ -66,7 +67,7 @@ Required only if the steering library has been built to use SOAP
 
 For use when machine hosting simulation/visualisation has more than
 one TCP interface.  Set to IP address of desired interface to use for
-globus_io.  Uses default if not set (i.e. probably INADDR_ANY).
+globus_io/sockets.  Uses default if not set (i.e. probably INADDR_ANY).
 
 -------------------------------
 <REG_MACHINE_NAME>
@@ -75,12 +76,22 @@ The address of a publicly-accessible node on the machine we're
 executing on.  On many machines we may be running on a node that
 cannot be seen by the outside world and therefore globus connections
 for file transfer etc. will need the address of a publicly-accessible
-node.  This assumes that the port-forwarder (used for both steering
-and globus_io connections) runs on the same node as that to be used
-for gsiftp access.
+node.
   If this isn't set then REG_TCP_INTERFACE is used.  If that isn't
 set then uname and gethostbyname are used to get the fully-qualified
 domain name of the node we're executing on.  
   This variable only affects what address the SGS (and checkpoint 
 data) publishes to the outside world - it does not alter which local 
 interface is used by socket connections.
+
+-------------------------------
+<REG_IO_ADDRESS>
+
+The address to use when publishing details of listening sockets -
+useful when using port forwarding (and thus the address we need to
+publish is not the interface we're binding the socket to).  Takes
+precedence over all other settings (including the hostname of the
+local machine).  Setting this variable only affects the _published_
+address - does not control which TCP interface the listener binds to
+(use REG_TCP_INTERFACE for that).  If this isn't set then the
+published address is the address to which the socket is bound.
