@@ -40,10 +40,12 @@ all:
 	$(MAKE) lib
 	$(MAKE) c_examples
 	$(MAKE) f90_examples
+	$(MAKE) wrappers
 
 no_f90:
 	$(MAKE) lib
 	$(MAKE) c_examples
+	$(MAKE) wrappers
 
 c_examples:
 	$(MAKE) simple
@@ -99,6 +101,9 @@ libfd:
 	rm -f $(LIB_PATH)/libReG_Steer.so
 	ln -s libReG_SteerFileDebug.so $(LIB_PATH)/libReG_Steer.so
 
+wrappers: $(LIB_PATH)/$(LIB_NAME)
+	cd wrappers; $(MAKE)
+
 simple: $(LIB_PATH)/$(LIB_NAME)
 	cd examples/simple; $(MAKE)
 
@@ -134,6 +139,7 @@ clean:
 	cd examples/mini_app_f90; $(MAKE) clean
 	cd examples/mini_app_f90_parallel; $(MAKE) clean
 	cd examples/sink; $(MAKE) clean
+	cd wrappers; $(MAKE) clean
 
 tar:
 	$(MAKE) clean
