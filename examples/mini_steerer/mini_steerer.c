@@ -137,7 +137,7 @@ int main(){
     }
   }
 
-  /* Attempt to attach to (just one) simulation */
+  /* Attempt to attach to (just one) simulation - this blocks */
 
   status = REG_FAILURE;
 
@@ -420,6 +420,8 @@ int main(){
       break;
 
     case 'R':
+      /* This only works if we're steering in a Grid Service 
+	 framework - otherwise a GSH is meaningless */
       printf("Enter GSH of checkpoint to restart from: ");
       while(TRUE){
 	scanf("%s", chk_GSH);
@@ -556,7 +558,9 @@ int main(){
 	if(num_types > REG_INITIAL_NUM_IOTYPES){
 	  num_types = REG_INITIAL_NUM_IOTYPES;
 	}
-
+	/* This section only applicable to file-based checkpoint
+	   logging.  In a Grid Service framework the user would 
+	   browse the checkpoint tree to see what's available. */
 	Get_chktypes(sim_handle,
 		     num_types,
 		     io_handles,
@@ -612,6 +616,7 @@ int main(){
     fprintf(stderr, "Detached from sim, sim_handle = %d\n", sim_handle);
   }
 
+  /* Detach (if not already detached) and clean up the steering lib */
   status = Steerer_finalize();
 
   if(status != REG_SUCCESS){
@@ -620,7 +625,7 @@ int main(){
     return 1;
   }
 
-  /* Clean up */
+  /* Clean up locals */
 
   /* Stuff for parameters */
 
