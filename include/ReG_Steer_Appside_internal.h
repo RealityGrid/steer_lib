@@ -73,9 +73,6 @@ typedef struct {
   /* Where to write files for file-based steering */
   char			file_root[REG_MAX_STRING_LENGTH];
 
-  /* For steering via globus_io - port to listen on */
-  int			port_num;
-
   /* Address of the Steering Grid Service (for SOAP-based steering) */
   char                  SGS_address[REG_MAX_STRING_LENGTH];
 
