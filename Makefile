@@ -42,8 +42,6 @@ all:
 	make c_examples
 	make f90_examples
 
-#	make ${LOCAL_BIN_DIR}/ReG_Steer_Proxy.class
-
 no_f90:
 	make steerer
 	make c_examples
@@ -58,8 +56,7 @@ f90_examples:
 
 lib$(NBIT)/libReG_Steer.a: include/*.h \
  src/*.c \
- src/*.m4 \
- src/*.java
+ src/*.m4
 	cd src; make lib
 
 app: lib$(NBIT)/libReG_Steer.a \
@@ -80,11 +77,6 @@ app_f90_parallel:  lib$(NBIT)/libReG_Steer.a \
 steerer: lib$(NBIT)/libReG_Steer.a \
  examples/mini_steerer/*.c
 	cd examples/mini_steerer; make
-
-#	cd src; make proxy
-
-${LOCAL_BIN_DIR}/ReG_Steer_Proxy.class: src/*.java
-	cd src; make proxy
 
 clean:
 	cd src; make clean 
