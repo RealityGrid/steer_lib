@@ -160,7 +160,7 @@ int Delete_log_file(Chk_log_type *log)
   if(log->file_ptr){
     fclose(log->file_ptr);
   }
-  len = strlen(log->filename) + strlen(backup_suffix);
+  len = strlen(log->filename) + strlen(backup_suffix) + 1;
   
   pchar = (char*)malloc(len);
   if(!pchar)return REG_FAILURE;

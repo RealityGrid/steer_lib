@@ -377,6 +377,8 @@ int Sim_attach(char *SimID,
     sim_ptr->Params_table.param[i].log      = NULL;
     sim_ptr->Params_table.param[i].log_index= 0;
     sim_ptr->Params_table.param[i].log_size = 0;
+    sim_ptr->Params_table.param[i].ptr_raw  = NULL;
+    sim_ptr->Params_table.param[i].raw_buf_size = 0;
   }
 
   /* ...supported commands */
@@ -786,11 +788,6 @@ int Consume_param_defs(int SimHandle)
 
       Sim_table.sim[index].Params_table.param[j].ptr = NULL;
 
-      if(ptr->value){
-	strcpy(Sim_table.sim[index].Params_table.param[j].value,
-		(char *)(ptr->value));
-      }
-
       if(ptr->is_internal){
         if(!xmlStrcmp(ptr->is_internal, (const xmlChar *) "TRUE")){
 
@@ -826,11 +823,21 @@ int Consume_param_defs(int SimHandle)
       }
 
       /* Special memory buffer for 'raw data' type of monitored parameter */
-      if(Sim_table.sim[index].Params_table.param[j].type == REG_BIN &&
-	 Sim_table.sim[index].Params_table.param[j].max_val_valid == REG_TRUE){
+      if(Sim_table.sim[index].Params_table.param[j].type == REG_BIN){
+	 if(Sim_table.sim[index].Params_table.param[j].max_val_valid == REG_TRUE){
 
-	Sim_table.sim[index].Params_table.param[j].ptr_raw = 
-	  malloc(atoi(Sim_table.sim[index].Params_table.param[j].max_val));
+	   Sim_table.sim[index].Params_table.param[j].ptr_raw = 
+	     malloc(atoi(Sim_table.sim[index].Params_table.param[j].max_val));
+	   Sim_table.sim[index].Params_table.param[j].raw_buf_size = 
+	     atoi(Sim_table.sim[index].Params_table.param[j].max_val);
+
+	   /* Won't have a traditional value field so blank it */
+	   sprintf(Sim_table.sim[index].Params_table.param[j].value, " ");
+	 }
+      }
+      else if(ptr->value){
+	strcpy(Sim_table.sim[index].Params_table.param[j].value,
+		(char *)(ptr->value));
       }
 
       Sim_table.sim[index].Params_table.num_registered++;
@@ -1340,7 +1347,7 @@ int Consume_status(int   SimHandle,
   int                  handle;
   int                  count;
   int                  return_status;
-  char                *pchar;
+  int                  k;
 
   /* For XML parser */
 
@@ -1438,17 +1445,26 @@ int Consume_status(int   SimHandle,
     if(param_ptr->value){
 
       if(Sim_table.sim[index].Params_table.param[j].type == REG_BIN){
-	printf("ARPDBG >>%s<<\n", (char *)(param_ptr->value));
-	printf("ARPDBG, len of REG_BIN buffer = %d\n", strlen((char *)(param_ptr->value)));
-	pchar = Base64_decode((char *)(param_ptr->value), strlen((char *)(param_ptr->value)));
-	if(!pchar){
+
+	if(Base64_decode((char *)(param_ptr->value), 
+			 strlen((char *)(param_ptr->value)), 
+			 (char **)&(Sim_table.sim[index].Params_table.param[j].ptr_raw),
+			 &Sim_table.sim[index].Params_table.param[j].raw_buf_size)
+	   != REG_SUCCESS){
 	  fprintf(stderr, "Consume_status: Base64 decode failed\n");
 	  continue;
 	}
-	memcpy(Sim_table.sim[index].Params_table.param[j].ptr_raw,
-	       pchar,
-	       atoi(Sim_table.sim[index].Params_table.param[j].max_val));
-	free(pchar);
+	/*
+	printf("ARPDBG Decoded buffer (len=%d)>>", len);
+	for(k=0; k<len; k++){
+	  printf("%d", pchar[k]);
+	}
+	printf("<<ARPDBG\n");
+	*/
+
+	/* Put blank in actual 'value' field */
+	sprintf(Sim_table.sim[index].Params_table.param[j].value, " ");
+	fprintf(stderr, "ARPDBG put blank value in value field \n");
       }
       else{
 	strcpy(Sim_table.sim[index].Params_table.param[j].value,
@@ -1857,6 +1873,7 @@ int Send_control_msg_file(int SimIndex, char* buf)
 int Delete_sim_table_entry(int *SimHandle)
 {
   int             index;
+  int             i;
   Sim_entry_type *sim;
 
   if(*SimHandle == REG_SIM_HANDLE_NOTSET) return REG_SUCCESS;
@@ -1893,6 +1910,17 @@ int Delete_sim_table_entry(int *SimHandle)
   sim->Chk_log.max_entries = 0;
   if (sim->Chk_log.entry) free(sim->Chk_log.entry);
   sim->Chk_log.entry = NULL;
+
+  for(i=0; i<sim->Params_table.max_entries; i++){
+    if(sim->Params_table.param[i].handle != REG_PARAM_HANDLE_NOTSET){
+      if(sim->Params_table.param[i].type == REG_BIN){
+	if(sim->Params_table.param[i].ptr_raw){
+	  free(sim->Params_table.param[i].ptr_raw);
+	  sim->Params_table.param[i].ptr_raw = NULL;
+	}
+      }
+    }
+  }
 
   /* Flag that this entry no longer contains valid data */
   sim->handle = REG_SIM_HANDLE_NOTSET;

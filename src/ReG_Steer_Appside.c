@@ -333,13 +333,15 @@ int Steering_initialize(char *AppName,
     return REG_FAILURE;
   }
 
-  /* Initialise parameter handles */
+  /* Initialize parameter handles */
 
   for(i=0; i<Params_table.max_entries; i++){
 
     Params_table.param[i].handle = REG_PARAM_HANDLE_NOTSET;
     Params_table.param[i].min_val_valid = REG_FALSE;
     Params_table.param[i].max_val_valid = REG_FALSE;
+    Params_table.param[i].ptr_raw       = NULL;
+    Params_table.param[i].raw_buf_size  = 0;
   }
 
   /* 'Sequence number' is treated as a parameter */
@@ -573,6 +575,14 @@ int Steering_finalize()
   /* Clean-up parameters table */
 
   if(Params_table.param != NULL){
+    for(i=0; i<Params_table.max_entries; i++){
+      if(Params_table.param[i].handle != REG_PARAM_HANDLE_NOTSET){
+	if(Params_table.param[i].ptr_raw){
+	  free(Params_table.param[i].ptr_raw);
+	  Params_table.param[i].ptr_raw = NULL;
+	}
+      }
+    }
     free(Params_table.param);
     Params_table.param = NULL;
   }
@@ -1220,6 +1230,9 @@ int Record_Chkpt(int   ChkType,
       }
     }
 
+    /* Don't include raw binary parameters in the log */
+    if(Params_table.param[index].type == REG_BIN)continue;
+
     /* This is one we want - store its handle and current value */
     Chk_log.entry[Chk_log.num_entries].param[count].handle = 
                                            Params_table.param[index].handle;
@@ -1446,6 +1459,9 @@ int Record_checkpoint_set(int   ChkType,
 	sprintf(Params_table.param[i].value, "");
       }
     }
+
+    /* Don't include raw binary parameters in the log */
+    if(Params_table.param[index].type == REG_BIN)continue;
 
     /* Update value associated with pointer */
     Get_ptr_value(&(Params_table.param[i]));
@@ -3048,8 +3064,8 @@ int Steering_pause(int   *NumSteerParams,
               Low-level steering routines
 ----------------------------------------------------------------*/
 
-int Emit_param_defs(){
-
+int Emit_param_defs()
+{
   char *buf;
   char *pbuf;
   char *dum_ptr;
@@ -3114,18 +3130,52 @@ int Emit_param_defs(){
   
       /* Update the 'value' part of this parameter's table entry */
       if(Get_ptr_value(&(Params_table.param[i])) == REG_SUCCESS){
-    	 
-	nbytes = snprintf(pbuf, bytes_left, "<Param>\n"
-			  "<Label>%s</Label>\n"
-			  "<Steerable>%d</Steerable>\n"
-			  "<Type>%d</Type>\n"
-			  "<Handle>%d</Handle>\n"
-			  "<Value>%s</Value>\n", 
-			  Params_table.param[i].label, 
-			  Params_table.param[i].steerable,
-			  Params_table.param[i].type,
-			  Params_table.param[i].handle, 
-			  Params_table.param[i].value);
+    	
+	if(Params_table.param[i].type == REG_BIN){
+
+	  nbytes = snprintf(pbuf, bytes_left, "<Param>\n"
+			    "<Label>%s</Label>\n"
+			    "<Steerable>%d</Steerable>\n"
+			    "<Type>%d</Type>\n"
+			    "<Handle>%d</Handle>\n"
+			    "<Value>", 
+			    Params_table.param[i].label, 
+			    Params_table.param[i].steerable,
+			    Params_table.param[i].type,
+			    Params_table.param[i].handle);
+
+	  /* Check for truncation */
+	  if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
+	    more_space = 1;
+	    continue;
+	  }
+	  bytes_left -= nbytes;
+	  pbuf += nbytes;
+
+	  /* Copy the Base64-encoded data in the buffer pointed to by ptr_raw
+	     into the 'Value' element of the message */
+	  if(bytes_left > Params_table.param[i].raw_buf_size){
+	    memcpy(pbuf, Params_table.param[i].ptr_raw, 
+		   Params_table.param[i].raw_buf_size);
+	    pbuf += Params_table.param[i].raw_buf_size;
+	    bytes_left -= Params_table.param[i].raw_buf_size;
+	  }
+
+	  nbytes = snprintf(pbuf, bytes_left, "</Value>\n");
+	}
+	else{
+	  nbytes = snprintf(pbuf, bytes_left, "<Param>\n"
+			    "<Label>%s</Label>\n"
+			    "<Steerable>%d</Steerable>\n"
+			    "<Type>%d</Type>\n"
+			    "<Handle>%d</Handle>\n"
+			    "<Value>%s</Value>\n", 
+			    Params_table.param[i].label, 
+			    Params_table.param[i].steerable,
+			    Params_table.param[i].type,
+			    Params_table.param[i].handle, 
+			    Params_table.param[i].value);
+	}
 
 
 	/* Check for truncation */
@@ -3749,7 +3799,6 @@ int Emit_status(int   SeqNum,
   int   paramdone = REG_FALSE;
   char  buf[REG_MAX_MSG_SIZE];
   char *pbuf;
-  char *pchar;
   int   nbytes, bytes_left;
 
   /* Emit a status report - this is complicated because we must ensure we
@@ -3806,26 +3855,40 @@ int Emit_status(int   SeqNum,
  	  /* Update the 'value' part of this parameter's table entry
 	     - Get_ptr_value checks to make sure parameter is not library-
 	     controlled (& hence has valid ptr to get value from) */
+	  if(Get_ptr_value(&(Params_table.param[tot_pcount])) 
+	     != REG_SUCCESS)continue;
 
 	  if(Params_table.param[tot_pcount].type == REG_BIN){
 
-	    if( !(pchar = Base64_encode(Params_table.param[tot_pcount].ptr, 
-					atoi(Params_table.param[tot_pcount].max_val))))continue;
-	    printf("ARPDBG: length of base 64 buffer = %d\n", strlen(pchar));
+	    nbytes = snprintf(pbuf, bytes_left, "<Param>\n<Handle>%d</Handle>\n"
+			      "<Value>", Params_table.param[tot_pcount].handle);
+	    /* Check for truncation */
+	    if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
+
+	      fprintf(stderr, "Emit_status: message exceeds max. "
+		      "msg. size of %d bytes\n", REG_MAX_MSG_SIZE);
+	      return REG_FAILURE;
+	    }
+	    pbuf += nbytes; bytes_left -= nbytes;
+
+	    /* Copy the Base64-encoded data in the buffer pointed to by ptr_raw
+	       into the 'Value' element of the message */
+	    if(bytes_left > Params_table.param[tot_pcount].raw_buf_size){
+	      memcpy(pbuf, Params_table.param[tot_pcount].ptr_raw, 
+		     Params_table.param[tot_pcount].raw_buf_size);
+	      pbuf += Params_table.param[tot_pcount].raw_buf_size; 
+	      bytes_left -= Params_table.param[tot_pcount].raw_buf_size;
+	    }
+
+	    nbytes = snprintf(pbuf, bytes_left, "</Value>\n</Param>\n");
 	  }
 	  else{
-	    if(Get_ptr_value(&(Params_table.param[tot_pcount])) != REG_SUCCESS)continue;
-	    pchar = Params_table.param[tot_pcount].value;
-	  }
 	  
-	  nbytes = snprintf(pbuf, bytes_left, "<Param>\n"
-			    "<Handle>%d</Handle>\n"
-			    "<Value>%s</Value>\n"
-			    "</Param>\n", 
-			    Params_table.param[tot_pcount].handle, pchar);
-
-	  if(Params_table.param[tot_pcount].type == REG_BIN){
-	    free(pchar); pchar = NULL;
+	    nbytes = snprintf(pbuf, bytes_left, "<Param>\n"
+			      "<Handle>%d</Handle>\n"
+			      "<Value>%s</Value>\n</Param>\n", 
+			      Params_table.param[tot_pcount].handle, 
+			      Params_table.param[tot_pcount].value);
 	  }
 
 	  /* Check for truncation */
@@ -3863,8 +3926,7 @@ int Emit_status(int   SeqNum,
       for(i=0; i<REG_MAX_NUM_STR_CMDS; i++){
   
     	nbytes = snprintf(pbuf, bytes_left, "<Command>\n"
-			  "<Cmd_id>%d</Cmd_id>\n"
-			  "</Command>\n", 
+			  "<Cmd_id>%d</Cmd_id>\n</Command>\n", 
 			  Commands[ccount]);
 
 	/* Check for truncation */
@@ -4006,6 +4068,12 @@ int Get_ptr_value(param_entry *param)
     break;
   
   case REG_BIN:
+
+    return_status = Base64_encode(param->ptr, 
+				  atoi(param->max_val),
+				  &(param->ptr_raw),
+				  &(param->raw_buf_size));
+
     break;
 
   default:

@@ -145,6 +145,7 @@ typedef struct {
   int   handle;
   void *ptr;
   void *ptr_raw;
+  int   raw_buf_size;
   char  value[REG_MAX_STRING_LENGTH];
   int   modified;
   int   is_internal;
