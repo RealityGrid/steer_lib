@@ -121,7 +121,6 @@ int Steering_initialize(int  NumSupportedCmds,
 {
   int   i, j;
   char *pchar;
-  FILE *fp;
 
   /* Actually defined in ReG_Steer_Common.c because both steerer
      and steered have a variable of this name */
@@ -174,16 +173,14 @@ int Steering_initialize(int  NumSupportedCmds,
 
   /* Get our current working directory - ASSUMES 'pwd' is in our path */
   memset(ReG_CurrentDir, '\0', REG_MAX_STRING_LENGTH);
-  system("pwd > ReG_current_directory.txt");
-  if( (fp = fopen("ReG_current_directory.txt", "r")) != NULL){
+  if( (pchar = getenv("PWD")) ){
 
-    if(fscanf(fp, "%s", ReG_CurrentDir) != 1){
+    strcpy(ReG_CurrentDir, pchar);
+  }
+  else{
 
-      fprintf(stderr, "Steering_initialize: failed to get working "
-	      "directory\n");
-    }
-    fclose(fp);
-    remove("ReG_current_directory.txt");
+    fprintf(stderr, "Steering_initialize: failed to get working "
+	    "directory\n");
   } 
 
   /* Get the hostname of this machine */
