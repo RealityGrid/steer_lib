@@ -625,107 +625,175 @@ void Finalize_IOType_transport_globus()
 #if REG_GLOBUS_SAMPLES
 int Consume_start_data_check_globus(const int index)
 {  
-  char buffer[REG_PACKET_SIZE];
-  globus_size_t   nbytes;
+  char            buffer[REG_PACKET_SIZE];
+  char           *pstart;
+  globus_size_t   nbytes, nbytes1;
   globus_result_t result;
-
+  int             attempt_reconnect;
 
   /* if not connected attempt to connect now */
   if (IOTypes_table.io_def[index].socket_info.comms_status 
       != REG_COMMS_STATUS_CONNECTED)
     Globus_attempt_connector_connect(&(IOTypes_table.io_def[index].socket_info));
 
-
   /* check if socket connection has been made */
-  if (IOTypes_table.io_def[index].socket_info.comms_status == 
+  if (IOTypes_table.io_def[index].socket_info.comms_status != 
       REG_COMMS_STATUS_CONNECTED) {
+#if REG_DEBUG
+    fprintf(stderr, "Consume_start_data_check_globus: socket is NOT "
+	    "connected, index = %d\n",index );
+#endif
+    return REG_FAILURE;
+  }
 
 #if REG_DEBUG
-    fprintf(stderr, "Consume_start_data_check_globus: socket status is connected, index = %d\n",
-	    index );
+  fprintf(stderr, "Consume_start_data_check_globus: socket status is connected, index = %d\n",
+	  index );
 #endif
 
-    /* Check for data on socket - non-blocking */
+  /* Drain socket until start tag found */
+  attempt_reconnect = 1;
+  memset(buffer, '\0', 1);
+
+  while(!(pstart = strstr(buffer, REG_DATA_HEADER))){
 
     result = globus_io_try_read(&(IOTypes_table.io_def[index].socket_info.conn_handle),
 				(globus_byte_t *)buffer,
 				REG_PACKET_SIZE,
 				&nbytes);
 
-    if (result != GLOBUS_SUCCESS){
+    if(result != GLOBUS_SUCCESS){
+
+      if(!attempt_reconnect){
+	return REG_FAILURE;
+      }
+
 #if REG_DEBUG
-      fprintf(stderr, "Consume_start_data_check_globus: globus_io_try_read failed - "
-	      "try immediate reconnect for index %d\n", index);
+      fprintf(stderr, "Consume_start_data_check_globus: globus_io_try_read"
+	      " failed - try immediate reconnect for index %d\n", index);
 #endif
       Globus_error_print(result);
 
       Globus_retry_connect(&(IOTypes_table.io_def[index].socket_info));
      
-      /* check if socket reconnection has been made and check for data if it has */
-      if (IOTypes_table.io_def[index].socket_info.comms_status == 
+      /* check if socket reconnection has been made and check for 
+	 data if it has */
+      if (IOTypes_table.io_def[index].socket_info.comms_status != 
 	  REG_COMMS_STATUS_CONNECTED) {
-	result = globus_io_try_read(&(IOTypes_table.io_def[index].socket_info.conn_handle),
-				    (globus_byte_t *)buffer,
-				    REG_PACKET_SIZE,
-				    &nbytes);
-      }
-      else {
-#if REG_DEBUG
-	fprintf(stderr, "Consume_start_data_check_globus: reconnect "
-		"attempt failed - socket is not connected status id %d\n", 
-		IOTypes_table.io_def[index].socket_info.comms_status);
-#endif
+
 	return REG_FAILURE;
       }
-    }
 
-    if(result == GLOBUS_SUCCESS){
+      attempt_reconnect = 0;
+      memset(buffer, '\0', 1);
+    }
+    else if(nbytes == 0){
+      /* Call was OK but there's no data to read... */
+      break;
+    }
+  }
+
+  if(nbytes > 0){
 
 #if REG_DEBUG
-      fprintf(stderr, "Consume_start_data_check_globus: read %d "
-	      "bytes from socket\n", (int)nbytes);
+    fprintf(stderr, "Consume_start_data_check_globus: read >>%s<< "
+	    "from socket\n", buffer);
 #endif
-      /* ARPDBG - globus_io_try_read always returns 0 bytes if connection
-	 configugured to use GSSAPI or SSL data wrapping. */
-      if(nbytes > 0){
+
+    /* Need to make sure we've read the full packet marking the 
+       beginning of the next data slice */
+    nbytes1 = (int)(pstart - buffer) + (REG_PACKET_SIZE - nbytes);
+    
+    result = globus_io_try_read(&(IOTypes_table.io_def[index].socket_info.conn_handle),
+				(globus_byte_t *)buffer,
+				nbytes1,
+				&nbytes);
+    if(result == GLOBUS_SUCCESS){
+
+      IOTypes_table.io_def[index].buffer_bytes = REG_IO_BUFSIZE;
+      IOTypes_table.io_def[index].buffer = (void *)malloc(REG_IO_BUFSIZE);
+
+      if(!IOTypes_table.io_def[index].buffer){
+	IOTypes_table.io_def[index].buffer_bytes = 0;
+	fprintf(stderr, "Consume_start_data_check_globus: malloc of IO "
+		"buffer failed\n");
+	return REG_FAILURE;
+      }
+      return REG_SUCCESS;
+    }
+  }
+
+
+
+  /* Check for data on socket - non-blocking *
+
+  result = globus_io_try_read(&(IOTypes_table.io_def[index].socket_info.conn_handle),
+			      (globus_byte_t *)buffer,
+			      REG_PACKET_SIZE,
+			      &nbytes);
+
+  if (result != GLOBUS_SUCCESS){
+#if REG_DEBUG
+    fprintf(stderr, "Consume_start_data_check_globus: globus_io_try_read failed - "
+	    "try immediate reconnect for index %d\n", index);
+#endif
+    Globus_error_print(result);
+
+    Globus_retry_connect(&(IOTypes_table.io_def[index].socket_info));
+     
+    /* check if socket reconnection has been made and check for data if it has *
+    if (IOTypes_table.io_def[index].socket_info.comms_status == 
+	REG_COMMS_STATUS_CONNECTED) {
+      result = globus_io_try_read(&(IOTypes_table.io_def[index].socket_info.conn_handle),
+				  (globus_byte_t *)buffer,
+				  REG_PACKET_SIZE,
+				  &nbytes);
+    }
+    else {
+#if REG_DEBUG
+      fprintf(stderr, "Consume_start_data_check_globus: reconnect "
+	      "attempt failed - socket is not connected status id %d\n", 
+	      IOTypes_table.io_def[index].socket_info.comms_status);
+#endif
+      return REG_FAILURE;
+    }
+  }
+
+  if(result == GLOBUS_SUCCESS){
+
+#if REG_DEBUG
+    fprintf(stderr, "Consume_start_data_check_globus: read %d "
+	    "bytes from socket\n", (int)nbytes);
+#endif
+    /* ARPDBG - globus_io_try_read always returns 0 bytes if connection
+       configugured to use GSSAPI or SSL data wrapping. *
+    if(nbytes > 0){
 
 #if REG_DEBUG
       fprintf(stderr, "Consume_start_data_check_globus: read >>%s<< "
 	      "from socket\n", buffer);
 #endif
-	if(!strncmp(buffer, REG_DATA_HEADER, strlen(REG_DATA_HEADER))){
+      if(!strncmp(buffer, REG_DATA_HEADER, strlen(REG_DATA_HEADER))){
 
-	  IOTypes_table.io_def[index].buffer_bytes = REG_IO_BUFSIZE;
-	  IOTypes_table.io_def[index].buffer =
-	                                     (void *)malloc(REG_IO_BUFSIZE);
+	IOTypes_table.io_def[index].buffer_bytes = REG_IO_BUFSIZE;
+	IOTypes_table.io_def[index].buffer = (void *)malloc(REG_IO_BUFSIZE);
 
-	  if(!IOTypes_table.io_def[index].buffer) return REG_FAILURE;
+	if(!IOTypes_table.io_def[index].buffer) return REG_FAILURE;
 
-	  return REG_SUCCESS;
-	}
-      }   
-    }
-    else {
-    
-#if REG_DEBUG
-      fprintf(stderr, "Consume_start_data_check_globus: reconnect attempt success - but "
-	      "globus_io_try_read failed\n");
-#endif
-      Globus_error_print(result);
-
-    }
-
-    return REG_FAILURE;
+	return REG_SUCCESS;
+      }
+    }   
   }
   else {
+    
 #if REG_DEBUG
-    fprintf(stderr, "Consume_start_data_check_globus: socket is NOT connected, index = "
-	    "%d\n",index );
+    fprintf(stderr, "Consume_start_data_check_globus: reconnect attempt"
+	    " success - but globus_io_try_read failed\n");
 #endif
+    Globus_error_print(result);    
   }
-
+  */
   return REG_FAILURE;
-
 }
 #endif
 
@@ -920,8 +988,8 @@ int Emit_footer_globus(const int index,
 			   &nbytes);
   */
   if(Write_globus(&(IOTypes_table.io_def[index].socket_info.conn_handle),
-		  (void *)buffer,
-		  strlen(buffer)+1) != REG_SUCCESS){
+		  strlen(buffer)+1,
+		  (void *)buffer) != REG_SUCCESS){
     /*if(result != GLOBUS_SUCCESS){*/
 
     fprintf(stderr, "Emit_footer_globus: call to globus_io_write failed\n");
@@ -943,9 +1011,8 @@ int Emit_data_globus(const int		index,
 		     void		*pData)
 {
   globus_result_t  result;
-  globus_size_t    nbytes;
+  /*  globus_size_t    nbytes;
 
-  /*
   result = globus_io_write(&(IOTypes_table.io_def[index].socket_info.conn_handle), 
 			   pData, 
 			   (globus_size_t) num_bytes_to_send, 
@@ -966,7 +1033,8 @@ int Emit_data_globus(const int		index,
   }
 
 #if REG_DEBUG
-  fprintf(stderr, "Emit_data_globus: sent %d bytes...\n", (int)nbytes);
+  fprintf(stderr, "Emit_data_globus: sent %d bytes...\n", 
+	  (int)num_bytes_to_send);
 #endif
   
   return REG_SUCCESS;

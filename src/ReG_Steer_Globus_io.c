@@ -1030,17 +1030,21 @@ int Write_globus(const globus_io_handle_t *handle,
   globus_size_t   nbytes, bytes_left;
   globus_result_t result;
   char           *pchar;
-
+  int             count = 0;
   if(n < 0){
     fprintf(stderr, "Write_globus: requested to write < 0 bytes!\n");
     return REG_FAILURE;
+  }
+  else if(n == 0){
+    fprintf(stderr, "Write_globus: ARPDBG: asked to send 0 bytes?!?\n");
+    return REG_SUCCESS;
   }
 
   nbytes = (globus_size_t)n;
   bytes_left = nbytes;
   pchar = (char *)buffer;
 
-  while(bytes_left > 0){
+  while(bytes_left > 0 && count < 10){
     result = globus_io_try_write(handle, 
 				 (globus_byte_t *)pchar, 
 				 bytes_left,
@@ -1055,9 +1059,16 @@ int Write_globus(const globus_io_handle_t *handle,
       bytes_left -= nbytes;
       pchar += nbytes;
     }
-    printf("ARPDBG: Write_globus: bytes_left = %d\n", bytes_left);
+    /*printf("ARPDBG: Write_globus: bytes_left = %d\n", bytes_left);*/
+    count++;
   }
 
-  return REG_SUCCESS;
+  if(bytes_left > 0){
+    fprintf(stderr, "Write_globus: timed-out trying to write data\n");
+    return REG_FAILURE;
+  }
+  else{
+    return REG_SUCCESS;
+  }
 }
 #endif /* REG_GLOBUS_STEERING || REG_GLOBUS_SAMPLES */
