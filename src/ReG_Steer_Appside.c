@@ -551,26 +551,8 @@ int Consume_start(int  IOType,
 
   /* if not connected attempt to connect now */
   if (IOTypes_table.io_def[*IOTypeIndex].socket_info.comms_status != REG_COMMS_STATUS_CONNECTED)
-  {
-    if (Globus_create_connector(&(IOTypes_table.io_def[*IOTypeIndex].socket_info)) != REG_SUCCESS)
-    {
-#if DEBUG
-      fprintf(stderr, "Register_IOTypes: failed to register connector "
-	      "for IOType\n");
-#endif
-    }
-    else{
-      
-#if DEBUG
-      fprintf(stderr, "Register_IOTypes: registered connector on port %d, "
-	      "hostname = %s, index %d, label %s\n", connector_port, 
-	      connector_hostname, *IOTypeIndex, 
-	      IOTypes_table.io_def[*IOTypeIndex].label );
-#endif
-      
-    }
-  }
-  
+    Globus_attempt_connector_connect(&(IOTypes_table.io_def[*IOTypeIndex].socket_info));
+
 
   /* check if socket connection has been made */
   if (IOTypes_table.io_def[*IOTypeIndex].socket_info.comms_status == 
