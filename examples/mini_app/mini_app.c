@@ -88,6 +88,10 @@ int main(){
   const int NY = 16;
   const int NZ = 16;
   
+  double aaxis = 1.5;
+  double baxis = 1.5;
+  double caxis = 1.5;
+
   float *array;
   char   header[BUFSIZ];
 
@@ -203,7 +207,22 @@ int main(){
   param_types[3]  = REG_CHAR;
   param_strbl[3]  = TRUE;
 
-  status = Register_params(4,
+  param_labels[4] = "a_axis";
+  param_ptrs[4]   = (void *)(&aaxis);
+  param_types[4]  = REG_DBL;
+  param_strbl[4]  = TRUE;
+
+  param_labels[5] = "b_axis";
+  param_ptrs[5]   = (void *)(&baxis);
+  param_types[5]  = REG_DBL;
+  param_strbl[5]  = TRUE;
+
+  param_labels[6] = "c_axis";
+  param_ptrs[6]   = (void *)(&caxis);
+  param_types[6]  = REG_DBL;
+  param_strbl[6]  = TRUE;
+
+   status = Register_params(7,
 			   param_labels,
 			   param_strbl,
 			   param_ptrs,
@@ -290,13 +309,14 @@ int main(){
 				     REG_FLOAT) != REG_SUCCESS) {
 		    continue;
 		  }
-		  if(Make_vtk_buffer(NX, NY, NZ, 1, 0.3, 0.5, 0.4, array)
+		  if(Make_vtk_buffer(NX, NY, NZ, 1, aaxis, baxis, caxis, 
+                                     array)
 		     != REG_SUCCESS){
 
 		    continue;
 		  }
 
-		  if( Emit_start(iotype_handle[j], i, FALSE, &iohandle)
+		  if( Emit_start(iotype_handle[j], i, TRUE, &iohandle)
 		      == REG_SUCCESS ){
 
 
