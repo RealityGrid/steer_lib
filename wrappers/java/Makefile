@@ -1,5 +1,6 @@
 include ../../Makefile.include
 include ../../make/Makefile.${ARCH}
+include ../Makefile.wrap
 
 REG_PACKAGE=org.realitygrid.steering
 REG_PACKAGE_DIR=org/realitygrid/steering
@@ -14,8 +15,7 @@ libReG_SteerJava.so: ReG_Steer_wrap.o
 
 ReG_Steer_wrap.o: ReG_Steer_wrap.c
 	${CC} -c ReG_Steer_wrap.c -fpic -I/usr/include \
-	-I/usr/java/j2sdk1.4.2_01/include -I/usr/java/j2sdk1.4.2_01/include/linux \
-	-I${REG_STEER_HOME}/include
+	${REG_JAVA_INC} -I${REG_STEER_HOME}/include
 
 ReG_Steer_wrap.c:
 	${REG_SWIG} -java -package ${REG_PACKAGE} \
