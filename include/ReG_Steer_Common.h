@@ -119,6 +119,8 @@ typedef struct {
   int                 send_all;
   /* Ptr to buffer containing logged steering cmds */
   char               *pSteer_cmds;
+  /* Ptr to next free space in this buffer */
+  char               *pSteer_cmds_slot;
   /* No. of bytes currently allocated to buffer */
   int                 steer_cmds_bytes;
 

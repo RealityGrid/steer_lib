@@ -79,6 +79,13 @@ struct tns__ResumeResponse
 };
 #endif
 
+#ifndef _SOAP_tns__destroyResponse
+#define _SOAP_tns__destroyResponse
+struct tns__destroyResponse
+{
+};
+#endif
+
 #ifndef _SOAP_tns__AppDetachResponse
 #define _SOAP_tns__AppDetachResponse
 struct tns__AppDetachResponse
@@ -143,14 +150,6 @@ struct tns__GetNotificationsResponse
 };
 #endif
 
-#ifndef _SOAP_tns__DestroyResponse
-#define _SOAP_tns__DestroyResponse
-struct tns__DestroyResponse
-{
-        void *rubbish; /* ARPDBG */
-};
-#endif
-
 #ifndef _SOAP_tns__AppRecordChkpointResponse
 #define _SOAP_tns__AppRecordChkpointResponse
 struct tns__AppRecordChkpointResponse
@@ -205,6 +204,14 @@ struct tns__AppRecordChkpoint
 struct tns__setServiceData
 {
 	char *input;
+};
+#endif
+
+#ifndef _SOAP_tns__destroy
+#define _SOAP_tns__destroy
+struct tns__destroy
+{
+        void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -304,14 +311,6 @@ struct tns__AppStart
 };
 #endif
 
-#ifndef _SOAP_tns__Destroy
-#define _SOAP_tns__Destroy
-struct tns__Destroy
-{
-        void *rubbish; /* ARPDBG */
-};
-#endif
-
 #ifndef _SOAP_tns__PutControl
 #define _SOAP_tns__PutControl
 struct tns__PutControl
@@ -358,10 +357,8 @@ struct SOAP_ENV__Fault
 /* Typedefs */
 typedef char *xsd__string;
 typedef char *xsd__integer;
-typedef char *xsdl__DestroyResponse;
 typedef char *xsdl__GetControlResponse;
 typedef char *xsdl__PutControlRequest;
-typedef char *xsdl__DestroyRequest;
 typedef char *xsdl__setServiceDataRequest;
 typedef char *xsdl__GetNotificationsResponse;
 typedef char *xsdl__GetStatusResponse;
@@ -374,10 +371,12 @@ typedef char *xsdl__ResumeRequest;
 typedef char *xsdl__findServiceDataResponse;
 typedef char *xsdl__DetachResponse;
 typedef char *xsdl__StopResponse;
+typedef char *xsdl__destroyRequest;
 typedef char *xsdl__AppRecordChkpointResponse;
 typedef char *xsdl__setServiceDataResponse;
 typedef char *xsdl__GetStatusRequest;
 typedef char *xsdl__findServiceDataRequest;
+typedef char *xsdl__destroyResponse;
 typedef char *xsdl__PauseResponse;
 typedef char *xsdl__PutControlResponse;
 typedef char *xsdl__ResumeResponse;
@@ -411,6 +410,8 @@ SOAP_FMAC1 int SOAP_FMAC2 tns__AppRecordChkpoint(struct soap*, char *, char *, s
 
 SOAP_FMAC1 int SOAP_FMAC2 tns__setServiceData(struct soap*, char *, struct tns__setServiceDataResponse *);
 
+SOAP_FMAC1 int SOAP_FMAC2 tns__destroy(struct soap*, struct tns__destroyResponse *);
+
 SOAP_FMAC1 int SOAP_FMAC2 tns__Detach(struct soap*, struct tns__DetachResponse *);
 
 SOAP_FMAC1 int SOAP_FMAC2 tns__GetStatus(struct soap*, struct tns__GetStatusResponse *);
@@ -435,8 +436,6 @@ SOAP_FMAC1 int SOAP_FMAC2 tns__PutStatus(struct soap*, char *, struct tns__PutSt
 
 SOAP_FMAC1 int SOAP_FMAC2 tns__AppStart(struct soap*, struct tns__AppStartResponse *);
 
-SOAP_FMAC1 int SOAP_FMAC2 tns__Destroy(struct soap*, struct tns__DestroyResponse *);
-
 SOAP_FMAC1 int SOAP_FMAC2 tns__PutControl(struct soap*, char *, struct tns__PutControlResponse *);
 
 /* Stubs */
@@ -450,6 +449,8 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_call_tns__findServiceData(struct soap*, const cha
 SOAP_FMAC1 int SOAP_FMAC2 soap_call_tns__AppRecordChkpoint(struct soap*, const char*, const char*, char *, char *, struct tns__AppRecordChkpointResponse *);
 
 SOAP_FMAC1 int SOAP_FMAC2 soap_call_tns__setServiceData(struct soap*, const char*, const char*, char *, struct tns__setServiceDataResponse *);
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_call_tns__destroy(struct soap*, const char*, const char*, struct tns__destroyResponse *);
 
 SOAP_FMAC1 int SOAP_FMAC2 soap_call_tns__Detach(struct soap*, const char*, const char*, struct tns__DetachResponse *);
 
@@ -475,8 +476,6 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_call_tns__PutStatus(struct soap*, const char*, co
 
 SOAP_FMAC1 int SOAP_FMAC2 soap_call_tns__AppStart(struct soap*, const char*, const char*, struct tns__AppStartResponse *);
 
-SOAP_FMAC1 int SOAP_FMAC2 soap_call_tns__Destroy(struct soap*, const char*, const char*, struct tns__DestroyResponse *);
-
 SOAP_FMAC1 int SOAP_FMAC2 soap_call_tns__PutControl(struct soap*, const char*, const char*, char *, struct tns__PutControlResponse *);
 
 /* Skeletons */
@@ -492,6 +491,8 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_serve_tns__findServiceData(struct soap*);
 SOAP_FMAC1 int SOAP_FMAC2 soap_serve_tns__AppRecordChkpoint(struct soap*);
 
 SOAP_FMAC1 int SOAP_FMAC2 soap_serve_tns__setServiceData(struct soap*);
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_serve_tns__destroy(struct soap*);
 
 SOAP_FMAC1 int SOAP_FMAC2 soap_serve_tns__Detach(struct soap*);
 
@@ -516,8 +517,6 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_serve_tns__Restart(struct soap*);
 SOAP_FMAC1 int SOAP_FMAC2 soap_serve_tns__PutStatus(struct soap*);
 
 SOAP_FMAC1 int SOAP_FMAC2 soap_serve_tns__AppStart(struct soap*);
-
-SOAP_FMAC1 int SOAP_FMAC2 soap_serve_tns__Destroy(struct soap*);
 
 SOAP_FMAC1 int SOAP_FMAC2 soap_serve_tns__PutControl(struct soap*);
 #ifdef __cplusplus
