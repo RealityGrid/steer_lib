@@ -33,6 +33,7 @@
 ---------------------------------------------------------------------------*/
 
 #include "ReG_Steer_Steerside.h"
+#include <unistd.h>
 
 #ifndef DEBUG
 #define DEBUG 0
@@ -44,16 +45,16 @@ static int Edit_parameter(int sim_handle);
 
 int main(){
 
-  int   sim_handle;
+  int    sim_handle;
   REG_MsgType msg_type;
-  int   status;
-  int   done;
-  int   i;
-  int   app_seqnum;
-  int   num_cmds;
-  int   commands[REG_MAX_NUM_STR_CMDS];
-  char  user_char[2];
-  char  user_str[REG_MAX_STRING_LENGTH];
+  int    status;
+  int    done;
+  int    i;
+  int    app_seqnum;
+  int    num_cmds;
+  int    commands[REG_MAX_NUM_STR_CMDS];
+  char   user_char[2];
+  char   user_str[REG_MAX_STRING_LENGTH];
 
   int    num_params;
   int    param_handles[REG_INITIAL_NUM_PARAMS];
@@ -68,6 +69,11 @@ int main(){
   int    io_auto[REG_INITIAL_NUM_IOTYPES];
   int    io_freqs[REG_INITIAL_NUM_IOTYPES];
   int    new_freq;
+
+  int    nsims;
+  char  *char_ptr;
+  char  *sim_name[REG_MAX_NUM_STEERED_SIM];
+  char  *sim_gsh[REG_MAX_NUM_STEERED_SIM];
 
   /* Initialise arrays for querying param values */
 
@@ -97,14 +103,49 @@ int main(){
     return 1;
   }
 
+  /* Get list of steerable simulations */
+
+  char_ptr = (char *)malloc(REG_MAX_NUM_STEERED_SIM*REG_MAX_STRING_LENGTH*
+			  sizeof(char));
+
+  if(!char_ptr){
+    fprintf(stderr, "malloc for application list failed\n");
+    return 1;
+  }
+
+  for(i=0; i<REG_MAX_NUM_STEERED_SIM; i++){
+
+    sim_name[i] = char_ptr;
+    char_ptr += REG_MAX_STRING_LENGTH;
+    sim_gsh[i]  = char_ptr;
+    char_ptr += REG_MAX_STRING_LENGTH;
+  }
+
+  if( Get_sim_list(&nsims, sim_name, sim_gsh) == REG_SUCCESS){
+
+    fprintf(stderr, "Steerable applications available:\n");
+    for(i=0; i<nsims; i++){
+
+      fprintf(stderr, "    id = %s, gsh = %s\n", sim_name[i], sim_gsh[i]);
+    }
+  }
+
   /* Attempt to attach to (just one) simulation */
 
   status = REG_FAILURE;
 
   while(status != REG_SUCCESS){
 
-    system("sleep 2");
-    status = Sim_attach(1, &sim_handle);
+    sleep(2);
+
+    /* If we got one from the framework then attempt to talk to that,
+       otherwise default to old behaviour */
+    if(nsims > 0){
+      status = Sim_attach(sim_gsh[0], &sim_handle);
+    }
+    else{
+      status = Sim_attach("DEFAULT", &sim_handle);
+    }
   }
 
   printf("Attached to sim, sim_handle = %d\n", sim_handle);
@@ -500,7 +541,7 @@ int Edit_parameter(int sim_handle)
 
       printf("user_str[0] = %c\n", user_str[0]);
 
-      if( !strchr(user_str, "c") ){
+      if( !strchr(user_str, 'c') ){
 
 	if(sscanf(user_str, "%d", &input) == 1){
 
