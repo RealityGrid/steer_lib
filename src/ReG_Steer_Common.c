@@ -1143,7 +1143,7 @@ int Get_fully_qualified_hostname(char **hostname, char **ip_addr_ptr)
     if(uname(&name) < 0){
 
       fprintf(stderr, "Get_fully_qualified_hostname: uname failed\n");
-      return NULL;
+      return REG_FAILURE;
     }
 
     host = gethostbyname(name.nodename);
@@ -1157,10 +1157,10 @@ int Get_fully_qualified_hostname(char **hostname, char **ip_addr_ptr)
 
   if(host->h_length == 4){
     sprintf(ip_addr, "%d.%d.%d.%d", 
-	    (int)(host->h_addr_list[0][0]),
-	    (int)(host->h_addr_list[0][1]),
-	    (int)(host->h_addr_list[0][2]),
-	    (int)(host->h_addr_list[0][3]));
+	    (unsigned char)(host->h_addr_list[0][0]),
+	    (unsigned char)(host->h_addr_list[0][1]),
+	    (unsigned char)(host->h_addr_list[0][2]),
+	    (unsigned char)(host->h_addr_list[0][3]));
   }
   else{
     fprintf(stderr, "Get_fully_qualified_hostname: address not four "
