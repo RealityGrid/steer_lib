@@ -77,7 +77,7 @@ int main(){
 
   int   opacity_step_start = 120;
   int   opacity_step_stop  = 130;
-  float sleep_time         = 1.0;
+  int   sleep_time         = 1;
   float temp               = 55.6;
   float str_float          = 0.9;
   char  my_string[REG_MAX_STRING_LENGTH];
@@ -257,7 +257,7 @@ int main(){
 
   param_labels[8] = "time_to_sleep";
   param_ptrs[8]   = (void *)(&sleep_time);
-  param_types[8]  = REG_FLOAT;
+  param_types[8]  = REG_INT;
   param_strbl[8]  = TRUE;
   param_min[8]    = "0";
   param_max[8]    = "100";
@@ -300,8 +300,7 @@ int main(){
 
   for(i=0; i<nloops; i++){
 
-    /*sleep(sleep_time); Pretend to do some work */
-    usleep((unsigned long)(sleep_time*1000000));
+    sleep(sleep_time); /* Pretend to do some work */
     printf("\ni = %d\n", i);
 
     /* Talk to the steering client (if one is connected) */
