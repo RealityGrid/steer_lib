@@ -70,6 +70,7 @@ typedef struct {
   char  value[REG_MAX_STRING_LENGTH];
   char  min_val[REG_MAX_STRING_LENGTH];
   char  max_val[REG_MAX_STRING_LENGTH];
+  void *raw_data;
 
 } Param_details_struct;
 

@@ -169,6 +169,7 @@
 #define REG_XDR_INT    4
 #define REG_XDR_FLOAT  5
 #define REG_XDR_DOUBLE 6
+#define REG_BIN        7
 
 #define REG_SIZEOF_XDR_INT    4
 #define REG_SIZEOF_XDR_FLOAT  8
