@@ -628,8 +628,13 @@ int Consume_param_defs(int SimHandle)
       }
 
       if(ptr->is_internal){
-	sscanf((char *)(ptr->is_internal), "%d",
-	       &(Sim_table.sim[index].Params_table.param[j].is_internal));
+        if(!xmlStrcmp(ptr->is_internal, (const xmlChar *) "TRUE")){
+
+	  Sim_table.sim[index].Params_table.param[j].is_internal = TRUE;
+	}
+	else{
+	  Sim_table.sim[index].Params_table.param[j].is_internal = FALSE;
+	}
       }
 
       Sim_table.sim[index].Params_table.num_registered++;
@@ -722,8 +727,22 @@ int Consume_IOType_defs(int SimHandle)
 
       if(ptr->direction){
 
-	sscanf((char *)(ptr->direction), "%d",
-	       &(Sim_table.sim[index].IOdef_table.io_def[j].direction));
+        if(!xmlStrcmp(ptr->direction, (const xmlChar *) "IN")){
+
+	  Sim_table.sim[index].IOdef_table.io_def[j].direction = REG_IO_IN;
+	}
+	else if(!xmlStrcmp(ptr->direction, (const xmlChar *) "OUT")){
+
+	  Sim_table.sim[index].IOdef_table.io_def[j].direction = REG_IO_OUT;
+	}
+	else if(!xmlStrcmp(ptr->direction, (const xmlChar *) "CHECKPOINT")){
+
+	  Sim_table.sim[index].IOdef_table.io_def[j].direction = REG_IO_CHKPT;
+	}
+	else{
+	  fprintf(stderr, "Consume_IOType_defs: ERROR: unrecognised "
+		  "direction value\n");
+	}
       }
 
       if(ptr->support_auto){
