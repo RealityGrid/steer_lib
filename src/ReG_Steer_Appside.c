@@ -895,7 +895,6 @@ int Emit_data_slice(int		      IOTypeIndex,
 		    int               Count,
 		    void             *pData)
 {
-  int              return_status = REG_SUCCESS;
   int              datatype;
   int              i;
   size_t	   num_bytes_to_send;
@@ -2609,7 +2608,7 @@ int Consume_start_data_check(const int index)
 
 #if REG_GLOBUS_SAMPLES
 
-  Consume_start_data_check_globus(index);
+  return Consume_start_data_check_globus(index);
 #else
 
   return REG_FAILURE;

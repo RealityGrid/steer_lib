@@ -677,6 +677,9 @@ int Consume_start_data_check_globus(const int index)
 	    "%d\n",index );
 #endif
   }
+
+  return REG_FAILURE;
+
 }
 #endif
 
@@ -898,7 +901,8 @@ int Emit_data_globus(const int		index,
     Globus_error_print(result);
     return REG_FAILURE;
   }
-
+  
+  return REG_SUCCESS;
 
 }
 #endif
