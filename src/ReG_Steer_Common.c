@@ -781,7 +781,6 @@ int Reorder_decode_array(IOdef_entry *io,
 {
   int         i, j, k;
   int         nslab, nrow;
-  size_t      nbytes;
   int        *pi, *pi_old;
   float      *pf, *pf_old;
   double     *pd, *pd_old;
@@ -852,7 +851,7 @@ int Reorder_decode_array(IOdef_entry *io,
     switch(type){
 
     case REG_INT:
-      nbytes = (array->nx)*(array->ny)*(array->nz)*sizeof(int);
+
       pi = (int *)pData;
 
       /* In this context, array->is_f90 flags whether we want to
@@ -940,7 +939,7 @@ int Reorder_decode_array(IOdef_entry *io,
       break;
 
     case REG_FLOAT:
-      nbytes = (array->nx)*(array->ny)*(array->nz)*sizeof(float);
+
       pf = (float *)pData;
 
       /* In this context, array->is_f90 flags whether we want to
@@ -1027,7 +1026,6 @@ int Reorder_decode_array(IOdef_entry *io,
 
     case REG_DBL:
     
-      nbytes = (array->nx)*(array->ny)*(array->nz)*sizeof(double);
       pd = (double *)pData;
 
       /* In this context, array->is_f90 flags whether we want to
