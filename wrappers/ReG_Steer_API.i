@@ -21,6 +21,7 @@ extern int Enable_IOType_acks(int IOType);
 
 extern int Disable_IOType_acks(int IOType);
 
+#if 0
 extern int Register_ChkType(char* ChkLabel,
 			    int   direction,
 			    int   ChkFrequency,
@@ -35,6 +36,7 @@ extern int Add_checkpoint_file(int   ChkType,
 extern int Record_checkpoint_set(int   ChkType,
 				 char *ChkTag,
 				 char *Path);
+#endif
 
 extern int Register_param(char* ParamLabel,
 			  int   ParamSteerable,
@@ -50,6 +52,7 @@ extern int Steering_control(int     SeqNum,
 			    int    *SteerCommands,
 			    char*  *SteerCmdParams);
 
+#if 0
 extern int Emit_start(int  IOType,
 		      int  SeqNum,
 		      int *IOTypeIndex);
@@ -65,6 +68,7 @@ extern int Emit_data_slice(int	            IOTypeIndex,
 			   const void     *pData);
 
 extern int Emit_stop(int *IOTypeIndexINOUT);
+#endif
 
 extern int Consume_start(int  IOType,
 			 int *IOHandle);
@@ -99,6 +103,7 @@ extern char **Alloc_string_array(int String_len,
 
 extern int Free_string_arrays();
 
+#if 0
 extern int Make_vtk_buffer(int    nx,
 			   int    ny,
 			   int    nz,
@@ -121,6 +126,7 @@ extern int Make_chunk_header(char *header,
 			     int   totx, int toty, int totz,
 			     int   sx,   int sy,   int sz,
 			     int   nx,   int ny,   int nz);
+#endif
 
 extern int Set_f90_array_ordering(int IOTypeIndex,
 				  int flag);
@@ -136,7 +142,7 @@ extern int Reorder_array(int          ndims,
 			 void        *pOutData,
 			 int          to_f90);
 
-/* Only C knows about this stuff! */
+/* It's useful to have a sizeof type thing... */
 %inline %{
   int Sizeof(int type) {
     int result;
@@ -152,6 +158,15 @@ extern int Reorder_array(int          ndims,
       break;
     case REG_DBL:
       result = sizeof(double);
+      break;
+    case REG_XDR_INT:
+      result = REG_SIZEOF_XDR_INT;
+      break;
+    case REG_XDR_FLOAT:
+      result = REG_SIZEOF_XDR_FLOAT;
+      break;
+    case REG_XDR_DOUBLE:
+      result = REG_SIZEOF_XDR_DOUBLE;
       break;
     default:
       result = 0;
