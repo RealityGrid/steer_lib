@@ -83,3 +83,7 @@ static int Update_ptr_value(param_entry *param);
    value of the variable pointed to by the pointer associated
    with the entry */
 static int Get_ptr_value(param_entry *param);
+
+/* Catch any signals and thus allow the library to clean up if the
+   application crashes or is stopped abruptly */
+static void Steering_signal_handler(int aSignal);
