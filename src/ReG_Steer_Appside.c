@@ -361,7 +361,7 @@ int Steering_initialize(int  NumSupportedCmds,
   Params_table.param[i].steerable = TRUE;
   Params_table.param[i].modified  = FALSE;
   Params_table.param[i].is_internal=FALSE;
-  sprintf(Params_table.param[i].label, "STEERING INTERVAL");
+  sprintf(Params_table.param[i].label, "STEERING_INTERVAL");
   sprintf(Params_table.param[i].value, "1");
   sprintf(Params_table.param[i].min_val, "1");
   Params_table.param[i].min_val_valid = TRUE;
