@@ -38,9 +38,8 @@ you wish to change the version of gSOAP used then the relevant files are:
 src/stdsoap2.c
 include/stdsoap2.h
 
-The following files are generated from the wsdl describing the Steering
-Grid Service (SGS/SGS.wsdl).  See SGS/utils/generate_c_from_wsdl.csh for
-how to do this.
+The following files are generated from the WSDL describing the Steering
+Grid Service (available in the OGSI::Lite distribution):
 
 src/soapC.c
 src/soapClient.c
@@ -121,12 +120,6 @@ similar to 'mini_app' but implemented in F90 instead of C. 'mini_app_para'
 is a parallel (F90 and MPI) example.
 
 ----------------------------------------------------------------------------
-
-UNICORE ('Sheffield') demonstrator:
-
-In order to produce a steering library suitable for use with the UNICORE
-demonstrator, the line containing "#define UNICORE_DEMO" in 
-'include/Reg_Steer_types.h' should be uncommented.
 
 Any comments, enquiries or pleas for explanation should be sent to:
 
