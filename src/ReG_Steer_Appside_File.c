@@ -520,6 +520,7 @@ int Get_file_list(char *fileroot,
 
     if(*num == 0){
       remove("ReG_files.tmp");
+      fclose(fp);
       return REG_FAILURE;
     }
 
@@ -541,6 +542,7 @@ int Get_file_list(char *fileroot,
 	free(*names);
 	*names = NULL;
 	remove("ReG_files.tmp");
+	fclose(fp);
 	return REG_FAILURE;
       }
       memcpy((*names)[i], bufline, len);
