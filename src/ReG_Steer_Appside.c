@@ -470,10 +470,12 @@ int Steering_initialize(char *AppName,
   signal(SIGILL, Steering_signal_handler);
   signal(SIGABRT, Steering_signal_handler);
   signal(SIGFPE, Steering_signal_handler);
+#if REG_SOCKET_SAMPLES
 #ifndef __linux
   /* Catch the broken pipe signal for sending down a disconnected
      socket. Linux allows us to do this with a flag to send()    */
   signal(SIGPIPE, signal_handler_sockets);
+#endif
 #endif
 
   /* Flag that library has been successfully initialised */

@@ -1255,4 +1255,4 @@ void signal_handler_sockets(int a_signal) {
 
 /*---------------------------------------------------*/
 
-#endif
+#endif /* REG_SOCKET_SAMPLES */
