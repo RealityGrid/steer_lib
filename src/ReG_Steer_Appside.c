@@ -1283,7 +1283,7 @@ int Get_file_list(char *fileroot,
       (*num)++;
     }
 
-    if(*num == 0)return REG_SUCCESS;
+    if(*num == 0)return REG_FAILURE;
 
     *names = (char **)malloc(*num * sizeof(char*));
     rewind(fp);
@@ -1613,6 +1613,15 @@ int Consume_stop(int *IOTypeIndex)
   if(IOTypes_table.io_def[*IOTypeIndex].is_enabled == FALSE){
     return REG_FAILURE;
   }
+
+#if !REG_GLOBUS_SAMPLES
+  /* Close any file associated with this channel */
+  if(IOTypes_table.io_def[*IOTypeIndex].fp){
+    fclose(IOTypes_table.io_def[*IOTypeIndex].fp);
+    IOTypes_table.io_def[*IOTypeIndex].fp = NULL;
+    remove(IOTypes_table.io_def[*IOTypeIndex].filename);
+  }
+#endif
 
   /* Free memory associated with channel */
   if( IOTypes_table.io_def[*IOTypeIndex].buffer ){
@@ -4829,18 +4838,47 @@ int Consume_start_data_check(const int index)
 
   strcpy(IOTypes_table.io_def[index].filename, filenames[0]);
 
+  /* Remove the lock file to take ownership of the data file */
+  remove(IOTypes_table.io_def[index].filename);
+
   /* Remove the '.lock' from the filename */
   pchar = strstr(IOTypes_table.io_def[index].filename, ".lock");
 
   if(!pchar)return REG_FAILURE;
 
   *pchar = '\0';
-  IOTypes_table.io_def[index].fp = 
-    fopen(IOTypes_table.io_def[index].filename, "r");
+  if( !(IOTypes_table.io_def[index].fp = 
+	fopen(IOTypes_table.io_def[index].filename, "r")) ){
 
-  if(IOTypes_table.io_def[index].fp) return REG_SUCCESS;
+    fprintf(stderr, "Consume_start_data_check: failed to open file: %s\n",
+	    IOTypes_table.io_def[index].filename);
+    return REG_FAILURE;
+  }
 
-  return REG_FAILURE;
+  /* Use fileroot buffer as is plenty big enough for the small header
+     we want to read here */
+  if(fread((void *)fileroot, 
+	   (size_t)1, 
+	   REG_PACKET_SIZE, 
+	   IOTypes_table.io_def[index].fp) != (size_t)REG_PACKET_SIZE){
+
+    fprintf(stderr, "Consume_start_data_check: failed to read "
+	    "header from file: %s\n",
+	    IOTypes_table.io_def[index].filename);
+    remove(IOTypes_table.io_def[index].filename);
+    return REG_FAILURE;
+  }
+
+  if(!strstr(fileroot, REG_DATA_HEADER)){
+
+    fprintf(stderr, "Consume_start_data_check: wrong "
+	    "header from file: %s\n",
+	    IOTypes_table.io_def[index].filename);
+    remove(IOTypes_table.io_def[index].filename);
+    return REG_FAILURE;
+  }
+
+  return REG_SUCCESS;
 #endif
 }
 
@@ -4851,6 +4889,13 @@ int Consume_data_read(const int		index,
 		      const size_t	num_bytes_to_read, 
 		      void		*pData)
 {
+  size_t nbytes;
+
+  if(index < 0 || index >= IOTypes_table.num_registered){
+
+    fprintf(stderr, "Consume_data_read: ERROR: IOType index out of range\n");
+    return REG_FAILURE;
+  }
 
 #if REG_GLOBUS_SAMPLES
 
@@ -4860,9 +4905,51 @@ int Consume_data_read(const int		index,
 				  pData);
 #else
 
-  return REG_FAILURE;
-#endif
+  if(!IOTypes_table.io_def[index].fp){
 
+    fprintf(stderr, "Consume_data_read: ERROR: null file pointer\n");
+    return REG_FAILURE;
+  }
+
+  if(IOTypes_table.io_def[index].use_xdr ||
+     IOTypes_table.io_def[index].convert_array_order == TRUE){
+
+    nbytes = fread((void *)IOTypes_table.io_def[index].buffer,
+		   1,
+		   (size_t)num_bytes_to_read, 
+		   IOTypes_table.io_def[index].fp);
+  }
+  else{
+    nbytes = fread(pData,
+		   1,
+		   (size_t)num_bytes_to_read, 
+		   IOTypes_table.io_def[index].fp);
+  }
+#if REG_DEBUG
+  fprintf(stderr, "Consume_data_read: read %d bytes\n",
+	  (int) nbytes);
+
+  if(datatype == REG_CHAR){
+    fprintf(stderr, "Consume_data_read: got char data:\n>>%s<<\n", 
+	    (char *)pData);
+  }
+#endif /* REG_DEBUG */
+
+  if((int)nbytes != num_bytes_to_read){
+
+    fprintf(stderr, "Consume_data_read: failed to read expected "
+	    "quantity of data\n");
+    /* Reset use_xdr flag set as only valid on a per-slice basis */
+    IOTypes_table.io_def[index].use_xdr = FALSE;
+
+    fclose(IOTypes_table.io_def[index].fp);
+    IOTypes_table.io_def[index].fp = NULL;
+    remove(IOTypes_table.io_def[index].filename);
+    return REG_FAILURE;
+  }
+
+  return REG_SUCCESS;
+#endif
 }
 
 /*---------------------------------------------------*/
