@@ -226,6 +226,18 @@ int Steering_initialize(int  NumSupportedCmds,
   sprintf(Params_table.param[0].value, "-1");
   Increment_param_registered(&Params_table);
 
+  /* Parameter for monitoring wall-clock timer per step *
+  i = Params_table.num_registered;
+  Params_table.param[i].ptr       = NULL;
+  Params_table.param[i].type      = REG_FLOAT;
+  Params_table.param[i].handle    = REG_STEP_TIME_HANDLE;
+  Params_table.param[i].steerable = FALSE;
+  Params_table.param[i].modified  = FALSE;
+  Params_table.param[i].is_internal=FALSE;
+  sprintf(Params_table.param[i].label, "TIME_PER_STEP");
+  sprintf(Params_table.param[i].value, "-1.0");
+  Increment_param_registered(&Params_table); */
+
   /* Clean up any old files... */
 
   /* ...file indicating a steerer is connected (which it can't be since we've
@@ -1308,73 +1320,6 @@ int Consume_control(int    *NumCommands,
 
     Delete_msg_struct(msg);
 
-    /* Copy data out of structures *
-
-    *NumCommands = recvd_cmds.num_registered;
-
-
-    for(i=0; i<(*NumCommands); i++){
-
-      Commands[i] = recvd_cmds.cmd[i].cmd_id;
-#if DEBUG
-      fprintf(stderr, "Consume_control: cmd[%d] = %d\n", i, Commands[i]);
-#endif
-    }
-
-    *NumSteerParams = recvd_params.num_registered;
-  
-#if DEBUG
-    fprintf(stderr, "Consume_control: received %d params\n", *NumSteerParams);
-#endif
-
-    count = 0;
-    i = 0;
-    while(count < (*NumSteerParams)){
-    
-      for(j=0; j<Params_table.max_entries; j++){
-  
-  	if(Params_table.param[j].handle == recvd_params.param[count].handle){
-	  
-	  break;
-  	}
-      }
-
-      if(j == Params_table.max_entries){
-  
-  	fprintf(stderr, "Consume_control: failed to match param handles\n");
-  	return_status = REG_FAILURE;
-      }
-      else{
-
-  	* Store char representation of new parameter value *
-	if( strlen(recvd_params.param[count].value) ){
-
-	  strcpy(Params_table.param[j].value, recvd_params.param[count].value);
-  
-	  * Update value associated with pointer *
-	  Update_ptr_value(&(Params_table.param[j]));
-
-	  * Return list of handles to inform caller of what's changed 
-	     unless parameter is internal to the library *
-	  if( !(Params_table.param[j].is_internal) ){
-
-	    SteerParamHandles[i] = recvd_params.param[count].handle;
-	    SteerParamLabels[i]  = Params_table.param[j].label;
-	    i++;
-	  }
-	}
-	else{
-	  fprintf(stderr, "Consume_control: empty parameter value field\n");
-	}
-      }
-
-      count++;
-    }
-
-    * Update the number of parameters received to allow for fact that
-       some may be internal and are not passed up to the calling routine *
-    *NumSteerParams = i;
-    */
   }
   else{
 
