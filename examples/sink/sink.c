@@ -73,6 +73,8 @@ int main(){
   int   commands[REG_INITIAL_NUM_CMDS];
   int   sleep_time         = 1;
   int   i;
+  /* Monitored parameter */
+  int   bytes_read = 0;
 
   /*---------- End of declarations ------------*/
 
@@ -129,6 +131,9 @@ int main(){
     return REG_FAILURE;
   }
 
+  status = Register_param("Bytes_read", FALSE, 
+			  (void *)(&bytes_read), REG_INT, "", "");
+
   /* Enter main loop waiting for data to arrive */
 
   for(i=0; i<nloops; i++){
@@ -145,6 +150,9 @@ int main(){
 			      recvd_cmd_params);
 
     if(status != REG_SUCCESS) continue;
+
+    /* Zero count of bytes read this time around */
+    bytes_read = 0;
 
     if(num_recvd_cmds > 0){
 
@@ -186,6 +194,7 @@ int main(){
 
 		    printf("Got char data:\n>>%s<<\n", c_array);
 
+		    bytes_read += data_count*sizeof(char);
 		    free(c_array);
 		  }
 		  break;
@@ -199,6 +208,8 @@ int main(){
 						data_count, i_array);
 
 		    printf("Got int data\n");
+
+		    bytes_read += data_count*sizeof(int);
 		    free(i_array);
 		  }
 		  break;
@@ -211,6 +222,8 @@ int main(){
 		    status = Consume_data_slice(iohandle, data_type, 
 						data_count, f_array);
 		    printf("Got float data\n");
+
+		    bytes_read += data_count*sizeof(float);
 		    free(f_array);
 		  }
 		  break;
@@ -223,6 +236,8 @@ int main(){
 		    status = Consume_data_slice(iohandle, data_type, 
 						data_count, d_array);
 		    printf("Got double data\n");
+
+		    bytes_read += data_count*sizeof(double);
 		    free(d_array);
 		  }
 		  break;
