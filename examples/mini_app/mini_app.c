@@ -67,7 +67,7 @@ int main(){
   int   opacity_step_stop  = 130;
   int   output_freq        = 5;
   float temp               = 55.6;
-  char* my_string          = "running";
+  char  my_string[REG_MAX_STRING_LENGTH];
 
   int   finished           = FALSE;
   int   icmd;
@@ -147,6 +147,7 @@ int main(){
   param_strbl[2]  = FALSE;
 
   param_labels[3] = "A_STRING";
+  sprintf(my_string, "running");
   param_ptrs[3]   = (void *)(my_string);
   param_types[3]  = REG_CHAR;
   param_strbl[3]  = TRUE;
