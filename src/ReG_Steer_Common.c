@@ -808,16 +808,16 @@ int Reorder_array(Array_type *array,
 
       /* Convert F90 array to C array */
 
-      nslab = (array->nz-1)*(array->ny-1);
-      nrow  = (array->nz-1);
+      nslab = (array->nz)*(array->ny);
+      nrow  = array->nz;
       /* Order loops so i,j,k vary as they should for an F90-style
 	 array ordered consecutively in memory */
-      for(k=0; k<(array->nz-1); k++){
-	for(j=0; j<(array->ny-1); j++){
-	  for(i=0; i<(array->nx-1); i++){
+      for(k=0; k<array->nz; k++){
+	for(j=0; j<array->ny; j++){
+	  for(i=0; i<array->nx; i++){
 	    /* Calculate position of (i,j,k)'th element in a C array 
 	       (where k varies most rapidly) and store value */
-	    pi[i*nslab + j*nrow + k] = *(++pi_old);
+	    pi[i*nslab + j*nrow + k] = *(pi_old++);
 	  }
 	}
       }
@@ -826,16 +826,16 @@ int Reorder_array(Array_type *array,
       
       /* Convert C array to F90 array */
 
-      nslab = (array->nx-1)*(array->ny-1);
-      nrow  = (array->nx-1);
+      nslab = array->nx*array->ny;
+      nrow  = array->nx;
       /* Order loops so i,j,k vary as they should for a C-style
 	 array ordered consecutively in memory */
-      for(i=0; i<(array->nx-1); i++){
-	for(j=0; j<(array->ny-1); j++){
-	  for(k=0; k<(array->nz-1); k++){
+      for(i=0; i<array->nx; i++){
+	for(j=0; j<array->ny; j++){
+	  for(k=0; k<array->nz; k++){
 	    /* Calculate position of (i,j,k)'th element in an F90 array 
 	       (where i varies most rapidly) and store value */
-	    pi[k*nslab + j*nrow + i] = *(++pi_old);
+	    pi[k*nslab + j*nrow + i] = *(pi_old++);
 	  }
 	}
       }
@@ -862,16 +862,16 @@ int Reorder_array(Array_type *array,
 
       /* Convert F90 array to C array */
       
-      nslab = (array->nz-1)*(array->ny-1);
-      nrow  = (array->nz-1);
+      nslab = (array->nz)*(array->ny);
+      nrow  = array->nz;
       /* Order loops so i,j,k vary as they should for an F90-style
 	 array ordered consecutively in memory */
-      for(k=0; k<(array->nz-1); k++){
-	for(j=0; j<(array->ny-1); j++){
-	  for(i=0; i<(array->nx-1); i++){
+      for(k=0; k<array->nz; k++){
+	for(j=0; j<array->ny; j++){
+	  for(i=0; i<array->nx; i++){
 	    /* Calculate position of (i,j,k)'th element in a C array 
 	       (where k varies most rapidly) and store value */
-	    pf[i*nslab + j*nrow + k] = *(++pf_old);
+	    pf[i*nslab + j*nrow + k] = *(pf_old++);
 	  }
 	}
       }
@@ -880,16 +880,16 @@ int Reorder_array(Array_type *array,
       
       /* Convert C array to F90 array */
 
-      nslab = (array->nx-1)*(array->ny-1);
-      nrow  = (array->nx-1);
+      nslab = (array->nx)*(array->ny);
+      nrow  = array->nx;
       /* Order loops so i,j,k vary as they should for a C-style
 	 array ordered consecutively in memory */
-      for(i=0; i<(array->nx-1); i++){
-	for(j=0; j<(array->ny-1); j++){
-	  for(k=0; k<(array->nz-1); k++){
+      for(i=0; i<array->nx; i++){
+	for(j=0; j<array->ny; j++){
+	  for(k=0; k<array->nz; k++){
 	    /* Calculate position of (i,j,k)'th element in an F90 array 
 	       (where i varies most rapidly) and store value */
-	    pf[k*nslab + j*nrow + i] = *(++pf_old);
+	    pf[k*nslab + j*nrow + i] = *(pf_old++);
 	  }
 	}
       }
@@ -917,16 +917,16 @@ int Reorder_array(Array_type *array,
 
       /* Convert F90 array to C array */
       
-      nslab = (array->nz-1)*(array->ny-1);
-      nrow  = (array->nz-1);
+      nslab = (array->nz)*(array->ny);
+      nrow  = array->nz;
       /* Order loops so i,j,k vary as they should for an F90-style
 	 array ordered consecutively in memory */
-      for(k=0; k<(array->nz-1); k++){
-	for(j=0; j<(array->ny-1); j++){
-	  for(i=0; i<(array->nx-1); i++){
+      for(k=0; k<array->nz; k++){
+	for(j=0; j<array->ny; j++){
+	  for(i=0; i<array->nx; i++){
 	    /* Calculate position of (i,j,k)'th element in a C array 
 	       (where k varies most rapidly) and store value */
-	    pd[i*nslab + j*nrow + k] = *(++pd_old);
+	    pd[i*nslab + j*nrow + k] = *(pd_old++);
 	  }
 	}
       }
@@ -935,16 +935,16 @@ int Reorder_array(Array_type *array,
       
       /* Convert C array to F90 array */
       
-      nslab = (array->nx-1)*(array->ny-1);
-      nrow  = (array->nx-1);
+      nslab = (array->nx)*(array->ny);
+      nrow  = array->nx;
       /* Order loops so i,j,k vary as they should for a C-style
 	 array ordered consecutively in memory */
-      for(i=0; i<(array->nx-1); i++){
-	for(j=0; j<(array->ny-1); j++){
-	  for(k=0; k<(array->nz-1); k++){
+      for(i=0; i<array->nx; i++){
+	for(j=0; j<array->ny; j++){
+	  for(k=0; k<array->nz; k++){
 	    /* Calculate position of (i,j,k)'th element in an F90 array 
 	       (where i varies most rapidly) and store value */
-	    pd[k*nslab + j*nrow + i] = *(++pd_old);
+	    pd[k*nslab + j*nrow + i] = *(pd_old++);
 	  }
 	}
       }
