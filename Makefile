@@ -31,7 +31,7 @@ steerer: lib$(NBIT)/libReG_Steer.a \
 
 lib$(NBIT)/libReG_Steer.a: expat/xmlparse/libexpat.a \
  include/*.h \
- src/*.c src/*.m4 src/*.java
+ src/*.c src/*.m4
 	cd src; make ${GLOBAL_FLAGS}
 
 ${LOCAL_BIN_DIR}/ReG_Steer_Proxy.class: src/*.java
