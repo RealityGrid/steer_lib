@@ -1375,6 +1375,7 @@ int Add_checkpoint_file(int   ChkType,
 {
   int index;
   int nbytes;
+  int i;
 
   /* Can only call this function if steering lib initialised */
   if (!ReG_SteeringInit) return REG_FAILURE;
@@ -1385,8 +1386,24 @@ int Add_checkpoint_file(int   ChkType,
 
   if (index == REG_IODEF_HANDLE_NOTSET) return REG_FAILURE;
 
-  /* Check that we have sufficient memory; +1 to allow for space delimiter */
-  nbytes = strlen(filename)+1;
+  /* Remove any trailing white space from the filename */
+  i = strlen(filename)-1;
+  while( (i > -1) && (filename[i] == ' ') ){
+    filename[i--] = '\0';
+  }
+
+  /* Check that it doesn't contain any spaces (since we use a space-delimited
+     list to store the filenames) */
+  if(strchr(filename, ' ')){
+
+    fprintf(stderr, "ERROR: Add_checkpoint_file - filenames must not "
+	    "contain spaces (file >>%s<<)\n", filename);
+    return REG_FAILURE;
+  }
+
+  /* Check that we have sufficient memory; +2 to allow for space delimiter 
+     and terminating character */
+  nbytes = strlen(filename)+2;
 
   if( (ChkTypes_table.io_def[index].buffer_max_bytes - 
        ChkTypes_table.io_def[index].buffer_bytes) < nbytes ){

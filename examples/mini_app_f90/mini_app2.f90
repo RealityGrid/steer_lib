@@ -474,8 +474,15 @@ PROGRAM mini_app
 		 IF(status .eq. 0)THEN
 		    WRITE(99, *) "Checkpoint data goes here"
 		    CLOSE(99)
+
+                    ! Add one or more files to the list of files making up 
+                    ! this checkpoint
+                    CALL Add_checkpoint_file_f(chk_handles(1), chk_tag, status)
+
+                    ! Record that we've successfully taken the checkpoint
 		    CALL Record_checkpoint_set_f(chk_handles(1), &
-					         TRIM(ADJUSTL(ctag)), ".", status)
+					         TRIM(ADJUSTL(ctag)), &
+                                                 ".", status)
                  END IF
                END IF
              END IF
