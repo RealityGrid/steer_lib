@@ -317,6 +317,7 @@ int Steering_initialize(char *AppName,
   Params_table.num_registered = 0;
   Params_table.max_entries    = REG_INITIAL_NUM_PARAMS;
   Params_table.next_handle    = REG_MIN_PARAM_HANDLE;
+  Params_table.log_all        = REG_TRUE;
   Params_table.param          = (param_entry *)malloc(Params_table.max_entries
 					      *sizeof(param_entry));
 
@@ -2323,6 +2324,9 @@ int Register_param(char* ParamLabel,
   /* This set to REG_TRUE external to this routine if this param.
      has been created by the steering library itself */
   Params_table.param[current].is_internal = REG_FALSE;
+
+  /* Logging of parameter values is on by default */
+  Params_table.param[current].logging_on = REG_TRUE;
 
   /* Range of validity for this parameter - assume invalid
      first and check second */

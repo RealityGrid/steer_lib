@@ -74,7 +74,7 @@ extern int ReG_SteeringActive;
 
 /*----------------------------------------------------------------*/
 
-int Initialize_log(Chk_log_type *log, int log_type)
+int Initialize_log(Chk_log_type *log, log_type_type log_type)
 {
   int i, j;
 
@@ -759,7 +759,6 @@ int Log_param_values()
 
   /* Store the no. of params this entry has */
   Param_log.entry[Param_log.num_entries].num_param = count;
-
 
   /* Since we send status messages containing parameter values to 
      attached client, we need only flag an entry as not being sent

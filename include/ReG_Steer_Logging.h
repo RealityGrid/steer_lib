@@ -48,7 +48,7 @@ int Set_log_primary_key(Chk_log_type *log);
 
 /* Allocate memory etc. for the log structure supplied.
    log->filename must be set prior to call. */
-int Initialize_log(Chk_log_type *log, int log_type);
+int Initialize_log(Chk_log_type *log, log_type_type log_type);
 
 /* Identifies format of log supplied in *buf & converts it to xml if
    necessary.  If the log is a parameter log then it pulls out values

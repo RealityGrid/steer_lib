@@ -3543,7 +3543,7 @@ int Realloc_param_log(param_entry *param)
       param->log_size = 0;
       param->log_index = 0;
       fprintf(stderr, "Realloc_param_log: realloc failed for %d"
-	      " bytes\n", param->log_size*sizeof(double));
+	      " bytes\n", (int)(param->log_size*sizeof(double)));
       return REG_FAILURE;
     }
     param->log = (double *)dum_ptr;
