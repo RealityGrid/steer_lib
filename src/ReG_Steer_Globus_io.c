@@ -216,7 +216,6 @@ int Globus_create_listener(socket_io_type * const socket_info)
 {
   globus_result_t	result;
   char                 *pchar, *ip_addr;
-  int                   dum;
 
   /* create listener socket on free port 
    *  - if environment variable GLOBUS_TCP_PORT_RANGE has been set,
