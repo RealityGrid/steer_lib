@@ -747,8 +747,13 @@ int Consume_IOType_defs(int SimHandle)
 
       if(ptr->support_auto){
 
-	sscanf((char *)(ptr->support_auto), "%d",
-	       &(Sim_table.sim[index].IOdef_table.io_def[j].auto_io_support));
+        if(!xmlStrcmp(ptr->support_auto, (const xmlChar *) "TRUE")){
+
+	  Sim_table.sim[index].IOdef_table.io_def[j].auto_io_support = TRUE;
+	}
+	else{
+	  Sim_table.sim[index].IOdef_table.io_def[j].auto_io_support = FALSE;
+	}
       }
 
       if(ptr->freq_handle){
