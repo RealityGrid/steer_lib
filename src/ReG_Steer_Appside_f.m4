@@ -163,7 +163,7 @@ SUBROUTINE register_chktype_f(NumTypes, ChkLabel, ChkDirn,
 
 ----------------------------------------------------------------*/
 
-void FUNCTION(register_chktype_f) ARGS(`NumTypes, 
+void FUNCTION(register_chktypes_f) ARGS(`NumTypes, 
                                         STRING_ARG(ChkLabel), 
                                         ChkDirn,
                                         ChkFrequency,
@@ -194,11 +194,11 @@ INT_KIND_1_DECL(Status);
     str_array[i] = &(STRING_PTR(ChkLabel)[i*STRING_LEN(ChkLabel)]);
   }
 
-  *Status = INT_KIND_1_CAST( Register_IOTypes((int)*NumTypes,
-                                                     str_array,
-                                              (int *)ChkDirn,
-                                              (int *)ChkFrequency,
-                                              (int *)ChkType) );
+  *Status = INT_KIND_1_CAST( Register_ChkTypes((int) *NumTypes,
+                                                      str_array,
+                                               (int *)ChkDirn,
+                                               (int *)ChkFrequency,
+                                               (int *)ChkType) );
 
   free(str_array);
 
@@ -513,10 +513,9 @@ INT_KIND_1_DECL(Status);
 
 /*----------------------------------------------------------------
 
-SUBROUTINE make_vtk_buffer_f(header, nx, ny, nz, veclen, a, b, c, 
+SUBROUTINE make_vtk_buffer_f(nx, ny, nz, veclen, a, b, c, 
                              array, status)
 
-  CHARACTER (LEN=BUFSIZ), INTENT(out)     :: header
   INTEGER (KIND=REG_SP_KIND), INTENT(in)  :: nx, ny, nz
   INTEGER (KIND=REG_SP_KIND), INTENT(in)  :: veclen
   REAL (KIND=REG_DP_KIND),    INTENT(in)  :: a, b, c
@@ -525,13 +524,11 @@ SUBROUTINE make_vtk_buffer_f(header, nx, ny, nz, veclen, a, b, c,
 
 ----------------------------------------------------------------*/
 
-void FUNCTION(make_vtk_buffer_f) ARGS(`STRING_ARG(header), 
-                                       nx, ny, nz,
+void FUNCTION(make_vtk_buffer_f) ARGS(`nx, ny, nz,
                                        veclen, 
                                        a, b, c,
                                        array,
                                        Status')
-STRING_ARG_DECL(header);
 INT_KIND_1_DECL(nx);
 INT_KIND_1_DECL(ny);
 INT_KIND_1_DECL(nz);
@@ -544,13 +541,49 @@ double *c;
 float *array;
 INT_KIND_1_DECL(Status);
 {
-  *Status = INT_KIND_1_CAST( Make_vtk_buffer(STRING_PTR(header), 
-                                             (int)*nx, 
+  *Status = INT_KIND_1_CAST( Make_vtk_buffer((int)*nx, 
                                              (int)*ny, 
                                              (int)*nz,
                                              (int)*veclen,
                                              *a, *b, *c,
                                              array) );
+  return;
+}
+
+/*----------------------------------------------------------------
+
+SUBROUTINE make_vtk_header_f(header, nx, ny, nz, veclen, type, status)
+
+  CHARACTER (LEN=BUFSIZ), INTENT(out)     :: header
+  INTEGER (KIND=REG_SP_KIND), INTENT(in)  :: nx, ny, nz
+  INTEGER (KIND=REG_SP_KIND), INTENT(in)  :: veclen
+  INTEGER (KIND=REG_SP_KIND), INTENT(out) :: status
+
+----------------------------------------------------------------*/
+
+void FUNCTION(make_vtk_header_f) ARGS(`STRING_ARG(header),
+                                       STRING_ARG(title),
+                                       nx, ny, nz,
+                                       veclen,
+                                       type,
+                                       Status')
+STRING_ARG_DECL(header);
+STRING_ARG_DECL(title);
+INT_KIND_1_DECL(nx);
+INT_KIND_1_DECL(ny);
+INT_KIND_1_DECL(nz);
+INT_KIND_1_DECL(veclen);
+INT_KIND_1_DECL(type);
+INT_KIND_1_DECL(Status);
+{
+  *Status = INT_KIND_1_CAST( Make_vtk_header(STRING_PTR(header),
+                                             STRING_PTR(title),
+                                             (int)*nx, 
+                                             (int)*ny, 
+                                             (int)*nz,
+                                             (int)*veclen,
+                                             (int)*type) );
+
   return;
 }
 

@@ -39,8 +39,14 @@
     Initial version by:  S Ramsden, 26.2.2003       0.1               
 
 ---------------------------------------------------------------------------*/
-
+#include "ReG_Steer_types.h"
+#include "ReG_Steer_Common.h"
+#include "ReG_Steer_Globus_io.h"
 #include "ReG_Steer_Appside_Globus.h"
+
+/* Need access to this table which is actually declared in 
+   ReG_Steer_Appside_internal.h */
+extern IOdef_table_type IOTypes_table;
 
 #if REG_GLOBUS_STEERING
 int Send_status_msg_globus(char *buf)

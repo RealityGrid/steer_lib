@@ -2574,8 +2574,7 @@ void Steering_signal_handler(int aSignal)
 
 /*--------------------------------------------------------------------*/
 
-int Make_vtk_buffer(char  *header,
-		    int    nx,
+int Make_vtk_buffer(int    nx,
 		    int    ny,
 		    int    nz,
 		    int    veclen,
@@ -2590,54 +2589,10 @@ int Make_vtk_buffer(char  *header,
   float  mag;
   float  sum;
   float *fptr;
-  char  *pchar;
-  char   text[64];
 
   a2 = a*a;
   b2 = b*b;
   c2 = c*c;
-
-  /* Make ASCII header to describe data to vtk */
-
-  pchar = header;
-  pchar += sprintf(pchar, REG_PACKET_FORMAT, "# AVS field file\n");
-  pchar += sprintf(pchar, REG_PACKET_FORMAT, "ndim=3\n");
-  sprintf(text, "dim1= %d\n", nx);
-  pchar += sprintf(pchar, REG_PACKET_FORMAT, text);
-  sprintf(text, "dim2= %d\n", ny);
-  pchar += sprintf(pchar, REG_PACKET_FORMAT, text);
-  sprintf(text, "dim3= %d\n", nz);
-  pchar += sprintf(pchar, REG_PACKET_FORMAT, text);
-  pchar += sprintf(pchar, REG_PACKET_FORMAT, "nspace=3\n");
-  pchar += sprintf(pchar, REG_PACKET_FORMAT, "field=uniform\n");
-  sprintf(text, "veclen= %d\n", veclen);
-  pchar += sprintf(pchar, REG_PACKET_FORMAT, text);
-  pchar += sprintf(pchar, REG_PACKET_FORMAT, "data=float\n");
-
-  /* Use 'filetype=stream' because this is _not_ standard AVS because
-     the way we interpret 'skip' at the other end of a socket is
-     not standard either - we use it as the number of objects (floats,
-     ints etc.) to skip rather than the no. of bytes or lines. */
-  if(veclen == 1){
-    pchar += sprintf(pchar, REG_PACKET_FORMAT, "variable 1 filetype=stream "
-		     "skip=0000000 stride=1\n");
-  }
-  else if(veclen == 2){
-    pchar += sprintf(pchar, REG_PACKET_FORMAT, "variable 1 filetype=stream "
-		     "skip=0000000 stride=2\n");
-    pchar += sprintf(pchar, REG_PACKET_FORMAT, "variable 2 filetype=stream "
-		     "skip=0000001 stride=2\n");
-
-  }
-  else if(veclen == 3){
-    pchar += sprintf(pchar, REG_PACKET_FORMAT, "variable 1 filetype=stream "
-		     "skip=0000000 stride=3\n");
-    pchar += sprintf(pchar, REG_PACKET_FORMAT, "variable 2 filetype=stream "
-		     "skip=0000001 stride=3\n");
-    pchar += sprintf(pchar, REG_PACKET_FORMAT, "variable 3 filetype=stream "
-		     "skip=0000002 stride=3\n");
-  }
-  pchar += sprintf(pchar, REG_PACKET_FORMAT, "END_OF_HEADER\n");
 
   /* Make an array of data */
   fptr = array;
@@ -2718,6 +2673,135 @@ int Make_vtk_buffer(char  *header,
     fprintf(stderr, "%.3f %.3f %.3f\n", *(fptr++), *(fptr++), *(fptr++));
   }
   */
+  return REG_SUCCESS;
+}
+
+/*--------------------------------------------------------------------
+  Make ASCII header to describe data to vtk
+*/
+int Make_vtk_header(char  *header,
+		    char  *title,
+		    int    nx,
+		    int    ny,
+		    int    nz,
+		    int    veclen,
+		    int    type)
+{
+  char *pchar = header;
+  char  type_text[8];
+
+  /* Flag to switch between AVS- and vtk-style headers 
+     - for testing */
+  const int AVS_STYLE = 1;
+
+  if (!pchar) return REG_FAILURE;
+
+  if(veclen != 1 && veclen != 3){
+
+    fprintf(stderr, "Make_vtk_header: only veclen of 1 or 3 supported\n");
+    return REG_FAILURE;
+  }
+
+
+  if(AVS_STYLE){
+
+    pchar += sprintf(pchar, "# AVS field file\n");
+    pchar += sprintf(pchar, "ndim=3\n");
+    pchar += sprintf(pchar, "dim1= %d\n", nx);
+    pchar += sprintf(pchar, "dim2= %d\n", ny);
+    pchar += sprintf(pchar, "dim3= %d\n", nz);
+    pchar += sprintf(pchar, "nspace=3\n");
+    pchar += sprintf(pchar, "field=uniform\n");
+    pchar += sprintf(pchar, "veclen= %d\n", veclen);
+
+    if(type == REG_DBL){
+      sprintf(type_text, "double");
+    }
+    else if(type == REG_FLOAT){
+
+      sprintf(type_text, "float");
+    }
+    else if(type == REG_INT){
+
+      sprintf(type_text, "integer");
+    }
+    else{
+
+      fprintf(stderr, "Make_vtk_header: Unrecognised data type\n");
+      return REG_FAILURE;
+    }
+    pchar += sprintf(pchar, "data=%s\n", type_text);
+
+    /* Use 'filetype=stream' because this is _not_ standard AVS because
+       the way we interpret 'skip' at the other end of a socket is
+       not standard either - we use it as the number of objects (floats,
+       ints etc.) to skip rather than the no. of bytes or lines. */
+    if(veclen == 1){
+      pchar += sprintf(pchar, "variable 1 filetype=stream "
+		       "skip=0000000 stride=1\n");
+    }
+    else if(veclen == 2){
+      pchar += sprintf(pchar, "variable 1 filetype=stream "
+		     "skip=0000000 stride=2\n");
+      pchar += sprintf(pchar, "variable 2 filetype=stream "
+		     "skip=0000001 stride=2\n");
+
+    }
+    else if(veclen == 3){
+      pchar += sprintf(pchar, "variable 1 filetype=stream "
+		       "skip=0000000 stride=3\n");
+      pchar += sprintf(pchar, "variable 2 filetype=stream "
+		       "skip=0000001 stride=3\n");
+      pchar += sprintf(pchar, "variable 3 filetype=stream "
+		       "skip=0000002 stride=3\n");
+    }
+    pchar += sprintf(pchar, "END_OF_HEADER\n");
+  }
+  else{ /* Make a vtk-style header */
+
+    pchar += sprintf(pchar, "# vtk DataFile Version 2.1\n");
+    pchar += sprintf(pchar, "%s\n", title);
+    pchar += sprintf(pchar, "BINARY\n");
+    pchar += sprintf(pchar, "DATASET STRUCTURED_POINTS\n");
+    pchar += sprintf(pchar, "DIMENSIONS %d %d %d\n", nx, ny, nz);
+    pchar += sprintf(pchar, "ORIGIN  0.000   0.000   0.000\n");
+    pchar += sprintf(pchar, "SPACING  1  1  1\n");
+    pchar += sprintf(pchar, "POINT_DATA %d\n", nx*ny*nz);
+
+    if(type == REG_DBL){
+      sprintf(type_text, "double");
+    }
+    else if(type == REG_FLOAT){
+
+      sprintf(type_text, "float");
+    }
+    else if(type == REG_INT){
+
+      sprintf(type_text, "int");
+    }
+    else{
+
+      fprintf(stderr, "Make_vtk_header: Unrecognised data type\n");
+      return REG_FAILURE;
+    }
+
+    if(veclen == 1){
+
+      pchar += sprintf(pchar, "SCALARS scalars %s\n", type_text);
+    }
+    else if(veclen == 3){
+
+      pchar += sprintf(pchar, "VECTORS vectors %s\n", type_text);
+    }
+    else{
+
+      fprintf(stderr, "Make_vtk_header: invalid veclen value: %d\n", veclen);
+      return REG_FAILURE;
+    }
+
+    pchar += sprintf(pchar, "LOOKUP_TABLE default\n");
+  }
+
   return REG_SUCCESS;
 }
 

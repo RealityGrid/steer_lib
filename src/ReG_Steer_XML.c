@@ -944,7 +944,7 @@ void Delete_cmd_struct(struct cmd_struct *cmd)
 
   while(cmd){
 
-    dum_ptr = cmd->next;
+    if(cmd->id) xmlFree(cmd->id);
 
     if(cmd->first_param){
       Delete_param_struct(cmd->first_param);
@@ -952,6 +952,7 @@ void Delete_cmd_struct(struct cmd_struct *cmd)
       cmd->param       = NULL;
     }
 
+    dum_ptr = cmd->next;
     free(cmd);
     cmd = dum_ptr;
   }
@@ -986,6 +987,11 @@ void Delete_io_struct(struct io_struct *io)
   struct io_struct *dum_ptr;
 
   while(io){
+
+    if(io->label)       xmlFree(io->label);
+    if(io->handle)      xmlFree(io->handle);
+    if(io->direction)   xmlFree(io->direction);
+    if(io->freq_handle) xmlFree(io->freq_handle);
 
     dum_ptr = io->next;
     free(io);
