@@ -124,35 +124,67 @@ int main(){
   }
   char_ptr = NULL;
 
-  if( Get_sim_list(&nsims, sim_name, sim_gsh) == REG_SUCCESS){
-
-    fprintf(stderr, "Steerable applications available:\n");
-    for(i=0; i<nsims; i++){
-
-      fprintf(stderr, "    id = %s, gsh = %s\n", sim_name[i], sim_gsh[i]);
-    }
+  printf("Do (l)ocal or (r)emote attach: ");
+  while(TRUE){
+    scanf("%c", user_char);
+    if(user_char[0] != '\n' && user_char[0] != ' ')break;
   }
 
-  /* Attempt to attach to (just one) simulation - this blocks */
+  if(user_char[0] == 'l' || user_char[0] == 'L'){
 
-  status = REG_FAILURE;
+    status = Sim_attach("", &sim_handle);
+  }
+  else{
 
-  while(status != REG_SUCCESS){
+    Get_sim_list(&nsims, sim_name, sim_gsh);
 
-    sleep(2);
+    /* Attempt to attach to (just one) simulation - this blocks */
 
-    /* If we got one from the framework then attempt to talk to that,
-       otherwise default to old behaviour */
-    if(nsims > 0){
-      status = Sim_attach(sim_gsh[0], &sim_handle);
-    }
-    else{
-      status = Sim_attach("DEFAULT", &sim_handle);
+    status = REG_FAILURE;
+
+    while(status != REG_SUCCESS){
+
+      sleep(2);
+
+      /* If we got one from the framework then attempt to talk to that,
+	 otherwise default to old behaviour */
+      if(nsims > 0){
+
+	printf("\n%d steerable applications available:\n", nsims);
+	for(i=0; i<nsims; i++){
+
+	  printf("    %d: %s, gsh = %s\n", i, sim_name[i], sim_gsh[i]);
+	}
+
+	i = -1;
+	while(i<0 || i>(nsims-1)){
+	  printf("\nWhich one to attach to (0 - %d): ", nsims-1);
+	  while(TRUE){
+	    if(scanf("%d", &i) == 1)break;
+	  }
+	  printf("\n");
+	}
+
+	status = Sim_attach(sim_gsh[i], &sim_handle);
+      }
+      else{
+	status = Sim_attach("", &sim_handle);
+      }
+
+      if(status != REG_SUCCESS){
+	fprintf(stderr, "Attach failed :-(\n");
+      }
     }
   }
 
   /* Done with malloc'd memory */
   free(pchar);
+
+  if(status != REG_SUCCESS){
+
+    printf("Failed to attach to a simulation\n");
+    return 1;
+  }
 
   fprintf(stderr, "Attached to sim, sim_handle = %d\n", sim_handle);
 
