@@ -1200,7 +1200,7 @@ int Record_checkpoint_set(int   ChkType,
   cp_data = Global_scratch_buffer;
   pchar = cp_data;
   bytes_left = REG_SCRATCH_BUFFER_SIZE;
-  nbytes = snprintf(pchar, bytes_left, "<Checkpoint_data Application=\"%s\">\n"		    
+  nbytes = snprintf(pchar, bytes_left, "<Checkpoint_data application=\"%s\">\n"		    
 		    "<Chk_type>%d</Chk_type>\n"
 		    "<Chk_UID>%s</Chk_UID>\n"
 		    "<Files location=\"%s\">\n", 
