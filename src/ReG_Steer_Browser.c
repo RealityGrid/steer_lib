@@ -36,7 +36,6 @@
 #include "ReG_Steer_Browser.h"
 #include "ReG_Steer_XML.h"
 #include "soapH.h"
-#include "soapServiceGroupRegistration.nsmap"
 
 /*-------------------------------------------------------------------------*/
 

@@ -35,7 +35,7 @@
 #include "ReG_Steer_types.h"
 #include "ReG_Steer_Appside_internal.h"
 #include "ReG_Steer_Appside_Soap.h"
-#include "soapSGS.nsmap"
+#include "soapRealityGrid.nsmap"
 
 /* Need access to these tables which are actually declared in 
    ReG_Steer_Appside_internal.h and ReG_Steer_Appside.c */
