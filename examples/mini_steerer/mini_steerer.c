@@ -74,6 +74,7 @@ int main(){
 
   int    nsims;
   char  *char_ptr;
+  char  *pchar;
   char  *sim_name[REG_MAX_NUM_STEERED_SIM];
   char  *sim_gsh[REG_MAX_NUM_STEERED_SIM];
 
@@ -108,9 +109,9 @@ int main(){
 
   /* Get list of steerable simulations */
 
-  char_ptr = (char *)malloc(REG_MAX_NUM_STEERED_SIM*REG_MAX_STRING_LENGTH*
+  pchar = (char *)malloc(REG_MAX_NUM_STEERED_SIM*REG_MAX_STRING_LENGTH*
 			  sizeof(char));
-
+  char_ptr = pchar;
   if(!char_ptr){
     fprintf(stderr, "malloc for application list failed\n");
     return 1;
@@ -151,6 +152,9 @@ int main(){
       status = Sim_attach("DEFAULT", &sim_handle);
     }
   }
+
+  /* Done with malloc'd memory */
+  free(pchar);
 
   fprintf(stderr, "Attached to sim, sim_handle = %d\n", sim_handle);
 
