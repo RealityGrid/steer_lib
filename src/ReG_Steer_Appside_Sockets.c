@@ -43,6 +43,7 @@
 #include "ReG_Steer_Appside_internal.h"
 #include "ReG_Steer_Appside_Sockets.h"
 #include <string.h>
+#include <signal.h>
 #include <sys/time.h>
 
 #ifndef REG_DEBUG
@@ -436,7 +437,6 @@ void attempt_connector_connect(const int index) {
 /*--------------------------------------------------------------------*/
 
 void retry_connect(const int index) {
-  int status;
   socket_io_type *socket_info;
   socket_info = &(IOTypes_table.io_def[index].socket_info);
 
@@ -527,7 +527,7 @@ int dns_lookup(char* hostname) {
 
 #if REG_DEBUG
   fprintf(stderr, "DNS lookup: host: %s\n", host->h_name);
-  fprintf(stderr, "            IP:   %s\n", inet_ntoa(*((struct in_addr*) host->h_addr)));
+  fprintf(stderr, "            IP:   %s\n", (char*) inet_ntoa(*((struct in_addr*) host->h_addr)));
 #endif
 
   strcpy(hostname, (char*) inet_ntoa(*((struct in_addr*) host->h_addr)));
@@ -707,8 +707,11 @@ int Write_sockets(const int index, const int size, void* buffer) {
   fprintf(stderr, "Writing...\n");
 #endif
   while(bytes_left > 0) {
+#ifndef __sgi
     result = send(connector, pchar, bytes_left, MSG_NOSIGNAL);
-
+#else
+    result = send(connector, pchar, bytes_left, 0);
+#endif
     if(result == REG_SOCKETS_ERROR) {
       perror("send");
       return REG_FAILURE;
@@ -837,7 +840,6 @@ int Emit_data_sockets(const int index, const size_t num_bytes_to_send, void* pDa
 
 int Consume_msg_header_sockets(int index, int* datatype, int* count, int* num_bytes, int* is_fortran_array) {
 
-  int result;
   int nbytes;
   char buffer[REG_PACKET_SIZE];
   socket_io_type  *sock_info;
@@ -1020,9 +1022,7 @@ int Consume_start_data_check_sockets(const int index) {
   char buffer[REG_PACKET_SIZE];
   char* pstart;
   int nbytes, nbytes1;
-  int result;
   int attempt_reconnect;
-  int status;
 
   socket_io_type  *sock_info;
   sock_info = &(IOTypes_table.io_def[index].socket_info);
@@ -1152,11 +1152,9 @@ int Consume_start_data_check_sockets(const int index) {
 /*--------------------------------------------------------------*/
 
 int Consume_data_read_sockets(const int index, const int datatype, const int num_bytes_to_read, void *pData) {
-  int result;
   int nbytes;
 
   socket_io_type  *sock_info;
-  sock_info = &(IOTypes_table.io_def[index].socket_info);
 
 #if REG_DEBUG
 
@@ -1171,6 +1169,8 @@ int Consume_data_read_sockets(const int index, const int datatype, const int num
 #endif
 
 #endif /* REG_DEBUG */
+
+  sock_info = &(IOTypes_table.io_def[index].socket_info);
 
   if(IOTypes_table.io_def[index].use_xdr || IOTypes_table.io_def[index].convert_array_order == TRUE) {
     nbytes = recv(sock_info->connector_handle, IOTypes_table.io_def[index].buffer, num_bytes_to_read, MSG_WAITALL);
@@ -1210,6 +1210,20 @@ int Consume_data_read_sockets(const int index, const int datatype, const int num
 
   return REG_SUCCESS;
 }
+
+/*---------------------------------------------------*/
+
+#ifdef __sgi
+void signal_handler_sockets(int a_signal) {
+
+#if REG_DEBUG
+  fprintf(stderr, "Caught SIGPIPE!\n");
+#endif
+
+  signal(SIGPIPE, signal_handler_sockets);
+
+}
+#endif
 
 /*---------------------------------------------------*/
 
