@@ -20,10 +20,7 @@ attempting to install the steering library itself.
 get a 64-bit library on an SGI.  Configure should also be run with the 
 following flags:
 
---with-python=no
---with-threads=no
---with-xpath=no
---with-xptr=no
+--with-python=no --with-threads=no --with-xpath=no --with-xptr=no --enable-shared=no flag
 
 If you don't have the access rights to install the library in a system-default
 location and don't want to have to set LD_LIBRARY64_PATH/LD_LIBRARYN32_PATH
