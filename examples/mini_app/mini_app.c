@@ -143,11 +143,11 @@ int main(){
 
   /* Register the input IO channel */
 
-  iotype_labels[0] = "VTK_STRUCTURED_POINTS_INPUT";
+  iotype_labels[0] = "SOME_INPUT_DATA";
   iotype_dirn[0] = REG_IO_IN;
   iotype_frequency[0] = 0; /* Don't do any auto consumption */
 
-  iotype_labels[1] = "VTK_OUTPUT_GLOBUS_IO";
+  iotype_labels[1] = "VTK_STRUCTURED_POINTS";
   iotype_dirn[1] = REG_IO_OUT;
   iotype_frequency[1] = 1; /* Attempt to do output every timestep */
 
