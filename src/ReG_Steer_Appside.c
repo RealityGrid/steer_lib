@@ -2241,6 +2241,7 @@ int Emit_ChkType_defs(){
 int Emit_log()
 {
   char *pbuf;
+  char  filename[REG_MAX_STRING_LENGTH];
   int   size;
   int   return_status = REG_SUCCESS;
 
@@ -2254,7 +2255,9 @@ int Emit_log()
 
     /* Read the log file and get back contents in buffer pointed
        to by pbuf.  We must free() this once we're done. */
-    if(Read_file(REG_LOG_FILENAME, &pbuf, &size) != REG_SUCCESS){
+    sprintf(filename, "%s%s", Steerer_connection.file_root,
+		              REG_LOG_FILENAME);
+    if(Read_file(filename, &pbuf, &size) != REG_SUCCESS){
 
       return REG_FAILURE;
     }
@@ -2792,11 +2795,11 @@ int Get_ptr_value(param_entry *param)
     break;
   
   case REG_FLOAT:
-    sprintf(param->value,"%f", *((float *)(param->ptr)));
+    sprintf(param->value,"%.8f", *((float *)(param->ptr)));
     break;
   
   case REG_DBL:
-    sprintf(param->value,"%lf", *((double *)(param->ptr)));
+    sprintf(param->value,"%.8lf", *((double *)(param->ptr)));
     break;
   
   case REG_CHAR:
