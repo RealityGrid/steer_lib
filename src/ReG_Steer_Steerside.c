@@ -1260,8 +1260,10 @@ int Consume_param_log(Sim_entry_type *sim,
 	break;
       case REG_CHAR:
 	/* This not implemented yet */
+#if REG_DEBUG
 	fprintf(stderr, "Consume_param_log: logging of char params not "
 		"implemented!\n");
+#endif
 	break;
       default:
 	break;
