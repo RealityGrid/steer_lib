@@ -122,8 +122,22 @@ to.  There is some simple code in src/utils to aid with this task.
 
 Specify compilers and compiler flags...
 
+Ensure that STEER_LIBS and STEER_INCLUDES point to the correct directories
+for finding the steering and libxml2 libraries and associated headers.
+
+Choose whether or not to use sockets for library-controlled sample
+emission/consumption. (Uses file-based IO if not.)
+
+Choose whether or not to use SOAP (and the Grid Services framework) for
+steering.  (Uses file-based steering if not.)
+
+Choose whether or not you want the library to supply debugging output.
+
 Type 'make' in the current directory...bear in mind that the makefiles etc.
 are not currently platform independent and may require tweaking.
+
+Type 'make install' to install the example binaries in the directory
+specified in Makefile.include.
 
 Included in the distribution are 'mini_steerer', 'mini_app',
 'mini_app2' and 'mini_app_para' (an MPI version) which are _very_
