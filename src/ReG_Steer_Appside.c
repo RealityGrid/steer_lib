@@ -630,6 +630,7 @@ int Record_Chkpt(int   ChkType,
   if(Chk_log.num_entries == Chk_log.max_entries){
 
     new_size = Chk_log.max_entries + REG_INITIAL_CHK_LOG_SIZE;
+
     ptr = realloc((void *)(Chk_log.entry), 
 		  new_size*sizeof(Chk_log_entry_type));
 
@@ -641,6 +642,7 @@ int Record_Chkpt(int   ChkType,
     }
 
     Chk_log.entry = (Chk_log_entry_type *)ptr;
+    Chk_log.max_entries = new_size;
 
     for(index=Chk_log.num_entries; index<Chk_log.max_entries; index++){
 
