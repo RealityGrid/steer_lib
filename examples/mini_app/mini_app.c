@@ -354,7 +354,7 @@ int main(){
 		    continue;
 		  }
 
-		  if( Emit_start(iotype_handle[j], i, TRUE, &iohandle)
+		  if( Emit_start(iotype_handle[j], i, &iohandle)
 		      == REG_SUCCESS ){
 
 

@@ -413,7 +413,7 @@ PROGRAM mini_app
                                         baxis, caxis, f_array, status)
 
                  IF(status .eq. REG_SUCCESS)THEN
-                   CALL emit_start_f(iotype_handles(2), iloop, reg_true, &
+                   CALL emit_start_f(iotype_handles(2), iloop, &
                                      iohandle, status)
                  END IF
 
