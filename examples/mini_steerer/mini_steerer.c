@@ -422,8 +422,6 @@ int main(){
     case 's':
       fprintf(stderr, "Sending stop signal...\n");
       Emit_stop_cmd(sim_handle);
-
-      Delete_sim_table_entry(&sim_handle);
       break;		   
 
     case 'g':
