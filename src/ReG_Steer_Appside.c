@@ -39,6 +39,7 @@
 #include "ReG_Steer_Appside_internal.h"
 #include <signal.h>
 #include <unistd.h>
+#include <time.h>
 
 /* Allow value of 'DEBUG' to propagate down from Reg_steer_types.h if
    it has been set there */
