@@ -74,7 +74,8 @@ int Initialize_steering_connection_soap(int  NumSupportedCmds,
 
   if(pchar){
 
-    sprintf(Steerer_connection.SGS_address, "%s", pchar);
+    snprintf(Steerer_connection.SGS_address, REG_MAX_STRING_LENGTH, 
+	     "%s", pchar);
 #if DEBUG
     fprintf(stderr, "Initialize_steering_connection_soap: SGS address = %s\n",
 	    Steerer_connection.SGS_address);
@@ -113,7 +114,8 @@ int Initialize_steering_connection_soap(int  NumSupportedCmds,
   /* Strip off any xml version declaration */
   pchar = strstr(Steerer_connection.supp_cmds,"<ReG_steer_message");
 
-  sprintf(query_buf, "<ogsi:setByServiceDataNames><%s>%s</%s></ogsi:setByServiceDataNames>", 
+  snprintf(query_buf, REG_MAX_MSG_SIZE, 
+	   "<ogsi:setByServiceDataNames><%s>%s</%s></ogsi:setByServiceDataNames>", 
 	  SUPPORTED_CMDS_SDE, pchar, SUPPORTED_CMDS_SDE);
 
   if (soap_call_tns__setServiceData(&soap, 
@@ -165,8 +167,9 @@ int Steerer_connected_soap()
   char                                 query_buf[REG_MAX_STRING_LENGTH];
 
   findServiceData_response._result = NULL;
-  sprintf(query_buf, "<ogsi:queryByServiceDataNames names=\"%s\"/>", 
-	  STEER_STATUS_SDE );
+  snprintf(query_buf, REG_MAX_STRING_LENGTH, 
+	   "<ogsi:queryByServiceDataNames names=\"%s\"/>", 
+	   STEER_STATUS_SDE );
   if(soap_call_tns__findServiceData(&soap, Steerer_connection.SGS_address, 
 				    "", query_buf, 
 				    &findServiceData_response )){
@@ -198,6 +201,10 @@ int Send_status_msg_soap(char* msg)
   struct tns__setServiceDataResponse  setSDE_response;
   char                               *sde_name;
   char                                query_buf[REG_MAX_MSG_SIZE];
+  int                                 nbytes;
+  int                                 new_size;
+  int                                 status;
+  char                               *pbuf;
 
   /* Status & log messages are both sent as 'status' messages */
   if(strstr(msg, "<App_status>") || strstr(msg, "<Steer_log>")){
@@ -240,13 +247,49 @@ int Send_status_msg_soap(char* msg)
     }
 
     setSDE_response._result = NULL;
-    sprintf(query_buf, "<ogsi:setByServiceDataNames>" 
-	    "<%s>%s</%s></ogsi:setByServiceDataNames>", 
-	    sde_name, msg, sde_name);
+    nbytes = snprintf(query_buf, REG_MAX_MSG_SIZE, 
+		      "<ogsi:setByServiceDataNames>" 
+		      "<%s>%s</%s></ogsi:setByServiceDataNames>", 
+		      sde_name, msg, sde_name);
 
-    if(soap_call_tns__setServiceData (&soap, Steerer_connection.SGS_address, "",
-				      query_buf,  
-				      &setSDE_response)){
+    /* Check for truncation - if it occurs then malloc a bigger buffer
+       and try again */
+    if((nbytes >= (REG_MAX_MSG_SIZE-1)) || (nbytes < 1)){
+
+      new_size = strlen(msg) + 512;
+      if(!(pbuf = (char *)malloc(new_size)) ){
+
+	fprintf(stderr, "Send_status_msg_soap: malloc failed\n");
+	return REG_FAILURE;
+      }
+
+      nbytes = snprintf(pbuf, new_size, 
+			"<ogsi:setByServiceDataNames>" 
+			"<%s>%s</%s></ogsi:setByServiceDataNames>", 
+			sde_name, msg, sde_name);
+
+      if((nbytes >= (new_size-1)) || (nbytes < 1)){
+      
+	free(pbuf);
+	pbuf = NULL;
+	fprintf(stderr, "Send_status_msg_soap: ERROR - msg truncated\n");
+	return REG_FAILURE;
+      }
+      status = soap_call_tns__setServiceData(&soap, 
+					     Steerer_connection.SGS_address, 
+					     "", pbuf,  
+					     &setSDE_response);
+      free(pbuf);
+      pbuf = NULL;
+    }
+    else {
+      status = soap_call_tns__setServiceData(&soap, 
+					     Steerer_connection.SGS_address,
+					     "", query_buf,  
+					     &setSDE_response);
+    }
+
+    if(status){
       fprintf(stderr, "Send_status_msg_soap: setServiceData failed:\n");
       soap_print_fault(&soap,stderr);
       return REG_FAILURE;

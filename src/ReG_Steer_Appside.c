@@ -855,7 +855,7 @@ int Log_to_xml(char **pchar, int *count, const int not_sent_only)
 
 #if DEBUG
     /* Check for truncation of message */
-    if((nbytes >= bytes_left) || (nbytes < 1)){
+    if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
       fprintf(stderr, "Log_to_xml: message size exceeds BUFSIZ (%d)\n", 
 	      BUFSIZ);
       free(*pchar);
@@ -879,7 +879,7 @@ int Log_to_xml(char **pchar, int *count, const int not_sent_only)
 
 #if DEBUG
       /* Check for truncation of message */
-      if((nbytes >= bytes_left) || (nbytes < 1)){
+      if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
 	fprintf(stderr, "Log_to_xml: message size exceeds BUFSIZ (%d)\n", 
 		BUFSIZ);
 	free(*pchar);
@@ -894,7 +894,7 @@ int Log_to_xml(char **pchar, int *count, const int not_sent_only)
     nbytes = snprintf(pentry, bytes_left, "</Log_entry>\n");
 #if DEBUG
     /* Check for truncation of message */
-    if((nbytes >= bytes_left) || (nbytes < 1)){
+    if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
       fprintf(stderr, "Log_to_xml: message size exceeds BUFSIZ (%d)\n", 
 	      BUFSIZ);
       free(*pchar);
@@ -2101,160 +2101,192 @@ int Steering_pause(int   *NumSteerParams,
 
 int Emit_param_defs(){
 
-  char  buf[REG_MAX_MSG_SIZE];
+  char *buf;
   char *pbuf;
+  char *dum_ptr;
   int   nbytes;
   int   bytes_left;
   int   i = 0;
+  int   more_space = 0;
+  int   buf_size = REG_MAX_MSG_SIZE;
   char *plast_param;
 
   /* Check to see that we do actually have something to emit */
   if (Params_table.num_registered == 0) return REG_SUCCESS;
 
-  /* Emit all currently registered parameters */
-  while (i < Params_table.max_entries) {
-  
-    pbuf = buf;
-    plast_param = buf;
-    bytes_left = REG_MAX_MSG_SIZE;
+  if( !(buf=(char *)malloc(buf_size)) ){
 
-    /* Assume header and following line fit comfortably within
-       REG_MAX_MSG_SIZE so don't check for truncation yet */
-    Write_xml_header(&pbuf);
-
-    pbuf += sprintf(pbuf, "<Param_defs>\n");
-    bytes_left -= (int)(pbuf - buf);
-  
-    while (i < Params_table.max_entries){
-      /*for(i=0; i<Params_table.max_entries; i++){*/
-
-      /* Check handle because if a parameter is deleted then this is
-	 flagged by unsetting its handle */
-  
-      if(Params_table.param[i].handle != REG_PARAM_HANDLE_NOTSET){
-  
-	/* Update the 'value' part of this parameter's table entry */
-	if(Get_ptr_value(&(Params_table.param[i])) == REG_SUCCESS){
-    	 
-	  nbytes = snprintf(pbuf, bytes_left, "<Param>\n"
-			    "<Label>%s</Label>\n"
-			    "<Steerable>%d</Steerable>\n"
-			    "<Type>%d</Type>\n"
-			    "<Handle>%d</Handle>\n"
-			    "<Value>%s</Value>\n", 
-			    Params_table.param[i].label, 
-			    Params_table.param[i].steerable,
-			    Params_table.param[i].type,
-			    Params_table.param[i].handle, 
-			    Params_table.param[i].value);
-
-
-	  /* Check for truncation */
-	  if((nbytes >= bytes_left) || (nbytes < 1)){
-
-	    break;
-	  }
-	  bytes_left -= nbytes;
-	  pbuf += nbytes;
-
-	  if(Params_table.param[i].is_internal == TRUE){
-
-	    nbytes = snprintf(pbuf, bytes_left, 
-			      "<Is_internal>TRUE</Is_internal>\n");
-	  }
-	  else{
-	    
-	    nbytes = snprintf(pbuf, bytes_left, 
-			      "<Is_internal>FALSE</Is_internal>\n");
-	  }
-
-	  /* Check for truncation */
-	  if((nbytes >= bytes_left) || (nbytes < 1)){
-
-	    break;
-	  }
-	  bytes_left -= nbytes;
-	  pbuf += nbytes;
-
-	  if(Params_table.param[i].min_val_valid==TRUE &&
-	     Params_table.param[i].max_val_valid==TRUE){
-
-	    nbytes = snprintf(pbuf, bytes_left, "<Min_value>%s</Min_value>"
-			      "<Max_value>%s</Max_value>\n"
-			      "</Param>\n", 
-			      Params_table.param[i].min_val, 
-			      Params_table.param[i].max_val);
-	  }
-	  else if(Params_table.param[i].min_val_valid==TRUE){
-	    nbytes = snprintf(pbuf, bytes_left, 
-			      "<Min_value>%s</Min_value>\n" 
-			      "</Param>\n", 
-			      Params_table.param[i].min_val);
-	  }
-	  else if(Params_table.param[i].max_val_valid==TRUE){
-	    nbytes = snprintf(pbuf, bytes_left, 
-			      "<Max_value>%s</Max_value>\n" 
-			      "</Param>\n", 
-			      Params_table.param[i].max_val);
-	  }
-	  else{
-	    nbytes = snprintf(pbuf, bytes_left, "</Param>\n");
-	  }
-
-	  /* Check for truncation */
-	  if((nbytes >= bytes_left) || (nbytes < 1)){
-
-	    break;
-	  }
-	 
-	  bytes_left -= nbytes;
-	  pbuf += nbytes;
-
-	  /* Try and predict whether we'll hit truncation problems
-	     for the next param def - allow 5/4 the length of 
-	     last param def. */
-	  if( bytes_left < (int)(1.25*(pbuf - plast_param))){
-	    break;
-	  }
-	  plast_param = pbuf;
-	}
-      }
-
-      i++;
-    }
-
-    if(plast_param == buf){
-
-      if(!strstr(buf, "</Param>")){
-	fprintf(stderr, "Emit_param_defs: error constructing"
-		" message: >%s<\n", buf);
-	return REG_FAILURE;
-      }
-    }
-
-    /* Move back to last complete param entry */
-    bytes_left += pbuf - plast_param;
-    pbuf = plast_param;
-
-    nbytes = snprintf(pbuf, bytes_left, "</Param_defs>\n");
-
-    /* Check for truncation */
-    if((nbytes >= bytes_left) || (nbytes < 1)){
-
-      fprintf(stderr, "Emit_param_defs: message exceeds max. "
-	      "msg. size of %d bytes\n", REG_MAX_MSG_SIZE);
-      return REG_FAILURE;
-    }
-
-    bytes_left -= nbytes;
-    pbuf += nbytes;
-
-    Write_xml_footer(&pbuf);
-
-    /* Physically send the message */
-    Send_status_msg(buf);
+    fprintf(stderr,"Emit_param_defs: malloc failed\n");
+    return REG_FAILURE;
   }
 
+  pbuf = buf;
+  plast_param = buf;
+  bytes_left = buf_size;
+
+  /* Assume header and following line fit comfortably within
+     REG_MAX_MSG_SIZE so don't check for truncation yet */
+  Write_xml_header(&pbuf);
+
+  pbuf += sprintf(pbuf, "<Param_defs>\n");
+  bytes_left -= (int)(pbuf - buf);
+  
+  /* Emit all currently registered parameters  */
+  while (i < Params_table.max_entries) {
+
+    /* Check handle because if a parameter is deleted then this is
+       flagged by unsetting its handle */
+  
+    if(Params_table.param[i].handle != REG_PARAM_HANDLE_NOTSET){
+
+      /* We ran out of space */
+      if(more_space){
+	buf_size += REG_MAX_MSG_SIZE;
+	/* Adjust amount of remaining space to allow for return to 
+	   last complete param entry as well as realloc */
+	bytes_left += REG_MAX_MSG_SIZE + (int)(pbuf - plast_param);
+
+	if(!(dum_ptr = (char *)realloc(buf, buf_size)) ){
+	  
+	  free(buf);
+	  buf = NULL;
+	  fprintf(stderr, "Emit_param_defs: realloc failed for %d "
+		  "bytes\n", buf_size);
+	  return REG_FAILURE;
+	}
+	/* realloc can return a ptr to a different chunk of memory */
+	plast_param += (dum_ptr - buf);
+	buf = dum_ptr;
+	more_space = 0;
+
+	/* Move back to last complete param entry */
+	pbuf = plast_param;
+      }
+  
+      /* Update the 'value' part of this parameter's table entry */
+      if(Get_ptr_value(&(Params_table.param[i])) == REG_SUCCESS){
+    	 
+	nbytes = snprintf(pbuf, bytes_left, "<Param>\n"
+			  "<Label>%s</Label>\n"
+			  "<Steerable>%d</Steerable>\n"
+			  "<Type>%d</Type>\n"
+			  "<Handle>%d</Handle>\n"
+			  "<Value>%s</Value>\n", 
+			  Params_table.param[i].label, 
+			  Params_table.param[i].steerable,
+			  Params_table.param[i].type,
+			  Params_table.param[i].handle, 
+			  Params_table.param[i].value);
+
+
+	/* Check for truncation */
+	if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
+	  more_space = 1;
+	  continue;
+	}
+	bytes_left -= nbytes;
+	pbuf += nbytes;
+
+	if(Params_table.param[i].is_internal == TRUE){
+	  
+	  nbytes = snprintf(pbuf, bytes_left, 
+			    "<Is_internal>TRUE</Is_internal>\n");
+	}
+	else{
+	  
+	  nbytes = snprintf(pbuf, bytes_left, 
+			    "<Is_internal>FALSE</Is_internal>\n");
+	}
+
+	/* Check for truncation */
+	if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
+	  more_space = 1;
+	  continue;
+	}
+	bytes_left -= nbytes;
+	pbuf += nbytes;
+
+	if(Params_table.param[i].min_val_valid==TRUE &&
+	   Params_table.param[i].max_val_valid==TRUE){
+	  
+	  nbytes = snprintf(pbuf, bytes_left, "<Min_value>%s</Min_value>"
+			    "<Max_value>%s</Max_value>\n"
+			    "</Param>\n", 
+			    Params_table.param[i].min_val, 
+			    Params_table.param[i].max_val);
+	}
+	else if(Params_table.param[i].min_val_valid==TRUE){
+	  nbytes = snprintf(pbuf, bytes_left, 
+			    "<Min_value>%s</Min_value>\n" 
+			    "</Param>\n", 
+			    Params_table.param[i].min_val);
+	}
+	else if(Params_table.param[i].max_val_valid==TRUE){
+	  nbytes = snprintf(pbuf, bytes_left, 
+			    "<Max_value>%s</Max_value>\n" 
+			    "</Param>\n", 
+			    Params_table.param[i].max_val);
+	}
+	else{
+	  nbytes = snprintf(pbuf, bytes_left, "</Param>\n");
+	}
+
+	/* Check for truncation */
+	if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
+	  more_space = 1;
+	  continue;
+	}
+	
+	bytes_left -= nbytes;
+	pbuf += nbytes;
+
+	/* Try and predict whether we'll hit truncation problems
+	   for the next param def - allow 5/4 the length of 
+	   last param def. */
+	if( bytes_left < (int)(1.25*(pbuf - plast_param))){
+	  more_space = 1;
+	  continue;
+	}
+	plast_param = pbuf;
+      }
+    }
+
+    i++;
+  }
+
+  nbytes = snprintf(pbuf, bytes_left, "</Param_defs>\n");
+
+  /* Check for truncation */
+  if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
+
+    buf_size +=  REG_MAX_MSG_SIZE;
+    bytes_left +=  REG_MAX_MSG_SIZE;
+
+    if(!(dum_ptr = (char *)realloc(buf, buf_size)) ){
+
+      free(buf);
+      buf = NULL;
+      fprintf(stderr, "Emit_param_defs: realloc failed for %d "
+	      "bytes\n", buf_size);
+      return REG_FAILURE;
+    }
+    /* realloc can return a ptr to a different chunk of memory */
+    pbuf += (dum_ptr - buf);
+    buf = dum_ptr;
+
+    nbytes = snprintf(pbuf, bytes_left, "</Param_defs>\n");
+  }
+
+  bytes_left -= nbytes;
+  pbuf += nbytes;
+  
+  Write_xml_footer(&pbuf);
+
+  /* Physically send the message */
+  Send_status_msg(buf);
+  
+  free(buf);
+  buf = NULL;
   return REG_SUCCESS;
 }
 
@@ -2293,7 +2325,7 @@ int Emit_IOType_defs(){
 
 #if DEBUG
       /* Check for truncation */
-      if((nbytes >= bytes_left) || (nbytes < 1)){
+      if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
 
 	fprintf(stderr, "Emit_IOType_defs: message exceeds max. "
 		"msg. size of %d bytes\n", REG_MAX_MSG_SIZE);
@@ -2328,7 +2360,7 @@ int Emit_IOType_defs(){
 			IOTypes_table.io_def[i].freq_param_handle);
 #if DEBUG
       /* Check for truncation */
-      if((nbytes >= bytes_left) || (nbytes < 1)){
+      if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
 
 	fprintf(stderr, "Emit_IOType_defs: message exceeds max. "
 		"msg. size of %d bytes\n", REG_MAX_MSG_SIZE);
@@ -2350,7 +2382,7 @@ int Emit_IOType_defs(){
 
 #if DEBUG
 	  /* Check for truncation */
-	  if((nbytes >= bytes_left) || (nbytes < 1)){
+	  if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
 
 	    fprintf(stderr, "Emit_IOType_defs: message exceeds max. "
 		    "msg. size of %d bytes\n", REG_MAX_MSG_SIZE);
@@ -2412,7 +2444,7 @@ int Emit_ChkType_defs(){
 		       ChkTypes_table.io_def[i].handle);
 #if DEBUG
       /* Check for truncation */
-      if((nbytes >= bytes_left) || (nbytes < 1)){
+      if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
 
 	fprintf(stderr, "Emit_ChkType_defs: message exceeds max. "
 		"msg. size of %d bytes\n", REG_MAX_MSG_SIZE);
@@ -2447,7 +2479,7 @@ int Emit_ChkType_defs(){
       }
 #if DEBUG
       /* Check for truncation */
-      if((nbytes >= bytes_left) || (nbytes < 1)){
+      if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
 
 	fprintf(stderr, "Emit_ChkType_defs: message exceeds max. "
 		"msg. size of %d bytes\n", REG_MAX_MSG_SIZE);
@@ -2463,7 +2495,7 @@ int Emit_ChkType_defs(){
 			ChkTypes_table.io_def[i].freq_param_handle);
 #if DEBUG
       /* Check for truncation */
-      if((nbytes >= bytes_left) || (nbytes < 1)){
+      if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
 	fprintf(stderr, "Emit_ChkType_defs: message exceeds max. "
 		"msg. size of %d bytes\n", REG_MAX_MSG_SIZE);
 	return REG_FAILURE;
@@ -2477,7 +2509,7 @@ int Emit_ChkType_defs(){
   nbytes = snprintf(pbuf,bytes_left,"</ChkType_defs>\n");
 #if DEBUG
   /* Check for truncation */
-  if((nbytes >= bytes_left) || (nbytes < 1)){
+  if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
     fprintf(stderr, "Emit_ChkType_defs: message exceeds max. "
 	    "msg. size of %d bytes\n", REG_MAX_MSG_SIZE);
     return REG_FAILURE;
@@ -2881,13 +2913,16 @@ int Detach_from_steerer()
 
 #else /* File-based steering */
 
+  int   nbytes;
   char  filename[REG_MAX_STRING_LENGTH];
 
   /* Remove lock file that indicates app is being steered */
 
-  if( snprintf(filename, REG_MAX_STRING_LENGTH, "%s%s", 
-	       Steerer_connection.file_root, 
-	       STR_CONNECTED_FILENAME) >= REG_MAX_STRING_LENGTH ){
+  nbytes = snprintf(filename, REG_MAX_STRING_LENGTH, "%s%s", 
+		    Steerer_connection.file_root, 
+		    STR_CONNECTED_FILENAME);
+
+  if(nbytes >= (REG_MAX_STRING_LENGTH-1) || (nbytes < 1)){
 
     fprintf(stderr, "Detach_from_steerer: name of lock-file exceeds %d"
 	    " characters - increase REG_MAX_STRING_LENGTH\n", 
@@ -2900,9 +2935,11 @@ int Detach_from_steerer()
   /* Remove any files that steerer has produced that we won't
      now be consuming */
 
-  if( snprintf(filename, REG_MAX_STRING_LENGTH, "%s%s", 
-	       Steerer_connection.file_root, 
-	       STR_TO_APP_FILENAME) >= REG_MAX_STRING_LENGTH ){
+  nbytes = snprintf(filename, REG_MAX_STRING_LENGTH, "%s%s", 
+		    Steerer_connection.file_root, 
+		    STR_TO_APP_FILENAME);
+
+  if( nbytes >= (REG_MAX_STRING_LENGTH-1) || (nbytes < 1)){
 
     fprintf(stderr, "Detach_from_steerer: name of steerer ctrl files "
 	    "exceeds %d characters - increase REG_MAX_STRING_LENGTH\n", 
@@ -3011,7 +3048,7 @@ int Emit_status(int   SeqNum,
 			    Params_table.param[tot_pcount].value);
 #if DEBUG
 	  /* Check for truncation */
-	  if((nbytes >= bytes_left) || (nbytes < 1)){
+	  if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
 
 	    fprintf(stderr, "Emit_status: message exceeds max. "
 		    "msg. size of %d bytes\n", REG_MAX_MSG_SIZE);
@@ -3052,7 +3089,7 @@ int Emit_status(int   SeqNum,
 			  Commands[ccount]);
 #if DEBUG
 	/* Check for truncation */
-	if((nbytes >= bytes_left) || (nbytes < 1)){
+	if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
 
 	  fprintf(stderr, "Emit_status: message exceeds max. "
 		  "msg. size of %d bytes\n", REG_MAX_MSG_SIZE);
@@ -3477,21 +3514,19 @@ int Steerer_connected_file()
 {
   char   filename[REG_MAX_STRING_LENGTH];
   FILE  *fp;
+  int    nbytes;
 
-#if DEBUG
-  if( snprintf(filename, REG_MAX_STRING_LENGTH, "%s%s", 
-	       Steerer_connection.file_root, 
-	       STR_CONNECTED_FILENAME) >= REG_MAX_STRING_LENGTH){
+  nbytes = snprintf(filename, REG_MAX_STRING_LENGTH, "%s%s", 
+		    Steerer_connection.file_root, 
+		    STR_CONNECTED_FILENAME);
+
+  if( nbytes >= (REG_MAX_STRING_LENGTH-1) || (nbytes < 1)){
 
     fprintf(stderr, "Steerer_connected_file: full path name of lockfile "
 	    "indicating steerrer connected exceeds %d chars - increase "
 	    "REG_MAX_STRING_LENGTH\n", REG_MAX_STRING_LENGTH);
     return REG_FAILURE;
   }
-#else
-  sprintf(filename, "%s%s", Steerer_connection.file_root, 
-	  STR_CONNECTED_FILENAME);
-#endif /* DEBUG */
 
   if( (fp = fopen(filename, "r")) ){
 
@@ -3575,19 +3610,18 @@ struct msg_struct *Get_control_msg_file()
   struct msg_struct   *msg = NULL;
   FILE                *fp;
   char                 filename[REG_MAX_STRING_LENGTH];
+  int                  nbytes;
 
-#if DEBUG
-  if( snprintf(filename, REG_MAX_STRING_LENGTH, "%s%s", 
-	       Steerer_connection.file_root, 
-	       STR_TO_APP_FILENAME) >= REG_MAX_STRING_LENGTH){
+  nbytes = snprintf(filename, REG_MAX_STRING_LENGTH, "%s%s", 
+		    Steerer_connection.file_root, 
+		    STR_TO_APP_FILENAME);
+
+  if( nbytes >= (REG_MAX_STRING_LENGTH-1) || (nbytes < 1)){
 
     fprintf(stderr, "Get_control_msg_file: length of ctrl msg filename "
 	    "exceeds %d chars - increase REG_MAX_STRING_LENGTH\n", 
 	    REG_MAX_STRING_LENGTH);
   }
-#else
-  sprintf(filename, "%s%s", Steerer_connection.file_root, STR_TO_APP_FILENAME);
-#endif
 
   if( (fp = Open_next_file(filename)) != NULL){
 
