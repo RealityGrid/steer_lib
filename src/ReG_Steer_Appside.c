@@ -1160,7 +1160,9 @@ int Record_checkpoint_set(int   ChkType,
     }
     pchar += nbytes;
     bytes_left -= nbytes;
+    free(filenames[i]);
   }
+  free(filenames);
 
   nbytes = snprintf(pchar, bytes_left, "</Files>\n</Checkpoint_data>\n");
   pchar += nbytes;
@@ -4810,6 +4812,7 @@ int Consume_start_data_check(const int index)
 
   return Consume_start_data_check_globus(index);
 #else
+  int    i;
   int    nfiles;
   char  *pchar;
   char** filenames;
@@ -4821,7 +4824,7 @@ int Consume_start_data_check(const int index)
 
   /* Replace any spaces with '_' */
   pchar = strchr(fileroot, ' ');
-  while( pchar && ((pchar - IOTypes_table.io_def[index].label + 1) 
+  while( pchar && ((pchar - fileroot + 1) 
 		   < REG_MAX_STRING_LENGTH) ){
     *pchar = '_';
     pchar = strchr(++pchar,' ');
@@ -4835,6 +4838,11 @@ int Consume_start_data_check(const int index)
   }
 
   strcpy(IOTypes_table.io_def[index].filename, filenames[0]);
+
+  for(i=0; i<nfiles; i++){
+    free(filenames[i]);
+  }
+  free(filenames);
 
   /* Remove the lock file to take ownership of the data file */
   remove(IOTypes_table.io_def[index].filename);
@@ -5250,7 +5258,7 @@ int Consume_iotype_msg_header(int  IOTypeIndex,
   }
 
 #if REG_DEBUG
-  fprintf(stderr, "Consume_msg_header: read >%s< from socket\n", 
+  fprintf(stderr, "Consume_msg_header: read >%s< from file\n", 
 	  buffer);
 #endif
 
