@@ -221,9 +221,15 @@ int main(){
   param_ptrs[3]   = (void *)(my_string);
   param_types[3]  = REG_CHAR;
   param_strbl[3]  = TRUE;
-  /* Max. and min. not applicable to strings */
+  /* For strings, max. 'value' is taken as max. length */
   param_min[3]    = "";
-  param_max[3]    = "";
+  if( !(param_max[3] = malloc(8*sizeof(char))) ){
+    printf("mini_app: failed to malloc 8 bytes!\n");
+    return REG_FAILURE;
+  }
+  /* Let's say that this string can be at most 10 
+     characters long */
+  sprintf(param_max[3], "%d", 10);
 
   param_labels[4] = "a_axis";
   param_ptrs[4]   = (void *)(&aaxis);
@@ -288,7 +294,7 @@ int main(){
 			   param_types,
 			   param_min,
 			   param_max);
-
+ 
   if(status != REG_SUCCESS){
 
     printf("Failed to register parameters\n");
@@ -503,6 +509,7 @@ int main(){
 
   /* Clean up locals */
   free(changed_param_labels[0]);
+  free(param_max[3]);
 
   return 0;
 }
