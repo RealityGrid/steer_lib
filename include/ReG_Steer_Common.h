@@ -176,6 +176,8 @@ typedef struct {
   /* How many bytes of xdr data to read (to avoid having to work-out/guess
      how many it will be from the type) */
   int                           num_xdr_bytes;
+  /* Whether array data is in F90 ordering */
+  int                           is_f90_array;
 
 } IOdef_entry;
 

@@ -256,13 +256,15 @@ static int Get_communication_status(const int		index);
 static int Consume_iotype_msg_header(int IOTypeIndex,
 				     int *DataType,
 				     int *Count,
-				     int *NumBytes);
+				     int *NumBytes,
+				     int *IsFortranArray);
 
 /* Construct and send ReG-specific header for iotype*/
 static int Emit_iotype_msg_header(int IOTypeIndex,
 				  int DataType,
 				  int Count,
-				  int NumBytes);
+				  int NumBytes,
+				  int IsFortranArray);
 
 /* Sets the value of the next primary key to be used in generating
    log entries.  If a log file exists then it pulls the last value out
@@ -296,4 +298,5 @@ static int Log_to_xml(char **pchar, int *count, const int not_sent_only);
    num_bytes. */
 static int Realloc_iotype_buffer(int index,
 				 int num_bytes);
+
 #endif

@@ -181,16 +181,19 @@ extern void Globus_retry_connect(socket_io_type * const socket_info);
 extern void Globus_error_print(const globus_result_t result);
 
 
-/* Functions for both appside and steerside STEERING globus comms */
+/* Functions for both appside and steerside globus comms (both data
+   and steering) */
 extern int Consume_msg_header_globus(socket_io_type *sock_info,
 				     int *DataType,
 				     int *Count,
-				     int *NumBytes);
+				     int *NumBytes,
+				     int *IsFortranArray);
 
 extern int Emit_msg_header_globus(socket_io_type *sock_info,
 				  int DataType,
 				  int Count,
-				  int NumBytes);
+				  int NumBytes,
+				  int IsFortranArray);
 
 /* Does what is says.  Uses uname and gethostbyname - not globus specific. */
 extern char *Get_fully_qualified_hostname();

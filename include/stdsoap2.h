@@ -719,6 +719,8 @@ struct soap
   char endpoint[SOAP_TAGLEN];
   char *action;
   int port;
+  int client_port_min;
+  int client_port_max;
   short keep_alive;
   const char *proxy_host;	/* Proxy Server host name */
   int proxy_port;		/* Proxy Server port (default = 8080) */
