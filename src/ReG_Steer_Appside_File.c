@@ -333,7 +333,7 @@ int Initialize_steering_connection_file(int  NumSupportedCmds,
 	  filename);
 #endif
 
-  Make_supp_cmds_msg(NumSupportedCmds, SupportedCmds, buf);
+  Make_supp_cmds_msg(NumSupportedCmds, SupportedCmds, buf, REG_MAX_MSG_SIZE);
 
   fprintf(fp, "%s", buf);
   fclose(fp);
