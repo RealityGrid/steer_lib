@@ -1852,12 +1852,8 @@ int Get_param_number(int  sim_handle,
 int Get_param_values(int    sim_handle,
 		     int    steerable,
 		     int    num_params,
-		     int   *handles,
-		     char* *labels,
-		     char* *vals,
-		     int   *types,
-		     char* *min_vals,
-		     char* *max_vals)
+		     Param_details_struct *param_details)
+
 {
   int return_status = REG_SUCCESS;
   int isim;
@@ -1865,16 +1861,17 @@ int Get_param_values(int    sim_handle,
   int count;
 
   /* Return lists of registered parameter handles and associated
-     values (as strings) for the steered simulation with handle
-     sim_handle 
+     values (as strings), types and limits for the steered simulation 
+     with handle sim_handle 
 
-     num_param is the number to return and handles and vals should
-     each point to arrays (of arrays of char) of at least this length 
+     num_param is the number to return and param_details should
+     point to an array (of Param_details_struct's) of at least this length 
 
      if steerable == TRUE (1) then return steerable params, if FALSE 
      (0) then return monitoring params */
 
-  if(!handles || !labels || !vals || !min_vals || !max_vals) {
+  if(!param_details) {
+    fprintf(stderr, "Get_param_values: ptr to param_details is NULL\n");
     return REG_FAILURE;
   }
 
@@ -1893,16 +1890,21 @@ int Get_param_values(int    sim_handle,
 
 	if(Sim_table.sim[isim].Params_table.param[i].steerable == steerable){
 
-	  handles[count] = Sim_table.sim[isim].Params_table.param[i].handle;
-	  strcpy(labels[count], 
+	  param_details[count].handle = 
+	                     Sim_table.sim[isim].Params_table.param[i].handle;
+
+	  strcpy(param_details[count].label, 
 		 Sim_table.sim[isim].Params_table.param[i].label);
-	  strcpy(vals[count], Sim_table.sim[isim].Params_table.param[i].value);
 
-          types[count] = Sim_table.sim[isim].Params_table.param[i].type;
+	  strcpy(param_details[count].value, 
+		 Sim_table.sim[isim].Params_table.param[i].value);
 
-	  strcpy(min_vals[count], 
+          param_details[count].type = Sim_table.sim[isim].Params_table.param[i].type;
+
+	  strcpy(param_details[count].min_val, 
 		 Sim_table.sim[isim].Params_table.param[i].min_val);
-	  strcpy(max_vals[count], 
+
+	  strcpy(param_details[count].max_val, 
 		 Sim_table.sim[isim].Params_table.param[i].max_val);
 
 	  count++;

@@ -62,12 +62,8 @@ int main(){
   char   user_str[REG_MAX_STRING_LENGTH];
 
   int    num_params;
-  int    param_handles[REG_INITIAL_NUM_PARAMS];
-  int    param_types[REG_INITIAL_NUM_PARAMS];
   char  *param_vals[REG_INITIAL_NUM_PARAMS];
-  char  *param_labels[REG_INITIAL_NUM_PARAMS];
-  char  *param_vals_min[REG_INITIAL_NUM_PARAMS];
-  char  *param_vals_max[REG_INITIAL_NUM_PARAMS];
+  Param_details_struct param_details[REG_INITIAL_NUM_PARAMS];
   int    num_types;
 
   int    io_handles[REG_INITIAL_NUM_IOTYPES];
@@ -89,12 +85,7 @@ int main(){
   for(i=0; i<REG_INITIAL_NUM_PARAMS; i++){
 
     param_vals[i]   = (char *)malloc(REG_MAX_STRING_LENGTH*sizeof(char));
-    param_labels[i] = (char *)malloc(REG_MAX_STRING_LENGTH*sizeof(char));
-    param_vals_min[i] = (char *)malloc(REG_MAX_STRING_LENGTH*sizeof(char));
-    param_vals_max[i] = (char *)malloc(REG_MAX_STRING_LENGTH*sizeof(char));
-
-    if(param_vals[i]==NULL || param_labels[i]==NULL || 
-       param_vals_min[i]==NULL || param_vals_max[i]==NULL){
+    if(param_vals[i]==NULL ){
       fprintf(stderr, "Error allocating memory for params - quitting\n");
       return 1;
     }
@@ -184,18 +175,14 @@ int main(){
       if(Get_param_values(sim_handle, 
 			  FALSE,
 			  num_params,
-			  param_handles,
-			  param_labels,
-			  param_vals,
-			  param_types,
-			  param_vals_min,
-			  param_vals_max) != REG_FAILURE){
+			  param_details) != REG_FAILURE){
 
 	for(i=0; i<num_params; i++){
 
 	  fprintf(stderr, "Handle: %d, Label: %s, Value: %s, Type: %d\n", 
-		  param_handles[i], 
-		  param_labels[i], param_vals[i], param_types[i]);
+		  param_details[i].handle, 
+		  param_details[i].label, param_details[i].value, 
+		  param_details[i].type);
 	}
       }
     }
@@ -215,18 +202,15 @@ int main(){
       if(Get_param_values(sim_handle, 
 			  TRUE,
 			  num_params,
-			  param_handles,
-			  param_labels,
-			  param_vals,
-			  param_types,
-			  param_vals_min,
-			  param_vals_max) != REG_FAILURE){
+			  param_details) != REG_FAILURE){
+
 
 	for(i=0; i<num_params; i++){
 
 	  fprintf(stderr, "Handle: %d, Label: %s, Value: %s, Type: %d\n", 
-		  param_handles[i], 
-		  param_labels[i], param_vals[i], param_types[i]);
+		  param_details[i].handle, 
+		  param_details[i].label, param_details[i].value, 
+		  param_details[i].type);
 	}
       }
     }
@@ -626,10 +610,10 @@ int main(){
 
   for(i=0; i<REG_INITIAL_NUM_PARAMS; i++){
 
-    if (param_vals[i]) free(param_vals[i]);
-    if (param_labels[i]) free(param_labels[i]);
-    if (param_vals_min[i]) free(param_vals_min[i]);
-    if (param_vals_max[i]) free(param_vals_max[i]);
+    if (param_vals[i]) {
+      free(param_vals[i]);
+      param_vals[i] = NULL;
+    }
   }
 
   /* Stuff for IO definitions */
@@ -647,32 +631,15 @@ int main(){
 int Edit_parameter(int sim_handle)
 {
   int    num_params;
-  int    param_handles[REG_INITIAL_NUM_PARAMS];
-  int    param_types[REG_INITIAL_NUM_PARAMS];
-  char  *param_vals[REG_INITIAL_NUM_PARAMS];
-  char  *param_labels[REG_INITIAL_NUM_PARAMS];
-  char  *param_vals_min[REG_INITIAL_NUM_PARAMS];
-  char  *param_vals_max[REG_INITIAL_NUM_PARAMS];
+  char  *param_val[1];
+  Param_details_struct param_details[REG_INITIAL_NUM_PARAMS];
   int    i;
   int    input;
   char   user_str[REG_MAX_STRING_LENGTH];
   int    return_status = REG_SUCCESS;
 
-  /* Initialise arrays for querying param values */
-
-  for(i=0; i<REG_INITIAL_NUM_PARAMS; i++){
-
-    param_vals[i]   = (char *)malloc(REG_MAX_STRING_LENGTH*sizeof(char));
-    param_labels[i] = (char *)malloc(REG_MAX_STRING_LENGTH*sizeof(char));
-    param_vals_min[i] = (char *)malloc(REG_MAX_STRING_LENGTH*sizeof(char));
-    param_vals_max[i] = (char *)malloc(REG_MAX_STRING_LENGTH*sizeof(char));
-
-    if(param_vals[i]==NULL || param_labels[i]==NULL || 
-       param_vals_min[i]==NULL || param_vals_max[i]==NULL){
-      fprintf(stderr, "Error allocating memory for params - quitting\n");
-      return REG_FAILURE;
-    }
-  }
+  param_val[0] = (char *)malloc(REG_MAX_STRING_LENGTH*sizeof(char));
+  if (!param_val[0]) return REG_FAILURE;
 
   /* Find out what parameters there are to edit */
   
@@ -685,18 +652,14 @@ int Edit_parameter(int sim_handle)
     if(Get_param_values(sim_handle, 
     			TRUE,
     			num_params,
-    			param_handles,
-    			param_labels,
-    			param_vals,
-			param_types,
-			param_vals_min,
-			param_vals_max) != REG_FAILURE){
+			param_details) != REG_FAILURE){
     
       fprintf(stderr, "Which of the following do you wish to edit?\n\n");
     
       for(i=0; i<num_params; i++){
-    	fprintf(stderr, "%d: %s = %s (%s,%s)\n", i, param_labels[i], 
-		param_vals[i], param_vals_min[i], param_vals_max[i]);
+    	fprintf(stderr, "%d: %s = %s (%s,%s)\n", i, param_details[i].label, 
+		param_details[i].value, param_details[i].min_val, 
+		param_details[i].max_val);
       }
 
       fprintf(stderr, "Enter choice or 'c' to cancel: ");
@@ -706,8 +669,6 @@ int Edit_parameter(int sim_handle)
 	if(user_str[0] != '\n' && user_str[0] != ' ')break;
       }
 
-      fprintf(stderr, "user_str[0] = %c\n", user_str[0]);
-
       if( !strchr(user_str, 'c') ){
 
 	if(sscanf(user_str, "%d", &input) == 1){
@@ -715,7 +676,7 @@ int Edit_parameter(int sim_handle)
 	  if(input >= 0 && input < num_params){
 
 	    fprintf(stderr, "Editing parameter %d, current value = %s...\n", 
-		    input, param_vals[input]);
+		    input, param_details[input].value);
 
 	    fprintf(stderr, "New value: ");
 
@@ -724,11 +685,11 @@ int Edit_parameter(int sim_handle)
 	      if(user_str[0] != '\n' && user_str[0] != ' ')break;
 	    }
 
-	    strcpy(param_vals[0], user_str);
+	    strcpy(param_val[0], user_str);
 	    return_status = Set_param_values(sim_handle,
 					     1,
-					     &(param_handles[input]),
-					     param_vals);
+					     &(param_details[input].handle),
+					     param_val);
 	  }
 	  else{
 	    fprintf(stderr, "That is not a valid selection.\n");
@@ -744,14 +705,11 @@ int Edit_parameter(int sim_handle)
 
     return_status = REG_FAILURE;
   }
- 
-  /* Clean up */
 
-  for(i=0; i<REG_INITIAL_NUM_PARAMS; i++){
-
-    if (param_vals[i]) free(param_vals[i]);
-    if (param_labels[i]) free(param_labels[i]);
-  }
+  if(param_val[0]){
+    free(param_val[0]);
+    param_val[0] = NULL;
+  } 
 
   return return_status;
 }

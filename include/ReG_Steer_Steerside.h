@@ -174,7 +174,7 @@ extern PREFIX int Get_param_number(int  sim_handle,
    values (as strings) of these parameters. handles, labels, vals, min_vals
    and max_vals must all point to chunks of memory large enough to receive
    num_params entries. */
-extern PREFIX int Get_param_values(int    sim_handle,
+/*extern PREFIX int Get_param_values(int    sim_handle,
 				   int    steerable,
 				   int    num_params,
 				   int   *handles,
@@ -183,6 +183,11 @@ extern PREFIX int Get_param_values(int    sim_handle,
 				   int   *types,
 				   char* *min_vals,
 				   char* *max_vals);
+*/
+extern PREFIX int Get_param_values(int                   sim_handle,
+				   int                   steerable,
+				   int                   num_params,
+				   Param_details_struct *param_details);
 
 /* Sets the values of the parameters with the specified handles for the
    simulation with handle sim_handle. Causes internal flags to be set
