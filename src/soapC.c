@@ -8,7 +8,7 @@
 extern "C" {
 #endif
 
-SOAP_SOURCE_STAMP("@(#) soapC.c ver 2.2.3b 2004-05-27 09:02:30 GMT")
+SOAP_SOURCE_STAMP("@(#) soapC.c ver 2.2.3b 2005-02-08 16:41:21 GMT")
 
 
 #ifndef WITH_NOGLOBAL
@@ -253,124 +253,136 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_getindependent(struct soap *soap)
 			soap_in_sgsf__createServiceResponse(soap, NULL, NULL, "sgsf:createServiceResponse");
 			break;
 		case SOAP_TYPE_sgs__ClearStatusMsgQueue:
-			soap_in_sgs__ClearStatusMsgQueue(soap, NULL, NULL, "sgs:ClearStatusMsgQueue");
+			soap_in_sgs__ClearStatusMsgQueue(soap, NULL, NULL, "impl:ClearStatusMsgQueue");
 			break;
 		case SOAP_TYPE_sgs__Resume:
-			soap_in_sgs__Resume(soap, NULL, NULL, "sgs:Resume");
+			soap_in_sgs__Resume(soap, NULL, NULL, "impl:Resume");
 			break;
 		case SOAP_TYPE_sgs__AppStart:
-			soap_in_sgs__AppStart(soap, NULL, NULL, "sgs:AppStart");
+			soap_in_sgs__AppStart(soap, NULL, NULL, "impl:AppStart");
 			break;
 		case SOAP_TYPE_sgs__GetNotifications:
-			soap_in_sgs__GetNotifications(soap, NULL, NULL, "sgs:GetNotifications");
+			soap_in_sgs__GetNotifications(soap, NULL, NULL, "impl:GetNotifications");
 			break;
 		case SOAP_TYPE_sgs__Pause:
-			soap_in_sgs__Pause(soap, NULL, NULL, "sgs:Pause");
+			soap_in_sgs__Pause(soap, NULL, NULL, "impl:Pause");
 			break;
 		case SOAP_TYPE_sgs__AppRecordChkpoint:
-			soap_in_sgs__AppRecordChkpoint(soap, NULL, NULL, "sgs:AppRecordChkpoint");
+			soap_in_sgs__AppRecordChkpoint(soap, NULL, NULL, "impl:AppRecordChkpoint");
 			break;
 		case SOAP_TYPE_sgs__findServiceData:
-			soap_in_sgs__findServiceData(soap, NULL, NULL, "sgs:findServiceData");
+			soap_in_sgs__findServiceData(soap, NULL, NULL, "impl:findServiceData");
 			break;
 		case SOAP_TYPE_sgs__PutControl:
-			soap_in_sgs__PutControl(soap, NULL, NULL, "sgs:PutControl");
+			soap_in_sgs__PutControl(soap, NULL, NULL, "impl:PutControl");
 			break;
 		case SOAP_TYPE_sgs__Detach:
-			soap_in_sgs__Detach(soap, NULL, NULL, "sgs:Detach");
+			soap_in_sgs__Detach(soap, NULL, NULL, "impl:Detach");
 			break;
 		case SOAP_TYPE_sgs__Stop:
-			soap_in_sgs__Stop(soap, NULL, NULL, "sgs:Stop");
+			soap_in_sgs__Stop(soap, NULL, NULL, "impl:Stop");
 			break;
 		case SOAP_TYPE_sgs__GetNthDataSource:
-			soap_in_sgs__GetNthDataSource(soap, NULL, NULL, "sgs:GetNthDataSource");
+			soap_in_sgs__GetNthDataSource(soap, NULL, NULL, "impl:GetNthDataSource");
 			break;
 		case SOAP_TYPE_sgs__Attach:
-			soap_in_sgs__Attach(soap, NULL, NULL, "sgs:Attach");
+			soap_in_sgs__Attach(soap, NULL, NULL, "impl:Attach");
+			break;
+		case SOAP_TYPE_sgs__GetParamLog:
+			soap_in_sgs__GetParamLog(soap, NULL, NULL, "impl:GetParamLog");
 			break;
 		case SOAP_TYPE_sgs__Restart:
-			soap_in_sgs__Restart(soap, NULL, NULL, "sgs:Restart");
+			soap_in_sgs__Restart(soap, NULL, NULL, "impl:Restart");
 			break;
 		case SOAP_TYPE_sgs__GetStatus:
-			soap_in_sgs__GetStatus(soap, NULL, NULL, "sgs:GetStatus");
+			soap_in_sgs__GetStatus(soap, NULL, NULL, "impl:GetStatus");
+			break;
+		case SOAP_TYPE_sgs__AppPutLog:
+			soap_in_sgs__AppPutLog(soap, NULL, NULL, "impl:AppPutLog");
 			break;
 		case SOAP_TYPE_sgs__GetControl:
-			soap_in_sgs__GetControl(soap, NULL, NULL, "sgs:GetControl");
+			soap_in_sgs__GetControl(soap, NULL, NULL, "impl:GetControl");
 			break;
 		case SOAP_TYPE_sgs__AppStop:
-			soap_in_sgs__AppStop(soap, NULL, NULL, "sgs:AppStop");
+			soap_in_sgs__AppStop(soap, NULL, NULL, "impl:AppStop");
 			break;
 		case SOAP_TYPE_sgs__PutStatus:
-			soap_in_sgs__PutStatus(soap, NULL, NULL, "sgs:PutStatus");
+			soap_in_sgs__PutStatus(soap, NULL, NULL, "impl:PutStatus");
 			break;
 		case SOAP_TYPE_sgs__AppDetach:
-			soap_in_sgs__AppDetach(soap, NULL, NULL, "sgs:AppDetach");
+			soap_in_sgs__AppDetach(soap, NULL, NULL, "impl:AppDetach");
 			break;
 		case SOAP_TYPE_sgs__destroy:
-			soap_in_sgs__destroy(soap, NULL, NULL, "sgs:destroy");
+			soap_in_sgs__destroy(soap, NULL, NULL, "impl:destroy");
 			break;
 		case SOAP_TYPE_sgs__setServiceData:
-			soap_in_sgs__setServiceData(soap, NULL, NULL, "sgs:setServiceData");
+			soap_in_sgs__setServiceData(soap, NULL, NULL, "impl:setServiceData");
 			break;
 		case SOAP_TYPE_sgs__findServiceDataResponse:
-			soap_in_sgs__findServiceDataResponse(soap, NULL, NULL, "sgs:findServiceDataResponse");
+			soap_in_sgs__findServiceDataResponse(soap, NULL, NULL, "impl:findServiceDataResponse");
 			break;
 		case SOAP_TYPE_sgs__setServiceDataResponse:
-			soap_in_sgs__setServiceDataResponse(soap, NULL, NULL, "sgs:setServiceDataResponse");
+			soap_in_sgs__setServiceDataResponse(soap, NULL, NULL, "impl:setServiceDataResponse");
 			break;
 		case SOAP_TYPE_sgs__ResumeResponse:
-			soap_in_sgs__ResumeResponse(soap, NULL, NULL, "sgs:ResumeResponse");
+			soap_in_sgs__ResumeResponse(soap, NULL, NULL, "impl:ResumeResponse");
 			break;
 		case SOAP_TYPE_sgs__AttachResponse:
-			soap_in_sgs__AttachResponse(soap, NULL, NULL, "sgs:AttachResponse");
+			soap_in_sgs__AttachResponse(soap, NULL, NULL, "impl:AttachResponse");
 			break;
 		case SOAP_TYPE_sgs__GetControlResponse:
-			soap_in_sgs__GetControlResponse(soap, NULL, NULL, "sgs:GetControlResponse");
+			soap_in_sgs__GetControlResponse(soap, NULL, NULL, "impl:GetControlResponse");
 			break;
 		case SOAP_TYPE_sgs__GetNotificationsResponse:
-			soap_in_sgs__GetNotificationsResponse(soap, NULL, NULL, "sgs:GetNotificationsResponse");
+			soap_in_sgs__GetNotificationsResponse(soap, NULL, NULL, "impl:GetNotificationsResponse");
+			break;
+		case SOAP_TYPE_sgs__AppPutLogResponse:
+			soap_in_sgs__AppPutLogResponse(soap, NULL, NULL, "impl:AppPutLogResponse");
+			break;
+		case SOAP_TYPE_sgs__GetParamLogResponse:
+			soap_in_sgs__GetParamLogResponse(soap, NULL, NULL, "impl:GetParamLogResponse");
 			break;
 		case SOAP_TYPE_sgs__ClearStatusMsgQueueResponse:
-			soap_in_sgs__ClearStatusMsgQueueResponse(soap, NULL, NULL, "sgs:ClearStatusMsgQueueResponse");
+			soap_in_sgs__ClearStatusMsgQueueResponse(soap, NULL, NULL, "impl:ClearStatusMsgQueueResponse");
 			break;
 		case SOAP_TYPE_sgs__DetachResponse:
-			soap_in_sgs__DetachResponse(soap, NULL, NULL, "sgs:DetachResponse");
+			soap_in_sgs__DetachResponse(soap, NULL, NULL, "impl:DetachResponse");
 			break;
 		case SOAP_TYPE_sgs__PutStatusResponse:
-			soap_in_sgs__PutStatusResponse(soap, NULL, NULL, "sgs:PutStatusResponse");
+			soap_in_sgs__PutStatusResponse(soap, NULL, NULL, "impl:PutStatusResponse");
 			break;
 		case SOAP_TYPE_sgs__destroyResponse:
-			soap_in_sgs__destroyResponse(soap, NULL, NULL, "sgs:destroyResponse");
+			soap_in_sgs__destroyResponse(soap, NULL, NULL, "impl:destroyResponse");
 			break;
 		case SOAP_TYPE_sgs__AppStopResponse:
-			soap_in_sgs__AppStopResponse(soap, NULL, NULL, "sgs:AppStopResponse");
+			soap_in_sgs__AppStopResponse(soap, NULL, NULL, "impl:AppStopResponse");
 			break;
 		case SOAP_TYPE_sgs__StopResponse:
-			soap_in_sgs__StopResponse(soap, NULL, NULL, "sgs:StopResponse");
+			soap_in_sgs__StopResponse(soap, NULL, NULL, "impl:StopResponse");
 			break;
 		case SOAP_TYPE_sgs__PutControlResponse:
-			soap_in_sgs__PutControlResponse(soap, NULL, NULL, "sgs:PutControlResponse");
+			soap_in_sgs__PutControlResponse(soap, NULL, NULL, "impl:PutControlResponse");
 			break;
 		case SOAP_TYPE_sgs__GetNthDataSourceResponse:
-			soap_in_sgs__GetNthDataSourceResponse(soap, NULL, NULL, "sgs:GetNthDataSourceResponse");
+			soap_in_sgs__GetNthDataSourceResponse(soap, NULL, NULL, "impl:GetNthDataSourceResponse");
 			break;
 		case SOAP_TYPE_sgs__AppDetachResponse:
-			soap_in_sgs__AppDetachResponse(soap, NULL, NULL, "sgs:AppDetachResponse");
+			soap_in_sgs__AppDetachResponse(soap, NULL, NULL, "impl:AppDetachResponse");
 			break;
 		case SOAP_TYPE_sgs__AppRecordChkpointResponse:
-			soap_in_sgs__AppRecordChkpointResponse(soap, NULL, NULL, "sgs:AppRecordChkpointResponse");
+			soap_in_sgs__AppRecordChkpointResponse(soap, NULL, NULL, "impl:AppRecordChkpointResponse");
 			break;
 		case SOAP_TYPE_sgs__RestartResponse:
-			soap_in_sgs__RestartResponse(soap, NULL, NULL, "sgs:RestartResponse");
+			soap_in_sgs__RestartResponse(soap, NULL, NULL, "impl:RestartResponse");
 			break;
 		case SOAP_TYPE_sgs__AppStartResponse:
-			soap_in_sgs__AppStartResponse(soap, NULL, NULL, "sgs:AppStartResponse");
+			soap_in_sgs__AppStartResponse(soap, NULL, NULL, "impl:AppStartResponse");
 			break;
 		case SOAP_TYPE_sgs__PauseResponse:
-			soap_in_sgs__PauseResponse(soap, NULL, NULL, "sgs:PauseResponse");
+			soap_in_sgs__PauseResponse(soap, NULL, NULL, "impl:PauseResponse");
 			break;
 		case SOAP_TYPE_sgs__GetStatusResponse:
-			soap_in_sgs__GetStatusResponse(soap, NULL, NULL, "sgs:GetStatusResponse");
+			soap_in_sgs__GetStatusResponse(soap, NULL, NULL, "impl:GetStatusResponse");
 			break;
 		case SOAP_TYPE_PointerTorgt__addNodeResponse:
 			soap_in_PointerTorgt__addNodeResponse(soap, NULL, NULL, "rgt:addNodeResponse");
@@ -451,64 +463,73 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_getindependent(struct soap *soap)
 			soap_in_PointerTosgsf__registerSelfResponse(soap, NULL, NULL, "sgsf:registerSelfResponse");
 			break;
 		case SOAP_TYPE_PointerTosgs__ClearStatusMsgQueueResponse:
-			soap_in_PointerTosgs__ClearStatusMsgQueueResponse(soap, NULL, NULL, "sgs:ClearStatusMsgQueueResponse");
+			soap_in_PointerTosgs__ClearStatusMsgQueueResponse(soap, NULL, NULL, "impl:ClearStatusMsgQueueResponse");
 			break;
 		case SOAP_TYPE_PointerTosgs__ResumeResponse:
-			soap_in_PointerTosgs__ResumeResponse(soap, NULL, NULL, "sgs:ResumeResponse");
+			soap_in_PointerTosgs__ResumeResponse(soap, NULL, NULL, "impl:ResumeResponse");
 			break;
 		case SOAP_TYPE_PointerTosgs__AppStartResponse:
-			soap_in_PointerTosgs__AppStartResponse(soap, NULL, NULL, "sgs:AppStartResponse");
+			soap_in_PointerTosgs__AppStartResponse(soap, NULL, NULL, "impl:AppStartResponse");
 			break;
 		case SOAP_TYPE_PointerTosgs__GetNotificationsResponse:
-			soap_in_PointerTosgs__GetNotificationsResponse(soap, NULL, NULL, "sgs:GetNotificationsResponse");
+			soap_in_PointerTosgs__GetNotificationsResponse(soap, NULL, NULL, "impl:GetNotificationsResponse");
 			break;
 		case SOAP_TYPE_PointerTosgs__PauseResponse:
-			soap_in_PointerTosgs__PauseResponse(soap, NULL, NULL, "sgs:PauseResponse");
+			soap_in_PointerTosgs__PauseResponse(soap, NULL, NULL, "impl:PauseResponse");
 			break;
 		case SOAP_TYPE_PointerTosgs__AppRecordChkpointResponse:
-			soap_in_PointerTosgs__AppRecordChkpointResponse(soap, NULL, NULL, "sgs:AppRecordChkpointResponse");
+			soap_in_PointerTosgs__AppRecordChkpointResponse(soap, NULL, NULL, "impl:AppRecordChkpointResponse");
 			break;
 		case SOAP_TYPE_PointerTosgs__findServiceDataResponse:
-			soap_in_PointerTosgs__findServiceDataResponse(soap, NULL, NULL, "sgs:findServiceDataResponse");
+			soap_in_PointerTosgs__findServiceDataResponse(soap, NULL, NULL, "impl:findServiceDataResponse");
 			break;
 		case SOAP_TYPE_PointerTosgs__PutControlResponse:
-			soap_in_PointerTosgs__PutControlResponse(soap, NULL, NULL, "sgs:PutControlResponse");
+			soap_in_PointerTosgs__PutControlResponse(soap, NULL, NULL, "impl:PutControlResponse");
 			break;
 		case SOAP_TYPE_PointerTosgs__DetachResponse:
-			soap_in_PointerTosgs__DetachResponse(soap, NULL, NULL, "sgs:DetachResponse");
+			soap_in_PointerTosgs__DetachResponse(soap, NULL, NULL, "impl:DetachResponse");
 			break;
 		case SOAP_TYPE_PointerTosgs__StopResponse:
-			soap_in_PointerTosgs__StopResponse(soap, NULL, NULL, "sgs:StopResponse");
+			soap_in_PointerTosgs__StopResponse(soap, NULL, NULL, "impl:StopResponse");
 			break;
 		case SOAP_TYPE_PointerTosgs__GetNthDataSourceResponse:
-			soap_in_PointerTosgs__GetNthDataSourceResponse(soap, NULL, NULL, "sgs:GetNthDataSourceResponse");
+			soap_in_PointerTosgs__GetNthDataSourceResponse(soap, NULL, NULL, "impl:GetNthDataSourceResponse");
 			break;
 		case SOAP_TYPE_PointerTosgs__AttachResponse:
-			soap_in_PointerTosgs__AttachResponse(soap, NULL, NULL, "sgs:AttachResponse");
+			soap_in_PointerTosgs__AttachResponse(soap, NULL, NULL, "impl:AttachResponse");
+			break;
+		case SOAP_TYPE_PointerTosgs__GetParamLogResponse:
+			soap_in_PointerTosgs__GetParamLogResponse(soap, NULL, NULL, "impl:GetParamLogResponse");
 			break;
 		case SOAP_TYPE_PointerTosgs__RestartResponse:
-			soap_in_PointerTosgs__RestartResponse(soap, NULL, NULL, "sgs:RestartResponse");
+			soap_in_PointerTosgs__RestartResponse(soap, NULL, NULL, "impl:RestartResponse");
 			break;
 		case SOAP_TYPE_PointerTosgs__GetStatusResponse:
-			soap_in_PointerTosgs__GetStatusResponse(soap, NULL, NULL, "sgs:GetStatusResponse");
+			soap_in_PointerTosgs__GetStatusResponse(soap, NULL, NULL, "impl:GetStatusResponse");
+			break;
+		case SOAP_TYPE_PointerTosgs__AppPutLogResponse:
+			soap_in_PointerTosgs__AppPutLogResponse(soap, NULL, NULL, "impl:AppPutLogResponse");
 			break;
 		case SOAP_TYPE_PointerTosgs__GetControlResponse:
-			soap_in_PointerTosgs__GetControlResponse(soap, NULL, NULL, "sgs:GetControlResponse");
+			soap_in_PointerTosgs__GetControlResponse(soap, NULL, NULL, "impl:GetControlResponse");
 			break;
 		case SOAP_TYPE_PointerTosgs__AppStopResponse:
-			soap_in_PointerTosgs__AppStopResponse(soap, NULL, NULL, "sgs:AppStopResponse");
+			soap_in_PointerTosgs__AppStopResponse(soap, NULL, NULL, "impl:AppStopResponse");
 			break;
 		case SOAP_TYPE_PointerTosgs__PutStatusResponse:
-			soap_in_PointerTosgs__PutStatusResponse(soap, NULL, NULL, "sgs:PutStatusResponse");
+			soap_in_PointerTosgs__PutStatusResponse(soap, NULL, NULL, "impl:PutStatusResponse");
 			break;
 		case SOAP_TYPE_PointerTosgs__AppDetachResponse:
-			soap_in_PointerTosgs__AppDetachResponse(soap, NULL, NULL, "sgs:AppDetachResponse");
+			soap_in_PointerTosgs__AppDetachResponse(soap, NULL, NULL, "impl:AppDetachResponse");
 			break;
 		case SOAP_TYPE_PointerTosgs__destroyResponse:
-			soap_in_PointerTosgs__destroyResponse(soap, NULL, NULL, "sgs:destroyResponse");
+			soap_in_PointerTosgs__destroyResponse(soap, NULL, NULL, "impl:destroyResponse");
 			break;
 		case SOAP_TYPE_PointerTosgs__setServiceDataResponse:
-			soap_in_PointerTosgs__setServiceDataResponse(soap, NULL, NULL, "sgs:setServiceDataResponse");
+			soap_in_PointerTosgs__setServiceDataResponse(soap, NULL, NULL, "impl:setServiceDataResponse");
+			break;
+		case SOAP_TYPE_xsd__integer:
+			soap_in_xsd__integer(soap, NULL, NULL, "xsd:integer");
 			break;
 		case SOAP_TYPE_xsd__string:
 			soap_in_xsd__string(soap, NULL, NULL, "xsd:string");
@@ -627,85 +648,95 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_getindependent(struct soap *soap)
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
 				soap_in_sgsf__createServiceResponse(soap, NULL, NULL, "sgsf:createServiceResponse");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
-				soap_in_sgs__ClearStatusMsgQueue(soap, NULL, NULL, "sgs:ClearStatusMsgQueue");
+				soap_in_sgs__ClearStatusMsgQueue(soap, NULL, NULL, "impl:ClearStatusMsgQueue");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
-				soap_in_sgs__Resume(soap, NULL, NULL, "sgs:Resume");
+				soap_in_sgs__Resume(soap, NULL, NULL, "impl:Resume");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
-				soap_in_sgs__AppStart(soap, NULL, NULL, "sgs:AppStart");
+				soap_in_sgs__AppStart(soap, NULL, NULL, "impl:AppStart");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
-				soap_in_sgs__GetNotifications(soap, NULL, NULL, "sgs:GetNotifications");
+				soap_in_sgs__GetNotifications(soap, NULL, NULL, "impl:GetNotifications");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
-				soap_in_sgs__Pause(soap, NULL, NULL, "sgs:Pause");
+				soap_in_sgs__Pause(soap, NULL, NULL, "impl:Pause");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
-				soap_in_sgs__AppRecordChkpoint(soap, NULL, NULL, "sgs:AppRecordChkpoint");
+				soap_in_sgs__AppRecordChkpoint(soap, NULL, NULL, "impl:AppRecordChkpoint");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
-				soap_in_sgs__findServiceData(soap, NULL, NULL, "sgs:findServiceData");
+				soap_in_sgs__findServiceData(soap, NULL, NULL, "impl:findServiceData");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
-				soap_in_sgs__PutControl(soap, NULL, NULL, "sgs:PutControl");
+				soap_in_sgs__PutControl(soap, NULL, NULL, "impl:PutControl");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
-				soap_in_sgs__Detach(soap, NULL, NULL, "sgs:Detach");
+				soap_in_sgs__Detach(soap, NULL, NULL, "impl:Detach");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
-				soap_in_sgs__Stop(soap, NULL, NULL, "sgs:Stop");
+				soap_in_sgs__Stop(soap, NULL, NULL, "impl:Stop");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
-				soap_in_sgs__GetNthDataSource(soap, NULL, NULL, "sgs:GetNthDataSource");
+				soap_in_sgs__GetNthDataSource(soap, NULL, NULL, "impl:GetNthDataSource");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
-				soap_in_sgs__Attach(soap, NULL, NULL, "sgs:Attach");
+				soap_in_sgs__Attach(soap, NULL, NULL, "impl:Attach");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
-				soap_in_sgs__Restart(soap, NULL, NULL, "sgs:Restart");
+				soap_in_sgs__GetParamLog(soap, NULL, NULL, "impl:GetParamLog");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
-				soap_in_sgs__GetStatus(soap, NULL, NULL, "sgs:GetStatus");
+				soap_in_sgs__Restart(soap, NULL, NULL, "impl:Restart");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
-				soap_in_sgs__GetControl(soap, NULL, NULL, "sgs:GetControl");
+				soap_in_sgs__GetStatus(soap, NULL, NULL, "impl:GetStatus");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
-				soap_in_sgs__AppStop(soap, NULL, NULL, "sgs:AppStop");
+				soap_in_sgs__AppPutLog(soap, NULL, NULL, "impl:AppPutLog");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
-				soap_in_sgs__PutStatus(soap, NULL, NULL, "sgs:PutStatus");
+				soap_in_sgs__GetControl(soap, NULL, NULL, "impl:GetControl");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
-				soap_in_sgs__AppDetach(soap, NULL, NULL, "sgs:AppDetach");
+				soap_in_sgs__AppStop(soap, NULL, NULL, "impl:AppStop");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
-				soap_in_sgs__destroy(soap, NULL, NULL, "sgs:destroy");
+				soap_in_sgs__PutStatus(soap, NULL, NULL, "impl:PutStatus");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
-				soap_in_sgs__setServiceData(soap, NULL, NULL, "sgs:setServiceData");
+				soap_in_sgs__AppDetach(soap, NULL, NULL, "impl:AppDetach");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
-				soap_in_sgs__findServiceDataResponse(soap, NULL, NULL, "sgs:findServiceDataResponse");
+				soap_in_sgs__destroy(soap, NULL, NULL, "impl:destroy");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
-				soap_in_sgs__setServiceDataResponse(soap, NULL, NULL, "sgs:setServiceDataResponse");
+				soap_in_sgs__setServiceData(soap, NULL, NULL, "impl:setServiceData");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
-				soap_in_sgs__ResumeResponse(soap, NULL, NULL, "sgs:ResumeResponse");
+				soap_in_sgs__findServiceDataResponse(soap, NULL, NULL, "impl:findServiceDataResponse");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
-				soap_in_sgs__AttachResponse(soap, NULL, NULL, "sgs:AttachResponse");
+				soap_in_sgs__setServiceDataResponse(soap, NULL, NULL, "impl:setServiceDataResponse");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
-				soap_in_sgs__GetControlResponse(soap, NULL, NULL, "sgs:GetControlResponse");
+				soap_in_sgs__ResumeResponse(soap, NULL, NULL, "impl:ResumeResponse");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
-				soap_in_sgs__GetNotificationsResponse(soap, NULL, NULL, "sgs:GetNotificationsResponse");
+				soap_in_sgs__AttachResponse(soap, NULL, NULL, "impl:AttachResponse");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
-				soap_in_sgs__ClearStatusMsgQueueResponse(soap, NULL, NULL, "sgs:ClearStatusMsgQueueResponse");
+				soap_in_sgs__GetControlResponse(soap, NULL, NULL, "impl:GetControlResponse");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
-				soap_in_sgs__DetachResponse(soap, NULL, NULL, "sgs:DetachResponse");
+				soap_in_sgs__GetNotificationsResponse(soap, NULL, NULL, "impl:GetNotificationsResponse");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
-				soap_in_sgs__PutStatusResponse(soap, NULL, NULL, "sgs:PutStatusResponse");
+				soap_in_sgs__AppPutLogResponse(soap, NULL, NULL, "impl:AppPutLogResponse");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
-				soap_in_sgs__destroyResponse(soap, NULL, NULL, "sgs:destroyResponse");
+				soap_in_sgs__GetParamLogResponse(soap, NULL, NULL, "impl:GetParamLogResponse");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
-				soap_in_sgs__AppStopResponse(soap, NULL, NULL, "sgs:AppStopResponse");
+				soap_in_sgs__ClearStatusMsgQueueResponse(soap, NULL, NULL, "impl:ClearStatusMsgQueueResponse");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
-				soap_in_sgs__StopResponse(soap, NULL, NULL, "sgs:StopResponse");
+				soap_in_sgs__DetachResponse(soap, NULL, NULL, "impl:DetachResponse");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
-				soap_in_sgs__PutControlResponse(soap, NULL, NULL, "sgs:PutControlResponse");
+				soap_in_sgs__PutStatusResponse(soap, NULL, NULL, "impl:PutStatusResponse");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
-				soap_in_sgs__GetNthDataSourceResponse(soap, NULL, NULL, "sgs:GetNthDataSourceResponse");
+				soap_in_sgs__destroyResponse(soap, NULL, NULL, "impl:destroyResponse");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
-				soap_in_sgs__AppDetachResponse(soap, NULL, NULL, "sgs:AppDetachResponse");
+				soap_in_sgs__AppStopResponse(soap, NULL, NULL, "impl:AppStopResponse");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
-				soap_in_sgs__AppRecordChkpointResponse(soap, NULL, NULL, "sgs:AppRecordChkpointResponse");
+				soap_in_sgs__StopResponse(soap, NULL, NULL, "impl:StopResponse");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
-				soap_in_sgs__RestartResponse(soap, NULL, NULL, "sgs:RestartResponse");
+				soap_in_sgs__PutControlResponse(soap, NULL, NULL, "impl:PutControlResponse");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
-				soap_in_sgs__AppStartResponse(soap, NULL, NULL, "sgs:AppStartResponse");
+				soap_in_sgs__GetNthDataSourceResponse(soap, NULL, NULL, "impl:GetNthDataSourceResponse");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
-				soap_in_sgs__PauseResponse(soap, NULL, NULL, "sgs:PauseResponse");
+				soap_in_sgs__AppDetachResponse(soap, NULL, NULL, "impl:AppDetachResponse");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
-				soap_in_sgs__GetStatusResponse(soap, NULL, NULL, "sgs:GetStatusResponse");
+				soap_in_sgs__AppRecordChkpointResponse(soap, NULL, NULL, "impl:AppRecordChkpointResponse");
+			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
+				soap_in_sgs__RestartResponse(soap, NULL, NULL, "impl:RestartResponse");
+			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
+				soap_in_sgs__AppStartResponse(soap, NULL, NULL, "impl:AppStartResponse");
+			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
+				soap_in_sgs__PauseResponse(soap, NULL, NULL, "impl:PauseResponse");
+			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
+				soap_in_sgs__GetStatusResponse(soap, NULL, NULL, "impl:GetStatusResponse");
+			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
+				soap_in_xsd__integer(soap, NULL, NULL, "xsd:integer");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
 				soap_in_xsd__string(soap, NULL, NULL, "xsd:string");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
@@ -891,124 +922,136 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_putindependent(struct soap *soap)
 					soap_out_sgsf__createServiceResponse(soap, "id", pp->id, (const struct sgsf__createServiceResponse *)pp->ptr, "sgsf:createServiceResponse");
 					break;
 				case SOAP_TYPE_sgs__ClearStatusMsgQueue:
-					soap_out_sgs__ClearStatusMsgQueue(soap, "id", pp->id, (const struct sgs__ClearStatusMsgQueue *)pp->ptr, "sgs:ClearStatusMsgQueue");
+					soap_out_sgs__ClearStatusMsgQueue(soap, "id", pp->id, (const struct sgs__ClearStatusMsgQueue *)pp->ptr, "impl:ClearStatusMsgQueue");
 					break;
 				case SOAP_TYPE_sgs__Resume:
-					soap_out_sgs__Resume(soap, "id", pp->id, (const struct sgs__Resume *)pp->ptr, "sgs:Resume");
+					soap_out_sgs__Resume(soap, "id", pp->id, (const struct sgs__Resume *)pp->ptr, "impl:Resume");
 					break;
 				case SOAP_TYPE_sgs__AppStart:
-					soap_out_sgs__AppStart(soap, "id", pp->id, (const struct sgs__AppStart *)pp->ptr, "sgs:AppStart");
+					soap_out_sgs__AppStart(soap, "id", pp->id, (const struct sgs__AppStart *)pp->ptr, "impl:AppStart");
 					break;
 				case SOAP_TYPE_sgs__GetNotifications:
-					soap_out_sgs__GetNotifications(soap, "id", pp->id, (const struct sgs__GetNotifications *)pp->ptr, "sgs:GetNotifications");
+					soap_out_sgs__GetNotifications(soap, "id", pp->id, (const struct sgs__GetNotifications *)pp->ptr, "impl:GetNotifications");
 					break;
 				case SOAP_TYPE_sgs__Pause:
-					soap_out_sgs__Pause(soap, "id", pp->id, (const struct sgs__Pause *)pp->ptr, "sgs:Pause");
+					soap_out_sgs__Pause(soap, "id", pp->id, (const struct sgs__Pause *)pp->ptr, "impl:Pause");
 					break;
 				case SOAP_TYPE_sgs__AppRecordChkpoint:
-					soap_out_sgs__AppRecordChkpoint(soap, "id", pp->id, (const struct sgs__AppRecordChkpoint *)pp->ptr, "sgs:AppRecordChkpoint");
+					soap_out_sgs__AppRecordChkpoint(soap, "id", pp->id, (const struct sgs__AppRecordChkpoint *)pp->ptr, "impl:AppRecordChkpoint");
 					break;
 				case SOAP_TYPE_sgs__findServiceData:
-					soap_out_sgs__findServiceData(soap, "id", pp->id, (const struct sgs__findServiceData *)pp->ptr, "sgs:findServiceData");
+					soap_out_sgs__findServiceData(soap, "id", pp->id, (const struct sgs__findServiceData *)pp->ptr, "impl:findServiceData");
 					break;
 				case SOAP_TYPE_sgs__PutControl:
-					soap_out_sgs__PutControl(soap, "id", pp->id, (const struct sgs__PutControl *)pp->ptr, "sgs:PutControl");
+					soap_out_sgs__PutControl(soap, "id", pp->id, (const struct sgs__PutControl *)pp->ptr, "impl:PutControl");
 					break;
 				case SOAP_TYPE_sgs__Detach:
-					soap_out_sgs__Detach(soap, "id", pp->id, (const struct sgs__Detach *)pp->ptr, "sgs:Detach");
+					soap_out_sgs__Detach(soap, "id", pp->id, (const struct sgs__Detach *)pp->ptr, "impl:Detach");
 					break;
 				case SOAP_TYPE_sgs__Stop:
-					soap_out_sgs__Stop(soap, "id", pp->id, (const struct sgs__Stop *)pp->ptr, "sgs:Stop");
+					soap_out_sgs__Stop(soap, "id", pp->id, (const struct sgs__Stop *)pp->ptr, "impl:Stop");
 					break;
 				case SOAP_TYPE_sgs__GetNthDataSource:
-					soap_out_sgs__GetNthDataSource(soap, "id", pp->id, (const struct sgs__GetNthDataSource *)pp->ptr, "sgs:GetNthDataSource");
+					soap_out_sgs__GetNthDataSource(soap, "id", pp->id, (const struct sgs__GetNthDataSource *)pp->ptr, "impl:GetNthDataSource");
 					break;
 				case SOAP_TYPE_sgs__Attach:
-					soap_out_sgs__Attach(soap, "id", pp->id, (const struct sgs__Attach *)pp->ptr, "sgs:Attach");
+					soap_out_sgs__Attach(soap, "id", pp->id, (const struct sgs__Attach *)pp->ptr, "impl:Attach");
+					break;
+				case SOAP_TYPE_sgs__GetParamLog:
+					soap_out_sgs__GetParamLog(soap, "id", pp->id, (const struct sgs__GetParamLog *)pp->ptr, "impl:GetParamLog");
 					break;
 				case SOAP_TYPE_sgs__Restart:
-					soap_out_sgs__Restart(soap, "id", pp->id, (const struct sgs__Restart *)pp->ptr, "sgs:Restart");
+					soap_out_sgs__Restart(soap, "id", pp->id, (const struct sgs__Restart *)pp->ptr, "impl:Restart");
 					break;
 				case SOAP_TYPE_sgs__GetStatus:
-					soap_out_sgs__GetStatus(soap, "id", pp->id, (const struct sgs__GetStatus *)pp->ptr, "sgs:GetStatus");
+					soap_out_sgs__GetStatus(soap, "id", pp->id, (const struct sgs__GetStatus *)pp->ptr, "impl:GetStatus");
+					break;
+				case SOAP_TYPE_sgs__AppPutLog:
+					soap_out_sgs__AppPutLog(soap, "id", pp->id, (const struct sgs__AppPutLog *)pp->ptr, "impl:AppPutLog");
 					break;
 				case SOAP_TYPE_sgs__GetControl:
-					soap_out_sgs__GetControl(soap, "id", pp->id, (const struct sgs__GetControl *)pp->ptr, "sgs:GetControl");
+					soap_out_sgs__GetControl(soap, "id", pp->id, (const struct sgs__GetControl *)pp->ptr, "impl:GetControl");
 					break;
 				case SOAP_TYPE_sgs__AppStop:
-					soap_out_sgs__AppStop(soap, "id", pp->id, (const struct sgs__AppStop *)pp->ptr, "sgs:AppStop");
+					soap_out_sgs__AppStop(soap, "id", pp->id, (const struct sgs__AppStop *)pp->ptr, "impl:AppStop");
 					break;
 				case SOAP_TYPE_sgs__PutStatus:
-					soap_out_sgs__PutStatus(soap, "id", pp->id, (const struct sgs__PutStatus *)pp->ptr, "sgs:PutStatus");
+					soap_out_sgs__PutStatus(soap, "id", pp->id, (const struct sgs__PutStatus *)pp->ptr, "impl:PutStatus");
 					break;
 				case SOAP_TYPE_sgs__AppDetach:
-					soap_out_sgs__AppDetach(soap, "id", pp->id, (const struct sgs__AppDetach *)pp->ptr, "sgs:AppDetach");
+					soap_out_sgs__AppDetach(soap, "id", pp->id, (const struct sgs__AppDetach *)pp->ptr, "impl:AppDetach");
 					break;
 				case SOAP_TYPE_sgs__destroy:
-					soap_out_sgs__destroy(soap, "id", pp->id, (const struct sgs__destroy *)pp->ptr, "sgs:destroy");
+					soap_out_sgs__destroy(soap, "id", pp->id, (const struct sgs__destroy *)pp->ptr, "impl:destroy");
 					break;
 				case SOAP_TYPE_sgs__setServiceData:
-					soap_out_sgs__setServiceData(soap, "id", pp->id, (const struct sgs__setServiceData *)pp->ptr, "sgs:setServiceData");
+					soap_out_sgs__setServiceData(soap, "id", pp->id, (const struct sgs__setServiceData *)pp->ptr, "impl:setServiceData");
 					break;
 				case SOAP_TYPE_sgs__findServiceDataResponse:
-					soap_out_sgs__findServiceDataResponse(soap, "id", pp->id, (const struct sgs__findServiceDataResponse *)pp->ptr, "sgs:findServiceDataResponse");
+					soap_out_sgs__findServiceDataResponse(soap, "id", pp->id, (const struct sgs__findServiceDataResponse *)pp->ptr, "impl:findServiceDataResponse");
 					break;
 				case SOAP_TYPE_sgs__setServiceDataResponse:
-					soap_out_sgs__setServiceDataResponse(soap, "id", pp->id, (const struct sgs__setServiceDataResponse *)pp->ptr, "sgs:setServiceDataResponse");
+					soap_out_sgs__setServiceDataResponse(soap, "id", pp->id, (const struct sgs__setServiceDataResponse *)pp->ptr, "impl:setServiceDataResponse");
 					break;
 				case SOAP_TYPE_sgs__ResumeResponse:
-					soap_out_sgs__ResumeResponse(soap, "id", pp->id, (const struct sgs__ResumeResponse *)pp->ptr, "sgs:ResumeResponse");
+					soap_out_sgs__ResumeResponse(soap, "id", pp->id, (const struct sgs__ResumeResponse *)pp->ptr, "impl:ResumeResponse");
 					break;
 				case SOAP_TYPE_sgs__AttachResponse:
-					soap_out_sgs__AttachResponse(soap, "id", pp->id, (const struct sgs__AttachResponse *)pp->ptr, "sgs:AttachResponse");
+					soap_out_sgs__AttachResponse(soap, "id", pp->id, (const struct sgs__AttachResponse *)pp->ptr, "impl:AttachResponse");
 					break;
 				case SOAP_TYPE_sgs__GetControlResponse:
-					soap_out_sgs__GetControlResponse(soap, "id", pp->id, (const struct sgs__GetControlResponse *)pp->ptr, "sgs:GetControlResponse");
+					soap_out_sgs__GetControlResponse(soap, "id", pp->id, (const struct sgs__GetControlResponse *)pp->ptr, "impl:GetControlResponse");
 					break;
 				case SOAP_TYPE_sgs__GetNotificationsResponse:
-					soap_out_sgs__GetNotificationsResponse(soap, "id", pp->id, (const struct sgs__GetNotificationsResponse *)pp->ptr, "sgs:GetNotificationsResponse");
+					soap_out_sgs__GetNotificationsResponse(soap, "id", pp->id, (const struct sgs__GetNotificationsResponse *)pp->ptr, "impl:GetNotificationsResponse");
+					break;
+				case SOAP_TYPE_sgs__AppPutLogResponse:
+					soap_out_sgs__AppPutLogResponse(soap, "id", pp->id, (const struct sgs__AppPutLogResponse *)pp->ptr, "impl:AppPutLogResponse");
+					break;
+				case SOAP_TYPE_sgs__GetParamLogResponse:
+					soap_out_sgs__GetParamLogResponse(soap, "id", pp->id, (const struct sgs__GetParamLogResponse *)pp->ptr, "impl:GetParamLogResponse");
 					break;
 				case SOAP_TYPE_sgs__ClearStatusMsgQueueResponse:
-					soap_out_sgs__ClearStatusMsgQueueResponse(soap, "id", pp->id, (const struct sgs__ClearStatusMsgQueueResponse *)pp->ptr, "sgs:ClearStatusMsgQueueResponse");
+					soap_out_sgs__ClearStatusMsgQueueResponse(soap, "id", pp->id, (const struct sgs__ClearStatusMsgQueueResponse *)pp->ptr, "impl:ClearStatusMsgQueueResponse");
 					break;
 				case SOAP_TYPE_sgs__DetachResponse:
-					soap_out_sgs__DetachResponse(soap, "id", pp->id, (const struct sgs__DetachResponse *)pp->ptr, "sgs:DetachResponse");
+					soap_out_sgs__DetachResponse(soap, "id", pp->id, (const struct sgs__DetachResponse *)pp->ptr, "impl:DetachResponse");
 					break;
 				case SOAP_TYPE_sgs__PutStatusResponse:
-					soap_out_sgs__PutStatusResponse(soap, "id", pp->id, (const struct sgs__PutStatusResponse *)pp->ptr, "sgs:PutStatusResponse");
+					soap_out_sgs__PutStatusResponse(soap, "id", pp->id, (const struct sgs__PutStatusResponse *)pp->ptr, "impl:PutStatusResponse");
 					break;
 				case SOAP_TYPE_sgs__destroyResponse:
-					soap_out_sgs__destroyResponse(soap, "id", pp->id, (const struct sgs__destroyResponse *)pp->ptr, "sgs:destroyResponse");
+					soap_out_sgs__destroyResponse(soap, "id", pp->id, (const struct sgs__destroyResponse *)pp->ptr, "impl:destroyResponse");
 					break;
 				case SOAP_TYPE_sgs__AppStopResponse:
-					soap_out_sgs__AppStopResponse(soap, "id", pp->id, (const struct sgs__AppStopResponse *)pp->ptr, "sgs:AppStopResponse");
+					soap_out_sgs__AppStopResponse(soap, "id", pp->id, (const struct sgs__AppStopResponse *)pp->ptr, "impl:AppStopResponse");
 					break;
 				case SOAP_TYPE_sgs__StopResponse:
-					soap_out_sgs__StopResponse(soap, "id", pp->id, (const struct sgs__StopResponse *)pp->ptr, "sgs:StopResponse");
+					soap_out_sgs__StopResponse(soap, "id", pp->id, (const struct sgs__StopResponse *)pp->ptr, "impl:StopResponse");
 					break;
 				case SOAP_TYPE_sgs__PutControlResponse:
-					soap_out_sgs__PutControlResponse(soap, "id", pp->id, (const struct sgs__PutControlResponse *)pp->ptr, "sgs:PutControlResponse");
+					soap_out_sgs__PutControlResponse(soap, "id", pp->id, (const struct sgs__PutControlResponse *)pp->ptr, "impl:PutControlResponse");
 					break;
 				case SOAP_TYPE_sgs__GetNthDataSourceResponse:
-					soap_out_sgs__GetNthDataSourceResponse(soap, "id", pp->id, (const struct sgs__GetNthDataSourceResponse *)pp->ptr, "sgs:GetNthDataSourceResponse");
+					soap_out_sgs__GetNthDataSourceResponse(soap, "id", pp->id, (const struct sgs__GetNthDataSourceResponse *)pp->ptr, "impl:GetNthDataSourceResponse");
 					break;
 				case SOAP_TYPE_sgs__AppDetachResponse:
-					soap_out_sgs__AppDetachResponse(soap, "id", pp->id, (const struct sgs__AppDetachResponse *)pp->ptr, "sgs:AppDetachResponse");
+					soap_out_sgs__AppDetachResponse(soap, "id", pp->id, (const struct sgs__AppDetachResponse *)pp->ptr, "impl:AppDetachResponse");
 					break;
 				case SOAP_TYPE_sgs__AppRecordChkpointResponse:
-					soap_out_sgs__AppRecordChkpointResponse(soap, "id", pp->id, (const struct sgs__AppRecordChkpointResponse *)pp->ptr, "sgs:AppRecordChkpointResponse");
+					soap_out_sgs__AppRecordChkpointResponse(soap, "id", pp->id, (const struct sgs__AppRecordChkpointResponse *)pp->ptr, "impl:AppRecordChkpointResponse");
 					break;
 				case SOAP_TYPE_sgs__RestartResponse:
-					soap_out_sgs__RestartResponse(soap, "id", pp->id, (const struct sgs__RestartResponse *)pp->ptr, "sgs:RestartResponse");
+					soap_out_sgs__RestartResponse(soap, "id", pp->id, (const struct sgs__RestartResponse *)pp->ptr, "impl:RestartResponse");
 					break;
 				case SOAP_TYPE_sgs__AppStartResponse:
-					soap_out_sgs__AppStartResponse(soap, "id", pp->id, (const struct sgs__AppStartResponse *)pp->ptr, "sgs:AppStartResponse");
+					soap_out_sgs__AppStartResponse(soap, "id", pp->id, (const struct sgs__AppStartResponse *)pp->ptr, "impl:AppStartResponse");
 					break;
 				case SOAP_TYPE_sgs__PauseResponse:
-					soap_out_sgs__PauseResponse(soap, "id", pp->id, (const struct sgs__PauseResponse *)pp->ptr, "sgs:PauseResponse");
+					soap_out_sgs__PauseResponse(soap, "id", pp->id, (const struct sgs__PauseResponse *)pp->ptr, "impl:PauseResponse");
 					break;
 				case SOAP_TYPE_sgs__GetStatusResponse:
-					soap_out_sgs__GetStatusResponse(soap, "id", pp->id, (const struct sgs__GetStatusResponse *)pp->ptr, "sgs:GetStatusResponse");
+					soap_out_sgs__GetStatusResponse(soap, "id", pp->id, (const struct sgs__GetStatusResponse *)pp->ptr, "impl:GetStatusResponse");
 					break;
 				case SOAP_TYPE_PointerTorgt__addNodeResponse:
 					soap_out_PointerTorgt__addNodeResponse(soap, "id", pp->id, (struct rgt__addNodeResponse *const*)pp->ptr, "rgt:addNodeResponse");
@@ -1089,64 +1132,73 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_putindependent(struct soap *soap)
 					soap_out_PointerTosgsf__registerSelfResponse(soap, "id", pp->id, (struct sgsf__registerSelfResponse *const*)pp->ptr, "sgsf:registerSelfResponse");
 					break;
 				case SOAP_TYPE_PointerTosgs__ClearStatusMsgQueueResponse:
-					soap_out_PointerTosgs__ClearStatusMsgQueueResponse(soap, "id", pp->id, (struct sgs__ClearStatusMsgQueueResponse *const*)pp->ptr, "sgs:ClearStatusMsgQueueResponse");
+					soap_out_PointerTosgs__ClearStatusMsgQueueResponse(soap, "id", pp->id, (struct sgs__ClearStatusMsgQueueResponse *const*)pp->ptr, "impl:ClearStatusMsgQueueResponse");
 					break;
 				case SOAP_TYPE_PointerTosgs__ResumeResponse:
-					soap_out_PointerTosgs__ResumeResponse(soap, "id", pp->id, (struct sgs__ResumeResponse *const*)pp->ptr, "sgs:ResumeResponse");
+					soap_out_PointerTosgs__ResumeResponse(soap, "id", pp->id, (struct sgs__ResumeResponse *const*)pp->ptr, "impl:ResumeResponse");
 					break;
 				case SOAP_TYPE_PointerTosgs__AppStartResponse:
-					soap_out_PointerTosgs__AppStartResponse(soap, "id", pp->id, (struct sgs__AppStartResponse *const*)pp->ptr, "sgs:AppStartResponse");
+					soap_out_PointerTosgs__AppStartResponse(soap, "id", pp->id, (struct sgs__AppStartResponse *const*)pp->ptr, "impl:AppStartResponse");
 					break;
 				case SOAP_TYPE_PointerTosgs__GetNotificationsResponse:
-					soap_out_PointerTosgs__GetNotificationsResponse(soap, "id", pp->id, (struct sgs__GetNotificationsResponse *const*)pp->ptr, "sgs:GetNotificationsResponse");
+					soap_out_PointerTosgs__GetNotificationsResponse(soap, "id", pp->id, (struct sgs__GetNotificationsResponse *const*)pp->ptr, "impl:GetNotificationsResponse");
 					break;
 				case SOAP_TYPE_PointerTosgs__PauseResponse:
-					soap_out_PointerTosgs__PauseResponse(soap, "id", pp->id, (struct sgs__PauseResponse *const*)pp->ptr, "sgs:PauseResponse");
+					soap_out_PointerTosgs__PauseResponse(soap, "id", pp->id, (struct sgs__PauseResponse *const*)pp->ptr, "impl:PauseResponse");
 					break;
 				case SOAP_TYPE_PointerTosgs__AppRecordChkpointResponse:
-					soap_out_PointerTosgs__AppRecordChkpointResponse(soap, "id", pp->id, (struct sgs__AppRecordChkpointResponse *const*)pp->ptr, "sgs:AppRecordChkpointResponse");
+					soap_out_PointerTosgs__AppRecordChkpointResponse(soap, "id", pp->id, (struct sgs__AppRecordChkpointResponse *const*)pp->ptr, "impl:AppRecordChkpointResponse");
 					break;
 				case SOAP_TYPE_PointerTosgs__findServiceDataResponse:
-					soap_out_PointerTosgs__findServiceDataResponse(soap, "id", pp->id, (struct sgs__findServiceDataResponse *const*)pp->ptr, "sgs:findServiceDataResponse");
+					soap_out_PointerTosgs__findServiceDataResponse(soap, "id", pp->id, (struct sgs__findServiceDataResponse *const*)pp->ptr, "impl:findServiceDataResponse");
 					break;
 				case SOAP_TYPE_PointerTosgs__PutControlResponse:
-					soap_out_PointerTosgs__PutControlResponse(soap, "id", pp->id, (struct sgs__PutControlResponse *const*)pp->ptr, "sgs:PutControlResponse");
+					soap_out_PointerTosgs__PutControlResponse(soap, "id", pp->id, (struct sgs__PutControlResponse *const*)pp->ptr, "impl:PutControlResponse");
 					break;
 				case SOAP_TYPE_PointerTosgs__DetachResponse:
-					soap_out_PointerTosgs__DetachResponse(soap, "id", pp->id, (struct sgs__DetachResponse *const*)pp->ptr, "sgs:DetachResponse");
+					soap_out_PointerTosgs__DetachResponse(soap, "id", pp->id, (struct sgs__DetachResponse *const*)pp->ptr, "impl:DetachResponse");
 					break;
 				case SOAP_TYPE_PointerTosgs__StopResponse:
-					soap_out_PointerTosgs__StopResponse(soap, "id", pp->id, (struct sgs__StopResponse *const*)pp->ptr, "sgs:StopResponse");
+					soap_out_PointerTosgs__StopResponse(soap, "id", pp->id, (struct sgs__StopResponse *const*)pp->ptr, "impl:StopResponse");
 					break;
 				case SOAP_TYPE_PointerTosgs__GetNthDataSourceResponse:
-					soap_out_PointerTosgs__GetNthDataSourceResponse(soap, "id", pp->id, (struct sgs__GetNthDataSourceResponse *const*)pp->ptr, "sgs:GetNthDataSourceResponse");
+					soap_out_PointerTosgs__GetNthDataSourceResponse(soap, "id", pp->id, (struct sgs__GetNthDataSourceResponse *const*)pp->ptr, "impl:GetNthDataSourceResponse");
 					break;
 				case SOAP_TYPE_PointerTosgs__AttachResponse:
-					soap_out_PointerTosgs__AttachResponse(soap, "id", pp->id, (struct sgs__AttachResponse *const*)pp->ptr, "sgs:AttachResponse");
+					soap_out_PointerTosgs__AttachResponse(soap, "id", pp->id, (struct sgs__AttachResponse *const*)pp->ptr, "impl:AttachResponse");
+					break;
+				case SOAP_TYPE_PointerTosgs__GetParamLogResponse:
+					soap_out_PointerTosgs__GetParamLogResponse(soap, "id", pp->id, (struct sgs__GetParamLogResponse *const*)pp->ptr, "impl:GetParamLogResponse");
 					break;
 				case SOAP_TYPE_PointerTosgs__RestartResponse:
-					soap_out_PointerTosgs__RestartResponse(soap, "id", pp->id, (struct sgs__RestartResponse *const*)pp->ptr, "sgs:RestartResponse");
+					soap_out_PointerTosgs__RestartResponse(soap, "id", pp->id, (struct sgs__RestartResponse *const*)pp->ptr, "impl:RestartResponse");
 					break;
 				case SOAP_TYPE_PointerTosgs__GetStatusResponse:
-					soap_out_PointerTosgs__GetStatusResponse(soap, "id", pp->id, (struct sgs__GetStatusResponse *const*)pp->ptr, "sgs:GetStatusResponse");
+					soap_out_PointerTosgs__GetStatusResponse(soap, "id", pp->id, (struct sgs__GetStatusResponse *const*)pp->ptr, "impl:GetStatusResponse");
+					break;
+				case SOAP_TYPE_PointerTosgs__AppPutLogResponse:
+					soap_out_PointerTosgs__AppPutLogResponse(soap, "id", pp->id, (struct sgs__AppPutLogResponse *const*)pp->ptr, "impl:AppPutLogResponse");
 					break;
 				case SOAP_TYPE_PointerTosgs__GetControlResponse:
-					soap_out_PointerTosgs__GetControlResponse(soap, "id", pp->id, (struct sgs__GetControlResponse *const*)pp->ptr, "sgs:GetControlResponse");
+					soap_out_PointerTosgs__GetControlResponse(soap, "id", pp->id, (struct sgs__GetControlResponse *const*)pp->ptr, "impl:GetControlResponse");
 					break;
 				case SOAP_TYPE_PointerTosgs__AppStopResponse:
-					soap_out_PointerTosgs__AppStopResponse(soap, "id", pp->id, (struct sgs__AppStopResponse *const*)pp->ptr, "sgs:AppStopResponse");
+					soap_out_PointerTosgs__AppStopResponse(soap, "id", pp->id, (struct sgs__AppStopResponse *const*)pp->ptr, "impl:AppStopResponse");
 					break;
 				case SOAP_TYPE_PointerTosgs__PutStatusResponse:
-					soap_out_PointerTosgs__PutStatusResponse(soap, "id", pp->id, (struct sgs__PutStatusResponse *const*)pp->ptr, "sgs:PutStatusResponse");
+					soap_out_PointerTosgs__PutStatusResponse(soap, "id", pp->id, (struct sgs__PutStatusResponse *const*)pp->ptr, "impl:PutStatusResponse");
 					break;
 				case SOAP_TYPE_PointerTosgs__AppDetachResponse:
-					soap_out_PointerTosgs__AppDetachResponse(soap, "id", pp->id, (struct sgs__AppDetachResponse *const*)pp->ptr, "sgs:AppDetachResponse");
+					soap_out_PointerTosgs__AppDetachResponse(soap, "id", pp->id, (struct sgs__AppDetachResponse *const*)pp->ptr, "impl:AppDetachResponse");
 					break;
 				case SOAP_TYPE_PointerTosgs__destroyResponse:
-					soap_out_PointerTosgs__destroyResponse(soap, "id", pp->id, (struct sgs__destroyResponse *const*)pp->ptr, "sgs:destroyResponse");
+					soap_out_PointerTosgs__destroyResponse(soap, "id", pp->id, (struct sgs__destroyResponse *const*)pp->ptr, "impl:destroyResponse");
 					break;
 				case SOAP_TYPE_PointerTosgs__setServiceDataResponse:
-					soap_out_PointerTosgs__setServiceDataResponse(soap, "id", pp->id, (struct sgs__setServiceDataResponse *const*)pp->ptr, "sgs:setServiceDataResponse");
+					soap_out_PointerTosgs__setServiceDataResponse(soap, "id", pp->id, (struct sgs__setServiceDataResponse *const*)pp->ptr, "impl:setServiceDataResponse");
+					break;
+				case SOAP_TYPE_xsd__integer:
+					soap_out_string(soap, "id", pp->id, (char**)&pp->ptr, "xsd:integer");
 					break;
 				case SOAP_TYPE_xsd__string:
 					soap_out_string(soap, "id", pp->id, (char**)&pp->ptr, "xsd:string");
@@ -1176,6 +1228,13 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_getattachments(struct soap *soap)
 			break;
 		switch (soap_lookup_type(soap, soap->dime_id))
 		{
+		case SOAP_TYPE_xsd__integer:
+		{	char ** a;
+			a = (char **)soap_id_enter(soap, soap->dime_id, NULL, SOAP_TYPE_xsd__integer, sizeof(char *), 0);
+			if (a)
+				*a = soap->dime_ptr;
+			break;
+		}
 		case SOAP_TYPE_xsd__string:
 		{	char ** a;
 			a = (char **)soap_id_enter(soap, soap->dime_id, NULL, SOAP_TYPE_xsd__string, sizeof(char *), 0);
@@ -8113,6 +8172,111 @@ SOAP_FMAC1 struct sgs__Attach * SOAP_FMAC2 soap_in_sgs__Attach(struct soap *soap
 	return a;
 }
 
+SOAP_FMAC1 void SOAP_FMAC2 soap_serialize_sgs__GetParamLog(struct soap *soap, struct sgs__GetParamLog const*a)
+{
+	if (!soap_reference(soap, a, SOAP_TYPE_sgs__GetParamLog))
+		soap_mark_sgs__GetParamLog(soap, a);
+}
+
+SOAP_FMAC1 void SOAP_FMAC2 soap_mark_sgs__GetParamLog(struct soap *soap, const struct sgs__GetParamLog *a)
+{
+	soap_embedded(soap, &a->in0, SOAP_TYPE_xsd__integer);
+	soap_mark_xsd__integer(soap, &a->in0);
+}
+
+SOAP_FMAC1 void SOAP_FMAC2 soap_default_sgs__GetParamLog(struct soap *soap, struct sgs__GetParamLog *a)
+{
+	soap_default_xsd__integer(soap, &a->in0);
+}
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_put_sgs__GetParamLog(struct soap *soap, struct sgs__GetParamLog *a, const char *tag, const char *type)
+{
+	int i;
+	struct soap_plist *pp;
+	if ((i = soap_pointer_lookup(soap, a, SOAP_TYPE_sgs__GetParamLog, &pp)))
+		if (soap_is_embedded(soap, pp))
+			soap_element_ref(soap, tag, 0, i);
+		else if (soap_is_single(soap, pp))
+			soap_out_sgs__GetParamLog(soap, tag, 0, a, type);
+		else
+		{
+			soap_set_embedded(soap, pp);
+			soap_out_sgs__GetParamLog(soap, tag, i, a, type);
+		}
+	else
+		soap_out_sgs__GetParamLog(soap, tag, 0, a, type);
+	return soap_putindependent(soap);
+}
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_out_sgs__GetParamLog(struct soap *soap, const char *tag, int id, const struct sgs__GetParamLog *a, const char *type)
+{
+	soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_sgs__GetParamLog), type);
+	soap_out_xsd__integer(soap, "in0", -1, &a->in0, "xsd:integer");
+	soap_element_end_out(soap, tag);
+	return SOAP_OK;
+}
+
+SOAP_FMAC1 struct sgs__GetParamLog * SOAP_FMAC2 soap_get_sgs__GetParamLog(struct soap *soap, struct sgs__GetParamLog *p, const char *tag, const char *type)
+{
+	if ((p = soap_in_sgs__GetParamLog(soap, tag, p, type)))
+		soap_getindependent(soap);
+	return p;
+}
+
+SOAP_FMAC1 struct sgs__GetParamLog * SOAP_FMAC2 soap_in_sgs__GetParamLog(struct soap *soap, const char *tag, struct sgs__GetParamLog *a, const char *type)
+{
+	short soap_flag_in0 = 1;
+	if (soap_element_begin_in(soap, tag))
+		return NULL;
+	if (*soap->type && soap_match_tag(soap, soap->type, type))
+	{	soap->error = SOAP_TYPE_MISMATCH;
+		soap_revert(soap);
+		return NULL;
+	}
+	if (soap->null)
+	{	if (soap->mode & SOAP_XML_NIL)
+		{	soap->error = SOAP_NULL;
+			return NULL;
+		}
+		else
+			return a;
+	}
+	if (!*soap->href)
+	{	a = (struct sgs__GetParamLog *)soap_id_enter(soap, soap->id, a, SOAP_TYPE_sgs__GetParamLog, sizeof(struct sgs__GetParamLog), 0);
+		if (!a)
+			return NULL;
+		if (soap->alloced)
+			soap_default_sgs__GetParamLog(soap, a);
+		if (soap->body)
+		{	for (;;)
+			{	soap->error = SOAP_TAG_MISMATCH;
+			if (soap_flag_in0 && soap->error == SOAP_TAG_MISMATCH)
+				if (soap_in_xsd__integer(soap, "in0", &a->in0, "xsd:integer"))
+				{	soap_flag_in0 = 0;
+					continue;
+				}
+			if (soap->error == SOAP_TAG_MISMATCH)
+				soap->error = soap_ignore_element(soap);
+			if (soap->error == SOAP_NO_TAG)
+				break;
+			if (soap->error)
+			{	return NULL;
+			}
+		}
+		if (soap_element_end_in(soap, tag))
+			return NULL;
+		}
+	}
+	else
+	{	a = (struct sgs__GetParamLog *)soap_id_forward(soap, soap->href, (void**)soap_id_enter(soap, soap->id, a, SOAP_TYPE_sgs__GetParamLog, sizeof(struct sgs__GetParamLog), 0), SOAP_TYPE_sgs__GetParamLog, sizeof(struct sgs__GetParamLog));
+		if (soap->alloced)
+			soap_default_sgs__GetParamLog(soap, a);
+		if (soap->body && soap_element_end_in(soap, tag))
+			return NULL;
+	}
+	return a;
+}
+
 SOAP_FMAC1 void SOAP_FMAC2 soap_serialize_sgs__Restart(struct soap *soap, struct sgs__Restart const*a)
 {
 	if (!soap_reference(soap, a, SOAP_TYPE_sgs__Restart))
@@ -8307,6 +8471,111 @@ SOAP_FMAC1 struct sgs__GetStatus * SOAP_FMAC2 soap_in_sgs__GetStatus(struct soap
 	{	a = (struct sgs__GetStatus *)soap_id_forward(soap, soap->href, (void**)soap_id_enter(soap, soap->id, a, SOAP_TYPE_sgs__GetStatus, sizeof(struct sgs__GetStatus), 0), SOAP_TYPE_sgs__GetStatus, sizeof(struct sgs__GetStatus));
 		if (soap->alloced)
 			soap_default_sgs__GetStatus(soap, a);
+		if (soap->body && soap_element_end_in(soap, tag))
+			return NULL;
+	}
+	return a;
+}
+
+SOAP_FMAC1 void SOAP_FMAC2 soap_serialize_sgs__AppPutLog(struct soap *soap, struct sgs__AppPutLog const*a)
+{
+	if (!soap_reference(soap, a, SOAP_TYPE_sgs__AppPutLog))
+		soap_mark_sgs__AppPutLog(soap, a);
+}
+
+SOAP_FMAC1 void SOAP_FMAC2 soap_mark_sgs__AppPutLog(struct soap *soap, const struct sgs__AppPutLog *a)
+{
+	soap_embedded(soap, &a->in0, SOAP_TYPE_xsd__string);
+	soap_mark_xsd__string(soap, &a->in0);
+}
+
+SOAP_FMAC1 void SOAP_FMAC2 soap_default_sgs__AppPutLog(struct soap *soap, struct sgs__AppPutLog *a)
+{
+	soap_default_xsd__string(soap, &a->in0);
+}
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_put_sgs__AppPutLog(struct soap *soap, struct sgs__AppPutLog *a, const char *tag, const char *type)
+{
+	int i;
+	struct soap_plist *pp;
+	if ((i = soap_pointer_lookup(soap, a, SOAP_TYPE_sgs__AppPutLog, &pp)))
+		if (soap_is_embedded(soap, pp))
+			soap_element_ref(soap, tag, 0, i);
+		else if (soap_is_single(soap, pp))
+			soap_out_sgs__AppPutLog(soap, tag, 0, a, type);
+		else
+		{
+			soap_set_embedded(soap, pp);
+			soap_out_sgs__AppPutLog(soap, tag, i, a, type);
+		}
+	else
+		soap_out_sgs__AppPutLog(soap, tag, 0, a, type);
+	return soap_putindependent(soap);
+}
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_out_sgs__AppPutLog(struct soap *soap, const char *tag, int id, const struct sgs__AppPutLog *a, const char *type)
+{
+	soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_sgs__AppPutLog), type);
+	soap_out_xsd__string(soap, "in0", -1, &a->in0, "xsd:string");
+	soap_element_end_out(soap, tag);
+	return SOAP_OK;
+}
+
+SOAP_FMAC1 struct sgs__AppPutLog * SOAP_FMAC2 soap_get_sgs__AppPutLog(struct soap *soap, struct sgs__AppPutLog *p, const char *tag, const char *type)
+{
+	if ((p = soap_in_sgs__AppPutLog(soap, tag, p, type)))
+		soap_getindependent(soap);
+	return p;
+}
+
+SOAP_FMAC1 struct sgs__AppPutLog * SOAP_FMAC2 soap_in_sgs__AppPutLog(struct soap *soap, const char *tag, struct sgs__AppPutLog *a, const char *type)
+{
+	short soap_flag_in0 = 1;
+	if (soap_element_begin_in(soap, tag))
+		return NULL;
+	if (*soap->type && soap_match_tag(soap, soap->type, type))
+	{	soap->error = SOAP_TYPE_MISMATCH;
+		soap_revert(soap);
+		return NULL;
+	}
+	if (soap->null)
+	{	if (soap->mode & SOAP_XML_NIL)
+		{	soap->error = SOAP_NULL;
+			return NULL;
+		}
+		else
+			return a;
+	}
+	if (!*soap->href)
+	{	a = (struct sgs__AppPutLog *)soap_id_enter(soap, soap->id, a, SOAP_TYPE_sgs__AppPutLog, sizeof(struct sgs__AppPutLog), 0);
+		if (!a)
+			return NULL;
+		if (soap->alloced)
+			soap_default_sgs__AppPutLog(soap, a);
+		if (soap->body)
+		{	for (;;)
+			{	soap->error = SOAP_TAG_MISMATCH;
+			if (soap_flag_in0 && soap->error == SOAP_TAG_MISMATCH)
+				if (soap_in_xsd__string(soap, "in0", &a->in0, "xsd:string"))
+				{	soap_flag_in0 = 0;
+					continue;
+				}
+			if (soap->error == SOAP_TAG_MISMATCH)
+				soap->error = soap_ignore_element(soap);
+			if (soap->error == SOAP_NO_TAG)
+				break;
+			if (soap->error)
+			{	return NULL;
+			}
+		}
+		if (soap_element_end_in(soap, tag))
+			return NULL;
+		}
+	}
+	else
+	{	a = (struct sgs__AppPutLog *)soap_id_forward(soap, soap->href, (void**)soap_id_enter(soap, soap->id, a, SOAP_TYPE_sgs__AppPutLog, sizeof(struct sgs__AppPutLog), 0), SOAP_TYPE_sgs__AppPutLog, sizeof(struct sgs__AppPutLog));
+		if (soap->alloced)
+			soap_default_sgs__AppPutLog(soap, a);
 		if (soap->body && soap_element_end_in(soap, tag))
 			return NULL;
 	}
@@ -9527,6 +9796,216 @@ SOAP_FMAC1 struct sgs__GetNotificationsResponse * SOAP_FMAC2 soap_in_sgs__GetNot
 	{	a = (struct sgs__GetNotificationsResponse *)soap_id_forward(soap, soap->href, (void**)soap_id_enter(soap, soap->id, a, SOAP_TYPE_sgs__GetNotificationsResponse, sizeof(struct sgs__GetNotificationsResponse), 0), SOAP_TYPE_sgs__GetNotificationsResponse, sizeof(struct sgs__GetNotificationsResponse));
 		if (soap->alloced)
 			soap_default_sgs__GetNotificationsResponse(soap, a);
+		if (soap->body && soap_element_end_in(soap, tag))
+			return NULL;
+	}
+	return a;
+}
+
+SOAP_FMAC1 void SOAP_FMAC2 soap_serialize_sgs__AppPutLogResponse(struct soap *soap, struct sgs__AppPutLogResponse const*a)
+{
+	if (!soap_reference(soap, a, SOAP_TYPE_sgs__AppPutLogResponse))
+		soap_mark_sgs__AppPutLogResponse(soap, a);
+}
+
+SOAP_FMAC1 void SOAP_FMAC2 soap_mark_sgs__AppPutLogResponse(struct soap *soap, const struct sgs__AppPutLogResponse *a)
+{
+	soap_embedded(soap, &a->_AppPutLogReturn, SOAP_TYPE_xsd__string);
+	soap_mark_xsd__string(soap, &a->_AppPutLogReturn);
+}
+
+SOAP_FMAC1 void SOAP_FMAC2 soap_default_sgs__AppPutLogResponse(struct soap *soap, struct sgs__AppPutLogResponse *a)
+{
+	soap_default_xsd__string(soap, &a->_AppPutLogReturn);
+}
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_put_sgs__AppPutLogResponse(struct soap *soap, struct sgs__AppPutLogResponse *a, const char *tag, const char *type)
+{
+	int i;
+	struct soap_plist *pp;
+	if ((i = soap_pointer_lookup(soap, a, SOAP_TYPE_sgs__AppPutLogResponse, &pp)))
+		if (soap_is_embedded(soap, pp))
+			soap_element_ref(soap, tag, 0, i);
+		else if (soap_is_single(soap, pp))
+			soap_out_sgs__AppPutLogResponse(soap, tag, 0, a, type);
+		else
+		{
+			soap_set_embedded(soap, pp);
+			soap_out_sgs__AppPutLogResponse(soap, tag, i, a, type);
+		}
+	else
+		soap_out_sgs__AppPutLogResponse(soap, tag, 0, a, type);
+	return soap_putindependent(soap);
+}
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_out_sgs__AppPutLogResponse(struct soap *soap, const char *tag, int id, const struct sgs__AppPutLogResponse *a, const char *type)
+{
+	soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_sgs__AppPutLogResponse), type);
+	soap_out_xsd__string(soap, "AppPutLogReturn", -1, &a->_AppPutLogReturn, "xsd:string");
+	soap_element_end_out(soap, tag);
+	return SOAP_OK;
+}
+
+SOAP_FMAC1 struct sgs__AppPutLogResponse * SOAP_FMAC2 soap_get_sgs__AppPutLogResponse(struct soap *soap, struct sgs__AppPutLogResponse *p, const char *tag, const char *type)
+{
+	if ((p = soap_in_sgs__AppPutLogResponse(soap, tag, p, type)))
+		soap_getindependent(soap);
+	return p;
+}
+
+SOAP_FMAC1 struct sgs__AppPutLogResponse * SOAP_FMAC2 soap_in_sgs__AppPutLogResponse(struct soap *soap, const char *tag, struct sgs__AppPutLogResponse *a, const char *type)
+{
+	short soap_flag__AppPutLogReturn = 1;
+	if (soap_element_begin_in(soap, tag))
+		return NULL;
+	if (*soap->type && soap_match_tag(soap, soap->type, type))
+	{	soap->error = SOAP_TYPE_MISMATCH;
+		soap_revert(soap);
+		return NULL;
+	}
+	if (soap->null)
+	{	if (soap->mode & SOAP_XML_NIL)
+		{	soap->error = SOAP_NULL;
+			return NULL;
+		}
+		else
+			return a;
+	}
+	if (!*soap->href)
+	{	a = (struct sgs__AppPutLogResponse *)soap_id_enter(soap, soap->id, a, SOAP_TYPE_sgs__AppPutLogResponse, sizeof(struct sgs__AppPutLogResponse), 0);
+		if (!a)
+			return NULL;
+		if (soap->alloced)
+			soap_default_sgs__AppPutLogResponse(soap, a);
+		if (soap->body)
+		{	for (;;)
+			{	soap->error = SOAP_TAG_MISMATCH;
+			if (soap_flag__AppPutLogReturn && soap->error == SOAP_TAG_MISMATCH)
+				if (soap_in_xsd__string(soap, NULL, &a->_AppPutLogReturn, "xsd:string"))
+				{	soap_flag__AppPutLogReturn = 0;
+					continue;
+				}
+			if (soap->error == SOAP_TAG_MISMATCH)
+				soap->error = soap_ignore_element(soap);
+			if (soap->error == SOAP_NO_TAG)
+				break;
+			if (soap->error)
+			{	return NULL;
+			}
+		}
+		if (soap_element_end_in(soap, tag))
+			return NULL;
+		}
+	}
+	else
+	{	a = (struct sgs__AppPutLogResponse *)soap_id_forward(soap, soap->href, (void**)soap_id_enter(soap, soap->id, a, SOAP_TYPE_sgs__AppPutLogResponse, sizeof(struct sgs__AppPutLogResponse), 0), SOAP_TYPE_sgs__AppPutLogResponse, sizeof(struct sgs__AppPutLogResponse));
+		if (soap->alloced)
+			soap_default_sgs__AppPutLogResponse(soap, a);
+		if (soap->body && soap_element_end_in(soap, tag))
+			return NULL;
+	}
+	return a;
+}
+
+SOAP_FMAC1 void SOAP_FMAC2 soap_serialize_sgs__GetParamLogResponse(struct soap *soap, struct sgs__GetParamLogResponse const*a)
+{
+	if (!soap_reference(soap, a, SOAP_TYPE_sgs__GetParamLogResponse))
+		soap_mark_sgs__GetParamLogResponse(soap, a);
+}
+
+SOAP_FMAC1 void SOAP_FMAC2 soap_mark_sgs__GetParamLogResponse(struct soap *soap, const struct sgs__GetParamLogResponse *a)
+{
+	soap_embedded(soap, &a->_GetParamLogResult, SOAP_TYPE_xsd__string);
+	soap_mark_xsd__string(soap, &a->_GetParamLogResult);
+}
+
+SOAP_FMAC1 void SOAP_FMAC2 soap_default_sgs__GetParamLogResponse(struct soap *soap, struct sgs__GetParamLogResponse *a)
+{
+	soap_default_xsd__string(soap, &a->_GetParamLogResult);
+}
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_put_sgs__GetParamLogResponse(struct soap *soap, struct sgs__GetParamLogResponse *a, const char *tag, const char *type)
+{
+	int i;
+	struct soap_plist *pp;
+	if ((i = soap_pointer_lookup(soap, a, SOAP_TYPE_sgs__GetParamLogResponse, &pp)))
+		if (soap_is_embedded(soap, pp))
+			soap_element_ref(soap, tag, 0, i);
+		else if (soap_is_single(soap, pp))
+			soap_out_sgs__GetParamLogResponse(soap, tag, 0, a, type);
+		else
+		{
+			soap_set_embedded(soap, pp);
+			soap_out_sgs__GetParamLogResponse(soap, tag, i, a, type);
+		}
+	else
+		soap_out_sgs__GetParamLogResponse(soap, tag, 0, a, type);
+	return soap_putindependent(soap);
+}
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_out_sgs__GetParamLogResponse(struct soap *soap, const char *tag, int id, const struct sgs__GetParamLogResponse *a, const char *type)
+{
+	soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_sgs__GetParamLogResponse), type);
+	soap_out_xsd__string(soap, "GetParamLogResult", -1, &a->_GetParamLogResult, "xsd:string");
+	soap_element_end_out(soap, tag);
+	return SOAP_OK;
+}
+
+SOAP_FMAC1 struct sgs__GetParamLogResponse * SOAP_FMAC2 soap_get_sgs__GetParamLogResponse(struct soap *soap, struct sgs__GetParamLogResponse *p, const char *tag, const char *type)
+{
+	if ((p = soap_in_sgs__GetParamLogResponse(soap, tag, p, type)))
+		soap_getindependent(soap);
+	return p;
+}
+
+SOAP_FMAC1 struct sgs__GetParamLogResponse * SOAP_FMAC2 soap_in_sgs__GetParamLogResponse(struct soap *soap, const char *tag, struct sgs__GetParamLogResponse *a, const char *type)
+{
+	short soap_flag__GetParamLogResult = 1;
+	if (soap_element_begin_in(soap, tag))
+		return NULL;
+	if (*soap->type && soap_match_tag(soap, soap->type, type))
+	{	soap->error = SOAP_TYPE_MISMATCH;
+		soap_revert(soap);
+		return NULL;
+	}
+	if (soap->null)
+	{	if (soap->mode & SOAP_XML_NIL)
+		{	soap->error = SOAP_NULL;
+			return NULL;
+		}
+		else
+			return a;
+	}
+	if (!*soap->href)
+	{	a = (struct sgs__GetParamLogResponse *)soap_id_enter(soap, soap->id, a, SOAP_TYPE_sgs__GetParamLogResponse, sizeof(struct sgs__GetParamLogResponse), 0);
+		if (!a)
+			return NULL;
+		if (soap->alloced)
+			soap_default_sgs__GetParamLogResponse(soap, a);
+		if (soap->body)
+		{	for (;;)
+			{	soap->error = SOAP_TAG_MISMATCH;
+			if (soap_flag__GetParamLogResult && soap->error == SOAP_TAG_MISMATCH)
+				if (soap_in_xsd__string(soap, NULL, &a->_GetParamLogResult, "xsd:string"))
+				{	soap_flag__GetParamLogResult = 0;
+					continue;
+				}
+			if (soap->error == SOAP_TAG_MISMATCH)
+				soap->error = soap_ignore_element(soap);
+			if (soap->error == SOAP_NO_TAG)
+				break;
+			if (soap->error)
+			{	return NULL;
+			}
+		}
+		if (soap_element_end_in(soap, tag))
+			return NULL;
+		}
+	}
+	else
+	{	a = (struct sgs__GetParamLogResponse *)soap_id_forward(soap, soap->href, (void**)soap_id_enter(soap, soap->id, a, SOAP_TYPE_sgs__GetParamLogResponse, sizeof(struct sgs__GetParamLogResponse), 0), SOAP_TYPE_sgs__GetParamLogResponse, sizeof(struct sgs__GetParamLogResponse));
+		if (soap->alloced)
+			soap_default_sgs__GetParamLogResponse(soap, a);
 		if (soap->body && soap_element_end_in(soap, tag))
 			return NULL;
 	}
@@ -14897,6 +15376,106 @@ SOAP_FMAC1 struct sgs__AttachResponse ** SOAP_FMAC2 soap_in_PointerTosgs__Attach
 	return a;
 }
 
+SOAP_FMAC1 void SOAP_FMAC2 soap_serialize_PointerTosgs__GetParamLogResponse(struct soap *soap, struct sgs__GetParamLogResponse *const*a)
+{
+	if (!soap_reference(soap, a, SOAP_TYPE_PointerTosgs__GetParamLogResponse))
+		soap_mark_PointerTosgs__GetParamLogResponse(soap, a);
+}
+
+SOAP_FMAC1 void SOAP_FMAC2 soap_mark_PointerTosgs__GetParamLogResponse(struct soap *soap, struct sgs__GetParamLogResponse *const*a)
+{
+	if (!soap_reference(soap, *a, SOAP_TYPE_sgs__GetParamLogResponse))
+		soap_mark_sgs__GetParamLogResponse(soap, *a);
+}
+
+SOAP_FMAC1 void SOAP_FMAC2 soap_default_PointerTosgs__GetParamLogResponse(struct soap *soap, struct sgs__GetParamLogResponse **a)
+{
+	*a = NULL;
+}
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_put_PointerTosgs__GetParamLogResponse(struct soap *soap, struct sgs__GetParamLogResponse **a, const char *tag, const char *type)
+{
+	int i;
+	struct soap_plist *pp;
+	if ((i = soap_pointer_lookup(soap, a, SOAP_TYPE_PointerTosgs__GetParamLogResponse, &pp)))
+		if (soap_is_embedded(soap, pp))
+			soap_element_ref(soap, tag, 0, i);
+		else if (soap_is_single(soap, pp))
+			soap_out_PointerTosgs__GetParamLogResponse(soap, tag, 0, a, type);
+		else
+		{
+			soap_set_embedded(soap, pp);
+			soap_out_PointerTosgs__GetParamLogResponse(soap, tag, i, a, type);
+		}
+	else
+		soap_out_PointerTosgs__GetParamLogResponse(soap, tag, 0, a, type);
+	return soap_putindependent(soap);
+}
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_out_PointerTosgs__GetParamLogResponse(struct soap *soap, const char *tag, int id, struct sgs__GetParamLogResponse *const*a, const char *type)
+{
+	id = soap_embedded_id(soap, id, a, SOAP_TYPE_PointerTosgs__GetParamLogResponse);
+	if (!*a)
+		soap_element_null(soap, tag, id, type);
+	else
+	{	struct soap_plist *pp;
+		int i = soap_pointer_lookup(soap, *a, SOAP_TYPE_sgs__GetParamLogResponse, &pp);
+		if (i)
+			if (soap_is_embedded(soap, pp))
+				soap_element_ref(soap, tag, id, i);
+			else if (soap_is_single(soap, pp))
+				soap_out_sgs__GetParamLogResponse(soap, tag, 0, *a, type);
+			else
+			{	soap_set_embedded(soap, pp);
+				soap_out_sgs__GetParamLogResponse(soap, tag, i, *a, type);
+			}
+		else
+			soap_out_sgs__GetParamLogResponse(soap, tag, soap_pointer_enter(soap, *a, SOAP_TYPE_sgs__GetParamLogResponse, &pp), *a, type);
+	}
+	return SOAP_OK;
+}
+
+SOAP_FMAC1 struct sgs__GetParamLogResponse ** SOAP_FMAC2 soap_get_PointerTosgs__GetParamLogResponse(struct soap *soap, struct sgs__GetParamLogResponse **p, const char *tag, const char *type)
+{
+	if ((p = soap_in_PointerTosgs__GetParamLogResponse(soap, tag, p, type)))
+		soap_getindependent(soap);
+	return p;
+}
+
+SOAP_FMAC1 struct sgs__GetParamLogResponse ** SOAP_FMAC2 soap_in_PointerTosgs__GetParamLogResponse(struct soap *soap, const char *tag, struct sgs__GetParamLogResponse **a, const char *type)
+{
+	struct sgs__GetParamLogResponse *p;
+	if (soap_element_begin_in(soap, tag))
+		return NULL;
+	if (soap->null)
+	{	a = (struct sgs__GetParamLogResponse **)soap_id_enter(soap, soap->id, a, SOAP_TYPE_PointerTosgs__GetParamLogResponse, sizeof(struct sgs__GetParamLogResponse *), 1);
+		if (a)
+			*a = NULL;
+		if (soap->body && soap_element_end_in(soap, tag))
+			return NULL;
+	}
+	else if (!*soap->href)
+	{	soap_revert(soap);
+		if (a)
+		{	if ((p = soap_in_sgs__GetParamLogResponse(soap, tag, *a, type)))
+				*a = p;
+			else
+				a = NULL;
+		}
+		else if ((p = soap_in_sgs__GetParamLogResponse(soap, tag, NULL, type)))
+		{	a = (struct sgs__GetParamLogResponse **)soap_id_enter(soap, "", NULL, SOAP_TYPE_PointerTosgs__GetParamLogResponse, sizeof(struct sgs__GetParamLogResponse *), 0);
+			if (a)
+				*a = p;
+		}
+	}
+	else
+	{	a = (struct sgs__GetParamLogResponse **)soap_id_lookup(soap, soap->href, (void**)soap_id_enter(soap, soap->id, a, SOAP_TYPE_PointerTosgs__GetParamLogResponse, sizeof(struct sgs__GetParamLogResponse *), 1), SOAP_TYPE_sgs__GetParamLogResponse, sizeof(struct sgs__GetParamLogResponse), 0);
+		if (soap->body && soap_element_end_in(soap, tag))
+			return NULL;
+	}
+	return a;
+}
+
 SOAP_FMAC1 void SOAP_FMAC2 soap_serialize_PointerTosgs__RestartResponse(struct soap *soap, struct sgs__RestartResponse *const*a)
 {
 	if (!soap_reference(soap, a, SOAP_TYPE_PointerTosgs__RestartResponse))
@@ -15091,6 +15670,106 @@ SOAP_FMAC1 struct sgs__GetStatusResponse ** SOAP_FMAC2 soap_in_PointerTosgs__Get
 	}
 	else
 	{	a = (struct sgs__GetStatusResponse **)soap_id_lookup(soap, soap->href, (void**)soap_id_enter(soap, soap->id, a, SOAP_TYPE_PointerTosgs__GetStatusResponse, sizeof(struct sgs__GetStatusResponse *), 1), SOAP_TYPE_sgs__GetStatusResponse, sizeof(struct sgs__GetStatusResponse), 0);
+		if (soap->body && soap_element_end_in(soap, tag))
+			return NULL;
+	}
+	return a;
+}
+
+SOAP_FMAC1 void SOAP_FMAC2 soap_serialize_PointerTosgs__AppPutLogResponse(struct soap *soap, struct sgs__AppPutLogResponse *const*a)
+{
+	if (!soap_reference(soap, a, SOAP_TYPE_PointerTosgs__AppPutLogResponse))
+		soap_mark_PointerTosgs__AppPutLogResponse(soap, a);
+}
+
+SOAP_FMAC1 void SOAP_FMAC2 soap_mark_PointerTosgs__AppPutLogResponse(struct soap *soap, struct sgs__AppPutLogResponse *const*a)
+{
+	if (!soap_reference(soap, *a, SOAP_TYPE_sgs__AppPutLogResponse))
+		soap_mark_sgs__AppPutLogResponse(soap, *a);
+}
+
+SOAP_FMAC1 void SOAP_FMAC2 soap_default_PointerTosgs__AppPutLogResponse(struct soap *soap, struct sgs__AppPutLogResponse **a)
+{
+	*a = NULL;
+}
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_put_PointerTosgs__AppPutLogResponse(struct soap *soap, struct sgs__AppPutLogResponse **a, const char *tag, const char *type)
+{
+	int i;
+	struct soap_plist *pp;
+	if ((i = soap_pointer_lookup(soap, a, SOAP_TYPE_PointerTosgs__AppPutLogResponse, &pp)))
+		if (soap_is_embedded(soap, pp))
+			soap_element_ref(soap, tag, 0, i);
+		else if (soap_is_single(soap, pp))
+			soap_out_PointerTosgs__AppPutLogResponse(soap, tag, 0, a, type);
+		else
+		{
+			soap_set_embedded(soap, pp);
+			soap_out_PointerTosgs__AppPutLogResponse(soap, tag, i, a, type);
+		}
+	else
+		soap_out_PointerTosgs__AppPutLogResponse(soap, tag, 0, a, type);
+	return soap_putindependent(soap);
+}
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_out_PointerTosgs__AppPutLogResponse(struct soap *soap, const char *tag, int id, struct sgs__AppPutLogResponse *const*a, const char *type)
+{
+	id = soap_embedded_id(soap, id, a, SOAP_TYPE_PointerTosgs__AppPutLogResponse);
+	if (!*a)
+		soap_element_null(soap, tag, id, type);
+	else
+	{	struct soap_plist *pp;
+		int i = soap_pointer_lookup(soap, *a, SOAP_TYPE_sgs__AppPutLogResponse, &pp);
+		if (i)
+			if (soap_is_embedded(soap, pp))
+				soap_element_ref(soap, tag, id, i);
+			else if (soap_is_single(soap, pp))
+				soap_out_sgs__AppPutLogResponse(soap, tag, 0, *a, type);
+			else
+			{	soap_set_embedded(soap, pp);
+				soap_out_sgs__AppPutLogResponse(soap, tag, i, *a, type);
+			}
+		else
+			soap_out_sgs__AppPutLogResponse(soap, tag, soap_pointer_enter(soap, *a, SOAP_TYPE_sgs__AppPutLogResponse, &pp), *a, type);
+	}
+	return SOAP_OK;
+}
+
+SOAP_FMAC1 struct sgs__AppPutLogResponse ** SOAP_FMAC2 soap_get_PointerTosgs__AppPutLogResponse(struct soap *soap, struct sgs__AppPutLogResponse **p, const char *tag, const char *type)
+{
+	if ((p = soap_in_PointerTosgs__AppPutLogResponse(soap, tag, p, type)))
+		soap_getindependent(soap);
+	return p;
+}
+
+SOAP_FMAC1 struct sgs__AppPutLogResponse ** SOAP_FMAC2 soap_in_PointerTosgs__AppPutLogResponse(struct soap *soap, const char *tag, struct sgs__AppPutLogResponse **a, const char *type)
+{
+	struct sgs__AppPutLogResponse *p;
+	if (soap_element_begin_in(soap, tag))
+		return NULL;
+	if (soap->null)
+	{	a = (struct sgs__AppPutLogResponse **)soap_id_enter(soap, soap->id, a, SOAP_TYPE_PointerTosgs__AppPutLogResponse, sizeof(struct sgs__AppPutLogResponse *), 1);
+		if (a)
+			*a = NULL;
+		if (soap->body && soap_element_end_in(soap, tag))
+			return NULL;
+	}
+	else if (!*soap->href)
+	{	soap_revert(soap);
+		if (a)
+		{	if ((p = soap_in_sgs__AppPutLogResponse(soap, tag, *a, type)))
+				*a = p;
+			else
+				a = NULL;
+		}
+		else if ((p = soap_in_sgs__AppPutLogResponse(soap, tag, NULL, type)))
+		{	a = (struct sgs__AppPutLogResponse **)soap_id_enter(soap, "", NULL, SOAP_TYPE_PointerTosgs__AppPutLogResponse, sizeof(struct sgs__AppPutLogResponse *), 0);
+			if (a)
+				*a = p;
+		}
+	}
+	else
+	{	a = (struct sgs__AppPutLogResponse **)soap_id_lookup(soap, soap->href, (void**)soap_id_enter(soap, soap->id, a, SOAP_TYPE_PointerTosgs__AppPutLogResponse, sizeof(struct sgs__AppPutLogResponse *), 1), SOAP_TYPE_sgs__AppPutLogResponse, sizeof(struct sgs__AppPutLogResponse), 0);
 		if (soap->body && soap_element_end_in(soap, tag))
 			return NULL;
 	}
@@ -15695,6 +16374,61 @@ SOAP_FMAC1 struct sgs__setServiceDataResponse ** SOAP_FMAC2 soap_in_PointerTosgs
 			return NULL;
 	}
 	return a;
+}
+
+SOAP_FMAC1 void SOAP_FMAC2 soap_default_xsd__integer(struct soap *soap, char **a)
+{
+#ifdef SOAP_DEFAULT_xsd__integer
+	*a = SOAP_DEFAULT_xsd__integer;
+#else
+	*a = (char *)0;
+#endif
+}
+
+SOAP_FMAC1 void SOAP_FMAC2 soap_serialize_xsd__integer(struct soap *soap, char *const*a)
+{
+	soap_reference(soap, *a, SOAP_TYPE_xsd__integer);
+}
+
+SOAP_FMAC1 void SOAP_FMAC2 soap_mark_xsd__integer(struct soap *soap, char *const*a)
+{
+	soap_reference(soap, *a, SOAP_TYPE_xsd__integer);
+}
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_put_xsd__integer(struct soap *soap, char **a, const char *tag, const char *type)
+{
+	int i;
+	struct soap_plist *pp;
+	if ((i = soap_pointer_lookup(soap, a, SOAP_TYPE_xsd__integer, &pp)))
+		if (soap_is_embedded(soap, pp))
+			soap_element_ref(soap, tag, 0, i);
+		else if (soap_is_single(soap, pp))
+			soap_out_xsd__integer(soap, tag, 0, a, type);
+		else
+		{
+			soap_set_embedded(soap, pp);
+			soap_out_xsd__integer(soap, tag, i, a, type);
+		}
+	else
+		soap_out_xsd__integer(soap, tag, 0, a, type);
+	return soap_putindependent(soap);
+}
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_out_xsd__integer(struct soap *soap, const char *tag, int id, char *const*a, const char *type)
+{
+	return soap_outstring(soap, tag, id, a, type, SOAP_TYPE_xsd__integer);
+}
+
+SOAP_FMAC1 char ** SOAP_FMAC2 soap_get_xsd__integer(struct soap *soap, char **p, const char *tag, const char *type)
+{
+	if ((p = soap_in_xsd__integer(soap, tag, p, type)))
+		soap_getindependent(soap);
+	return p;
+}
+
+SOAP_FMAC1 char * * SOAP_FMAC2 soap_in_xsd__integer(struct soap *soap, const char *tag, char **a, const char *type)
+{
+	return soap_instring(soap, tag, a, type, SOAP_TYPE_xsd__integer, 1);
 }
 
 SOAP_FMAC1 void SOAP_FMAC2 soap_default_xsd__string(struct soap *soap, char **a)

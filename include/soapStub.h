@@ -99,7 +99,6 @@ struct sgs__AppStopResponse
 #define _SOAP_sgs__destroyResponse
 struct sgs__destroyResponse
 {
-  void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -124,6 +123,22 @@ struct sgs__DetachResponse
 struct sgs__ClearStatusMsgQueueResponse
 {
 	char *_ClearStatusMsgQueueReturn;
+};
+#endif
+
+#ifndef _SOAP_sgs__GetParamLogResponse
+#define _SOAP_sgs__GetParamLogResponse
+struct sgs__GetParamLogResponse
+{
+	char *_GetParamLogResult;
+};
+#endif
+
+#ifndef _SOAP_sgs__AppPutLogResponse
+#define _SOAP_sgs__AppPutLogResponse
+struct sgs__AppPutLogResponse
+{
+	char *_AppPutLogReturn;
 };
 #endif
 
@@ -187,7 +202,6 @@ struct sgs__setServiceData
 #define _SOAP_sgs__destroy
 struct sgs__destroy
 {
-  void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -195,7 +209,6 @@ struct sgs__destroy
 #define _SOAP_sgs__AppDetach
 struct sgs__AppDetach
 {
-  void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -211,7 +224,6 @@ struct sgs__PutStatus
 #define _SOAP_sgs__AppStop
 struct sgs__AppStop
 {
-  void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -219,7 +231,14 @@ struct sgs__AppStop
 #define _SOAP_sgs__GetControl
 struct sgs__GetControl
 {
-  void *rubbish; /* ARPDBG */
+};
+#endif
+
+#ifndef _SOAP_sgs__AppPutLog
+#define _SOAP_sgs__AppPutLog
+struct sgs__AppPutLog
+{
+	char *in0;
 };
 #endif
 
@@ -227,7 +246,6 @@ struct sgs__GetControl
 #define _SOAP_sgs__GetStatus
 struct sgs__GetStatus
 {
-  void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -239,11 +257,18 @@ struct sgs__Restart
 };
 #endif
 
+#ifndef _SOAP_sgs__GetParamLog
+#define _SOAP_sgs__GetParamLog
+struct sgs__GetParamLog
+{
+	char *in0;
+};
+#endif
+
 #ifndef _SOAP_sgs__Attach
 #define _SOAP_sgs__Attach
 struct sgs__Attach
 {
-  void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -259,7 +284,6 @@ struct sgs__GetNthDataSource
 #define _SOAP_sgs__Stop
 struct sgs__Stop
 {
-  void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -267,7 +291,6 @@ struct sgs__Stop
 #define _SOAP_sgs__Detach
 struct sgs__Detach
 {
-  void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -300,7 +323,6 @@ struct sgs__AppRecordChkpoint
 #define _SOAP_sgs__Pause
 struct sgs__Pause
 {
-  void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -308,7 +330,6 @@ struct sgs__Pause
 #define _SOAP_sgs__GetNotifications
 struct sgs__GetNotifications
 {
-  void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -316,7 +337,6 @@ struct sgs__GetNotifications
 #define _SOAP_sgs__AppStart
 struct sgs__AppStart
 {
-  void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -324,7 +344,6 @@ struct sgs__AppStart
 #define _SOAP_sgs__Resume
 struct sgs__Resume
 {
-  void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -332,7 +351,6 @@ struct sgs__Resume
 #define _SOAP_sgs__ClearStatusMsgQueue
 struct sgs__ClearStatusMsgQueue
 {
-  void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -348,7 +366,6 @@ struct sgsf__createServiceResponse
 #define _SOAP_sgsf__destroyResponse
 struct sgsf__destroyResponse
 {
-  void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -373,7 +390,6 @@ struct sgsf__registerSelf
 #define _SOAP_sgsf__destroy
 struct sgsf__destroy
 {
-  void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -417,7 +433,6 @@ struct sgr__addResponse
 #define _SOAP_sgr__removeResponse
 struct sgr__removeResponse
 {
-  void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -499,7 +514,6 @@ struct rgtf__requestTerminationAfterResponse
 #define _SOAP_rgtf__destroyResponse
 struct rgtf__destroyResponse
 {
-  void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -527,7 +541,6 @@ struct rgtf__findByHandle
 #define _SOAP_rgtf__destroy
 struct rgtf__destroy
 {
-  void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -543,7 +556,6 @@ struct rgtf__findServiceData
 #define _SOAP_rgtf__getActiveTrees
 struct rgtf__getActiveTrees
 {
-  void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -607,7 +619,6 @@ struct rgt__findServiceDataResponse
 #define _SOAP_rgt__setCheckPointDataResponse
 struct rgt__setCheckPointDataResponse
 {
-  void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -647,7 +658,6 @@ struct rgt__getInputFileResponse
 #define _SOAP_rgt__destroyResponse
 struct rgt__destroyResponse
 {
-  void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -663,7 +673,6 @@ struct rgt__requestTerminationAfter
 #define _SOAP_rgt__getChildNodes
 struct rgt__getChildNodes
 {
-  void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -671,7 +680,6 @@ struct rgt__getChildNodes
 #define _SOAP_rgt__getInputFile
 struct rgt__getInputFile
 {
-  void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -687,7 +695,6 @@ struct rgt__findServiceData
 #define _SOAP_rgt__setCheckPointData
 struct rgt__setCheckPointData
 {
-  void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -695,7 +702,6 @@ struct rgt__setCheckPointData
 #define _SOAP_rgt__destroy
 struct rgt__destroy
 {
-  void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -703,7 +709,6 @@ struct rgt__destroy
 #define _SOAP_rgt__getSteeringCommands
 struct rgt__getSteeringCommands
 {
-  void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -719,7 +724,6 @@ struct rgt__requestTerminationBefore
 #define _SOAP_rgt__getCheckPointData
 struct rgt__getCheckPointData
 {
-  void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -727,7 +731,6 @@ struct rgt__getCheckPointData
 #define _SOAP_rgt__getParentNode
 struct rgt__getParentNode
 {
-  void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -781,6 +784,7 @@ struct SOAP_ENV__Fault
 /* Typedefs */
 typedef char *xsd__string;
 typedef int xsd__int;
+typedef char *xsd__integer;
 
 /* Variables */
 
@@ -798,9 +802,13 @@ SOAP_FMAC1 int SOAP_FMAC2 sgs__AppStop(struct soap*, struct sgs__AppStopResponse
 
 SOAP_FMAC1 int SOAP_FMAC2 sgs__GetControl(struct soap*, struct sgs__GetControlResponse *);
 
+SOAP_FMAC1 int SOAP_FMAC2 sgs__AppPutLog(struct soap*, char *, struct sgs__AppPutLogResponse *);
+
 SOAP_FMAC1 int SOAP_FMAC2 sgs__GetStatus(struct soap*, struct sgs__GetStatusResponse *);
 
 SOAP_FMAC1 int SOAP_FMAC2 sgs__Restart(struct soap*, char *, struct sgs__RestartResponse *);
+
+SOAP_FMAC1 int SOAP_FMAC2 sgs__GetParamLog(struct soap*, char *, struct sgs__GetParamLogResponse *);
 
 SOAP_FMAC1 int SOAP_FMAC2 sgs__Attach(struct soap*, struct sgs__AttachResponse *);
 
@@ -888,9 +896,13 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__AppStop(struct soap*, const char*, cons
 
 SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__GetControl(struct soap*, const char*, const char*, struct sgs__GetControlResponse *);
 
+SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__AppPutLog(struct soap*, const char*, const char*, char *, struct sgs__AppPutLogResponse *);
+
 SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__GetStatus(struct soap*, const char*, const char*, struct sgs__GetStatusResponse *);
 
 SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__Restart(struct soap*, const char*, const char*, char *, struct sgs__RestartResponse *);
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__GetParamLog(struct soap*, const char*, const char*, char *, struct sgs__GetParamLogResponse *);
 
 SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__Attach(struct soap*, const char*, const char*, struct sgs__AttachResponse *);
 
@@ -980,9 +992,13 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_serve_sgs__AppStop(struct soap*);
 
 SOAP_FMAC1 int SOAP_FMAC2 soap_serve_sgs__GetControl(struct soap*);
 
+SOAP_FMAC1 int SOAP_FMAC2 soap_serve_sgs__AppPutLog(struct soap*);
+
 SOAP_FMAC1 int SOAP_FMAC2 soap_serve_sgs__GetStatus(struct soap*);
 
 SOAP_FMAC1 int SOAP_FMAC2 soap_serve_sgs__Restart(struct soap*);
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_serve_sgs__GetParamLog(struct soap*);
 
 SOAP_FMAC1 int SOAP_FMAC2 soap_serve_sgs__Attach(struct soap*);
 

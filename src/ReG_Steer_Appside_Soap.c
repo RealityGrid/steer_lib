@@ -56,6 +56,8 @@ extern char ReG_Hostname[REG_MAX_STRING_LENGTH];
 /* Name (and version) of the application that has called us */
 extern char ReG_AppName[REG_MAX_STRING_LENGTH];
 
+extern char Global_scratch_buffer[];
+
 /* Soap-specific declarations */
 static struct soap soap;
 
@@ -649,4 +651,31 @@ int Record_checkpoint_set_soap(char *chk_data,
   }
 
   return REG_FAILURE;
+}
+
+/*----------------------------------------------------------------------*/
+
+int Save_log_soap(char *log_data)
+{
+  struct sgs__AppPutLogResponse AppPutLog_response;
+  char *pmsg_buf;
+
+  AppPutLog_response._AppPutLogReturn = NULL;
+
+  pmsg_buf = Global_scratch_buffer;
+  pmsg_buf += sprintf(pmsg_buf, "<Steer_log><Raw_param_log><![CDATA[");
+  strcpy(pmsg_buf, log_data);
+  pmsg_buf += strlen(log_data);
+  pmsg_buf += sprintf(pmsg_buf, "]]></Raw_param_log></Steer_log>");
+
+  if(soap_call_sgs__AppPutLog(&soap, 
+			      Steerer_connection.SGS_address, 
+			      "", Global_scratch_buffer,  
+			      &AppPutLog_response)){
+    fprintf(stderr, "Save_log_soap: soap call failed:\n");
+    soap_print_fault(&soap, stderr);
+    return REG_FAILURE;
+  }
+
+  return REG_SUCCESS;
 }

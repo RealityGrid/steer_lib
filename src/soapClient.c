@@ -8,7 +8,7 @@
 extern "C" {
 #endif
 
-SOAP_SOURCE_STAMP("@(#) soapClient.c ver 2.2.3b 2004-05-27 09:02:30 GMT")
+SOAP_SOURCE_STAMP("@(#) soapClient.c ver 2.2.3b 2005-02-08 16:41:21 GMT")
 
 
 SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__setServiceData(struct soap *soap, const char *URL, const char *action, char *in0, struct sgs__setServiceDataResponse *out)
@@ -301,6 +301,55 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__GetControl(struct soap *soap, const cha
 	return SOAP_OK;
 }
 
+SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__AppPutLog(struct soap *soap, const char *URL, const char *action, char *in0, struct sgs__AppPutLogResponse *out)
+{
+	struct sgs__AppPutLog soap_tmp_sgs__AppPutLog;
+	if (!action)
+		action = "";
+	soap_tmp_sgs__AppPutLog.in0=in0;
+	soap_begin(soap);
+	soap_serializeheader(soap);
+	soap_serialize_sgs__AppPutLog(soap, &soap_tmp_sgs__AppPutLog);
+	soap_begin_count(soap);
+	if (soap->mode & SOAP_IO_LENGTH)
+	{	soap_envelope_begin_out(soap);
+		soap_putheader(soap);
+		soap_body_begin_out(soap);
+		soap_put_sgs__AppPutLog(soap, &soap_tmp_sgs__AppPutLog, "sgs:AppPutLog", "");
+		soap_body_end_out(soap);
+		soap_envelope_end_out(soap);
+	}
+	if (soap_connect(soap, URL, action)
+	 || soap_envelope_begin_out(soap)
+	 || soap_putheader(soap)
+	 || soap_body_begin_out(soap)
+	 || soap_put_sgs__AppPutLog(soap, &soap_tmp_sgs__AppPutLog, "sgs:AppPutLog", "")
+	 || soap_body_end_out(soap)
+	 || soap_envelope_end_out(soap)
+	 || soap_putattachments(soap)
+	 || soap_end_send(soap))
+		return soap->error;
+	soap_default_sgs__AppPutLogResponse(soap, out);
+	if (soap_begin_recv(soap)
+	 || soap_envelope_begin_in(soap)
+	 || soap_recv_header(soap)
+	 || soap_body_begin_in(soap))
+		return soap->error;
+	soap_get_sgs__AppPutLogResponse(soap, out, "sgs:AppPutLogResponse", "sgs:AppPutLogResponse");
+	if (soap->error)
+	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
+			soap_recv_fault(soap);
+		return soap->error;
+	}
+	if (soap_body_end_in(soap)
+	 || soap_envelope_end_in(soap)
+	 || soap_getattachments(soap)
+	 || soap_end_recv(soap))
+		return soap->error;
+	soap_closesock(soap);
+	return SOAP_OK;
+}
+
 SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__GetStatus(struct soap *soap, const char *URL, const char *action, struct sgs__GetStatusResponse *out)
 {
 	struct sgs__GetStatus soap_tmp_sgs__GetStatus;
@@ -384,6 +433,55 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__Restart(struct soap *soap, const char *
 	 || soap_body_begin_in(soap))
 		return soap->error;
 	soap_get_sgs__RestartResponse(soap, out, "sgs:RestartResponse", "sgs:RestartResponse");
+	if (soap->error)
+	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
+			soap_recv_fault(soap);
+		return soap->error;
+	}
+	if (soap_body_end_in(soap)
+	 || soap_envelope_end_in(soap)
+	 || soap_getattachments(soap)
+	 || soap_end_recv(soap))
+		return soap->error;
+	soap_closesock(soap);
+	return SOAP_OK;
+}
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__GetParamLog(struct soap *soap, const char *URL, const char *action, char *in0, struct sgs__GetParamLogResponse *out)
+{
+	struct sgs__GetParamLog soap_tmp_sgs__GetParamLog;
+	if (!action)
+		action = "";
+	soap_tmp_sgs__GetParamLog.in0=in0;
+	soap_begin(soap);
+	soap_serializeheader(soap);
+	soap_serialize_sgs__GetParamLog(soap, &soap_tmp_sgs__GetParamLog);
+	soap_begin_count(soap);
+	if (soap->mode & SOAP_IO_LENGTH)
+	{	soap_envelope_begin_out(soap);
+		soap_putheader(soap);
+		soap_body_begin_out(soap);
+		soap_put_sgs__GetParamLog(soap, &soap_tmp_sgs__GetParamLog, "sgs:GetParamLog", "");
+		soap_body_end_out(soap);
+		soap_envelope_end_out(soap);
+	}
+	if (soap_connect(soap, URL, action)
+	 || soap_envelope_begin_out(soap)
+	 || soap_putheader(soap)
+	 || soap_body_begin_out(soap)
+	 || soap_put_sgs__GetParamLog(soap, &soap_tmp_sgs__GetParamLog, "sgs:GetParamLog", "")
+	 || soap_body_end_out(soap)
+	 || soap_envelope_end_out(soap)
+	 || soap_putattachments(soap)
+	 || soap_end_send(soap))
+		return soap->error;
+	soap_default_sgs__GetParamLogResponse(soap, out);
+	if (soap_begin_recv(soap)
+	 || soap_envelope_begin_in(soap)
+	 || soap_recv_header(soap)
+	 || soap_body_begin_in(soap))
+		return soap->error;
+	soap_get_sgs__GetParamLogResponse(soap, out, "sgs:GetParamLogResponse", "sgs:GetParamLogResponse");
 	if (soap->error)
 	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
 			soap_recv_fault(soap);

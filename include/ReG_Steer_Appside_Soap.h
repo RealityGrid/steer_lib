@@ -57,4 +57,6 @@ int Get_data_source_address_soap(int                 index,
 int Record_checkpoint_set_soap(char *chk_data,
 			       char *node_data);
 
+int Save_log_soap(char *log_data);
+
 #endif

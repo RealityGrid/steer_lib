@@ -181,6 +181,9 @@ int Save_log(Chk_log_type *log)
     if(status == REG_SUCCESS){
       fprintf(log->file_ptr, "%s", buf);
     }
+#if REG_SOAP_STEERING
+    Save_log_soap(buf);
+#endif
   }
 
   log->num_entries = 0;
