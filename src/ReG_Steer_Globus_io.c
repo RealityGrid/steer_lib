@@ -147,10 +147,10 @@ int Globus_socket_info_init(socket_io_type * const socket_info)
 #if REG_DEBUG
     else{
       fprintf(stderr, 
-	      "Globus_socket_info_init: "
+	  "Globus_socket_info_init: "
 	  "Get_fully_qualified_hostname returned IP of localhost\n"
-	      "                         so not setting globus_io "
-	      "tcp interface - will use INADDR_ANY\n");
+	  "                         so not setting globus_io "
+	  "tcp interface - will use INADDR_ANY\n");
     }
 #endif
   }
