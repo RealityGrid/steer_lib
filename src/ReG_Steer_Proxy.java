@@ -1,3 +1,32 @@
+//---------------------------------------------------------------------
+//  Class defining a steering proxy that allows the standard steering
+//  library to communicate with the UNICORE framework.
+//
+//  (C)Copyright 2002 The University of Manchester, United Kingdom,
+//  all rights reserved.
+//
+//  This software is produced by the Supercomputing, Visualization &
+//  e-Science Group, Manchester Computing, the Victoria University of
+//  Manchester as part of the RealityGrid project.
+//
+//  This software has been tested with care but is not guaranteed for
+//  any particular purpose. Neither the authors, nor the University of
+//  Manchester offer any warranties or representations, nor do they
+//  accept any liabilities with respect to this software.
+//
+//  This program must not be used for commmercial gain without the
+//  written permission of the authors.
+//
+//  Supercomputing, Visualization & e-Science Group
+//  Manchester Computing
+//  University of Manchester
+//  Manchester M13 9PL
+//
+//  email:  sve@man.ac.uk.
+//  Tel:    +44 161 275 6824/5997
+//  Fax:    +44 161 275 6800    
+//---------------------------------------------------------------------
+
 //package ReG_Steer_Proxy;
 
 import java.io.*;
