@@ -694,7 +694,6 @@ int Consume_param_defs(int SimHandle)
   return return_status;
 }
 
-
 /*----------------------------------------------------------*/
 
 int Consume_IOType_defs(int SimHandle)
@@ -818,6 +817,26 @@ int Consume_IOType_defs(int SimHandle)
 
   Delete_msg_struct(Sim_table.sim[index].msg);
   Sim_table.sim[index].msg = NULL;
+
+  return return_status;
+}
+
+/*----------------------------------------------------------*/
+
+int Consume_ChkType_defs(int SimHandle)
+{
+  int               index;
+  int               i, j;
+  int               return_status = REG_SUCCESS;
+  int               handle;
+  int               found;
+  struct io_struct *ptr;
+
+  if( (index = Sim_index_from_handle(SimHandle)) == REG_SIM_HANDLE_NOTSET){
+
+    fprintf(stderr, "Consume_ChkType_defs: failed to find sim table entry\n");
+    return REG_FAILURE;
+  }
 
   return return_status;
 }
@@ -1669,6 +1688,194 @@ int Set_iotype_freq(int sim_handle,
 
 #if DEBUG
     fprintf(stderr, "Set_iotype_freq: failed to match sim_handle\n");
+#endif
+    return_status = REG_FAILURE;
+  }
+
+  return return_status;
+}
+
+/*-------------------------------------------------------------------*/
+
+int Get_chktype_number(int  sim_handle,
+		       int *num_chktypes)
+{
+  int i;
+  int isim;
+  int count;
+  int return_status = REG_SUCCESS;
+
+  /* Calculates the number of valid chk types currently registered with the
+     simulation with handle sim_handle */
+
+  if(num_chktypes == NULL)return REG_FAILURE;
+
+  if((isim = Sim_index_from_handle(sim_handle)) != -1){
+
+    count = 0;
+
+    for(i=0; i<Sim_table.sim[isim].Chkdef_table.max_entries; i++){
+
+      if(Sim_table.sim[isim].Chkdef_table.io_def[i].handle != 
+	 REG_IODEF_HANDLE_NOTSET) count++;
+    }
+
+    *num_chktypes = count;
+  }
+  else{
+    return_status = REG_FAILURE;
+  }
+
+  return return_status;
+}
+
+/*-------------------------------------------------------------------*/
+
+int Get_chktypes(int    sim_handle,
+	 	 int    num_chktypes,
+		 int   *handles,
+		 char* *labels,
+		 int   *types,
+		 int   *chk_freqs)
+{
+  int isim;
+  int i;
+  int count;
+  int iparam;
+  int nitem;
+  int return_status = REG_SUCCESS;
+
+  /* Get the first num_chktype Chk defs out of the table.  Assumes
+     that Get_chktype_number has been called first to get the number
+     of entries in the table. */
+
+  if(labels == NULL || handles == NULL)return REG_FAILURE;
+
+  if((isim = Sim_index_from_handle(sim_handle)) != REG_SIM_HANDLE_NOTSET){
+
+    count = 0;
+
+    for(i=0; i<Sim_table.sim[isim].Chkdef_table.max_entries; i++){
+
+      if(Sim_table.sim[isim].Chkdef_table.io_def[i].handle != 
+	 REG_IODEF_HANDLE_NOTSET){
+
+	handles[count] = Sim_table.sim[isim].Chkdef_table.io_def[i].handle;
+	strcpy(labels[count],Sim_table.sim[isim].Chkdef_table.io_def[i].label);
+
+	types[count] = Sim_table.sim[isim].Chkdef_table.io_def[i].direction;
+
+	/* Get the current frequency at which this occurs */
+	if(types[count] == REG_IO_OUT){
+
+	  iparam = Param_index_from_handle(&(Sim_table.sim[isim].Params_table),
+		                           Sim_table.sim[isim].Chkdef_table.io_def[i].freq_param_handle);
+
+	  if(iparam != REG_PARAM_HANDLE_NOTSET){
+
+	    nitem = sscanf(Sim_table.sim[isim].Params_table.param[iparam].value, 
+			   "%d", &(chk_freqs[count]) );
+	    if(nitem != 1){
+
+#if DEBUG
+	      fprintf(stderr, "Get_chktypes: failed to retrieve freq value\n");
+#endif
+	      chk_freqs[count] = 0;
+	      return_status = REG_FAILURE;
+	    }
+	  }
+	  else{
+#if DEBUG
+	    fprintf(stderr, "Get_chktypes: failed to match param handle\n");
+#endif
+	    chk_freqs[count] = 0;
+	    return_status = REG_FAILURE;
+	  }
+	}
+	else{
+
+	  /* Frequency not meaningful for checkpoints registered as inputs
+	     (since this implies a restart of the simulation) */
+	  chk_freqs[count] = 0;
+	}
+
+	count++;
+
+	if(count == num_chktypes)break;
+      }
+    }
+  }
+  else{
+    return_status = REG_FAILURE;
+  }
+
+  return return_status;
+}
+
+/*----------------------------------------------------------------------*/
+
+int Set_chktype_freq(int  sim_handle,
+		     int  num_chktypes,
+		     int *chktype_handles,
+		     int *freqs)
+{
+  int  isim;
+  int  i;
+  int  itype;
+  char *val_array;
+  char param_val[REG_MAX_STRING_LENGTH];
+  int  return_status = REG_SUCCESS;
+
+  /* A utility function that allows the steerer to update the emit/consume
+     frequency associated with a given IOtype - the frequency itself is
+     stored as a steerable parameter and therefore must be looked-up */
+
+  if((isim = Sim_index_from_handle(sim_handle)) != REG_SIM_HANDLE_NOTSET){
+
+    for(itype=0; itype<num_chktypes; itype++){
+
+      /* Find Chkdef with matching handle */
+      for(i=0; i<Sim_table.sim[isim].Chkdef_table.max_entries; i++){
+
+	if(Sim_table.sim[isim].Chkdef_table.io_def[i].handle ==
+	   chktype_handles[itype]) break;
+      }
+
+      if(i==Sim_table.sim[isim].Chkdef_table.max_entries){
+
+#if DEBUG
+	fprintf(stderr, "Set_chktype_freq: failed to match iotype handle\n");
+#endif
+	return_status = REG_FAILURE;
+	continue;
+      }
+
+      if(Sim_table.sim[isim].Chkdef_table.io_def[i].direction == REG_IO_IN){
+
+#if DEBUG
+	fprintf(stderr, "Set_chktype_freq: frequency ignored for ChkTypes"
+		"with direction 'IN'\n");
+#endif
+	continue;
+      }
+
+      /* Identify which entry in the parameter table corresponds to the
+	 emission frequency for this chkdef */
+      sprintf(param_val, "%d", freqs[itype]);
+
+      val_array = param_val;
+
+      return_status =  Set_param_values(sim_handle,
+					1,
+					&(Sim_table.sim[isim].Chkdef_table.io_def[i].freq_param_handle),
+					&val_array);
+      
+    }
+  }
+  else{
+
+#if DEBUG
+    fprintf(stderr, "Set_chktype_freq: failed to match sim_handle\n");
 #endif
     return_status = REG_FAILURE;
   }
