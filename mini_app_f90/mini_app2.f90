@@ -12,7 +12,11 @@ PROGRAM mini_app
   ! For IO types
   INTEGER (KIND=REG_SP_KIND) :: num_types
   CHARACTER(LEN=REG_MAX_STRING_LENGTH), DIMENSION(REG_INITIAL_NUM_IOTYPES) :: io_labels
-  INTEGER (KIND=REG_SP_KIND), DIMENSION(REG_INITIAL_NUM_IOTYPES) :: input_iotype
+  INTEGER (KIND=REG_SP_KIND), DIMENSION(REG_INITIAL_NUM_IOTYPES) :: iotype_handles
+  INTEGER (KIND=REG_SP_KIND), DIMENSION(REG_INITIAL_NUM_IOTYPES) :: io_dirn
+  INTEGER (KIND=REG_SP_KIND), DIMENSION(REG_INITIAL_NUM_IOTYPES) :: io_supp_auto
+  INTEGER (KIND=REG_SP_KIND) :: input_freq
+  INTEGER (KIND=REG_SP_KIND) :: output_freq = 5
 
   ! For parameters
   INTEGER (KIND=REG_SP_KIND) :: num_params
@@ -21,10 +25,11 @@ PROGRAM mini_app
   INTEGER (KIND=REG_SP_KIND) :: param_strbl
 
   ! Parameters for steering
-  INTEGER (KIND=REG_SP_KIND) :: dum_int, dum_int2
-  REAL (KIND=REG_SP_KIND)    :: dum_real, dum_real2
-  REAL (KIND=REG_DP_KIND)    :: dum_dbl
+  INTEGER (KIND=REG_SP_KIND)           :: dum_int, dum_int2
+  REAL (KIND=REG_SP_KIND)              :: dum_real, dum_real2
+  REAL (KIND=REG_DP_KIND)              :: dum_dbl
   CHARACTER(LEN=REG_MAX_STRING_LENGTH) :: dum_str
+
   ! Ensure that we have enough storage for a ptr returned from C - needs
   ! to be large enough to store a C 'long' on whatever architecture is
   ! being used.
@@ -62,15 +67,38 @@ PROGRAM mini_app
   io_labels(1) = " "
   io_labels(1) = "VTK_STRUCTURED_POINTS_INPUT"
   io_labels(1)(28:28) = CHAR(0)
-  CALL register_iotypes_f(num_types, io_labels, input_iotype, status)
+
+  io_dirn(1) = REG_IO_IN
+  io_supp_auto(1) = reg_false
+  
+  CALL register_iotypes_f(num_types, io_labels, io_dirn, io_supp_auto, &
+                          input_freq, iotype_handles(1), status)
 
   IF(status .ne. REG_SUCCESS)THEN
 
     CALL steering_finalize_f(status)
-    STOP 'Failed to register IO types'
+    STOP 'Failed to register IO type'
   END IF
 
-  WRITE(*,*) 'Returned IOtype = ', input_iotype(1)
+  WRITE(*,*) 'Returned IOtype = ', iotype_handles(1)
+
+  io_labels(1) = " "
+  io_labels(1) = "SOME_OUTPUT"
+  io_labels(1)(12:12) = CHAR(0)
+
+  io_dirn(1) = REG_IO_OUT
+  io_supp_auto(1) = reg_true
+  
+  CALL register_iotypes_f(num_types, io_labels, io_dirn, io_supp_auto, &
+                          output_freq, iotype_handles(2), status)
+
+  IF(status .ne. REG_SUCCESS)THEN
+
+    CALL steering_finalize_f(status)
+    STOP 'Failed to register IO type'
+  END IF
+
+  WRITE(*,*) 'Returned IOtype = ', iotype_handles(2)
 
   ! Register some parameters
 
@@ -167,6 +195,7 @@ PROGRAM mini_app
       WRITE(*,*) '2nd_test_real = ', dum_real2
       WRITE(*,*) 'test_string = ', TRIM(dum_str)
       WRITE(*,*) 'test_double = ', dum_dbl
+      WRITE(*,*) 'output_freq = ', output_freq
 
       IF(num_params_changed > 0)THEN
 

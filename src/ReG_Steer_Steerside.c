@@ -1568,7 +1568,7 @@ int Get_iotypes(int    sim_handle,
 
   if(labels == NULL || handles == NULL)return REG_FAILURE;
 
-  if((isim = Sim_index_from_handle(sim_handle)) != -1){
+  if((isim = Sim_index_from_handle(sim_handle)) != REG_SIM_HANDLE_NOTSET){
 
     count = 0;
 

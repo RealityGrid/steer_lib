@@ -116,16 +116,12 @@ int main(){
 
   num_iotypes = 2;
 
-  printf("Calling Register_IOTypes...\n");
-
   status = Register_IOTypes(num_iotypes,
   			    iotype_labels, 
 			    iotype_dirn, 
 			    iotype_auto,
 			    iotype_frequency,
   			    iotype_handle);
-
-  printf("...done\n");
 
   if(status != REG_SUCCESS){
 
