@@ -741,7 +741,8 @@ void Globus_error_print(const globus_result_t result)
 
 int Consume_msg_header_globus(socket_io_type *sock_info,
 			      int *DataType,
-			      int *Count)
+			      int *Count,
+			      int *NumBytes)
 {
   globus_result_t  result;
   globus_size_t    nbytes;
@@ -858,6 +859,35 @@ int Consume_msg_header_globus(socket_io_type *sock_info,
 	  buffer);
 #endif
 
+  if(!strstr(buffer, "<Num_bytes>")){
+
+    return REG_FAILURE;
+  }
+
+  if( sscanf(buffer, "<Num_bytes>%d</Num_bytes>", NumBytes) != 1){
+
+    fprintf(stderr, "Consume_msg_header_globus: failed to read Num_bytes\n");
+    return REG_FAILURE;
+  }
+
+  result = globus_io_read(&(sock_info->conn_handle), 
+			  (globus_byte_t *)buffer, 
+			  REG_PACKET_SIZE, 
+			  REG_PACKET_SIZE, 
+			  &nbytes);
+
+  if(result != GLOBUS_SUCCESS){
+
+    fprintf(stderr, "Consume_msg_header_globus: globus_io_read failed\n");
+    Globus_error_print(result);
+    return REG_FAILURE;
+  }
+
+#if REG_DEBUG
+  fprintf(stderr, "Consume_msg_header_globus: read <%s> from socket\n", 
+	  buffer);
+#endif
+
   if(strncmp(buffer, END_SLICE_HEADER, strlen(END_SLICE_HEADER))){
 
     return REG_FAILURE;
@@ -870,9 +900,10 @@ int Consume_msg_header_globus(socket_io_type *sock_info,
 
 int Emit_msg_header_globus(socket_io_type *sock_info,
 			   int DataType,
-			   int Count)
+			   int Count,
+			   int NumBytes)
 {
-  char  buffer[5*REG_PACKET_SIZE];
+  char  buffer[6*REG_PACKET_SIZE];
   char  tmp_buffer[REG_PACKET_SIZE];
   char *pchar;
   globus_result_t  result;
@@ -888,23 +919,20 @@ int Emit_msg_header_globus(socket_io_type *sock_info,
   sprintf(tmp_buffer, "<Num_objects>%d</Num_objects>", Count);
   pchar += sprintf(pchar, REG_PACKET_FORMAT, tmp_buffer);
   *(pchar-1) = '\0';
+  sprintf(tmp_buffer, "<Num_bytes>%d</Num_bytes>", NumBytes);
+  pchar += sprintf(pchar, REG_PACKET_FORMAT, tmp_buffer);
+  *(pchar-1) = '\0';
   pchar += sprintf(pchar, REG_PACKET_FORMAT, "</ReG_data_slice_header>");
   *(pchar-1) = '\0';
 
-#if REG_DEBUG
-  fprintf(stderr, "Emit_msg_header_globus: sending >>%s<<\n", buffer);
-#endif
-
   result = globus_io_write(&(sock_info->conn_handle), 
 			   (globus_byte_t *)buffer, 
-			   4*128, /* Can't use strlen 'cos of multiple '\0' */
+			   (int)(pchar-buffer), /* Can't use strlen 'cos of multiple '\0's */
 			   &nbytes);
 
   if (result != GLOBUS_SUCCESS ) {
 
-#if REG_DEBUG
     fprintf(stderr, "Emit_msg_header_globus: failed to write slice header\n");
-#endif
     Globus_error_print(result);
     return REG_FAILURE;
   }

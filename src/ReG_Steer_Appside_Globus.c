@@ -894,7 +894,7 @@ int Emit_header_globus(const int index)
 
 #if REG_GLOBUS_SAMPLES
 int Emit_footer_globus(const int index,
-		       const char * const buffer)
+ 		       const char * const buffer)
 {
   globus_size_t   nbytes;
   globus_result_t result;
@@ -931,21 +931,12 @@ int Emit_data_globus(const int		index,
 {
   globus_result_t  result;
   globus_size_t    nbytes;
+  int sent;
 
-  if(IOTypes_table.io_def[index].use_xdr && datatype != REG_CHAR){
-    /* XDR-encoded data stored in buffer associated with IO channel */
-    result = globus_io_write(&(IOTypes_table.io_def[index].socket_info.conn_handle), 
-			     IOTypes_table.io_def[index].buffer, 
-			     (globus_size_t) num_bytes_to_send, 
-			     &nbytes);
-  }
-  else{
-    /* Just send raw data as provided by calling routine */
-    result = globus_io_write(&(IOTypes_table.io_def[index].socket_info.conn_handle), 
-			     pData, 
-			     (globus_size_t) num_bytes_to_send, 
-			     &nbytes);
-  }
+  result = globus_io_write(&(IOTypes_table.io_def[index].socket_info.conn_handle), 
+			   pData, 
+			   (globus_size_t) num_bytes_to_send, 
+			   &nbytes);
 
 #if REG_DEBUG
   fprintf(stderr, "Emit_data_globus: sent %d bytes...\n", (int)nbytes);
@@ -958,7 +949,6 @@ int Emit_data_globus(const int		index,
   }
   
   return REG_SUCCESS;
-
 }
 #endif
 

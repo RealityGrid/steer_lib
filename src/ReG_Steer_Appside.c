@@ -355,6 +355,8 @@ int Steering_initialize(int  NumSupportedCmds,
 
 int Steering_finalize()
 {
+  int i;
+
   /* Can only call this function if steering lib initialised */
 
   if (!ReG_SteeringInit) return REG_FAILURE;
@@ -371,9 +373,19 @@ int Steering_finalize()
 
   /* Clean-up IOTypes table */
 
-  if(IOTypes_table.io_def != NULL){
+  if(IOTypes_table.io_def){
     /* cleanup transport mechanism */
     Finalize_IOType_transport();
+
+    /* Free buffers associated with each iotype */
+    for(i=0; i<IOTypes_table.num_registered; i++){
+
+      if(IOTypes_table.io_def[i].buffer){
+	free(IOTypes_table.io_def[i].buffer);
+	IOTypes_table.io_def[i].buffer = NULL;
+	IOTypes_table.io_def[i].buffer_bytes = 0;
+      }
+    }
     free(IOTypes_table.io_def);
     IOTypes_table.io_def = NULL;
   }
@@ -532,7 +544,9 @@ int Register_IOTypes(int    NumTypes,
     }
       
     IOTypes_table.io_def[current].buffer = NULL;
+    IOTypes_table.io_def[current].buffer_bytes = 0;
     IOTypes_table.io_def[current].use_xdr = FALSE;
+    IOTypes_table.io_def[current].num_xdr_bytes = 0;
 
     /* set up transport for sample data - eg sockets */
     return_status = Initialize_IOType_transport(direction[i], current);
@@ -1102,10 +1116,12 @@ int Consume_data_slice_header(int  IOTypeIndex,
 			      int *Count)
 {
   int status;
+  int NumBytes;
 
   status = Consume_iotype_msg_header(IOTypeIndex,
 				     DataType,
-				     Count);
+				     Count,
+				     &NumBytes);
 
   if(status != REG_SUCCESS) return REG_FAILURE;
 
@@ -1116,16 +1132,19 @@ int Consume_data_slice_header(int  IOTypeIndex,
 
   case REG_XDR_INT:
     IOTypes_table.io_def[IOTypeIndex].use_xdr = TRUE;
+    IOTypes_table.io_def[IOTypeIndex].num_xdr_bytes = NumBytes;
     *DataType = REG_INT;
     break;
 
   case REG_XDR_FLOAT:
     IOTypes_table.io_def[IOTypeIndex].use_xdr = TRUE;
+    IOTypes_table.io_def[IOTypeIndex].num_xdr_bytes = NumBytes;
     *DataType = REG_FLOAT;
     break;
 
   case REG_XDR_DOUBLE:
     IOTypes_table.io_def[IOTypeIndex].use_xdr = TRUE;
+    IOTypes_table.io_def[IOTypeIndex].num_xdr_bytes = NumBytes;
     *DataType = REG_DBL;
     break;
 
@@ -1146,19 +1165,15 @@ int Consume_data_slice(int    IOTypeIndex,
   int              i;
   int              return_status = REG_SUCCESS;
   size_t	   num_bytes_to_read;
-
-  XDR     xdrs;
-  int    *pint;
-  float  *pfloat;
-  double *pdouble;
-  void   *tmp_ptr;
+  XDR              xdrs;
 
   /* Calculate how many bytes to expect */
   switch(DataType){
 
   case REG_INT:
     if(IOTypes_table.io_def[IOTypeIndex].use_xdr){
-      num_bytes_to_read = Count*REG_SIZEOF_XDR_INT;
+/*       num_bytes_to_read = Count*REG_SIZEOF_XDR_INT; */
+      num_bytes_to_read = IOTypes_table.io_def[IOTypeIndex].num_xdr_bytes;
     }
     else{
       num_bytes_to_read = Count*sizeof(int);
@@ -1167,7 +1182,8 @@ int Consume_data_slice(int    IOTypeIndex,
 
   case REG_FLOAT:
     if(IOTypes_table.io_def[IOTypeIndex].use_xdr){
-      num_bytes_to_read = Count*REG_SIZEOF_XDR_FLOAT;
+/*       num_bytes_to_read = Count*REG_SIZEOF_XDR_FLOAT; */
+      num_bytes_to_read = IOTypes_table.io_def[IOTypeIndex].num_xdr_bytes;
     }
     else{
       num_bytes_to_read = Count*sizeof(float);
@@ -1176,7 +1192,8 @@ int Consume_data_slice(int    IOTypeIndex,
 
   case REG_DBL:
     if(IOTypes_table.io_def[IOTypeIndex].use_xdr){
-      num_bytes_to_read = Count*REG_SIZEOF_XDR_DOUBLE;
+/*       num_bytes_to_read = Count*REG_SIZEOF_XDR_DOUBLE; */
+      num_bytes_to_read = IOTypes_table.io_def[IOTypeIndex].num_xdr_bytes;
     }
     else{
       num_bytes_to_read = Count*sizeof(double);
@@ -1193,6 +1210,7 @@ int Consume_data_slice(int    IOTypeIndex,
 
     /* Reset use_xdr flag set as only valid on a per-slice basis */
     IOTypes_table.io_def[IOTypeIndex].use_xdr = FALSE;
+    IOTypes_table.io_def[IOTypeIndex].num_xdr_bytes = 0;
 
     return REG_FAILURE;
     break;
@@ -1203,21 +1221,14 @@ int Consume_data_slice(int    IOTypeIndex,
   if(IOTypes_table.io_def[IOTypeIndex].use_xdr){
     if(IOTypes_table.io_def[IOTypeIndex].buffer_bytes < num_bytes_to_read){
 
-      tmp_ptr = realloc(IOTypes_table.io_def[IOTypeIndex].buffer, 
-			(size_t)num_bytes_to_read);
-            
-      if(!tmp_ptr){
-	fprintf(stderr, "Consume_data_slice: failed to realloc input "
-		"buffer - consume failed\n");
+      if(Realloc_iotype_buffer(IOTypeIndex, num_bytes_to_read) 
+	 != REG_SUCCESS){
 
 	/* Reset use_xdr flag set as only valid on a per-slice basis */
 	IOTypes_table.io_def[IOTypeIndex].use_xdr = FALSE;
-
+	IOTypes_table.io_def[IOTypeIndex].num_xdr_bytes = 0;
 	return REG_FAILURE;
       }
-
-      IOTypes_table.io_def[IOTypeIndex].buffer_bytes = num_bytes_to_read;
-      IOTypes_table.io_def[IOTypeIndex].buffer = tmp_ptr;
     }
   }
 
@@ -1245,43 +1256,28 @@ int Consume_data_slice(int    IOTypeIndex,
 
     case REG_INT:
       
-      pint = (int *)pData;
-
-      for(i=0; i<Count; i++){
-
-	if (1!=xdr_int(&xdrs, pint++)) {
-	  fprintf(stderr, "Consume_data_slice: error decoding datum %d\n",i);
-	  return_status = REG_FAILURE;
-	  break;
-	}
+      if(1 != xdr_vector(&xdrs, (char *)pData, (unsigned int)Count, 
+			 (unsigned int)sizeof(int), (xdrproc_t)xdr_int)){
+	fprintf(stderr, "Consume_data_slice: xdr_vector decode failed\n");
+	return_status = REG_FAILURE;
       }
       break;
 
     case REG_FLOAT:
       
-      pfloat = (float *)pData;
-
-      for(i=0; i<Count; i++){
-
-	if (1!=xdr_float(&xdrs, pfloat++)) {
-	  fprintf(stderr, "Consume_data_slice: error decoding datum %d\n",i);
-	  return_status = REG_FAILURE;
-	  break;
-	}
+      if(1 != xdr_vector(&xdrs, (char *)pData, (unsigned int)Count, 
+			 (unsigned int)sizeof(float), (xdrproc_t)xdr_float)){
+	fprintf(stderr, "Consume_data_slice: xdr_vector decode failed\n");
+	return_status = REG_FAILURE;
       }
-      break;
+     break;
 
     case REG_DBL:
       
-      pdouble = (double *)pData;
-
-      for(i=0; i<Count; i++){
-
-	if (1!=xdr_double(&xdrs, pdouble++)) {
-	  fprintf(stderr, "Consume_data_slice: error decoding datum %d\n",i);
-	  return_status = REG_FAILURE;
-	  break;
-	}
+      if(1 != xdr_vector(&xdrs, (char *)pData, (unsigned int)Count, 
+			 (unsigned int)sizeof(double), (xdrproc_t)xdr_double)){
+	fprintf(stderr, "Consume_data_slice: xdr_vector decode failed\n");
+	return_status = REG_FAILURE;
       }
       break;
 
@@ -1300,6 +1296,7 @@ int Consume_data_slice(int    IOTypeIndex,
 
   /* Reset use_xdr flag set as only valid on a per-slice basis */
   IOTypes_table.io_def[IOTypeIndex].use_xdr = FALSE;
+  IOTypes_table.io_def[IOTypeIndex].num_xdr_bytes = 0;
 
   return return_status;
 }
@@ -1334,41 +1331,20 @@ int Emit_start(int  IOType,
   /* Set whether or not to encode as XDR */
   IOTypes_table.io_def[*IOTypeIndex].use_xdr = TRUE;
 
-  /* We'll need additional memory to perform conversion to XDR */
-  if(IOTypes_table.io_def[*IOTypeIndex].use_xdr){
-
-    IOTypes_table.io_def[*IOTypeIndex].buffer = (void *)malloc(REG_IO_BUFSIZE);
-
-    if(!IOTypes_table.io_def[*IOTypeIndex].buffer){
-
-      return REG_FAILURE; 
-    }
-
-  }
-
   if (Emit_header(*IOTypeIndex) == REG_SUCCESS){
 
     return REG_SUCCESS;
   }
-  else {
 
-    /* free up memory as no guarantee Emit_stop will be called */
-    if(IOTypes_table.io_def[*IOTypeIndex].use_xdr && 
-       IOTypes_table.io_def[*IOTypeIndex].buffer){
-      free(IOTypes_table.io_def[*IOTypeIndex].buffer);
-      IOTypes_table.io_def[*IOTypeIndex].buffer = NULL;
-    }
-
-    return REG_FAILURE;
-  }
-
+  return REG_FAILURE;
 }
 
 /*----------------------------------------------------------------*/
 
 int Emit_stop(int *IOTypeIndex)
 {
-  char            buffer[REG_PACKET_SIZE];
+                  /* +1 for '0' of sprintf */
+  char            buffer[REG_PACKET_SIZE+1];
   int             return_status = REG_SUCCESS;
 
   /* Check that steering is enabled */
@@ -1383,14 +1359,6 @@ int Emit_stop(int *IOTypeIndex)
   buffer[REG_PACKET_SIZE-1] = '\0';
 
   return_status = Emit_footer(*IOTypeIndex, buffer);
-
-  /* Free associated memory (will have been allocated if conversion to
-     XDR performed) */
-  if(IOTypes_table.io_def[*IOTypeIndex].buffer){
-
-    free(IOTypes_table.io_def[*IOTypeIndex].buffer);
-    IOTypes_table.io_def[*IOTypeIndex].buffer = NULL;
-  }
 
   *IOTypeIndex = REG_IODEF_HANDLE_NOTSET;
 
@@ -1408,12 +1376,9 @@ int Emit_data_slice(int		      IOTypeIndex,
   int              i;
   int              actual_count;
   size_t	   num_bytes_to_send;
-
   XDR              xdrs;
-  int             *iptr;
-  float           *fptr;
-  double          *dptr;
   char            *pChar;
+  void            *out_ptr;
 
   /* Check that steering is enabled */
   if(!ReG_SteeringEnabled) return REG_SUCCESS;
@@ -1436,23 +1401,30 @@ int Emit_data_slice(int		      IOTypeIndex,
       datatype = REG_XDR_INT;
       num_bytes_to_send = actual_count*REG_SIZEOF_XDR_INT;
 
+      if(num_bytes_to_send > IOTypes_table.io_def[IOTypeIndex].buffer_bytes){
+
+	if(Realloc_iotype_buffer(IOTypeIndex, num_bytes_to_send) 
+	   != REG_SUCCESS){
+	  return REG_FAILURE;
+	}
+      }
+
       xdrmem_create(&xdrs, 
 		    IOTypes_table.io_def[IOTypeIndex].buffer,
 		    num_bytes_to_send,
 		    XDR_ENCODE);
+      xdr_vector(&xdrs, (char *)pData, (unsigned int)actual_count, 
+		 (unsigned int)sizeof(int), (xdrproc_t)xdr_int);
 
-      iptr = (int *)pData;
-
-      for(i=0; i<actual_count; i++){
-
-	xdr_int(&xdrs, iptr++);
-      }
+      num_bytes_to_send = (int)xdr_getpos(&xdrs);
+      out_ptr = IOTypes_table.io_def[IOTypeIndex].buffer;
 
       xdr_destroy(&xdrs);
     }
     else{
       datatype = DataType;
       num_bytes_to_send = actual_count*sizeof(int);
+      out_ptr = pData;
     }
     break;
 
@@ -1461,23 +1433,30 @@ int Emit_data_slice(int		      IOTypeIndex,
       datatype = REG_XDR_FLOAT;
       num_bytes_to_send = actual_count*REG_SIZEOF_XDR_FLOAT;
 
+      if(num_bytes_to_send > IOTypes_table.io_def[IOTypeIndex].buffer_bytes){
+
+	if(Realloc_iotype_buffer(IOTypeIndex, num_bytes_to_send) 
+	   != REG_SUCCESS){
+	  return REG_FAILURE;
+	}
+      }
+
       xdrmem_create(&xdrs, 
 		    IOTypes_table.io_def[IOTypeIndex].buffer,
 		    num_bytes_to_send,
 		    XDR_ENCODE);
+      xdr_vector(&xdrs, (char *)pData, (unsigned int)actual_count, 
+		 (unsigned int)sizeof(float), (xdrproc_t)xdr_float);
 
-      fptr = (float *)pData;
-
-      for(i=0; i<actual_count; i++){
-
-	xdr_float(&xdrs, fptr++);
-      }
+      num_bytes_to_send = (int)xdr_getpos(&xdrs);
+      out_ptr = IOTypes_table.io_def[IOTypeIndex].buffer;
 
       xdr_destroy(&xdrs);
     }
     else{
       datatype = DataType;
       num_bytes_to_send = actual_count*sizeof(float);
+      out_ptr = pData;
     }
     break;
 
@@ -1486,23 +1465,31 @@ int Emit_data_slice(int		      IOTypeIndex,
       datatype = REG_XDR_DOUBLE;
       num_bytes_to_send = actual_count*REG_SIZEOF_XDR_DOUBLE;
 
+      if(num_bytes_to_send > IOTypes_table.io_def[IOTypeIndex].buffer_bytes){
+
+	/* This function will malloc if buffer not already set */
+	if(Realloc_iotype_buffer(IOTypeIndex, num_bytes_to_send) 
+	   != REG_SUCCESS){
+	  return REG_FAILURE;
+	}
+      }
+
       xdrmem_create(&xdrs, 
 		    IOTypes_table.io_def[IOTypeIndex].buffer,
 		    num_bytes_to_send,
 		    XDR_ENCODE);
+      xdr_vector(&xdrs, (char *)pData, (unsigned int)actual_count, 
+		 (unsigned int)sizeof(double), (xdrproc_t)xdr_double);
 
-      dptr = (double *)pData;
-
-      for(i=0; i<actual_count; i++){
-
-	xdr_double(&xdrs, dptr++);
-      }
+      num_bytes_to_send = (int)xdr_getpos(&xdrs);
+      out_ptr = IOTypes_table.io_def[IOTypeIndex].buffer;
 
       xdr_destroy(&xdrs);
     }
     else{
       datatype = DataType;
       num_bytes_to_send = actual_count*sizeof(double);
+      out_ptr = pData;
     }
     break;
 
@@ -1516,6 +1503,7 @@ int Emit_data_slice(int		      IOTypeIndex,
       actual_count++;
     }
     num_bytes_to_send = actual_count*sizeof(char);
+    out_ptr = pData;
     break;
 
   default:
@@ -1528,7 +1516,8 @@ int Emit_data_slice(int		      IOTypeIndex,
 
   if( Emit_iotype_msg_header(IOTypeIndex,
 			     datatype,
-			     actual_count) != REG_SUCCESS){
+			     actual_count,
+			     num_bytes_to_send) != REG_SUCCESS){
 
     return REG_FAILURE;
   }
@@ -1537,7 +1526,7 @@ int Emit_data_slice(int		      IOTypeIndex,
   return Emit_data(IOTypeIndex,
 		   datatype,
 		   num_bytes_to_send,
-		   pData);
+		   out_ptr);
 
 }
 
@@ -4203,13 +4192,15 @@ int Get_communication_status(const int	index)
 
 int Consume_iotype_msg_header(int  IOTypeIndex,
 			      int *DataType,
-			      int *Count)
+			      int *Count,
+			      int *NumBytes)
 {
   
 #if REG_GLOBUS_SAMPLES
   return Consume_msg_header_globus(&(IOTypes_table.io_def[IOTypeIndex].socket_info),
 				   DataType,
-				   Count);
+				   Count,
+				   NumBytes);
 #else
 
   return REG_FAILURE;
@@ -4221,16 +4212,69 @@ int Consume_iotype_msg_header(int  IOTypeIndex,
 
 int Emit_iotype_msg_header(int IOTypeIndex,
 			   int DataType,
-			   int Count)
+			   int Count,
+			   int NumBytes)
 {
 
 #if REG_GLOBUS_SAMPLES
   return Emit_msg_header_globus(&(IOTypes_table.io_def[IOTypeIndex].socket_info),
 				DataType,
-				Count);
+				Count,
+				NumBytes);
 #else
 
   return REG_FAILURE;
 #endif
 
+}
+
+/*----------------------------------------------------------------*/
+
+int Realloc_iotype_buffer(int index,
+			  int num_bytes)
+{
+  void *dum_ptr;
+
+  if(index < 0)return REG_FAILURE;
+
+#if REG_DEBUG
+  if(IOTypes_table.io_def[index].buffer){
+    fprintf(stderr, "Realloc_iotype_buffer: realloc'ing pointer %p\n", 
+	    IOTypes_table.io_def[index].buffer);
+  }
+  else{
+    fprintf(stderr, "Realloc_iotype_buffer: doing malloc for IO buffer\n");
+  }
+#endif
+
+  if(IOTypes_table.io_def[index].buffer){
+
+    if(!(dum_ptr = realloc(IOTypes_table.io_def[index].buffer, 
+			 (size_t)num_bytes))){
+
+      free(IOTypes_table.io_def[index].buffer);
+      IOTypes_table.io_def[index].buffer = NULL;
+      IOTypes_table.io_def[index].buffer_bytes = 0;
+ 
+      fprintf(stderr, "Realloc_iotype_buffer: realloc failed for %d bytes\n", 
+	      num_bytes);
+      return REG_FAILURE;
+    }
+
+    IOTypes_table.io_def[index].buffer = dum_ptr;
+  }
+  else{
+    if(!(IOTypes_table.io_def[index].buffer = malloc(num_bytes))){
+
+      IOTypes_table.io_def[index].buffer_bytes = 0;
+ 
+      fprintf(stderr, "Realloc_iotype_buffer: malloc failed for %d bytes\n", 
+	      num_bytes);
+      return REG_FAILURE;
+    }
+  }
+
+  IOTypes_table.io_def[index].buffer_bytes = num_bytes;
+
+  return REG_SUCCESS;
 }
