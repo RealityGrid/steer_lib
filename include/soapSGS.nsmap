@@ -1,5 +1,3 @@
-#ifndef __REG_STEER_STEERSIDE_SOAPSGS_NSMAP__
-#define __REG_STEER_STEERSIDE_SOAPSGS_NSMAP__
 
 #include "soapH.h"
 SOAP_NMAC struct Namespace namespaces[] =
@@ -9,8 +7,9 @@ SOAP_NMAC struct Namespace namespaces[] =
   {"xsi", "http://www.w3.org/2001/XMLSchema-instance", "http://www.w3.org/*/XMLSchema-instance"},
   {"xsd", "http://www.w3.org/2001/XMLSchema", "http://www.w3.org/*/XMLSchema"},
   {"xsdl", "http://vermont.mvc.mcc.ac.uk/WSDL/SGS.xsd"},
-  {"tns", "SGS"},
+  {"sgr", "http://vermont.mvc.mcc.ac.uk/ServiceGroupRegistration"},
+  {"rgtf", "http://www.RealityGrid.org/factory"},
+  {"rgt", "http://www.RealityGrid.org/RealityGridTree/service"},
+  {"sgs", "SGS"},
   {NULL, NULL}
 };
-
-#endif
