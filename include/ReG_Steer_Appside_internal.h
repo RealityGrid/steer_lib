@@ -41,6 +41,21 @@
 #include "ReG_Steer_Common.h"
 #include "ReG_Steer_XML.h"
 
+/*----------------------- Data structures -----------------------*/
+
+/* Table of open IO channels */
+typedef struct {
+
+  /* Handle of associated IOType */
+  int   iotype_handle;
+
+  /* Pointer to buffer to hold data */
+  void *buffer;
+
+}IO_channel_table_type;
+
+static IO_channel_table_type IO_channel[REG_INITIAL_NUM_IOTYPES];
+
 /*--------- Prototypes of internal library functions -------------*/
 
 /* Emit all of the parameters that have previously been registered 

@@ -39,7 +39,7 @@
 
 #include "ReG_Steer_types.h"
 
-#ifdef REG_STR_CPP
+#ifdef __cplusplus
   #define PREFIX "C"
 #else
   #define PREFIX 

@@ -123,7 +123,6 @@
 #define REG_STR_PAUSE            2
 #define REG_STR_RESUME           3
 #define REG_STR_DETACH           4
-#define REG_STR_RESTART          5
 
 /* All generated IOtype handles must be >= this value because they
    will be interpreted as commands - this value must therefore be >
@@ -137,6 +136,10 @@
 #define REG_IO_IN    0
 #define REG_IO_OUT   1
 #define REG_IO_CHKPT 2
+
+/* Size (in bytes) of input buffer for each active IO channel */
+
+#define REG_IO_BUFSIZE 1048576
 
 /* Coding scheme for data types */
 
@@ -159,7 +162,7 @@
 #define REG_PARAM_HANDLE_NOTSET -1
 /* Handle for the sequence number parameter */
 #define REG_SEQ_NUM_HANDLE      -100
-/* Handle for the timer-per-step parameter */
+/* Handle for the time-per-step parameter */
 #define REG_STEP_TIME_HANDLE    -99
 
 /* Message tags */
@@ -176,13 +179,11 @@
 
 typedef int REG_MsgType;
 typedef int REG_IOHandleType;
-/*typedef int REG_SimIDType;*/
 
 /* Definitions used in communicating with the java proxy */
 
 #define REG_MAX_LINE_LEN 256
 #define REG_MAX_MSG_SIZE BUFSIZ
-/*#define REG_HEADER_BYTES 4*/
 #define REG_PIPE_UNSET   -1
 
 #endif /* __REG_TYPES_INCLUDED defined */

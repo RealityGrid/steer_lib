@@ -87,11 +87,6 @@ static int Generate_control_filename(int SimHandle, char* filename);
    matching handle found. */
 static int Sim_index_from_handle(int SimHandle);
 
-/* A look-up function - return the index of the IOdef with handle 
-   IOdefHandle in the table pointed to by *table.  Returns
-   REG_IODEF_HANDLE_NOTSET if no matching handle found. */
-static int IOdef_index_from_handle(IOdef_table_type *table, int IOdefHandle);
-
 /* Looks for the next free entry in the table pointed to by *table.  If
    there are no free entries then more memory is allocated. Returns -1
    on failure. */

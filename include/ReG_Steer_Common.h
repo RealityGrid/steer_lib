@@ -129,6 +129,11 @@ extern int Next_free_param_index(Param_table_type *table);
    REG_PARAM_HANDLE_NOTSET if no matching handle found. */
 extern int Param_index_from_handle(Param_table_type *table, int ParamHandle);
 
+/* A look-up function - return the index of the IOdef with handle 
+   IOdefHandle in the table pointed to by *table.  Returns
+   REG_IODEF_HANDLE_NOTSET if no matching handle found. */
+extern int IOdef_index_from_handle(IOdef_table_type *table, int IOdefHandle);
+
 extern int Increment_param_registered(Param_table_type *table);
 
 extern int Increment_cmd_registered(Supp_cmd_table_type *table);
