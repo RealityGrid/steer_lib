@@ -78,8 +78,10 @@
 
 <xs:complexType name="ControlType">
 	<xs:sequence>
+                <!-- A command such as STOP or emit data (== handle of IOType) -->
 		<xs:element name="Command" type="CmdType"
 		    minOccurs="0" maxOccurs="unbounded" />
+                <!-- Change the value of a steerable parameter -->
 		<xs:element name="Param" type="ParamType"
 		    minOccurs="0" maxOccurs="unbounded" /> 
 	</xs:sequence>
