@@ -34,9 +34,9 @@
 ---------------------------------------------------------------------------*/
 #include <string.h>
 
+#include "ReG_Steer_types.h"
 #include "ReG_Steer_Common.h"
 #include "ReG_Steer_Logging.h"
-#include "ReG_Steer_types.h"
 #include "ReG_Steer_Appside_internal.h"
 
 /* Allow value of 'REG_DEBUG' to propagate down from Reg_steer_types.h if
