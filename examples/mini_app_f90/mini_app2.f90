@@ -132,10 +132,8 @@ PROGRAM mini_app
   ! Register the input IO channel
 
   num_types = 1
-  io_labels(1) = "VTK_STRUCTURED_POINTS_INPUT"
-  io_labels(1)(28:28) = CHAR(0)
-
-  io_dirn(1) = REG_IO_IN
+  io_labels(1) = "VTK_STRUCTURED_POINTS_INPUT"//CHAR(0)
+  io_dirn(1)   = REG_IO_IN
   
   CALL register_iotypes_f(num_types, io_labels, io_dirn, &
                           input_freq, iotype_handles(1), status)
@@ -148,9 +146,8 @@ PROGRAM mini_app
 
   WRITE(*,*) 'Returned IOtype = ', iotype_handles(1)
 
-  io_labels(1) = "VTK_STRUCTURED_POINTS_OUTPUT"
-  io_labels(1)(29:29) = CHAR(0)
-
+  io_labels(1) = "VTK_STRUCTURED_POINTS_OUTPUT"//CHAR(0)
+  output_freq = 0
   io_dirn(1) = REG_IO_OUT
   
   CALL register_iotypes_f(num_types, io_labels, io_dirn, &
@@ -165,10 +162,8 @@ PROGRAM mini_app
   WRITE(*,*) 'Returned IOtype = ', iotype_handles(2)
 
   num_chk_types = 1
-  chk_labels(1) = "SOME_CHECKPOINT"
-  chk_labels(1)(16:16) = CHAR(0)
-
-  chk_dirn(1) = REG_IO_INOUT
+  chk_labels(1) = "SOME_CHECKPOINT"//CHAR(0)
+  chk_dirn(1)   = REG_IO_INOUT
   
   CALL register_chktypes_f(num_chk_types, chk_labels, chk_dirn, &
                            output_freq, chk_handles(1), status)
@@ -185,8 +180,7 @@ PROGRAM mini_app
 
   num_params  = 1
   dum_int     = 5
-  param_label = "test_integer"
-  param_label(13:13) = CHAR(0)
+  param_label = "test_integer"//CHAR(0)
   param_type  = REG_INT
   param_strbl = reg_true
 
@@ -196,16 +190,14 @@ PROGRAM mini_app
   ! Registration uses address of variable so use second 'dum_int' here
   ! rather than simply changing value of first one
   dum_int2 = 123
-  param_label = "2nd_test_integer"
-  param_label(17:17) = CHAR(0)
+  param_label = "2nd_test_integer"//CHAR(0)
   param_strbl = reg_false
 
   CALL register_params_f(num_params, param_label, param_strbl, dum_int2, &
                          param_type, status)
 
   dum_real = 123.45
-  param_label = "test_real"
-  param_label(10:10) = CHAR(0)
+  param_label = "test_real"//CHAR(0)
   param_type  = REG_FLOAT
   param_strbl = reg_false
   
@@ -213,18 +205,15 @@ PROGRAM mini_app
                          param_type, status)
 
   dum_real2 = -23.456
-  param_label = "2nd_test_real"
-  param_label(14:14) = CHAR(0)
+  param_label = "2nd_test_real"//CHAR(0)
   param_type  = REG_FLOAT
   param_strbl = reg_true
   
   CALL register_params_f(num_params, param_label, param_strbl, dum_real2, &
                          param_type, status)
 
-  dum_str = "hello"
-  dum_str(6:6) = CHAR(0)
-  param_label = "test_string"
-  param_label(12:12) = CHAR(0)
+  dum_str = "hello"//CHAR(0)
+  param_label = "test_string"//CHAR(0)
   param_type  = REG_CHAR
   param_strbl = reg_true
   
@@ -237,40 +226,35 @@ PROGRAM mini_app
                          param_type, status)
 
   dum_dbl = 123.123d0
-  param_label = "test_double"
-  param_label(12:12) = CHAR(0)
+  param_label = "test_double"//CHAR(0)
   param_type  = REG_DBL
   param_strbl = reg_true
 
   CALL register_params_f(num_params, param_label, param_strbl, dum_dbl, &
                          param_type, status)
 
-  param_label = "veclen"
-  param_label(7:7) = CHAR(0)
+  param_label = "veclen"//CHAR(0)
   param_type  = REG_INT
   param_strbl = reg_true
 
   CALL register_params_f(num_params, param_label, param_strbl, veclen, &
                          param_type, status)
 
-  param_label = "a_axis"
-  param_label(7:7) = CHAR(0)
+  param_label = "a_axis"//CHAR(0)
   param_type  = REG_DBL
   param_strbl = reg_true
 
   CALL register_params_f(num_params, param_label, param_strbl, aaxis, &
                          param_type, status)
 
-  param_label = "b_axis"
-  param_label(7:7) = CHAR(0)
+  param_label = "b_axis"//CHAR(0)
   param_type  = REG_DBL
   param_strbl = reg_true
 
   CALL register_params_f(num_params, param_label, param_strbl, baxis, &
                          param_type, status)
 
-  param_label = "c_axis"
-  param_label(7:7) = CHAR(0)
+  param_label = "c_axis"//CHAR(0)
   param_type  = REG_DBL
   param_strbl = reg_true
 
