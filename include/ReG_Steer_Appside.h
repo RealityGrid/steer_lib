@@ -145,3 +145,13 @@ extern PREFIX int Steering_pause(int   *NumSteerParams,
 				 int   *NumCommands,
 				 int   *SteerCommands,
 				 char **SteerCmdParams);
+
+/* For testing only, generates a buffer containing vtk data plus a 
+   suitable ASCII header.  Both header and array should point to 
+   big enough chunks of memory (BUFSIZ for header and nx*ny*nz floats
+   for array) */
+extern PREFIX int Make_vtk_buffer(char  *header,
+				  int    nx,
+				  int    ny,
+				  int    nz,
+				  float *array);
