@@ -397,7 +397,9 @@ int main(){
 		    if(Make_vtk_buffer(nx, ny, nz, 1, aaxis, baxis, caxis, 
 				       array)
 		       != REG_SUCCESS){
-		      
+
+		      free(array);
+		      array = NULL;
 		      continue;
 		    }
 
@@ -407,11 +409,15 @@ int main(){
 		    if(nx % chunk_dim != 0){
 
 		      printf("nx not a multiple of %d\n", chunk_dim);
+		      free(array);
+		      array = NULL;
 		      Emit_stop(&iohandle);
 		      continue;
 		    }
 
 		    nchunk = nx/chunk_dim;
+		    printf("nx = %d, chunk_dim = %d so have %d chunks...\n",
+			   nx, chunk_dim, nchunk);
 
 		    for(ichunk=0; ichunk<nchunk; ichunk++){
 
@@ -442,7 +448,6 @@ int main(){
 		    }
 
 		    Emit_stop(&iohandle);
-
 		    free(array);
 		    array = NULL;
 		  }
