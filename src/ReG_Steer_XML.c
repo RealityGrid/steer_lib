@@ -202,10 +202,10 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg)
     msg->msg_type = Get_message_type((const char *)(cur->name));
 
 #if REG_DEBUG
-    fprintf(stderr, "Parse_xml: Calling parseSteerLog...\n");
+    fprintf(stderr, "Parse_xml: Calling parseLog...\n");
 #endif
     msg->log = New_log_struct();
-    parseSteerLog(doc, ns, cur, msg->log);
+    parseLog(doc, ns, cur, msg->log);
   }
 
   /* Print out what we've got */
@@ -480,7 +480,7 @@ int parseSuppCmd(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 
 /*-----------------------------------------------------------------*/
 
-int parseSteerLog(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
+int parseLog(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 	          struct log_struct *log)
 {
   if (!log) return REG_FAILURE;
@@ -501,9 +501,9 @@ int parseSteerLog(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
       }
 
 #if REG_DEBUG
-      fprintf(stderr, "parseSteerLog: calling parseSteerLogEntry\n");
+      fprintf(stderr, "parseLog: calling parseLogEntry\n");
 #endif
-      parseSteerLogEntry(doc, ns, cur, log->entry);
+      parseLogEntry(doc, ns, cur, log->entry);
 
     }
     cur = cur->next;
@@ -514,8 +514,57 @@ int parseSteerLog(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 
 /*-----------------------------------------------------------------*/
 
-int parseSteerLogEntry(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
-	               struct log_entry_struct *log_entry)
+int parseLogEntry(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
+	               struct log_entry_struct *log)
+{
+  int return_status = REG_SUCCESS;
+
+  if(!log) return REG_FAILURE;
+
+  cur = cur->xmlChildrenNode;
+  while (cur != NULL) {
+  
+    if( !xmlStrcmp(cur->name, (const xmlChar *)"Key") && (cur->ns==ns)){
+
+      log->key = xmlNodeListGetString(doc, 
+				      cur->xmlChildrenNode, 1);
+    }
+    else if( !xmlStrcmp(cur->name, (const xmlChar *)"Chk_log_entry") 
+	     && (cur->ns==ns)){
+      if(!log->first_chk_log){
+	
+	log->first_chk_log = New_chk_log_entry_struct();
+	log->chk_log = log->first_chk_log;
+      }
+      else{
+	log->chk_log->next = New_chk_log_entry_struct();
+	log->chk_log = log->chk_log->next;
+      }
+      return_status = parseChkLogEntry(doc, ns, cur, log->chk_log);
+    }
+    else if( !xmlStrcmp(cur->name, (const xmlChar *)"Param_log_entry") 
+	     && (cur->ns==ns)){
+      if(!log->first_param_log){
+
+	log->first_param_log = New_param_struct();
+	log->param_log = log->first_param_log;
+      }
+      else{
+	log->param_log->next = New_param_struct();
+	log->param_log = log->param_log->next;
+      }
+      return_status = parseParam(doc, ns, cur, log->param_log);
+    }
+
+    cur = cur->next;
+  }
+  return return_status;
+}
+
+/*-----------------------------------------------------------------*/
+
+int parseChkLogEntry(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
+		     struct chk_log_entry_struct *log_entry)
 {
   int return_status = REG_SUCCESS;
 
@@ -523,13 +572,8 @@ int parseSteerLogEntry(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 
   cur = cur->xmlChildrenNode;
   while (cur != NULL) {
-  
-    if( !xmlStrcmp(cur->name, (const xmlChar *)"Key") && (cur->ns==ns)){
 
-      log_entry->key = xmlNodeListGetString(doc, 
-					    cur->xmlChildrenNode, 1);
-    }
-    else if(!xmlStrcmp(cur->name, (const xmlChar *)"Chk_handle")){
+    if(!xmlStrcmp(cur->name, (const xmlChar *)"Chk_handle") && (cur->ns==ns)){
 
       log_entry->chk_handle = xmlNodeListGetString(doc, 
 					    cur->xmlChildrenNode, 1);
@@ -840,7 +884,30 @@ struct log_entry_struct *New_log_entry_struct()
 
   if(entry){
 
-    entry->key         = NULL;
+    entry->key             = NULL;
+    entry->first_chk_log   = NULL;
+    entry->chk_log         = NULL;
+    entry->first_param_log = NULL;
+    entry->param_log       = NULL;
+    /* Steer log stuct not yet implemented */
+    /*entry->first_steer_log = NULL;*/
+    entry->next            = NULL;
+  }
+
+  return entry;
+}
+
+/*-----------------------------------------------------------------*/
+
+struct chk_log_entry_struct *New_chk_log_entry_struct()
+{
+  struct chk_log_entry_struct *entry;
+
+  entry = (struct chk_log_entry_struct *)
+                      malloc(sizeof(struct chk_log_entry_struct));
+
+  if(entry){
+
     entry->chk_handle  = NULL;
     entry->chk_tag     = NULL;
     entry->param       = NULL;
@@ -1037,6 +1104,25 @@ void Delete_param_struct(struct param_struct *param)
 
 /*-----------------------------------------------------------------*/
 
+void Delete_chk_log_entry_struct(struct chk_log_entry_struct *log)
+{
+  struct chk_log_entry_struct *dum_ptr;
+
+  while(log){
+
+    xmlFree(log->chk_handle);
+    xmlFree(log->chk_tag);
+
+    Delete_param_struct(log->first_param);
+
+    dum_ptr = log->next;
+    free(log);
+    log = dum_ptr;
+  }
+}
+
+/*-----------------------------------------------------------------*/
+
 void Delete_log_entry_struct(struct log_entry_struct *log)
 {
   struct log_entry_struct *dum_ptr;
@@ -1044,10 +1130,9 @@ void Delete_log_entry_struct(struct log_entry_struct *log)
   while(log){
 
     xmlFree(log->key);
-    xmlFree(log->chk_handle);
-    xmlFree(log->chk_tag);
 
-    Delete_param_struct(log->first_param);
+    Delete_chk_log_entry_struct(log->first_chk_log);
+    Delete_param_struct(log->first_param_log);
 
     dum_ptr = log->next;
     free(log);
@@ -1104,7 +1189,7 @@ void Print_msg(struct msg_struct *msg)
 
   if(msg->log){
 
-    Print_steer_log_struct(msg->log);
+    Print_log_struct(msg->log);
   }
 
   fprintf(stderr, "Print_msg: done\n");
@@ -1247,20 +1332,20 @@ void Print_io_struct(struct io_struct   *io)
 
 /*-----------------------------------------------------------------*/
 
-void Print_steer_log_struct(struct log_struct *log)
+void Print_log_struct(struct log_struct *log)
 {
   if (!log) return;
 
   if(log->first_entry){
 
     fprintf(stderr, "Log entries:\n");
-    Print_steer_log_entry_struct(log->first_entry);
+    Print_log_entry_struct(log->first_entry);
   }
 }
 
 /*-----------------------------------------------------------------*/
 
-void Print_steer_log_entry_struct(struct log_entry_struct *entry)
+void Print_log_entry_struct(struct log_entry_struct *entry)
 {
   struct log_entry_struct *ptr = entry;
   int                      count = 0;
@@ -1269,8 +1354,30 @@ void Print_steer_log_entry_struct(struct log_entry_struct *entry)
 
     fprintf(stderr, "Log entry no. %d:\n", count);
 
-    if(ptr->key)       fprintf(stderr, "  Key = %s\n", 
-			       (char *)ptr->key);
+    if(ptr->key) fprintf(stderr, "  Key = %s\n", 
+			 (char *)ptr->key);
+
+    if(ptr->first_chk_log){
+      Print_chk_log_entry_struct(ptr->first_chk_log);
+    }
+    else if(ptr->first_param_log){
+      Print_param_struct(ptr->first_param_log);
+    }
+
+    count++;
+    ptr = ptr->next;
+  }
+}
+
+/*-----------------------------------------------------------------*/
+
+void Print_chk_log_entry_struct(struct chk_log_entry_struct *entry)
+{
+  struct chk_log_entry_struct *ptr = entry;
+  int                        count = 0;
+
+  while(ptr){
+    fprintf(stderr, "Chk log entry no. %d:\n", count);
 
     if(ptr->chk_handle)fprintf(stderr, "  Chk handle = %s\n", 
 			       (char *)ptr->chk_handle);
@@ -1283,7 +1390,6 @@ void Print_steer_log_entry_struct(struct log_entry_struct *entry)
     count++;
     ptr = ptr->next;
   }
-
 }
 
 /*-----------------------------------------------------------------*/

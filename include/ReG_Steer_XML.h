@@ -100,13 +100,22 @@ struct io_def_struct{
   struct io_struct *io;
 };
 
-struct log_entry_struct{
+struct chk_log_entry_struct{
 
-  xmlChar                 *key;
   xmlChar                 *chk_handle;
   xmlChar                 *chk_tag;
   struct param_struct     *first_param;
   struct param_struct     *param;
+  struct chk_log_entry_struct *next;
+};
+
+struct log_entry_struct{
+
+  xmlChar                 *key;
+  struct param_struct     *first_param_log;
+  struct param_struct     *param_log;
+  struct chk_log_entry_struct *first_chk_log;
+  struct chk_log_entry_struct *chk_log;
   struct log_entry_struct *next;
 };
 
@@ -149,21 +158,24 @@ int parseIOTypeDef(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 		   struct io_def_struct *io_def);
 int parseIOType(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
                  struct io_struct *io);
-int parseSteerLog(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
-	          struct log_struct *log);
-int parseSteerLogEntry(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
-	               struct log_entry_struct *log_entry);
+int parseLog(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
+	     struct log_struct *log);
+int parseLogEntry(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
+		  struct log_entry_struct *log_entry);
+int parseChkLogEntry(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
+		     struct chk_log_entry_struct *log_entry);
 
-struct msg_struct       *New_msg_struct();
-struct status_struct    *New_status_struct();
-struct control_struct   *New_control_struct();
-struct supp_cmd_struct  *New_supp_cmd_struct();
-struct io_def_struct    *New_io_def_struct();
-struct io_struct        *New_io_struct();
-struct param_struct     *New_param_struct();
-struct cmd_struct       *New_cmd_struct();
-struct log_entry_struct *New_log_entry_struct();
-struct log_struct       *New_log_struct();
+struct msg_struct           *New_msg_struct();
+struct status_struct        *New_status_struct();
+struct control_struct       *New_control_struct();
+struct supp_cmd_struct      *New_supp_cmd_struct();
+struct io_def_struct        *New_io_def_struct();
+struct io_struct            *New_io_struct();
+struct param_struct         *New_param_struct();
+struct cmd_struct           *New_cmd_struct();
+struct chk_log_entry_struct *New_chk_log_entry_struct();
+struct log_entry_struct     *New_log_entry_struct();
+struct log_struct           *New_log_struct();
 
 void Delete_msg_struct(struct msg_struct *msg);
 void Delete_status_struct(struct status_struct *status);
@@ -173,6 +185,7 @@ void Delete_param_struct(struct param_struct *param);
 void Delete_cmd_struct(struct cmd_struct *cmd);
 void Delete_io_def_struct(struct io_def_struct *io_def);
 void Delete_io_struct(struct io_struct *io);
+void Delete_chk_log_entry_struct(struct chk_log_entry_struct *log);
 void Delete_log_entry_struct(struct log_entry_struct *log);
 void Delete_log_struct(struct log_struct *log);
 
@@ -184,8 +197,9 @@ void Print_cmd_struct(struct cmd_struct *cmd);
 void Print_supp_cmd_struct(struct supp_cmd_struct *supp_cmd);
 void Print_io_def_struct(struct io_def_struct   *io_def);
 void Print_io_struct(struct io_struct   *io);
-void Print_steer_log_struct(struct log_struct *log);
-void Print_steer_log_entry_struct(struct log_entry_struct *entry);
+void Print_log_struct(struct log_struct *log);
+void Print_log_entry_struct(struct log_entry_struct *entry);
+void Print_chk_log_entry_struct(struct chk_log_entry_struct *entry);
 
 int  String_contains_xml_chars(char *string);
 

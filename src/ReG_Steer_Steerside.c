@@ -1122,7 +1122,6 @@ int Consume_log(int SimHandle)
   int index;
   int count;
   Sim_entry_type          *sim;
-  struct param_struct     *param_ptr;
   struct log_entry_struct *entry_ptr;
 
   int return_status = REG_SUCCESS;
@@ -1135,7 +1134,6 @@ int Consume_log(int SimHandle)
   }
 
   sim = &(Sim_table.sim[index]);
-  index = sim->Chk_log.num_entries;
 
   /* Get_next_message has already parsed the (xml) message and stored
      it in the structure pointed to by sim->msg */
@@ -1156,47 +1154,14 @@ int Consume_log(int SimHandle)
       sscanf((char *)entry_ptr->key, "%d", 
 	     &(sim->Chk_log.entry[index].key));
     }
-    if(entry_ptr->chk_handle){
 
-      sscanf((char *)entry_ptr->chk_handle, "%d", 
-	     &(sim->Chk_log.entry[index].chk_handle));
+    if(entry_ptr->first_param_log){
+      Consume_param_log(sim, entry_ptr->first_param_log);
     }
-    if(entry_ptr->chk_tag){
-
-      strcpy(sim->Chk_log.entry[index].chk_tag, 
-	     (char *)entry_ptr->chk_tag);
+    else if(entry_ptr->first_chk_log){
+      Consume_chk_log(sim, entry_ptr->first_chk_log);
     }
 
-    param_ptr = entry_ptr->first_param;
-    count = 0;
-
-    while(param_ptr){
-
-      if(param_ptr->handle){
-	sscanf((char *)(param_ptr->handle), "%d", 
-	       &(sim->Chk_log.entry[index].param[count].handle));
-      }
-      if(param_ptr->value){
-	strcpy(sim->Chk_log.entry[index].param[count].value,
-	     (char *)(param_ptr->value));
-      }
-      param_ptr = param_ptr->next;
-
-      if(++count >= REG_MAX_NUM_STR_PARAMS){
-
-	fprintf(stderr, "Consume_log: WARNING: discarding parameter "
-		"because max. no. of %d exceeded\n", 
-		REG_MAX_NUM_STR_PARAMS);
-	break;
-      }
-    }
-
-    if(Increment_log_entry(&(sim->Chk_log)) != REG_SUCCESS){
-
-      return_status = REG_FAILURE;
-      break;
-    }
-    index++;
     entry_ptr = entry_ptr->next;
   }
 
@@ -1208,6 +1173,141 @@ int Consume_log(int SimHandle)
   return return_status;
 }
 
+/*----------------------------------------------------------*/
+
+int Consume_chk_log(Sim_entry_type *sim, 
+		    struct chk_log_entry_struct *entry)
+{
+  int                  index, count;
+  int                  return_status;
+  struct param_struct *param_ptr;
+
+  index = sim->Chk_log.num_entries;
+
+  while(entry){
+
+  if(entry->chk_handle){
+
+    sscanf((char *)entry->chk_handle, "%d", 
+	   &(sim->Chk_log.entry[index].chk_handle));
+  }
+  if(entry->chk_tag){
+
+    strcpy(sim->Chk_log.entry[index].chk_tag, 
+	   (char *)entry->chk_tag);
+  }
+
+  param_ptr = entry->first_param;
+  count = 0;
+
+  while(param_ptr){
+
+    if(param_ptr->handle){
+      sscanf((char *)(param_ptr->handle), "%d", 
+	     &(sim->Chk_log.entry[index].param[count].handle));
+    }
+    if(param_ptr->value){
+      strcpy(sim->Chk_log.entry[index].param[count].value,
+	     (char *)(param_ptr->value));
+    }
+    param_ptr = param_ptr->next;
+
+    if(++count >= REG_MAX_NUM_STR_PARAMS){
+
+      fprintf(stderr, "Consume_chk_log: WARNING: discarding parameter "
+	      "because max. no. of %d exceeded\n", 
+	      REG_MAX_NUM_STR_PARAMS);
+      break;
+    }
+  }
+
+    entry = entry->next;
+  }
+
+  if(Increment_log_entry(&(sim->Chk_log)) != REG_SUCCESS){
+
+    return_status = REG_FAILURE;
+  }
+
+  return return_status;
+}
+
+/*----------------------------------------------------------*/
+
+int Consume_param_log(Sim_entry_type *sim, 
+		      struct param_struct *param_ptr)
+{
+  int handle;
+  int index;
+  int i;
+
+  if(!sim->Params_table.param[i].log){
+
+    if(Realloc_param_log(&(sim->Params_table.param[i])) !=
+       REG_SUCCESS){
+
+      return REG_FAILURE;
+    }
+  }
+
+  index = sim->Params_table.param[i].log_index;
+
+  while(param_ptr){
+
+    /* Look-up entry for param to update */
+
+    sscanf((char *)(param_ptr->handle), "%d", &handle);
+
+    if( (i=Param_index_from_handle(&(sim->Params_table),
+				   handle)) == -1){
+
+      fprintf(stderr, "Consume_param_log: failed to match param handles\n");
+      fprintf(stderr, "                   handle = %d\n", handle);
+
+      param_ptr = param_ptr->next;
+      continue;
+    }
+
+    /* Update value of this param */
+    if(param_ptr->value){
+      switch(sim->Params_table.param[i].type){
+
+      case REG_INT:
+	sscanf((char *)(param_ptr->value), "%d",
+	       &( ((int *)sim->Params_table.param[i].log)[index++]) );
+        break;
+      case REG_FLOAT:
+	sscanf((char *)(param_ptr->value), "%f",
+	       &( ((float *)sim->Params_table.param[i].log)[index++]) );
+	break;
+      case REG_DBL:
+	sscanf((char *)(param_ptr->value), "%f",
+	       &( ((double *)sim->Params_table.param[i].log)[index++]) );
+	break;
+      case REG_CHAR:
+	/* This not implemented yet */
+	fprintf(stderr, "Consume_param_log: logging of char params not "
+		"implemented!\n");
+	break;
+      default:
+	break;
+      }
+
+      if(index >= sim->Params_table.param[i].log_size){
+	Realloc_param_log(&(sim->Params_table.param[i]));
+      }
+    }
+    else{
+
+    }
+
+    param_ptr = param_ptr->next;
+  }
+
+  sim->Params_table.param[i].log_index = index;
+
+  return REG_SUCCESS;
+}
 /*----------------------------------------------------------*/
 
 int Consume_status(int   SimHandle,
@@ -3259,3 +3359,38 @@ int Finalize_connection_file(Sim_entry_type *sim)
 
 /*-------------------------------------------------------------------*/
 
+int Realloc_param_log(param_entry *param)
+{
+  static int chunk_size = 500;
+  void *dum_ptr;
+
+  if(!param)return REG_FAILURE;
+
+  if(param->log){
+
+    param->log_size += chunk_size;
+    if( !(dum_ptr = realloc(param->log,
+			    param->log_size*sizeof(double))) ){
+      free(param->log);
+      param->log = NULL;
+      param->log_size = 0;
+      param->log_index = 0;
+      fprintf(stderr, "Realloc_param_log: realloc failed for %d"
+	      " bytes\n", param->log_size*sizeof(double));
+      return REG_FAILURE;
+    }
+    param->log = dum_ptr;
+  }
+  else{
+    param->log_index = 0;
+    param->log_size = chunk_size;
+
+    if( !(param->log = malloc(param->log_size*sizeof(double))) ){
+      param->log_size = 0;
+      fprintf(stderr, "Consume_param_log: failed to malloc mem for log\n");
+      return REG_FAILURE;
+    }
+  }
+
+  return REG_SUCCESS;
+}

@@ -1709,6 +1709,7 @@ int Log_to_xml(Chk_log_type *log, char **pchar, int *count,
     pentry = entry;
     nbytes = snprintf(pentry, bytes_left, "<Log_entry>\n"
 		      "<Key>%d</Key>\n"
+		      "<Chk_log_entry>"
 		      "<Chk_handle>%d</Chk_handle>\n"
 		      "<Chk_tag>%s</Chk_tag>\n", 
 		      log->entry[i].key, 
@@ -1753,7 +1754,8 @@ int Log_to_xml(Chk_log_type *log, char **pchar, int *count,
       pentry += nbytes;
     }
     
-    nbytes = snprintf(pentry, bytes_left, "</Log_entry>\n");
+    nbytes = snprintf(pentry, bytes_left, "</Chk_log_entry>\n"
+		                          "</Log_entry>\n");
 #if REG_DEBUG
     /* Check for truncation of message */
     if((nbytes >= (bytes_left-1)) || (nbytes < 1)){

@@ -100,6 +100,9 @@ typedef struct {
   /* Table for logging checkpoint activity */
   Chk_log_type         Chk_log;
 
+  /* Table for keeping parameter histories 
+     Param_log_type       Param_log;*/
+
 } Sim_entry_type;
 
 
@@ -173,6 +176,9 @@ static int Finalize_connection(Sim_entry_type *sim);
 static int Finalize_connection_proxy(Sim_entry_type *sim);
 
 static int Finalize_connection_file(Sim_entry_type *sim);
+
+int Consume_chk_log(Sim_entry_type *sim, 
+		    struct chk_log_entry_struct *entry);
 
 /* Obtain details associated with the supplied Chk log entry (e.g. values
    of steerable parameters at that point) */
