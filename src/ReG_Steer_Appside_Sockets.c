@@ -61,11 +61,11 @@ int socket_info_init(const int index) {
 
   char* pchar;
   char* ip_addr;
-  int min = 0;
-  int max = 0;
+  int min = 21370;
+  int max = 65535;
 
   if(pchar = getenv("GLOBUS_TCP_PORT_RANGE")) {
-    if(sscanf(pchar, "%d,%d", &(min), &(max)) != 2){
+    if(sscanf(pchar, "%d,%d", &(min), &(max)) != 2) {
       min = 21370;
       max = 65535;
     }
@@ -1063,13 +1063,12 @@ int Consume_start_data_check_sockets(const int index) {
     fprintf(stderr, "!");
 #endif
 
-    if((nbytes = recv(sock_info->connector_handle, buffer, 
-		      REG_PACKET_SIZE, MSG_DONTWAIT)) <= 0) {
+    if((nbytes = recv(sock_info->connector_handle, buffer, REG_PACKET_SIZE, MSG_DONTWAIT)) <= 0) {
       if(nbytes == 0) {
 	/* closed connection */
 	fprintf(stderr, "Consume_start_data_check_sockets: hung up!\n");
       }
-      else if(errno == EAGAIN){
+      else if(errno == EAGAIN) {
 	/* Call would have blocked because no data to read */
 #if REG_DEBUG
 	fprintf(stderr, "\n");
