@@ -39,6 +39,14 @@
 #include "ReG_Steer_Logging.h"
 #include "ReG_Steer_Appside_internal.h"
 
+#ifndef WIN32
+#else
+#include <windows.h>
+#define snprintf _snprintf
+#define usleep(microseconds) (Sleep(microseconds/1000))
+#endif
+
+
 /* Allow value of 'REG_DEBUG' to propagate down from Reg_steer_types.h if
    it has been set there */
 #ifndef REG_DEBUG

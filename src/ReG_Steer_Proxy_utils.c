@@ -39,10 +39,18 @@
 #define REG_DEBUG 1
 #endif
 
+#ifndef WIN32
+#else
+#include <io.h>
+#define read _read
+#endif
+
 /*----------------------------------------------------------*/
 
+/* NOTE - This function is not currently available under Windows */
 int Create_proxy(int *to_proxy, int *from_proxy)
 {
+#ifndef WIN32
   const int stdin_fd  = 0;
   const int stdout_fd = 1;
 
@@ -165,6 +173,7 @@ int Create_proxy(int *to_proxy, int *from_proxy)
     }
   }
 
+#endif
   return REG_SUCCESS;
 }
 
@@ -177,8 +186,10 @@ int Destroy_proxy(int pipe_to_proxy)
 
 /*----------------------------------------------------------*/
 
+/* NOTE - This function is not currently available under Windows */
 int Send_proxy_message(int pipe_to_proxy, const char *buf)
 {
+#ifndef WIN32
   int   nbytes;
   int   buf_len;
   int   foot_len;
@@ -239,14 +250,16 @@ int Send_proxy_message(int pipe_to_proxy, const char *buf)
     return REG_FAILURE;
   }
   */
-
+#endif
   return REG_SUCCESS;
 }
 
 /*----------------------------------------------------------*/
 
+/* NOTE - This function is not currently available under Windows */
 int Get_proxy_message(int pipe_from_proxy, char *buf, int *nbytes)
 {
+#ifndef WIN32
   char *pbuf;
   char  line_buf[REG_MAX_LINE_LEN];
   int   count;
@@ -331,6 +344,7 @@ int Get_proxy_message(int pipe_from_proxy, char *buf, int *nbytes)
   fprintf(stderr, "Get_proxy_message: received: %s\n", buf);
 #endif
 
+#endif
   return REG_SUCCESS;
 }
 

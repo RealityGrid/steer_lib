@@ -45,6 +45,15 @@
 #define REG_DEBUG 0
 #endif
 
+/* MR: Temporary fix - forward declaration of the Consume_param_log */
+/*     function so it can be used throughout this implementation    */
+/*     file. Sticking it in the header causes problems due to       */
+/*     struct param_struct (from ReG_Steer_XML.h) not being         */
+/*     available. Including the XML header in the Steerside causes  */
+/*     other problems.                                              */
+int Consume_param_log(Sim_entry_type *sim, 
+		      struct param_struct *param_ptr);
+
 /*--------------------- Data structures -------------------*/
 
 /* Main table used to record all simulations currently

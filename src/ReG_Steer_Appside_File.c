@@ -38,6 +38,11 @@
 #include "ReG_Steer_types.h"
 #include "ReG_Steer_Appside_internal.h"
 
+#ifndef WIN32
+#else
+#define snprintf _snprintf
+#endif
+
 /* Allow value of 'REG_DEBUG' to propagate down from Reg_steer_types.h if
    it has been set there */
 #ifndef REG_DEBUG

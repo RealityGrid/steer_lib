@@ -41,11 +41,20 @@
 #include "ReG_Steer_Logging.h"
 
 #include <signal.h>
-#include <unistd.h>
 #include <time.h>
 #include <rpc/rpc.h>
 #include <math.h>
 #include <string.h>
+
+#ifndef WIN32
+#include <unistd.h>
+#else
+#include <direct.h>
+#define snprintf _snprintf
+#define sleep(seconds) (Sleep(seconds*1000))
+#define usleep(microseconds) (Sleep(microseconds/1000))
+#define getcwd _getcwd
+#endif
 
 /* Allow value of 'REG_DEBUG' to propagate down from Reg_steer_types.h if
    it has been set there */
@@ -472,10 +481,12 @@ int Steering_initialize(char *AppName,
   signal(SIGILL, Steering_signal_handler);
   signal(SIGABRT, Steering_signal_handler);
   signal(SIGFPE, Steering_signal_handler);
+#ifndef WIN32
   /* For CPU-limit exceeded */
   signal(SIGXCPU, Steering_signal_handler);
   /* LSF sends us a SIGUSR2 signal when we reach our wall-clock limit */
   signal(SIGUSR2, Steering_signal_handler);
+#endif
 #if REG_SOCKET_SAMPLES
 #ifndef __linux
   /* Catch the broken pipe signal for sending down a disconnected
@@ -4093,8 +4104,10 @@ void Steering_signal_handler(int aSignal)
   signal(SIGILL, SIG_IGN);
   signal(SIGABRT, SIG_IGN);
   signal(SIGFPE, SIG_IGN);
+#ifndef WIN32
   signal(SIGXCPU, SIG_IGN);
   signal(SIGUSR2, SIG_IGN);
+#endif
 
   switch(aSignal){
 
@@ -4130,6 +4143,7 @@ void Steering_signal_handler(int aSignal)
               aSignal);
       break;
 
+#ifndef WIN32
     case SIGXCPU:
       fprintf(stderr, "Steering_signal_handler: CPU usuage exceeded (signal %d)\n", 
               aSignal);
@@ -4141,6 +4155,7 @@ void Steering_signal_handler(int aSignal)
       fprintf(stderr, "Steering_signal_handler: USR2 signal caught (signal %d)\n", 
               aSignal);
       break;
+#endif
 
     default:
       fprintf(stderr, "Steering_signal_handler: Signal caught (signal %d)\n", 

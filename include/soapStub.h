@@ -147,6 +147,7 @@ struct sgs__AppStopResponse
 #define _SOAP_sgs__destroyResponse
 struct sgs__destroyResponse
 {
+	void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -194,6 +195,7 @@ struct sgs__AppDetachResponse
 #define _SOAP_sgs__Attach
 struct sgs__Attach
 {
+	void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -201,6 +203,7 @@ struct sgs__Attach
 #define _SOAP_sgs__GetStatus
 struct sgs__GetStatus
 {
+	void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -208,6 +211,7 @@ struct sgs__GetStatus
 #define _SOAP_sgs__Stop
 struct sgs__Stop
 {
+	void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -215,6 +219,7 @@ struct sgs__Stop
 #define _SOAP_sgs__ClearStatusMsgQueue
 struct sgs__ClearStatusMsgQueue
 {
+	void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -222,6 +227,7 @@ struct sgs__ClearStatusMsgQueue
 #define _SOAP_sgs__Detach
 struct sgs__Detach
 {
+	void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -229,6 +235,7 @@ struct sgs__Detach
 #define _SOAP_sgs__Resume
 struct sgs__Resume
 {
+	void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -253,6 +260,7 @@ struct sgs__PutStatus
 #define _SOAP_sgs__AppStart
 struct sgs__AppStart
 {
+	void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -284,6 +292,7 @@ struct sgs__AppPutLog
 #define _SOAP_sgs__AppDetach
 struct sgs__AppDetach
 {
+	void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -291,6 +300,7 @@ struct sgs__AppDetach
 #define _SOAP_sgs__Pause
 struct sgs__Pause
 {
+	void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -330,6 +340,7 @@ struct sgs__findServiceData
 #define _SOAP_sgs__destroy
 struct sgs__destroy
 {
+	void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -337,6 +348,7 @@ struct sgs__destroy
 #define _SOAP_sgs__GetControl
 struct sgs__GetControl
 {
+	void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -344,6 +356,7 @@ struct sgs__GetControl
 #define _SOAP_sgs__GetNotifications
 struct sgs__GetNotifications
 {
+	void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -351,6 +364,7 @@ struct sgs__GetNotifications
 #define _SOAP_sgs__AppStop
 struct sgs__AppStop
 {
+	void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -366,6 +380,7 @@ struct sgsf__createServiceResponse
 #define _SOAP_sgsf__destroyResponse
 struct sgsf__destroyResponse
 {
+	void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -390,6 +405,7 @@ struct sgsf__registerSelf
 #define _SOAP_sgsf__destroy
 struct sgsf__destroy
 {
+	void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -433,6 +449,7 @@ struct sgr__addResponse
 #define _SOAP_sgr__removeResponse
 struct sgr__removeResponse
 {
+	void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -514,6 +531,7 @@ struct rgtf__requestTerminationAfterResponse
 #define _SOAP_rgtf__destroyResponse
 struct rgtf__destroyResponse
 {
+	void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -541,6 +559,7 @@ struct rgtf__findByHandle
 #define _SOAP_rgtf__destroy
 struct rgtf__destroy
 {
+	void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -556,6 +575,7 @@ struct rgtf__findServiceData
 #define _SOAP_rgtf__getActiveTrees
 struct rgtf__getActiveTrees
 {
+	void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -619,6 +639,7 @@ struct rgt__findServiceDataResponse
 #define _SOAP_rgt__setCheckPointDataResponse
 struct rgt__setCheckPointDataResponse
 {
+	void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -658,6 +679,7 @@ struct rgt__getInputFileResponse
 #define _SOAP_rgt__destroyResponse
 struct rgt__destroyResponse
 {
+	void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -673,6 +695,7 @@ struct rgt__requestTerminationAfter
 #define _SOAP_rgt__getChildNodes
 struct rgt__getChildNodes
 {
+	void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -680,6 +703,7 @@ struct rgt__getChildNodes
 #define _SOAP_rgt__getInputFile
 struct rgt__getInputFile
 {
+	void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -695,6 +719,7 @@ struct rgt__findServiceData
 #define _SOAP_rgt__setCheckPointData
 struct rgt__setCheckPointData
 {
+	void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -702,6 +727,7 @@ struct rgt__setCheckPointData
 #define _SOAP_rgt__destroy
 struct rgt__destroy
 {
+	void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -709,6 +735,7 @@ struct rgt__destroy
 #define _SOAP_rgt__getSteeringCommands
 struct rgt__getSteeringCommands
 {
+	void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -724,6 +751,7 @@ struct rgt__requestTerminationBefore
 #define _SOAP_rgt__getCheckPointData
 struct rgt__getCheckPointData
 {
+	void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -731,6 +759,7 @@ struct rgt__getCheckPointData
 #define _SOAP_rgt__getParentNode
 struct rgt__getParentNode
 {
+	void *rubbish; /* ARPDBG */
 };
 #endif
 

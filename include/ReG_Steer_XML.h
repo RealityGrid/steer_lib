@@ -33,6 +33,9 @@
 
 ---------------------------------------------------------------------------*/
 
+#ifndef __REG_STEER_XML_H__
+#define __REG_STEER_XML_H__
+
 #include "libxml/xmlmemory.h"
 #include "libxml/parser.h"
 
@@ -211,7 +214,7 @@ struct xtndString {
 /* Enumeration of the various possible states of our parser
    - corresponds to the elements of the doc we're interested in */
 enum doc_state {UNKNOWN, STARTING, OGSI_ENTRY, MEMBER_SERVICE_LOCATOR, 
-		HANDLE, CONTENT, SERVICE_TYPE, COMPONENT_CONTENT, 
+		GS_HANDLE, CONTENT, SERVICE_TYPE, COMPONENT_CONTENT, 
 		COMPONENT_START_DATE_TIME,
 		COMPONENT_CREATOR_NAME, COMPONENT_CREATOR_GROUP, 
 		COMPONENT_SOFTWARE_PACKAGE, COMPONENT_TASK_DESCRIPTION, 
@@ -251,3 +254,4 @@ void Characters_handler(void          *user_data,
 			const xmlChar *ch,
 			int  	       len);
 
+#endif

@@ -35,18 +35,29 @@
 
 #include "ReG_Steer_types.h"
 #include "ReG_Steer_Common.h"
+#ifndef WIN32
 #include <sys/time.h>
+#endif
 #include <rpc/rpc.h>
 #include <string.h>
 /* These are for uname and gethostbyname */
+#ifndef WIN32
 #include <sys/utsname.h>
+#endif
 #include <sys/types.h>
+#ifndef WIN32
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#endif
 
 #ifndef REG_DEBUG
 #define REG_DEBUG 0
+#endif
+
+#ifndef WIN32
+#else
+#define snprintf _snprintf
 #endif
 
 /* Location of file specifying the schema/namespace to which all
@@ -1072,6 +1083,7 @@ int Reorder_decode_array(IOdef_entry *io,
 
 int Get_fully_qualified_hostname(char **hostname, char **ip_addr_ptr)
 {
+#ifndef WIN32
   struct utsname  name;
   struct hostent *host;
   char           *pchar;
@@ -1128,4 +1140,17 @@ int Get_fully_qualified_hostname(char **hostname, char **ip_addr_ptr)
   *ip_addr_ptr = ip_addr;
 
   return REG_SUCCESS;
+
+#else
+  HOSTENT *hostDetailsStruct;
+  char FAR hostNameBuffer[64];
+
+  gethostname (&hostNameBuffer[0], 64);
+  hostDetailsStruct = gethostbyname(hostNameBuffer);
+
+  *hostname = hostNameBuffer;
+  *ip_addr_ptr = hostDetailsStruct->h_addr_list[0];
+ 
+  return REG_SUCCESS;
+#endif
 }

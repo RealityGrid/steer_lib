@@ -62,6 +62,8 @@ int Open_log_file(Chk_log_type *log);
 /* Close the log file */
 int Close_log_file(Chk_log_type *log);
 
+int Finalize_log(Chk_log_type *log);
+
 /* (Close and) delete the log file */
 int Delete_log_file(Chk_log_type *log);
 
@@ -91,6 +93,8 @@ int Param_log_to_xml(Chk_log_type *log, int handle, char **pchar,
    storing parameter histories. */
 int Log_to_columns(Chk_log_type *log, char **pchar, int *count, 
 		   const int not_sent_only);
+
+int Log_param_values();
 
 /* Convert a columnar-format log back into xml.  buf points to
    the columnar data (space delimited data on lines delimited by

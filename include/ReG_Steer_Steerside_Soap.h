@@ -64,4 +64,6 @@ int Send_restart_msg_soap(Sim_entry_type *sim, char *chkGSH);
 /* Clean-up soap-specific structures */
 int Finalize_connection_soap(Sim_entry_type *sim);
 
+int Get_param_log_soap(Sim_entry_type *sim, int handle);
+
 #endif

@@ -1498,7 +1498,7 @@ void Start_element_handler(void * 	user_data,
   }
   else if( !xmlStrcmp(name, (const xmlChar *) "ogsi:handle") ){
 
-    if(state->depth == MEMBER_SERVICE_LOCATOR) state->depth = HANDLE;
+    if(state->depth == MEMBER_SERVICE_LOCATOR) state->depth = GS_HANDLE;
   } 
   else if( !xmlStrcmp(name, (const xmlChar *) "ogsi:content") ){
 
@@ -1577,7 +1577,7 @@ void End_element_handler(void          *user_data,
   }
   else if( !xmlStrcmp(name, (const xmlChar *) "ogsi:handle") ){
 
-    if (state->depth == HANDLE) state->depth = MEMBER_SERVICE_LOCATOR;
+    if (state->depth == GS_HANDLE) state->depth = MEMBER_SERVICE_LOCATOR;
   }
   else if( !xmlStrcmp(name, (const xmlChar *) "ogsi:content") ){
 
@@ -1625,7 +1625,7 @@ void Characters_handler(void          *user_data,
   /* Check that we haven't previously hit an error */
   if(state->return_val != REG_SUCCESS) return;
 
-  if(state->depth == HANDLE){
+  if(state->depth == GS_HANDLE){
     strncpy(state->entries[state->num_entries].gsh, (char *)ch, len);
     state->entries[state->num_entries].gsh[len] = '\0';
   } 
