@@ -2938,7 +2938,6 @@ int Get_log_entry_details(Param_table_type *param_table,
 
 int Sim_attach_local(Sim_entry_type *sim, char *SimID)
 {
-  int   i;
   char *pchar;
   char  file_root[REG_MAX_STRING_LENGTH];
   char  filename[REG_MAX_STRING_LENGTH];
