@@ -102,6 +102,8 @@ void Globus_io_deactivate()
 int Globus_socket_info_init(socket_io_type * const socket_info)
 {
   globus_result_t	result;
+  char                 *pchar;
+  int                   dum;
 
   if (Globus_io_activate() != REG_SUCCESS)
     return REG_FAILURE;
@@ -124,6 +126,37 @@ int Globus_socket_info_init(socket_io_type * const socket_info)
     Globus_error_print(result);
     return REG_FAILURE;
   }
+
+  /* If this environment variable is set then use it as the local
+     TCP interface (rather than INADDR_ANY I expect) */
+  if(pchar = getenv("REG_TCP_INTERFACE")){
+
+    if(sscanf(pchar, "%d.%d.%d.%d", &dum, &dum, &dum, &dum) == 4){
+
+      result = globus_io_attr_set_tcp_interface(&socket_info->attr, 
+						pchar);
+
+      if(result != GLOBUS_SUCCESS){
+	fprintf(stderr, "Globus_socket_info_init: Error setting "
+		"tcp interface.\n");
+	Globus_error_print(result);
+	return REG_FAILURE;
+      }
+    }
+    else{
+      fprintf(stderr, "Globus_socket_info_init: REG_TCP_INTERFACE"
+	      " is set but is of wrong format - should be "
+	      "<int>.<int>.<int>.<int>\n"
+	      "- using INADDR_ANY for local interface...\n");
+    }
+  }
+#if REG_DEBUG
+  else{
+    fprintf(stderr, "Globus_socket_info_init: REG_TCP_INTERFACE not"
+	    " set - using INADDR_ANY for local interface\n");
+  }
+#endif
+
 
   /* SMR XXX - add more attr security stuff here */
 
@@ -191,6 +224,7 @@ int Globus_create_listener(socket_io_type * const socket_info)
 {
   globus_result_t	result;
   char                 *pchar;
+  int                   dum;
 
   /* create listener socket on free port 
    *  - if environment variable GLOBUS_TCP_PORT_RANGE has been set,
@@ -215,19 +249,37 @@ int Globus_create_listener(socket_io_type * const socket_info)
 
   /* Get the hostname of the machine we're running on (so we can publish
      the endpoint of this connection) */
-  if(pchar = Get_fully_qualified_hostname()){
 
-    sprintf(socket_info->listener_hostname, "%s", pchar);
+  /* First check to see if we're using an interface other than the default */
+  if(pchar = getenv("REG_TCP_INTERFACE")){
+
+    if(sscanf(pchar, "%d.%d.%d.%d", &dum, &dum, &dum, &dum) != 4){
+
+      fprintf(stderr, "Globus_create_listener: WARNING: REG_TCP_INTERFACE is"
+	      "set but is of wrong format (should be <int>.<int>.<int>.<int>)\n"
+	      "                        Proceeding with default interface...\n");
+      pchar = NULL;
+    }
+    else{
+      sprintf(socket_info->listener_hostname, "%s", pchar);
+    }
   }
-  else{
 
-    fprintf(stderr, "Globus_create_listener: WARNING: failed to get "
-	    "hostname\n");
-    sprintf(socket_info->listener_hostname, "NOT_SET");
+  if(!pchar){
+    /* We're using the default interface - get our hostname */
+    if(pchar = Get_fully_qualified_hostname()){
+
+      sprintf(socket_info->listener_hostname, "%s", pchar);
+    }
+    else{
+
+      fprintf(stderr, "Globus_create_listener: WARNING: failed to get "
+	      "hostname\n");
+      sprintf(socket_info->listener_hostname, "NOT_SET");
+    }
   }
-
   
-  /* now register listener so can accept connections when they happen */
+  /* Now register listener so can accept connections when they happen */
   result = globus_io_tcp_register_listen(&(socket_info->listener_handle),
 					 Globus_listener_callback,
 					 (void *) socket_info);
