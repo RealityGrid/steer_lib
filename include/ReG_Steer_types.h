@@ -36,7 +36,7 @@
 
 #define __REG_TYPES_INCLUDED
 
-/*#define DEBUG 0*/
+#define DEBUG 1
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -167,8 +167,8 @@ typedef int REG_IOHandleType;
 
 /* Definitions used in communicating with the java proxy */
 
-#define MAX_MSG_SIZE BUFSIZ
-#define HEADER_BYTES 4
-#define REG_PIPE_UNSET -1
+#define REG_MAX_MSG_SIZE BUFSIZ
+#define REG_HEADER_BYTES 4
+#define REG_PIPE_UNSET   -1
 
 #endif /* __REG_TYPES_INCLUDED defined */
