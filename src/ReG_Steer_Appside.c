@@ -842,6 +842,13 @@ int Set_log_primary_key()
     return REG_SUCCESS;
   }
 
+  if(size == 0){
+
+    /* Log file existed but was empty */
+    Chk_log.primary_key_value = 0;
+    return REG_SUCCESS;
+  }
+
   ptr = pbuf;
   while(ptr = strstr((ptr+1), "<Key>")){
 
