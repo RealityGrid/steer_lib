@@ -115,7 +115,7 @@
 
 /* Maximum length for any string */
 
-#define REG_MAX_STRING_LENGTH 80
+#define REG_MAX_STRING_LENGTH 256
 
 /* Steering commands */
 

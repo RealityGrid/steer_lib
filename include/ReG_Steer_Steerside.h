@@ -37,6 +37,9 @@
 
 ---------------------------------------------------------------------------*/
 
+#ifndef __REG_STEER_STEERSIDE_H__
+#define __REG_STEER_STEERSIDE_H__
+
 #include "ReG_Steer_types.h"
 #include "ReG_Steer_Globus_io.h"
 
@@ -279,3 +282,5 @@ extern PREFIX int Get_chk_log_entries_reverse(int                sim_handle,
 					      int                chk_handle,
 					      int                num_entries,
 					      Output_log_struct *entries);
+
+#endif
