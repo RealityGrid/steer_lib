@@ -860,14 +860,16 @@ int Consume_msg_header_sockets(int index, int* datatype, int* count, int* num_by
 
   /* Blocks until REG_PACKET_SIZE bytes received */
   if((nbytes = recv(sock_info->connector_handle, buffer, REG_PACKET_SIZE, MSG_WAITALL)) <= 0) {
-    if(nbytes == 0) {
-      /* closed connection */
-      fprintf(stderr, "Consume_msg_header_sockets: hung up!\n");
-    }
-    else {
+    if(nbytes < 0) {
       /* error */
       perror("recv");
     }
+#if REG_DEBUG
+    else {
+      /* closed connection */
+      fprintf(stderr, "Consume_msg_header_sockets: hung up!\n");
+    }
+#endif
 
     return REG_FAILURE;
   }
@@ -1040,13 +1042,15 @@ int Consume_start_data_check_sockets(const int index) {
   /* check if socket connection has been made */
   if(IOTypes_table.io_def[index].socket_info.comms_status != REG_COMMS_STATUS_CONNECTED) {
 #if REG_DEBUG
-    fprintf(stderr, "Consume_start_data_check_socket: socket is NOT connected, index = %d\n", index);
+    fprintf(stderr, "Consume_start_data_check_socket: socket is NOT connected, "
+	    "index = %d\n", index);
 #endif
     return REG_FAILURE;
   }
 
 #if REG_DEBUG
-  fprintf(stderr, "Consume_start_data_check_socket: socket status is connected, index = %d\n", index);
+  fprintf(stderr, "Consume_start_data_check_socket: socket status is connected, "
+	  "index = %d\n", index);
 #endif
 
   /* Drain socket until start tag found */
@@ -1063,40 +1067,45 @@ int Consume_start_data_check_sockets(const int index) {
 
     /* So it looks like AIX blocks by default... So make the socket
      * non-blocking as we can't control this with flags to recv() in AIX... */
-    fcntl(sock_info->connector_handle, F_SETFL, fcntl(sock_info->connector_handle, F_GETFL)|O_NONBLOCK);
+    fcntl(sock_info->connector_handle, F_SETFL, 
+	  fcntl(sock_info->connector_handle, F_GETFL)|O_NONBLOCK);
 
     nbytes = recv(sock_info->connector_handle, buffer, REG_PACKET_SIZE, 0);
 
     /* ...And turn off non-blocking again... */
-    fcntl(sock_info->connector_handle, F_SETFL, fcntl(sock_info->connector_handle, F_GETFL)&~O_NONBLOCK);
+    fcntl(sock_info->connector_handle, F_SETFL, 
+	  fcntl(sock_info->connector_handle, F_GETFL)&~O_NONBLOCK);
 
     if(nbytes <= 0) {
-
 #else
 
-    if((nbytes = recv(sock_info->connector_handle, buffer, REG_PACKET_SIZE, MSG_DONTWAIT)) <= 0) {
-
+    if((nbytes = recv(sock_info->connector_handle, buffer, 
+		      REG_PACKET_SIZE, MSG_DONTWAIT)) <= 0) {
 #endif
 
-      if(nbytes == 0) {
-	/* closed connection */
+      if(nbytes < 0) {
+	if(errno == EAGAIN) {
+	  /* Call would have blocked because no data to read */
+#if REG_DEBUG
+	  fprintf(stderr, "\n");
+#endif
+	  /* Call was OK but there's no data to read... */
+	  return REG_FAILURE;
+	}
+	else {
+	  /* Some error occurred */
+#if REG_DEBUG
+	  fprintf(stderr, "\n");
+#endif
+	  perror("recv");
+	}
+      }
+#if REG_DEBUG
+      else {
+	/* recv returned 0 bytes => closed connection */
 	fprintf(stderr, "Consume_start_data_check_sockets: hung up!\n");
       }
-      else if(errno == EAGAIN) {
-	/* Call would have blocked because no data to read */
-#if REG_DEBUG
-	fprintf(stderr, "\n");
 #endif
-	/* Call was OK but there's no data to read... */
-	return REG_FAILURE;
-      }
-      else {
-	/* Some error occurred */
-#if REG_DEBUG
-	fprintf(stderr, "\n");
-#endif
-	perror("recv");
-      }
 
       /* We're in the middle of a while loop here so don't keep trying
 	 to reconnect ad infinitum */
