@@ -40,7 +40,7 @@ TARGET   = sink
 .c.o:
 	${CC} ${C_FLAGS} ${STEER_INCLUDES} ${GLOBUS_INCLUDES} -c $< -o $@
 
-${TARGET}: ${REG_STEER_HOME}/lib$(NBIT)/libReG_Steer.a ${TARGET}.o
+${TARGET}: ${REG_STEER_HOME}/lib$(NBIT)/$(LIB_NAME) ${TARGET}.o
 	${CC} ${C_FLAGS} ${TARGET}.o -o $@ ${STEER_LIBS} ${GLOBUS_LDFLAGS} \
         -lReG_Steer ${STEER_LDFLAGS} ${GLOBUS_PKG_LIBS}
 

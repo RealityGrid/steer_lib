@@ -34,6 +34,8 @@
 include Makefile.include
 include make/Makefile.${ARCH}
 
+LIB_PATH       = ${REG_STEER_HOME}/lib$(NBIT)
+
 all:
 	make lib
 	make c_examples
@@ -55,28 +57,85 @@ f90_examples:
 lib: include/*.h \
  src/*.c \
  src/*.m4
+	rm -f $(LIB_PATH)/libReG_Steer.so
 	cd src; make lib
 
-app: lib$(NBIT)/libReG_Steer.a \
+libss: include/*.h \
+ src/*.c \
+ src/*.m4
+	cd src; make -f Makefile.ss all
+	rm -f $(LIB_PATH)/libReG_Steer.so
+	ln -s libReG_SteerSoapSockets.so $(LIB_PATH)/libReG_Steer.so
+
+libssd: include/*.h \
+ src/*.c \
+ src/*.m4
+	cd src; make -f Makefile.ssd all
+	rm -f $(LIB_PATH)/libReG_Steer.so
+	ln -s libReG_SteerSoapSocketsDebug.so $(LIB_PATH)/libReG_Steer.so
+
+libsf: include/*.h \
+ src/*.c \
+ src/*.m4
+	cd src; make -f Makefile.sf all
+	rm -f $(LIB_PATH)/libReG_Steer.so
+	ln -s libReG_SteerSoapFile.so $(LIB_PATH)/libReG_Steer.so
+
+libsfd: include/*.h \
+ src/*.c \
+ src/*.m4
+	cd src; make -f Makefile.sfd all
+	rm -f $(LIB_PATH)/libReG_Steer.so
+	ln -s libReG_SteerSoapFileDebug.so $(LIB_PATH)/libReG_Steer.so
+
+libfs: include/*.h \
+ src/*.c \
+ src/*.m4
+	cd src; make -f Makefile.fs all
+	rm -f $(LIB_PATH)/libReG_Steer.so
+	ln -s libReG_SteerFileSockets.so $(LIB_PATH)/libReG_Steer.so
+
+libfsd: include/*.h \
+ src/*.c \
+ src/*.m4
+	cd src; make -f Makefile.fsd all
+	rm -f $(LIB_PATH)/libReG_Steer.so
+	ln -s libReG_SteerFileSocketsDebug.so $(LIB_PATH)/libReG_Steer.so
+
+libf: include/*.h \
+ src/*.c \
+ src/*.m4
+	cd src; make -f Makefile.f all
+	rm -f $(LIB_PATH)/libReG_Steer.so
+	ln -s libReG_SteerFile.so $(LIB_PATH)/libReG_Steer.so
+
+libfd: include/*.h \
+ src/*.c \
+ src/*.m4
+	cd src; make -f Makefile.fd all
+	rm -f $(LIB_PATH)/libReG_Steer.so
+	ln -s libReG_SteerFileDebug.so $(LIB_PATH)/libReG_Steer.so
+
+app: lib$(NBIT)/$(LIB_NAME) \
  examples/mini_app/*.c
 	cd examples/mini_app; make
 
 
-app_f90: lib$(NBIT)/libReG_Steer.a \
+app_f90: lib$(NBIT)/$(LIB_NAME) \
  include/*.inc \
  examples/mini_app_f90/*.f90
 	cd examples/mini_app_f90; make
 
-app_f90_parallel:  lib$(NBIT)/libReG_Steer.a \
+app_f90_parallel:  lib$(NBIT)/$(LIB_NAME) \
  include/*.inc \
  examples/mini_app_f90_parallel/*.f90
 	cd examples/mini_app_f90_parallel; make
 
-steerer: lib$(NBIT)/libReG_Steer.a \
+steerer: lib$(NBIT)/$(LIB_NAME) \
  examples/mini_steerer/*.c
 	cd examples/mini_steerer; make
 
-sink: lib$(NBIT)/libReG_Steer.a \
+sink: lib$(NBIT)/$(LIB_NAME) \
  examples/mini_steerer/*.c
 	cd examples/sink; make
 

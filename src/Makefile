@@ -33,6 +33,7 @@
 
 include ../Makefile.include
 include ../make/Makefile.${ARCH}
+include Makefile.shared
 
 # Set-up access to M4 scripts for production of F90 wrappers, this is
 # taken from the PVM project.
@@ -42,10 +43,10 @@ INCLUDE_PATH   = ${STEER_INCLUDES}
 LIB_PATH       = ${REG_STEER_HOME}/lib$(NBIT)
 
 all:
-	make ${LIB_PATH}/libReG_Steer.a
+	make ${LIB_PATH}/$(LIB_NAME)
 
 lib:
-	make ${LIB_PATH}/libReG_Steer.a
+	make ${LIB_PATH}/$(LIB_NAME)
 
 .c.o:
 	${CC} ${C_FLAGS} \
@@ -56,6 +57,18 @@ lib:
         -DREG_STEER_LIB_VERSION=\"${REG_STEER_LIB_VERSION}\" \
         ${INCLUDE_PATH} -c $< -o $@
 
+${LIB_PATH}/libReG_Steer.so:
+	make -f Makefile.ss all
+	make -f Makefile.ssd all
+	make -f Makefile.sf all
+	make -f Makefile.sfd all
+	make -f Makefile.fs all
+	make -f Makefile.fsd all
+	make -f Makefile.ff all
+	make -f Makefile.ffd all
+	rm -f $(LIB_PATH)/libReG_Steer.so
+	ln -s libReG_SteerSoapSockets.so $(LIB_PATH)/libReG_Steer.so
+
 ${LIB_PATH}/libReG_Steer.a: ReG_Steer_Appside_f.o \
 	ReG_Steer_Appside.o \
 	ReG_Steer_Steerside.o \
@@ -63,12 +76,11 @@ ${LIB_PATH}/libReG_Steer.a: ReG_Steer_Appside_f.o \
 	ReG_Steer_Proxy_utils.o \
 	ReG_Steer_XML.o \
 	ReG_Steer_Appside_Sockets.o \
-        ReG_Steer_Steerside_Soap.o \
-        ReG_Steer_Appside_Soap.o \
-        ReG_Steer_Appside_File.o \
-        ReG_Steer_Browser.o \
+	ReG_Steer_Steerside_Soap.o \
+	ReG_Steer_Appside_Soap.o \
+	ReG_Steer_Appside_File.o \
+	ReG_Steer_Browser.o \
 	stdsoap2.o soapC.o soapClient.o
-
 
 ${LIB_PATH}/libReG_Steer.a:
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Appside_f.o
@@ -140,7 +152,7 @@ ReG_Steer_Appside_Soap.o: ReG_Steer_Appside_Soap.c \
         ../include/ReG_Steer_Appside_Soap.h \
         ../include/ReG_Steer_Appside_internal.h \
 	../include/ReG_Steer_types.h \
-        ../include/soapSGS.nsmap \
+        ../include/soapRealityGrid.nsmap \
         ../include/soapH.h \
 	stdsoap2.c soapC.c soapClient.c
 
@@ -154,14 +166,14 @@ ReG_Steer_Steerside_Soap.o: ReG_Steer_Steerside_Soap.c \
         ../include/ReG_Steer_Steerside_internal.h \
         ../include/ReG_Steer_Steerside.h \
 	../include/ReG_Steer_types.h \
-        ../include/soapSGS.nsmap \
+        ../include/soapRealityGrid.nsmap \
         ../include/soapH.h \
 	stdsoap2.c soapC.c soapClient.c 
 
 ReG_Steer_Browser.o: ReG_Steer_Browser.c \
         ../include/ReG_Steer_Browser.h \
 	../include/ReG_Steer_types.h \
-        ../include/soapServiceGroupRegistration.nsmap \
+        ../include/soapRealityGrid.nsmap \
         ../include/soapH.h \
         ../include/soapStub.h \
 	stdsoap2.c soapC.c soapClient.c
@@ -173,6 +185,7 @@ clean:
 	rm -f ReG_Steer_Appside_f.c
 	rm -f ../include/*~
 	rm -f ${LIB_PATH}/libReG_Steer.a
+	rm -f ${LIB_PATH}/libReG_Steer*.so
 
 tidy:
 	rm -f ReG_Steer_Steerside.o ReG_Steer_Appside.o \

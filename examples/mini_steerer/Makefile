@@ -37,7 +37,7 @@ include ${REG_STEER_HOME}/make/Makefile.${ARCH}
 
 TARGET   = mini_steerer
 
-${TARGET}: ${REG_STEER_HOME}/lib$(NBIT)/libReG_Steer.a \
+${TARGET}: ${REG_STEER_HOME}/lib$(NBIT)/$(LIB_NAME) \
            ${TARGET}.c
 
 .c.o:

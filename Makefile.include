@@ -69,3 +69,6 @@ REG_DEBUG_FULL_FLAG = 0
 
 # Pass version information to compile
 REG_STEER_LIB_VERSION = 1.2a
+
+# Static or Shared?
+LIB_NAME=libReG_Steer.so
