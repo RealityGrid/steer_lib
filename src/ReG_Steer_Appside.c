@@ -1028,6 +1028,13 @@ int Record_checkpoint_set(int   ChkType,
     bytes_left -= nbytes;
   }
 
+  nbytes = snprintf(pchar, bytes_left, "</Checkpoint_node_data>\n");
+  if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
+    fprintf(stderr, "Record_checkpoint_set: node metadata "
+	    "exceeds %d chars\n", REG_MAX_MSG_SIZE);
+    return REG_FAILURE;
+  }
+
 #if REG_DEBUG
   fprintf(stderr, "Record_checkpoint_set: node meta data >>%s<<\n",
 	  node_data);
