@@ -1321,12 +1321,13 @@ int Get_param_number(int  sim_handle,
 
 /*----------------------------------------------------------------*/
 
-int Get_param_values(int  sim_handle,
-		     int  steerable,
-		     int  num_params,
-		     int *handles,
+int Get_param_values(int    sim_handle,
+		     int    steerable,
+		     int    num_params,
+		     int   *handles,
 		     char* *labels,
-		     char* *vals)
+		     char* *vals,
+		     int   *types)
 {
   int return_status = REG_SUCCESS;
   int isim;
@@ -1361,6 +1362,8 @@ int Get_param_values(int  sim_handle,
 	  strcpy(labels[count], 
 		 Sim_table.sim[isim].Params_table.param[i].label);
 	  strcpy(vals[count], Sim_table.sim[isim].Params_table.param[i].value);
+          types[count] = Sim_table.sim[isim].Params_table.param[i].type;
+
 	  count++;
 
 	  if(count == num_params)break;

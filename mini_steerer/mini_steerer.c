@@ -54,6 +54,7 @@ int main(){
 
   int    num_params;
   int    param_handles[REG_INITIAL_NUM_PARAMS];
+  int    param_types[REG_INITIAL_NUM_PARAMS];
   char  *param_vals[REG_INITIAL_NUM_PARAMS];
   char  *param_labels[REG_INITIAL_NUM_PARAMS];
   int    num_types;
@@ -123,12 +124,14 @@ int main(){
 			  num_params,
 			  param_handles,
 			  param_labels,
-			  param_vals) != REG_FAILURE){
+			  param_vals,
+			  param_types) != REG_FAILURE){
 
 	for(i=0; i<num_params; i++){
 
-	  printf("Handle: %d, Label: %s, Value: %s\n", param_handles[i], 
-		 param_labels[i], param_vals[i]);
+	  printf("Handle: %d, Label: %s, Value: %s, Type: %d\n", 
+		 param_handles[i], 
+		 param_labels[i], param_vals[i], param_types[i]);
 	}
       }
     }
@@ -381,6 +384,7 @@ int Edit_parameter(int sim_handle)
 {
   int    num_params;
   int    param_handles[REG_INITIAL_NUM_PARAMS];
+  int    param_types[REG_INITIAL_NUM_PARAMS];
   char  *param_vals[REG_INITIAL_NUM_PARAMS];
   char  *param_labels[REG_INITIAL_NUM_PARAMS];
   int    i;
@@ -414,7 +418,8 @@ int Edit_parameter(int sim_handle)
     			num_params,
     			param_handles,
     			param_labels,
-    			param_vals) != REG_FAILURE){
+    			param_vals,
+			param_types) != REG_FAILURE){
     
       printf("Which of the following do you wish to edit?\n\n");
     

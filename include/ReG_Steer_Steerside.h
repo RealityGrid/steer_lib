@@ -117,7 +117,8 @@ extern PREFIX int Get_param_values(int    sim_handle,
 				   int    num_params,
 				   int   *handles,
 				   char* *labels,
-				   char* *vals);
+				   char* *vals,
+				   int   *types);
 
 /* Sets the values of the parameters with the specified handles for the
    simulation with handle sim_handle. Causes internal flags to be set
