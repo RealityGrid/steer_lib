@@ -49,9 +49,8 @@ PROGRAM mini_app
   INTEGER (KIND=REG_SP_KIND), DIMENSION(REG_INITIAL_NUM_CMDS) :: commands
 
   ! For IO types
-  INTEGER (KIND=REG_SP_KIND) :: num_types
-  CHARACTER(LEN=REG_MAX_STRING_LENGTH), &
-                           DIMENSION(REG_INITIAL_NUM_IOTYPES) :: io_labels
+  INTEGER (KIND=REG_SP_KIND)                                  :: num_types
+  CHARACTER(LEN=40), DIMENSION(REG_INITIAL_NUM_IOTYPES)       :: io_labels
   INTEGER (KIND=REG_SP_KIND), &
                            DIMENSION(REG_INITIAL_NUM_IOTYPES) :: iotype_handles
   INTEGER (KIND=REG_SP_KIND), &
@@ -59,9 +58,8 @@ PROGRAM mini_app
   INTEGER (KIND=REG_SP_KIND), &
                            DIMENSION(REG_INITIAL_NUM_IOTYPES) :: io_freqs
 
-  INTEGER (KIND=REG_SP_KIND) :: num_chk_types
-  CHARACTER(LEN=REG_MAX_STRING_LENGTH), &
-                           DIMENSION(REG_INITIAL_NUM_IOTYPES) :: chk_labels
+  INTEGER (KIND=REG_SP_KIND)                                  :: num_chk_types
+  CHARACTER(LEN=40), DIMENSION(REG_INITIAL_NUM_IOTYPES)       :: chk_labels
   INTEGER (KIND=REG_SP_KIND), &
                            DIMENSION(REG_INITIAL_NUM_IOTYPES) :: chk_handles
   INTEGER (KIND=REG_SP_KIND), &
@@ -76,7 +74,7 @@ PROGRAM mini_app
   REAL    (KIND=REG_DP_KIND), DIMENSION(:), ALLOCATABLE :: d_array
 
   ! For parameters
-  CHARACTER(LEN=REG_MAX_STRING_LENGTH) :: param_label
+  CHARACTER(LEN=40)          :: param_label
   INTEGER (KIND=REG_SP_KIND) :: param_type
   INTEGER (KIND=REG_SP_KIND) :: param_strbl
 
@@ -119,8 +117,6 @@ PROGRAM mini_app
   commands(1) = REG_STR_STOP
   commands(2) = REG_STR_PAUSE
 
-  WRITE (*,*) 'Calling steering_initialize_f'
-
   CALL steering_initialize_f(num_cmds, commands, status)
 
   IF(status .ne. REG_SUCCESS)THEN
@@ -130,11 +126,11 @@ PROGRAM mini_app
 
   ! Register some IO channels
 
-  io_labels(1) = "VTK_STRUCTURED_POINTS_INPUT"//CHAR(0)
+  io_labels(1) = "VTK_STRUCTURED_POINTS_INPUT"
   io_dirn(1)   = REG_IO_IN
   io_freqs(1)  = 0
 
-  io_labels(2) = "VTK_STRUCTURED_POINTS_OUTPUT"//CHAR(0)
+  io_labels(2) = "VTK_STRUCTURED_POINTS_OUTPUT"
   io_dirn(2) = REG_IO_OUT
   io_freqs(2)  = 2
   
@@ -153,7 +149,7 @@ PROGRAM mini_app
   WRITE(*,*) 'Returned IOtype = ', iotype_handles(2)
 
   num_chk_types = 1
-  chk_labels(1) = "SOME_CHECKPOINT"//CHAR(0)
+  chk_labels(1) = "SOME_CHECKPOINT"
   chk_dirn(1)   = REG_IO_INOUT
   
   ! Register a Checkpoint type
@@ -172,7 +168,7 @@ PROGRAM mini_app
   ! Register some parameters
 
   dum_int     = 5
-  param_label = "test_integer"//CHAR(0)
+  param_label = "test_integer"
   param_type  = REG_INT
   param_strbl = reg_true
 
@@ -182,14 +178,14 @@ PROGRAM mini_app
   ! Registration uses address of variable so use second 'dum_int' here
   ! rather than simply changing value of first one
   dum_int2 = 123
-  param_label = "2nd_test_integer"//CHAR(0)
+  param_label = "2nd_test_integer"
   param_strbl = reg_false
 
   CALL register_param_f(param_label, param_strbl, dum_int2, &
                          param_type, "-345", "908", status)
 
   dum_real = 123.45
-  param_label = "test_real"//CHAR(0)
+  param_label = "test_real"
   param_type  = REG_FLOAT
   param_strbl = reg_false
   
@@ -197,7 +193,7 @@ PROGRAM mini_app
                          param_type, "0.0", "800.0", status)
 
   dum_real2 = -23.456
-  param_label = "2nd_test_real"//CHAR(0)
+  param_label = "2nd_test_real"
   param_type  = REG_FLOAT
   param_strbl = reg_true
   
@@ -205,7 +201,7 @@ PROGRAM mini_app
                          param_type, "-50.0", "50.0", status)
 
   dum_str = "hello"//CHAR(0)
-  param_label = "test_string"//CHAR(0)
+  param_label = "test_string"
   param_type  = REG_CHAR
   param_strbl = reg_true
   
@@ -214,35 +210,35 @@ PROGRAM mini_app
   CALL register_string_param_f(param_label, param_strbl, dum_str, status)
 
   dum_dbl = 123.123d0
-  param_label = "test_double"//CHAR(0)
+  param_label = "test_double"
   param_type  = REG_DBL
   param_strbl = reg_true
 
   CALL register_param_f(param_label, param_strbl, dum_dbl, &
                          param_type, "0.0d0", "500.0d0", status)
 
-  param_label = "veclen"//CHAR(0)
+  param_label = "veclen"
   param_type  = REG_INT
   param_strbl = reg_true
 
   CALL register_param_f(param_label, param_strbl, veclen, &
                          param_type, "1", "3", status)
 
-  param_label = "a_axis"//CHAR(0)
+  param_label = "a_axis"
   param_type  = REG_DBL
   param_strbl = reg_true
 
   CALL register_param_f(param_label, param_strbl, aaxis, &
                          param_type, "0.0d0", "10.0d0", status)
 
-  param_label = "b_axis"//CHAR(0)
+  param_label = "b_axis"
   param_type  = REG_DBL
   param_strbl = reg_true
 
   CALL register_param_f(param_label, param_strbl, baxis, &
                          param_type, "0.0d0", "10.0d0", status)
 
-  param_label = "c_axis"//CHAR(0)
+  param_label = "c_axis"
   param_type  = REG_DBL
   param_strbl = reg_true
 
@@ -456,6 +452,8 @@ PROGRAM mini_app
 
     ! Increment loop counter
     iloop = iloop + 1
+
+    WRITE (*,*)
 
   END DO ! End of main loop
 

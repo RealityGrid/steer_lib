@@ -46,18 +46,17 @@ PROGRAM para_mini_app
 
   ! For supported commands
   INTEGER (KIND=REG_SP_KIND) :: num_cmds
-  INTEGER (KIND=REG_SP_KIND), DIMENSION(REG_INITIAL_NUM_CMDS) :: commands
+  INTEGER (KIND=REG_SP_KIND), DIMENSION(REG_INITIAL_NUM_CMDS)    :: commands
 
   ! For IO types
-  INTEGER (KIND=REG_SP_KIND) :: num_types
-  CHARACTER(LEN=REG_MAX_STRING_LENGTH), DIMENSION(REG_INITIAL_NUM_IOTYPES) :: io_labels
+  INTEGER (KIND=REG_SP_KIND)                                     :: num_types
+  CHARACTER(LEN=40), DIMENSION(REG_INITIAL_NUM_IOTYPES)          :: io_labels
   INTEGER (KIND=REG_SP_KIND), DIMENSION(REG_INITIAL_NUM_IOTYPES) :: iotype_handles
   INTEGER (KIND=REG_SP_KIND), DIMENSION(REG_INITIAL_NUM_IOTYPES) :: io_dirn
 
   ! For Chk types
-  INTEGER (KIND=REG_SP_KIND) :: num_chk_types
-  CHARACTER(LEN=REG_MAX_STRING_LENGTH), &
-                           DIMENSION(REG_INITIAL_NUM_IOTYPES) :: chk_labels
+  INTEGER (KIND=REG_SP_KIND)                                  :: num_chk_types
+  CHARACTER(LEN=40), DIMENSION(REG_INITIAL_NUM_IOTYPES)       :: chk_labels
   INTEGER (KIND=REG_SP_KIND), &
                            DIMENSION(REG_INITIAL_NUM_IOTYPES) :: chk_handles
   INTEGER (KIND=REG_SP_KIND), &
@@ -67,9 +66,9 @@ PROGRAM para_mini_app
   INTEGER (KIND=REG_SP_KIND) :: output_freq = 5
 
   ! For parameters
-  CHARACTER(LEN=REG_MAX_STRING_LENGTH) :: param_label
-  INTEGER (KIND=REG_SP_KIND) :: param_type
-  INTEGER (KIND=REG_SP_KIND) :: param_strbl
+  CHARACTER(LEN=40), DIMENSION(REG_MAX_NUM_STR_PARAMS) :: param_labels
+  INTEGER (KIND=REG_SP_KIND)                           :: param_type
+  INTEGER (KIND=REG_SP_KIND)                           :: param_strbl
 
   ! Parameters for steering
   INTEGER (KIND=REG_SP_KIND)           :: dum_int, dum_int2
@@ -116,12 +115,14 @@ PROGRAM para_mini_app
   IF(my_id .eq. 0)THEN
 
     CALL steering_enable_f(reg_true)
+  END IF
 
-    ! Specify which commands we support and initialise the library
-    num_cmds = 2
-    commands(1) = REG_STR_STOP
-    commands(2) = REG_STR_PAUSE
+  ! Specify which commands we support and initialise the library
+  num_cmds = 2
+  commands(1) = REG_STR_STOP
+  commands(2) = REG_STR_PAUSE
 
+  IF(my_id .eq. 0)THEN
     CALL steering_initialize_f(num_cmds, commands, status)
 
     IF(status .ne. REG_SUCCESS)THEN
@@ -130,13 +131,15 @@ PROGRAM para_mini_app
       CALL MPI_FINALIZE(IERROR)
       STOP 'Call to steering_initialize_f failed!'
     END IF
+  END IF
 
-    ! Register the input IO channel
+  ! Register the input IO channel
 
-    num_types    = 1
-    io_labels(1) = "VTK_STRUCTURED_POINTS_INPUT"//CHAR(0)
-    io_dirn(1)   = REG_IO_IN
+  num_types    = 1
+  io_labels(1) = "VTK_STRUCTURED_POINTS_INPUT"
+  io_dirn(1)   = REG_IO_IN
     
+  IF(my_id .eq. 0)THEN
     CALL register_iotypes_f(num_types, io_labels, io_dirn, &
                             input_freq, iotype_handles(1), status)
   
@@ -149,10 +152,12 @@ PROGRAM para_mini_app
     END IF
   
     WRITE(*,*) 'Returned IOtype = ', iotype_handles(1)
-  
-    io_labels(1) = "SOME_OUTPUT"//CHAR(0)
-    io_dirn(1)   = REG_IO_OUT
+  END IF
+
+  io_labels(1) = "SOME_OUTPUT"
+  io_dirn(1)   = REG_IO_OUT
     
+  IF(my_id .eq. 0)THEN
     CALL register_iotypes_f(num_types, io_labels, io_dirn, &
                             output_freq, iotype_handles(2), status)
   
@@ -165,11 +170,13 @@ PROGRAM para_mini_app
     END IF
   
     WRITE(*,*) 'Returned IOtype = ', iotype_handles(2)
+  END IF
 
-    num_chk_types = 1
-    chk_labels(1) = "SOME_CHECKPOINT"//CHAR(0)
-    chk_dirn(1)   = REG_IO_INOUT
+  num_chk_types = 1
+  chk_labels(1) = "SOME_CHECKPOINT"
+  chk_dirn(1)   = REG_IO_INOUT
   
+  IF(my_id .eq. 0)THEN
     CALL register_chktypes_f(num_chk_types, chk_labels, chk_dirn, &
                             output_freq, chk_handles(1), status)
 
@@ -182,52 +189,64 @@ PROGRAM para_mini_app
     END IF
   
     WRITE(*,*) 'Returned IOtype = ', iotype_handles(3)
+  END IF
 
-    ! Register some parameters
+  ! Register some parameters
   
-    param_label = "test_integer"//CHAR(0)
-    param_type  = REG_INT
-    param_strbl = reg_true
+  param_labels(1) = "test_integer"
+  param_type  = REG_INT
+  param_strbl = reg_true
   
-    CALL register_param_f(param_label, param_strbl, dum_int, &
+  IF(my_id .eq. 0)THEN
+    CALL register_param_f(param_labels(1), param_strbl, dum_int, &
                           param_type, "0", "100", status)
+  END IF
+
+  ! Registration uses address of variable so use second 'dum_int' here
+  ! rather than simply changing value of first one
+  param_labels(2) = "2nd_test_integer"
+  param_strbl = reg_false
   
-    ! Registration uses address of variable so use second 'dum_int' here
-    ! rather than simply changing value of first one
-    param_label = "2nd_test_integer"//CHAR(0)
-    param_strbl = reg_false
-  
-    CALL register_param_f(param_label, param_strbl, dum_int2, &
+  IF(my_id .eq. 0)THEN
+    CALL register_param_f(param_labels(2), param_strbl, dum_int2, &
                           param_type, "-50", "50", status)
+  END IF
+
+  param_labels(3) = "test_real"
+  param_type  = REG_FLOAT
+  param_strbl = reg_false
   
-    param_label = "test_real"//CHAR(0)
-    param_type  = REG_FLOAT
-    param_strbl = reg_false
-    
-    CALL register_param_f(param_label, param_strbl, dum_real, &
+  IF(my_id .eq. 0)THEN
+    CALL register_param_f(param_labels(3), param_strbl, dum_real, &
                           param_type, "-200.0", "200.0", status)
-  
-    param_label = "2nd_test_real"//CHAR(0)
-    param_type  = REG_FLOAT
-    param_strbl = reg_true
+  END IF
+
+  param_labels(4) = "2nd_test_real"
+  param_type  = REG_FLOAT
+  param_strbl = reg_true
     
-    CALL register_param_f(param_label, param_strbl, dum_real2, &
+  IF(my_id .eq. 0)THEN
+    CALL register_param_f(param_labels(4), param_strbl, dum_real2, &
                           param_type, "-200.0", "200.0", status)
-  
-    param_label = "test_string"//CHAR(0)
-    param_type  = REG_CHAR
-    param_strbl = reg_true
+  END IF
+
+  param_labels(5) = "test_string"
+  param_type  = REG_CHAR
+  param_strbl = reg_true
     
+  IF(my_id .eq. 0)THEN
     ! Getting a pointer to a string from F90 is a bit tricky so use
     ! the following string-specific function to register a string for
     ! steering/monitoring  
-    CALL register_string_param_f(param_label, param_strbl, dum_str, status)
+    CALL register_string_param_f(param_labels(5), param_strbl, dum_str, status)
+  END IF
+
+  param_labels(6) = "test_double"
+  param_type  = REG_DBL
+  param_strbl = reg_true
   
-    param_label = "test_double"//CHAR(0)
-    param_type  = REG_DBL
-    param_strbl = reg_true
-  
-    CALL register_param_f(param_label, param_strbl, dum_dbl, &
+  IF(my_id .eq. 0)THEN
+    CALL register_param_f(param_labels(6), param_strbl, dum_dbl, &
                           param_type, "50.0d0", "150.0d0", status)
   
   
@@ -242,7 +261,7 @@ PROGRAM para_mini_app
     ! Let workers know that initialisation was successful
     CALL MPI_BCAST(status, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, IERROR)
 
-  ElSE
+  ELSE
 
     ! Check that initialisation was successful
     CALL MPI_BCAST(status, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, IERROR)
@@ -261,7 +280,7 @@ PROGRAM para_mini_app
   WRITE(*,*) 'PX ', my_id,' entering main simulation loop...'
 
   iloop = 0
-  DO WHILE(iloop<20 .AND. (finished .ne. 1))
+  DO WHILE(iloop<50 .AND. (finished .ne. 1))
 
     CALL MPI_BARRIER(MPI_COMM_WORLD, IERROR)
 
@@ -289,30 +308,36 @@ PROGRAM para_mini_app
       CALL MPI_BCAST(num_params_changed, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, &
                      IERROR)
 
-      IF(num_params_changed > 0)THEN
+      DO iparam=1, num_params_changed, 1
 
-        CALL MPI_BCAST(dum_int, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, IERROR)
-        CALL MPI_BCAST(dum_real2, 1, MPI_REAL, 0, MPI_COMM_WORLD, IERROR)
-        str_len = LEN_TRIM(dum_str)
-        CALL MPI_BCAST(str_len, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, IERROR)
-        CALL MPI_BCAST(dum_str, str_len, MPI_CHARACTER, 0, MPI_COMM_WORLD, IERROR)
-        CALL MPI_BCAST(dum_dbl, 1, MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD, &
-                       IERROR)
-        CALL MPI_BCAST(output_freq, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, IERROR)
-    
+        CALL MPI_BCAST(changed_param_labels(iparam), REG_MAX_STRING_LENGTH, &
+                       MPI_CHARACTER, 0, MPI_COMM_WORLD, IERROR)
+
+        IF(changed_param_labels(iparam) == param_labels(1))THEN
+          CALL MPI_BCAST(dum_int, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, IERROR)
+        ELSE IF(changed_param_labels(iparam) == param_labels(4))THEN
+          CALL MPI_BCAST(dum_real2, 1, MPI_REAL, 0, MPI_COMM_WORLD, IERROR)
+        ELSE IF(changed_param_labels(iparam) == param_labels(5))THEN
+          str_len = LEN_TRIM(dum_str)
+          CALL MPI_BCAST(str_len, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, IERROR)
+          CALL MPI_BCAST(dum_str, str_len, MPI_CHARACTER, 0, MPI_COMM_WORLD, IERROR)
+        ELSE IF(changed_param_labels(iparam) == param_labels(6))THEN
+          CALL MPI_BCAST(dum_dbl, 1, MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD, &
+                         IERROR)
+        END IF
+  
+        WRITE(*,FMT="(A, I2, A, I2, A, A)") 'Px ', my_id, ' changed param no. ', &
+                                            iparam,' = ', &
+                                            changed_param_labels(iparam)
+      END DO
+
+      IF(num_params_changed > 0)THEN
         WRITE(*,*) 'Px ', my_id,' test_integer = ', dum_int
         WRITE(*,*) 'Px ', my_id,' 2nd_test_real = ', dum_real2
         WRITE(*,*) 'Px ', my_id,' test_string = ', TRIM(dum_str)
         WRITE(*,*) 'Px ', my_id,' test_double = ', dum_dbl
-        WRITE(*,*) 'Px ', my_id,' output_freq = ', output_freq
-  
-        DO iparam=1, num_params_changed, 1
-  
-          WRITE(*,*) 'Px ', my_id, ' changed param no. ', iparam,' = ', &
-                     TRIM(changed_param_labels(iparam))
-        END DO
       END IF
-  
+
       ! Inform worker px's how many cmds were received
       CALL MPI_BCAST(num_recvd_cmds, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, &
                      IERROR)
@@ -355,24 +380,34 @@ PROGRAM para_mini_app
               CALL MPI_BCAST(num_params_changed, 1, MPI_INTEGER, 0, &
                              MPI_COMM_WORLD, IERROR)
 
-              IF(num_params_changed > 0)THEN
-      
-                CALL MPI_BCAST(dum_int, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, IERROR)
-                CALL MPI_BCAST(dum_real2, 1, MPI_REAL, 0, MPI_COMM_WORLD, IERROR)
-                str_len = LEN_TRIM(dum_str)
-                CALL MPI_BCAST(str_len, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, IERROR)
-                CALL MPI_BCAST(dum_str, str_len, MPI_CHARACTER, 0, &
-                               MPI_COMM_WORLD, IERROR)
-                CALL MPI_BCAST(dum_dbl, 1, MPI_DOUBLE_PRECISION, 0, &
-                               MPI_COMM_WORLD, IERROR)
-                CALL MPI_BCAST(output_freq, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, &
-                               IERROR)
-            
+              DO iparam=1, num_params_changed, 1
+
+                 CALL MPI_BCAST(changed_param_labels(iparam), REG_MAX_STRING_LENGTH, &
+                                MPI_CHARACTER, 0, MPI_COMM_WORLD, IERROR)
+
+                IF(changed_param_labels(iparam) == param_labels(1))THEN
+                  CALL MPI_BCAST(dum_int, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, IERROR)
+                ELSE IF(changed_param_labels(iparam) == param_labels(4))THEN
+                  CALL MPI_BCAST(dum_real2, 1, MPI_REAL, 0, MPI_COMM_WORLD, IERROR)
+                ELSE IF(changed_param_labels(iparam) == param_labels(5))THEN
+                  str_len = LEN_TRIM(dum_str)
+                  CALL MPI_BCAST(str_len, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, IERROR)
+                  CALL MPI_BCAST(dum_str, str_len, MPI_CHARACTER, 0, MPI_COMM_WORLD, &
+                                 IERROR)
+                ELSE IF(changed_param_labels(iparam) == param_labels(5))THEN
+                  CALL MPI_BCAST(dum_dbl, 1, MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD, &
+                                 IERROR)
+                END IF
+  
+                WRITE(*,*) 'Px ', my_id, ' changed param no. ', iparam,' = ', &
+                           changed_param_labels(iparam)
+              END DO
+
+              IF(num_params_changed > 0)THEN           
                 WRITE(*,*) 'Px ', my_id,' test_integer = ', dum_int
                 WRITE(*,*) 'Px ', my_id,' 2nd_test_real = ', dum_real2
                 WRITE(*,*) 'Px ', my_id,' test_string = ', TRIM(dum_str)
                 WRITE(*,*) 'Px ', my_id,' test_double = ', dum_dbl
-                WRITE(*,*) 'Px ', my_id,' output_freq = ', output_freq
               END IF
 
               ! Reset loop counter so loop over new set of commands
@@ -426,21 +461,35 @@ PROGRAM para_mini_app
 
       WRITE (*,*) 'Px ', my_id, ' num_params_changed = ', num_params_changed
 
-      IF(num_params_changed > 0)THEN
+      DO iparam=1, num_params_changed, 1
 
-        CALL MPI_BCAST(dum_int, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, IERROR)
-        CALL MPI_BCAST(dum_real2, 1, MPI_REAL, 0, MPI_COMM_WORLD, IERROR)
-        CALL MPI_BCAST(str_len, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, IERROR)
-        CALL MPI_BCAST(dum_str, str_len, MPI_CHARACTER, 0, MPI_COMM_WORLD, IERROR)
-        CALL MPI_BCAST(dum_dbl, 1, MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD, &
-                       IERROR)
-        CALL MPI_BCAST(output_freq, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, IERROR)
-    
+        ! Find out which parameter has been changed
+        CALL MPI_BCAST(changed_param_labels(iparam), REG_MAX_STRING_LENGTH, &
+                       MPI_CHARACTER, 0, MPI_COMM_WORLD, IERROR)
+
+        IF(changed_param_labels(iparam) == param_labels(1))THEN
+          CALL MPI_BCAST(dum_int, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, IERROR)
+        ELSE IF(changed_param_labels(iparam) == param_labels(4))THEN
+          CALL MPI_BCAST(dum_real2, 1, MPI_REAL, 0, MPI_COMM_WORLD, IERROR)
+        ELSE IF(changed_param_labels(iparam) == param_labels(5))THEN
+          str_len = LEN_TRIM(dum_str)
+          CALL MPI_BCAST(str_len, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, IERROR)
+          CALL MPI_BCAST(dum_str, str_len, MPI_CHARACTER, 0, MPI_COMM_WORLD, &
+                         IERROR)
+        ELSE IF(changed_param_labels(iparam) == param_labels(6))THEN
+          CALL MPI_BCAST(dum_dbl, 1, MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD, &
+                         IERROR)
+        END IF
+  
+        WRITE(*,*) 'Px ', my_id, ' changed param no. ', iparam,' = ', &
+                   TRIM(changed_param_labels(iparam))
+      END DO
+
+      IF(num_params_changed > 0)THEN    
         WRITE(*,*) 'Px ', my_id,' test_integer = ', dum_int
         WRITE(*,*) 'Px ', my_id,' 2nd_test_real = ', dum_real2
         WRITE(*,*) 'Px ', my_id,' test_string = ', TRIM(dum_str)
         WRITE(*,*) 'Px ', my_id,' test_double = ', dum_dbl
-        WRITE(*,*) 'Px ', my_id,' output_freq = ', output_freq
       END IF
 
       CALL MPI_BCAST(num_recvd_cmds, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, IERROR)
@@ -462,24 +511,35 @@ PROGRAM para_mini_app
             CALL MPI_BCAST(num_params_changed, 1, MPI_INTEGER, 0, &
                            MPI_COMM_WORLD, IERROR)
 
-            IF(num_params_changed > 0)THEN
-      
-              CALL MPI_BCAST(dum_int, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, IERROR)
-              CALL MPI_BCAST(dum_real2, 1, MPI_REAL, 0, MPI_COMM_WORLD, IERROR)
-              str_len = LEN_TRIM(dum_str)
-              CALL MPI_BCAST(str_len, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, IERROR)
-              CALL MPI_BCAST(dum_str, str_len, MPI_CHARACTER, 0, MPI_COMM_WORLD, &
-                             IERROR)
-              CALL MPI_BCAST(dum_dbl, 1, MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD, &
-                             IERROR)
-              CALL MPI_BCAST(output_freq, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, &
-                             IERROR)
-          
+            DO iparam=1, num_params_changed, 1
+
+              ! Find out which parameter has been changed
+              CALL MPI_BCAST(changed_param_labels(iparam), REG_MAX_STRING_LENGTH, &
+                             MPI_CHARACTER, 0, MPI_COMM_WORLD, IERROR)
+
+              IF(changed_param_labels(iparam) == param_labels(1))THEN
+                CALL MPI_BCAST(dum_int, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, IERROR)
+              ELSE IF(changed_param_labels(iparam) == param_labels(4))THEN
+                CALL MPI_BCAST(dum_real2, 1, MPI_REAL, 0, MPI_COMM_WORLD, IERROR)
+              ELSE IF(changed_param_labels(iparam) == param_labels(5))THEN
+                str_len = LEN_TRIM(dum_str)
+                CALL MPI_BCAST(str_len, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, IERROR)
+                CALL MPI_BCAST(dum_str, str_len, MPI_CHARACTER, 0, MPI_COMM_WORLD, &
+                               IERROR)
+              ELSE IF(changed_param_labels(iparam) == param_labels(6))THEN
+                CALL MPI_BCAST(dum_dbl, 1, MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD, &
+                               IERROR)
+              END IF
+  
+              WRITE(*,*) 'Px ', my_id, ' changed param no. ', iparam,' = ', &
+                         TRIM(changed_param_labels(iparam))
+            END DO
+
+            IF(num_params_changed > 0)THEN         
               WRITE(*,*) 'Px ', my_id,' test_integer = ', dum_int
               WRITE(*,*) 'Px ', my_id,' 2nd_test_real = ', dum_real2
               WRITE(*,*) 'Px ', my_id,' test_string = ', TRIM(dum_str)
               WRITE(*,*) 'Px ', my_id,' test_double = ', dum_dbl
-              WRITE(*,*) 'Px ', my_id,' output_freq = ', output_freq
             END IF
 
           END IF
