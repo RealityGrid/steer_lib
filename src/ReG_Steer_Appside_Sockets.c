@@ -120,4 +120,11 @@ void Retry_connect(socket_io_type * const socket_info)
 
 }
 
+/*--------------------------------------------------------------------*/
+
+int Consume_start_data_check_socks(const int index)
+{
+
+}
+
 #endif
