@@ -35,6 +35,14 @@
 				</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="ChkType_defs" >
+				<xs:complexType>
+				<xs:sequence>
+					<xs:element name="ChkType" type="IOTypeType"
+		    				minOccurs="1" maxOccurs="unbounded" />
+				</xs:sequence>
+				</xs:complexType>
+			</xs:element>
 	        </xs:choice>
 	</xs:complexType>
 </xs:element>
