@@ -633,8 +633,9 @@ int Consume_start_data_check_globus(const int index)
 
   /* if not connected attempt to connect now */
   if (IOTypes_table.io_def[index].socket_info.comms_status 
-      != REG_COMMS_STATUS_CONNECTED)
+      != REG_COMMS_STATUS_CONNECTED){
     Globus_attempt_connector_connect(&(IOTypes_table.io_def[index].socket_info));
+  }
 
   /* check if socket connection has been made */
   if (IOTypes_table.io_def[index].socket_info.comms_status != 
@@ -655,8 +656,10 @@ int Consume_start_data_check_globus(const int index)
   attempt_reconnect = 1;
   memset(buffer, '\0', 1);
 
+  printf("ARPDBG: Consume_start_data_check_globus - searching for start tag\n");
   while(!(pstart = strstr(buffer, REG_DATA_HEADER))){
 
+    printf(".");
     result = globus_io_try_read(&(IOTypes_table.io_def[index].socket_info.conn_handle),
 				(globus_byte_t *)buffer,
 				REG_PACKET_SIZE,
@@ -664,6 +667,15 @@ int Consume_start_data_check_globus(const int index)
 
     if(result != GLOBUS_SUCCESS){
 
+      if( globus_object_type_match(globus_object_get_type(globus_error_get(result)),
+				   GLOBUS_IO_ERROR_TYPE_EOF) ){
+	/*      if( globus_object_get_type(globus_error_get(result)) == GLOBUS_IO_ERROR_TYPE_EOF){
+	 */
+	printf("ARPDBG: Consume_start_data_check_globus - hit EOF\n");	
+	return REG_FAILURE;
+      }
+
+      printf("ARPDBG: Consume_start_data_check_globus - try read failed\n");
       if(!attempt_reconnect){
 	return REG_FAILURE;
       }
@@ -688,10 +700,13 @@ int Consume_start_data_check_globus(const int index)
       memset(buffer, '\0', 1);
     }
     else if(nbytes == 0){
+      printf("\n");
+      printf("ARPDBG: Consume_start_data_check_globus - no data\n");
       /* Call was OK but there's no data to read... */
-      break;
+      return REG_FAILURE;
     }
   }
+  printf("\n");
 
   if(nbytes > 0){
 
@@ -703,24 +718,30 @@ int Consume_start_data_check_globus(const int index)
     /* Need to make sure we've read the full packet marking the 
        beginning of the next data slice */
     nbytes1 = (int)(pstart - buffer) + (REG_PACKET_SIZE - nbytes);
-    
-    result = globus_io_try_read(&(IOTypes_table.io_def[index].socket_info.conn_handle),
-				(globus_byte_t *)buffer,
-				nbytes1,
-				&nbytes);
-    if(result == GLOBUS_SUCCESS){
+    printf("ARPDBG: Consume_start_data_check_globus - nbytes1 = %d\n", 
+	   nbytes1);
 
-      IOTypes_table.io_def[index].buffer_bytes = REG_IO_BUFSIZE;
-      IOTypes_table.io_def[index].buffer = (void *)malloc(REG_IO_BUFSIZE);
-
-      if(!IOTypes_table.io_def[index].buffer){
-	IOTypes_table.io_def[index].buffer_bytes = 0;
-	fprintf(stderr, "Consume_start_data_check_globus: malloc of IO "
-		"buffer failed\n");
+    if(nbytes1 > 0){
+      result = globus_io_try_read(&(IOTypes_table.io_def[index].socket_info.conn_handle),
+				  (globus_byte_t *)buffer,
+				  nbytes1,
+				  &nbytes);
+      if(result != GLOBUS_SUCCESS || nbytes != nbytes1){
+	fprintf(stderr, "Consume_start_data_check_globus: failed to read"
+		" remaining %d bytes of header\n", nbytes1);
 	return REG_FAILURE;
       }
-      return REG_SUCCESS;
     }
+    IOTypes_table.io_def[index].buffer_bytes = REG_IO_BUFSIZE;
+    IOTypes_table.io_def[index].buffer = (void *)malloc(REG_IO_BUFSIZE);
+
+    if(!IOTypes_table.io_def[index].buffer){
+      IOTypes_table.io_def[index].buffer_bytes = 0;
+      fprintf(stderr, "Consume_start_data_check_globus: malloc of IO "
+	      "buffer failed\n");
+      return REG_FAILURE;
+    }
+    return REG_SUCCESS;
   }
 
 

@@ -800,7 +800,8 @@ int Reorder_decode_array(IOdef_entry *io,
   if(io->use_xdr){
 
 #if REG_DEBUG
-    fprintf(stderr, "Reorder_decode_array: doing XDR decode\n");
+    fprintf(stderr, "Reorder_decode_array: doing XDR decode for type = %d\n",
+	    type);
 #endif
 
     xdrmem_create(&xdrs, 
@@ -820,6 +821,10 @@ int Reorder_decode_array(IOdef_entry *io,
 			 (unsigned int)sizeof(int), (xdrproc_t)xdr_int)){
 	fprintf(stderr, "Reorder_decode_array: xdr_vector decode failed\n");
 	return_status = REG_FAILURE;
+      }
+      /* ARPDBG */
+      for(i=0; i<count; i++){
+	printf("Reorder_decode_array: pData[%d] = %d\n", i, ((int *)pData)[i]);
       }
       break;
 
