@@ -158,7 +158,8 @@ static int Send_status_msg(char *buf);
    the application supports (supplied in array SupportedCmds). */
 int Make_supp_cmds_msg(int   NumSupportedCmds,
 		       int  *SupportedCmds, 
-		       char *msg);
+		       char *msg,
+		       int   max_msg_size);
 
 /* Read the next control message from the steerer, if any.  Results
    passed back in structure.  Returns NULL if no message. */

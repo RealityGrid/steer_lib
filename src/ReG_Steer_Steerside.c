@@ -381,10 +381,12 @@ int Sim_attach(char *SimID,
   sim_ptr->Cmds_table.num_registered = 0;
   sim_ptr->Cmds_table.max_entries    = REG_INITIAL_NUM_CMDS;
 
-  /* all simulations must support the 'detach' command */
+  /* all simulations must support the 'detach' command
 
   sim_ptr->Cmds_table.cmd[0].cmd_id = REG_STR_DETACH;
   Increment_cmd_registered(&(sim_ptr->Cmds_table));
+  The detach cmd is now automatically generated on the app side so
+  that clients binding to the SGS need not worry about it. */
 
   /* ...IO types */
 
@@ -515,46 +517,6 @@ int Sim_attach(char *SimID,
     sim_ptr->handle = current_sim;
     *SimHandle = current_sim;
     Sim_table.num_registered++;
-
-    /* If simulation supports the pause command then it must also
-       support the resume command so add this to the list */
-
-    for(i=0; i<sim_ptr->Cmds_table.num_registered; i++){
-
-#if REG_DEBUG
-      fprintf(stderr, "Sim_attach: cmd[%d] = %d\n", i, 
-	      sim_ptr->Cmds_table.cmd[i].cmd_id);
-#endif
-      if(sim_ptr->Cmds_table.cmd[i].cmd_id == REG_STR_PAUSE){
-	
-	j = sim_ptr->Cmds_table.num_registered;
-
-	/* Check that we aren't about to exceed allocated storage */
-
-	if(j == sim_ptr->Cmds_table.max_entries){
-
-	  new_size = sim_ptr->Cmds_table.max_entries +
-	             REG_INITIAL_NUM_CMDS;
-
-	  dum_ptr = (void *)realloc(sim_ptr->Cmds_table.cmd,
-				    new_size*sizeof(supp_cmd_entry));
-
-	  if(dum_ptr){
-	    sim_ptr->Cmds_table.cmd = (supp_cmd_entry *)dum_ptr;
-	    sim_ptr->Cmds_table.max_entries = new_size;
-	  }
-	  else{
-
-	    fprintf(stderr, 
-		   "Sim_attach: failed to realloc memory for supp commands\n");
-	    return REG_FAILURE;
-	  }
-	}
-	sim_ptr->Cmds_table.cmd[j].cmd_id = REG_STR_RESUME;
-	sim_ptr->Cmds_table.num_registered++;
-	break;
-      }
-    }
   }
   else{
 
@@ -1242,7 +1204,7 @@ int Consume_param_log(Sim_entry_type *sim,
 {
   int handle;
   int index;
-  int i;
+  int i = -1;
 
   while(param_ptr){
 
@@ -1329,7 +1291,7 @@ int Consume_param_log(Sim_entry_type *sim,
     param_ptr = param_ptr->next;
   }
 
-  sim->Params_table.param[i].log_index = index;
+  if(i>-1)sim->Params_table.param[i].log_index = index;
 
   return REG_SUCCESS;
 }
@@ -1584,6 +1546,29 @@ int Emit_resume_cmd(int SimHandle)
 
 /*----------------------------------------------------------*/
 
+int Emit_retrieve_param_log_cmd(int SimHandle)
+{
+  int index;
+  int SysCommands[1];
+
+  /* Check that handle is valid */
+  if(SimHandle == REG_SIM_HANDLE_NOTSET) return REG_SUCCESS;
+
+  if( (index = Sim_index_from_handle(SimHandle)) == -1){
+
+    return REG_FAILURE;
+  }
+
+  SysCommands[0] = REG_STR_EMIT_PARAM_LOG;
+
+  return Emit_control(SimHandle,
+		      1,
+		      SysCommands,
+		      NULL);
+}
+
+/*----------------------------------------------------------*/
+
 int Emit_restart_cmd(int SimHandle, char *chkGSH)
 {
   int index;
@@ -1827,11 +1812,7 @@ int Delete_sim_table_entry(int *SimHandle)
   if (sim->Cmds_table.cmd) free(sim->Cmds_table.cmd);
   sim->Cmds_table.cmd = NULL;
 
-  sim->Params_table.num_registered = 0;
-  sim->Params_table.max_entries = 0;
-  if (sim->Params_table.param) {
-    Delete_param_table(&(sim->Params_table));
-  }
+  Delete_param_table(&(sim->Params_table));
 
   sim->IOdef_table.num_registered = 0;
   sim->IOdef_table.max_entries = 0;
@@ -1871,8 +1852,13 @@ int Delete_param_table(Param_table_type *param_table)
     }
   }
 
-  free(param_table->param);
-  param_table->param = NULL;
+  if(param_table->param){
+    free(param_table->param);
+    param_table->param = NULL;
+  }
+
+  param_table->num_registered = 0;
+  param_table->max_entries = 0;
 
   return REG_SUCCESS;
 }
@@ -2336,6 +2322,35 @@ int Set_param_values(int    sim_handle,
   }
 
   return return_status;
+}
+
+/*----------------------------------------------------------------*/
+
+int Get_param_log(int    sim_handle,
+		  int    handle,
+		  void **buf, 
+		  int   *num_entries)
+{
+  int isim;
+  int index;
+
+  *buf = NULL;
+  *num_entries = 0;
+
+  isim = Sim_index_from_handle(sim_handle);
+  if(isim == REG_SIM_HANDLE_NOTSET){
+    return REG_FAILURE;
+  }
+
+  if( (index = Param_index_from_handle(&(Sim_table.sim[isim].Params_table), 
+				       handle)) == REG_PARAM_HANDLE_NOTSET ){
+    return REG_FAILURE;
+  }
+
+  *buf = Sim_table.sim[isim].Params_table.param[index].log;
+  *num_entries = Sim_table.sim[isim].Params_table.param[index].log_index;
+
+  return REG_SUCCESS;
 }
 
 /*----------------------------------------------------------------*/

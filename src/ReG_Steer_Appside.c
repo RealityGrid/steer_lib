@@ -644,7 +644,7 @@ int Finalize_log(Chk_log_type *log)
   log->num_entries = 0;
   log->max_entries = REG_INITIAL_CHK_LOG_SIZE;
   /* Buffer for logged commands */
-  free(Chk_log.pSteer_cmds);
+  free(log->pSteer_cmds);
   log->pSteer_cmds = NULL;
   log->steer_cmds_bytes = 0;
 
@@ -1865,9 +1865,9 @@ int Param_log_to_xml(Chk_log_type *log, char **pchar, int *count,
        loop over the no. of params that this entry has */
     for(j=0; j<log->entry[i].num_param; j++){
 
-      nbytes = snprintf(pentry, bytes_left, "<Param_log_entry>\n"
-			"<Handle>%d</Handle>\n" 
-			"<Value>%s</Value>\n"
+      nbytes = snprintf(pentry, bytes_left, "<Param_log_entry>"
+			"<Handle>%d</Handle>" 
+			"<Value>%s</Value>"
 			"</Param_log_entry>\n", 
 		        log->entry[i].param[j].handle,
 		        log->entry[i].param[j].value);
@@ -3290,19 +3290,6 @@ int Steering_control(int     SeqNum,
     }
 #endif
 
-    /* I think we only want to emit the parameter log if a client
-       requests it
-    if( Emit_log(&Param_log) != REG_SUCCESS ){
-
-      fprintf(stderr, "Steering_control: Emit param log failed\n");
-    }
-#if REG_DEBUG_FULL
-    else{
-      fprintf(stderr, "Steering_control: done Emit_log\n");
-    }
-#endif
-    */
-
     /* Set array holding labels of changed params - pass back strings 
        rather than pointers to strings */
 
@@ -3346,6 +3333,20 @@ int Steering_control(int     SeqNum,
 #endif
 
         detached = REG_TRUE;
+	break;
+
+      case REG_STR_EMIT_PARAM_LOG:
+
+	/* Emit the parameter log */
+	if( Emit_log(&Param_log) != REG_SUCCESS ){
+
+	  fprintf(stderr, "Steering_control: Emit param log failed\n");
+	}
+#if REG_DEBUG_FULL
+	else{
+	  fprintf(stderr, "Steering_control: done Emit_log\n");
+	}
+#endif
 	break;
 
       default:
@@ -4370,6 +4371,7 @@ int Emit_log_entries(Chk_log_type *log, char *buf)
 
 	/* Can't fit the footer in remaining space in buffer - go
 	   back to last complete entry */
+	if(*plast == '\n')plast++;
 	tot_len = (int)(plast - msg_buf);
 	pmsg_buf = plast;
 	pmsg_buf += sprintf(pmsg_buf, "</Steer_log>\n");
@@ -4402,6 +4404,7 @@ int Emit_log_entries(Chk_log_type *log, char *buf)
     }
 
     /* Look for next entry */
+    if(*pbuf3 == '\n')pbuf3++;
     pbuf1 = pbuf2;
     pbuf2 = pbuf3;
     if(pbuf3 = strstr(pbuf2, "</Log_entry>")){
@@ -5517,31 +5520,69 @@ int Finalize_steering_connection()
 
 int Make_supp_cmds_msg(int   NumSupportedCmds,
 		       int  *SupportedCmds, 
-                       char *msg)
+                       char *msg,
+		       int   max_msg_size)
 {
   char *pchar;
   int   i;
+  int   nbytes, bytes_left;
+  int   pause_supported = REG_FALSE;
 
+  bytes_left = max_msg_size;
   pchar = msg;
 
   Write_xml_header(&pchar);
 
   pchar += sprintf(pchar, "<Supported_commands>\n");
+  bytes_left -= (int)(pchar - msg);
 
   for(i=0; i<NumSupportedCmds; i++){
-    pchar += sprintf(pchar, "<Command>\n");
-    pchar += sprintf(pchar, "<Cmd_id>%d</Cmd_id>\n", SupportedCmds[i]);
-    pchar += sprintf(pchar, "</Command>\n");
+    nbytes = snprintf(pchar,  bytes_left, "<Command>\n"
+		      "<Cmd_id>%d</Cmd_id>\n"
+		      "</Command>\n", SupportedCmds[i]);
+    /* Check for truncation */
+    if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
+      fprintf(stderr, "Make_supp_cmds_msg: supplied buffer of "
+	      "%d bytes is too small!\n", max_msg_size);
+      return REG_FAILURE;
+    }
+    bytes_left -= nbytes;
+    pchar += nbytes;
+
+    if(SupportedCmds[i] == REG_STR_PAUSE){
+      pause_supported = REG_TRUE;
+    }
   }
 
-  pchar += sprintf(pchar, "</Supported_commands>\n");
-  /* ARPDBG - we have no idea how much space msg points to
-     so unfortunately have to use some random integer here.
-     We're working on the assumption that the supported commands
-     message is only ever going to be small... */
-  Write_xml_footer(&pchar, 256);
+  /* All applications support detach and the ability to emit the 
+     parameter history log by default.  If the app supports pause
+     then it also supports resume by default. */
 
-  return REG_SUCCESS;
+  if(pause_supported == REG_TRUE){
+    nbytes = snprintf(pchar,  bytes_left, 
+		      "<Command><Cmd_id>%d</Cmd_id></Command>\n"
+		      "<Command><Cmd_id>%d</Cmd_id></Command>\n"
+		      "<Command><Cmd_id>%d</Cmd_id></Command>\n"
+		      "</Supported_commands>\n", 
+		      REG_STR_EMIT_PARAM_LOG, REG_STR_DETACH, 
+		      REG_STR_RESUME);
+  }
+  else{
+    nbytes = snprintf(pchar,  bytes_left, 
+		      "<Command><Cmd_id>%d</Cmd_id></Command>\n"
+		      "<Command><Cmd_id>%d</Cmd_id></Command>\n"
+		      "</Supported_commands>\n", 
+		      REG_STR_EMIT_PARAM_LOG, REG_STR_DETACH);
+  }
+  if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
+    fprintf(stderr, "Make_supp_cmds_msg: supplied buffer of "
+	      "%d bytes is too small!\n", max_msg_size);
+    return REG_FAILURE;
+  }
+  bytes_left -= nbytes;
+  pchar += nbytes;
+
+  return Write_xml_footer(&pchar, bytes_left);
 }
 
 /*---------------------------------------------------*/

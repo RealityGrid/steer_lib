@@ -140,6 +140,7 @@ extern PREFIX int Emit_detach_cmd(int SimHandle);
 extern PREFIX int Emit_stop_cmd(int SimHandle);
 extern PREFIX int Emit_pause_cmd(int SimHandle);
 extern PREFIX int Emit_resume_cmd(int SimHandle);
+extern PREFIX int Emit_retrieve_param_log_cmd(int SimHandle);
 /* This one is SGS-specific as it uses the Checkpoint Tree */
 extern PREFIX int Emit_restart_cmd(int SimHandle, char *chkGSH);
 
@@ -195,6 +196,14 @@ extern PREFIX int Set_param_values(int    sim_handle,
 				   int    num_params,
 				   int   *handles,
 				   char* *vals);
+
+/* Retrieve pointer to internal buffer holding previous values of
+   the parameter with handle 'handle' belonging to 'sim_handle.'
+   num_entries holds the no. of entries in the log. */
+extern PREFIX int Get_param_log(int  sim_handle,
+				int  handle,
+				void **buf, 
+				int *num_entries);
 
 /* Gets the number of IO types associated with the simulation with
    handle <sim_handle>. */
