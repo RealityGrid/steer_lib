@@ -79,9 +79,9 @@ PROGRAM mini_app
   INTEGER (KIND=REG_SP_KIND) :: param_strbl
 
   ! Parameters for steering
-  INTEGER (KIND=REG_SP_KIND)           :: dum_int, dum_int2
-  REAL (KIND=REG_SP_KIND)              :: dum_real, dum_real2
-  REAL (KIND=REG_DP_KIND)              :: dum_dbl
+  INTEGER (KIND=REG_SP_KIND)           :: dum_int, dum_int2, dum_int3
+  REAL (KIND=REG_SP_KIND)              :: dum_real, dum_real2, dum_real3
+  REAL (KIND=REG_DP_KIND)              :: dum_dbl, dum_dbl2, dum_dbl3
   CHARACTER(LEN=REG_MAX_STRING_LENGTH) :: dum_str
 
   ! Ensure that we have enough storage for a ptr returned from C - needs
@@ -173,24 +173,31 @@ PROGRAM mini_app
   param_strbl = reg_true
 
   CALL register_param_f(param_label, param_strbl, dum_int, &
-                         param_type, "0", "100", status)
+                         param_type, "0", "256", status)
 
   ! Registration uses address of variable so use second 'dum_int' here
   ! rather than simply changing value of first one
   dum_int2 = 123
   param_label = "2nd_test_integer"
-  param_strbl = reg_false
+  param_strbl = reg_true
 
   CALL register_param_f(param_label, param_strbl, dum_int2, &
-                         param_type, "-345", "908", status)
+                         param_type, "", "256", status)
+
+  dum_int3 = 123
+  param_label = "3rd_test_integer"
+  param_strbl = reg_true
+
+  CALL register_param_f(param_label, param_strbl, dum_int3, &
+                         param_type, "", "", status)
 
   dum_real = 123.45
   param_label = "test_real"
   param_type  = REG_FLOAT
-  param_strbl = reg_false
+  param_strbl = reg_true
   
   CALL register_param_f(param_label, param_strbl, dum_real, &
-                         param_type, "0.0", "800.0", status)
+                         param_type, "-80.0", "", status)
 
   dum_real2 = -23.456
   param_label = "2nd_test_real"
@@ -198,7 +205,15 @@ PROGRAM mini_app
   param_strbl = reg_true
   
   CALL register_param_f(param_label, param_strbl, dum_real2, &
-                         param_type, "-50.0", "50.0", status)
+                         param_type, "", "80.0", status)
+
+  dum_real3 = 26.456
+  param_label = "3rd_test_real"
+  param_type  = REG_FLOAT
+  param_strbl = reg_true
+  
+  CALL register_param_f(param_label, param_strbl, dum_real3, &
+                         param_type, "", "", status)
 
   dum_str = "hello"//CHAR(0)
   param_label = "test_string"
@@ -215,7 +230,23 @@ PROGRAM mini_app
   param_strbl = reg_true
 
   CALL register_param_f(param_label, param_strbl, dum_dbl, &
-                         param_type, "0.0d0", "500.0d0", status)
+                         param_type, "0.0d0", "", status)
+
+  dum_dbl2 = 129.3d0
+  param_label = "2nd_test_double"
+  param_type  = REG_DBL
+  param_strbl = reg_true
+
+  CALL register_param_f(param_label, param_strbl, dum_dbl2, &
+                         param_type, "", "500.0d0", status)
+
+  dum_dbl3 = 209.3d0
+  param_label = "3rd_test_double"
+  param_type  = REG_DBL
+  param_strbl = reg_true
+
+  CALL register_param_f(param_label, param_strbl, dum_dbl3, &
+                         param_type, "", "", status)
 
   param_label = "veclen"
   param_type  = REG_INT
@@ -424,9 +455,12 @@ PROGRAM mini_app
              ELSE IF(recvd_cmds(icmd) .EQ. chk_handles(1))THEN
 
                WRITE (*,*) 'Got checkpoint command...'
-               ! Pretend that we took a checkpoint
-               CALL record_chkpt_f(chk_handles(1), "Some_tag_or_filename", &
-                                   status)
+
+               IF(INDEX(recvd_cmd_params(icmd), "OUT") /= 0)THEN
+                 ! Pretend that we took a checkpoint
+                 CALL record_chkpt_f(chk_handles(1), "Some_tag_or_filename",&
+                                     status)
+               END IF
              END IF
 
           END SELECT
@@ -447,8 +481,8 @@ PROGRAM mini_app
     CALL steering_sleep_f()
 
     ! Adjust values of monitored variables
-    dum_int2 = dum_int2 + 6
-    dum_real = dum_real - 1.5
+    !dum_int2 = dum_int2 + 6
+    !dum_real = dum_real - 1.5
 
     ! Increment loop counter
     iloop = iloop + 1
