@@ -742,21 +742,18 @@ void Globus_error_print(const globus_result_t result)
 
 #if REG_DEBUG
   globus_object_t		*error;
-  char				*error_string = NULL;
+  char				*error_string;
 
   if  (result != GLOBUS_SUCCESS) {
     error =  globus_error_get(result); 
 
-    /* check for globus_io error string */
-    error_string = (char *) globus_i_io_error_string_func(error);
+    /* Get error string */
+    error_string = NULL;
+    error_string = globus_object_printable_to_string(error);
 
-    /* if NULL try general error strings */
-    if (error_string == NULL)
-      error_string = (char *) globus_error_generic_string_func(error);
-
-    if (error_string != NULL)
+    if (error_string){
       fprintf(stderr, "Globus_error_print: %s \n", error_string);
-
+    }
   }
 #endif
 
