@@ -1644,16 +1644,16 @@ int Auto_generate_steer_cmds(int    SeqNum,
     switch(IOTypes_table.io_def[i].direction){
 
     case REG_IO_IN:
-      SteerCmdParams[*posn] = "IN";
+      sprintf(SteerCmdParams[*posn], "IN");
       break;
 
     case REG_IO_OUT:
     case REG_IO_INOUT:
-      SteerCmdParams[*posn] = "OUT";
+      sprintf(SteerCmdParams[*posn], "OUT");
       break;
 
     default:
-      SteerCmdParams[*posn] = " ";
+      sprintf(SteerCmdParams[*posn], " ");
       break;
     }
     (*posn)++;
@@ -1681,7 +1681,7 @@ int Auto_generate_steer_cmds(int    SeqNum,
 
     /* We only ever instruct the app. to emit checkpoints since to consume
        a checkpoint implies a restart */
-    SteerCmdParams[*posn] = "OUT";
+    sprintf(SteerCmdParams[*posn], "OUT");
 
     (*posn)++;
   }
@@ -2113,7 +2113,7 @@ int Consume_control(int    *NumCommands,
   struct param_struct *param;
   int                  handle;
   int                  return_status = REG_SUCCESS;
-
+  
   /* Read the file produced by the steerer - may contain commands and/or
      new parameter values */
 
@@ -2132,6 +2132,7 @@ int Consume_control(int    *NumCommands,
 
 	  param = cmd->first_param;
 	  ptr   = CommandParams[count];
+	  
 	  while(param){
 
 	    if(param->value){
@@ -2232,6 +2233,11 @@ int Consume_control(int    *NumCommands,
       *NumCommands    = 0;
       return_status   = REG_FAILURE;
     }
+
+    /* free up msg memory */
+    Delete_msg_struct(msg);
+    msg = NULL;
+
   }
   else{
 
