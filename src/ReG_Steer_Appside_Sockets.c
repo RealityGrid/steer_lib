@@ -500,7 +500,11 @@ void poll(const int index) {
       if(FD_ISSET(listener, &sockets)) {
 	/* new connection */
 	struct sockaddr_in theirAddr;
+#ifdef __sgi
+	socklen_t addrlen = sizeof(theirAddr);
+#else
 	unsigned int addrlen = sizeof(theirAddr);
+#endif
 	int new_fd = accept(listener, (struct sockaddr*) &theirAddr, &addrlen);
 	if(new_fd == REG_SOCKETS_ERROR) {
 	  perror("accept");
