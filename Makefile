@@ -41,7 +41,11 @@ include make/Makefile.${ARCH}
 all:
 	make lib
 	make c_examples
+ifdef F90
 	make f90_examples
+else
+	@echo "No F90 compiler - not compiling F90 examples"
+endif
 
 no_f90:
 	make lib
@@ -53,8 +57,12 @@ c_examples:
 	make sink
 
 f90_examples:
+ifdef F90
 	make app_f90
 	make app_f90_parallel
+else
+	@echo "No F90 compiler - not compiling F90 examples"
+endif
 
 lib: include/*.h \
  src/*.c \
@@ -87,16 +95,20 @@ sink: lib$(NBIT)/libReG_Steer.a \
 install:
 	cd examples/mini_app; make install
 	cd examples/mini_steerer; make install
+ifdef F90
 	cd examples/mini_app_f90; make install
 	cd examples/mini_app_f90_parallel; make install
+endif
 	cd examples/sink; make install
 
 clean:
 	cd src; make clean 
 	cd examples/mini_app; make clean
 	cd examples/mini_steerer; make clean
+ifdef F90
 	cd examples/mini_app_f90; make clean
 	cd examples/mini_app_f90_parallel; make clean
+endif
 	cd examples/sink; make clean
 
 tar:
