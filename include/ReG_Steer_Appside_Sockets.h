@@ -103,7 +103,7 @@ int Consume_start_data_check_sockets(const int index);
 
 int Consume_data_read_sockets(const int index, const int datatype, const int num_bytes_to_read, void *pData);
 
-#ifdef __sgi
+#ifndef __linux
 void signal_handler_sockets(int a_signal);
 #endif
 
