@@ -71,6 +71,18 @@ extern PREFIX int Disable_IOType(int IOType);
 
 extern PREFIX int Enable_IOType(int IOType);
 
+/* Turn on use of acknowledgements for this IOType - this means
+   that an emitter won't attempt to send a sample until the consumer
+   has acknowledged the previous one. 
+   Acknowledgements are ON by default. */
+extern PREFIX int Enable_IOType_acknowledgements(int IOType);
+
+/* Turn off use of acknowledgements for this IOType - this means
+   that an emitter will keep (attempting to) send data samples,
+   irrespective of whether the consumer has processed previous ones. 
+   Acknowledgements are ON by default. */
+extern PREFIX int Disable_IOType_acknowledgements(int IOType);
+
 /* Register the listed Checkpoint types. This is for control and
    monitoring purposes - no reference is made to the actual location
    of the checkpoint data */

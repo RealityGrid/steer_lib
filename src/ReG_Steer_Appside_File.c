@@ -885,13 +885,18 @@ int Consume_ack_file(const int index)
   if(IOTypes_table.io_def[index].ack_needed == FALSE)return REG_SUCCESS;
 
   /* In the short term, use the label (with spaces replaced by
-     '_'s) as the filename */
+     '_'s) as the filename.  This routine is called before filename
+     for next sample is generated so 'filename' contains the index
+     of the last one we emitted. i.e. we look for an acknowledgement
+     of a specific sample rather than just any sample. */
   sprintf(Global_scratch_buffer, "%s_ACK", 
 	  IOTypes_table.io_def[index].filename);
 
   if(fp = fopen(Global_scratch_buffer, "r")){
 
     fclose(fp);
+    printf("ARPDBG: Consume_ack_file removing %s\n", 
+	   Global_scratch_buffer);
     remove(Global_scratch_buffer);
 
     return REG_SUCCESS;
@@ -907,10 +912,12 @@ int Emit_ack_file(const int index)
   FILE*  fp;
 
   /* In the short term, use the label (with spaces replaced by
-     '_'s) as the filename */
+     '_'s) as the filename.  'filename' is set in 
+     Consume_start_data_check and contains an index so this ack
+     is unique to the data set we've just read. */
   sprintf(Global_scratch_buffer, "%s_ACK", 
 	  IOTypes_table.io_def[index].filename);
-
+  
   if(fp = fopen(Global_scratch_buffer, "w")){
 
     fclose(fp);

@@ -222,8 +222,12 @@ typedef struct {
   /* Index of the input channel - used in mapping to the details
      held by the SGS (when steering via SOAP) */
   int                           input_index;
+  /* Whether or not this IOType (direction OUT) cares about getting 
+     an acknowledgement before trying to emit the next sample */
+  int                           use_ack;
   /* Whether or not we need to check for an acknowledgement before
-     attempting to emit the next data set */
+     attempting to emit the next data set.  'use_ack' OVERRIDES
+     this flag. */
   int                           ack_needed;
 
 } IOdef_entry;
