@@ -89,35 +89,48 @@ typedef struct {
 
 /* Types and structures for reading IO types */
 
+/* structure used for globus_io callback SMR XXXn may remove some of struct members*/
+typedef struct
+{
+  globus_mutex_t		mutex;
+  globus_cond_t			cond;
+  globus_object_t *		err;
+  globus_bool_t			use_err;
+  globus_bool_t		        done;
+} Globus_callback_monitor;
+
+
 typedef struct {
 
-  char                  label[REG_MAX_STRING_LENGTH];
-  char                  filename[REG_MAX_STRING_LENGTH];
-  int                   handle;
+  char				label[REG_MAX_STRING_LENGTH];
+  char				filename[REG_MAX_STRING_LENGTH];
+  int				handle;
   /* Whether input, output or a checkpoint */
-  int                   direction;
+  int				direction;
   /* Whether this channel supports automatic emission/consumption
      every frequency steps */
-  int                   auto_io_support;
+  int				auto_io_support;
   /* Handle of the (steerable) frequency in the parameter table */
-  int                   freq_param_handle;
+  int				freq_param_handle;
 
   /* Pointer to buffer to hold data */
-  void		       *buffer;
+  void				*buffer;
   /* Size of this buffer */
-  int                   buffer_bytes;
+  int				buffer_bytes;
 
   /* port for socket connection */
-  unsigned short int	port;
+  unsigned short int		port;
   /* socket connection handles */
-  globus_io_handle_t	listener_handle;
-  globus_io_handle_t	conn_handle;
+  globus_io_handle_t		listener_handle;
+  globus_io_handle_t		conn_handle;
   /* status indicator for socket comms*/
-  int			comms_status;
-  int			index;
+  int				comms_status;
+  /* monitor struc used for callback */
+  Globus_callback_monitor	monitor;
+  int				index;
 
   /* Whether or not to encode non-ASCII data as XDR (set in Emit_start) */
-  int                   use_xdr;
+  int				use_xdr;
 
 } IOdef_entry;
 

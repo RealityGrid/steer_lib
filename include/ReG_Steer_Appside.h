@@ -166,6 +166,13 @@ extern PREFIX int Make_vtk_buffer(char  *header,
 				  int    nz,
 				  float *array);
 
+extern PREFIX int Globus_io_activate(void);
+
+extern PREFIX void Globus_io_deactivate(void);
+
+extern PREFIX void Globus_monitor_init(const int index);
+
+extern PREFIX void Globus_callback_poll(const int index);
 
 extern PREFIX int Globus_create_listener(unsigned short int	*port,
 					 int			*index);
@@ -174,9 +181,7 @@ extern PREFIX void Globus_listener_callback (void		*callback_arg,
 					     globus_io_handle_t	*handle,
 					     globus_result_t	result);
 
-extern PREFIX int Globus_create_connector(const int index);
-
-extern PREFIX int Globus_create_connector_callback(int			*index);
+extern PREFIX int Globus_create_connector(int			*index);
 
 extern PREFIX void Globus_connector_callback (void			*callback_arg,
 					      globus_io_handle_t	*handle,
@@ -189,3 +194,7 @@ extern PREFIX void Globus_close_listener_connections(const int index);
 extern PREFIX void Globus_close_connector_connection(const int index);
 
 extern PREFIX void Globus_close_connection(globus_io_handle_t	*conn_handle);
+
+extern PREFIX void Globus_cancel_callback (void			*callback_arg,
+					   globus_io_handle_t	*handle,
+					   globus_result_t	resultparam);
