@@ -77,10 +77,12 @@ extern int Consume_data_slice_header(int  IOTypeIndex,
 				     int *DataType,
 				     int *DataCount);
 
+#ifndef SWIGJAVA
 extern int Consume_data_slice(int     IOTypeIndex,
 			      int     DataType,
 			      int     Count,
 			      void   *pDataOUT);
+#endif
 
 extern int Consume_stop(int     *IOHandleINOUT);
 
@@ -133,3 +135,30 @@ extern int Reorder_array(int          ndims,
 			 void        *pInData,
 			 void        *pOutData,
 			 int          to_f90);
+
+/* Only C knows about this stuff! */
+%inline %{
+  int Sizeof(int type) {
+    int result;
+    switch(type) {
+    case REG_INT:
+      result = sizeof(int);
+      break;
+    case REG_CHAR:
+      result = sizeof(char);
+      break;
+    case REG_FLOAT:
+      result = sizeof(float);
+      break;
+    case REG_DBL:
+      result = sizeof(double);
+      break;
+    default:
+      result = 0;
+      break;
+    }
+
+    return result;
+  }
+%}
+int Sizeof(int type);
