@@ -73,14 +73,6 @@ IOdef_table_type ChkTypes_table;
 
 Chk_log_type Chk_log;
 
-static struct  {
-
-  int num_files;
-  int max_num_files;
-  char **filenames;
-
-} Checkpoint_files ;
-
 /* Log of steering commands received */
 
 Steer_log_type Steer_log;
@@ -290,24 +282,6 @@ int Steering_initialize(char *AppName,
   for(i=0; i<ChkTypes_table.max_entries; i++){
 
     ChkTypes_table.io_def[i].handle = REG_IODEF_HANDLE_NOTSET;
-  }
-
-  /* Memory for storing checkpoint filenames */
-
-  Checkpoint_files.num_files = 0;
-  Checkpoint_files.max_num_files = 50;
-  Checkpoint_files.filenames = malloc(Checkpoint_files.max_num_files*sizeof(char*));
-
-  if(!Checkpoint_files.filenames){
-    fprintf(stderr, "Steering_initialize: failed to allocate memory "
-	    "for checkpoint filenames\n");
-
-    free(IOTypes_table.io_def);
-    IOTypes_table.io_def = NULL;
-    free(ChkTypes_table.io_def);
-    ChkTypes_table.io_def = NULL;
-    Steering_enable(FALSE);
-    return REG_FAILURE;
   }
 
   /* Set up table for registered parameters */
@@ -1018,6 +992,11 @@ int Register_ChkTypes(int    NumTypes,
       ChkTypes_table.io_def[current].frequency = 0;
     }
 
+    /* Set-up buffer used to store checkpoint filenames */
+    ChkTypes_table.io_def[current].buffer = NULL;
+    ChkTypes_table.io_def[current].buffer_bytes = 0;
+    ChkTypes_table.io_def[current].buffer_max_bytes = 0;
+
     /* Create, store and return a handle for this ChkType */
     ChkTypes_table.io_def[current].handle = Next_IO_Chk_handle++;
     ChkType[i] = ChkTypes_table.io_def[current].handle;
@@ -1253,12 +1232,11 @@ int Record_checkpoint_set(int   ChkType,
 	return REG_FAILURE;
       }
 
-      printf("ARPDBG: path >>%s<<\n", node_data);
       len = strlen(node_data); /* Get length of path */
       pchar = (char *)ChkTypes_table.io_def[index].buffer;
       for(i=0; i<nfiles; i++){
 	pTag = strchr(pchar, ' ');
-	filenames[i] = (char *)malloc((pTag - pchar) + 1 + len);
+	filenames[i] = (char *)malloc((pTag - pchar) + 2 + len);
 	if(!filenames[i]){
 	  fprintf(stderr, "Record_checkpoint_set: malloc for filename "
 		  "%d failed\n", i);
@@ -1267,7 +1245,6 @@ int Record_checkpoint_set(int   ChkType,
 	strcpy(filenames[i], node_data); /* Put path at beginning of filename */
 	strncat(filenames[i], pchar, (pTag-pchar));
 	filenames[i][(pTag-pchar)+1+len] = '\0';
-	printf("ARPDBG, file %d >>%s<<\n", i, filenames[i]);
 	pchar = ++pTag;
       }
     } /* nfiles > 0 */
@@ -1375,12 +1352,12 @@ int Record_checkpoint_set(int   ChkType,
     return REG_FAILURE;
   }
 
-  /*#if REG_DEBUG*/
+#if REG_DEBUG
   fprintf(stderr, "Record_checkpoint_set: node meta data >>%s<<\n",
 	  node_data);
   fprintf(stderr, "Record_checkpoint_set: cp_data >>%s<<\n",
 	  cp_data);
-  /*#endif*/
+#endif
 
   /* Record checkpoint */
   Record_checkpoint_set_soap(cp_data, node_data);
@@ -1410,11 +1387,6 @@ int Record_checkpoint_file(int   ChkType,
 
   /* Check that we have sufficient memory; +1 to allow for space delimiter */
   nbytes = strlen(filename)+1;
-  printf("ARPDBG: nbytes = %d\n", nbytes);
-  printf("ARPDBG: buffer_max_bytes = %d\n", 
-	 ChkTypes_table.io_def[index].buffer_max_bytes);
-  printf("ARPDBG: buffer_bytes = %d\n", 
-	 ChkTypes_table.io_def[index].buffer_bytes);
 
   if( (ChkTypes_table.io_def[index].buffer_max_bytes - 
        ChkTypes_table.io_def[index].buffer_bytes) < nbytes ){
@@ -1427,24 +1399,21 @@ int Record_checkpoint_file(int   ChkType,
   }
 
   if(ChkTypes_table.io_def[index].buffer_bytes){
-    nbytes = sprintf( 
-&(( (char *)(ChkTypes_table.io_def[index].buffer) )[ChkTypes_table.io_def[index].buffer_bytes - 1]),
-		   "%s ", filename);
-    printf("ARPDBG: pos should be %d\n",ChkTypes_table.io_def[index].buffer_bytes - 1);
+
+    nbytes = sprintf( &(( (char *)(ChkTypes_table.io_def[index].buffer) )[ChkTypes_table.io_def[index].buffer_bytes - 1]),
+		      "%s ", filename);
+
+    /* Update the count of the bytes stored - unlike below don't need '+1' because
+       we've just overwritten the final '\0' character in the string */ 
+    ChkTypes_table.io_def[index].buffer_bytes += nbytes;
   }
   else{
     nbytes = sprintf( (char *)(ChkTypes_table.io_def[index].buffer),
 		   "%s ", filename);
+    /* Update the count of the bytes stored - include the '\0' (and
+       hence the '-1' above) */
+    ChkTypes_table.io_def[index].buffer_bytes += nbytes + 1;
   }
-
-  /* Update the count of the bytes stored - include the '\0' (and
-     hence the '-1' above) */
-  ChkTypes_table.io_def[index].buffer_bytes += nbytes + 1;
-
-  printf("ARPDBG, filenames buffer = %s\n", 
-	 ChkTypes_table.io_def[index].buffer);
-  printf("ARPDBG, filenames buffer, count = %d\n", 
-	 ChkTypes_table.io_def[index].buffer_bytes);
 
   return REG_SUCCESS;
 }
