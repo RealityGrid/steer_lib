@@ -40,6 +40,7 @@
 #include "ReG_Steer_Proxy_utils.h"
 #include "ReG_Steer_Steerside_Soap.h"
 #include "ReG_Steer_Browser.h"
+#include "Base64.h"
 
 #ifndef REG_DEBUG
 #define REG_DEBUG 0
@@ -824,6 +825,14 @@ int Consume_param_defs(int SimHandle)
 	Sim_table.sim[index].Params_table.param[j].max_val_valid = REG_FALSE;
       }
 
+      /* Special memory buffer for 'raw data' type of monitored parameter */
+      if(Sim_table.sim[index].Params_table.param[j].type == REG_BIN &&
+	 Sim_table.sim[index].Params_table.param[j].max_val_valid == REG_TRUE){
+
+	Sim_table.sim[index].Params_table.param[j].ptr_raw = 
+	  malloc(atoi(Sim_table.sim[index].Params_table.param[j].max_val));
+      }
+
       Sim_table.sim[index].Params_table.num_registered++;
     }
     ptr = ptr->next;
@@ -1331,6 +1340,7 @@ int Consume_status(int   SimHandle,
   int                  handle;
   int                  count;
   int                  return_status;
+  char                *pchar;
 
   /* For XML parser */
 
@@ -1426,8 +1436,24 @@ int Consume_status(int   SimHandle,
 
     /* Update value of this param */
     if(param_ptr->value){
-      strcpy(Sim_table.sim[index].Params_table.param[j].value,
-	     (char *)(param_ptr->value));
+
+      if(Sim_table.sim[index].Params_table.param[j].type == REG_BIN){
+	printf("ARPDBG >>%s<<\n", (char *)(param_ptr->value));
+	printf("ARPDBG, len of REG_BIN buffer = %d\n", strlen((char *)(param_ptr->value)));
+	pchar = Base64_decode((char *)(param_ptr->value), strlen((char *)(param_ptr->value)));
+	if(!pchar){
+	  fprintf(stderr, "Consume_status: Base64 decode failed\n");
+	  continue;
+	}
+	memcpy(Sim_table.sim[index].Params_table.param[j].ptr_raw,
+	       pchar,
+	       atoi(Sim_table.sim[index].Params_table.param[j].max_val));
+	free(pchar);
+      }
+      else{
+	strcpy(Sim_table.sim[index].Params_table.param[j].value,
+	       (char *)(param_ptr->value));
+      }
     }
     else{
       sprintf(Sim_table.sim[index].Params_table.param[j].value, " ");
@@ -1884,6 +1910,9 @@ int Delete_param_table(Param_table_type *param_table)
   for(i=0; i<param_table->max_entries; i++){
     if(param_table->param[i].handle != REG_PARAM_HANDLE_NOTSET){
 
+      if(param_table->param[i].ptr_raw)free(param_table->param[i].ptr_raw);
+      param_table->param[i].ptr_raw = NULL;
+
       if(param_table->param[i].log)free(param_table->param[i].log);
       param_table->param[i].log = NULL;
       param_table->param[i].log_size = 0;
@@ -2201,6 +2230,14 @@ int Get_param_values(int    sim_handle,
 	  else{
 	    sprintf(param_details[count].max_val, "--");
 	  }
+
+	  /* For monitored parameters that are simply chunks of raw data we pass
+	     back a pointer to this data */
+	  if(param_details[count].type == REG_BIN){
+	    param_details[count].raw_data = 
+	      Sim_table.sim[isim].Params_table.param[i].ptr_raw;
+	  }
+
 	  count++;
 
 	  if(count == num_params)break;

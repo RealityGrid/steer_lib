@@ -77,7 +77,8 @@ ${LIB_PATH}/libReG_Steer.a: ReG_Steer_Appside_f.o \
 	ReG_Steer_Appside_File.o \
 	ReG_Steer_Browser.o \
 	ReG_Steer_Logging.o \
-	stdsoap2.o soapC.o soapClient.o
+	stdsoap2.o soapC.o soapClient.o \
+        Base64.o
 
 ${LIB_PATH}/libReG_Steer.a:
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Appside_f.o
@@ -95,6 +96,7 @@ ${LIB_PATH}/libReG_Steer.a:
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a stdsoap2.o
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a soapC.o
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a soapClient.o
+	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a Base64.o
 
 #---------------------------------------------------------------
 
@@ -181,6 +183,9 @@ ReG_Steer_Logging.o: ReG_Steer_Logging.c \
         ../include/ReG_Steer_Logging.h \
         ../include/ReG_Steer_types.h \
         ../include/ReG_Steer_Appside_internal.h
+
+Base64.o: Base64.c \
+        ../include/Base64.h
 
 #---------------------------------------------------------------
 

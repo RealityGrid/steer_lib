@@ -39,6 +39,7 @@
 #include "ReG_Steer_Appside_Soap.h"
 #include "ReG_Steer_Appside_File.h"
 #include "ReG_Steer_Logging.h"
+#include "Base64.h"
 
 #include <signal.h>
 #include <time.h>
@@ -2282,6 +2283,13 @@ int Register_param(char* ParamLabel,
     return REG_FAILURE;
   }
 
+  if(ParamSteerable == REG_TRUE && ParamType == REG_BIN){
+
+    fprintf(stderr, "Register_param: ERROR: a parameter of type"
+	    " REG_BIN cannot be steerable\n");
+    return REG_FAILURE;
+  }
+
   /* Store label */
   strncpy(Params_table.param[current].label,
           ParamLabel,
@@ -2338,6 +2346,14 @@ int Register_param(char* ParamLabel,
     if(sscanf(ParamMinimum, "%d", &dum_int) == 1){
       Params_table.param[current].min_val_valid = REG_TRUE;
     }
+    if(sscanf(ParamMaximum, "%d", &dum_int) == 1){
+      Params_table.param[current].max_val_valid = REG_TRUE;
+    }
+    break;
+
+  case REG_BIN:
+    /* Upper limit is taken as no. of bytes for raw data 
+       buffer */
     if(sscanf(ParamMaximum, "%d", &dum_int) == 1){
       Params_table.param[current].max_val_valid = REG_TRUE;
     }
@@ -2401,114 +2417,9 @@ int Register_params(int    NumParams,
 
   for(i=0; i<NumParams; i++){
 
-    /* Find next free entry - allocates more memory if required */
-    current = Next_free_param_index(&Params_table);
-
-    if(current == -1){
-
-      fprintf(stderr, "Register_params: failed to find free "
-	      "param entry\n");
-      return REG_FAILURE;
-    }
-
-    if(String_contains_xml_chars(ParamLabels[i]) == REG_TRUE){
-
-      fprintf(stderr, "Register_params: ERROR: Param label "
-	      "contains reserved xml characters (<,>,&): %s\n"
-              "     - skipping this parameter.\n", ParamLabels[i]);
-      continue;
-    }
-
-    /* Store label */
-    strncpy(Params_table.param[current].label, 
-	    ParamLabels[i],
-	    REG_MAX_STRING_LENGTH);
-
-    /* Store 'steerable' */
-    Params_table.param[current].steerable = ParamSteerable[i];
-    
-    /* Store pointer */
-    Params_table.param[current].ptr = ParamPtrs[i];
-
-    /* Store type */
-    Params_table.param[current].type = ParamTypes[i];
-
-    /* This set to REG_TRUE external to this routine if this param.
-       has been created by the steering library itself */
-    Params_table.param[current].is_internal = REG_FALSE;
-
-    /* Range of validity for this parameter - assume invalid 
-       first and check second */
-    Params_table.param[current].min_val_valid = REG_FALSE;
-    Params_table.param[current].max_val_valid = REG_FALSE;
-    switch(ParamTypes[i]){
-
-    case REG_INT:
-      if(sscanf(ParamMinima[i], "%d", &dum_int) == 1){
-	Params_table.param[current].min_val_valid = REG_TRUE;
-      }
-      if(sscanf(ParamMaxima[i], "%d", &dum_int) == 1){
-	Params_table.param[current].max_val_valid = REG_TRUE;
-      }
-      break;
-
-    case REG_FLOAT:
-      if(sscanf(ParamMinima[i], "%f", &dum_flt) == 1){
-	Params_table.param[current].min_val_valid = REG_TRUE;
-      }
-      if(sscanf(ParamMaxima[i], "%f", &dum_flt) == 1){
-	Params_table.param[current].max_val_valid = REG_TRUE;
-      }
-      break;
-
-    case REG_DBL:
-      if(sscanf(ParamMinima[i], "%lf", &dum_dbl) == 1){
-	Params_table.param[current].min_val_valid = REG_TRUE;
-      }
-      if(sscanf(ParamMaxima[i], "%lf", &dum_dbl) == 1){
-	Params_table.param[current].max_val_valid = REG_TRUE;
-      }
-      break;
-
-    case REG_CHAR:
-      /* Limits are taken as lengths for a string */
-      if(sscanf(ParamMinima[i], "%d", &dum_int) == 1){
-	Params_table.param[current].min_val_valid = REG_TRUE;
-      }
-      if(sscanf(ParamMaxima[i], "%d", &dum_int) == 1){
-	Params_table.param[current].max_val_valid = REG_TRUE;
-      }
-      break;
-
-    default:
-      fprintf(stderr, "Register_params: unrecognised parameter "
-	      "type - skipping parameter >%s<\n", ParamLabels[i]);
-      continue;
-    }
-    if(Params_table.param[current].min_val_valid == REG_TRUE){
-      strncpy(Params_table.param[current].min_val, ParamMinima[i],
-	      REG_MAX_STRING_LENGTH);
-    }
-    else{
-      sprintf(Params_table.param[current].min_val, " ");
-    }
-
-    if(Params_table.param[current].max_val_valid == REG_TRUE){
-      strncpy(Params_table.param[current].max_val, ParamMaxima[i],
-	      REG_MAX_STRING_LENGTH);
-    }
-    else{
-      sprintf(Params_table.param[current].max_val, " ");
-    }
-
-    /* Create handle for this parameter */
-    Params_table.param[current].handle = Params_table.next_handle++;
-
-    Params_table.num_registered++;
+    Register_param(ParamLabels[i], ParamSteerable[i], ParamPtrs[i],
+		   ParamTypes[i], ParamMinima[i], ParamMaxima[i]);
   }
-
-  /* Flag that the registered parameters have changed */
-  ReG_ParamsChanged = REG_TRUE;
 
   return REG_SUCCESS;
 }
@@ -3838,6 +3749,7 @@ int Emit_status(int   SeqNum,
   int   paramdone = REG_FALSE;
   char  buf[REG_MAX_MSG_SIZE];
   char *pbuf;
+  char *pchar;
   int   nbytes, bytes_left;
 
   /* Emit a status report - this is complicated because we must ensure we
@@ -3847,10 +3759,8 @@ int Emit_status(int   SeqNum,
   /* Count how many monitoring parameters there are */
 
   for(i=0; i<Params_table.max_entries; i++){
-    
-    if(Params_table.param[i].handle != REG_PARAM_HANDLE_NOTSET) 
-	/* Want to output ALL params now - not just steerable ones */
-	/* && (!Params_table.param[i].steerable) ) */  pcount++;
+    /* Want to output ALL params, irrespective of steered/monitored */
+    if(Params_table.param[i].handle != REG_PARAM_HANDLE_NOTSET)pcount++;
   }
   num_param = pcount;
   pcount = 0;
@@ -3896,14 +3806,27 @@ int Emit_status(int   SeqNum,
  	  /* Update the 'value' part of this parameter's table entry
 	     - Get_ptr_value checks to make sure parameter is not library-
 	     controlled (& hence has valid ptr to get value from) */
- 	  Get_ptr_value(&(Params_table.param[tot_pcount]));
 
- 	  nbytes = snprintf(pbuf, bytes_left, "<Param>\n"
+	  if(Params_table.param[tot_pcount].type == REG_BIN){
+
+	    if( !(pchar = Base64_encode(Params_table.param[tot_pcount].ptr, 
+					atoi(Params_table.param[tot_pcount].max_val))))continue;
+	    printf("ARPDBG: length of base 64 buffer = %d\n", strlen(pchar));
+	  }
+	  else{
+	    if(Get_ptr_value(&(Params_table.param[tot_pcount])) != REG_SUCCESS)continue;
+	    pchar = Params_table.param[tot_pcount].value;
+	  }
+	  
+	  nbytes = snprintf(pbuf, bytes_left, "<Param>\n"
 			    "<Handle>%d</Handle>\n"
 			    "<Value>%s</Value>\n"
 			    "</Param>\n", 
-			    Params_table.param[tot_pcount].handle, 
-			    Params_table.param[tot_pcount].value);
+			    Params_table.param[tot_pcount].handle, pchar);
+
+	  if(Params_table.param[tot_pcount].type == REG_BIN){
+	    free(pchar); pchar = NULL;
+	  }
 
 	  /* Check for truncation */
 	  if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
@@ -3915,16 +3838,16 @@ int Emit_status(int   SeqNum,
 	  pbuf += nbytes;
 	  bytes_left -= nbytes;
 
- 	  pcount++;
-    	}
+	  pcount++;
+	}
   
 	/* Cumulative counter to move us through param table */
 	tot_pcount++;
 
-    	if(pcount >= num_param){
- 	  paramdone = REG_TRUE;
- 	  break;
-    	}
+	if(pcount >= num_param){
+	  paramdone = REG_TRUE;
+	  break;
+	}
       }
     }
 
@@ -3993,6 +3916,7 @@ int Emit_status(int   SeqNum,
 
 int Update_ptr_value(param_entry *param)
 {
+  int len;
 
   if (!param->ptr) return REG_SUCCESS;
 
@@ -4023,6 +3947,9 @@ int Update_ptr_value(param_entry *param)
     else{
       strcpy((char *)(param->ptr), param->value);
     }
+    break;
+
+  case REG_BIN:
     break;
 
   default:
@@ -4078,6 +4005,9 @@ int Get_ptr_value(param_entry *param)
     }
     break;
   
+  case REG_BIN:
+    break;
+
   default:
     fprintf(stderr, "Get_ptr_value: unrecognised parameter type\n");
     fprintf(stderr, "Param type   = %d\n", param->type);

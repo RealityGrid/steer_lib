@@ -738,6 +738,9 @@ int Log_param_values()
        }
     }
 
+    /* We do not log 'raw binary' parameters */
+    if(Params_table.param[index].type == REG_BIN)continue;
+
     /* This is one we want - store its handle and current value */
     Param_log.entry[Param_log.num_entries].param[count].handle = 
                                            Params_table.param[index].handle;
