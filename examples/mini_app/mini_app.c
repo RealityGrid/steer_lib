@@ -38,9 +38,7 @@
 ---------------------------------------------------------------------------*/
 #include "ReG_Steer_Appside.h"
 #include <string.h>
-/*#include "soapH.h"
-#include "soapSGS.nsmap"
-*/
+
 /*-------------------------------------------------------------------------*/
 
 int main(){
@@ -167,11 +165,11 @@ int main(){
 
   iotype_labels[1] = "MY_OTHER_CHECKPOINT";
   iotype_dirn[1] = REG_IO_INOUT;
-  iotype_frequency[1] = 2;
+  iotype_frequency[1] = 0;
 
   iotype_labels[2] = "YET_ANOTHER_CHECKPOINT";
  iotype_dirn[2] = REG_IO_INOUT;
-  iotype_frequency[2] = 1;
+  iotype_frequency[2] = 0;
 
   num_chktypes = 3;
 
