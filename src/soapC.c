@@ -8,7 +8,7 @@
 extern "C" {
 #endif
 
-SOAP_SOURCE_STAMP("@(#) soapC.c ver 2.2.3b 2003-10-03 15:57:22 GMT")
+SOAP_SOURCE_STAMP("@(#) soapC.c ver 2.2.3b 2003-10-07 09:50:48 GMT")
 
 
 #ifndef WITH_NOGLOBAL
@@ -114,6 +114,9 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_getindependent(struct soap *soap)
 		case SOAP_TYPE_tns__PutStatus:
 			soap_in_tns__PutStatus(soap, NULL, NULL, "tns:PutStatus");
 			break;
+		case SOAP_TYPE_tns__Restart:
+			soap_in_tns__Restart(soap, NULL, NULL, "tns:Restart");
+			break;
 		case SOAP_TYPE_tns__Pause:
 			soap_in_tns__Pause(soap, NULL, NULL, "tns:Pause");
 			break;
@@ -180,6 +183,9 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_getindependent(struct soap *soap)
 		case SOAP_TYPE_tns__PutStatusResponse:
 			soap_in_tns__PutStatusResponse(soap, NULL, NULL, "tns:PutStatusResponse");
 			break;
+		case SOAP_TYPE_tns__RestartResponse:
+			soap_in_tns__RestartResponse(soap, NULL, NULL, "tns:RestartResponse");
+			break;
 		case SOAP_TYPE_tns__PutControlResponse:
 			soap_in_tns__PutControlResponse(soap, NULL, NULL, "tns:PutControlResponse");
 			break;
@@ -221,6 +227,9 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_getindependent(struct soap *soap)
 			break;
 		case SOAP_TYPE_PointerTotns__PutStatusResponse:
 			soap_in_PointerTotns__PutStatusResponse(soap, NULL, NULL, "tns:PutStatusResponse");
+			break;
+		case SOAP_TYPE_PointerTotns__RestartResponse:
+			soap_in_PointerTotns__RestartResponse(soap, NULL, NULL, "tns:RestartResponse");
 			break;
 		case SOAP_TYPE_PointerTotns__PauseResponse:
 			soap_in_PointerTotns__PauseResponse(soap, NULL, NULL, "tns:PauseResponse");
@@ -300,6 +309,12 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_getindependent(struct soap *soap)
 		case SOAP_TYPE_xsdl__AppRecordChkpointRequest:
 			soap_in_xsdl__AppRecordChkpointRequest(soap, NULL, NULL, "xsdl:AppRecordChkpointRequest");
 			break;
+		case SOAP_TYPE_xsdl__RestartRequest:
+			soap_in_xsdl__RestartRequest(soap, NULL, NULL, "xsdl:RestartRequest");
+			break;
+		case SOAP_TYPE_xsdl__RestartResponse:
+			soap_in_xsdl__RestartResponse(soap, NULL, NULL, "xsdl:RestartResponse");
+			break;
 		case SOAP_TYPE_xsdl__GetControlRequest:
 			soap_in_xsdl__GetControlRequest(soap, NULL, NULL, "xsdl:GetControlRequest");
 			break;
@@ -336,11 +351,11 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_getindependent(struct soap *soap)
 		case SOAP_TYPE_xsdl__ResumeRequest:
 			soap_in_xsdl__ResumeRequest(soap, NULL, NULL, "xsdl:ResumeRequest");
 			break;
-		case SOAP_TYPE_xsdl__AppStopResponse:
-			soap_in_xsdl__AppStopResponse(soap, NULL, NULL, "xsdl:AppStopResponse");
-			break;
 		case SOAP_TYPE_xsdl__AppStartResponse:
 			soap_in_xsdl__AppStartResponse(soap, NULL, NULL, "xsdl:AppStartResponse");
+			break;
+		case SOAP_TYPE_xsdl__AppStopResponse:
+			soap_in_xsdl__AppStopResponse(soap, NULL, NULL, "xsdl:AppStopResponse");
 			break;
 		case SOAP_TYPE_xsdl__AppStopRequest:
 			soap_in_xsdl__AppStopRequest(soap, NULL, NULL, "xsdl:AppStopRequest");
@@ -400,6 +415,8 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_getindependent(struct soap *soap)
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
 				soap_in_tns__PutStatus(soap, NULL, NULL, "tns:PutStatus");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
+				soap_in_tns__Restart(soap, NULL, NULL, "tns:Restart");
+			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
 				soap_in_tns__Pause(soap, NULL, NULL, "tns:Pause");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
 				soap_in_tns__GetNotifications(soap, NULL, NULL, "tns:GetNotifications");
@@ -443,6 +460,8 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_getindependent(struct soap *soap)
 				soap_in_tns__AttachResponse(soap, NULL, NULL, "tns:AttachResponse");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
 				soap_in_tns__PutStatusResponse(soap, NULL, NULL, "tns:PutStatusResponse");
+			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
+				soap_in_tns__RestartResponse(soap, NULL, NULL, "tns:RestartResponse");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
 				soap_in_tns__PutControlResponse(soap, NULL, NULL, "tns:PutControlResponse");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
@@ -488,6 +507,10 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_getindependent(struct soap *soap)
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
 				soap_in_xsdl__AppRecordChkpointRequest(soap, NULL, NULL, "xsdl:AppRecordChkpointRequest");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
+				soap_in_xsdl__RestartRequest(soap, NULL, NULL, "xsdl:RestartRequest");
+			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
+				soap_in_xsdl__RestartResponse(soap, NULL, NULL, "xsdl:RestartResponse");
+			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
 				soap_in_xsdl__GetControlRequest(soap, NULL, NULL, "xsdl:GetControlRequest");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
 				soap_in_xsdl__ResumeResponse(soap, NULL, NULL, "xsdl:ResumeResponse");
@@ -512,9 +535,9 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_getindependent(struct soap *soap)
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
 				soap_in_xsdl__ResumeRequest(soap, NULL, NULL, "xsdl:ResumeRequest");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
-				soap_in_xsdl__AppStopResponse(soap, NULL, NULL, "xsdl:AppStopResponse");
-			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
 				soap_in_xsdl__AppStartResponse(soap, NULL, NULL, "xsdl:AppStartResponse");
+			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
+				soap_in_xsdl__AppStopResponse(soap, NULL, NULL, "xsdl:AppStopResponse");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
 				soap_in_xsdl__AppStopRequest(soap, NULL, NULL, "xsdl:AppStopRequest");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
@@ -583,6 +606,9 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_putindependent(struct soap *soap)
 				case SOAP_TYPE_tns__PutStatus:
 					soap_out_tns__PutStatus(soap, "id", pp->id, (const struct tns__PutStatus *)pp->ptr, "tns:PutStatus");
 					break;
+				case SOAP_TYPE_tns__Restart:
+					soap_out_tns__Restart(soap, "id", pp->id, (const struct tns__Restart *)pp->ptr, "tns:Restart");
+					break;
 				case SOAP_TYPE_tns__Pause:
 					soap_out_tns__Pause(soap, "id", pp->id, (const struct tns__Pause *)pp->ptr, "tns:Pause");
 					break;
@@ -649,6 +675,9 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_putindependent(struct soap *soap)
 				case SOAP_TYPE_tns__PutStatusResponse:
 					soap_out_tns__PutStatusResponse(soap, "id", pp->id, (const struct tns__PutStatusResponse *)pp->ptr, "tns:PutStatusResponse");
 					break;
+				case SOAP_TYPE_tns__RestartResponse:
+					soap_out_tns__RestartResponse(soap, "id", pp->id, (const struct tns__RestartResponse *)pp->ptr, "tns:RestartResponse");
+					break;
 				case SOAP_TYPE_tns__PutControlResponse:
 					soap_out_tns__PutControlResponse(soap, "id", pp->id, (const struct tns__PutControlResponse *)pp->ptr, "tns:PutControlResponse");
 					break;
@@ -690,6 +719,9 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_putindependent(struct soap *soap)
 					break;
 				case SOAP_TYPE_PointerTotns__PutStatusResponse:
 					soap_out_PointerTotns__PutStatusResponse(soap, "id", pp->id, (struct tns__PutStatusResponse *const*)pp->ptr, "tns:PutStatusResponse");
+					break;
+				case SOAP_TYPE_PointerTotns__RestartResponse:
+					soap_out_PointerTotns__RestartResponse(soap, "id", pp->id, (struct tns__RestartResponse *const*)pp->ptr, "tns:RestartResponse");
 					break;
 				case SOAP_TYPE_PointerTotns__PauseResponse:
 					soap_out_PointerTotns__PauseResponse(soap, "id", pp->id, (struct tns__PauseResponse *const*)pp->ptr, "tns:PauseResponse");
@@ -769,6 +801,12 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_putindependent(struct soap *soap)
 				case SOAP_TYPE_xsdl__AppRecordChkpointRequest:
 					soap_out_string(soap, "id", pp->id, (char**)&pp->ptr, "xsdl:AppRecordChkpointRequest");
 					break;
+				case SOAP_TYPE_xsdl__RestartRequest:
+					soap_out_string(soap, "id", pp->id, (char**)&pp->ptr, "xsdl:RestartRequest");
+					break;
+				case SOAP_TYPE_xsdl__RestartResponse:
+					soap_out_string(soap, "id", pp->id, (char**)&pp->ptr, "xsdl:RestartResponse");
+					break;
 				case SOAP_TYPE_xsdl__GetControlRequest:
 					soap_out_string(soap, "id", pp->id, (char**)&pp->ptr, "xsdl:GetControlRequest");
 					break;
@@ -805,11 +843,11 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_putindependent(struct soap *soap)
 				case SOAP_TYPE_xsdl__ResumeRequest:
 					soap_out_string(soap, "id", pp->id, (char**)&pp->ptr, "xsdl:ResumeRequest");
 					break;
-				case SOAP_TYPE_xsdl__AppStopResponse:
-					soap_out_string(soap, "id", pp->id, (char**)&pp->ptr, "xsdl:AppStopResponse");
-					break;
 				case SOAP_TYPE_xsdl__AppStartResponse:
 					soap_out_string(soap, "id", pp->id, (char**)&pp->ptr, "xsdl:AppStartResponse");
+					break;
+				case SOAP_TYPE_xsdl__AppStopResponse:
+					soap_out_string(soap, "id", pp->id, (char**)&pp->ptr, "xsdl:AppStopResponse");
 					break;
 				case SOAP_TYPE_xsdl__AppStopRequest:
 					soap_out_string(soap, "id", pp->id, (char**)&pp->ptr, "xsdl:AppStopRequest");
@@ -956,6 +994,20 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_getattachments(struct soap *soap)
 				*a = soap->dime_ptr;
 			break;
 		}
+		case SOAP_TYPE_xsdl__RestartRequest:
+		{	char ** a;
+			a = (char **)soap_id_enter(soap, soap->dime_id, NULL, SOAP_TYPE_xsdl__RestartRequest, sizeof(char *), 0);
+			if (a)
+				*a = soap->dime_ptr;
+			break;
+		}
+		case SOAP_TYPE_xsdl__RestartResponse:
+		{	char ** a;
+			a = (char **)soap_id_enter(soap, soap->dime_id, NULL, SOAP_TYPE_xsdl__RestartResponse, sizeof(char *), 0);
+			if (a)
+				*a = soap->dime_ptr;
+			break;
+		}
 		case SOAP_TYPE_xsdl__GetControlRequest:
 		{	char ** a;
 			a = (char **)soap_id_enter(soap, soap->dime_id, NULL, SOAP_TYPE_xsdl__GetControlRequest, sizeof(char *), 0);
@@ -1040,16 +1092,16 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_getattachments(struct soap *soap)
 				*a = soap->dime_ptr;
 			break;
 		}
-		case SOAP_TYPE_xsdl__AppStopResponse:
+		case SOAP_TYPE_xsdl__AppStartResponse:
 		{	char ** a;
-			a = (char **)soap_id_enter(soap, soap->dime_id, NULL, SOAP_TYPE_xsdl__AppStopResponse, sizeof(char *), 0);
+			a = (char **)soap_id_enter(soap, soap->dime_id, NULL, SOAP_TYPE_xsdl__AppStartResponse, sizeof(char *), 0);
 			if (a)
 				*a = soap->dime_ptr;
 			break;
 		}
-		case SOAP_TYPE_xsdl__AppStartResponse:
+		case SOAP_TYPE_xsdl__AppStopResponse:
 		{	char ** a;
-			a = (char **)soap_id_enter(soap, soap->dime_id, NULL, SOAP_TYPE_xsdl__AppStartResponse, sizeof(char *), 0);
+			a = (char **)soap_id_enter(soap, soap->dime_id, NULL, SOAP_TYPE_xsdl__AppStopResponse, sizeof(char *), 0);
 			if (a)
 				*a = soap->dime_ptr;
 			break;
@@ -2061,6 +2113,111 @@ SOAP_FMAC1 struct tns__PutStatus * SOAP_FMAC2 soap_in_tns__PutStatus(struct soap
 	{	a = (struct tns__PutStatus *)soap_id_forward(soap, soap->href, (void**)soap_id_enter(soap, soap->id, a, SOAP_TYPE_tns__PutStatus, sizeof(struct tns__PutStatus), 0), SOAP_TYPE_tns__PutStatus, sizeof(struct tns__PutStatus));
 		if (soap->alloced)
 			soap_default_tns__PutStatus(soap, a);
+		if (soap->body && soap_element_end_in(soap, tag))
+			return NULL;
+	}
+	return a;
+}
+
+SOAP_FMAC1 void SOAP_FMAC2 soap_serialize_tns__Restart(struct soap *soap, struct tns__Restart const*a)
+{
+	if (!soap_reference(soap, a, SOAP_TYPE_tns__Restart))
+		soap_mark_tns__Restart(soap, a);
+}
+
+SOAP_FMAC1 void SOAP_FMAC2 soap_mark_tns__Restart(struct soap *soap, const struct tns__Restart *a)
+{
+	soap_embedded(soap, &a->input, SOAP_TYPE_xsd__string);
+	soap_mark_xsd__string(soap, &a->input);
+}
+
+SOAP_FMAC1 void SOAP_FMAC2 soap_default_tns__Restart(struct soap *soap, struct tns__Restart *a)
+{
+	soap_default_xsd__string(soap, &a->input);
+}
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_put_tns__Restart(struct soap *soap, struct tns__Restart *a, const char *tag, const char *type)
+{
+	int i;
+	struct soap_plist *pp;
+	if ((i = soap_pointer_lookup(soap, a, SOAP_TYPE_tns__Restart, &pp)))
+		if (soap_is_embedded(soap, pp))
+			soap_element_ref(soap, tag, 0, i);
+		else if (soap_is_single(soap, pp))
+			soap_out_tns__Restart(soap, tag, 0, a, type);
+		else
+		{
+			soap_set_embedded(soap, pp);
+			soap_out_tns__Restart(soap, tag, i, a, type);
+		}
+	else
+		soap_out_tns__Restart(soap, tag, 0, a, type);
+	return soap_putindependent(soap);
+}
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_out_tns__Restart(struct soap *soap, const char *tag, int id, const struct tns__Restart *a, const char *type)
+{
+	soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_tns__Restart), type);
+	soap_out_xsd__string(soap, "input", -1, &a->input, "xsd:string");
+	soap_element_end_out(soap, tag);
+	return SOAP_OK;
+}
+
+SOAP_FMAC1 struct tns__Restart * SOAP_FMAC2 soap_get_tns__Restart(struct soap *soap, struct tns__Restart *p, const char *tag, const char *type)
+{
+	if ((p = soap_in_tns__Restart(soap, tag, p, type)))
+		soap_getindependent(soap);
+	return p;
+}
+
+SOAP_FMAC1 struct tns__Restart * SOAP_FMAC2 soap_in_tns__Restart(struct soap *soap, const char *tag, struct tns__Restart *a, const char *type)
+{
+	short soap_flag_input = 1;
+	if (soap_element_begin_in(soap, tag))
+		return NULL;
+	if (*soap->type && soap_match_tag(soap, soap->type, type))
+	{	soap->error = SOAP_TYPE_MISMATCH;
+		soap_revert(soap);
+		return NULL;
+	}
+	if (soap->null)
+	{	if (soap->mode & SOAP_XML_NIL)
+		{	soap->error = SOAP_NULL;
+			return NULL;
+		}
+		else
+			return a;
+	}
+	if (!*soap->href)
+	{	a = (struct tns__Restart *)soap_id_enter(soap, soap->id, a, SOAP_TYPE_tns__Restart, sizeof(struct tns__Restart), 0);
+		if (!a)
+			return NULL;
+		if (soap->alloced)
+			soap_default_tns__Restart(soap, a);
+		if (soap->body)
+		{	for (;;)
+			{	soap->error = SOAP_TAG_MISMATCH;
+			if (soap_flag_input && soap->error == SOAP_TAG_MISMATCH)
+				if (soap_in_xsd__string(soap, "input", &a->input, "xsd:string"))
+				{	soap_flag_input = 0;
+					continue;
+				}
+			if (soap->error == SOAP_TAG_MISMATCH)
+				soap->error = soap_ignore_element(soap);
+			if (soap->error == SOAP_NO_TAG)
+				break;
+			if (soap->error)
+			{	return NULL;
+			}
+		}
+		if (soap_element_end_in(soap, tag))
+			return NULL;
+		}
+	}
+	else
+	{	a = (struct tns__Restart *)soap_id_forward(soap, soap->href, (void**)soap_id_enter(soap, soap->id, a, SOAP_TYPE_tns__Restart, sizeof(struct tns__Restart), 0), SOAP_TYPE_tns__Restart, sizeof(struct tns__Restart));
+		if (soap->alloced)
+			soap_default_tns__Restart(soap, a);
 		if (soap->body && soap_element_end_in(soap, tag))
 			return NULL;
 	}
@@ -4276,6 +4433,111 @@ SOAP_FMAC1 struct tns__PutStatusResponse * SOAP_FMAC2 soap_in_tns__PutStatusResp
 	return a;
 }
 
+SOAP_FMAC1 void SOAP_FMAC2 soap_serialize_tns__RestartResponse(struct soap *soap, struct tns__RestartResponse const*a)
+{
+	if (!soap_reference(soap, a, SOAP_TYPE_tns__RestartResponse))
+		soap_mark_tns__RestartResponse(soap, a);
+}
+
+SOAP_FMAC1 void SOAP_FMAC2 soap_mark_tns__RestartResponse(struct soap *soap, const struct tns__RestartResponse *a)
+{
+	soap_embedded(soap, &a->_result, SOAP_TYPE_xsd__string);
+	soap_mark_xsd__string(soap, &a->_result);
+}
+
+SOAP_FMAC1 void SOAP_FMAC2 soap_default_tns__RestartResponse(struct soap *soap, struct tns__RestartResponse *a)
+{
+	soap_default_xsd__string(soap, &a->_result);
+}
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_put_tns__RestartResponse(struct soap *soap, struct tns__RestartResponse *a, const char *tag, const char *type)
+{
+	int i;
+	struct soap_plist *pp;
+	if ((i = soap_pointer_lookup(soap, a, SOAP_TYPE_tns__RestartResponse, &pp)))
+		if (soap_is_embedded(soap, pp))
+			soap_element_ref(soap, tag, 0, i);
+		else if (soap_is_single(soap, pp))
+			soap_out_tns__RestartResponse(soap, tag, 0, a, type);
+		else
+		{
+			soap_set_embedded(soap, pp);
+			soap_out_tns__RestartResponse(soap, tag, i, a, type);
+		}
+	else
+		soap_out_tns__RestartResponse(soap, tag, 0, a, type);
+	return soap_putindependent(soap);
+}
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_out_tns__RestartResponse(struct soap *soap, const char *tag, int id, const struct tns__RestartResponse *a, const char *type)
+{
+	soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_tns__RestartResponse), type);
+	soap_out_xsd__string(soap, "result", -1, &a->_result, "xsd:string");
+	soap_element_end_out(soap, tag);
+	return SOAP_OK;
+}
+
+SOAP_FMAC1 struct tns__RestartResponse * SOAP_FMAC2 soap_get_tns__RestartResponse(struct soap *soap, struct tns__RestartResponse *p, const char *tag, const char *type)
+{
+	if ((p = soap_in_tns__RestartResponse(soap, tag, p, type)))
+		soap_getindependent(soap);
+	return p;
+}
+
+SOAP_FMAC1 struct tns__RestartResponse * SOAP_FMAC2 soap_in_tns__RestartResponse(struct soap *soap, const char *tag, struct tns__RestartResponse *a, const char *type)
+{
+	short soap_flag__result = 1;
+	if (soap_element_begin_in(soap, tag))
+		return NULL;
+	if (*soap->type && soap_match_tag(soap, soap->type, type))
+	{	soap->error = SOAP_TYPE_MISMATCH;
+		soap_revert(soap);
+		return NULL;
+	}
+	if (soap->null)
+	{	if (soap->mode & SOAP_XML_NIL)
+		{	soap->error = SOAP_NULL;
+			return NULL;
+		}
+		else
+			return a;
+	}
+	if (!*soap->href)
+	{	a = (struct tns__RestartResponse *)soap_id_enter(soap, soap->id, a, SOAP_TYPE_tns__RestartResponse, sizeof(struct tns__RestartResponse), 0);
+		if (!a)
+			return NULL;
+		if (soap->alloced)
+			soap_default_tns__RestartResponse(soap, a);
+		if (soap->body)
+		{	for (;;)
+			{	soap->error = SOAP_TAG_MISMATCH;
+			if (soap_flag__result && soap->error == SOAP_TAG_MISMATCH)
+				if (soap_in_xsd__string(soap, NULL, &a->_result, "xsd:string"))
+				{	soap_flag__result = 0;
+					continue;
+				}
+			if (soap->error == SOAP_TAG_MISMATCH)
+				soap->error = soap_ignore_element(soap);
+			if (soap->error == SOAP_NO_TAG)
+				break;
+			if (soap->error)
+			{	return NULL;
+			}
+		}
+		if (soap_element_end_in(soap, tag))
+			return NULL;
+		}
+	}
+	else
+	{	a = (struct tns__RestartResponse *)soap_id_forward(soap, soap->href, (void**)soap_id_enter(soap, soap->id, a, SOAP_TYPE_tns__RestartResponse, sizeof(struct tns__RestartResponse), 0), SOAP_TYPE_tns__RestartResponse, sizeof(struct tns__RestartResponse));
+		if (soap->alloced)
+			soap_default_tns__RestartResponse(soap, a);
+		if (soap->body && soap_element_end_in(soap, tag))
+			return NULL;
+	}
+	return a;
+}
+
 SOAP_FMAC1 void SOAP_FMAC2 soap_serialize_tns__PutControlResponse(struct soap *soap, struct tns__PutControlResponse const*a)
 {
 	if (!soap_reference(soap, a, SOAP_TYPE_tns__PutControlResponse))
@@ -5824,6 +6086,106 @@ SOAP_FMAC1 struct tns__PutStatusResponse ** SOAP_FMAC2 soap_in_PointerTotns__Put
 	}
 	else
 	{	a = (struct tns__PutStatusResponse **)soap_id_lookup(soap, soap->href, (void**)soap_id_enter(soap, soap->id, a, SOAP_TYPE_PointerTotns__PutStatusResponse, sizeof(struct tns__PutStatusResponse *), 1), SOAP_TYPE_tns__PutStatusResponse, sizeof(struct tns__PutStatusResponse), 0);
+		if (soap->body && soap_element_end_in(soap, tag))
+			return NULL;
+	}
+	return a;
+}
+
+SOAP_FMAC1 void SOAP_FMAC2 soap_serialize_PointerTotns__RestartResponse(struct soap *soap, struct tns__RestartResponse *const*a)
+{
+	if (!soap_reference(soap, a, SOAP_TYPE_PointerTotns__RestartResponse))
+		soap_mark_PointerTotns__RestartResponse(soap, a);
+}
+
+SOAP_FMAC1 void SOAP_FMAC2 soap_mark_PointerTotns__RestartResponse(struct soap *soap, struct tns__RestartResponse *const*a)
+{
+	if (!soap_reference(soap, *a, SOAP_TYPE_tns__RestartResponse))
+		soap_mark_tns__RestartResponse(soap, *a);
+}
+
+SOAP_FMAC1 void SOAP_FMAC2 soap_default_PointerTotns__RestartResponse(struct soap *soap, struct tns__RestartResponse **a)
+{
+	*a = NULL;
+}
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_put_PointerTotns__RestartResponse(struct soap *soap, struct tns__RestartResponse **a, const char *tag, const char *type)
+{
+	int i;
+	struct soap_plist *pp;
+	if ((i = soap_pointer_lookup(soap, a, SOAP_TYPE_PointerTotns__RestartResponse, &pp)))
+		if (soap_is_embedded(soap, pp))
+			soap_element_ref(soap, tag, 0, i);
+		else if (soap_is_single(soap, pp))
+			soap_out_PointerTotns__RestartResponse(soap, tag, 0, a, type);
+		else
+		{
+			soap_set_embedded(soap, pp);
+			soap_out_PointerTotns__RestartResponse(soap, tag, i, a, type);
+		}
+	else
+		soap_out_PointerTotns__RestartResponse(soap, tag, 0, a, type);
+	return soap_putindependent(soap);
+}
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_out_PointerTotns__RestartResponse(struct soap *soap, const char *tag, int id, struct tns__RestartResponse *const*a, const char *type)
+{
+	id = soap_embedded_id(soap, id, a, SOAP_TYPE_PointerTotns__RestartResponse);
+	if (!*a)
+		soap_element_null(soap, tag, id, type);
+	else
+	{	struct soap_plist *pp;
+		int i = soap_pointer_lookup(soap, *a, SOAP_TYPE_tns__RestartResponse, &pp);
+		if (i)
+			if (soap_is_embedded(soap, pp))
+				soap_element_ref(soap, tag, id, i);
+			else if (soap_is_single(soap, pp))
+				soap_out_tns__RestartResponse(soap, tag, 0, *a, type);
+			else
+			{	soap_set_embedded(soap, pp);
+				soap_out_tns__RestartResponse(soap, tag, i, *a, type);
+			}
+		else
+			soap_out_tns__RestartResponse(soap, tag, soap_pointer_enter(soap, *a, SOAP_TYPE_tns__RestartResponse, &pp), *a, type);
+	}
+	return SOAP_OK;
+}
+
+SOAP_FMAC1 struct tns__RestartResponse ** SOAP_FMAC2 soap_get_PointerTotns__RestartResponse(struct soap *soap, struct tns__RestartResponse **p, const char *tag, const char *type)
+{
+	if ((p = soap_in_PointerTotns__RestartResponse(soap, tag, p, type)))
+		soap_getindependent(soap);
+	return p;
+}
+
+SOAP_FMAC1 struct tns__RestartResponse ** SOAP_FMAC2 soap_in_PointerTotns__RestartResponse(struct soap *soap, const char *tag, struct tns__RestartResponse **a, const char *type)
+{
+	struct tns__RestartResponse *p;
+	if (soap_element_begin_in(soap, tag))
+		return NULL;
+	if (soap->null)
+	{	a = (struct tns__RestartResponse **)soap_id_enter(soap, soap->id, a, SOAP_TYPE_PointerTotns__RestartResponse, sizeof(struct tns__RestartResponse *), 1);
+		if (a)
+			*a = NULL;
+		if (soap->body && soap_element_end_in(soap, tag))
+			return NULL;
+	}
+	else if (!*soap->href)
+	{	soap_revert(soap);
+		if (a)
+		{	if ((p = soap_in_tns__RestartResponse(soap, tag, *a, type)))
+				*a = p;
+			else
+				a = NULL;
+		}
+		else if ((p = soap_in_tns__RestartResponse(soap, tag, NULL, type)))
+		{	a = (struct tns__RestartResponse **)soap_id_enter(soap, "", NULL, SOAP_TYPE_PointerTotns__RestartResponse, sizeof(struct tns__RestartResponse *), 0);
+			if (a)
+				*a = p;
+		}
+	}
+	else
+	{	a = (struct tns__RestartResponse **)soap_id_lookup(soap, soap->href, (void**)soap_id_enter(soap, soap->id, a, SOAP_TYPE_PointerTotns__RestartResponse, sizeof(struct tns__RestartResponse *), 1), SOAP_TYPE_tns__RestartResponse, sizeof(struct tns__RestartResponse), 0);
 		if (soap->body && soap_element_end_in(soap, tag))
 			return NULL;
 	}
@@ -7890,6 +8252,116 @@ SOAP_FMAC1 char * * SOAP_FMAC2 soap_in_xsdl__AppRecordChkpointRequest(struct soa
 	return soap_instring(soap, tag, a, type, SOAP_TYPE_xsdl__AppRecordChkpointRequest, 1);
 }
 
+SOAP_FMAC1 void SOAP_FMAC2 soap_default_xsdl__RestartRequest(struct soap *soap, char **a)
+{
+#ifdef SOAP_DEFAULT_xsdl__RestartRequest
+	*a = SOAP_DEFAULT_xsdl__RestartRequest;
+#else
+	*a = (char *)0;
+#endif
+}
+
+SOAP_FMAC1 void SOAP_FMAC2 soap_serialize_xsdl__RestartRequest(struct soap *soap, char *const*a)
+{
+	soap_reference(soap, *a, SOAP_TYPE_xsdl__RestartRequest);
+}
+
+SOAP_FMAC1 void SOAP_FMAC2 soap_mark_xsdl__RestartRequest(struct soap *soap, char *const*a)
+{
+	soap_reference(soap, *a, SOAP_TYPE_xsdl__RestartRequest);
+}
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_put_xsdl__RestartRequest(struct soap *soap, char **a, const char *tag, const char *type)
+{
+	int i;
+	struct soap_plist *pp;
+	if ((i = soap_pointer_lookup(soap, a, SOAP_TYPE_xsdl__RestartRequest, &pp)))
+		if (soap_is_embedded(soap, pp))
+			soap_element_ref(soap, tag, 0, i);
+		else if (soap_is_single(soap, pp))
+			soap_out_xsdl__RestartRequest(soap, tag, 0, a, type);
+		else
+		{
+			soap_set_embedded(soap, pp);
+			soap_out_xsdl__RestartRequest(soap, tag, i, a, type);
+		}
+	else
+		soap_out_xsdl__RestartRequest(soap, tag, 0, a, type);
+	return soap_putindependent(soap);
+}
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_out_xsdl__RestartRequest(struct soap *soap, const char *tag, int id, char *const*a, const char *type)
+{
+	return soap_outstring(soap, tag, id, a, type, SOAP_TYPE_xsdl__RestartRequest);
+}
+
+SOAP_FMAC1 char ** SOAP_FMAC2 soap_get_xsdl__RestartRequest(struct soap *soap, char **p, const char *tag, const char *type)
+{
+	if ((p = soap_in_xsdl__RestartRequest(soap, tag, p, type)))
+		soap_getindependent(soap);
+	return p;
+}
+
+SOAP_FMAC1 char * * SOAP_FMAC2 soap_in_xsdl__RestartRequest(struct soap *soap, const char *tag, char **a, const char *type)
+{
+	return soap_instring(soap, tag, a, type, SOAP_TYPE_xsdl__RestartRequest, 1);
+}
+
+SOAP_FMAC1 void SOAP_FMAC2 soap_default_xsdl__RestartResponse(struct soap *soap, char **a)
+{
+#ifdef SOAP_DEFAULT_xsdl__RestartResponse
+	*a = SOAP_DEFAULT_xsdl__RestartResponse;
+#else
+	*a = (char *)0;
+#endif
+}
+
+SOAP_FMAC1 void SOAP_FMAC2 soap_serialize_xsdl__RestartResponse(struct soap *soap, char *const*a)
+{
+	soap_reference(soap, *a, SOAP_TYPE_xsdl__RestartResponse);
+}
+
+SOAP_FMAC1 void SOAP_FMAC2 soap_mark_xsdl__RestartResponse(struct soap *soap, char *const*a)
+{
+	soap_reference(soap, *a, SOAP_TYPE_xsdl__RestartResponse);
+}
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_put_xsdl__RestartResponse(struct soap *soap, char **a, const char *tag, const char *type)
+{
+	int i;
+	struct soap_plist *pp;
+	if ((i = soap_pointer_lookup(soap, a, SOAP_TYPE_xsdl__RestartResponse, &pp)))
+		if (soap_is_embedded(soap, pp))
+			soap_element_ref(soap, tag, 0, i);
+		else if (soap_is_single(soap, pp))
+			soap_out_xsdl__RestartResponse(soap, tag, 0, a, type);
+		else
+		{
+			soap_set_embedded(soap, pp);
+			soap_out_xsdl__RestartResponse(soap, tag, i, a, type);
+		}
+	else
+		soap_out_xsdl__RestartResponse(soap, tag, 0, a, type);
+	return soap_putindependent(soap);
+}
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_out_xsdl__RestartResponse(struct soap *soap, const char *tag, int id, char *const*a, const char *type)
+{
+	return soap_outstring(soap, tag, id, a, type, SOAP_TYPE_xsdl__RestartResponse);
+}
+
+SOAP_FMAC1 char ** SOAP_FMAC2 soap_get_xsdl__RestartResponse(struct soap *soap, char **p, const char *tag, const char *type)
+{
+	if ((p = soap_in_xsdl__RestartResponse(soap, tag, p, type)))
+		soap_getindependent(soap);
+	return p;
+}
+
+SOAP_FMAC1 char * * SOAP_FMAC2 soap_in_xsdl__RestartResponse(struct soap *soap, const char *tag, char **a, const char *type)
+{
+	return soap_instring(soap, tag, a, type, SOAP_TYPE_xsdl__RestartResponse, 1);
+}
+
 SOAP_FMAC1 void SOAP_FMAC2 soap_default_xsdl__GetControlRequest(struct soap *soap, char **a)
 {
 #ifdef SOAP_DEFAULT_xsdl__GetControlRequest
@@ -8550,61 +9022,6 @@ SOAP_FMAC1 char * * SOAP_FMAC2 soap_in_xsdl__ResumeRequest(struct soap *soap, co
 	return soap_instring(soap, tag, a, type, SOAP_TYPE_xsdl__ResumeRequest, 1);
 }
 
-SOAP_FMAC1 void SOAP_FMAC2 soap_default_xsdl__AppStopResponse(struct soap *soap, char **a)
-{
-#ifdef SOAP_DEFAULT_xsdl__AppStopResponse
-	*a = SOAP_DEFAULT_xsdl__AppStopResponse;
-#else
-	*a = (char *)0;
-#endif
-}
-
-SOAP_FMAC1 void SOAP_FMAC2 soap_serialize_xsdl__AppStopResponse(struct soap *soap, char *const*a)
-{
-	soap_reference(soap, *a, SOAP_TYPE_xsdl__AppStopResponse);
-}
-
-SOAP_FMAC1 void SOAP_FMAC2 soap_mark_xsdl__AppStopResponse(struct soap *soap, char *const*a)
-{
-	soap_reference(soap, *a, SOAP_TYPE_xsdl__AppStopResponse);
-}
-
-SOAP_FMAC1 int SOAP_FMAC2 soap_put_xsdl__AppStopResponse(struct soap *soap, char **a, const char *tag, const char *type)
-{
-	int i;
-	struct soap_plist *pp;
-	if ((i = soap_pointer_lookup(soap, a, SOAP_TYPE_xsdl__AppStopResponse, &pp)))
-		if (soap_is_embedded(soap, pp))
-			soap_element_ref(soap, tag, 0, i);
-		else if (soap_is_single(soap, pp))
-			soap_out_xsdl__AppStopResponse(soap, tag, 0, a, type);
-		else
-		{
-			soap_set_embedded(soap, pp);
-			soap_out_xsdl__AppStopResponse(soap, tag, i, a, type);
-		}
-	else
-		soap_out_xsdl__AppStopResponse(soap, tag, 0, a, type);
-	return soap_putindependent(soap);
-}
-
-SOAP_FMAC1 int SOAP_FMAC2 soap_out_xsdl__AppStopResponse(struct soap *soap, const char *tag, int id, char *const*a, const char *type)
-{
-	return soap_outstring(soap, tag, id, a, type, SOAP_TYPE_xsdl__AppStopResponse);
-}
-
-SOAP_FMAC1 char ** SOAP_FMAC2 soap_get_xsdl__AppStopResponse(struct soap *soap, char **p, const char *tag, const char *type)
-{
-	if ((p = soap_in_xsdl__AppStopResponse(soap, tag, p, type)))
-		soap_getindependent(soap);
-	return p;
-}
-
-SOAP_FMAC1 char * * SOAP_FMAC2 soap_in_xsdl__AppStopResponse(struct soap *soap, const char *tag, char **a, const char *type)
-{
-	return soap_instring(soap, tag, a, type, SOAP_TYPE_xsdl__AppStopResponse, 1);
-}
-
 SOAP_FMAC1 void SOAP_FMAC2 soap_default_xsdl__AppStartResponse(struct soap *soap, char **a)
 {
 #ifdef SOAP_DEFAULT_xsdl__AppStartResponse
@@ -8658,6 +9075,61 @@ SOAP_FMAC1 char ** SOAP_FMAC2 soap_get_xsdl__AppStartResponse(struct soap *soap,
 SOAP_FMAC1 char * * SOAP_FMAC2 soap_in_xsdl__AppStartResponse(struct soap *soap, const char *tag, char **a, const char *type)
 {
 	return soap_instring(soap, tag, a, type, SOAP_TYPE_xsdl__AppStartResponse, 1);
+}
+
+SOAP_FMAC1 void SOAP_FMAC2 soap_default_xsdl__AppStopResponse(struct soap *soap, char **a)
+{
+#ifdef SOAP_DEFAULT_xsdl__AppStopResponse
+	*a = SOAP_DEFAULT_xsdl__AppStopResponse;
+#else
+	*a = (char *)0;
+#endif
+}
+
+SOAP_FMAC1 void SOAP_FMAC2 soap_serialize_xsdl__AppStopResponse(struct soap *soap, char *const*a)
+{
+	soap_reference(soap, *a, SOAP_TYPE_xsdl__AppStopResponse);
+}
+
+SOAP_FMAC1 void SOAP_FMAC2 soap_mark_xsdl__AppStopResponse(struct soap *soap, char *const*a)
+{
+	soap_reference(soap, *a, SOAP_TYPE_xsdl__AppStopResponse);
+}
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_put_xsdl__AppStopResponse(struct soap *soap, char **a, const char *tag, const char *type)
+{
+	int i;
+	struct soap_plist *pp;
+	if ((i = soap_pointer_lookup(soap, a, SOAP_TYPE_xsdl__AppStopResponse, &pp)))
+		if (soap_is_embedded(soap, pp))
+			soap_element_ref(soap, tag, 0, i);
+		else if (soap_is_single(soap, pp))
+			soap_out_xsdl__AppStopResponse(soap, tag, 0, a, type);
+		else
+		{
+			soap_set_embedded(soap, pp);
+			soap_out_xsdl__AppStopResponse(soap, tag, i, a, type);
+		}
+	else
+		soap_out_xsdl__AppStopResponse(soap, tag, 0, a, type);
+	return soap_putindependent(soap);
+}
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_out_xsdl__AppStopResponse(struct soap *soap, const char *tag, int id, char *const*a, const char *type)
+{
+	return soap_outstring(soap, tag, id, a, type, SOAP_TYPE_xsdl__AppStopResponse);
+}
+
+SOAP_FMAC1 char ** SOAP_FMAC2 soap_get_xsdl__AppStopResponse(struct soap *soap, char **p, const char *tag, const char *type)
+{
+	if ((p = soap_in_xsdl__AppStopResponse(soap, tag, p, type)))
+		soap_getindependent(soap);
+	return p;
+}
+
+SOAP_FMAC1 char * * SOAP_FMAC2 soap_in_xsdl__AppStopResponse(struct soap *soap, const char *tag, char **a, const char *type)
+{
+	return soap_instring(soap, tag, a, type, SOAP_TYPE_xsdl__AppStopResponse, 1);
 }
 
 SOAP_FMAC1 void SOAP_FMAC2 soap_default_xsdl__AppStopRequest(struct soap *soap, char **a)

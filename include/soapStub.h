@@ -95,6 +95,14 @@ struct tns__PutControlResponse
 };
 #endif
 
+#ifndef _SOAP_tns__RestartResponse
+#define _SOAP_tns__RestartResponse
+struct tns__RestartResponse
+{
+	char *_result;
+};
+#endif
+
 #ifndef _SOAP_tns__PutStatusResponse
 #define _SOAP_tns__PutStatusResponse
 struct tns__PutStatusResponse
@@ -139,7 +147,7 @@ struct tns__GetNotificationsResponse
 #define _SOAP_tns__DestroyResponse
 struct tns__DestroyResponse
 {
-  void *rubbish; /* ARPDBG */
+        void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -163,7 +171,7 @@ struct tns__GetControlResponse
 #define _SOAP_tns__AppDetach
 struct tns__AppDetach
 {
-  void *rubbish; /* ARPDBG */
+        void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -171,6 +179,7 @@ struct tns__AppDetach
 #define _SOAP_tns__Attach
 struct tns__Attach
 {
+        void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -203,7 +212,7 @@ struct tns__setServiceData
 #define _SOAP_tns__Detach
 struct tns__Detach
 {
-  void *rubbish; /* ARPDBG */
+        void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -211,7 +220,7 @@ struct tns__Detach
 #define _SOAP_tns__GetStatus
 struct tns__GetStatus
 {
-  void *rubbish; /* ARPDBG */
+        void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -227,7 +236,7 @@ struct tns__GetNthDataSource
 #define _SOAP_tns__AppStop
 struct tns__AppStop
 {
-  void *rubbish; /* ARPDBG */
+        void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -235,7 +244,7 @@ struct tns__AppStop
 #define _SOAP_tns__Resume
 struct tns__Resume
 {
-  void *rubbish; /* ARPDBG */
+        void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -243,7 +252,7 @@ struct tns__Resume
 #define _SOAP_tns__GetControl
 struct tns__GetControl
 {
-  void *rubbish; /* ARPDBG */
+        void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -251,7 +260,7 @@ struct tns__GetControl
 #define _SOAP_tns__Stop
 struct tns__Stop
 {
-  void *rubbish; /* ARPDBG */
+        void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -259,7 +268,7 @@ struct tns__Stop
 #define _SOAP_tns__GetNotifications
 struct tns__GetNotifications
 {
-  void *rubbish; /* ARPDBG */
+        void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -267,7 +276,15 @@ struct tns__GetNotifications
 #define _SOAP_tns__Pause
 struct tns__Pause
 {
-  void *rubbish; /* ARPDBG */
+        void *rubbish; /* ARPDBG */
+};
+#endif
+
+#ifndef _SOAP_tns__Restart
+#define _SOAP_tns__Restart
+struct tns__Restart
+{
+	char *input;
 };
 #endif
 
@@ -283,7 +300,7 @@ struct tns__PutStatus
 #define _SOAP_tns__AppStart
 struct tns__AppStart
 {
-  void *rubbish; /* ARPDBG */
+        void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -291,7 +308,7 @@ struct tns__AppStart
 #define _SOAP_tns__Destroy
 struct tns__Destroy
 {
-  void *rubbish; /* ARPDBG */
+        void *rubbish; /* ARPDBG */
 };
 #endif
 
@@ -351,8 +368,8 @@ typedef char *xsdl__GetStatusResponse;
 typedef char *xsdl__GetNotificationsRequest;
 typedef char *xsdl__PauseRequest;
 typedef char *xsdl__AppStopRequest;
-typedef char *xsdl__AppStartResponse;
 typedef char *xsdl__AppStopResponse;
+typedef char *xsdl__AppStartResponse;
 typedef char *xsdl__ResumeRequest;
 typedef char *xsdl__findServiceDataResponse;
 typedef char *xsdl__DetachResponse;
@@ -365,6 +382,8 @@ typedef char *xsdl__PauseResponse;
 typedef char *xsdl__PutControlResponse;
 typedef char *xsdl__ResumeResponse;
 typedef char *xsdl__GetControlRequest;
+typedef char *xsdl__RestartResponse;
+typedef char *xsdl__RestartRequest;
 typedef char *xsdl__AppRecordChkpointRequest;
 typedef char *xsdl__AttachResponse;
 typedef char *xsdl__PutStatusResponse;
@@ -410,6 +429,8 @@ SOAP_FMAC1 int SOAP_FMAC2 tns__GetNotifications(struct soap*, struct tns__GetNot
 
 SOAP_FMAC1 int SOAP_FMAC2 tns__Pause(struct soap*, struct tns__PauseResponse *);
 
+SOAP_FMAC1 int SOAP_FMAC2 tns__Restart(struct soap*, char *, struct tns__RestartResponse *);
+
 SOAP_FMAC1 int SOAP_FMAC2 tns__PutStatus(struct soap*, char *, struct tns__PutStatusResponse *);
 
 SOAP_FMAC1 int SOAP_FMAC2 tns__AppStart(struct soap*, struct tns__AppStartResponse *);
@@ -447,6 +468,8 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_call_tns__Stop(struct soap*, const char*, const c
 SOAP_FMAC1 int SOAP_FMAC2 soap_call_tns__GetNotifications(struct soap*, const char*, const char*, struct tns__GetNotificationsResponse *);
 
 SOAP_FMAC1 int SOAP_FMAC2 soap_call_tns__Pause(struct soap*, const char*, const char*, struct tns__PauseResponse *);
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_call_tns__Restart(struct soap*, const char*, const char*, char *, struct tns__RestartResponse *);
 
 SOAP_FMAC1 int SOAP_FMAC2 soap_call_tns__PutStatus(struct soap*, const char*, const char*, char *, struct tns__PutStatusResponse *);
 
@@ -487,6 +510,8 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_serve_tns__Stop(struct soap*);
 SOAP_FMAC1 int SOAP_FMAC2 soap_serve_tns__GetNotifications(struct soap*);
 
 SOAP_FMAC1 int SOAP_FMAC2 soap_serve_tns__Pause(struct soap*);
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_serve_tns__Restart(struct soap*);
 
 SOAP_FMAC1 int SOAP_FMAC2 soap_serve_tns__PutStatus(struct soap*);
 

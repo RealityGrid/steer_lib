@@ -8,7 +8,7 @@
 extern "C" {
 #endif
 
-SOAP_SOURCE_STAMP("@(#) soapClient.c ver 2.2.3b 2003-10-03 15:57:22 GMT")
+SOAP_SOURCE_STAMP("@(#) soapClient.c ver 2.2.3b 2003-10-07 09:50:48 GMT")
 
 
 SOAP_FMAC1 int SOAP_FMAC2 soap_call_tns__AppDetach(struct soap *soap, const char *URL, const char *action, struct tns__AppDetachResponse *out)
@@ -674,6 +674,55 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_call_tns__Pause(struct soap *soap, const char *UR
 	 || soap_body_begin_in(soap))
 		return soap->error;
 	soap_get_tns__PauseResponse(soap, out, "tns:PauseResponse", "tns:PauseResponse");
+	if (soap->error)
+	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
+			soap_recv_fault(soap);
+		return soap->error;
+	}
+	if (soap_body_end_in(soap)
+	 || soap_envelope_end_in(soap)
+	 || soap_getattachments(soap)
+	 || soap_end_recv(soap))
+		return soap->error;
+	soap_closesock(soap);
+	return SOAP_OK;
+}
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_call_tns__Restart(struct soap *soap, const char *URL, const char *action, char *input, struct tns__RestartResponse *out)
+{
+	struct tns__Restart soap_tmp_tns__Restart;
+	if (!action)
+		action = "";
+	soap_tmp_tns__Restart.input=input;
+	soap_begin(soap);
+	soap_serializeheader(soap);
+	soap_serialize_tns__Restart(soap, &soap_tmp_tns__Restart);
+	soap_begin_count(soap);
+	if (soap->mode & SOAP_IO_LENGTH)
+	{	soap_envelope_begin_out(soap);
+		soap_putheader(soap);
+		soap_body_begin_out(soap);
+		soap_put_tns__Restart(soap, &soap_tmp_tns__Restart, "tns:Restart", "");
+		soap_body_end_out(soap);
+		soap_envelope_end_out(soap);
+	}
+	if (soap_connect(soap, URL, action)
+	 || soap_envelope_begin_out(soap)
+	 || soap_putheader(soap)
+	 || soap_body_begin_out(soap)
+	 || soap_put_tns__Restart(soap, &soap_tmp_tns__Restart, "tns:Restart", "")
+	 || soap_body_end_out(soap)
+	 || soap_envelope_end_out(soap)
+	 || soap_putattachments(soap)
+	 || soap_end_send(soap))
+		return soap->error;
+	soap_default_tns__RestartResponse(soap, out);
+	if (soap_begin_recv(soap)
+	 || soap_envelope_begin_in(soap)
+	 || soap_recv_header(soap)
+	 || soap_body_begin_in(soap))
+		return soap->error;
+	soap_get_tns__RestartResponse(soap, out, "tns:RestartResponse", "tns:RestartResponse");
 	if (soap->error)
 	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
 			soap_recv_fault(soap);
