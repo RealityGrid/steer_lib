@@ -18,7 +18,7 @@ result:
    being registered has been removed (since this always had to be set 
    to 1).
 
-   It has two new args immediately before final (status) argument:
+   It has two new arg.'s immediately before final (status) argument:
       string for min value (empty or blank for none)
       string for max value (empty or blank for none)
    These limits are only applied if the parameter is steerable. They
@@ -35,3 +35,10 @@ result:
 
 As usual, take a look at examples/mini_app_f90/mini_app2.f90 for
 clarification.
+
+Known issues:
+
+When the library is compiled as 64-bit with the -O2 (or higher) flag
+under IRIX calls to globus_io routines can hang.  This is under
+investigation but for the present use the -O1 flag if compiling a
+64-bit version of the library with globus_io.
