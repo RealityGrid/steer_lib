@@ -701,10 +701,13 @@ struct msg_struct *Get_status_msg_file(Sim_entry_type *sim)
 int Consume_param_defs(int SimHandle)
 {
   int                  index;
-  int                  i, j;
+  /*
+  int                  i;
+  int                  found;
+  */
+  int                  j;
   struct param_struct *ptr;
   int                  handle;
-  int                  found;
   int                  return_status = REG_SUCCESS;
 
   /* Read a message containing parameter definitions.  Table of
@@ -775,20 +778,36 @@ int Consume_param_defs(int SimHandle)
       if(ptr->min_val){
 	strcpy(Sim_table.sim[index].Params_table.param[j].min_val, 
 	       (char *)ptr->min_val);
+	Sim_table.sim[index].Params_table.param[j].min_val_valid = TRUE;
+      }
+      else{
+	/* Absence of a bound in the xml message indicates no bound
+	   is set */
+	sprintf(Sim_table.sim[index].Params_table.param[j].min_val, "--");
+	Sim_table.sim[index].Params_table.param[j].min_val_valid = FALSE;
       }
 
       if(ptr->max_val){
 	strcpy(Sim_table.sim[index].Params_table.param[j].max_val, 
 	       (char *)ptr->max_val);
+	Sim_table.sim[index].Params_table.param[j].max_val_valid = TRUE;
       }
-
+      else{
+	/* Absence of a bound in the xml message indicates no bound
+	   is set */
+	sprintf(Sim_table.sim[index].Params_table.param[j].max_val, "--");
+	Sim_table.sim[index].Params_table.param[j].max_val_valid = FALSE;
+      }
 
       Sim_table.sim[index].Params_table.num_registered++;
     }
     ptr = ptr->next;
   }
 
-  /* Remove any parameters that have been deleted */
+  /* This section removed because prevents packaging of param_defs
+     in multiple messages.  Currently (30/6/2003) unused
+     anyway because Unregister_param not implemented. */
+  /* Remove any parameters that have been deleted *
 
   for(i=0; i<Sim_table.sim[index].Params_table.max_entries; i++){
 
@@ -808,14 +827,15 @@ int Consume_param_defs(int SimHandle)
 
     if(!found){
 
-      /* Only indication that param deleted is change of handle - hence loop
-	 over max_entries here */
+      * Only indication that param deleted is change of handle - hence loop
+	 over max_entries here *
 
       Sim_table.sim[index].Params_table.param[i].handle = 
 	                                       REG_PARAM_HANDLE_NOTSET;
       Sim_table.sim[index].Params_table.num_registered--;
     }
   }
+  */
 
   /* Clean up */
 
@@ -1734,13 +1754,15 @@ int Dump_sim_table()
   
  	  fprintf(fp, "Param index %d\n", iparam);
  	  fprintf(fp, "--------------\n");
- 	  fprintf(fp, "Label  = %s\n", paramptr->label);
- 	  fprintf(fp, "strble = %d\n", paramptr->steerable);
- 	  fprintf(fp, "type   = %d\n", paramptr->type);
- 	  fprintf(fp, "handle = %d\n", paramptr->handle);
- 	  fprintf(fp, "value  = %s\n\n", paramptr->value);
- 	  fprintf(fp, "min    = %s\n\n", paramptr->min_val);
- 	  fprintf(fp, "max    = %s\n\n", paramptr->max_val);
+ 	  fprintf(fp, "Label  	 = %s\n", paramptr->label);
+ 	  fprintf(fp, "strble    = %d\n", paramptr->steerable);
+ 	  fprintf(fp, "type      = %d\n", paramptr->type);
+ 	  fprintf(fp, "handle    = %d\n", paramptr->handle);
+ 	  fprintf(fp, "value     = %s\n\n", paramptr->value);
+ 	  fprintf(fp, "min       = %s\n\n", paramptr->min_val);
+ 	  fprintf(fp, "min_valid = %d\n\n", paramptr->min_val_valid);
+ 	  fprintf(fp, "max       = %s\n\n", paramptr->max_val);
+ 	  fprintf(fp, "max_valid = %d\n\n", paramptr->max_val_valid);
   
  	  paramptr++;
         }
@@ -1934,12 +1956,20 @@ int Get_param_values(int    sim_handle,
 
           param_details[count].type = Sim_table.sim[isim].Params_table.param[i].type;
 
-	  strcpy(param_details[count].min_val, 
-		 Sim_table.sim[isim].Params_table.param[i].min_val);
-
-	  strcpy(param_details[count].max_val, 
-		 Sim_table.sim[isim].Params_table.param[i].max_val);
-
+	  if(Sim_table.sim[isim].Params_table.param[i].min_val_valid == TRUE){
+	    strcpy(param_details[count].min_val, 
+		   Sim_table.sim[isim].Params_table.param[i].min_val);
+	  }
+	  else{
+	    sprintf(param_details[count].min_val, "--");
+	  }
+	  if(Sim_table.sim[isim].Params_table.param[i].max_val_valid == TRUE){
+	    strcpy(param_details[count].max_val, 
+		   Sim_table.sim[isim].Params_table.param[i].max_val);
+	  }
+	  else{
+	    sprintf(param_details[count].max_val, "--");
+	  }
 	  count++;
 
 	  if(count == num_params)break;
@@ -1965,6 +1995,7 @@ int Set_param_values(int    sim_handle,
   int isim;
   int index;
   int i;
+  int outside_range;
 
   int    ivalue, imin, imax;
   float  fvalue, fmin, fmax;
@@ -1987,58 +2018,77 @@ int Set_param_values(int    sim_handle,
 
       if(Sim_table.sim[isim].Params_table.param[index].steerable){
 
-	fprintf(stderr, "ARPDBG: val = %s, min = %s, max = %s\n",
-		vals[i],
-		Sim_table.sim[isim].Params_table.param[index].min_val,
-		Sim_table.sim[isim].Params_table.param[index].max_val);
+	outside_range = FALSE;
 
 	/* Enforce limits specified when parameter was registered */
 	switch(Sim_table.sim[isim].Params_table.param[index].type){
 
 	case REG_INT:
 	  sscanf(vals[i], "%d", &ivalue);
-	  sscanf(Sim_table.sim[isim].Params_table.param[index].min_val, "%d",
-		 &imin);
-	  sscanf(Sim_table.sim[isim].Params_table.param[index].max_val, "%d",
-		 &imax);
-
-	  if(ivalue > imax || ivalue < imin){
+	  if(Sim_table.sim[isim].Params_table.param[index].min_val_valid == TRUE){
+	    sscanf(Sim_table.sim[isim].Params_table.param[index].min_val, "%d",
+		   &imin);
+	    if (ivalue < imin) outside_range = TRUE;
+	  }
+	  if(Sim_table.sim[isim].Params_table.param[index].max_val_valid == TRUE){
+	    sscanf(Sim_table.sim[isim].Params_table.param[index].max_val, "%d",
+		   &imax);
+	    if (ivalue > imax) outside_range = TRUE;
+	  }
+	  if(outside_range == TRUE){
 	    fprintf(stderr, "Set_param_values: new value (%d) of %s is outside\n"
-		    "permitted range (%d,%d) - skipping...\n", 
-		    ivalue, Sim_table.sim[isim].Params_table.param[index].label, 
-		    imin, imax);
+		    "permitted range (%s,%s) - skipping...\n", 
+		    ivalue, 
+		    Sim_table.sim[isim].Params_table.param[index].label, 
+		    Sim_table.sim[isim].Params_table.param[index].min_val,
+		    Sim_table.sim[isim].Params_table.param[index].max_val);
 	    continue;
 	  }
 
 	case REG_FLOAT:
 	  sscanf(vals[i], "%f", &fvalue);
-	  sscanf(Sim_table.sim[isim].Params_table.param[index].min_val, "%f",
-		 &fmin);
-	  sscanf(Sim_table.sim[isim].Params_table.param[index].max_val, "%f",
-		 &fmax);
+	  if(Sim_table.sim[isim].Params_table.param[index].min_val_valid == TRUE){
+	    sscanf(Sim_table.sim[isim].Params_table.param[index].min_val, "%f",
+		   &fmin);
+	    if (fvalue < fmin) outside_range = TRUE;
+	  }
+	  if(Sim_table.sim[isim].Params_table.param[index].max_val_valid == TRUE){
+	    sscanf(Sim_table.sim[isim].Params_table.param[index].max_val, "%f",
+		   &fmax);
+	    if (fvalue > fmax) outside_range = TRUE;
+	  }
 
-	  if(fvalue > fmax || fvalue < fmin){
+	  if(outside_range == TRUE){
 	    fprintf(stderr, "Set_param_values: new value (%f) of %s is outside\n"
-		    "permitted range (%f,%f) - skipping...\n", 
-		    fvalue, Sim_table.sim[isim].Params_table.param[index].label, 
-		    fmin, fmax);
+		    "permitted range (%s,%s) - skipping...\n", 
+		    fvalue, 
+		    Sim_table.sim[isim].Params_table.param[index].label, 
+		    Sim_table.sim[isim].Params_table.param[index].min_val, 
+		    Sim_table.sim[isim].Params_table.param[index].max_val);
 	    continue;
 	  }
 	  break;
 
 	case REG_DBL:
 	  sscanf(vals[i], "%lf", &dvalue);
-	  sscanf(Sim_table.sim[isim].Params_table.param[index].min_val, "%lf",
-		 &dmin);
-	  sscanf(Sim_table.sim[isim].Params_table.param[index].max_val, "%lf",
-		 &dmax);
+	  if(Sim_table.sim[isim].Params_table.param[index].min_val_valid == TRUE){
+	    sscanf(Sim_table.sim[isim].Params_table.param[index].min_val, 
+		   "%lf", &dmin);
+	    if(dvalue < dmin) outside_range = TRUE;
+	  }
+	  if(Sim_table.sim[isim].Params_table.param[index].max_val_valid == TRUE){
+	    sscanf(Sim_table.sim[isim].Params_table.param[index].max_val, 
+		   "%lf", &dmax);
+	    if(dvalue > dmax) outside_range = TRUE;
+	  }
 
-	  if(dvalue > dmax || dvalue < dmin){
+	  if(outside_range == TRUE){
 	    fprintf(stderr, "Set_param_values: new value (%f) of %s is outside\n"
-		    "permitted range (%f,%f) - skipping...\n", 
+		    "permitted range (%s,%s) - skipping...\n", 
 		    (float)dvalue, 
 		    Sim_table.sim[isim].Params_table.param[index].label, 
-		    (float)dmin, (float)dmax);
+		    Sim_table.sim[isim].Params_table.param[index].min_val,
+		    Sim_table.sim[isim].Params_table.param[index].max_val);
 	    continue;
 	  }
 	  break;

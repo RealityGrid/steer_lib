@@ -349,7 +349,9 @@ int Next_free_param_index(Param_table_type *table)
       /* Initialise new entries */
       for(i=index; i<table->max_entries; i++){
 	table->param[i].handle = REG_PARAM_HANDLE_NOTSET;
-      }
+ 	table->param[i].min_val_valid = FALSE;
+	table->param[i].max_val_valid = FALSE;
+     }
     }
   }
 
@@ -405,6 +407,8 @@ int Increment_param_registered(Param_table_type *table)
       for(i=table->num_registered; i<table->max_entries; i++){
 
 	table->param[i].handle = REG_PARAM_HANDLE_NOTSET;
+	table->param[i].min_val_valid = FALSE;
+	table->param[i].max_val_valid = FALSE;
       }
     }
     else{
