@@ -41,7 +41,7 @@ include ../Makefile.include
 # taken from the PVM project.
 M4FILE = conf/${ARCH}.m4
 
-INCLUDE_PATH   = ${STEER_INCLUDES} ${GLOBUS_INCLUDES} ${SOAP_INCLUDES}
+INCLUDE_PATH   = ${STEER_INCLUDES} ${GLOBUS_INCLUDES}
 LIB_PATH       = ${REG_STEER_HOME}/lib$(NBIT)
 
 all:
@@ -71,7 +71,7 @@ ${LIB_PATH}/libReG_Steer.a: ReG_Steer_Appside_f.o \
 	ReG_Steer_Appside_Globus.o \
         ReG_Steer_Steerside_Soap.o \
         ReG_Steer_Appside_Soap.o \
-	soapC.o soapClient.o
+	stdsoap2.o soapC.o soapClient.o
 
 
 ${LIB_PATH}/libReG_Steer.a:
@@ -86,6 +86,7 @@ ${LIB_PATH}/libReG_Steer.a:
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Steerside_Globus.o
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Appside_Soap.o
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Steerside_Soap.o
+	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a stdsoap2.o
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a soapC.o
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a soapClient.o
 
@@ -164,7 +165,8 @@ ReG_Steer_Appside_Soap.o: ReG_Steer_Appside_Soap.c \
         ../include/ReG_Steer_Appside_internal.h \
 	../include/ReG_Steer_types.h \
         ../include/soapSGS.nsmap \
-	soapC.c soapClient.c ../include/soapH.h
+        ../include/soapH.h \
+	stdsoap2.c soapC.c soapClient.c
 
 ReG_Steer_Steerside_Soap.o: ReG_Steer_Steerside_Soap.c \
         ../include/ReG_Steer_Steerside_Soap.h \
@@ -172,35 +174,14 @@ ReG_Steer_Steerside_Soap.o: ReG_Steer_Steerside_Soap.c \
         ../include/ReG_Steer_Steerside.h \
 	../include/ReG_Steer_types.h \
         ../include/soapSGS.nsmap \
-	soapC.c soapClient.c ../include/soapH.h
-
-soapC.c: ../SGS/SGS.wsdl
-	cd ../SGS; make
-
-soapC.o: soapC.c \
-         ../include/soapH.h
-
-soapClient.c: ../SGS/SGS.wsdl
-	cd ../SGS; make
-
-soapClient.o: soapClient.c \
-         ../include/soapH.h
-
-../include/soapH.h: ../SGS/SGS.wsdl
-	cd ../SGS; make
-
-../include/soapSGS.nsmap: ../SGS/SGS.wsdl
-	cd ../SGS; make
-
-../include/soapStub.h: ../SGS/SGS.wsdl
-	cd ../SGS; make
+        ../include/soapH.h \
+	stdsoap2.c soapC.c soapClient.c 
 
 #---------------------------------------------------------------
 
 clean:
 	rm -f *.o ReG_Steer.ln *~ 
 	rm -f ReG_Steer_Appside_f.c
-	rm -f soapC.c soapClient.c
 	rm -f ../include/*~
 	rm -f ${LIB_PATH}/libReG_Steer.a
 
