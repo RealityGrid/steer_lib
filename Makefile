@@ -10,22 +10,22 @@ all:
 	make steerer
 
 app: lib$(NBIT)/libReG_Steer.a \
- mini_app/*.c
-	cd mini_app; make ${GLOBAL_FLAGS}
+ examples/mini_app/*.c
+	cd examples/mini_app; make ${GLOBAL_FLAGS}
 
 app_f90: lib$(NBIT)/libReG_Steer.a \
  include/*.inc \
- mini_app_f90/*.f90
-	cd mini_app_f90; make ${GLOBAL_FLAGS}
+ examples/mini_app_f90/*.f90
+	cd examples/mini_app_f90; make ${GLOBAL_FLAGS}
 
 app_f90_parallel:  lib$(NBIT)/libReG_Steer.a \
  include/*.inc \
- mini_app_f90_parallel/*.f90
-	cd mini_app_f90_parallel; make ${GLOBAL_FLAGS}
+ examples/mini_app_f90_parallel/*.f90
+	cd examples/mini_app_f90_parallel; make ${GLOBAL_FLAGS}
 
 steerer: lib$(NBIT)/libReG_Steer.a \
- mini_steerer/*.c
-	cd mini_steerer; make ${GLOBAL_FLAGS}
+ examples/mini_steerer/*.c
+	cd examples/mini_steerer; make ${GLOBAL_FLAGS}
 
 lib$(NBIT)/libReG_Steer.a: expat/xmlparse/libexpat.a \
  include/*.h \
@@ -44,5 +44,5 @@ clean:
 
 tar:
 	make clean
-	cd ..; tar -cf reg_steer_backup.tar reg_steer/*; \
+	cd ..; tar -cf reg_steer_backup.tar reg_steer_lib/*; \
 gzip reg_steer_backup.tar
