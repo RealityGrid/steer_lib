@@ -43,14 +43,11 @@ JAVAC          = /usr/java2/bin/javac
 
 # Whether to use 32 or 64-bit depends on contents of G and NBIT - these
 # are passed to make on the cmd line
-EXPAT_PARSE_PATH = ${REG_STEER_HOME}/expat/xmlparse
-#XML_INCLUDE_PATH = ${HOME}/projects/xml_parsing/libxml2-2.4.24/include
 XML_INCLUDE_PATH = ${REG_XML_INCDIR}
 
 REG_INCLUDE_PATH = ${REG_STEER_HOME}/include
 INCLUDE_PATH   = -I${REG_INCLUDE_PATH}  \
-                 -I${XML_INCLUDE_PATH} \
-                 -I${EXPAT_PARSE_PATH}
+                 -I${XML_INCLUDE_PATH}
 
 LIB_PATH       = ${REG_STEER_HOME}/lib$(NBIT)
 CC             = cc
@@ -113,7 +110,10 @@ ReG_Steer_Appside_f.c: ReG_Steer_Appside_f.m4 \
 	${M4} ${M4FILE} ReG_Steer_Appside_f.m4 > $@
 
 ReG_Steer_Appside_f.o: ReG_Steer_Appside_f.c \
-         ${REG_INCLUDE_PATH}/ReG_Steer_Appside_internal.h
+         ${REG_INCLUDE_PATH}/ReG_Steer_Appside_internal.h \
+         ${REG_INCLUDE_PATH}/ReG_Steer_Appside.h \
+	 ${REG_INCLUDE_PATH}/ReG_Steer_types.h \
+	 ${REG_INCLUDE_PATH}/ReG_Steer_Common.h
 
 ReG_Steer_XML.o: ReG_Steer_XML.c \
 	${REG_INCLUDE_PATH}/ReG_Steer_XML.h \
