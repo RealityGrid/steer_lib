@@ -217,6 +217,9 @@ typedef struct {
   /* Whether or not (1 or 0) we'll need to convert the ordering of 
      the array */
   int                           convert_array_order;
+  /* Whether IOType is enabled or not (for globus_io - whether socket
+     has been created) */
+  int                           is_enabled;
 
 } IOdef_entry;
 
@@ -225,6 +228,9 @@ typedef struct {
   int          num_registered;
   int          max_entries;
   int          next_handle;
+  int          enable_on_registration; /* Whether or not to create the socket
+					  (if using globus_io) when an IOType
+					  is registered */
   IOdef_entry *io_def;
 
 }IOdef_table_type;

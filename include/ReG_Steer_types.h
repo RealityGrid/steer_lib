@@ -85,10 +85,11 @@
 
 /* Return values */
 
-#define REG_SUCCESS  0
-#define REG_FAILURE  1
-#define REG_EOD      2
-#define REG_MEM_FAIL 3
+#define REG_SUCCESS   0
+#define REG_FAILURE   1
+#define REG_EOD       2
+#define REG_MEM_FAIL  3
+#define REG_TIMED_OUT 4
 
 /* Limit on number of commands steerer can send at any one time */
 #define REG_MAX_NUM_STR_CMDS 20

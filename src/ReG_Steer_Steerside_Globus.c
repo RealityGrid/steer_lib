@@ -370,6 +370,7 @@ int Finalize_connection_globus(Sim_entry_type *sim)
 {
   /* close globus sockets */
   Globus_cleanup_connector_connection(&(sim->socket_info));
+  Globus_socket_info_cleanup(&(sim->socket_info));
 
   return REG_SUCCESS;
 }

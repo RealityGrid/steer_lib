@@ -216,6 +216,7 @@ int Steering_initialize(int  NumSupportedCmds,
 
   IOTypes_table.num_registered = 0;
   IOTypes_table.max_entries    = REG_INITIAL_NUM_IOTYPES;
+  IOTypes_table.enable_on_registration = TRUE;
   IOTypes_table.io_def         = (IOdef_entry *)
                                  malloc(IOTypes_table.max_entries
 					*sizeof(IOdef_entry));
@@ -664,6 +665,11 @@ int Register_IOTypes(int    NumTypes,
 
     /* set up transport for sample data - eg sockets */
     return_status = Initialize_IOType_transport(direction[i], current);
+    if(return_status == REG_SUCCESS){
+      IOTypes_table.io_def[current].is_enabled = TRUE;
+    } else {
+      IOTypes_table.io_def[current].is_enabled = FALSE;
+    }
 
     /* Create, store and return a handle for this IOType */
     IOTypes_table.io_def[current].handle = Next_IO_Chk_handle++;
@@ -698,6 +704,87 @@ int Register_IOTypes(int    NumTypes,
   ReG_IOTypesChanged = TRUE;
 
   return return_status;
+}
+
+/*----------------------------------------------------------------*/
+
+int Disable_IOType(int IOType){
+
+  int index;
+
+  /* Check that steering is enabled */
+  if(!ReG_SteeringEnabled) return REG_SUCCESS;
+
+  /* Can only call this function if steering lib initialised */
+  if (!ReG_SteeringInit) return REG_FAILURE;
+
+  /* Find corresponding entry in table of IOtypes */
+  index = IOdef_index_from_handle(&IOTypes_table, IOType);
+  if(index == REG_IODEF_HANDLE_NOTSET){
+
+    fprintf(stderr, "Disable_IOType: failed to find matching IOType\n");
+    return REG_FAILURE;
+  }
+
+  if(IOTypes_table.io_def[index].is_enabled == TRUE){
+
+#if REG_GLOBUS_SAMPLES
+    Disable_IOType_globus(index);
+    IOTypes_table.io_def[index].is_enabled = FALSE;
+#endif
+  }
+
+  return REG_SUCCESS;
+}
+
+/*----------------------------------------------------------------*/
+
+int Enable_IOTypes_on_registration(int toggle){
+
+  /* Default operation is for IOTypes to be enabled (socket created
+     in the case of globus_io) when they are registered.  Can turn
+     this off using this function prior to call to Register_IOTypes.*/
+
+  if(toggle == TRUE){
+    IOTypes_table.enable_on_registration = TRUE;
+  }
+  else if(toggle == FALSE){
+    IOTypes_table.enable_on_registration = FALSE;
+  }
+  else{
+    return REG_FAILURE;
+  }
+}
+
+/*----------------------------------------------------------------*/
+
+int Enable_IOType(int IOType){
+
+  int index;
+
+  /* Check that steering is enabled */
+  if(!ReG_SteeringEnabled) return REG_SUCCESS;
+
+  /* Can only call this function if steering lib initialised */
+  if (!ReG_SteeringInit) return REG_FAILURE;
+
+  /* Find corresponding entry in table of IOtypes */
+  index = IOdef_index_from_handle(&IOTypes_table, IOType);
+  if(index == REG_IODEF_HANDLE_NOTSET){
+
+    fprintf(stderr, "Enable_IOType: failed to find matching IOType\n");
+    return REG_FAILURE;
+  }
+
+  if(IOTypes_table.io_def[index].is_enabled == FALSE){
+
+#if REG_GLOBUS_SAMPLES
+    Enable_IOType_globus(index);
+    IOTypes_table.io_def[index].is_enabled = TRUE;
+#endif
+  }
+
+  return REG_SUCCESS;
 }
 
 /*----------------------------------------------------------------*/
@@ -1457,6 +1544,11 @@ int Consume_start(int  IOType,
     return REG_FAILURE;
   }
 
+  /* Check that this IOType is enabled */
+  if(IOTypes_table.io_def[*IOTypeIndex].is_enabled == FALSE){
+    return REG_FAILURE;
+  }
+
   /* Check that this IOType can be consumed */
   if(IOTypes_table.io_def[*IOTypeIndex].direction == REG_IO_OUT){
 
@@ -1483,6 +1575,11 @@ int Consume_stop(int *IOTypeIndex)
   /* Can only call this function if steering lib initialised */
   if (!ReG_SteeringInit) return REG_FAILURE;
 
+  /* Check that this IOType is enabled */
+  if(IOTypes_table.io_def[*IOTypeIndex].is_enabled == FALSE){
+    return REG_FAILURE;
+  }
+
   /* Free memory associated with channel */
   if( IOTypes_table.io_def[*IOTypeIndex].buffer ){
     free(IOTypes_table.io_def[*IOTypeIndex].buffer);
@@ -1505,6 +1602,11 @@ int Consume_data_slice_header(int  IOTypeIndex,
   int status;
   int NumBytes;
   int IsFortranArray;
+
+  /* Check that this IOType is enabled */
+  if(IOTypes_table.io_def[IOTypeIndex].is_enabled == FALSE){
+    return REG_FAILURE;
+  }
 
   status = Consume_iotype_msg_header(IOTypeIndex,
 				     DataType,
@@ -1570,6 +1672,11 @@ int Consume_data_slice(int    IOTypeIndex,
 {
   int              return_status = REG_SUCCESS;
   size_t	   num_bytes_to_read;
+
+  /* Check that this IOType is enabled */
+  if(IOTypes_table.io_def[IOTypeIndex].is_enabled == FALSE){
+    return REG_FAILURE;
+  }
 
   /* Calculate how many bytes to expect */
   switch(DataType){
@@ -1681,6 +1788,11 @@ int Emit_start(int  IOType,
     return REG_FAILURE;
   }
 
+  /* Check that this IOType is enabled */
+  if(IOTypes_table.io_def[*IOTypeIndex].is_enabled == FALSE){
+    return REG_FAILURE;
+  }
+
   /* Check that this IOType can be emitted */
   if(IOTypes_table.io_def[*IOTypeIndex].direction == REG_IO_IN){
 
@@ -1717,6 +1829,11 @@ int Emit_stop(int *IOTypeIndex)
   /* Can only call this function if steering lib initialised */
   if (!ReG_SteeringInit) return REG_FAILURE;
 
+  /* Check that this IOType is enabled */
+  if(IOTypes_table.io_def[*IOTypeIndex].is_enabled == FALSE){
+    return REG_FAILURE;
+  }
+
   /* Send footer */
   sprintf(buffer, REG_PACKET_FORMAT, REG_DATA_FOOTER);
   /* Include termination char WITHIN the packet */
@@ -1734,7 +1851,7 @@ int Emit_stop(int *IOTypeIndex)
 int Emit_data_slice(int		      IOTypeIndex,
 		    int               DataType,
 		    int               Count,
-		    void             *pData)
+		    const void       *pData)
 {
   int              datatype;
   int              actual_count;
@@ -1752,6 +1869,11 @@ int Emit_data_slice(int		      IOTypeIndex,
   /* check comms connection has been made */
   if (Get_communication_status(IOTypeIndex) !=  REG_SUCCESS)
     return REG_FAILURE;
+
+  /* Check that this IOType is enabled */
+  if(IOTypes_table.io_def[IOTypeIndex].is_enabled == FALSE){
+    return REG_FAILURE;
+  }
 
   actual_count = Count;
 

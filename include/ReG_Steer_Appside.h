@@ -68,6 +68,12 @@ extern PREFIX int Register_IOTypes(int    NumTypes,
 				   int   *IOFrequency,
 				   int   *IOType);
 
+extern PREFIX int Enable_IOTypes_on_registration(int toggle);
+
+extern PREFIX int Disable_IOType(int IOType);
+
+extern PREFIX int Enable_IOType(int IOType);
+
 /* Register the listed Checkpoint types. This is for control and
    monitoring purposes - no reference is made to the actual location
    of the checkpoint data */
@@ -139,7 +145,7 @@ extern PREFIX int Emit_start(int  IOType,
 extern PREFIX int Emit_data_slice(int	            IOTypeIndex,
 				  int               DataType,
 				  int               Count,
-				  void             *pData);
+				  const void       *pData);
 
 /* Close the specified IOType and complete the emission process. */
 extern PREFIX int Emit_stop(int	       *IOTypeIndex);

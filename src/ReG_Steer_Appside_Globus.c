@@ -469,6 +469,8 @@ int Steerer_connected_globus()
 int Finalize_steering_connection_globus()
 {
   Globus_cleanup_listener_connection(&(Steerer_connection.socket_info));
+  Globus_socket_info_cleanup(&(Steerer_connection.socket_info));
+
   return REG_SUCCESS;
 }
 #endif 
@@ -502,9 +504,15 @@ int Initialize_IOType_transport_globus(const int direction,
       
     if (direction == REG_IO_OUT){
 
+      /* Don't create socket yet if this flag is set */
+      if (IOTypes_table.enable_on_registration == FALSE) return REG_SUCCESS;
+
       /* open socket and register callback function to listen for and
 	 accept connections */
-      if (Globus_create_listener(&(IOTypes_table.io_def[index].socket_info)) != REG_SUCCESS) {
+      if (Globus_create_listener(&(IOTypes_table.io_def[index].socket_info)) 
+	  != REG_SUCCESS) {
+
+	IOTypes_table.io_def[index].is_enabled = FALSE;
 #if REG_DEBUG
 	fprintf(stderr, "Initialize_IOType_transport_globus: failed to "
 		"create listener "
@@ -514,6 +522,8 @@ int Initialize_IOType_transport_globus(const int direction,
       }
       else{
 	  
+	IOTypes_table.io_def[index].is_enabled = TRUE;
+
 #if REG_DEBUG
 	fprintf(stderr, "Initialize_IOType_transport_globus: Created "
 		"listener on port %d, "
@@ -567,7 +577,13 @@ int Initialize_IOType_transport_globus(const int direction,
 	  
       if (port_ok && hostname_ok) {
 	
-	if (Globus_create_connector(&(IOTypes_table.io_def[index].socket_info)) != REG_SUCCESS) {
+	/* Don't create socket yet if this flag is set */
+	if (IOTypes_table.enable_on_registration == FALSE) return REG_SUCCESS;
+
+	if (Globus_create_connector(&(IOTypes_table.io_def[index].socket_info)) 
+	    != REG_SUCCESS) {
+
+	  IOTypes_table.io_def[index].is_enabled = FALSE;
 #if REG_DEBUG
 	  fprintf(stderr, "Initialize_IOType_transport_globus: failed to "
 		  "register connector for IOType\n");
@@ -576,6 +592,7 @@ int Initialize_IOType_transport_globus(const int direction,
 	}
 	else{
 
+	  IOTypes_table.io_def[index].is_enabled = TRUE;
 #if REG_DEBUG
 	  fprintf(stderr, "Initialize_IOType_transport_globus: registered"
 		  " connector on port %d, hostname = %s, index %d, "
@@ -602,21 +619,103 @@ int Initialize_IOType_transport_globus(const int direction,
 #if REG_GLOBUS_SAMPLES
 void Finalize_IOType_transport_globus()
 {
-  int	index;
+  int index;
 
   for (index=0; index<IOTypes_table.num_registered; index++) {
     if (IOTypes_table.io_def[index].direction == REG_IO_OUT) {
       /* close globus sockets */
       Globus_cleanup_listener_connection(&(IOTypes_table.io_def[index].socket_info));
+      Globus_socket_info_cleanup(&(IOTypes_table.io_def[index].socket_info));
     }
     else if (IOTypes_table.io_def[index].direction == REG_IO_IN) {
       /* close globus sockets */
       Globus_cleanup_connector_connection(&(IOTypes_table.io_def[index].socket_info));
+      Globus_socket_info_cleanup(&(IOTypes_table.io_def[index].socket_info));
     }
   }
   /* deactivate globus module */
   Globus_io_deactivate();
   
+}
+#endif
+
+/*---------------------------------------------------*/
+
+#if REG_GLOBUS_SAMPLES
+int Disable_IOType_globus(int index)
+{
+  /* check index is valid */
+  if(index < 0 || index >= IOTypes_table.num_registered){
+
+    fprintf(stderr, "Disable_IOType_globus: index out of range\n");
+    return REG_FAILURE;
+  }
+
+  if (IOTypes_table.io_def[index].direction == REG_IO_OUT) {
+    /* close globus sockets */
+    Globus_cleanup_listener_connection(&(IOTypes_table.io_def[index].socket_info));
+
+    while(IOTypes_table.io_def[index].socket_info.comms_status != REG_COMMS_STATUS_NULL
+	  && IOTypes_table.io_def[index].socket_info.comms_status != REG_COMMS_STATUS_FAILURE){
+      /* ARPDBG */
+      printf("(%d) ", IOTypes_table.io_def[index].socket_info.comms_status);
+      Globus_callback_poll(&(IOTypes_table.io_def[index].socket_info));
+      sleep(1);
+    }
+    printf("\n");
+  }
+  else if (IOTypes_table.io_def[index].direction == REG_IO_IN) {
+    /* close globus sockets */
+    Globus_cleanup_connector_connection(&(IOTypes_table.io_def[index].socket_info));
+
+    while(IOTypes_table.io_def[index].socket_info.comms_status != REG_COMMS_STATUS_NULL
+	  && IOTypes_table.io_def[index].socket_info.comms_status != REG_COMMS_STATUS_FAILURE){
+      /* ARPDBG */
+      printf("%d ", IOTypes_table.io_def[index].socket_info.comms_status);
+      Globus_callback_poll(&(IOTypes_table.io_def[index].socket_info));
+      sleep(1);
+    }
+    printf("\n");
+  }
+
+  return REG_SUCCESS;
+}
+#endif
+
+/*---------------------------------------------------*/
+
+#if REG_GLOBUS_SAMPLES
+int Enable_IOType_globus(int index)
+{
+  /* check index is valid */
+  if(index < 0 || index >= IOTypes_table.num_registered)return;
+
+  if(IOTypes_table.io_def[index].direction == REG_IO_OUT){
+
+    /* open socket and register callback function to listen for and
+       accept connections */
+    if (Globus_create_listener(&(IOTypes_table.io_def[index].socket_info)) 
+	!= REG_SUCCESS) {
+#if REG_DEBUG
+      fprintf(stderr, "Enable_IOType_globus: failed to create listener "
+	      "for IOType\n");
+#endif
+      return REG_FAILURE;
+    }
+  }
+  else if (IOTypes_table.io_def[index].direction == REG_IO_IN){
+
+    if (Globus_create_connector(&(IOTypes_table.io_def[index].socket_info)) 
+	!= REG_SUCCESS) {
+#if REG_DEBUG
+      fprintf(stderr, "Enable_IOType_globus: failed to "
+	      "register connector for IOType\n");
+#endif
+      return REG_FAILURE;
+    }
+  }
+
+  return REG_SUCCESS;
 }
 #endif
 
@@ -898,8 +997,7 @@ int Consume_data_read_globus(const int		index,
 int Emit_header_globus(const int index)
 {
   char            buffer[REG_PACKET_SIZE];
-  /*  globus_size_t   nbytes;*/
-  globus_result_t result;
+  int             status;
 
   /* check if socket connection has been made */
   if (IOTypes_table.io_def[index].socket_info.comms_status 
@@ -920,31 +1018,23 @@ int Emit_header_globus(const int index)
 #if REG_DEBUG
     fprintf(stderr, "Emit_header_globus: Sending >>%s<<\n", buffer);
 #endif
-    /*
-    result = globus_io_write(&(IOTypes_table.io_def[index].socket_info.conn_handle), 
-			     (globus_byte_t *)buffer, 
-			     REG_PACKET_SIZE,
-			     &nbytes);
-    */
-    if(Write_globus(&(IOTypes_table.io_def[index].socket_info.conn_handle),
-		    REG_PACKET_SIZE,
-		    (void *)buffer) == REG_SUCCESS){
+    status = Write_globus(&(IOTypes_table.io_def[index].socket_info.conn_handle),
+			  REG_PACKET_SIZE,
+			  (void *)buffer);
 
-    /*    if(result == GLOBUS_SUCCESS){*/
+    if(status == GLOBUS_SUCCESS){
 
 #if REG_DEBUG
       fprintf(stderr, "Emit_header_globus: Sent %d bytes\n", REG_PACKET_SIZE);
 #endif
       return REG_SUCCESS;
     }
-    else{
+    else if(status == REG_FAILURE){
 
 #if REG_DEBUG
-      fprintf(stderr, "Emit_header_globus: globus_io_write failed - "
+      fprintf(stderr, "Emit_header_globus: Write_globus failed - "
 	      "immediate retry connect\n");
 #endif
-      /*Globus_error_print(result);*/
-
       Globus_retry_accept_connect(&(IOTypes_table.io_def[index].socket_info));
 
       if (IOTypes_table.io_def[index].socket_info.comms_status 
@@ -953,39 +1043,29 @@ int Emit_header_globus(const int index)
 #if REG_DEBUG
 	fprintf(stderr, "Emit_header_globus: Sending >>%s<<\n", buffer);
 #endif    
-	/*
-	result = globus_io_write(&(IOTypes_table.io_def[index].socket_info.conn_handle), 
-				 (globus_byte_t *)buffer, 
-				 REG_PACKET_SIZE, 
-				 &nbytes);
-	*/
 	if(Write_globus(&(IOTypes_table.io_def[index].socket_info.conn_handle),
 			REG_PACKET_SIZE,
 			(void *)buffer) == REG_SUCCESS){
 
-	  /*if(result == GLOBUS_SUCCESS){*/
-
 	  return REG_SUCCESS;
-	}
-	
-#if REG_DEBUG
-	fprintf(stderr, "Emit_header_globus: globus_io_write failed\n");
-#endif
-	/*Globus_error_print(result);*/
-
+	}	
       }
-
-      return REG_FAILURE;
     }
-  }
-  else {
 #if REG_DEBUG
+    else{
+      fprintf(stderr, "Emit_header_globus: attempt to write to socket "
+	      "timed out\n");
+    }
+#endif
+  }
+#if REG_DEBUG
+  else {
     fprintf(stderr, "Emit_header_globus: socket not connected, index = %d\n",
 	    index );
-#endif
-    return REG_FAILURE;
   }
+#endif
 
+  return REG_FAILURE;
 }
 #endif
 
@@ -995,31 +1075,19 @@ int Emit_header_globus(const int index)
 int Emit_footer_globus(const int index,
  		       const char * const buffer)
 {
-  globus_size_t   nbytes;
-  globus_result_t result;
-
 #if REG_DEBUG
   fprintf(stderr, "Emit_footer_globus: Sending >>%s<<\n", buffer);
 #endif
-  /*
-  result = globus_io_write(&(IOTypes_table.io_def[index].socket_info.conn_handle), 
-			   (globus_byte_t *)buffer,
-			   * strlen doesn't count '\0' *
-			   strlen(buffer)+1, 
-			   &nbytes);
-  */
+
   if(Write_globus(&(IOTypes_table.io_def[index].socket_info.conn_handle),
 		  strlen(buffer)+1,
 		  (void *)buffer) != REG_SUCCESS){
-    /*if(result != GLOBUS_SUCCESS){*/
 
     fprintf(stderr, "Emit_footer_globus: call to globus_io_write failed\n");
-    /*Globus_error_print(result);*/
     return REG_FAILURE;
   }
 
   return REG_SUCCESS;
-
 }
 #endif
 
@@ -1031,20 +1099,6 @@ int Emit_data_globus(const int		index,
 		     const size_t	num_bytes_to_send,
 		     void		*pData)
 {
-  globus_result_t  result;
-  /*  globus_size_t    nbytes;
-
-  result = globus_io_write(&(IOTypes_table.io_def[index].socket_info.conn_handle), 
-			   pData, 
-			   (globus_size_t) num_bytes_to_send, 
-			   &nbytes);
-
-  if (result != GLOBUS_SUCCESS ) {
-    fprintf(stderr, "Emit_data_globus: error globus_io_write\n");
-    Globus_error_print(result);
-    return REG_FAILURE;
-  }
-  */
   if(Write_globus(&(IOTypes_table.io_def[index].socket_info.conn_handle), 
 		  num_bytes_to_send,
 		  (void *)pData) != REG_SUCCESS){

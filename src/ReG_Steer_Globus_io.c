@@ -475,14 +475,19 @@ Globus_connector_callback (void			*callback_arg,
 void Globus_cleanup_listener_connection(socket_io_type * const socket_info)
 {
 
-  if (socket_info->listener_status == REG_COMMS_STATUS_LISTENING)
+  if (socket_info->listener_status == REG_COMMS_STATUS_LISTENING){
+    fprintf(stderr, "Globus_cleanup_listener_connection: calling Globus_close_listener_handle...\n");
     Globus_close_listener_handle(socket_info);
+  }
 
   if (socket_info->comms_status == REG_COMMS_STATUS_CONNECTED || 
-      socket_info->comms_status == REG_COMMS_STATUS_WAITING_FOR_ACCEPT)
+      socket_info->comms_status == REG_COMMS_STATUS_WAITING_FOR_ACCEPT){
+    fprintf(stderr, "Globus_cleanup_listener_connection: calling Globus_close_conn_handle...\n");
     Globus_close_conn_handle(socket_info);
- 
-  Globus_socket_info_cleanup(socket_info);
+  }
+
+  fprintf(stderr, "Globus_cleanup_listener_connection: ...done\n");
+  /*Globus_socket_info_cleanup(socket_info);*/
 }
 
 /*--------------------------------------------------------------------*/
@@ -490,10 +495,11 @@ void Globus_cleanup_listener_connection(socket_io_type * const socket_info)
 void Globus_cleanup_connector_connection(socket_io_type * const socket_info)
 {
   if (socket_info->comms_status == REG_COMMS_STATUS_CONNECTED ||
-      socket_info->comms_status == REG_COMMS_STATUS_WAITING_TO_CONNECT )
+      socket_info->comms_status == REG_COMMS_STATUS_WAITING_TO_CONNECT ){
     Globus_close_conn_handle(socket_info);
+  }
 
-  Globus_socket_info_cleanup(socket_info);
+  /*Globus_socket_info_cleanup(socket_info);*/
 }
 
 /*--------------------------------------------------------------------*/
@@ -513,7 +519,6 @@ void Globus_close_conn_handle(socket_io_type * const	socket_info)
 	    "connection\n");
     Globus_error_print(result);
     socket_info->comms_status = REG_COMMS_STATUS_FAILURE;
-
   }
   else {
     socket_info->comms_status = REG_COMMS_STATUS_CLOSING;
@@ -523,7 +528,6 @@ void Globus_close_conn_handle(socket_io_type * const	socket_info)
   }
 
   Globus_callback_poll(socket_info);
-
 }
 
 /*--------------------------------------------------------------------*/
@@ -550,7 +554,6 @@ void Globus_close_listener_handle(socket_io_type * const socket_info)
   }
 
   Globus_callback_poll(socket_info);
-
 }
 
 /*--------------------------------------------------------------------*/
@@ -1065,7 +1068,7 @@ int Write_globus(const globus_io_handle_t *handle,
 
   if(bytes_left > 0){
     fprintf(stderr, "Write_globus: timed-out trying to write data\n");
-    return REG_FAILURE;
+    return REG_TIMED_OUT;
   }
   else{
     return REG_SUCCESS;

@@ -61,6 +61,10 @@ int Initialize_IOType_transport_globus(const int direction,
 
 void Finalize_IOType_transport_globus();
 
+int Enable_IOType_globus(int index);
+
+int Disable_IOType_globus(int index);
+
 int Consume_start_data_check_globus(const int index);
 
 int Consume_data_read_globus(const int		index,  
