@@ -186,4 +186,13 @@ typedef int REG_IOHandleType;
 #define REG_MAX_MSG_SIZE BUFSIZ
 #define REG_PIPE_UNSET   -1
 
+
+/* Values for IOdef_entry.comms_status */
+
+#define REG_COMMS_STATUS_NULL			0
+#define REG_COMMS_STATUS_LISTENING		1
+#define REG_COMMS_STATUS_WAITING_TO_CONNECT	2
+#define REG_COMMS_STATUS_CONNECTED		3
+#define REG_COMMS_STATUS_FAILURE		4
+
 #endif /* __REG_TYPES_INCLUDED defined */
