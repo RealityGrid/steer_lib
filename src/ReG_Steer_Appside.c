@@ -159,28 +159,31 @@ int Steering_initialize(char *AppName,
        put aside for it */
     if((i + strlen(schema_path) + 1) > REG_MAX_STRING_LENGTH){
 
-      fprintf(stderr, "Steering_initialize: schema path exceeds "
-	      "REG_MAX_STRING_LENGTH (%d chars)\n", REG_MAX_STRING_LENGTH);
-      Steering_enable(REG_FALSE);
-      return REG_FAILURE;
+      fprintf(stderr, "Steering_initialize: WARNING: schema path exceeds "
+	      "REG_MAX_STRING_LENGTH (%d chars) - truncating\n", 
+	      REG_MAX_STRING_LENGTH);
     }
 #endif
 
     if( pchar[i-1] != '/' ){
 
-      sprintf(ReG_Steer_Schema_Locn, "%s/%s", pchar, schema_path);
+      snprintf(ReG_Steer_Schema_Locn, REG_MAX_STRING_LENGTH, "%s/%s", 
+	       pchar, schema_path);
     }
     else{
 
-      sprintf(ReG_Steer_Schema_Locn, "%s%s", pchar, schema_path);
+      snprintf(ReG_Steer_Schema_Locn, REG_MAX_STRING_LENGTH, "%s%s", 
+	       pchar, schema_path);
     }
   }
   else{
 
-    fprintf(stderr, "Steering_initialize: Error - REG_STEER_HOME "
+    /* ARP - changed so that failure to get a (file) location for
+       the XML schema is no longer fatal.  We just use some made-up
+       path. */
+    fprintf(stderr, "Steering_initialize: WARNING: REG_STEER_HOME "
 	    "environment variable not set\n");
-    Steering_enable(REG_FALSE);
-    return REG_FAILURE;
+    sprintf(ReG_Steer_Schema_Locn, "/tmp/%s", schema_path);
   }
 
   /* Get our current working directory */

@@ -52,7 +52,9 @@
 /* Location of file specifying the schema/namespace to which all
    steering messages should belong.  Set in Steerer_initialize or
    Steering_initialize (depending on whether we are steerer or
-   application side) using the REG_STEER_HOME environment variable */
+   application side) using the REG_STEER_HOME environment variable.
+   If that is not set then we use a fake path (this info was only
+   intended for validating xml messages which we do not normally do). */
 
 char ReG_Steer_Schema_Locn[REG_MAX_STRING_LENGTH];
 
