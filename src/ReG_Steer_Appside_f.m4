@@ -126,8 +126,9 @@ INT_KIND_1_DECL(Status);
 
   str_array = (char**)malloc((*NumTypes)*sizeof(char));
 
-  if(*str_array == NULL){
+  if(str_array == NULL){
 
+    fprintf(stderr, "Register_IOTypes_f: malloc failed\n");
     *Status = INT_KIND_1_CAST( REG_FAILURE );
     return;
   }
@@ -181,8 +182,9 @@ INT_KIND_1_DECL(Status);
 
   str_array = (char**)malloc((*NumTypes)*sizeof(char));
 
-  if(*str_array == NULL){
+  if(str_array == NULL){
 
+    fprintf(stderr, "Register_ChkTypes_f: malloc failed\n");
     *Status = INT_KIND_1_CAST( REG_FAILURE );
     return;
   }

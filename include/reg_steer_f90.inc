@@ -72,11 +72,11 @@
 
 ! Limit on number of commands steerer can send at any one time
 
-  INTEGER (KIND=4), PARAMETER :: REG_MAX_NUM_STR_CMDS = 50
+  INTEGER (KIND=4), PARAMETER :: REG_MAX_NUM_STR_CMDS = 20
 
 ! Limit on number of parameters steerer can modify at any one time
 
-  INTEGER (KIND=4), PARAMETER :: REG_MAX_NUM_STR_PARAMS = 100
+  INTEGER (KIND=4), PARAMETER :: REG_MAX_NUM_STR_PARAMS = 20
 
 ! Initial sizes for internal tables of registered IO types 
 ! and parameters
@@ -95,7 +95,7 @@
 ! Limit on number of files used in communication - filenames
 !  wrap back on themselves once this limit reached
 
-  INTEGER (KIND=4), PARAMETER :: REG_MAX_NUM_FILES = 100
+  INTEGER (KIND=4), PARAMETER :: REG_MAX_NUM_FILES = 500
 
 ! Maximum length for any string
 
@@ -107,8 +107,6 @@
   INTEGER (KIND=4), PARAMETER :: REG_STR_PAUSE            = 2
   INTEGER (KIND=4), PARAMETER :: REG_STR_RESUME           = 3
   INTEGER (KIND=4), PARAMETER :: REG_STR_DETACH           = 4
-  INTEGER (KIND=4), PARAMETER :: REG_STR_SET_EMIT_FREQ    = 5
-  INTEGER (KIND=4), PARAMETER :: REG_STR_SET_CONSUME_FREQ = 6
 
 ! Coding scheme for data types
 
@@ -122,3 +120,8 @@
   INTEGER (KIND=4), PARAMETER :: REG_IO_IN    = 0
   INTEGER (KIND=4), PARAMETER :: REG_IO_OUT   = 1
   INTEGER (KIND=4), PARAMETER :: REG_IO_INOUT = 2
+
+
+
+
+
