@@ -312,7 +312,7 @@ int Steering_finalize()
 
     commands[0] = REG_STR_DETACH;
     Emit_status(0,
-		NULL,
+		0,
 		NULL,
 		1,
 		commands);
@@ -790,7 +790,7 @@ int Steering_control(int     SeqNum,
       /* Currently don't support returning a copy of the data just 
 	 received from the steerer - hence NULL's below */
       status = Emit_status(SeqNum,
-			   NULL, /* *NumSteerParams, */
+			   0,    /* *NumSteerParams, */
 			   NULL, /* param_handles,   */
 			   *NumSteerCommands,
 			   commands);

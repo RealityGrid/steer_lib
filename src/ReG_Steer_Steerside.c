@@ -225,11 +225,11 @@ int Get_sim_list(int   *nSims,
 
   if(Proxy.buf[0] == ' '){
 
-    ptr = strtok(&(Proxy.buf[1]), " ");
+    ptr = (char *)strtok(&(Proxy.buf[1]), " ");
   }
   else{
 
-    ptr = strtok(Proxy.buf, " ");
+    ptr = (char *)strtok(Proxy.buf, " ");
   }
 
   count = 0;
@@ -237,11 +237,11 @@ int Get_sim_list(int   *nSims,
   while(ptr){
 
     strcpy(simName[count], ptr);
-    ptr = strtok(NULL, " ");
+    ptr = (char *)strtok(NULL, " ");
 
     if(ptr){
       strcpy(simGSH[count], ptr);
-      ptr = strtok(NULL, " ");
+      ptr = (char *)strtok(NULL, " ");
 
       count++;
 
