@@ -1062,13 +1062,25 @@ int Consume_start_data_check_sockets(const int index) {
     fprintf(stderr, "!");
 #endif
 
-    if((nbytes = recv(sock_info->connector_handle, buffer, REG_PACKET_SIZE, 0)) <= 0) {
+    if((nbytes = recv(sock_info->connector_handle, buffer, 
+		      REG_PACKET_SIZE, MSG_DONTWAIT)) <= 0) {
       if(nbytes == 0) {
 	/* closed connection */
 	fprintf(stderr, "Consume_start_data_check_sockets: hung up!\n");
       }
+      else if(errno == EAGAIN){
+	/* Call would have blocked because no data to read */
+#if REG_DEBUG
+	fprintf(stderr, "\n");
+#endif
+	/* Call was OK but there's no data to read... */
+	return REG_FAILURE;
+      }
       else {
-	/* error */
+	/* Some error occurred */
+#if REG_DEBUG
+	fprintf(stderr, "\n");
+#endif
 	perror("recv");
       }
 
@@ -1079,7 +1091,8 @@ int Consume_start_data_check_sockets(const int index) {
       }
 
 #if REG_DEBUG
-      fprintf(stderr, "\nConsume_start_data_check_sockets: recv failed - try immediate reconnect for index %d\n", index);
+      fprintf(stderr, "\nConsume_start_data_check_sockets: recv failed - "
+	      "try immediate reconnect for index %d\n", index);
 #endif
 
       retry_connect(index);
@@ -1111,7 +1124,8 @@ int Consume_start_data_check_sockets(const int index) {
 
     if(nbytes1 > 0) {
 
-      if((nbytes = recv(sock_info->connector_handle, buffer, nbytes1, 0)) <= 0) {
+      if((nbytes = recv(sock_info->connector_handle, buffer, 
+			nbytes1, 0)) <= 0) {
 	if(nbytes == 0) {
 	  /* closed connection */
 	  fprintf(stderr, "Consume_start_data_check_sockets: hung up!\n");
