@@ -275,7 +275,7 @@ Globus_listener_callback (void			*callback_arg,
   globus_cond_signal(&lsocket_info->cond);
   globus_mutex_unlock(&lsocket_info->mutex);
 
-  /* attempt to kick the callback function - need for accept just registered */
+  /* attempt to kick the callback function - for accept just registered */
   Globus_callback_poll(lsocket_info);    
   
 
@@ -357,7 +357,7 @@ int Globus_create_connector(socket_io_type * const socket_info)
       fprintf(stderr, " - globus error type: host not found\n");
     }
 
-    socket_info->comms_status=REG_COMMS_STATUS_NULL;
+    socket_info->comms_status=REG_COMMS_STATUS_FAILURE;
     return REG_FAILURE;
   }
   else {
@@ -378,11 +378,6 @@ int Globus_create_connector(socket_io_type * const socket_info)
 }
 
 /*--------------------------------------------------------------------*/
-
-/* NOTE: for globus_io_register_connect, callback just happens immediately - 
- * i.e. a connect attempt is made straight away and callback invoked
- * therefore to attempt another connect need to re-register callback
- */
 void
 Globus_connector_callback (void			*callback_arg,
 			   globus_io_handle_t	*handle,
@@ -396,7 +391,7 @@ Globus_connector_callback (void			*callback_arg,
   globus_mutex_lock(&lsocket_info->mutex);
 
   if (resultparam != GLOBUS_SUCCESS) {
-    lsocket_info->comms_status=REG_COMMS_STATUS_NULL;
+    lsocket_info->comms_status=REG_COMMS_STATUS_FAILURE;
     fprintf(stderr, "DBG: Entered Globus_connector_callback resultparam FALSE, no connection\n");
     err = globus_error_get(resultparam);
   }
@@ -559,15 +554,16 @@ Globus_close_listener_callback (void			*callback_arg,
 void Globus_attempt_listener_connect(socket_io_type * const socket_info)
 {
 
-  if (socket_info->comms_status == REG_COMMS_STATUS_LISTENING) {
-    /* we're waiting for connect callback so attempt to kick the callback function */
+  if (socket_info->comms_status == REG_COMMS_STATUS_LISTENING ||
+      socket_info->comms_status == REG_COMMS_STATUS_WAITING_FOR_ACCEPT) {
+    /* we're waiting for listen/accept callback so attempt to kick the callback function */
 #if DEBUG    
     fprintf(stderr, "Globus_attempt_listener_connect:kick callback_poll\n");
 #endif
     Globus_callback_poll(socket_info);
   }
   else if (socket_info->comms_status == REG_COMMS_STATUS_FAILURE) {
-    /* connection has broken - we're still listeneing so see if anything to connect */
+    /* connection has broken - we're still listening so see if anything to connect */
 #if DEBUG
     fprintf(stderr, "Globus_attempt_listener_connect:retry accept connect\n");
 #endif
@@ -633,30 +629,55 @@ void Globus_retry_accept_connect(socket_io_type * const socket_info)
 #endif
     socket_info->comms_status=REG_COMMS_STATUS_WAITING_FOR_ACCEPT;
 
-    /* attempt to kick the callback function - need for accept just registered */
+    /* attempt to kick the callback function - for accept just registered */
     Globus_callback_poll(socket_info);
 
   }
 
 }
 
+
+
+
+/*--------------------------------------------------------------------*/
+
+void Globus_attempt_connector_connect(socket_io_type * const socket_info)
+{
+
+  if (socket_info->comms_status == REG_COMMS_STATUS_WAITING_TO_CONNECT) {
+    /* we're waiting for connect callback so attempt to kick the callback function */
+#if DEBUG    
+    fprintf(stderr, "Globus_attempt_connector_connect:kick callback_poll\n");
+#endif
+    Globus_callback_poll(socket_info);
+  }
+  else if (socket_info->comms_status == REG_COMMS_STATUS_FAILURE) {
+    /* connection has broken - try to re-connect */
+#if DEBUG
+    fprintf(stderr, "Globus_attempt_connector_connect:retry accept connect\n");
+#endif
+    Globus_retry_connect(socket_info);
+  }
+
+}
+
+
 /*--------------------------------------------------------------------*/
 
 void Globus_retry_connect(socket_io_type * const socket_info){
 
   /* close the failed connector and retry to connect */
-
   if (socket_info->comms_status==REG_COMMS_STATUS_CONNECTED) {
     Globus_close_conn_handle(socket_info);
   }
   
-   if (Globus_create_connector(socket_info) != REG_SUCCESS) {
+  if (Globus_create_connector(socket_info) != REG_SUCCESS) {
 #if DEBUG
-     fprintf(stderr, "Register_IOTypes: failed to register connector for IOType\n");
+    fprintf(stderr, "Register_IOTypes: failed to register connector for IOType\n");
 #endif
-      /* Set to NULL so Globus_create_connector is attempted again next time round */
-     socket_info->comms_status=REG_COMMS_STATUS_NULL;
-   }
+    /* Set to FAILURE so Globus_create_connector is attempted again next time round */
+    socket_info->comms_status=REG_COMMS_STATUS_FAILURE;
+  }
 }
 
 /*--------------------------------------------------------------------*/
