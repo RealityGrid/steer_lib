@@ -226,7 +226,7 @@ int Steering_initialize(int  NumSupportedCmds,
   sprintf(Params_table.param[0].value, "-1");
   Increment_param_registered(&Params_table);
 
-  /* Parameter for monitoring wall-clock timer per step *
+  /* Parameter for monitoring CPU time per step */
   i = Params_table.num_registered;
   Params_table.param[i].ptr       = NULL;
   Params_table.param[i].type      = REG_FLOAT;
@@ -234,9 +234,9 @@ int Steering_initialize(int  NumSupportedCmds,
   Params_table.param[i].steerable = FALSE;
   Params_table.param[i].modified  = FALSE;
   Params_table.param[i].is_internal=FALSE;
-  sprintf(Params_table.param[i].label, "TIME_PER_STEP");
+  sprintf(Params_table.param[i].label, "CPU_TIME_PER_STEP");
   sprintf(Params_table.param[i].value, "-1.0");
-  Increment_param_registered(&Params_table); */
+  Increment_param_registered(&Params_table);
 
   /* Clean up any old files... */
 
@@ -667,6 +667,12 @@ int Steering_control(int     SeqNum,
   char*  param_labels[REG_MAX_NUM_STR_PARAMS];
   char   filename[REG_MAX_STRING_LENGTH];
 
+  /* Variables for timing */
+  float          time_per_step;
+  clock_t        new_time;
+  static clock_t previous_time = 0;
+  static int     first_time    = TRUE;
+
   return_status     = REG_SUCCESS;
   *NumSteerParams   = 0;
   *NumSteerCommands = 0;
@@ -690,6 +696,7 @@ int Steering_control(int     SeqNum,
 
       fclose(fp);
       ReG_SteeringActive = TRUE;
+      first_time = TRUE;
 #if DEBUG
       fprintf(stderr, "Steering_control: steerer has connected\n");
 #endif
@@ -699,6 +706,31 @@ int Steering_control(int     SeqNum,
   /* If we're being steered then... */
 
   if(ReG_SteeringActive){
+
+    /* Update any library-controlled monitored variables */
+    i = Param_index_from_handle(&(Params_table), REG_SEQ_NUM_HANDLE);
+    if(i != -1){
+      sprintf(Params_table.param[i].value, "%d", SeqNum);
+      Params_table.param[i].modified = TRUE;
+    }
+
+    i = Param_index_from_handle(&(Params_table), REG_STEP_TIME_HANDLE);
+    if(i != -1){
+
+      new_time = clock();
+      time_per_step = (float)(new_time - previous_time)/(float)CLOCKS_PER_SEC;
+      previous_time = new_time;
+
+      /* First value we get will be rubbish because need two passes 
+	 through to get a valid difference... */
+      if(!first_time){
+	sprintf(Params_table.param[i].value, "%.3f", time_per_step);
+        Params_table.param[i].modified = TRUE;
+      }
+      else{
+	first_time = FALSE;
+      }    
+    }
 
     /* If registered params have changed since the last time then
        tell the steerer about the current set */
@@ -1470,15 +1502,11 @@ int Emit_status(int   SeqNum,
 	  /* Changed to emit ALL parameters, ARP 19.08.2002 */
 	  /*  && (!Params_table.param[tot_pcount].steerable) ){ */
   
- 	  /* Update the 'value' part of this parameter's table entry */
- 	  if(Params_table.param[tot_pcount].handle != REG_SEQ_NUM_HANDLE){
- 	    Get_ptr_value(&(Params_table.param[tot_pcount]));
- 	  }
- 	  else{
- 	    /* Update stored value of sequence number */
- 	    sprintf(Params_table.param[tot_pcount].value, "%d", SeqNum);
- 	  }
-  
+ 	  /* Update the 'value' part of this parameter's table entry
+	     - Get_ptr_value checks to make sure parameter is not library-
+	     controlled (& hence has valid ptr to get value from) */
+ 	  Get_ptr_value(&(Params_table.param[tot_pcount]));
+
  	  pbuf += sprintf(pbuf, "<Param>\n");
  	  pbuf += sprintf(pbuf, "<Handle>%d</Handle>\n", 
  		  Params_table.param[tot_pcount].handle);
@@ -1579,7 +1607,8 @@ int Get_ptr_value(param_entry *param)
   return_status = REG_SUCCESS;
   
   /* If this is a special parameter then its pointer isn't used */
-  if(param->handle == REG_SEQ_NUM_HANDLE){
+  if(param->handle == REG_SEQ_NUM_HANDLE || 
+     param->handle == REG_STEP_TIME_HANDLE){
 
     return REG_SUCCESS;
   }
