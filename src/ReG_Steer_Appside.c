@@ -1269,8 +1269,8 @@ int Record_checkpoint_set(int   ChkType,
 
   for(i=0; i<nfiles; i++){
 
-    nbytes = snprintf(pchar, bytes_left, "  <file type=\"gsiftp-URL\">\n"
-		      "    gsiftp://%s%s\n    </file>\n",
+    nbytes = snprintf(pchar, bytes_left, "  <file type=\"gsiftp-URL\">"
+		      "gsiftp://%s%s</file>\n",
 		      ReG_Hostname, filenames[i]);
 
     /* Check for truncation */
