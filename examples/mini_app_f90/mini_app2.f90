@@ -41,6 +41,7 @@ PROGRAM mini_app
 
   INCLUDE 'reg_steer_f90.inc'
 
+  INTEGER (KIND=REG_SP_KIND) :: num_sim_loops = 1000
   INTEGER (KIND=REG_SP_KIND) :: status
 
   ! For supported commands
@@ -56,6 +57,8 @@ PROGRAM mini_app
   INTEGER (KIND=REG_SP_KIND) :: input_freq
   INTEGER (KIND=REG_SP_KIND) :: output_freq = 5
   INTEGER (KIND=REG_SP_KIND) :: iohandle
+  INTEGER (KIND=REG_SP_KIND) :: data_type
+  INTEGER (KIND=REG_SP_KIND) :: data_count
   INTEGER (KIND=REG_SP_KIND), DIMENSION(:), ALLOCATABLE :: i_array
   REAL    (KIND=REG_SP_KIND), DIMENSION(:), ALLOCATABLE :: f_array
   REAL    (KIND=REG_DP_KIND), DIMENSION(:), ALLOCATABLE :: d_array
@@ -87,6 +90,11 @@ PROGRAM mini_app
 
   INTEGER (KIND=4) :: i, icmd, iparam
   INTEGER (KIND=4) :: finished = 0
+  INTEGER (KIND=4) :: NX = 32
+  INTEGER (KIND=4) :: NY = 32
+  INTEGER (KIND=4) :: NZ = 32
+  CHARACTER(LEN=4096) :: header
+
 
   ! Enable steering
   CALL steering_enable_f(reg_true)
@@ -127,8 +135,8 @@ PROGRAM mini_app
   WRITE(*,*) 'Returned IOtype = ', iotype_handles(1)
 
   io_labels(1) = " "
-  io_labels(1) = "SOME_OUTPUT"
-  io_labels(1)(12:12) = CHAR(0)
+  io_labels(1) = "VTK_STRUCTURED_POINTS_OUTPUT"
+  io_labels(1)(29:29) = CHAR(0)
 
   io_dirn(1) = REG_IO_OUT
   io_supp_auto(1) = reg_true
@@ -152,7 +160,7 @@ PROGRAM mini_app
   io_supp_auto(1) = reg_false
   
   CALL register_iotypes_f(num_types, io_labels, io_dirn, io_supp_auto, &
-                          output_freq, iotype_handles(2), status)
+                          output_freq, iotype_handles(3), status)
 
   IF(status .ne. REG_SUCCESS)THEN
 
@@ -244,69 +252,52 @@ PROGRAM mini_app
 
   WRITE(*,*) 'Entering main simulation loop...'
 
-  DO WHILE(i<20 .AND. (finished .ne. 1))
+  DO WHILE(i<num_sim_loops .AND. (finished .ne. 1))
 
-    CALL consume_start(iotype_handles(1), iohandle, status)
-
-    IF( status == REG_SUCCESS )THEN
-	
-      CALL consume_data_slice_header_f(iohandle, data_type, data_count, status)
-
-
-      DO WHILE(status == REG_SUCCESS)
-
-        SELECT CASE(data_type)
-
-        CASE (REG_INT)
-
-          ALLOCATE(i_array(data_count))
-
-          CALL consume_data_slice_f(iohandle, data_type, data_count, &
-                                    i_array, status)
-          DEALLOCATE(i_array)
-
-        CASE (REG_FLOAT)
-
-          ALLOCATE(f_array(data_count))
-
-          CALL consume_data_slice_f(iohandle, data_type, data_count, &
-                                    f_array, status)
-          DEALLOCATE(f_array)
-
-        CASE (REG_DBL)
-
-          ALLOCATE(d_array(data_count))
-
-          CALL consume_data_slice_f(iohandle, data_type, data_count, &
-                                    d_array, status)
-          DEALLOCATE(d_array)
-
-        END SELECT
-
-        CALL consume_data_slice_header_f(iohandle, data_type, &
-                                         data_count, status)
-
-      END DO
-    END IF
-!!$    CALL make_vtk_buffer_f(header, NX, NY, NZ, array, status)
+!!$    CALL consume_start_f(iotype_handles(1), iohandle, status)
 !!$
-!!$    ! ARPDBG for io testing only (should emit in response to a command
-!!$    ! or maybe every n steps)...
-!!$    CALL emit_start_f(iotype_handle[1], i, FALSE, iohandle, status)
-!!$
-!!$    IF( status .eq. REG_SUCCESS )THEN
+!!$    IF( status == REG_SUCCESS )THEN
 !!$	
-!!$      data_count = strlen(header)
-!!$      data_type  = REG_CHAR
-!!$      emit_data_slice(iohandle, data_type, data_count, (void *)header)
+!!$      CALL consume_data_slice_header_f(iohandle, data_type, data_count, status)
 !!$
-!!$      data_count = NX*NY*NZ
-!!$      data_type  = REG_FLOAT
-!!$      emit_data_slice(iohandle, data_type, data_count, array)
 !!$
-!!$      emit_stop(iohandle)
+!!$      DO WHILE(status == REG_SUCCESS)
+!!$
+!!$        SELECT CASE(data_type)
+!!$
+!!$        CASE (REG_INT)
+!!$
+!!$          ALLOCATE(i_array(data_count))
+!!$
+!!$          CALL consume_data_slice_f(iohandle, data_type, data_count, &
+!!$                                    i_array, status)
+!!$          DEALLOCATE(i_array)
+!!$
+!!$        CASE (REG_FLOAT)
+!!$
+!!$          ALLOCATE(f_array(data_count))
+!!$
+!!$          CALL consume_data_slice_f(iohandle, data_type, data_count, &
+!!$                                    f_array, status)
+!!$          DEALLOCATE(f_array)
+!!$
+!!$        CASE (REG_DBL)
+!!$
+!!$          ALLOCATE(d_array(data_count))
+!!$
+!!$          CALL consume_data_slice_f(iohandle, data_type, data_count, &
+!!$                                    d_array, status)
+!!$          DEALLOCATE(d_array)
+!!$
+!!$        END SELECT
+!!$
+!!$        CALL consume_data_slice_header_f(iohandle, data_type, &
+!!$                                         data_count, status)
+!!$
+!!$      END DO
+!!$
+!!$      CALL consume_stop_f(iohandle)
 !!$    END IF
-!!$    !...ARPDBG end
 
     CALL steering_control_f(i, num_params_changed, changed_param_labels, &
                             num_recvd_cmds, recvd_cmds, recvd_cmd_params, &
@@ -316,6 +307,7 @@ PROGRAM mini_app
 
       WRITE(*,*) 'Received ',num_recvd_cmds, 'commands and ', &
                  num_params_changed, 'params'
+      WRITE(*,*) 'i = ', i
       WRITE(*,*) 'test_integer = ', dum_int
       WRITE(*,*) '2nd_test_real = ', dum_real2
       WRITE(*,*) 'test_string = ', TRIM(dum_str)
@@ -368,6 +360,38 @@ PROGRAM mini_app
             WRITE (*,*) 'Received stop command from steerer'
             finished = 1           
             EXIT
+
+          CASE DEFAULT
+             IF(recvd_cmds(icmd) .EQ. iotype_handles(2))THEN
+
+               WRITE(*,*) 'Emitting data...'
+
+               ALLOCATE(f_array(NX*NY*NZ))
+
+               CALL make_vtk_buffer_f(header, NX, NY, NZ, f_array, status)
+
+               CALL emit_start_f(iotype_handles(2), i, reg_true, iohandle, &
+                                 status)
+
+               IF( status .eq. REG_SUCCESS )THEN
+	
+                 data_count = LEN(header)
+                 data_type  = REG_CHAR
+                 CALL emit_data_slice_f(iohandle, data_type, data_count, &
+                                        header, status)
+
+                 data_count = NX*NY*NZ
+                 data_type  = REG_FLOAT
+                 CALL emit_data_slice_f(iohandle, data_type, data_count, &
+                                        f_array, status)
+
+                 CALL emit_stop_f(iohandle, status)
+               END IF
+
+               DEALLOCATE(f_array)
+
+               WRITE (*,*) '...done'
+             END IF
 
           END SELECT
 
