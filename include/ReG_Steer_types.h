@@ -256,6 +256,7 @@ typedef int REG_IOHandleType;
 /* Standard return values from the SGS */
 #define REG_SGS_ERROR "SGS_ERROR"
 #define REG_SGS_SUCCESS "SGS_SUCCESS"
+#define REG_SGS_TIMEOUT "SGS_TIMEOUT"
 
 /* Default minimum interval (integer no. of seconds) at which 
    to poll for connection from steerer - overridden by 
