@@ -36,21 +36,22 @@
 #--------------------------------------------------------------------
 
 # Architecture of this platform.  Choose the most appropriate from
-# those listed in the src/conf directory.
-ARCH = LINUX
+# those listed in the src/conf directory. Make sure you don't leave
+# any SPACES at the end of this line!
+ARCH = SGI64
 # Edit the two following lines if 32-bit binaries are desired 
 # (NBIT = 32 and C_FLAGS=-n32).
 NBIT = 32
 CC = cc
-C_FLAGS = ${CFLAGS} -g 
+C_FLAGS = ${CFLAGS} -g -n32
 F90 = f90
 F90_FLAGS = -g
 # Location of java compiler - used to produce proxy binary
 JAVAC          = 
 # Location of the M4 macro processor (used to generate F90 wrappers)
-M4 = /usr/bin/m4
+M4 = m4
 # Location of the archive command
-AR = /usr/bin/ar
+AR = ar
 # Flags need to add an object file to an archive
 AR_FLAGS = rv
 # Directory to put executables in (mini_app, mini_steerer etc.)

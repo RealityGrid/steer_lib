@@ -122,7 +122,6 @@ INT_KIND_1_DECL(IOType);
 INT_KIND_1_DECL(Status);
 {
   int    i;
-  int  **ptr_array;
   char **str_array;
 
   str_array = (char**)malloc((*NumTypes)*sizeof(char));
@@ -140,23 +139,11 @@ INT_KIND_1_DECL(Status);
     str_array[i] = &(STRING_PTR(IOLabel)[i*STRING_LEN(IOLabel)]);
   }
 
-  /* Put pointers to integers in a form suitable for passing in
-     to the C code
-
-  ptr_array = (int**)malloc((*NumTypes)*sizeof(int*));
-
-  for(i=0; i<(int)(*NumTypes); i++){
-
-      ptr_array[i] = &(IOFrequency[i]);
-  }
-  */
-
   *Status = INT_KIND_1_CAST( Register_IOTypes((int)*NumTypes,
 			                             str_array,
                                               (int *)IODirn,
                                               (int *)IOFrequency,
 			                      (int *)IOType) );
-  /*free(ptr_array);*/
   free(str_array);
   return;
 }
