@@ -60,6 +60,9 @@ Sim_table_type Sim_table;
    via files, Globus or SOAP) */
 Proxy_table_type Proxy;
 
+/* Whether we have the option of steering via SOAP and SGS */
+int SGS_available = TRUE;
+
 /*----- Routines to be used by the steering component ------*/
 
 int Steerer_initialize()
@@ -143,9 +146,11 @@ int Steerer_initialize()
   }
   */
 
-#if REG_SOAP_STEERING
-  Steerer_initialize_soap();
-#endif
+  if(Steerer_initialize_soap() != REG_SUCCESS){
+
+    SGS_available = FALSE;
+  }
+
 
   return REG_SUCCESS;
 }
@@ -180,9 +185,7 @@ int Steerer_finalize()
     Proxy.available       = FALSE;
   }
 
-#if REG_SOAP_STEERING
   Steerer_finalize_soap();
-#endif
 
   return REG_SUCCESS;
 }
@@ -206,35 +209,33 @@ int Get_sim_list(int   *nSims,
 
   if(Proxy.available != TRUE){
 
-#if REG_SOAP_STEERING
+    if(SGS_available){
 
-    /* ARPDBG - ultimately we will contact a registry here
-       and ask it for the location of any SGSs it knows of */
+      /* ARPDBG - ultimately we will contact a registry here
+	 and ask it for the location of any SGSs it knows of */
 
-    if(ptr = getenv("REG_SGS_ADDRESS")){
+      if(ptr = getenv("REG_SGS_ADDRESS")){
 
-      *nSims = 1;
-      sprintf(simName[0], "Simulation");
-      strcpy(simGSH[0], ptr);
+	*nSims = 1;
+	sprintf(simName[0], "Simulation");
+	strcpy(simGSH[0], ptr);
+      }
+      else{
+
+	fprintf(stderr, "Get_sim_list: REG_SGS_ADDRESS environment variable "
+	      "is not set\n");
+	*nSims = 0;
+        SGS_available = FALSE;
+	return REG_FAILURE;
+      }
+
+      return REG_SUCCESS;
     }
     else{
 
-      fprintf(stderr, "Get_sim_list: REG_SGS_ADDRESS environment variable "
-	      "is not set\n");
-      *nSims = 0;
+      fprintf(stderr, "Get_sim_list: no proxy and no SGS available\n");
       return REG_FAILURE;
     }
-
-    return REG_SUCCESS;
-
-#else
-
-#if DEBUG
-    fprintf(stderr, "Get_sim_list: no proxy available\n");
-#endif
-    return REG_FAILURE;
-
-#endif /* REG_SOAP_STEERING */
   }
 
   /* Get (space-delimited) list of steerable apps & associated
@@ -434,11 +435,10 @@ int Sim_attach(char *SimID,
     }
   }
 
-  /* Initialise Steering Grid Service-related data if steering via SOAP */
-#if REG_SOAP_STEERING
+  /* Initialise Steering Grid Service-related data */
+  sim_ptr->SGS_info.active = FALSE;
   sim_ptr->SGS_info.sde_count = 0;
   sim_ptr->SGS_info.sde_index = 0;
-#endif
 
   /* Now we actually connect to the application */
 
@@ -453,30 +453,41 @@ int Sim_attach(char *SimID,
   else{
 
 #if REG_GLOBUS_STEERING
-
     /* Use Globus */
 #if DEBUG
     fprintf(stderr, "Sim_attach: calling Sim_attach_globus...\n");
 #endif
     return_status = Sim_attach_globus(&(Sim_table.sim[current_sim]), SimID);
 
-#elif REG_SOAP_STEERING
-
-    /* Use SOAP (and Steering Grid Service) */
-#if DEBUG
-    fprintf(stderr, "Sim_attach: calling Sim_attach_soap, "
-	    "current_sim = %d\n", current_sim);
-#endif
-    return_status = Sim_attach_soap(&(Sim_table.sim[current_sim]), SimID);
-#else
-
-    /* Use local file system */
-#if DEBUG
-    fprintf(stderr, "Sim_attach: calling Sim_attach_local...\n");
-#endif
-    return_status = Sim_attach_local(&(Sim_table.sim[current_sim]), SimID);
-
 #endif /* REG_GLOBUS_STEERING */
+
+    return_status = REG_FAILURE;
+
+    if(SGS_available == TRUE){
+
+      /* Use SOAP (and Steering Grid Service) */
+#if DEBUG
+      fprintf(stderr, "Sim_attach: calling Sim_attach_soap, "
+	      "current_sim = %d\n", current_sim);
+#endif
+      return_status = Sim_attach_soap(&(Sim_table.sim[current_sim]), SimID);
+
+      if(return_status == REG_SUCCESS){
+	Sim_table.sim[current_sim].SGS_info.active = TRUE;
+      }
+      else{
+	Sim_table.sim[current_sim].SGS_info.active = FALSE;
+      }
+    }
+
+    if(return_status == REG_FAILURE){
+
+      /* Use local file system */
+#if DEBUG
+      fprintf(stderr, "Sim_attach: calling Sim_attach_local...\n");
+#endif
+      return_status = Sim_attach_local(&(Sim_table.sim[current_sim]), SimID);
+    }
   }
 
   if(return_status == REG_SUCCESS){
@@ -592,12 +603,16 @@ int Get_next_message(int         *SimHandle,
 
 	Sim_table.sim[isim].msg = 
 	                Get_status_msg_globus(&(Sim_table.sim[isim]));
-#elif REG_SOAP_STEERING
-	Sim_table.sim[isim].msg = Get_status_msg_soap(&(Sim_table.sim[isim]));
 #else
 
-	/* No proxy available so using 'local' file system */
-	Sim_table.sim[isim].msg = Get_status_msg_file(&(Sim_table.sim[isim]));
+        if(Sim_table.sim[isim].SGS_info.active){
+  	  Sim_table.sim[isim].msg = Get_status_msg_soap(&(Sim_table.sim[isim]));
+	}
+	else{
+
+	  /* No proxy and no SGS available so using 'local' file system */
+	  Sim_table.sim[isim].msg = Get_status_msg_file(&(Sim_table.sim[isim]));
+	}
 #endif
       }
 
@@ -1292,128 +1307,112 @@ int Consume_status(int   SimHandle,
 
 int Emit_detach_cmd(int SimHandle)
 {
-#if REG_SOAP_STEERING
   int index;
-#else
   int SysCommands[1];
-#endif
 
   /* Check that handle is valid */
   if(SimHandle == REG_SIM_HANDLE_NOTSET) return REG_SUCCESS;
 
-#if REG_SOAP_STEERING
   if( (index = Sim_index_from_handle(SimHandle)) == -1){
 
     return REG_FAILURE;
   }
 
-  return Send_detach_msg_soap(&(Sim_table.sim[index]));
+  if(Sim_table.sim[index].SGS_info.active){
+    return Send_detach_msg_soap(&(Sim_table.sim[index]));
+  }
+  else{
+    SysCommands[0] = REG_STR_DETACH;
 
-#else
-  SysCommands[0] = REG_STR_DETACH;
-
-  return Emit_control(SimHandle,
-		      1,
-		      SysCommands,
-		      NULL);
-#endif /* REG_SOAP_STEERING */
-
+    return Emit_control(SimHandle,
+			1,
+			SysCommands,
+			NULL);
+  }
 }
 
 /*----------------------------------------------------------*/
 
 int Emit_stop_cmd(int SimHandle)
 {
-#if REG_SOAP_STEERING
   int index;
-#else
   int SysCommands[1];
-#endif
 
   /* Check that handle is valid */
   if(SimHandle == REG_SIM_HANDLE_NOTSET) return REG_SUCCESS;
 
-#if REG_SOAP_STEERING
   if( (index = Sim_index_from_handle(SimHandle)) == -1){
 
     return REG_FAILURE;
   }
 
-  return Send_stop_msg_soap(&(Sim_table.sim[index]));
+  if(Sim_table.sim[index].SGS_info.active){
+    return Send_stop_msg_soap(&(Sim_table.sim[index]));
+  }
+  else{
+    SysCommands[0] = REG_STR_STOP;
 
-#else
-  SysCommands[0] = REG_STR_STOP;
-
-  return Emit_control(SimHandle,
-		      1,
-		      SysCommands,
-		      NULL);
-#endif /* REG_SOAP_STEERING */
-
+    return Emit_control(SimHandle,
+			1,
+			SysCommands,
+			NULL);
+  }
 }
 
 /*----------------------------------------------------------*/
 
 int Emit_pause_cmd(int SimHandle)
 {
-#if REG_SOAP_STEERING
   int index;
-#else
   int SysCommands[1];
-#endif
 
   /* Check that handle is valid */
   if(SimHandle == REG_SIM_HANDLE_NOTSET) return REG_SUCCESS;
 
-#if REG_SOAP_STEERING
   if( (index = Sim_index_from_handle(SimHandle)) == -1){
 
     return REG_FAILURE;
   }
 
-  return Send_pause_msg_soap(&(Sim_table.sim[index]));
+  if(Sim_table.sim[index].SGS_info.active){
+    return Send_pause_msg_soap(&(Sim_table.sim[index]));
+  }
+  else{
+    SysCommands[0] = REG_STR_PAUSE;
 
-#else
-  SysCommands[0] = REG_STR_PAUSE;
-
-  return Emit_control(SimHandle,
-		      1,
-		      SysCommands,
-		      NULL);
-#endif /* REG_SOAP_STEERING */
-
+    return Emit_control(SimHandle,
+			1,
+			SysCommands,
+			NULL);
+  }
 }
 
 /*----------------------------------------------------------*/
 
 int Emit_resume_cmd(int SimHandle)
 {
-#if REG_SOAP_STEERING
   int index;
-#else
   int SysCommands[1];
-#endif
 
   /* Check that handle is valid */
   if(SimHandle == REG_SIM_HANDLE_NOTSET) return REG_SUCCESS;
 
-#if REG_SOAP_STEERING
   if( (index = Sim_index_from_handle(SimHandle)) == -1){
 
     return REG_FAILURE;
   }
 
-  return Send_resume_msg_soap(&(Sim_table.sim[index]));
+  if(Sim_table.sim[index].SGS_info.active){
+    return Send_resume_msg_soap(&(Sim_table.sim[index]));
+  }
+  else{
+    SysCommands[0] = REG_STR_RESUME;
 
-#else
-  SysCommands[0] = REG_STR_RESUME;
-
-  return Emit_control(SimHandle,
-		      1,
-		      SysCommands,
-		      NULL);
-#endif /* REG_SOAP_STEERING */
-
+    return Emit_control(SimHandle,
+			1,
+			SysCommands,
+			NULL);
+  }
 }
 
 /*----------------------------------------------------------*/
@@ -1554,16 +1553,17 @@ int Send_control_msg(int SimIndex, char* buf)
 
     return Send_control_msg_globus(sim, buf);
 
-#elif REG_SOAP_STEERING
-
-    fprintf(stderr, "Send_control_msg: calling Send_control_msg_soap\n");
-    return Send_control_msg_soap(sim, buf);
 #else
 
-    return Send_control_msg_file(SimIndex, buf);
+    if(sim->SGS_info.active){
 
+      return Send_control_msg_soap(sim, buf);
+    }
+    else{
+
+      return Send_control_msg_file(SimIndex, buf);
+    }
 #endif
-
   }
 }
 
@@ -3122,14 +3122,17 @@ int Finalize_connection(Sim_entry_type *sim)
 
     return Finalize_connection_globus(sim);
 
-#elif REG_SOAP_STEERING
-
-    /* Detaching from the SGS should be enough to take everything
-       down */
-    return Send_detach_msg_soap(sim);
 #else
+    if(sim->SGS_info.active){
 
-    return Finalize_connection_file(sim);
+      /* Detaching from the SGS should be enough to take everything
+	 down */
+      return Send_detach_msg_soap(sim);
+    }
+    else{
+
+      return Finalize_connection_file(sim);
+    }
 #endif
   }
  
