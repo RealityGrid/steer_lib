@@ -45,21 +45,12 @@ PROGRAM para_mini_app
   INTEGER (KIND=REG_SP_KIND), DIMENSION(REG_INITIAL_NUM_CMDS)    :: commands
 
   ! For IO types
-  INTEGER (KIND=REG_SP_KIND)                                     :: num_types
-  CHARACTER(LEN=40), DIMENSION(REG_INITIAL_NUM_IOTYPES)          :: io_labels
-  INTEGER (KIND=REG_SP_KIND), DIMENSION(REG_INITIAL_NUM_IOTYPES) :: iotype_handles
-  INTEGER (KIND=REG_SP_KIND), DIMENSION(REG_INITIAL_NUM_IOTYPES) :: io_dirn
+  INTEGER (KIND=REG_SP_KIND), &
+                           DIMENSION(REG_INITIAL_NUM_IOTYPES) :: iotype_handles
 
   ! For Chk types
-  INTEGER (KIND=REG_SP_KIND)                                  :: num_chk_types
-  CHARACTER(LEN=40), DIMENSION(REG_INITIAL_NUM_IOTYPES)       :: chk_labels
   INTEGER (KIND=REG_SP_KIND), &
                            DIMENSION(REG_INITIAL_NUM_IOTYPES) :: chk_handles
-  INTEGER (KIND=REG_SP_KIND), &
-                           DIMENSION(REG_INITIAL_NUM_IOTYPES) :: chk_dirn
-
-  INTEGER (KIND=REG_SP_KIND) :: input_freq  = 0
-  INTEGER (KIND=REG_SP_KIND) :: output_freq = 5
 
   ! For parameters
   CHARACTER(LEN=40), DIMENSION(REG_MAX_NUM_STR_PARAMS) :: param_labels
@@ -133,13 +124,9 @@ PROGRAM para_mini_app
 
   ! Register the input IO channel
 
-  num_types    = 1
-  io_labels(1) = "VTK_STRUCTURED_POINTS_INPUT"
-  io_dirn(1)   = REG_IO_IN
-    
   IF(my_id .eq. 0)THEN
-    CALL register_iotypes_f(num_types, io_labels, io_dirn, &
-                            input_freq, iotype_handles(1), status)
+    CALL register_iotype_f("VTK_STRUCTURED_POINTS_INPUT", REG_IO_IN, &
+                           0, iotype_handles(1), status)
   
     IF(status .ne. REG_SUCCESS)THEN
   
@@ -152,12 +139,9 @@ PROGRAM para_mini_app
     WRITE(*,*) 'Returned IOtype = ', iotype_handles(1)
   END IF
 
-  io_labels(1) = "SOME_OUTPUT"
-  io_dirn(1)   = REG_IO_OUT
-    
   IF(my_id .eq. 0)THEN
-    CALL register_iotypes_f(num_types, io_labels, io_dirn, &
-                            output_freq, iotype_handles(2), status)
+    CALL register_iotype_f("SOME_OUTPUT", REG_IO_OUT, &
+                           5, iotype_handles(2), status)
   
     IF(status .ne. REG_SUCCESS)THEN
   
@@ -170,13 +154,9 @@ PROGRAM para_mini_app
     WRITE(*,*) 'Returned IOtype = ', iotype_handles(2)
   END IF
 
-  num_chk_types = 1
-  chk_labels(1) = "SOME_CHECKPOINT"
-  chk_dirn(1)   = REG_IO_INOUT
-  
   IF(my_id .eq. 0)THEN
-    CALL register_chktypes_f(num_chk_types, chk_labels, chk_dirn, &
-                             output_freq, chk_handles(1), status)
+    CALL register_chktype_f("SOME_CHECKPOINT", REG_IO_INOUT, &
+                            5, chk_handles(1), status)
 
     IF(status .ne. REG_SUCCESS)THEN
   

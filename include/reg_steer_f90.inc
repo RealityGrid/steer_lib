@@ -32,30 +32,6 @@
 !  Authors........: Andrew Porter, Robert Haines
 !---------------------------------------------------------------------
 
-! Declarations of RealityGrid steering functions - these are actually
-! wrappers for the library routines (in C)
-
-  EXTERNAL steering_enable_f
-  EXTERNAL steering_initialize_f
-  EXTERNAL steering_finalize_f
-  EXTERNAL register_iotypes_f
-  EXTERNAL register_chktypes_f
-  EXTERNAL register_param_f
-  EXTERNAL register_string_param_f
-  EXTERNAL record_chkpt_f
-  EXTERNAL add_checkpoint_file_f
-  EXTERNAL record_checkpoint_set_f
-  EXTERNAL consume_start_f
-  EXTERNAL consume_stop_f
-  EXTERNAL steering_control_f
-  EXTERNAL steering_pause_f
-  EXTERNAL steering_char_to_ptr_f
-  EXTERNAL enable_iotypes_on_registrn_f
-  EXTERNAL enable_iotype_f
-  EXTERNAL disable_iotype_f
-  EXTERNAL enable_iotype_acks_f
-  EXTERNAL disable_iotype_acks_f
-
 ! KIND parameters to ensure we match types when passing between
 ! C and F90
   INTEGER, PARAMETER :: REG_SP_KIND = KIND(1)

@@ -65,6 +65,15 @@ extern PREFIX int Register_IOTypes(int    NumTypes,
 				   int   *IOFrequency,
 				   int   *IOType);
 
+/* Register one IO type.  This routine performs some sort of
+   mapping between the supplied label and a physical destination for
+   data (e.g. a filename and location or IP and port), possibly using 
+   the Grid service framework. Returns an integer handle for the IO type. */
+extern PREFIX int Register_IOType(char* IOLabel,
+				  int   direction,
+				  int   IOFrequency,
+				  int   *IOType);
+
 extern PREFIX int Enable_IOTypes_on_registration(int toggle);
 
 extern PREFIX int Disable_IOType(int IOType);
@@ -91,6 +100,15 @@ extern PREFIX int Register_ChkTypes(int    NumTypes,
 				    int   *direction,
 				    int   *ChkFrequency,
 				    int   *ChkType);
+
+/* Register a Checkpoint type. This is for control and
+   monitoring purposes - no reference is made to the actual location
+   of the checkpoint data */
+extern PREFIX int Register_ChkType(char* ChkLabel,
+				   int   direction,
+				   int   ChkFrequency,
+				   int   *ChkType);
+
 
 /* Record that the application has just read/written a checkpoint
    of type ChkType - the handle returned by Register_ChkTypes.  Whether

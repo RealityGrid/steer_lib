@@ -46,9 +46,6 @@ int main(){
   /* For steering */
   int    num_iotypes;
   int    iotype_handle[REG_INITIAL_NUM_IOTYPES];
-  char  *iotype_labels[REG_INITIAL_NUM_IOTYPES];
-  int	 iotype_dirn[REG_INITIAL_NUM_IOTYPES];
-  int	 iotype_frequency[REG_INITIAL_NUM_IOTYPES];
   int    num_chktypes;
   int    chktype_handle[REG_INITIAL_NUM_IOTYPES];
   char   chk_tag[REG_MAX_STRING_LENGTH];
@@ -137,51 +134,47 @@ int main(){
     return REG_FAILURE;
   }
 
-  /* Register the input IO channel */
+  /* Register the input and output IO channels */
 
-  iotype_labels[0] = "SOME_INPUT_DATA";
-  iotype_dirn[0] = REG_IO_IN;
-  iotype_frequency[0] = 0; /* Don't do any auto consumption */
+  status = Register_IOType("SOME_INPUT_DATA", 
+			   REG_IO_IN, 
+			   0, /* Don't do any auto consumption */
+			   &(iotype_handle[0]));
 
-  iotype_labels[1] = "VTK_STRUCTURED_POINTS";
-  iotype_dirn[1] = REG_IO_OUT;
-  iotype_frequency[1] = 1; /* Attempt to do output every timestep */
+  if(status == REG_SUCCESS){
 
+    status = Register_IOType("VTK_STRUCTURED_POINTS",
+			     REG_IO_OUT, 
+			     1, /* Attempt to do output every timestep */
+			     &(iotype_handle[1]));
+  }
   num_iotypes = 2;
-
-  status = Register_IOTypes(num_iotypes,
-  			    iotype_labels, 
-			    iotype_dirn, 
-			    iotype_frequency,
-  			    iotype_handle);
 
   if(status != REG_SUCCESS){
 
-    printf("Failed to register IO types\n");
+    printf("Failed to register 2nd IO type\n");
     Steering_finalize();
     return REG_FAILURE;
   }
 
   /* Register checkpoint emission */
-  iotype_labels[0] = "MY_CHECKPOINT";
-  iotype_dirn[0] = REG_IO_OUT; /* For output only */
-  iotype_frequency[0] = 0; /* No auto checkpointing */
 
-  iotype_labels[1] = "MY_OTHER_CHECKPOINT";
-  iotype_dirn[1] = REG_IO_INOUT; /* Can be used for restart */
-  iotype_frequency[1] = 0; /* No auto checkpointing */
+  status = Register_ChkType("MY_CHECKPOINT", 
+			    REG_IO_OUT, 
+			    0, /* No auto checkpointing */
+			    &(chktype_handle[0]));
 
-  iotype_labels[2] = "YET_ANOTHER_CHECKPOINT";
-  iotype_dirn[2] = REG_IO_INOUT;
-  iotype_frequency[2] = 0; /* No auto checkpointing */
+  status = Register_ChkType("MY_OTHER_CHECKPOINT", 
+			    REG_IO_INOUT, 
+			    0, /* No auto checkpointing */
+			    &(chktype_handle[1]));
+
+  status = Register_ChkType("YET_ANOTHER_CHECKPOINT", 
+			    REG_IO_INOUT, 
+			    0, /* No auto checkpointing */
+			    &(chktype_handle[2]));
 
   num_chktypes = 3;
-
-  status = Register_ChkTypes(num_chktypes,
-			     iotype_labels, 
-			     iotype_dirn, 
-			     iotype_frequency,
-			     chktype_handle);
 
   if(status != REG_SUCCESS){
 

@@ -45,22 +45,10 @@ PROGRAM mini_app
   INTEGER (KIND=REG_SP_KIND), DIMENSION(REG_INITIAL_NUM_CMDS) :: commands
 
   ! For IO types
-  INTEGER (KIND=REG_SP_KIND)                                  :: num_types
-  CHARACTER(LEN=40), DIMENSION(REG_INITIAL_NUM_IOTYPES)       :: io_labels
   INTEGER (KIND=REG_SP_KIND), &
                            DIMENSION(REG_INITIAL_NUM_IOTYPES) :: iotype_handles
   INTEGER (KIND=REG_SP_KIND), &
-                           DIMENSION(REG_INITIAL_NUM_IOTYPES) :: io_dirn
-  INTEGER (KIND=REG_SP_KIND), &
-                           DIMENSION(REG_INITIAL_NUM_IOTYPES) :: io_freqs
-
-  INTEGER (KIND=REG_SP_KIND)                                  :: num_chk_types
-  CHARACTER(LEN=40), DIMENSION(REG_INITIAL_NUM_IOTYPES)       :: chk_labels
-
-  INTEGER (KIND=REG_SP_KIND), &
                            DIMENSION(REG_INITIAL_NUM_IOTYPES) :: chk_handles
-  INTEGER (KIND=REG_SP_KIND), &
-                           DIMENSION(REG_INITIAL_NUM_IOTYPES) :: chk_dirn
   CHARACTER(LEN=40)                                           :: chk_tag
   REAL (KIND=REG_SP_KIND)    :: ran_no
   INTEGER (KIND=REG_SP_KIND) :: itag
@@ -125,20 +113,10 @@ PROGRAM mini_app
   END IF
 
   ! Register some IO channels
-
-  io_labels(1) = "VTK_STRUCTURED_POINTS_INPUT"
-  io_dirn(1)   = REG_IO_IN
-  io_freqs(1)  = 0
-
-  io_labels(2) = "VTK_STRUCTURED_POINTS_OUTPUT"
-  io_dirn(2) = REG_IO_OUT
-  ! Attempt to automatically output every timestep
-  io_freqs(2)  = 1 
-  
-  num_types = 2
-
-  CALL register_iotypes_f(num_types, io_labels, io_dirn, &
-                          io_freqs, iotype_handles, status)
+  CALL register_iotype_f("VTK_STRUCTURED_POINTS_INPUT", REG_IO_IN, &
+                         0, iotype_handles(1), status)
+  CALL register_iotype_f("VTK_STRUCTURED_POINTS_OUTPUT", REG_IO_OUT, &
+                         1, iotype_handles(2), status)
 
   IF(status .ne. REG_SUCCESS)THEN
 
@@ -149,16 +127,10 @@ PROGRAM mini_app
   WRITE(*,*) 'Returned IOtype = ', iotype_handles(1)
   WRITE(*,*) 'Returned IOtype = ', iotype_handles(2)
 
-  num_chk_types = 1
-  chk_labels(1) = "SOME_CHECKPOINT"
-  ! This checkpoint type can be created and used to restart too
-  chk_dirn(1)   = REG_IO_INOUT
-  io_freqs(1)   = 2
-
   ! Register a Checkpoint type
-
-  CALL register_chktypes_f(num_chk_types, chk_labels, chk_dirn, &
-                           io_freqs, chk_handles, status)
+  ! This checkpoint type can be created and used to restart too
+  CALL register_chktype_f("SOME_CHECKPOINT", REG_IO_INOUT, &
+                          2, chk_handles, status)
 
   IF(status .ne. REG_SUCCESS)THEN
 
