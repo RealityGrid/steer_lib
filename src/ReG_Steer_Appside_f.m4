@@ -376,6 +376,82 @@ INT_KIND_1_DECL(Status);
 
 /*----------------------------------------------------------------
 
+SUBROUTINE emit_start_f(IOType, SeqNum, UseXDR, IOHandle, Status)
+
+  INTEGER(KIND=REG_SP_KIND), INTENT(in)  :: IOType
+  INTEGER(KIND=REG_SP_KIND), INTENT(in)  :: SeqNum
+  INTEGER(KIND=REG_SP_KIND), INTENT(in)  :: UseXDR
+  INTEGER(KIND=REG_SP_KIND), INTENT(out) :: IOHandle
+  INTEGER(KIND=REG_SP_KIND), INTENT(out) :: Status
+
+----------------------------------------------------------------*/
+
+void FUNCTION(emit_start_f) ARGS(`IOType, 
+                                SeqNum, 
+                                UseXDR,
+                                IOHandle,
+                                Status')
+INT_KIND_1_DECL(IOType);
+INT_KIND_1_DECL(SeqNum);
+INT_KIND_1_DECL(UseXDR);
+INT_KIND_1_DECL(IOHandle);
+INT_KIND_1_DECL(Status);
+{
+  *Status = INT_KIND_1_CAST( Emit_start(*IOType, *SeqNum, *UseXDR, 
+                                        IOHandle) );
+  return;
+}
+
+/*----------------------------------------------------------------
+
+SUBROUTINE emit_stop_f(IOHandle, Status)
+
+  INTEGER(KIND=REG_SP_KIND), INTENT(inout) :: IOHandle
+  INTEGER(KIND=REG_SP_KIND), INTENT(out)   :: Status
+
+----------------------------------------------------------------*/
+
+void FUNCTION(emit_stop_f) ARGS(`IOHandle,
+                                 Status')
+INT_KIND_1_DECL(IOHandle);
+INT_KIND_1_DECL(Status);
+{
+  *Status = INT_KIND_1_CAST( Emit_stop(IOHandle) );
+
+  return;
+}
+
+/*----------------------------------------------------------------
+
+SUBROUTINE emit_data_slice_f(IOHandle, DataType, Count, pData, Status)
+
+  INTEGER(KIND=REG_SP_KIND), INTENT(in)  :: IOHandle
+  INTEGER(KIND=REG_SP_KIND), INTENT(in)  :: DataType
+  INTEGER(KIND=REG_SP_KIND), INTENT(in)  :: Count
+  XXXXXXX(KIND=REG_DP_KIND), DIMENSION(),INTENT(in) :: pData
+  INTEGER(KIND=REG_SP_KIND), INTENT(out) :: Status
+
+----------------------------------------------------------------*/
+
+void FUNCTION(emit_data_slice_f) ARGS(`IOHandle,
+                                       DataType,
+                                       Count,
+                                       pData,
+                                       Status')
+INT_KIND_1_DECL(IOHandle);
+INT_KIND_1_DECL(DataType);
+INT_KIND_1_DECL(Count);
+void *pData;
+INT_KIND_1_DECL(Status);
+{
+  *Status = INT_KIND_1_CAST( Emit_data_slice(*IOHandle, *DataType, *Count, 
+                                             pData) );
+
+  return;
+}
+
+/*----------------------------------------------------------------
+
 SUBROUTINE make_vtk_buffer_f(header, nx, ny, nz, array, status)
 
   CHARACTER (LEN=BUFSIZ), INTENT(out)     :: header

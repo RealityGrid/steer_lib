@@ -38,7 +38,7 @@ include ../globus_definitions
 
 # Set-up access to M4 scripts for production of F90 wrappers, this is
 # taken from the PVM project.
-ARCH           = LINUX
+ARCH           = SGI64
 BIN_DIR        = ${HOME}/bin
 #JAVAC          = javac
 M4             = m4
