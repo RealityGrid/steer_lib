@@ -64,6 +64,7 @@ int Sim_attach_soap(Sim_entry_type *sim, char *SimID)
   int nbytes;
 
   /* SimID holds the address of the soap server of the SGS */
+  attach_response._result = NULL;
   if(soap_call_tns__Attach(&soap, SimID, 
 			   "", &attach_response )){
 
@@ -131,6 +132,7 @@ int Send_control_msg_soap(Sim_entry_type *sim, char* buf)
   fprintf(stderr, "Send_control_msg_soap: address = %s\n", sim->SGS_info.address);
 
   /* Send message */
+  putControl_response._result = NULL;
   if(soap_call_tns__PutControl(&soap, sim->SGS_info.address, 
 			       "", buf, &putControl_response )){
 
@@ -167,6 +169,7 @@ struct msg_struct *Get_status_msg_soap(Sim_entry_type *sim)
   fprintf(stderr, "Get_status_msg_soap: address = %s\n", sim->SGS_info.address);
 
   /* Check SGS for new notifications */
+  getNotifications_response._result = NULL;
   if(soap_call_tns__GetNotifications(&soap, sim->SGS_info.address, 
 				     "", &getNotifications_response )){
 
@@ -213,6 +216,7 @@ struct msg_struct *Get_status_msg_soap(Sim_entry_type *sim)
   }
 
   /* Only ask for a status msg if had no notifications */
+  getStatus_response._result = NULL;
   if(soap_call_tns__GetStatus(&soap, sim->SGS_info.address, 
 			       "", &getStatus_response )){
 
@@ -251,7 +255,7 @@ struct msg_struct *Get_service_data(Sim_entry_type *sim, char *sde_name)
   fprintf(stderr, "Get_service_data: calling FindServiceData for %s\n", 
 	  sde_name);
 #endif
-
+  findServiceData_response._result = NULL;
   if(soap_call_tns__FindServiceData(&soap, sim->SGS_info.address, 
 				    "", sde_name, 
 				    &findServiceData_response )){
@@ -323,7 +327,7 @@ int Send_pause_msg_soap(Sim_entry_type *sim)
 #if DEBUG
   fprintf(stderr, "Send_pause_msg_soap: calling Pause...\n");
 #endif
-
+  pause_response._result = NULL;
   if(soap_call_tns__Pause(&soap, sim->SGS_info.address, 
 			   "", &pause_response )){
 
@@ -345,7 +349,7 @@ int Send_resume_msg_soap(Sim_entry_type *sim)
 #if DEBUG
   fprintf(stderr, "Send_resume_msg_soap: calling Resume...\n");
 #endif
-
+  resume_response._result = NULL;
   if(soap_call_tns__Resume(&soap, sim->SGS_info.address, 
 			   "", &resume_response )){
 
@@ -367,7 +371,7 @@ int Send_detach_msg_soap(Sim_entry_type *sim)
 #if DEBUG
   fprintf(stderr, "Send_detach_msg_soap: calling Detach...\n");
 #endif
-
+  detach_response._result = NULL;
   if(soap_call_tns__Detach(&soap, sim->SGS_info.address, 
 			   "", &detach_response )){
 
@@ -389,7 +393,7 @@ int Send_stop_msg_soap(Sim_entry_type *sim)
 #if DEBUG
   fprintf(stderr, "Send_stop_msg_soap: calling Stop...\n");
 #endif
-
+  stop_response._result = NULL;
   if(soap_call_tns__Stop(&soap, sim->SGS_info.address, 
 			   "", &stop_response )){
 
@@ -400,4 +404,14 @@ int Send_stop_msg_soap(Sim_entry_type *sim)
   }
 
   return REG_SUCCESS;
+}
+
+/*-------------------------------------------------------------------------*/
+
+int Steerer_finalize_soap()
+{
+  /* Release memory */
+  soap_end(&soap);
+
+  return REG_SUCCESS;  
 }

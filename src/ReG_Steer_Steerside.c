@@ -180,6 +180,10 @@ int Steerer_finalize()
     Proxy.available       = FALSE;
   }
 
+#if REG_SOAP_STEERING
+  Steerer_finalize_soap();
+#endif
+
   return REG_SUCCESS;
 }
 

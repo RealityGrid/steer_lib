@@ -2685,7 +2685,10 @@ soap_malloc(struct soap *soap, size_t n)
   /* keep chain of alloced cells for later destruction */
   soap->alloced = 1;
   *(void**)(p + n) = soap->alist;
+  /* ARPDBG
   *(size_t*)(p + n + sizeof(void*) + sizeof(size_t)) = n;
+  */
+  *(size_t*)(p + n + sizeof(void*)) = n;
   soap->alist = p + n;
   DBGLOG(TEST, SOAP_MESSAGE(fdebug, "Malloc %u bytes at location %p\n", (unsigned int)n, p));
   return p;
@@ -2701,7 +2704,10 @@ soap_dealloc(struct soap *soap, void *p)
   if (p)
   { char **q;
     for (q = (char**)&soap->alist; *q; q = *(char***)q)
+      /* ARPDBG
     { if (p == (void*)(*q - *(size_t*)(*q + 8)))
+      */
+    { if (p == (void*)(*q - *(size_t*)(*q + sizeof(void*))))
       { *q = **(char***)q;
         free(p);
         DBGLOG(TEST, SOAP_MESSAGE(fdebug, "Freed data %p\n", p));
@@ -2715,7 +2721,10 @@ soap_dealloc(struct soap *soap, void *p)
     while (soap->alist)
     { q = (char*)soap->alist;
       soap->alist = *(void**)q;
+      /* ARPDBG
       q -= *(size_t*)(q + 8);
+      */
+      q -= *(size_t*)(q + sizeof(void*));
       if (q == (char*)soap->fault)
         soap->fault = NULL; /* this was deallocated */
       else if (q == (char*)soap->header)
@@ -2736,7 +2745,10 @@ soap_unlink(struct soap *soap, void *p)
   if (!soap)
     return;
   for (q = (char**)&soap->alist; *q; q = *(char***)q)
+  /* ARPDBG
   { if (p == (void*)(*q - *(size_t*)(*q + 8)))
+  */
+  { if (p == (void*)(*q - *(size_t*)(*q + sizeof(void*))))
     { *q = **(char***)q;
       DBGLOG(TEST, SOAP_MESSAGE(fdebug, "Unlinked data %p\n", p));
       return;

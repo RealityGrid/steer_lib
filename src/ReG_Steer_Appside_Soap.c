@@ -87,6 +87,7 @@ int Initialize_steering_connection_soap(int  NumSupportedCmds,
 
   soap_init(&soap);
 
+  appStart_response._result = NULL;
   if (soap_call_tns__AppStart(&soap, Steerer_connection.SGS_address, "", 
 			      &appStart_response)){
 
@@ -105,6 +106,7 @@ int Initialize_steering_connection_soap(int  NumSupportedCmds,
   Make_supp_cmds_msg(NumSupportedCmds, SupportedCmds, 
 		     Steerer_connection.supp_cmds);
 
+  setSDE_response._result = NULL;
   if (soap_call_tns__SetServiceData(&soap, 
 				    Steerer_connection.SGS_address, "", "Supp_cmds", 
 				    Steerer_connection.supp_cmds, 
@@ -127,6 +129,7 @@ int Detach_from_steerer_soap()
 {
   struct tns__AppDetachResponse appDetach_response;
 
+  appDetach_response._result = NULL;
   if(soap_call_tns__AppDetach(&soap, Steerer_connection.SGS_address, 
 			      "", &appDetach_response )){
 
@@ -151,6 +154,7 @@ int Steerer_connected_soap()
 {
   struct tns__FindServiceDataResponse  findServiceData_response;
 
+  findServiceData_response._result = NULL;
   if(soap_call_tns__FindServiceData(&soap, Steerer_connection.SGS_address, 
 				    "", "Steerer_status", 
 				    &findServiceData_response )){
@@ -186,6 +190,7 @@ int Send_status_msg_soap(char* msg)
   /* Status & log messages are both sent as 'status' messages */
   if(strstr(msg, "<App_status>") || strstr(msg, "<Steer_log>")){
 
+    putStatus_response._result = NULL;
     if(soap_call_tns__PutStatus(&soap, Steerer_connection.SGS_address, 
 				"", msg, &putStatus_response )){
       soap_print_fault(&soap, stderr);
@@ -219,6 +224,7 @@ int Send_status_msg_soap(char* msg)
 
     fprintf(stderr, "Send_status_msg_soap: doing SetServiceData\n");
 
+    setSDE_response._result = NULL;
     if(soap_call_tns__SetServiceData (&soap, Steerer_connection.SGS_address, "",
 				      sde_name, msg,  &setSDE_response)){
       soap_print_fault(&soap,stderr);
@@ -242,7 +248,7 @@ struct msg_struct *Get_control_msg_soap()
     fprintf(stderr, "Get_control_msg_soap: address = %s\n", 
 	    Steerer_connection.SGS_address);
 #endif
-
+    getControl_response._result = NULL;
   if(soap_call_tns__GetControl(&soap, Steerer_connection.SGS_address, 
 			       "",  &getControl_response)){
     soap_print_fault(&soap, stderr);
@@ -276,11 +282,14 @@ int Finalize_steering_connection_soap()
 
   /* Tell the SGS to die - could use Destroy here but that doesn't 
      provide any opportunites for clean-up */
+  appStop_response._result = NULL;
   if(soap_call_tns__AppStop(&soap, Steerer_connection.SGS_address, 
 			    "",  &appStop_response)){
     soap_print_fault(&soap, stderr);
     return REG_FAILURE;
   }
+
+  soap_end(&soap);
 
   return REG_SUCCESS;
 }
