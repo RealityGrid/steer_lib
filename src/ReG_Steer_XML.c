@@ -1454,8 +1454,10 @@ void End_element_handler(void          *user_data,
 	if(tmp){
 	  state->entries = tmp;
 	  state->max_entries *= 2;
-	  fprintf(stderr, "ARPDBG: done malloc for %d entries\n", 
-		  state->max_entries);
+#if REG_DEBUG_FULL
+	  fprintf(stderr, "INFO: End_element_handler: done malloc for "
+		  "%d entries\n", state->max_entries);
+#endif
 	}
 	else{
 	  state->return_val = REG_FAILURE;
