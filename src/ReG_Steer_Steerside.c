@@ -2959,14 +2959,16 @@ int Sim_attach_local(Sim_entry_type *sim, char *SimID)
       strcpy(file_root, pchar);
     }
 
-    if((return_status = Directory_valid(file_root)) != REG_SUCCESS){
+    return_status = Directory_valid(file_root);
+#if REG_DEBUG
+    if(return_status != REG_SUCCESS){
       fprintf(stderr, "Sim_attach_local: invalid dir for "
-	      "steering messages: %s\n",
-	      file_root);
+	      "steering messages: %s\n", file_root);
     }
+#endif
   }
 
-  /* Supplied ID didn't work so try using REG_STEER_DIRECTORY env.
+  /* If supplied ID didn't work then try using REG_STEER_DIRECTORY env.
      variable instead */
   if(return_status != REG_SUCCESS){
     
@@ -2984,22 +2986,25 @@ int Sim_attach_local(Sim_entry_type *sim, char *SimID)
       strcpy(file_root, pchar);
     }
 
-    if((return_status = Directory_valid(file_root)) != REG_SUCCESS){
+    return_status = Directory_valid(file_root);
+#if REG_DEBUG
+    if(return_status != REG_SUCCESS){
       fprintf(stderr, "Sim_attach_local: invalid dir for "
-	      "steering messages: %s\n",
-	      file_root);
+	      "steering messages: %s\n", file_root);
     }
+#endif
   }
 
-  if(return_status == REG_SUCCESS){
-    fprintf(stderr, "Sim_attach_local: using following dir for "
-	    "steering messages: %s\n", file_root);
-  }
-  else{
-
+  if(return_status != REG_SUCCESS){
     fprintf(stderr, "Sim_attach_local: failed to get scratch directory\n");    
     return REG_FAILURE;
   }
+#if REG_DEBUG
+  else{
+    fprintf(stderr, "Sim_attach_local: using following dir for "
+	    "steering messages: %s\n", file_root);
+  }
+#endif
 
   /* Delete any old communication files written by an app 
      in this location */
