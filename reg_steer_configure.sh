@@ -58,7 +58,7 @@ export REG_XML_INCDIR=/usr/freeware/include/libxml2
 # by library when application launched
 export REG_CONNECTOR_HOSTNAME=vermont.mvc.mcc.ac.uk
 export REG_CONNECTOR_PORT=2566
-export GLOBUS_TCP_PORT_RANGE=2566,2566
+export GLOBUS_TCP_PORT_RANGE=2566,2666
 
 #---------------------------------------------------------------
 # This section needed when steering via SOAP and the Steering
