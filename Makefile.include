@@ -74,21 +74,22 @@ STEER_LIBS = -L${REG_STEER_HOME}/lib$(NBIT) \
 # Subsititue flavor (sic) as appropriate for your globus installation 
 # but use only non-threaded flavours.
 
-GLOBUS_INCLUDES = -I/usr/local/globus/include/gcc${NBIT}dbg
-GLOBUS_PKG_LIBS = -lglobus_io_gcc${NBIT}dbg \
-                  -lglobus_common_gcc${NBIT}dbg \
-                  -lglobus_gss_assist_gcc${NBIT}dbg \
-                  -lglobus_gssapi_gsi_gcc${NBIT}dbg \
-                  -lssl_gcc${NBIT}dbg \
-                  -lcrypto_gcc${NBIT}dbg 
-GLOBUS_LDFLAGS = -L/usr/local/globus/lib
-#GLOBUS_INCLUDES = 
-#GLOBUS_PKG_LIBS = 
-#GLOBUS_LDFLAGS = 
+#GLOBUS_INCLUDES = -I/usr/local/globus/include/gcc${NBIT}dbg
+#GLOBUS_PKG_LIBS = -lglobus_io_gcc${NBIT}dbg \
+#                  -lglobus_common_gcc${NBIT}dbg \
+#                  -lglobus_gss_assist_gcc${NBIT}dbg \
+#                  -lglobus_gssapi_gsi_gcc${NBIT}dbg \
+#                  -lssl_gcc${NBIT}dbg \
+#                  -lcrypto_gcc${NBIT}dbg 
+#GLOBUS_LDFLAGS = -L/usr/local/globus/lib
+GLOBUS_INCLUDES = 
+GLOBUS_PKG_LIBS = 
+GLOBUS_LDFLAGS = 
 
 # Either define GLOBUS_INCLUDES, GLOBUS_PKG_LIBS and GLOBUS_LDFLAGS, OR
-# uncomment this line if using Globus for sample AND/OR steering
+# uncomment this line if using Globus for sample output/input.
 #include ${REG_STEER_HOME}/globus_definitions
+
 
 # Set flag to 1 to use globus for iotype samples communication, 0 to not 
 REG_GLOBUS_SAMPLES_FLAG = 0
