@@ -2445,6 +2445,49 @@ int Register_params(int    NumParams,
 }
 
 /*----------------------------------------------------------------
+ * Really just a wrapper for a special call to Register_param.
+ * We currently mandate that a REG_BIN variable is for monitoring
+ * only.
+ */
+int Register_bin_param(char *ParamLabel, void *ParamPtr,
+		       int ParamType, int NumObjects)
+{
+  char len_buf[16];
+  int  size;
+
+  switch(ParamType){
+
+    case REG_CHAR:
+      size = sizeof(char);
+      break;
+
+    case REG_INT:
+      size = sizeof(int);
+      break;
+
+    case REG_FLOAT:
+      size = sizeof(float);
+      break;
+
+    case REG_DBL:
+      size = sizeof(double);
+      break;
+
+    default:
+      fprintf(stderr, "Register_bin_param: ERROR: "
+	      "unrecognised variable type\n");
+      return REG_FAILURE;
+      break;
+  }
+
+  sprintf(len_buf, "%d", size * NumObjects);
+
+  /* REG_BIN always just monitored */
+  return Register_param(ParamLabel, REG_FALSE, ParamPtr,
+			ParamType, "", len_buf);
+}
+
+/*----------------------------------------------------------------
    Toggle whether (toggle=REG_TRUE) or not (toggle=REG_FALSE) to 
    log values of all registered  parameters. Logging is on by
    default. */

@@ -78,7 +78,8 @@ ${LIB_PATH}/libReG_Steer.a: ReG_Steer_Appside_f.o \
 	ReG_Steer_Browser.o \
 	ReG_Steer_Logging.o \
 	stdsoap2.o soapC.o soapClient.o \
-        Base64.o
+        Base64.o \
+        ReG_Steering_Initialize.o
 
 ${LIB_PATH}/libReG_Steer.a:
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Appside_f.o
@@ -97,6 +98,7 @@ ${LIB_PATH}/libReG_Steer.a:
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a soapC.o
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a soapClient.o
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a Base64.o
+	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steering_Initialize.o
 
 #---------------------------------------------------------------
 
@@ -186,6 +188,16 @@ ReG_Steer_Logging.o: ReG_Steer_Logging.c \
 
 Base64.o: Base64.c \
         ../include/Base64.h
+
+ReG_Steering_Initialize.o: ReG_Steering_Initialize.f90 \
+        ../include/reg_steer_f90.inc
+	${F90} ${F90_FLAGS} \
+        -DREG_SOCKET_SAMPLES=${REG_SOCKET_SAMPLES_FLAG} \
+        -DREG_SOAP_STEERING=${REG_SOAP_STEERING_FLAG} \
+        -DREG_DEBUG=${REG_DEBUG_FLAG} \
+        -DREG_DEBUG_FULL=${REG_DEBUG_FULL_FLAG} \
+        -DREG_STEER_LIB_VERSION=\"${REG_STEER_LIB_VERSION}\" \
+        ${INCLUDE_PATH} -c ReG_Steering_Initialize.f90 -o ReG_Steering_Initialize.o
 
 #---------------------------------------------------------------
 

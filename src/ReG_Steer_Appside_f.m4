@@ -51,6 +51,9 @@ static char string_buf[(REG_MAX_NUM_STR_PARAMS+REG_MAX_NUM_STR_CMDS)
 static char *str_array[REG_MAX_NUM_STR_PARAMS];
 static char *str_array_params[REG_MAX_NUM_STR_CMDS];
 
+/* Array to store size in bytes of each of ReG type */
+static int sizeof_type[8] = {0,0,0,0,0,0,0,0};
+
 /*----------------------------------------------------------------
 
 SUBROUTINE steering_enable_f(EnableSteer)
@@ -67,17 +70,18 @@ INT_KIND_1_DECL(EnableSteer);
 
 /*----------------------------------------------------------------
 
-SUBROUTINE steering_initialize_f(AppName, NumSupportedCmds, &
-                                 SupportedCmds, Status)
+SUBROUTINE steering_initialize_wrapper(AppName, NumSupportedCmds, &
+                                       SupportedCmds, Status)
 
+  CHARACTER (LEN=REG_MAX_STRING_LEN), INTENT(in) :: AppName
   INTEGER (KIND=REG_SP_KIND), INTENT(in)  :: NumSupportedCmds
   INTEGER (KIND=REG_SP_KIND), INTENT(in)  :: SupportedCmds
   INTEGER (KIND=REG_SP_KIND), INTENT(out) :: Status
 ----------------------------------------------------------------*/
 
-void FUNCTION(steering_initialize_f) ARGS(`STRING_ARG(AppName), 
-                                           NumSupportedCmds,
-			                   SupportedCmds, Status')
+void FUNCTION(steering_initialize_wrapper) ARGS(`STRING_ARG(AppName), 
+                                                 NumSupportedCmds,
+			                         SupportedCmds, Status')
 STRING_ARG_DECL(AppName);
 INT_KIND_1_DECL(NumSupportedCmds);
 INT_KIND_1_DECL(SupportedCmds);
@@ -996,6 +1000,98 @@ INT_KIND_1_DECL(Status);
 
 /*----------------------------------------------------------------
 
+SUBROUTINE register_bin_param_f(ParamLabel, ParamPtr, &
+                                ParamType, NumObjects, Status)
+
+  CHARACTER (LEN=REG_MAX_STRING_LENGTH), INTENT(in) :: ParamLabel
+  XXXXXXX (KIND=REG_DP_KIND), INTENT(in)            :: ParamPtr
+  INTEGER (KIND=REG_SP_KIND), INTENT(in)            :: ParamType
+  INTEGER (KIND=REG_SP_KIND), INTENT(in)            :: NumObjects
+  INTEGER (KIND=REG_SP_KIND), INTENT(out)           :: Status
+
+----------------------------------------------------------------*/
+void FUNCTION(register_bin_param_f) ARGS(`STRING_ARG(ParamLabel),
+		                          ParamPtr,
+		                          ParamType,
+                                          NumObjects,
+	                                  Status')
+STRING_ARG_DECL(ParamLabel);
+void   *ParamPtr;
+INT_KIND_1_DECL(ParamType);
+INT_KIND_1_DECL(NumObjects);
+INT_KIND_1_DECL(Status);
+{
+  int   i, found = 0;
+  char  len_buf[16];
+  char *pchar, *pbuf;
+
+  if(STRING_LEN(ParamLabel) > REG_MAX_STRING_LENGTH){
+
+    fprintf(stderr, "register_bin_param_f: ERROR - length of label "
+            "exceeds REG_MAX_STRING_LENGTH (%d) chars\n", 
+            REG_MAX_STRING_LENGTH);
+
+    *Status = INT_KIND_1_CAST(REG_FAILURE);
+    return;
+  }
+
+  if(STRING_LEN(ParamLabel) == REG_MAX_STRING_LENGTH){
+
+    pchar = STRING_PTR(ParamLabel);
+    for(i = (REG_MAX_STRING_LENGTH-1); i == 0; i--){
+      if(pchar[i] == '\0'){
+        found = 1;
+	break;
+      }
+    }
+    if(!found){
+      fprintf(stderr, "register_bin_param_f: ERROR - length of label "
+              "is REG_MAX_STRING_LENGTH (%d) chars long\nbut contains "
+              "no termination character - shorten label (or its len "
+              "declaration)\n", 
+              REG_MAX_STRING_LENGTH);
+
+      *Status = INT_KIND_1_CAST(REG_FAILURE);
+      return;
+    }
+  }
+
+  if(!(pbuf = (char*)malloc(REG_MAX_STRING_LENGTH)) ){
+
+    fprintf(stderr, "register_bin_param_f: ERROR - malloc failed\n");
+    *Status = INT_KIND_1_CAST(REG_FAILURE);
+    return;
+  }
+
+  /* Terminate label just in case */
+  memcpy(pbuf, STRING_PTR(ParamLabel), STRING_LEN(ParamLabel));
+  if(!found){
+    pbuf[STRING_LEN(ParamLabel)] = '\0';
+  }
+
+  if(sizeof_type[*ParamType]){
+    /* Calculate how many bytes we're being passed a ptr to */
+    sprintf(len_buf, "%d", *NumObjects*sizeof_type[*ParamType]);
+
+    *Status = INT_KIND_1_CAST( Register_param( pbuf,
+	  		      		       REG_FALSE,
+			      		       &ParamPtr,
+			      		       REG_BIN,
+                                               "",
+                                               len_buf ) );
+  }
+  else{
+    fprintf(stderr, "Register_bin_param_f: sizeof type %d is unknown\n", *ParamType);
+    *Status = INT_KIND_1_CAST( REG_FAILURE );
+  }
+
+  free(pbuf);
+  pbuf = NULL;
+  return;
+}
+
+/*----------------------------------------------------------------
+
 SUBROUTINE enable_all_param_logging_f(Toggle, Status)
 
   INTEGER (KIND=REG_SP_KIND), INTENT(in)  :: Toggle
@@ -1605,4 +1701,56 @@ INT_KIND_1D0_DECL(ptr);
 
 }
 
+/*----------------------------------------------------------------
 
+SUBROUTINE set_type_size(Type, Ptr1, Ptr2, Status)
+
+  INTEGER (KIND=REG_SP_KIND), INTENT(in)  :: Type
+  XXXXXXX, INTENT(in)                     :: Ptr1, Ptr2
+  INTEGER (KIND=REG_SP_KIND), INTENT(out) :: Status
+----------------------------------------------------------------*/
+
+void FUNCTION(set_type_size) ARGS(`Type, Ptr1, Ptr2, Status')
+INT_KIND_1_DECL(Type);
+void *Ptr1;
+void *Ptr2;
+INT_KIND_1_DECL(Status);
+{
+  int size;
+
+  if(Ptr2 < Ptr1){
+    fprintf(stderr, "set_type_size: ERROR: Ptr2 < Ptr1; arguments"
+            " ordered incorrectly?\n");
+    *Status = INT_KIND_1_CAST(REG_FAILURE);
+    return;
+  }
+
+  size = (int)(Ptr2 - Ptr1);
+
+  switch(*Type){
+
+    case REG_CHAR:
+      sizeof_type[REG_CHAR] = size;
+      break;
+
+    case REG_INT:
+      sizeof_type[REG_INT] = size;
+      break;
+
+    case REG_FLOAT:
+      sizeof_type[REG_FLOAT] = size;
+      break;
+
+    case REG_DBL:
+      sizeof_type[REG_DBL] = size;
+      break;
+
+    default:
+      fprintf(stderr, "set_type_size: ERROR: unrecognised type\n");
+      *Status = INT_KIND_1_CAST(REG_FAILURE);
+      break;
+  }
+
+  *Status = INT_KIND_1_CAST(REG_SUCCESS);
+  return;
+}
