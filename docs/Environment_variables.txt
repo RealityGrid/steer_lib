@@ -46,6 +46,14 @@ Used by both globus_io and gSOAP - specifies a range of ports that may
 be opened on the client machine.  Port chosen at random if not set.
 
 -------------------------------
+<REG_DATA_DIRECTORY>
+
+Directory to write data files to/read data files from when doing
+file-based IO (as opposed to globus_io or sockets).  Uses current
+working directory if not set.  Applies to all IOTypes registered
+by a program.
+
+-------------------------------
 REG_SGS_ADDRESS
 
 Location of steering grid service that provides public interface for
