@@ -81,6 +81,10 @@ IOdef_table_type IOTypes_table;
 
 IOdef_table_type ChkTypes_table;
 
+/* Log of checkpoints taken */
+
+Chk_log_type Chk_log;
+
 /* Param_table_type is declared in ReG_Steer_Common.h since it is 
    used in both the steerer-side and app-side libraries */
 
@@ -224,12 +228,28 @@ int Steering_initialize(int  NumSupportedCmds,
     
     fprintf(stderr, "Steering_initialize: failed to allocate memory "
 	    "for ChkType table\n");
+    free(IOTypes_table.io_def);
     return REG_FAILURE;
   }
 
   for(i=0; i<ChkTypes_table.max_entries; i++){
 
     ChkTypes_table.io_def[i].handle = REG_IODEF_HANDLE_NOTSET;
+  }
+
+  /* Initialise log of checkpoints */
+
+  Chk_log.num_entries = 0;
+  Chk_log.max_entries = REG_INITIAL_CHK_LOG_SIZE;
+  Chk_log.entry = (Chk_log_entry_type *)malloc(Chk_log.max_entries
+					  *sizeof(Chk_log_entry_type));
+  if(Chk_log.entry == NULL){
+
+    fprintf(stderr, "Steering_initialize: failed to allocate memory "
+	    "for checkpoint logging\n");
+    free(IOTypes_table.io_def);
+    free(ChkTypes_table.io_def);
+    return REG_FAILURE;
   }
 
   /* Set up table for registered parameters */
@@ -244,6 +264,9 @@ int Steering_initialize(int  NumSupportedCmds,
 
     fprintf(stderr, "Steering_initialize: failed to allocate memory "
 	    "for param table\n");
+    free(IOTypes_table.io_def);
+    free(ChkTypes_table.io_def);
+    free(Chk_log.entry);
     return REG_FAILURE;
   }
 
@@ -635,7 +658,7 @@ int Register_ChkTypes(int    NumTypes,
     /* Set variables required for registration of associated io
        frequency as a steerable parameter (but only if checkpoint is
        to be emitted) */
-    if(ChkType[i] == REG_IO_OUT){
+    if(ChkType[i] != REG_IO_IN){
 
       /* Set variables required for registration of associated io
          frequency as a steerable parameter */
@@ -707,6 +730,67 @@ int Register_ChkTypes(int    NumTypes,
   ReG_ChkTypesChanged = TRUE;
 
   return return_status;
+}
+
+/*----------------------------------------------------------------*/
+
+int Record_Chkpt(int   ChkType,
+		 char *ChkTag)
+{
+  /* int   index; */
+  int   new_size;
+  void *ptr;
+
+  /* Can only call this function if steering lib initialised */
+
+  if (!ReG_SteeringInit) return REG_FAILURE;
+
+  /* Check that we have enough storage space */
+
+  if(Chk_log.num_entries == Chk_log.max_entries){
+
+    new_size = Chk_log.max_entries + REG_INITIAL_CHK_LOG_SIZE;
+    ptr = realloc((void *)(Chk_log.entry), 
+		  new_size*sizeof(Chk_log_entry_type));
+
+    if(!ptr){
+
+      fprintf(stderr, "Record_Chkpt: failed to allocate memory to extend"
+	      " chkpt log\n");
+      return REG_FAILURE;
+    }
+
+    Chk_log.entry = (Chk_log_entry_type *)ptr;
+  }
+
+  Chk_log.entry[Chk_log.num_entries].key = Chk_log.primary_key_value++;
+  strcpy(Chk_log.entry[Chk_log.num_entries].chk_tag, ChkTag);
+  Chk_log.entry[Chk_log.num_entries].chk_handle = ChkType;
+
+  /* Keep this function lightweight - need extra function to 'uncompress'
+     log entries and fill in details of the ChkTypes they refer to - code
+     below is how to get at label of ChkType */
+  /* Can use IOdef utility functions because table of ChkTypes is of
+     same type as table of IOdefs
+  index = IOdef_index_from_handle(&ChkTypes_table, ChkType);
+
+  if(index == REG_IODEF_HANDLE_NOTSET){
+
+#if DEBUG
+    fprintf(stderr, "Record_Chkpt: unknown ChkType\n");
+#endif
+    return REG_FAILURE;
+  }
+
+  * Record label of associated checkpoint type - this (plus others)
+     should be done client side?? *
+  strcpy(Chk_log.entry[Chk_log.num_entries].chk_label,
+	 ChkTypes_table.io_def[index].label);
+  */
+
+  Chk_log.num_entries++;
+
+  return REG_SUCCESS;
 }
 
 /*----------------------------------------------------------------*/
@@ -1650,10 +1734,6 @@ int Emit_IOType_defs(){
 
       case REG_IO_OUT:
         pbuf += sprintf(pbuf,"<Direction>OUT</Direction>\n");
-	break;
-
-      case REG_IO_CHKPT:
-        pbuf += sprintf(pbuf,"<Direction>CHECKPOINT</Direction>\n");
 	break;
 
       default:
