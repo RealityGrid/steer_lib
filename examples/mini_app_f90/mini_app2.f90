@@ -224,7 +224,7 @@ PROGRAM mini_app
   CALL register_param_f(param_label, param_strbl, dum_real3, &
                          param_type, "", "", status)
 
-  dum_str = "hello"//CHAR(0)
+  dum_str = "hello"
   param_label = "test_string"
   param_type  = REG_CHAR
   param_strbl = reg_true
@@ -388,7 +388,6 @@ PROGRAM mini_app
                    DO j=1, NY, 1
                      DO i=1, NX, 1
                        i_array(i, j, k) = i*100 + j*10 + k
-                       WRITE(*,FMT='(3I3," = ",I3)') i, j, k, i_array(i,j,k)
                      END DO
                    END DO
                  END DO
