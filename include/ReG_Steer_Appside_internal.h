@@ -66,6 +66,10 @@ typedef struct {
      attached */
   double                polling_interval;
 
+  /* Steerable interval (in increments of Seq. no.) controlling how 
+     often we perform steering activity while steerer is connected */
+  int                   steer_interval;
+
   /* Where to write files for file-based steering */
   char			file_root[REG_MAX_STRING_LENGTH];
 

@@ -187,6 +187,9 @@
 #define REG_STEP_TIME_HANDLE    -99
 /* Handle for parameter holding time-stamp */
 #define REG_TIMESTAMP_HANDLE    -98
+/* Handle for the variable holding the interval between 
+   steering activity */
+#define REG_STEER_INTERVAL_HANDLE -97
 /* Min value for an automatically generated parameter handle
    - must be > than all special handles defined above */
 #define REG_MIN_PARAM_HANDLE     0
