@@ -1,71 +1,76 @@
 import org.realitygrid.steering.*;
 
 public class Sink implements Runnable, ReG_SteerConstants {
-  static {
-    try {
-      System.loadLibrary("ReG_SteerJava");
-    }
-    catch(UnsatisfiedLinkError e) {
-      System.err.println("Failed to load libReG_SteerJava.so. " + e);
-      System.exit(1);
-    }
-  }
 
   /* The Thread */
   Thread t;
 
+  /* The Steering Library */
+  ReG_SteerAppside rsa;
+
   /* global variables */
   int status;
-  int nloops = 5000;
+  int nloops = 1000;
   int sleep_time = 1;
   boolean finished = false;
 
-  /* For calling Steering_control */
-  Intp num_params_changed = new Intp();
-  String[] changed_param_labels = new String[REG_MAX_NUM_STR_PARAMS];
-  Intp num_recvd_cmds = new Intp();
-  int[] recvd_cmds = new int[REG_MAX_NUM_STR_CMDS];
-  String[] recvd_cmd_params = new String[REG_MAX_NUM_STR_CMDS];
-
   /* */
-  Intp iotype_handle = new Intp();
-  Intp iohandle = new Intp();
-  Intp data_type = new Intp();
-  Intp data_count = new Intp();
+  int iotype_handle;
 
   /* Monitored parameter */
-  Intp bytes_read = new Intp();
+  ReG_SteerParameter bytesRead;
 
   public static void main(String argv[]) {
     new Sink();
   }
 
   public Sink() {
+
+    rsa = ReG_SteerAppside.getInstance();
+
     /* Enable steering and init the library */
-    ReG_Steer.Steering_enable(REG_TRUE);
+    rsa.steeringEnable(true);
 
     int[] commands = {REG_STR_STOP};
-    status = ReG_Steer.Steering_initialize("Java Sink v1.0", commands);
-    if(status != REG_SUCCESS) {
-      System.out.println("Steering library initialization failed");
-      System.exit(REG_FAILURE);
+    try {
+      rsa.steeringInitialize("Java Sink v1.0", commands);
+    }
+    catch(ReG_SteerException e) {
+      System.err.println(e.getMessage());
+      System.exit(e.getErrorCode());
     }
 
     /* Register the input IO channel */
-    status = ReG_Steer.Register_IOType("VTK_STRUCTURED_POINTS", REG_IO_IN, 1, iotype_handle.cast());
-    if(status != REG_SUCCESS) {
-      System.out.println("Failed to register IO type");
-      System.exit(REG_FAILURE);
+    try {
+      iotype_handle = rsa.registerIOType("VTK_STRUCTURED_POINTS", REG_IO_IN, 1);
+    }
+    catch(ReG_SteerException e) {
+      System.err.println(e.getMessage());
+      System.exit(e.getErrorCode());      
     }
 
     /* Register monitored parameter */
-    status = ReG_Steer.Register_param("Bytes_read", REG_FALSE, bytes_read.cast().getVoidPointer(), REG_INT, "", "");
+    bytesRead = new ReG_SteerParameter("Items_read", false, REG_INT, "", "");
+    try {
+      bytesRead.register();
+    }
+    catch(ReG_SteerException e) {
+      System.err.println(e.getMessage());
+      System.exit(e.getErrorCode());
+    }
 
     t = new Thread(this);
     t.start();
   }
 
   public void run() {
+
+    int numParamsChanged;
+    int numReceivedCommands;
+    int[] recvdCmds;
+
+    int iohandle;
+
     /* Enter main loop waiting for data to arrive */
     for(int i = 0; i < nloops; i++) {
       
@@ -80,89 +85,48 @@ public class Sink implements Runnable, ReG_SteerConstants {
       System.out.println("\ni = " + i);
 
       /* Talk to the steering client (if one is connected) */
-      status = ReG_Steer.Steering_control(i,
-					  num_params_changed.cast(),
-					  changed_param_labels,
-					  num_recvd_cmds.cast(),
-					  recvd_cmds,
-					  recvd_cmd_params);
-
-      if(status != REG_SUCCESS) {
-	System.out.println("Ouch!");
+      try {
+	int[] result = rsa.steeringControl(i);
+	numParamsChanged = result[0];
+	numReceivedCommands = result[1];
+	recvdCmds = rsa.getReceivedCommands();
+      }
+      catch(ReG_SteerException e) {
+	System.err.println(e.getMessage());
 	continue;
       }
 
       /* Zero count of bytes read this time around */
-      bytes_read.assign(0);
+      bytesRead.setValue(0);
 
-      if(num_recvd_cmds.value() > 0) {
-	for(int icmd = 0; icmd < num_recvd_cmds.value(); icmd++) {
-	  switch(recvd_cmds[icmd]) {
+      if(numReceivedCommands > 0) {
+	for(int icmd = 0; icmd < numReceivedCommands; icmd++) {
+	  switch(recvdCmds[icmd]) {
 	  case REG_STR_STOP:
 	    finished = true;
 	    break;
 
 	  default:
-	    if(recvd_cmds[icmd] == iotype_handle.value()) {
+	    if(recvdCmds[icmd] == iotype_handle) {
 	      /* 'Open' the channel to consume data */
-	      status = ReG_Steer.Consume_start(iotype_handle.value(), iohandle.cast());
+	      try {
+		iohandle = rsa.consumeStart(iotype_handle);
 
-	      if(status == REG_SUCCESS) {
-		/* Data is available to read...get header describing it */
-		status = ReG_Steer.Consume_data_slice_header(iohandle.value(),
-							     data_type.cast(),
-							     data_count.cast());
-
-		while(status == REG_SUCCESS) {
-		  System.out.println("Got data: type = " + data_type.value() +
-				     ", count = " + data_count.value());
-
-		  /* Do something with data */
-		  switch(data_type.value()) {
-		  case REG_INT:
-		    int[] idata = new int[data_count.value()];
-		    status = ReG_Steer.Consume_data_slice_int(iohandle.value(), idata);
-		    bytes_read.assign(bytes_read.value() + (data_count.value()
-		                                     * ReG_Steer.Sizeof(REG_INT)));
+		while(true) {
+		  Object data = rsa.consumeDataSlice(iohandle);
+		  if(data == null)
 		    break;
-
-		  case REG_CHAR:
-		    byte[] cdata = new byte[data_count.value()];
-		    status = ReG_Steer.Consume_data_slice_char(iohandle.value(), cdata);
-		    bytes_read.assign(bytes_read.value() + (data_count.value()
-		                                     * ReG_Steer.Sizeof(REG_CHAR)));
-
-		    System.out.println(new String(cdata));
-		    break;
-
-		  case REG_FLOAT:
-		    float[] fdata = new float[data_count.value()];
-		    status = ReG_Steer.Consume_data_slice_float(iohandle.value(),
-								fdata);
-		    bytes_read.assign(bytes_read.value() + (data_count.value()
-		                                     * ReG_Steer.Sizeof(REG_FLOAT)));
-
-		    break;
-
-		  case REG_DBL:
-		    double[] ddata = new double[data_count.value()];
-		    status = ReG_Steer.Consume_data_slice_double(iohandle.value(),
-								ddata);
-		    bytes_read.assign(bytes_read.value() + (data_count.value()
-		                                     * ReG_Steer.Sizeof(REG_DBL)));
-
-		    break;
-		  } // switch data_type	  
-
-		  status = ReG_Steer.Consume_data_slice_header(iohandle.value(),
-							       data_type.cast(),
-							       data_count.cast());
-		} // while
+		  if(data instanceof String) 
+		    System.out.println(data);
+		}
 
 		/* Reached the end of this data set; 'close' the channel */
-		status = ReG_Steer.Consume_stop(iohandle.cast());
+		iohandle = rsa.consumeStop(iohandle);
 
-	      } // if status
+	      }
+	      catch(ReG_SteerException e) {
+		System.err.println(e.getMessage());
+	      }
 	    } // if recvd_cmds[icmd]
 	    break;
 	  } // switch
@@ -174,7 +138,11 @@ public class Sink implements Runnable, ReG_SteerConstants {
     } // for i
 
     /* Clean-up the steering library */
-    status = ReG_Steer.Steering_finalize();
+    try {
+      rsa.steeringFinalize();
+    }
+    catch(ReG_SteerException e) { }
+
     return;
   }
 }
