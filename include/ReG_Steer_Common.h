@@ -103,7 +103,10 @@ typedef struct {
   int                   freq_param_handle;
 
   /* Pointer to buffer to hold data */
-  void			*buffer;
+  void		       *buffer;
+  /* Size of this buffer */
+  int                   buffer_bytes;
+
   /* port for socket connection */
   unsigned short int	port;
   /* socket connection handles */
