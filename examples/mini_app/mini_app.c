@@ -58,6 +58,7 @@ int main(){
 	 
   int    num_recvd_cmds;
   int    recvd_cmds[REG_MAX_NUM_STR_CMDS];
+  char*  recvd_cmd_params[REG_MAX_NUM_STR_CMDS];
   int    num_params_changed;
   char*  changed_param_labels[REG_MAX_NUM_STR_PARAMS];
 
@@ -75,18 +76,25 @@ int main(){
 
   /*---------- End of declarations ------------*/
 
-  for(i=0; i<REG_MAX_NUM_STR_PARAMS; i++){
+  changed_param_labels[0] = (char *)malloc((REG_MAX_NUM_STR_CMDS+
+		    REG_MAX_NUM_STR_PARAMS)*REG_MAX_STRING_LENGTH*sizeof(char));
 
-    changed_param_labels[i]=(char *)malloc(REG_MAX_STRING_LENGTH*sizeof(char));
+  if(!changed_param_labels[0]){
 
-    if(changed_param_labels[i] == NULL){
+    printf("Failed to allocate memory for strings\n");
+    return REG_FAILURE;
+  }
 
-      for(j=(i-1); j>=0; j--){
-	free(changed_param_labels[j]);
-      }
-      printf("Failed to allocate memory for strings\n");
-      return REG_FAILURE;
-    }
+  for(i=1; i<REG_MAX_NUM_STR_PARAMS; i++){
+
+    changed_param_labels[i]=changed_param_labels[i-1] + REG_MAX_STRING_LENGTH;
+  }
+
+  recvd_cmd_params[0] = changed_param_labels[REG_MAX_NUM_STR_PARAMS-1]
+                     + REG_MAX_STRING_LENGTH;
+  for(i=1; i<REG_MAX_NUM_STR_CMDS; i++){
+
+    recvd_cmd_params[i] = recvd_cmd_params[i-1] + REG_MAX_STRING_LENGTH;
   }
 
   /* Initialise & enable the steering library */
@@ -114,7 +122,12 @@ int main(){
   iotype_auto[1] = TRUE;
   iotype_frequency[1] = &output_freq;
 
-  num_iotypes = 2;
+  iotype_labels[2] = "MY_CHECKPOINT";
+  iotype_dirn[2] = REG_IO_CHKPT;
+  iotype_auto[2] = FALSE;
+  iotype_frequency[2] = NULL;
+
+  num_iotypes = 3;
 
   status = Register_IOTypes(num_iotypes,
   			    iotype_labels, 
@@ -175,7 +188,8 @@ int main(){
 			      &num_params_changed,
 			      changed_param_labels,
 			      &num_recvd_cmds,
-			      recvd_cmds);
+			      recvd_cmds,
+			      recvd_cmd_params);
 
     if(status == REG_SUCCESS){
 
@@ -197,7 +211,8 @@ int main(){
 	    if(Steering_pause(&num_params_changed,
 			      changed_param_labels,
 			      &num_recvd_cmds,
-			      recvd_cmds) != REG_SUCCESS){
+			      recvd_cmds,
+			      recvd_cmd_params) != REG_SUCCESS){
 
 	      printf("Steering_pause returned error\n");
 	    }
@@ -221,6 +236,12 @@ int main(){
 	      if(recvd_cmds[icmd] == iotype_handle[j]){
 
 	        printf("Some IO command received\n");
+
+		if(j==2){
+
+		  printf("Got checkpoint command, parameters: %s\n", 
+			 recvd_cmd_params[icmd]);
+		}
 	        break;
 	      }
 	    }
@@ -250,11 +271,7 @@ int main(){
   status = Steering_finalize();
 
   /* Clean up */
-
-  for(i=0; i<REG_MAX_NUM_STR_PARAMS; i++){
-
-    free(changed_param_labels[i]);
-  }
+  free(changed_param_labels[0]);
 
   return 0;
 }

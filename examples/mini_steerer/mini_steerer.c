@@ -251,10 +251,19 @@ int main(){
 	   play with */
 	for(i=0; i<num_types; i++){
 	  commands[i] = io_handles[i];
+
+	  if(io_types[i] == REG_IO_CHKPT){
+
+	    sprintf(param_vals[i], "OUT 1");
+	  }
+	  else{
+            sprintf(param_vals[i], " ");
+	  }
 	}
 	Emit_control(sim_handle,
 		     num_types,
-		     commands);
+		     commands,
+		     param_vals);
       }
       break;
 
@@ -281,8 +290,11 @@ int main(){
     case 'e':
       if( Edit_parameter(sim_handle) == REG_SUCCESS){
 
+	/* Emit_control automatically emits the values of any steerable
+	   parameters that have been edited since it was last called */
 	Emit_control(sim_handle,
 		     0,
+		     NULL,
 		     NULL);
       }
       else{
@@ -333,6 +345,7 @@ int main(){
 
 	    Emit_control(sim_handle,
 			 0,
+			 NULL,
 			 NULL);
 
 	    break;
@@ -346,7 +359,8 @@ int main(){
       commands[0] = REG_STR_STOP;
       Emit_control(sim_handle,
 		   1,
-		   commands);
+		   commands,
+		   NULL);
 
       Delete_sim_table_entry(&sim_handle);
       break;		   
@@ -357,7 +371,8 @@ int main(){
       commands[0] = REG_STR_PAUSE;
       Emit_control(sim_handle,
 		   1,
-		   commands);
+		   commands,
+		   NULL);
       break;
 
     case 'q':
@@ -371,7 +386,8 @@ int main(){
       commands[0] = REG_STR_RESUME;
       Emit_control(sim_handle,
 		   1,
-		   commands);
+		   commands,
+		   NULL);
       break;
 
     case 'g':

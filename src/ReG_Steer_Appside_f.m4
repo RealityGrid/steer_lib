@@ -317,15 +317,18 @@ INT_KIND_1_DECL(Status);
 /*----------------------------------------------------------------
 
 SUBROUTINE steering_control_f(SeqNum, NumSteerParams, SteerParamLabels &
-                              NumSteerCommands, SteerCommands, Status)
+                              NumSteerCommands, SteerCommands, &
+                              SteerCommandParams, Status)
 
   INTEGER (KIND=REG_SP_KIND), INTENT(in)           :: SeqNum
   INTEGER (KIND=REG_SP_KIND), INTENT(out)          :: NumSteerParams
   CHARACTER (LEN=REG_MAX_STRING_LENGTH)  &
-        DIMENSION(MAX_NUM_STR_PARAMS), INTENT(out) :: SteerParamLabels
+    DIMENSION(REG_MAX_NUM_STR_PARAMS), INTENT(out) :: SteerParamLabels
   INTEGER (KIND=REG_SP_KIND), INTENT(out)          :: NumSteerCommands
   INTEGER (KIND=REG_SP_KIND), DIMENSION(REG_MAX_NUM_STR_CMDS), &
 	                              INTENT(out)  :: SteerCommands
+  CHARACTER (LEN=REG_MAX_STRING_LENGTH)  &
+      DIMENSION(REG_MAX_NUM_STR_CMDS), INTENT(out) :: SteerCommandParams
   INTEGER (KIND=REG_SP_KIND), INTENT(out)          :: Status  
 ----------------------------------------------------------------*/
 
@@ -334,17 +337,35 @@ void FUNCTION(steering_control_f) ARGS(`SeqNum,
 		     			STRING_ARG(SteerParamLabels),
 		     			NumSteerCommands,
 		     			SteerCommands,
+                                        STRING_ARG(SteerCommandParams),
 					Status')
 INT_KIND_1_DECL(SeqNum);
 INT_KIND_1_DECL(NumSteerParams);
 STRING_ARG_DECL(SteerParamLabels);
 INT_KIND_1_DECL(NumSteerCommands);
 INT_KIND_1_DECL(SteerCommands);
+STRING_ARG_DECL(SteerCommandParams);
 INT_KIND_1_DECL(Status);
 {
   int   i, j, len, pos;
+  char  buf[(REG_MAX_NUM_STR_PARAMS+REG_MAX_NUM_STR_CMDS)
+            *REG_MAX_STRING_LENGTH];
   char *str_array[REG_MAX_NUM_STR_PARAMS];
+  char *str_array_params[REG_MAX_NUM_STR_CMDS];
 
+  j = 0;
+  for(i=0; i<REG_MAX_NUM_STR_PARAMS; i++){
+
+    str_array[i] = &(buf[j*REG_MAX_STRING_LENGTH]);
+    j++;
+  }
+  for(i=0; i<REG_MAX_NUM_STR_CMDS; i++){
+
+    str_array_params[i] = &(buf[j*REG_MAX_STRING_LENGTH]);
+    j++;
+  }
+
+  /*
   for(i=0; i<REG_MAX_NUM_STR_PARAMS; i++){
 
     str_array[i]=(char *)malloc(REG_MAX_STRING_LENGTH*sizeof(char));
@@ -360,6 +381,7 @@ INT_KIND_1_DECL(Status);
       return;
     }
   }
+  */
 
 #if DEBUG
   fprintf(stderr, "steering_control_f: Calling Steering_control...\n");
@@ -369,7 +391,8 @@ INT_KIND_1_DECL(Status);
 			     		      (int *)NumSteerParams,
 			     		      str_array,
 			     		      (int *)NumSteerCommands,
-			     		      (int *)SteerCommands) );
+			     		      (int *)SteerCommands,
+                                              str_array_params) );
 #if DEBUG
   fprintf(stderr, 
           "steering_control_f: got %d params and %d cmds\n", 
@@ -396,22 +419,42 @@ INT_KIND_1_DECL(Status);
         memset(&(STRING_PTR(SteerParamLabels)[pos]), ' ', len);
       }
     }
+
+    for(i=0; i<(int)(*NumSteerCommands); i++){
+
+      strcpy(&(STRING_PTR(SteerCommandParams)[i*STRING_LEN(SteerCommandParams)]),
+             str_array_params[i]);
+
+      /* Blank the remainder of the string being returned to the F90 
+         routine */
+      len = strlen(str_array_params[i]);
+      pos = i*STRING_LEN(SteerCommandParams) + len;
+      
+      if( (len = (STRING_LEN(SteerCommandParams) - len)) > 0){
+
+        memset(&(STRING_PTR(SteerCommandParams)[pos]), ' ', len);
+      }
+    }
   }
 
   /* Clean up */
 
+  free(str_array[0]);
+
+  /*
   for(i=0; i<REG_MAX_NUM_STR_PARAMS; i++){
 
     free(str_array[i]);
   }
-
+  */
   return;
 }
 
 /*----------------------------------------------------------------
 
 SUBROUTINE steering_pause_f(NumSteerParams, SteerParamLabels, &
-                            NumCommands, SteerCommands, Status)
+                            NumCommands, SteerCommands, &
+                            SteerCommandParams, Status)
 
   INTEGER (KIND=REG_SP_KIND), INTENT(out)          :: NumSteerParams
   CHARACTER (LEN=REG_MAX_STRING_LENGTH)  &
@@ -419,6 +462,8 @@ SUBROUTINE steering_pause_f(NumSteerParams, SteerParamLabels, &
   INTEGER (KIND=REG_SP_KIND), INTENT(out)          :: NumCommands
   INTEGER (KIND=REG_SP_KIND), DIMENSION(REG_MAX_NUM_STR_CMDS), &
 	                              INTENT(out)  :: SteerCommands
+  CHARACTER (LEN=REG_MAX_STRING_LENGTH)  &
+      DIMENSION(REG_MAX_NUM_STR_CMDS), INTENT(out) :: SteerCommandParams
   INTEGER (KIND=REG_SP_KIND), INTENT(out)          :: Status  
 ----------------------------------------------------------------*/
 
@@ -426,26 +471,37 @@ void FUNCTION(steering_pause_f) ARGS(`NumSteerParams,
 		                      STRING_ARG(SteerParamLabels),
 		                      NumCommands,
 		                      SteerCommands,
+                                      STRING_ARG(SteerCommandParams),
 				      Status')
 INT_KIND_1_DECL(NumSteerParams);
 STRING_ARG_DECL(SteerParamLabels);
 INT_KIND_1_DECL(NumCommands);
 INT_KIND_1_DECL(SteerCommands);
+STRING_ARG_DECL(SteerCommandParams);
 INT_KIND_1_DECL(Status);
 {
-  int   i;
-  char  buf[REG_MAX_NUM_STR_PARAMS*REG_MAX_STRING_LENGTH];
+  int   i, j, len, pos;
+  char  buf[(REG_MAX_NUM_STR_PARAMS+REG_MAX_NUM_STR_CMDS)*REG_MAX_STRING_LENGTH];
   char *str_array[REG_MAX_NUM_STR_PARAMS];
+  char *str_array_params[REG_MAX_NUM_STR_CMDS];
 
+  j = 0;
   for(i=0; i<REG_MAX_NUM_STR_PARAMS; i++){
 
-    str_array[i] = &(buf[i*REG_MAX_STRING_LENGTH]);
+    str_array[i] = &(buf[j*REG_MAX_STRING_LENGTH]);
+    j++;
+  }
+  for(i=0; i<REG_MAX_NUM_STR_CMDS; i++){
+
+    str_array_params[i] = &(buf[j*REG_MAX_STRING_LENGTH]);
+    j++;
   }
 
   *Status = INT_KIND_1_CAST( Steering_pause((int *)NumSteerParams,
                            		    str_array,
 			   		    (int *)NumCommands,
-			   		    (int *)SteerCommands) );
+			   		    (int *)SteerCommands,
+                                            str_array_params) );
 
   if(*Status == INT_KIND_1_CAST(REG_SUCCESS) ){
 
@@ -454,8 +510,34 @@ INT_KIND_1_DECL(Status);
 
     for(i=0; i<(int)(*NumSteerParams); i++){
 
-	strcpy(&(STRING_PTR(SteerParamLabels)[i*STRING_LEN(SteerParamLabels)]),
-               str_array[i]);
+      strcpy(&(STRING_PTR(SteerParamLabels)[i*STRING_LEN(SteerParamLabels)]),
+             str_array[i]);
+
+      /* Blank the remainder of the string being returned to the F90 
+         routine */
+      len = strlen(str_array[i]);
+      pos = i*STRING_LEN(SteerParamLabels) + len;
+      
+      if( (len = (STRING_LEN(SteerParamLabels) - len)) > 0){
+
+        memset(&(STRING_PTR(SteerParamLabels)[pos]), ' ', len);
+      }
+    }
+
+    for(i=0; i<(int)(*NumCommands); i++){
+
+      strcpy(&(STRING_PTR(SteerCommandParams)[i*STRING_LEN(SteerCommandParams)]),
+             str_array_params[i]);
+
+      /* Blank the remainder of the string being returned to the F90 
+         routine */
+      len = strlen(str_array_params[i]);
+      pos = i*STRING_LEN(SteerCommandParams) + len;
+      
+      if( (len = (STRING_LEN(SteerCommandParams) - len)) > 0){
+
+        memset(&(STRING_PTR(SteerCommandParams)[pos]), ' ', len);
+      }
     }
   }
 

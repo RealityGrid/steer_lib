@@ -36,7 +36,7 @@
 
 #define __REG_TYPES_INCLUDED
 
-#define DEBUG 0
+#define DEBUG 1
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -118,8 +118,7 @@
 #define REG_STR_PAUSE            2
 #define REG_STR_RESUME           3
 #define REG_STR_DETACH           4
-#define REG_STR_SET_EMIT_FREQ    5
-#define REG_STR_SET_CONSUME_FREQ 6
+#define REG_STR_RESTART          5
 
 /* All generated IOtype handles must be >= this value because they
    will be interpreted as commands - this value must therefore be >

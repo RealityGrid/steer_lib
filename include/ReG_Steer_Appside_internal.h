@@ -47,11 +47,15 @@ static int Emit_param_defs();
 static int Emit_IOType_defs();
 
 /* Consume a control message (if any present) from the steerer. Returns
-   any commands that the application must deal with as well as the handles
-   and labels of any (steerable) parameters whose values have changed.
-   (The values themselves are updated from within this routine.) */
+   any commands and associated parameters (the latter as a space-separated 
+   list in a string) that the application must deal with.  CommandParams is an
+   array of pointers to strings that must have already had memory allocated
+   for them. Also returns 
+   the handles and labels of any (steerable) parameters whose values have
+   changed. (The values themselves are updated from within this routine.) */
 static int Consume_control(int    *NumCommands,
 			   int    *Commands,
+			   char  **CommandParams,
 			   int    *NumSteerParams,
 			   int    *SteerParamHandles,
 			   char  **SteerParamLabels);

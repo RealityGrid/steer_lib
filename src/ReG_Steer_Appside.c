@@ -653,7 +653,8 @@ int Steering_control(int     SeqNum,
 		     int    *NumSteerParams,
 		     char  **SteerParamLabels,
 		     int    *NumSteerCommands,
-		     int    *SteerCommands)
+		     int    *SteerCommands,
+		     char  **SteerCmdParams)
 {
   FILE  *fp;
   int    i;
@@ -761,6 +762,7 @@ int Steering_control(int     SeqNum,
     /* Read anything that the steerer has sent to us */
     if( Consume_control(&num_commands,
 			commands,
+			SteerCmdParams,
 			NumSteerParams,
 			param_handles,
 			param_labels) != REG_SUCCESS ){
@@ -823,6 +825,8 @@ int Steering_control(int     SeqNum,
 #endif
 
         SteerCommands[count] = commands[i];
+	/*strcpy(SteerCmdParams[count], command_params[i]);*/
+	strcpy(SteerCmdParams[count], SteerCmdParams[i]);
 	count++;
 
 	/* If we've received a stop command then do just that - don't
@@ -887,7 +891,8 @@ int Steering_control(int     SeqNum,
 int Steering_pause(int   *NumSteerParams,
 		   char **SteerParamLabels,
 		   int   *NumCommands,
-		   int   *SteerCommands)
+		   int   *SteerCommands,
+		   char **SteerCmdParams)
 {
   int    paused        = TRUE;
   int    return_status = REG_SUCCESS;
@@ -915,6 +920,7 @@ int Steering_pause(int   *NumSteerParams,
 
     if( Consume_control(&num_commands,
 			commands,
+			SteerCmdParams,
 			NumSteerParams,
 			param_handles,
 			param_labels) != REG_SUCCESS ){
@@ -966,6 +972,7 @@ int Steering_pause(int   *NumSteerParams,
 	  *NumCommands = num_commands - i - 1;
 	  for(j=0; j<*NumCommands; j++){
 	    SteerCommands[j] = commands[i + 1 + j];
+	    strcpy(SteerCmdParams[j], SteerCmdParams[i + 1 + j]);
 	  }
 
 	  break;
@@ -1215,6 +1222,7 @@ int Emit_IOType_defs(){
 
 int Consume_control(int    *NumCommands,
 		    int    *Commands,
+		    char  **CommandParams,
 		    int    *NumSteerParams,
 		    int    *SteerParamHandles,
 		    char  **SteerParamLabels){
@@ -1222,6 +1230,7 @@ int Consume_control(int    *NumCommands,
   FILE                *fp;
   int                  j;
   int                  count;
+  char                *ptr;
   char                 filename[REG_MAX_STRING_LENGTH];
   struct msg_struct   *msg;
   struct cmd_struct   *cmd;
@@ -1229,8 +1238,8 @@ int Consume_control(int    *NumCommands,
   int                  handle;
   int                  return_status = REG_SUCCESS;
 
-  /* Read the file produced by the steerer - may contain commands and/
-     or new parameter values */
+  /* Read the file produced by the steerer - may contain commands and/or
+     new parameter values */
 
   sprintf(filename, "%s%s", Steerer_connection.file_root, STR_TO_APP_FILENAME);
 
@@ -1253,9 +1262,29 @@ int Consume_control(int    *NumCommands,
 
 	  sscanf((char *)(cmd->id), "%d", &(Commands[count]));
 
+	  if(cmd->first_param){
+
+	    param = cmd->first_param;
+	    ptr   = CommandParams[count];
+	    while(param){
+
+	      if(param->value){
+	        sprintf(ptr, "%s ", (char *)(param->value));
+		ptr += strlen((char *)param->value) + 1;
+	      }
+
+	      param = param->next;
+	    }
+	  }
+	  else{
+
+	    sprintf(CommandParams[count], " ");
+	  }
 #if DEBUG
 	  fprintf(stderr, "Consume_control: cmd[%d] = %d\n", count,
 		  Commands[count]);
+	  fprintf(stderr, "                 params  = %s\n", 
+		  CommandParams[count]);
 #endif
 	  count++;
 

@@ -42,6 +42,12 @@
 
 /*-------------- Steerer-side function prototypes -------------*/
 
+/* Returns list of steerable applications returned by UNICORE 
+   registry (contacted via GridService on the port given in the
+   REGISTRY_GSH environment variable. If the steering proxy is not
+   available this routine returns REG_FAILURE and nsims=0. The Grid
+   Service Handle returned in simGSH must be supplied as the SimID
+   to Sim_attach. */
 extern PREFIX int Get_sim_list(int   *nSims,
 			       char **simName,
 			       char **simGSH);
@@ -84,7 +90,8 @@ extern PREFIX int Consume_status(int   SimHandle,
    been edited since the last call to this routine. */
 extern PREFIX int Emit_control(int    SimHandle,
 			       int    NumCommands,
-			       int   *SysCommands);
+			       int   *SysCommands,
+			       char **SysCmdParams);
 
 /* Initialise the internal tables etc. used by the steering library
    on the steering application sied.  Must be called before all other

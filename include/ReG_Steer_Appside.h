@@ -44,8 +44,7 @@
 
 /* Set global flag to enable/disable steering.  This flag is checked
    at start of Steering_control and causes routine to simply return
-   if not enabled.  Flag not used in other routines in order to 
-   ensure that internal tables remain in a consistent state. */
+   if not enabled. */
 extern PREFIX void Steering_enable(const int EnableSteer);
 
 /* Initialise the internal library tables and advertise application
@@ -87,7 +86,8 @@ extern PREFIX int Steering_control(int     SeqNum,
 				   int    *NumSteerParams,
 				   char*  *SteerParamLabels,
 				   int    *NumSteerCommands,
-				   int    *SteerCommands);
+				   int    *SteerCommands,
+				   char*  *SteerCmdParams);
 
 /* Open the specified IOType (as returned by a call to Register_IOTypes)
    ready for output. <SeqNum> provides a measure of the application's
@@ -138,4 +138,5 @@ extern PREFIX int Steering_finalize();
 extern PREFIX int Steering_pause(int   *NumSteerParams,
 				 char **SteerParamLabels,
 				 int   *NumCommands,
-				 int   *SteerCommands);
+				 int   *SteerCommands,
+				 char **SteerCmdParams);

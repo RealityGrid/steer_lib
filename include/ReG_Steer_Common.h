@@ -13,6 +13,8 @@ typedef struct {
   int   handle;
   void *ptr;
   char  value[REG_MAX_STRING_LENGTH];
+  char  max_val[REG_MAX_STRING_LENGTH];
+  char  min_val[REG_MAX_STRING_LENGTH];
   int   modified;
   int   is_internal;
 

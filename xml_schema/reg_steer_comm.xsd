@@ -82,7 +82,7 @@
 		<xs:element name="Type" type="xs:integer" 
 	            minOccurs="0" maxOccurs="1" />
 		<xs:element name="Handle" type="xs:integer" 
-	            minOccurs="1" maxOccurs="1" />
+	            minOccurs="0" maxOccurs="1" />
 		<xs:element name="Value" type="xs:token" 
 	            minOccurs="0" maxOccurs="1" />	
 		<xs:element name="Is_internal" type="xs:token" 

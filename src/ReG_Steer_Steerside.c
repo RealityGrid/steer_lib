@@ -433,7 +433,7 @@ int Sim_attach(char *SimID,
 
 int Sim_detach(int *SimHandle)
 {
-  int  SysCommands[1];
+  int   SysCommands[1];
 
   /* Check that handle is valid */
 
@@ -445,7 +445,8 @@ int Sim_detach(int *SimHandle)
 
   Emit_control(*SimHandle,
 	       1,
-	       SysCommands);
+	       SysCommands,
+               NULL);
 
   /* Delete associated table entry */
 
@@ -925,7 +926,8 @@ int Consume_status(int   SimHandle,
 
 int Emit_control(int    SimHandle,
 		 int    NumCommands,
-		 int   *SysCommands)
+		 int   *SysCommands,
+		 char **SysCmdParams)
 {
   FILE *fp;
   int   i;
@@ -933,6 +935,8 @@ int Emit_control(int    SimHandle,
   int   count;
   int   num_to_emit;
   char  filename[REG_MAX_STRING_LENGTH];
+  char  param_buf[REG_MAX_STRING_LENGTH];
+  char *param_ptr;
   char  buf[REG_MAX_MSG_SIZE];
   char *pbuf;
   int   nbytes;
@@ -969,7 +973,23 @@ int Emit_control(int    SimHandle,
     if(Command_supported(simid, SysCommands[i])==REG_SUCCESS){
 
       pbuf += sprintf(pbuf, "<Command>\n");
-      pbuf += sprintf(pbuf, "<Cmd_id>%d</Cmd_id>\n", SysCommands[i]);
+      pbuf += sprintf(pbuf, "  <Cmd_id>%d</Cmd_id>\n", SysCommands[i]);
+
+      if(SysCmdParams){
+
+	strcpy(param_buf, SysCmdParams[i]);
+
+	param_ptr = strtok(param_buf, " ");
+	while(param_ptr){
+
+    	  pbuf += sprintf(pbuf, "  <Cmd_param>\n");
+	  pbuf += sprintf(pbuf, "    <Value>%s</Value>\n", param_ptr);
+	  pbuf += sprintf(pbuf, "  </Cmd_param>\n");
+
+	  param_ptr = strtok(NULL, " ");
+	}
+
+      }
       pbuf += sprintf(pbuf, "</Command>\n");
     }
   }
