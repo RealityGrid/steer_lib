@@ -1503,7 +1503,7 @@ int Emit_control(int    SimHandle,
   if(count==0 && num_to_emit==0){
 
 #if DEBUG
-    fprintf(stderr, "Emit_control: nothing to send\n", buf);
+    fprintf(stderr, "Emit_control: nothing to send\n");
 #endif
     return REG_SUCCESS;
   }
