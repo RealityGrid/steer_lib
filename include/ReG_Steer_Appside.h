@@ -201,8 +201,9 @@ extern PREFIX int Make_vtk_header(char  *header,
 /* Create a simple header for a data chunk - simply gives origin and
    extent of a 3D chunk of a larger data set */
 extern PREFIX int Make_chunk_header(char *header,
-				    int   sx, int sy, int sz,
-				    int   nx, int ny, int nz);
+				    int   totx, int toty, int totz,
+				    int   sx,   int sy,   int sz,
+				    int   nx,   int ny,   int nz);
 
 /* Toggle whether or not (flag = 1 or 0) the data to be emitted on the 
    IOType with the given index is from Fortran */

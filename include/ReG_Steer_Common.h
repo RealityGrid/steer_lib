@@ -154,7 +154,9 @@ typedef struct {
 
   /* Whether array data is in F90 ordering */
   int is_f90;
-  /* Extent of array */
+  /* Extent of whole array */
+  int totx, toty, totz;
+  /* Extent of sub-array */
   int nx, ny, nz;
   /* Origin of sub-array within whole */
   int sx, sy, sz;
