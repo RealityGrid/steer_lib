@@ -6,6 +6,7 @@ GLOBAL_FLAGS = G=-64 NBIT=$(NBIT)
 all:
 	make app
 	make app_f90
+	make app_f90_parallel
 	make steerer
 
 app: lib$(NBIT)/libReG_Steer.a \
@@ -16,6 +17,11 @@ app_f90: lib$(NBIT)/libReG_Steer.a \
  include/*.inc \
  mini_app_f90/*.f90
 	cd mini_app_f90; make ${GLOBAL_FLAGS}
+
+app_f90_parallel:  lib$(NBIT)/libReG_Steer.a \
+ include/*.inc \
+ mini_app_f90_parallel/*.f90
+	cd mini_app_f90_parallel; make ${GLOBAL_FLAGS}
 
 steerer: lib$(NBIT)/libReG_Steer.a \
  mini_steerer/*.c

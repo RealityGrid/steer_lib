@@ -729,7 +729,7 @@ int Steering_control(int     SeqNum,
 
       if(status != REG_SUCCESS){
 
-	printf("Steering_control: call to Emit_status failed\n");
+	fprintf(stderr, "Steering_control: call to Emit_status failed\n");
 	return_status = REG_FAILURE;
       }
     }
@@ -753,6 +753,7 @@ int Steering_pause(int   *NumSteerParams,
   int    commands[REG_MAX_NUM_STR_CMDS];
   int    param_handles[REG_MAX_NUM_STR_PARAMS];
   char*  param_labels[REG_MAX_NUM_STR_PARAMS];
+  int    tot_num_params = 0;
 
   /* Can only call this function if steering lib initialised */
 
@@ -777,10 +778,34 @@ int Steering_pause(int   *NumSteerParams,
       return_status = REG_FAILURE;
       paused = FALSE;
 #if DEBUG
-      printf("Steering_pause: call to Consume_control failed\n");
+      fprintf(stderr, "Steering_pause: call to Consume_control failed\n");
 #endif
     }
     else{
+
+#if DEBUG
+      fprintf(stderr,"Steering_pause: got %d cmds and %d params\n", 
+	      num_commands,
+	      *NumSteerParams);
+#endif
+
+      /* Add to array holding labels of changed params - pass back  
+	 strings rather than pointers */
+
+      for(j=0; j<(*NumSteerParams); j++){
+
+	if(tot_num_params < REG_MAX_NUM_STR_PARAMS){
+	  strcpy(SteerParamLabels[tot_num_params], param_labels[j]);
+	  tot_num_params++;
+	}
+	else{
+
+	  fprintf(stderr, "Steering_pause: no. of parameters edited "
+	          "exceeds %d\n", REG_MAX_NUM_STR_PARAMS);
+	  fprintf(stderr, "                Only returning the first %d\n",
+		  REG_MAX_NUM_STR_PARAMS);
+        }
+      }
 
       /* Check for a resume command - any other commands are
 	 ignored (although Consume_control will have updated the
@@ -797,14 +822,6 @@ int Steering_pause(int   *NumSteerParams,
 	  *NumCommands = num_commands - i - 1;
 	  for(j=0; j<*NumCommands; j++){
 	    SteerCommands[j] = commands[i + 1 + j];
-	  }
-
-	  /* Set array holding labels of changed params - pass back strings 
-	     rather than pointers */
-
-	  for(j=0; j<(*NumSteerParams); j++){
-
-	    strcpy(SteerParamLabels[j], param_labels[j]);
 	  }
 
 	  break;
@@ -826,7 +843,12 @@ int Steering_pause(int   *NumSteerParams,
 	}
       }
     }
-  }  
+  }
+
+  /* Return the total no. of parameters that have been edited
+     while the application was paused */
+  *NumSteerParams = tot_num_params;
+
   return return_status;
 }
 
