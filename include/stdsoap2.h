@@ -13,6 +13,14 @@ Copyright (C) 2000-2003 Robert A. van Engelen, Genivia inc. All Rights Reserved.
 
 */
 
+/* ARP - added to uniquely identify TRU64 systems.  Necessary on
+   Alpha workstations */
+#ifndef TRU64
+#if (defined (__digital__) && defined (__unix__))
+#define TRU64
+#endif
+#endif
+
 #ifdef WITH_SOAPDEFS_H
 #include "soapdefs.h"		/* include user-defined definitions */
 #endif
@@ -92,6 +100,12 @@ Copyright (C) 2000-2003 Robert A. van Engelen, Genivia inc. All Rights Reserved.
 #define HAVE_LOCALTIME_R
 #define HAVE_TIMEGM
 #elif defined(_AIXVERSION_431)
+#define HAVE_SYS_TIMEB_H
+#define HAVE_FTIME
+#define HAVE_RAND_R
+#define HAVE_GMTIME_R
+#define HAVE_LOCALTIME_R
+#elif defined(_AIX51)
 #define HAVE_SYS_TIMEB_H
 #define HAVE_FTIME
 #define HAVE_RAND_R
