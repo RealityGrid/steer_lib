@@ -233,4 +233,8 @@ typedef int REG_IOHandleType;
 /* Max no. of service-data elements on SGS */
 #define REG_MAX_NUM_SGS_SDE 15
 
+/* Standard return values from the SGS */
+#define REG_SGS_ERROR "SGS_ERROR"
+#define REG_SGS_SUCCESS "SGS_SUCCESS"
+
 #endif /* __REG_TYPES_INCLUDED defined */

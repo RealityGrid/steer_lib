@@ -83,7 +83,8 @@ int Sim_attach_soap(Sim_entry_type *sim, char *SimID)
 	  attach_response._result);
 #endif
 
-  if(!attach_response._result)return REG_FAILURE;
+  if(!attach_response._result || strstr(attach_response._result, 
+					REG_SGS_ERROR)) return REG_FAILURE;
 
   /* get commands back and parse them... */
   if(nbytes = strlen(attach_response._result)){
@@ -129,8 +130,6 @@ int Send_control_msg_soap(Sim_entry_type *sim, char* buf)
 {
   struct tns__PutControlResponse putControl_response;
 
-  fprintf(stderr, "Send_control_msg_soap: address = %s\n", sim->SGS_info.address);
-
   /* Send message */
   putControl_response._result = NULL;
   if(soap_call_tns__PutControl(&soap, sim->SGS_info.address, 
@@ -142,10 +141,10 @@ int Send_control_msg_soap(Sim_entry_type *sim, char* buf)
     return REG_FAILURE;
   }
 
-  fprintf(stderr, "Send_control_msg_soap: PutControl returned: %s\n", 
-	  putControl_response._result);
+  if(putControl_response._result && 
+     !strstr(putControl_response._result, REG_SGS_ERROR)) return REG_SUCCESS;
 
-  return REG_SUCCESS;
+  return REG_FAILURE;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -157,8 +156,6 @@ struct msg_struct *Get_status_msg_soap(Sim_entry_type *sim)
   struct msg_struct                   *msg = NULL;
   char                                *ptr;
 
-  fprintf(stderr, "Get_status_msg_soap: sde_count = %d\n", sim->SGS_info.sde_count);
-
   /* Check for pending notifications first */
   if(sim->SGS_info.sde_count > 0){
 
@@ -166,7 +163,6 @@ struct msg_struct *Get_status_msg_soap(Sim_entry_type *sim)
     return Get_service_data(sim, 
 			    sim->SGS_info.notifications[sim->SGS_info.sde_index++]); 
   }
-  fprintf(stderr, "Get_status_msg_soap: address = %s\n", sim->SGS_info.address);
 
   /* Check SGS for new notifications */
   getNotifications_response._result = NULL;
@@ -186,7 +182,8 @@ struct msg_struct *Get_status_msg_soap(Sim_entry_type *sim)
 
   /* GetNotifications returns a space-delimited list of the names of
      the SDE's that have changed since we last looked at them */
-  if(getNotifications_response._result){
+  if(getNotifications_response._result &&
+     !strstr(getNotifications_response._result, REG_SGS_ERROR)){
 
     if(ptr = strtok(getNotifications_response._result, " ")){
 
@@ -231,7 +228,9 @@ struct msg_struct *Get_status_msg_soap(Sim_entry_type *sim)
 	  getStatus_response._result);
 #endif
 
-  if(getStatus_response._result){
+  if(getStatus_response._result &&
+     !strstr(getStatus_response._result, REG_SGS_ERROR)){
+
     msg = New_msg_struct();
 
     if(Parse_xml_buf(getStatus_response._result, 
@@ -251,10 +250,6 @@ struct msg_struct *Get_service_data(Sim_entry_type *sim, char *sde_name)
   struct tns__FindServiceDataResponse  findServiceData_response;
   struct msg_struct                   *msg = NULL;
 
-#if DEBUG
-  fprintf(stderr, "Get_service_data: calling FindServiceData for %s\n", 
-	  sde_name);
-#endif
   findServiceData_response._result = NULL;
   if(soap_call_tns__FindServiceData(&soap, sim->SGS_info.address, 
 				    "", sde_name, 
@@ -271,7 +266,8 @@ struct msg_struct *Get_service_data(Sim_entry_type *sim, char *sde_name)
 	  findServiceData_response._result);
 #endif
 
-  if(findServiceData_response._result){
+  if(findServiceData_response._result &&
+     !strstr(findServiceData_response._result, REG_SGS_ERROR)){
 
     /* Not all SDEs will contain XML that we can parse - in particular, 
        those that hold the state of the steerer and application. */
@@ -337,7 +333,12 @@ int Send_pause_msg_soap(Sim_entry_type *sim)
     return REG_FAILURE;
   }
 
-  return REG_SUCCESS;
+  if(pause_response._result && 
+     !strstr(pause_response._result, REG_SGS_ERROR)){
+     return REG_SUCCESS;
+  }
+
+  return REG_FAILURE;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -359,7 +360,12 @@ int Send_resume_msg_soap(Sim_entry_type *sim)
     return REG_FAILURE;
   }
 
-  return REG_SUCCESS;
+  if(resume_response._result && 
+     !strstr(resume_response._result, REG_SGS_ERROR)){
+     return REG_SUCCESS;
+  }
+
+  return REG_FAILURE;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -381,7 +387,12 @@ int Send_detach_msg_soap(Sim_entry_type *sim)
     return REG_FAILURE;
   }
 
-  return REG_SUCCESS;
+  if(detach_response._result && 
+     !strstr(detach_response._result, REG_SGS_ERROR)){
+     return REG_SUCCESS;
+  }
+
+  return REG_FAILURE;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -403,7 +414,12 @@ int Send_stop_msg_soap(Sim_entry_type *sim)
     return REG_FAILURE;
   }
 
-  return REG_SUCCESS;
+  if(stop_response._result && 
+     !strstr(stop_response._result, REG_SGS_ERROR)){
+     return REG_SUCCESS;
+  }
+
+  return REG_FAILURE;
 }
 
 /*-------------------------------------------------------------------------*/

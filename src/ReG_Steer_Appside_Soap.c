@@ -96,7 +96,7 @@ int Initialize_steering_connection_soap(int  NumSupportedCmds,
     return REG_FAILURE;
   }
 
-  if(strstr(appStart_response._result, "SGS_ERROR")){
+  if(!appStart_response._result || strstr(appStart_response._result, "SGS_ERROR")){
 
     fprintf(stderr, "Initialize_steering_connection_soap: AppStart returned error\n");
     return REG_FAILURE;
@@ -139,13 +139,13 @@ int Detach_from_steerer_soap()
     return REG_FAILURE;
   }
 
-  if(strstr(appDetach_response._result, "SGS_SUCCESS")){
+  if(appDetach_response._result && 
+     strstr(appDetach_response._result, "SGS_SUCCESS")){
 
     return REG_SUCCESS;
-  } else {
-
-    return REG_FAILURE;
   }
+
+  return REG_FAILURE;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -170,13 +170,12 @@ int Steerer_connected_soap()
 	  findServiceData_response._result);
 #endif
 
-  if(strstr(findServiceData_response._result, "ATTACHED")){
+  if(findServiceData_response._result && 
+     strstr(findServiceData_response._result, "ATTACHED")){
     return REG_SUCCESS;
   }
-  else{
 
-    return REG_FAILURE;
-  }
+  return REG_FAILURE;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -202,6 +201,11 @@ int Send_status_msg_soap(char* msg)
     fprintf(stderr, "Send_status_msg_soap: PutStatus returned: %s\n", 
 	    putStatus_response._result);
 #endif
+
+    if(!putStatus_response._result ||
+       strstr(putStatus_response._result, REG_SGS_ERROR)){
+      return REG_FAILURE;
+    }
   }
   else{
 
@@ -222,16 +226,18 @@ int Send_status_msg_soap(char* msg)
       sde_name = CHKTYPE_DEFS_SDE;
     }
 
-    fprintf(stderr, "Send_status_msg_soap: doing SetServiceData\n");
-
     setSDE_response._result = NULL;
     if(soap_call_tns__SetServiceData (&soap, Steerer_connection.SGS_address, "",
 				      sde_name, msg,  &setSDE_response)){
+      fprintf(stderr, "Send_status_msg_soap: SetServiceData failed:\n");
       soap_print_fault(&soap,stderr);
       return REG_FAILURE;
     }
-    
-    fprintf(stderr, "Send_status_msg_soap: done SetServiceData\n");
+
+    if(!setSDE_response._result || 
+       strstr(setSDE_response._result, REG_SGS_ERROR)){
+      return REG_FAILURE;
+    }
   }
 
   return REG_SUCCESS;
@@ -260,7 +266,8 @@ struct msg_struct *Get_control_msg_soap()
 	  getControl_response._result);
 #endif
 
-  if(getControl_response._result){
+  if(getControl_response._result && 
+     !strstr(getControl_response._result, REG_SGS_ERROR)){
     msg = New_msg_struct();
 
     if(Parse_xml_buf(getControl_response._result, 
@@ -291,5 +298,11 @@ int Finalize_steering_connection_soap()
 
   soap_end(&soap);
 
-  return REG_SUCCESS;
+  if(appStop_response._result && 
+     !strstr(appStop_response._result, REG_SGS_ERROR)){
+
+    return REG_SUCCESS;
+  }
+
+  return REG_FAILURE;
 }
