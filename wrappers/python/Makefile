@@ -15,3 +15,4 @@ ReG_Steer_wrap.c:
 
 clean:
 	rm -rf *.pyc *.so ReG_Steer.py *_wrap.* *~ core
+	rm -rf examples/*~
