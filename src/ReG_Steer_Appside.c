@@ -1298,7 +1298,8 @@ int Consume_data_slice(int    IOTypeIndex,
     return REG_FAILURE;
 
 
-  /* Re-order and decode (xdr) data as necessary */
+  /* Re-order and decode (xdr) data as necessary - CURRENTLY
+     ONLY DECODES.*/
   Reorder_decode_array(&(IOTypes_table.io_def[IOTypeIndex]), 
 		       DataType, Count,  pData);
 
@@ -1306,13 +1307,6 @@ int Consume_data_slice(int    IOTypeIndex,
   IOTypes_table.io_def[IOTypeIndex].use_xdr = FALSE;
   IOTypes_table.io_def[IOTypeIndex].num_xdr_bytes = 0;
 
-  /* Check whether or not this is a chunk header - if it is then we
-     need to extract the array dimensions
-  if(DataType == REG_CHAR){
-
-    Parse_chunk_header(IOTypeIndex, (char*)pData);
-  }
-  */
   return return_status;
 }
 
@@ -4432,39 +4426,180 @@ int Realloc_iotype_buffer(int index,
 
 /*----------------------------------------------------------------*/
 
-int Parse_chunk_header(int IOTypeIndex, char* pData)
+int Reorder_array(int          ndims,
+		  int         *tot_extent,
+		  int         *sub_extent,
+		  int         *origin,
+		  int          type,
+		  void        *pInData,
+		  void        *pOutData,
+		  int          to_f90)
 {
-  Array_type *ptr;
+  int         i, j, k;
+  int         ox, oy, oz;
+  int         nx, ny, nz;
+  int         nslab, nrow;
+  int        *pi, *pi_old;
+  float      *pf, *pf_old;
+  double     *pd, *pd_old;
 
-  if(IOTypeIndex < 0){
+  if(ndims != 3){
 
-    fprintf(stderr, "Parse_chunk_header: IOType index is < 0\n");
+    fprintf(stderr, "Reorder_array: only 3D arrays supported\n");
     return REG_FAILURE;
   }
 
-  ptr = &(IOTypes_table.io_def[IOTypeIndex].array);
+  ox = origin[0];
+  oy = origin[1];
+  oz = origin[2];
+  nx = sub_extent[0];
+  ny = sub_extent[1];
+  nz = sub_extent[2];
 
-  if(strstr(pData, "CHUNK_HDR")){
+  switch(type){
 
-    /* ARPDBG - would be much better to use XML for this header */
-    if( sscanf(pData, 
-	       "CHUNK_HDR\n"
-	       "ARRAY  %d %d %d\n"
-	       "ORIGIN %d %d %d\n"
-	       "EXTENT %d %d %d\n"
-	       "END_CHUNK_HDR\n", 
-	       &(ptr->totx), &(ptr->toty), &(ptr->totz), 
-	       &(ptr->sx), &(ptr->sy), &(ptr->sz), 
-	       &(ptr->nx), &(ptr->ny), &(ptr->nz)) == 9){
+  case REG_INT:
+    pi = (int *)pOutData;
+    pi_old = (int *)pInData;
 
-      return REG_SUCCESS;
+    /* In this context, array->is_f90 flags whether we want to
+       convert _to_ an F90-style array */
+    if(to_f90 != TRUE){
+
+      /* Convert F90 array to C array */
+      nslab = tot_extent[2]*tot_extent[1];
+      nrow  = tot_extent[2];
+
+      /* Order loops so i,j,k vary as they should for an F90-style
+	 array ordered consecutively in memory */
+      for(k=oz; k<(nz+oz); k++){
+	for(j=oy; j<(ny+oy); j++){
+	  for(i=ox; i<(nx+ox); i++){
+	    /* Calculate position of (i,j,k)'th element in a C array 
+	       (where k varies most rapidly) and store value */
+	    pi[i*nslab + j*nrow + k] = *(pi_old++);
+	  }
+	}
+      }
     }
+    else{
+      
+      /* Convert C array to F90 array */
+
+      nslab = tot_extent[0]*tot_extent[1];
+      nrow  = tot_extent[0];
+	
+      /* Order loops so i,j,k vary as they should for a C-style
+	 array ordered consecutively in memory */
+      for(i=ox; i<(nx+ox); i++){
+	for(j=oy; j<(ny+oy); j++){
+	  for(k=oz; k<(nz+oz); k++){
+	    /* Calculate position of (i,j,k)'th element in an F90 array 
+	       (where i varies most rapidly) and store value */
+	    pi[k*nslab + j*nrow + i] = *(pi_old++);
+	  }
+	}
+      }
+    }
+    break;
+
+  case REG_FLOAT:
+
+    pf = (float *)pOutData;
+    pf_old = (float *)pInData;
+
+    /* In this context, array->is_f90 flags whether we want to
+       convert _to_ an F90-style array */
+    if(to_f90 != TRUE){
+
+      /* Convert F90 array to C array */
+	
+      nslab = tot_extent[2]*tot_extent[1];
+      nrow  = tot_extent[2];
+
+      /* Order loops so i,j,k vary as they should for an F90-style
+	 array ordered consecutively in memory */
+      for(k=oz; k<(nz+oz); k++){
+	for(j=oy; j<(ny+oy); j++){
+	  for(i=ox; i<(nx+ox); i++){
+	    /* Calculate position of (i,j,k)'th element in a C array 
+	       (where k varies most rapidly) and store value */
+	    pf[i*nslab + j*nrow + k] = *(pf_old++);
+	  }
+	}
+      }
+    }
+    else{
+	
+      /* Convert C array to F90 array */
+      
+      nslab = tot_extent[0]*tot_extent[1];
+      nrow  = tot_extent[0];
+
+      /* Order loops so i,j,k vary as they should for a C-style
+	 array ordered consecutively in memory */
+      for(i=ox; i<(nx+ox); i++){
+	for(j=oy; j<(ny+oy); j++){
+	  for(k=oz; k<(nz+oz); k++){
+	    /* Calculate position of (i,j,k)'th element in an F90 array 
+	       (where i varies most rapidly) and store value */
+	    pf[k*nslab + j*nrow + i] = *(pf_old++);
+	  }
+	}
+      }
+    }
+    break;
+
+  case REG_DBL:
+    
+    pd = (double *)pOutData;
+    pd_old = (double *)pInData;
+
+    /* In this context, array->is_f90 flags whether we want to
+       convert _to_ an F90-style array */
+    if(to_f90 != TRUE){
+	
+      /* Convert F90 array to C array */
+	
+      nslab = tot_extent[2]*tot_extent[1];
+      nrow  = tot_extent[2];
+
+      /* Order loops so i,j,k vary as they should for an F90-style
+	 array ordered consecutively in memory */
+      for(k=oz; k<(nz+oz); k++){
+	for(j=oy; j<(ny+oy); j++){
+	  for(i=ox; i<(nx+ox); i++){
+	    /* Calculate position of (i,j,k)'th element in a C array 
+	       (where k varies most rapidly) and store value */
+	    pd[i*nslab + j*nrow + k] = *(pd_old++);
+	  }
+	}
+      }
+    }
+    else{
+      
+      /* Convert C array to F90 array */
+	
+      nslab = tot_extent[0]*tot_extent[1];
+      nrow  = tot_extent[0];
+
+      /* Order loops so i,j,k vary as they should for a C-style
+	 array ordered consecutively in memory */
+      for(i=ox; i<(nx+ox); i++){
+	for(j=oy; j<(ny+oy); j++){
+	  for(k=oz; k<(nz+oz); k++){
+	    /* Calculate position of (i,j,k)'th element in an F90 array 
+	       (where i varies most rapidly) and store value */
+	    pd[k*nslab + j*nrow + i] = *(pd_old++);
+	  }
+	}
+      }
+    }
+    break;
+    
+  default:
+    break;
   }
 
-  /* Flag that we don't have extent info. */
-  ptr->nx = 0;
-  ptr->ny = 0;
-  ptr->nz = 0;
-
-  return REG_FAILURE;
+  return REG_SUCCESS;
 }

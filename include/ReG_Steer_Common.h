@@ -281,13 +281,4 @@ extern PREFIX int Reorder_decode_array(IOdef_entry *io,
 				       int          count,
 				       void        *pData);
 
-extern PREFIX int Reorder_array(int          ndims,
-				int         *tot_extent,
-				int         *sub_extent,
-				int         *origin,
-				int          type,
-				void        *pInData,
-				void        *pOutData,
-				int          to_f90);
-
 #endif

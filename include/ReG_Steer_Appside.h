@@ -210,3 +210,15 @@ extern PREFIX int Make_chunk_header(char *header,
    IOType with the given index is from Fortran */
 extern PREFIX int Set_f90_array_ordering(int IOTypeIndex,
 				         int flag);
+
+/* Reorder array pointed to by pInData into array pointed to by
+   pOutData (must be of dimension tot_extent[0]*tot_extent[1]*tot_extent[2])
+   If to_f90 == 1 then reorders from C to F90, otherwise, F90 to C */
+extern PREFIX int Reorder_array(int          ndims,
+				int         *tot_extent,
+				int         *sub_extent,
+				int         *origin,
+				int          type,
+				void        *pInData,
+				void        *pOutData,
+				int          to_f90);

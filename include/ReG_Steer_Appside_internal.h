@@ -299,9 +299,4 @@ static int Log_to_xml(char **pchar, int *count, const int not_sent_only);
 static int Realloc_iotype_buffer(int index,
 				 int num_bytes);
 
-/* Parse header describing sub-array - puts results in 'array' 
-   structure for the IOType with the given index */
-static int Parse_chunk_header(int   IOTypeIndex,
-			      char* pData);
-
 #endif
