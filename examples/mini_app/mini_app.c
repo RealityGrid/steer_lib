@@ -51,6 +51,7 @@ int main(){
   char  *iotype_labels[REG_INITIAL_NUM_IOTYPES];
   int	 iotype_dirn[REG_INITIAL_NUM_IOTYPES];
   int	 iotype_frequency[REG_INITIAL_NUM_IOTYPES];
+  int    chktype_handle[REG_INITIAL_NUM_IOTYPES];
   REG_IOHandleType iohandle;
   int    data_type;
   int    data_count;
@@ -88,7 +89,7 @@ int main(){
   float *array;
   char   header[BUFSIZ];
 
-  FILE *fp;
+  /*FILE *fp;*/
 
   /*---------- End of declarations ------------*/
 
@@ -136,11 +137,7 @@ int main(){
   iotype_dirn[1] = REG_IO_OUT;
   iotype_frequency[1] = output_freq;
 
-  iotype_labels[2] = "MY_CHECKPOINT";
-  iotype_dirn[2] = REG_IO_CHKPT;
-  iotype_frequency[2] = 0;
-
-  num_iotypes = 3;
+  num_iotypes = 2;
 
   status = Register_IOTypes(num_iotypes,
   			    iotype_labels, 
@@ -151,6 +148,25 @@ int main(){
   if(status != REG_SUCCESS){
 
     printf("Failed to register IO types\n");
+    return REG_FAILURE;
+  }
+
+  /* Register checkpoint emission */
+  iotype_labels[0] = "MY_CHECKPOINT";
+  iotype_dirn[0] = REG_IO_OUT;
+  iotype_frequency[0] = 0;
+
+  num_iotypes = 1;
+
+  status = Register_ChkTypes(num_iotypes,
+  			    iotype_labels, 
+			    iotype_dirn, 
+			    iotype_frequency,
+  			    chktype_handle);
+
+  if(status != REG_SUCCESS){
+
+    printf("Failed to register Chk types\n");
     return REG_FAILURE;
   }
 
@@ -298,12 +314,13 @@ int main(){
 		    Emit_stop(&iohandle);
 		  }
 		}
-		else if(j==2){
-
-		  printf("Got checkpoint command, parameters: %s\n", 
-			 recvd_cmd_params[icmd]);
-		}
 	        break;
+	      }
+	      else if(recvd_cmds[icmd] == chktype_handle[0]){
+
+		printf("Got checkpoint command, parameters: %s\n", 
+		       recvd_cmd_params[icmd]);
+		break;
 	      }
 	    }
 

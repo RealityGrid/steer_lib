@@ -419,6 +419,16 @@ int main(){
 	}
 	break;
 
+      case CHK_DEFS:
+#if DEBUG
+	fprintf(stderr, "Got Chkdefs message\n");
+#endif
+	if(Consume_ChkType_defs(sim_handle) != REG_SUCCESS){
+
+	  fprintf(stderr, "Consume_ChkType_defs failed\n");
+	}
+	break;
+
       case PARAM_DEFS:
 #if DEBUG
 	fprintf(stderr, "Got param defs message\n");
