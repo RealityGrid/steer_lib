@@ -37,6 +37,10 @@ NBIT = 64
 # Location of C compiler and flags to use
 CC = ecc
 C_FLAGS = -O2
+LIB_C_FLAGS = ${C_FLAGS} -fPIC -I../include
+
+# Linker flags to use
+LD_FLAGS = -shared -soname=libReG_Steer.so -L${REG_XML_LIBDIR} -lm -lz -lxml2
 
 # Location of F90 compiler (if any) and flags to use
 F90 = efc
