@@ -55,10 +55,10 @@ export REG_XML_LIBDIR=/usr/freeware/lib
 export REG_XML_INCDIR=/usr/freeware/include/libxml2
 
 #---------------------------------------------------------------
-# This section only necessary if using globus_io- rather
+# This section only necessary if using sockets rather
 # than file-based data transfer
 
-# For Globus_io connections - need to set port to that reported
+# For socket connections - need to set port to that reported
 # by library when application launched
 export REG_CONNECTOR_HOSTNAME=vermont.mvc.mcc.ac.uk
 export REG_CONNECTOR_PORT=2566
