@@ -93,6 +93,13 @@ typedef struct {
   int                 primary_key_value;
   /* Array of entries */
   Chk_log_entry_type *entry;
+  /* Ptr to file containing previous log entries */
+  FILE               *file_ptr;
+  /* Flag to indicate whether or not all entries must be sent to
+     steerer, IRRESPECTIVE of the value of their individual 
+     sent_to_steerer flags.  This used when a client detaches and
+     another one attaches some time later. */
+  int                 send_all;
   
 } Chk_log_type;
 

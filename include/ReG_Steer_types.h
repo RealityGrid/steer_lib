@@ -215,7 +215,8 @@ typedef int REG_IOHandleType;
 
 /* Parameters used to configure table for logging checkpoints */
 
-#define REG_INITIAL_CHK_LOG_SIZE 50
+#define REG_INITIAL_CHK_LOG_SIZE 5
+#define REG_LOG_FILENAME         "ReG_checkpoint_log.xml"
 
 /* Values for IOdef_entry.comms_status */
 

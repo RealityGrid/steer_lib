@@ -217,56 +217,69 @@ static int Steerer_connected_file();
 
 
 /* Take down any connection to a steering client */
-int Finalize_steering_connection();
+static int Finalize_steering_connection();
 
 
 /* Initialize the transport mechanism for IOtypes */
-int Initialize_IOType_transport(const int direction,
+static int Initialize_IOType_transport(const int direction,
 				const int index);
 
 
 /* Finalize the transport mechanism for IOtypes */
-void Finalize_IOType_transport();
+static void Finalize_IOType_transport();
 
 
 /* Check if any sample data needs to be consumed */
-int Consume_start_data_check(const int index);
+static int Consume_start_data_check(const int index);
 
 
 /* Read the sample data */
-int Consume_data_read(const int		index,  
-		      const int		datatype,
-		      const size_t	num_bytes_to_send, 
-		      void		*pData);
-
-
+static int Consume_data_read(const int		index,  
+			     const int		datatype,
+			     const size_t	num_bytes_to_send, 
+			     void		*pData);
 
 /* Emit header for sample data */
-int Emit_header(const int index);
+static int Emit_header(const int index);
 
 
 /* Emit footer for sample data */
-int Emit_footer(const int index,
-		const char * const buffer);
+static int Emit_footer(const int index,
+		       const char * const buffer);
 
 
-
-int Emit_data(const int		index,
-	      const int		datatype,
-	      const size_t	num_bytes_to_send,
-	      void		*pData);
+static int Emit_data(const int		index,
+		     const int		datatype,
+		     const size_t	num_bytes_to_send,
+		     void		*pData);
 
 /* Is the communication connection up */
-int Get_communication_status(const int		index);
+static int Get_communication_status(const int		index);
 
 /* Read ReG-specific header for iotype */
-int Consume_iotype_msg_header(int IOTypeIndex,
-			      int *DataType,
-			      int *Count);
+static int Consume_iotype_msg_header(int IOTypeIndex,
+				     int *DataType,
+				     int *Count);
 
 /* Construct and send ReG-specific header for iotype*/
-int Emit_iotype_msg_header(int IOTypeIndex,
-			   int DataType,
-			   int Count);
+static int Emit_iotype_msg_header(int IOTypeIndex,
+				  int DataType,
+				  int Count);
+
+/* Open log file and write necessary xml header text */
+static FILE *New_log_file(char *filename);
+
+/* Close xml off and then close the log file */
+static int Finalize_log_file(FILE *fp);
+
+/* Save current contents of log to file */
+static int Save_log();
+
+/* Convert current log to xml and store in buffer of max. length
+   <max_len> pointed to by pchar. If not_sent_only == TRUE then
+   only those entries not already returned to the steering client
+   are retrieved */
+static char* Log_to_xml(char *pchar, const int max_len, 
+			const int not_sent_only);
 
 #endif
