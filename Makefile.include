@@ -60,6 +60,10 @@ REG_SOCKET_SAMPLES_FLAG = 0
 # Set flag to 1 to get (a lot of) debug output, 0 otherwise.
 REG_DEBUG_FLAG = 0
 
+#------------------------------------
+# Set flag to 1 to get additional debug output, 0 otherwise.
+REG_DEBUG_FULL_FLAG = 0
+
 #--------------------------------------------------------------------
 # Don't edit anything below this line
 
