@@ -38,6 +38,7 @@
 ---------------------------------------------------------------------------*/
 
 #include "ReG_Steer_types.h"
+#include "ReG_Steer_Common.h"
 #include "ReG_Steer_XML.h"
 
 #ifndef REG_DEBUG

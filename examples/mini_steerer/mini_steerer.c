@@ -38,6 +38,7 @@
 ---------------------------------------------------------------------------*/
 
 #include "ReG_Steer_Steerside.h"
+#include <string.h>
 #include <unistd.h>
 
 #ifndef DEBUG
