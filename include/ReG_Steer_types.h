@@ -186,4 +186,9 @@ typedef int REG_IOHandleType;
 #define REG_MAX_MSG_SIZE BUFSIZ
 #define REG_PIPE_UNSET   -1
 
+/* Tolerance used to determine whether a floating point no. should
+   be interpreted as zero */
+
+#define REG_TOL_ZERO 1.0e-6
+
 #endif /* __REG_TYPES_INCLUDED defined */
