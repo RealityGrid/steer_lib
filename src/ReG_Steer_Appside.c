@@ -3141,7 +3141,6 @@ int Steering_control(int     SeqNum,
 
   if (!ReG_SteeringInit) return REG_FAILURE;
 
-
   /* Update any library-controlled monitored variables */
   if(seq_num_index != -1){
     sprintf(Params_table.param[seq_num_index].value, "%d", SeqNum);
@@ -3360,7 +3359,7 @@ int Steering_control(int     SeqNum,
 #endif
 
         SteerCommands[count] = commands[i];
-	strcpy(SteerCmdParams[count], SteerCmdParams[i]);
+	if(count != i)strcpy(SteerCmdParams[count], SteerCmdParams[i]);
 	count++;
 
 	/* If we've received a stop command then do just that - don't
@@ -4197,6 +4196,7 @@ int Emit_log(Chk_log_type *log)
     }
     else if(log->log_type == PARAM){
       return_status = Read_file(log->filename, &pbuf, &size, REG_TRUE);
+      if(return_status==REG_SUCCESS)printf("ARPDBG read param log Ok");
     }
 
     if(return_status != REG_SUCCESS){
@@ -4205,7 +4205,7 @@ int Emit_log(Chk_log_type *log)
       return REG_FAILURE;
     }
 
-    if (size > 0) Emit_log_entries(log, pbuf);
+    if (size > 0) Emit_log_entries(pbuf);
 
     free(pbuf);
     pbuf = NULL;
@@ -4246,7 +4246,7 @@ int Emit_log(Chk_log_type *log)
 
   /* Pull the entries out of the buffer returned by Log_to_xml and
      send them to the steerer */
-  if(size > 0)return_status = Emit_log_entries(log, pbuf);
+  if(size > 0)return_status = Emit_log_entries(pbuf);
   free(pbuf);
   pbuf = NULL;
 
@@ -4257,7 +4257,7 @@ int Emit_log(Chk_log_type *log)
   /* Send log of steering commands */
   if(strlen(log->pSteer_cmds) > 0){
 
-    Emit_log_entries(log, log->pSteer_cmds);
+    Emit_log_entries(log->pSteer_cmds);
     log->pSteer_cmds[0]='\0';
     log->pSteer_cmds_slot = log->pSteer_cmds;
   }
@@ -4274,10 +4274,35 @@ int Emit_log(Chk_log_type *log)
 
 /*----------------------------------------------------------------*/
 
-int Emit_log_entries(Chk_log_type *log, char *buf)
+int Emit_log_entries(char *buf)
 {
-  char *msg_buf;
   char *pmsg_buf;
+  int   status;
+
+  pmsg_buf = buf;
+  if(!strstr(buf, "<Log_entry>")){
+
+    while(1){
+      status = Log_columns_to_xml(&pmsg_buf, Global_scratch_buffer, 
+				  REG_SCRATCH_BUFFER_SIZE);
+      if(status == REG_FAILURE) return REG_FAILURE;
+
+      Pack_send_log_entries(Global_scratch_buffer);
+
+      if(status == REG_EOD)break;
+    }
+  }
+  else{
+    Pack_send_log_entries(pmsg_buf);
+  }
+  return REG_SUCCESS;
+}
+
+/*----------------------------------------------------------------*/
+
+int Pack_send_log_entries(char *pBuf)
+{
+  char *msg_buf, *pmsg_buf;
   char *plast = NULL;
   char *pbuf1 = NULL;
   char *pbuf2 = NULL;
@@ -4293,21 +4318,13 @@ int Emit_log_entries(Chk_log_type *log, char *buf)
   msg_buf_size = REG_MAX_MSG_SIZE;
   if(!(msg_buf = (char *)malloc(msg_buf_size))){
 
-    fprintf(stderr, "Emit_log_entries: malloc failed\n");
+    fprintf(stderr, "Pack_send_log_entries: malloc failed\n");
     return REG_FAILURE;
-  }
-
-  pmsg_buf = buf;
-  if(!strstr(buf, "<Log_entry>")){
-    if(Log_columns_to_xml(buf, Global_scratch_buffer) != REG_SUCCESS){
-      return REG_FAILURE;
-    }
-    pmsg_buf = Global_scratch_buffer;
   }
 
   /* Pull each log entry out of the buffer and pack them into
      messages to the steerer */
-  pbuf1 = strstr(pmsg_buf, "<Log_entry>");
+  pbuf1 = strstr(pBuf, "<Log_entry>");
   pbuf2 = pbuf1;
   if(pbuf2){
     if(pbuf3 = strstr(pbuf2, "</Log_entry>")){
@@ -4345,7 +4362,7 @@ int Emit_log_entries(Chk_log_type *log, char *buf)
 
 	free(msg_buf);
 	msg_buf = NULL;
-	fprintf(stderr, "Emit_log_entries: realloc failed\n");
+	fprintf(stderr, "Pack_send_log_entries: realloc failed\n");
 	return REG_FAILURE;
       }
       /* Allow for fact that realloc can return a ptr to a diff't
@@ -4386,7 +4403,7 @@ int Emit_log_entries(Chk_log_type *log, char *buf)
 
 	if(Write_xml_footer(&pmsg_buf, (msg_buf_size-tot_len)) 
 	                                             != REG_SUCCESS){
-	  fprintf(stderr, "Emit_log_entries: error writing footer\n");
+	  fprintf(stderr, "Pack_send_log_entries: error writing footer\n");
 	  return REG_FAILURE;
 	}
       }
@@ -4428,7 +4445,7 @@ int Emit_log_entries(Chk_log_type *log, char *buf)
       return_status = Send_status_msg(msg_buf);
     }
     else{
-      fprintf(stderr, "Emit_log_entries: error writing final footer\n");
+      fprintf(stderr, "Pack_send_log_entries: error writing final footer\n");
       return_status = REG_FAILURE;
     }
   }
@@ -4440,9 +4457,8 @@ int Emit_log_entries(Chk_log_type *log, char *buf)
 
 /*----------------------------------------------------------------*/
 
-int Log_columns_to_xml(char *buf, char* out_buf)
+int Log_columns_to_xml(char **buf, char* out_buf, int out_buf_size)
 {
-
   /* We have contents of log file as:
      key   <handle 0> <value 0> <handle 1> <value 1>... \n
      key++ <handle 0> <value 0> <handle 1> <value 1>... \n
@@ -4455,7 +4471,9 @@ int Log_columns_to_xml(char *buf, char* out_buf)
   char *ptr2;
   char *ptr3;
   char *ptr4;
-  int  i, key, count;
+  int   i, key, count;
+  int   nbytes = 0;
+  int   bytes_left = out_buf_size;
 
   fields[0] = malloc(REG_MAX_NUM_STR_PARAMS*max_field_length*sizeof(char));
   if(!fields[0]){
@@ -4467,10 +4485,10 @@ int Log_columns_to_xml(char *buf, char* out_buf)
   }
 
   /* Set pointer to buffer to take output. ASSUME that this is
-     pre-allocated by caller. */
+     pre-allocated by caller and has room for out_buf_size bytes. */
   pbuf = out_buf;
 
-  ptr1 = buf;
+  ptr1 = *buf;
   while(ptr2 = strstr(ptr1, "\n")){
 
     ptr3 = ptr1;
@@ -4486,20 +4504,45 @@ int Log_columns_to_xml(char *buf, char* out_buf)
     (fields[count])[ptr2-ptr3] = '\0';
     count++;
 
-    pbuf += sprintf(pbuf, "<Log_entry>");
-    pbuf += sprintf(pbuf, "<Key>%s</Key>", fields[0]);
-    for(i=1;i<count;i+=2){
-      pbuf += sprintf(pbuf, "<Param_log_entry><Handle>%s</Handle>"
-		      "<Value>%s</Value></Param_log_entry>", 
-		      fields[i], fields[i+1]);
+    nbytes = snprintf(pbuf, bytes_left, "<Log_entry><Key>%s</Key>", 
+		      fields[0]);
+    if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
+      *buf = ptr1;
+      free(fields[0]);
+      return REG_SUCCESS;     
     }
-    pbuf += sprintf(pbuf, "</Log_entry>\n");
+    pbuf += nbytes;
+    bytes_left -= nbytes;
+
+    for(i=1;i<count;i+=2){
+      nbytes = snprintf(pbuf, bytes_left, 
+			"<Param_log_entry><Handle>%s</Handle>"
+			"<Value>%s</Value></Param_log_entry>", 
+			fields[i], fields[i+1]);
+      if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
+	*buf = ptr1;
+	free(fields[0]);
+	return REG_SUCCESS;     
+      }
+      pbuf += nbytes;
+      bytes_left -= nbytes;
+    }
+    nbytes = snprintf(pbuf, bytes_left, "</Log_entry>\n");
+    if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
+      *buf = ptr1;
+      free(fields[0]);
+      return REG_SUCCESS;     
+    }
+    pbuf += nbytes;
+    bytes_left -= nbytes;
+
     ptr1 = ptr2 + 1;
   }
 
+  pbuf = '\0';
   free(fields[0]);
 
-  return REG_SUCCESS;
+  return REG_EOD;
 }
 
 /*----------------------------------------------------------------*/

@@ -242,10 +242,9 @@ int Set_log_primary_key(Chk_log_type *log);
 /* Allocate memory etc. for the log structure supplied */
 int Initialize_log(Chk_log_type *log);
 
-/* Pulls log entries out of the supplied buffer, packs them into
-   messages and sends them to the steerer. Log entries are assumed
-   to be contiguous in the buffer. */
-static int Emit_log_entries(Chk_log_type *log, char *buf);
+/* Identifies format of log supplied in *buf & converts it to xml if
+   necessary.  Then calls Pack_send_log_entries. */
+static int Emit_log_entries(char *buf);
 
 /* Open log file (in append mode) */
 static int Open_log_file(Chk_log_type *log);
@@ -281,7 +280,11 @@ int Log_to_columns(Chk_log_type *log, char **pchar, int *count,
    the columnar data (space delimited data on lines delimited by
    new-line chars) and out_buf points to a buffer pre-allocated
    to receive the new format log. */
-int Log_columns_to_xml(char *buf, char* out_buf);
+int Log_columns_to_xml(char **buf, char* out_buf, int out_buf_size);
+
+/* Takes the xml document describing a log and splits it into separate
+   entries which are packed into messages and sent to client */
+int Pack_send_log_entries(char *pBuf);
 
 /* Wrapper for call to Realloc_IOdef_entry_buffer */
 static int Realloc_iotype_buffer(int index,
