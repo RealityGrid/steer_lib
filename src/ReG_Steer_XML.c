@@ -985,17 +985,6 @@ void Delete_cmd_struct(struct cmd_struct *cmd)
 
 void Delete_io_def_struct(struct io_def_struct *io_def)
 {
-/*   if (!io_def) return; */
-
-/*   if(io_def->first_io){ */
-
-/*     Delete_io_struct(io_def->first_io); */
-/*     io_def->first_io = NULL; */
-/*     io_def->io       = NULL; */
-/*   } */
-
-/*   free (io_def); */
-
   if(io_def){
 
     Delete_io_struct(io_def->first_io);
@@ -1294,4 +1283,22 @@ void Print_steer_log_entry_struct(struct log_entry_struct *entry)
     ptr = ptr->next;
   }
 
+}
+
+/*-----------------------------------------------------------------*/
+
+int String_contains_xml_chars(char *string)
+{
+  if(strchr(string, '<')){
+
+    return TRUE;
+  }
+  if(strchr(string, '>')){
+    return TRUE;
+  }
+  if(strchr(string, '&')){
+    return TRUE;
+  }
+
+  return FALSE;
 }

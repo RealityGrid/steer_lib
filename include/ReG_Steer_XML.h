@@ -191,3 +191,5 @@ void Print_io_struct(struct io_struct   *io);
 void Print_steer_log_struct(struct log_struct *log);
 void Print_steer_log_entry_struct(struct log_entry_struct *entry);
 
+int  String_contains_xml_chars(char *string);
+
