@@ -145,13 +145,29 @@ int Finalize_log(Chk_log_type *log)
 
 int Delete_log_file(Chk_log_type *log)
 {
+  char *pchar;
+  char *backup_suffix = ".backup";
+  int   len, status;
+
   if(log->file_ptr){
     fclose(log->file_ptr);
   }
+  len = strlen(log->filename) + strlen(backup_suffix);
+  
+  pchar = (char*)malloc(len);
+  if(!pchar)return REG_FAILURE;
 
-  remove(log->filename);
+  strcpy(pchar, log->filename);
+  strcat(pchar, backup_suffix);
 
-  return REG_SUCCESS;
+  /* We don't actually delete the file - just move it to one side */
+  status = rename(log->filename, pchar);
+
+  free(pchar);
+  pchar = NULL;
+
+  if(status == 0)return REG_SUCCESS;
+  return REG_FAILURE;
 }
 
 /*----------------------------------------------------------------*/
