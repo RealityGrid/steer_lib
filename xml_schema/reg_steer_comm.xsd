@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+           xmlns="http://www.realitygrid.org/xml/steering" 
+	   targetNamespace="http://www.realitygrid.org/xml/steering" 
+           elementFormDefault="qualified" attributeFormDefault="unqualified">
+
+<xs:element name="ReG_steer_message">
+	<xs:complexType>
+		<xs:choice maxOccurs="1">
+			<xs:element name="Supported_commands" >
+				<xs:complexType>
+				<xs:sequence>
+					<xs:element name="Command" type="CmdType"
+			    	           	    minOccurs="1" maxOccurs="unbounded" />
+				</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="Param_defs" >
+				<xs:complexType>
+				<xs:sequence>
+					<xs:element name="Param" type="ParamType"
+		    				    minOccurs="1" maxOccurs="unbounded" />
+				</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="App_status" 
+				    type="StatusType" />
+			<xs:element name="Steer_control" 
+				    type="ControlType" />
+			<xs:element name="IOType_defs" >
+				<xs:complexType>
+				<xs:sequence>
+					<xs:element name="IOType" type="IOTypeType"
+		    				minOccurs="1" maxOccurs="unbounded" />
+				</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+	        </xs:choice>
+	</xs:complexType>
+</xs:element>
+
+
+<xs:complexType name="StatusType">
+	<xs:sequence>
+		<xs:element name="Param" type="ParamType"
+                    minOccurs="0" maxOccurs="unbounded" />
+		<xs:element name="Command" type="CmdType"
+                    minOccurs="0" maxOccurs="unbounded" />
+	</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="ControlType">
+	<xs:sequence>
+		<xs:element name="Command" type="CmdType"
+		    minOccurs="0" maxOccurs="unbounded" />
+		<xs:element name="Param" type="ParamType"
+		    minOccurs="0" maxOccurs="unbounded" /> 
+	</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="IOTypeType">
+	<xs:sequence>
+		<xs:element name="Label" type="xs:token"
+		    minOccurs="1" maxOccurs="1" />
+		<xs:element name="Handle" type="xs:integer"
+		    minOccurs="1" maxOccurs="1" />
+	</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="ParamType">
+	<xs:sequence>
+		<xs:element name="Label" type="xs:token" 
+	            minOccurs="0" maxOccurs="1" />
+		<xs:element name="Steerable" type="xs:boolean" 
+	            minOccurs="0" maxOccurs="1" />	
+		<xs:element name="Type" type="xs:integer" 
+	            minOccurs="0" maxOccurs="1" />
+		<xs:element name="Handle" type="xs:integer" 
+	            minOccurs="1" maxOccurs="1" />
+		<xs:element name="Value" type="xs:token" 
+	            minOccurs="0" maxOccurs="1" />	
+	</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="CmdType">
+	<xs:sequence>
+		<xs:element name="Cmd_id" type="xs:integer"
+	            minOccurs="1" maxOccurs="1" />
+		<xs:element name="Cmd_param" type="ParamType"
+	            minOccurs="0" maxOccurs="unbounded" />
+	</xs:sequence>
+</xs:complexType>
+
+</xs:schema>

@@ -1,0 +1,5 @@
+#!/usr/bin/csh -f
+
+cd ${HOME}/projects/reg_steer/src; make
+cd ${HOME}/projects/mini_steerer; make clean; make
+cd ${HOME}/projects/mini_app; make clean; make
