@@ -50,12 +50,23 @@ PROGRAM mini_app
 
   ! For IO types
   INTEGER (KIND=REG_SP_KIND) :: num_types
-  CHARACTER(LEN=REG_MAX_STRING_LENGTH), DIMENSION(REG_INITIAL_NUM_IOTYPES) :: io_labels
-  INTEGER (KIND=REG_SP_KIND), DIMENSION(REG_INITIAL_NUM_IOTYPES) :: iotype_handles
-  INTEGER (KIND=REG_SP_KIND), DIMENSION(REG_INITIAL_NUM_IOTYPES) :: io_dirn
+  CHARACTER(LEN=REG_MAX_STRING_LENGTH), &
+                           DIMENSION(REG_INITIAL_NUM_IOTYPES) :: io_labels
+  INTEGER (KIND=REG_SP_KIND), &
+                           DIMENSION(REG_INITIAL_NUM_IOTYPES) :: iotype_handles
+  INTEGER (KIND=REG_SP_KIND), &
+                           DIMENSION(REG_INITIAL_NUM_IOTYPES) :: io_dirn
+
+  INTEGER (KIND=REG_SP_KIND) :: num_chk_types
+  CHARACTER(LEN=REG_MAX_STRING_LENGTH), &
+                           DIMENSION(REG_INITIAL_NUM_IOTYPES) :: chk_labels
+  INTEGER (KIND=REG_SP_KIND), &
+                           DIMENSION(REG_INITIAL_NUM_IOTYPES) :: chk_handles
+  INTEGER (KIND=REG_SP_KIND), &
+                           DIMENSION(REG_INITIAL_NUM_IOTYPES) :: chk_dirn
+
 
   INTEGER (KIND=REG_SP_KIND) :: input_freq  = 0
-
   INTEGER (KIND=REG_SP_KIND) :: output_freq = 5
   INTEGER (KIND=REG_SP_KIND) :: iohandle
   INTEGER (KIND=REG_SP_KIND) :: data_type
@@ -153,21 +164,22 @@ PROGRAM mini_app
 
   WRITE(*,*) 'Returned IOtype = ', iotype_handles(2)
 
-  io_labels(1) = "SOME_CHECKPOINT"
-  io_labels(1)(16:16) = CHAR(0)
+  num_chk_types = 1
+  chk_labels(1) = "SOME_CHECKPOINT"
+  chk_labels(1)(16:16) = CHAR(0)
 
-  io_dirn(1) = REG_IO_CHKPT
+  chk_dirn(1) = REG_IO_INOUT
   
-  CALL register_iotypes_f(num_types, io_labels, io_dirn, &
-                          output_freq, iotype_handles(3), status)
+  CALL register_chktypes_f(num_chk_types, chk_labels, chk_dirn, &
+                           output_freq, chk_handles(1), status)
 
   IF(status .ne. REG_SUCCESS)THEN
 
     CALL steering_finalize_f(status)
-    STOP 'Failed to register IO type'
+    STOP 'Failed to register Chk type'
   END IF
 
-  WRITE(*,*) 'Returned IOtype = ', iotype_handles(3)
+  WRITE(*,*) 'Returned Chktype = ', chk_handles(3)
 
   ! Register some parameters
 
@@ -389,66 +401,25 @@ PROGRAM mini_app
 
                WRITE(*,*) 'Emitting data...'
 
-! Example of how to make a vtk header in F90...
-!!$               buf(1:128) = "# vtk DataFile Version 2.1"//ACHAR(10)
-!!$               hdr_len = 0
-!!$               header = buf
-!!$
-!!$               buf(1:128) = "Fake test data"//ACHAR(10)
-!!$               hdr_len = hdr_len + 128
-!!$               header = header(1:hdr_len)//buf
-!!$
-!!$               buf(1:128) = "BINARY"//ACHAR(10)
-!!$               hdr_len = hdr_len + 128
-!!$               header = header(1:hdr_len)//buf
-!!$
-!!$               buf(1:128) = "DATASET STRUCTURED_POINTS"//ACHAR(10)
-!!$               hdr_len = hdr_len + 128
-!!$               header = header(1:hdr_len)//buf
-!!$
-!!$               buf = " "
-!!$               WRITE(buf, FMT="('DIMENSIONS ',3(I3,1x),A1)") NX, NY, NZ, &
-!!$                     ACHAR(10)
-!!$               hdr_len = hdr_len + 128
-!!$               header = header(1:hdr_len)//buf
-!!$
-!!$               buf(1:128) = "ORIGIN  0.000   0.000   0.000"//ACHAR(10)
-!!$               hdr_len = hdr_len + 128
-!!$               header = header(1:hdr_len)//buf
-!!$
-!!$               buf(1:128) = "SPACING  1  1  1"//ACHAR(10)
-!!$               hdr_len = hdr_len + 128
-!!$               header = header(1:hdr_len)//buf
-!!$
-!!$               buf = " "
-!!$               WRITE(buf, FMT="('POINT_DATA ', I8, A1)") NX*NY*NZ, ACHAR(10)
-!!$               hdr_len = hdr_len + 128
-!!$               header = header(1:hdr_len)//buf
-!!$
-!!$               buf(1:128) = "SCALARS scalars double"//ACHAR(10)
-!!$               hdr_len = hdr_len + 128
-!!$               header = header(1:hdr_len)//buf
-!!$
-!!$               buf(1:128) = "LOOKUP_TABLE default"//ACHAR(10)
-!!$               hdr_len = hdr_len + 128
-!!$               header = header(1:hdr_len)//buf
-!!$
-!!$               ! Terminate string nicely for the C routines...
-!!$               hdr_len = hdr_len + 128
-!!$               header(hdr_len+1:hdr_len+1) = ACHAR(0)
-! ...end of example
-
                ALLOCATE(f_array(veclen*NX*NY*NZ))
 
-               CALL make_vtk_buffer_f(header, NX, NY, NZ, veclen, aaxis, &
-                                      baxis, caxis, f_array, status)
+               ! Make an array of floats to send to vtk
+               CALL make_vtk_header_f(header, "My test data", NX, NY, NZ, &
+                                       veclen, REG_FLOAT, status)
 
-               CALL emit_start_f(iotype_handles(2), iloop, reg_true, iohandle,&
-                                 status)
+               IF(status .eq. REG_SUCCESS)THEN
+                 CALL make_vtk_buffer_f(NX, NY, NZ, veclen, aaxis, &
+                                        baxis, caxis, f_array, status)
+
+                 IF(status .eq. REG_SUCCESS)THEN
+                   CALL emit_start_f(iotype_handles(2), iloop, reg_true, &
+                                     iohandle, status)
+                 END IF
+
+               END IF
 
                IF( status .eq. REG_SUCCESS )THEN
 	
-                 !data_count = hdr_len
                  data_count = LEN(header)
                  data_type  = REG_CHAR
                  CALL emit_data_slice_f(iohandle, data_type, data_count, &
@@ -481,6 +452,13 @@ PROGRAM mini_app
                !DEALLOCATE(d_array)
 
                WRITE (*,*) '...done'
+
+             ELSE IF(recvd_cmds(icmd) .EQ. chk_handles(1))THEN
+
+               WRITE (*,*) 'Got checkpoint command...'
+               ! Pretend that we took a checkpoint
+               CALL record_chkpt_f(chk_handles(1), "Some_tag_or_filename", &
+                                   status)
              END IF
 
           END SELECT
@@ -518,3 +496,91 @@ PROGRAM mini_app
   END IF
 
 END PROGRAM mini_app
+
+!=================================================================
+
+!!$SUBROUTINE make_vtk_header_f(header, title, NX, NY, NZ, veclen, type, status)
+!!$
+!!$  IMPLICIT none
+!!$
+!!$  INCLUDE 'reg_steer_f90.inc'
+!!$
+!!$  CHARACTER (LEN=*)          :: header
+!!$  CHARACTER (LEN=*)          :: title
+!!$  INTEGER (KIND=REG_SP_KIND) :: NX, NY, NZ
+!!$  INTEGER (KIND=REG_SP_KIND) :: veclen
+!!$  INTEGER (KIND=REG_SP_KIND) :: type
+!!$  INTEGER (KIND=REG_SP_KIND) :: status
+!!$
+!!$  INTEGER (KIND=REG_SP_KIND) :: hdr_len
+!!$  CHARACTER (LEN=128)        :: buf
+!!$
+!!$  header = " "
+!!$
+!!$  buf = "# vtk DataFile Version 2.1"//ACHAR(10)
+!!$  header = buf
+!!$  hdr_len = LEN_TRIM(header)
+!!$
+!!$  buf = TRIM(title)//ACHAR(10)
+!!$  header = header(1:hdr_len)//buf
+!!$  hdr_len = LEN_TRIM(header)
+!!$
+!!$  buf = "BINARY"//ACHAR(10)
+!!$  header = header(1:hdr_len)//buf
+!!$  hdr_len = LEN_TRIM(header)
+!!$
+!!$  buf = "DATASET STRUCTURED_POINTS"//ACHAR(10)
+!!$  header = header(1:hdr_len)//buf
+!!$  hdr_len = LEN_TRIM(header)
+!!$
+!!$  buf = " "
+!!$  WRITE(buf, FMT="('DIMENSIONS ',3(I3,1x),A1)") NX, NY, NZ, &
+!!$        ACHAR(10)
+!!$  header = header(1:hdr_len)//buf
+!!$  hdr_len = LEN_TRIM(header)
+!!$
+!!$  buf = "ORIGIN  0.000   0.000   0.000"//ACHAR(10)
+!!$  header = header(1:hdr_len)//buf
+!!$  hdr_len = LEN_TRIM(header)
+!!$
+!!$  buf = "SPACING  1  1  1"//ACHAR(10)
+!!$  header = header(1:hdr_len)//buf
+!!$  hdr_len = LEN_TRIM(header)
+!!$
+!!$  buf = " "
+!!$  WRITE(buf, FMT="('POINT_DATA ', I8, A1)") NX*NY*NZ, ACHAR(10)
+!!$  header = header(1:hdr_len)//buf
+!!$  hdr_len = LEN_TRIM(header)
+!!$
+!!$  IF(type .eq. REG_DBL)THEN
+!!$
+!!$    buf = "SCALARS scalars double"//ACHAR(10)
+!!$
+!!$  ELSE IF(type .eq. REG_FLOAT) THEN
+!!$
+!!$    buf = "SCALARS scalars float"//ACHAR(10)
+!!$
+!!$  ELSE IF(type .eq. REG_INT) THEN
+!!$
+!!$    buf = "SCALARS scalars int"//ACHAR(10)
+!!$
+!!$  ELSE
+!!$
+!!$    WRITE (*,*) 'make_vtk_header_f: Unrecognised data type'
+!!$    status = REG_FAILURE
+!!$    RETURN
+!!$  END IF
+!!$
+!!$  header = header(1:hdr_len)//buf
+!!$  hdr_len = LEN_TRIM(header)
+!!$
+!!$  buf = "LOOKUP_TABLE default"//ACHAR(10)
+!!$  header = header(1:hdr_len)//buf
+!!$  hdr_len = LEN_TRIM(header)
+!!$
+!!$  ! Terminate string nicely for the C routines...
+!!$  header(hdr_len+1:hdr_len+1) = ACHAR(0)
+!!$
+!!$  status = REG_SUCCESS;
+!!$
+!!$END SUBROUTINE make_vtk_header_f

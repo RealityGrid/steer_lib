@@ -54,6 +54,15 @@ PROGRAM para_mini_app
   INTEGER (KIND=REG_SP_KIND), DIMENSION(REG_INITIAL_NUM_IOTYPES) :: iotype_handles
   INTEGER (KIND=REG_SP_KIND), DIMENSION(REG_INITIAL_NUM_IOTYPES) :: io_dirn
 
+  ! For Chk types
+  INTEGER (KIND=REG_SP_KIND) :: num_chk_types
+  CHARACTER(LEN=REG_MAX_STRING_LENGTH), &
+                           DIMENSION(REG_INITIAL_NUM_IOTYPES) :: chk_labels
+  INTEGER (KIND=REG_SP_KIND), &
+                           DIMENSION(REG_INITIAL_NUM_IOTYPES) :: chk_handles
+  INTEGER (KIND=REG_SP_KIND), &
+                           DIMENSION(REG_INITIAL_NUM_IOTYPES) :: chk_dirn
+
   INTEGER (KIND=REG_SP_KIND) :: input_freq  = 0
   INTEGER (KIND=REG_SP_KIND) :: output_freq = 5
 
@@ -166,14 +175,15 @@ PROGRAM para_mini_app
   
     WRITE(*,*) 'Returned IOtype = ', iotype_handles(2)
 
-    io_labels(1) = " "
-    io_labels(1) = "SOME_CHECKPOINT"
-    io_labels(1)(12:12) = CHAR(0)
+    num_chk_types = 1
+    chk_labels(1) = " "
+    chk_labels(1) = "SOME_CHECKPOINT"
+    chk_labels(1)(12:12) = CHAR(0)
 
-    io_dirn(1) = REG_IO_CHKPT
+    chk_dirn(1) = REG_IO_INOUT
   
-    CALL register_iotypes_f(num_types, io_labels, io_dirn, &
-                            output_freq, iotype_handles(2), status)
+    CALL register_chktypes_f(num_chk_types, chk_labels, chk_dirn, &
+                            output_freq, chk_handles(1), status)
 
     IF(status .ne. REG_SUCCESS)THEN
   
