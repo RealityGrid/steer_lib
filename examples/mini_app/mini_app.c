@@ -52,13 +52,6 @@ int main(){
   REG_IOHandleType iohandle;
   int    data_type;
   int    data_count;
-
-  char  *param_labels[REG_INITIAL_NUM_PARAMS];
-  void  *param_ptrs[REG_INITIAL_NUM_PARAMS];
-  int    param_types[REG_INITIAL_NUM_PARAMS];
-  int    param_strbl[REG_INITIAL_NUM_PARAMS];
-  char  *param_min[REG_INITIAL_NUM_PARAMS];
-  char  *param_max[REG_INITIAL_NUM_PARAMS];
 	 
   int    status;
   int    numCommands;
@@ -184,108 +177,34 @@ int main(){
 
   /* Register some parameters */
 
-  param_labels[0] = "OPACITY_STEP_START";
-  param_ptrs[0]   = (void *)(&opacity_step_start);
-  param_types[0]  = REG_INT;
-  param_strbl[0]  = REG_TRUE;
-  param_min[0]    = "0";
-  param_max[0]    = "256";
-
-  param_labels[1] = "OPACITY_STEP_STOP";
-  param_ptrs[1]   = (void *)(&opacity_step_stop);
-  param_types[1]  = REG_INT;
-  param_strbl[1]  = REG_TRUE;
-  param_min[1]    = "0";
-  param_max[1]    = "256";
-
-  param_labels[2] = "TEMP";
-  param_ptrs[2]   = (void *)(&temp);
-  param_types[2]  = REG_FLOAT;
-  param_strbl[2]  = REG_FALSE;
-  param_min[2]    = "";
-  param_max[2]    = "";
-
-  param_labels[3] = "A_STRING";
+  status = Register_param("OPACITY_STEP_START", REG_TRUE, 
+			  (void *)(&opacity_step_start),
+			  REG_INT, "0", "256");
+  status = Register_param("OPACITY_STEP_STOP", REG_TRUE, 
+			  (void *)(&opacity_step_stop),
+			  REG_INT, "0", "256");
+  status = Register_param("TEMP", REG_FALSE, (void *)(&temp),
+			  REG_FLOAT, "", "");
   sprintf(my_string, "running");
-  param_ptrs[3]   = (void *)(my_string);
-  param_types[3]  = REG_CHAR;
-  param_strbl[3]  = REG_TRUE;
-  /* For strings, max. 'value' is taken as max. length */
-  param_min[3]    = "";
-  if( !(param_max[3] = malloc(8*sizeof(char))) ){
-    printf("mini_app: failed to malloc 8 bytes!\n");
-    return REG_FAILURE;
-  }
-  /* Let's say that this string can be at most 10 
-     characters long */
-  sprintf(param_max[3], "%d", 10);
-
-  param_labels[4] = "a_axis";
-  param_ptrs[4]   = (void *)(&aaxis);
-  param_types[4]  = REG_DBL;
-  param_strbl[4]  = REG_TRUE;
-  param_min[4]    = "0.01";
-  param_max[4]    = "10.0";
-
-  param_labels[5] = "b_axis";
-  param_ptrs[5]   = (void *)(&baxis);
-  param_types[5]  = REG_DBL;
-  param_strbl[5]  = REG_TRUE;
-  param_min[5]    = "0.01";
-  param_max[5]    = "10.0";
-
-  param_labels[6] = "c_axis";
-  param_ptrs[6]   = (void *)(&caxis);
-  param_types[6]  = REG_DBL;
-  param_strbl[6]  = REG_TRUE;
-  param_min[6]    = "0.01";
-  param_max[6]    = "10.0";
-
-  param_labels[7] = "str_float";
-  param_ptrs[7]   = (void *)(&str_float);
-  param_types[7]  = REG_FLOAT;
-  param_strbl[7]  = REG_TRUE;
-  param_min[7]    = "-10.0";
-  param_max[7]    = "";
-
-  param_labels[8] = "time_to_sleep";
-  param_ptrs[8]   = (void *)(&sleep_time);
-  param_types[8]  = REG_INT;
-  param_strbl[8]  = REG_TRUE;
-  param_min[8]    = "0";
-  param_max[8]    = "100";
-
-  param_labels[9] = "nx";
-  param_ptrs[9]   = (void *)(&nx);
-  param_types[9]  = REG_INT;
-  param_strbl[9]  = REG_TRUE;
-  param_min[9]    = "1";
-  param_max[9]    = "";
-
-  param_labels[10] = "ny";
-  param_ptrs[10]   = (void *)(&ny);
-  param_types[10]  = REG_INT;
-  param_strbl[10]  = REG_TRUE;
-  param_min[10]    = "1";
-  param_max[10]    = "";
-
-  param_labels[11] = "nz";
-  param_ptrs[11]   = (void *)(&nz);
-  param_types[11]  = REG_INT;
-  param_strbl[11]  = REG_TRUE;
-  param_min[11]    = "1";
-  param_max[11]    = "";
-
-  status = Register_params(12,
-			   param_labels,
-			   param_strbl,
-			   param_ptrs,
-			   param_types,
-			   param_min,
-			   param_max);
- 
+  status = Register_param("A_STRING", REG_TRUE, (void *)(my_string),
+			  REG_CHAR, "", "10");
+  status = Register_param("a_axis", REG_TRUE, (void *)(&aaxis),
+			  REG_DBL, "0.01", "10.0");
+  status = Register_param("b_axis", REG_TRUE, (void *)(&baxis),
+			  REG_DBL, "0.01", "10.0");
+  status = Register_param("c_axis", REG_TRUE, (void *)(&caxis),
+			  REG_DBL, "0.01", "10.0");
+  status = Register_param("str_float", REG_TRUE, (void *)(&str_float),
+			  REG_FLOAT, "-10.0", "");
+  status = Register_param("time_to_sleep", REG_TRUE, (void *)(&sleep_time),
+			  REG_INT, "0", "100");
+  status = Register_param("nx", REG_TRUE, (void *)(&nx),
+			  REG_INT, "1", "");
+  status = Register_param("ny", REG_TRUE, (void *)(&ny),
+			  REG_INT, "1", "");
+  status = Register_param("nz", REG_TRUE, (void *)(&nz),
+			  REG_INT, "1", "");
   if(status != REG_SUCCESS){
-
     printf("Failed to register parameters\n");
   }
 
@@ -504,7 +423,6 @@ int main(){
 
   /* Clean up locals */
   free(changed_param_labels[0]);
-  free(param_max[3]);
 
   return 0;
 }
