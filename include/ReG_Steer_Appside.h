@@ -104,18 +104,6 @@ extern PREFIX int Emit_start(int  IOType,
 			     int  UseXDR,
 			     int *IOTypeIndex);
 
-/* Open the specified IOType (as returned by a call to Register_IOTypes)
-   ready for input. */
-extern PREFIX int Consume_start(int               IOType,
-				int		  *IOTypeIndex);
-
-/* Close the specified IOType and complete the emission process. */
-extern PREFIX int Emit_stop(int	       *IOTypeIndex);
-
-/* Close the specified IOType and complete the consumption process. 
-   Frees any memory used during the consumption. */
-extern PREFIX int Consume_stop(int	       *IOTypeIndex);
-
 /* Must be called following a call to Emit_start.  Emits <Count> items
    of type <DataType> as pointed to by <pData>. */
 extern PREFIX int Emit_data_slice(int	            IOTypeIndex,
@@ -123,19 +111,32 @@ extern PREFIX int Emit_data_slice(int	            IOTypeIndex,
 				  int               Count,
 				  void             *pData);
 
-/* Must be called following a call to Consume_start. Returns a ptr
-   to <Count> items of type <DataType>. This pointer is temporary - the
-   data should be copied from the memory to which it points. */
-extern PREFIX int Consume_data_slice(int	      IOTypeIndex,
-				     int              *DataType,
-				     int              *Count,
-				     void            **pData);
+/* Close the specified IOType and complete the emission process. */
+extern PREFIX int Emit_stop(int	       *IOTypeIndex);
 
-extern PREFIX int Consume_data_slice(REG_IOHandleType  IOHandle,
-				     int              *DataType,
-				     int              *Count,
-				     void            **pData);
+/* Open the specified IOType (as returned by a call to Register_IOTypes)
+   ready for input. */
+extern PREFIX int Consume_start(int               IOType,
+				int		  *IOTypeIndex);
 
+/* Must be called following a call to Consume_start.  Use to get the type
+   and number of data objects in the next 'slice' - allows user to allocate
+   sufficient memory for call to Consume_data_slice */
+extern PREFIX int Consume_data_slice_header(int  IOTypeIndex,
+			                    int *DataType,
+			                    int *Count);
+
+/* Must be called following a call to Consume_data_slice_header. <pData> 
+   should point to a block of memory large enough to hold <Count> items
+   of type <DataType>. */
+extern PREFIX int Consume_data_slice(int     IOTypeIndex,
+		                     int     DataType,
+		                     int     Count,
+		                     void   *pData);
+
+/* Close the specified IOType and complete the consumption process. 
+   Frees any memory used during the consumption. */
+extern PREFIX int Consume_stop(int	       *IOTypeIndex);
 
 /* Called once all steering activity is complete.  Disconnects from
    steerer (if any), removes the 'I am steerable' advertisement and 
