@@ -113,15 +113,15 @@ SOURCE=.\src\ReG_Steer_Common.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\ReG_Steer_Logging.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\ReG_Steer_Proxy_utils.c
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\ReG_Steer_Steerside.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\ReG_Steer_Steerside_Globus.c
 # End Source File
 # Begin Source File
 
@@ -181,15 +181,15 @@ SOURCE=.\include\ReG_Steer_Common.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\include\ReG_Steer_Logging.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\include\ReG_Steer_Proxy_utils.h
 # End Source File
 # Begin Source File
 
 SOURCE=.\include\ReG_Steer_Steerside.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\include\ReG_Steer_Steerside_Globus.h
 # End Source File
 # Begin Source File
 
