@@ -212,7 +212,7 @@ int main(){
 
     /* ARPDBG for io testing only (should emit in response to a command
        or maybe every n steps)... */
-    if( Emit_start(iotype_handle[1], i, FALSE, &iohandle) == REG_SUCCESS ){
+    if( Emit_start(iotype_handle[1], i, TRUE, &iohandle) == REG_SUCCESS ){
 	
       data_count = strlen(header);
       data_type  = REG_CHAR;

@@ -558,6 +558,7 @@ int Register_IOTypes(int    NumTypes,
     IOTypes_table.io_def[current].port = 0;
     IOTypes_table.io_def[current].comms_status = REG_COMMS_STATUS_NULL;
     IOTypes_table.io_def[current].index=current;
+    IOTypes_table.io_def[current].use_xdr = FALSE;
 
     if (type[i] == REG_IO_OUT)
     {
@@ -733,9 +734,10 @@ int Consume_start(int  IOType,
 int Consume_stop(int *IOTypeIndex)
 {
   int             return_status = REG_SUCCESS;
-  char            buffer[REG_PACKET_SIZE];
+  /*  char            buffer[REG_PACKET_SIZE];
   globus_size_t   nbytes;
   globus_result_t result;
+  */
 
   /* Check that steering is enabled */
   if(!ReG_SteeringEnabled) return REG_SUCCESS;
@@ -822,7 +824,7 @@ int Consume_data_slice_header(int  IOTypeIndex,
 
   /* Blocks until REG_PACKET_SIZE bytes received */
   result = globus_io_read(&(IOTypes_table.io_def[IOTypeIndex].conn_handle), 
-			  buffer, 
+			  (globus_byte_t *)buffer, 
 			  REG_PACKET_SIZE, 
 			  REG_PACKET_SIZE, 
 			  &nbytes);
@@ -872,6 +874,30 @@ int Consume_data_slice_header(int  IOTypeIndex,
   }
 
   sscanf(buffer, "<Data_type>%d</Data_type>", DataType);
+
+  /* Use of XDR is internal to library so make sure user doesn't
+     get confused.  use_xdr flag set here for use in subsequent call
+     to consume_data_slice */
+  switch(*DataType){
+
+  case REG_XDR_INT:
+    IOTypes_table.io_def[IOTypeIndex].use_xdr = TRUE;
+    *DataType = REG_INT;
+    break;
+
+  case REG_XDR_FLOAT:
+    IOTypes_table.io_def[IOTypeIndex].use_xdr = TRUE;
+    *DataType = REG_FLOAT;
+    break;
+
+  case REG_XDR_DOUBLE:
+    IOTypes_table.io_def[IOTypeIndex].use_xdr = TRUE;
+    *DataType = REG_DBL;
+    break;
+
+  default:
+    break;
+  }
 
   result = globus_io_read(&(IOTypes_table.io_def[IOTypeIndex].conn_handle), 
 			  buffer, 
@@ -930,7 +956,6 @@ int Consume_data_slice(int    IOTypeIndex,
 {
   int		   index;
   int              i;
-  int              is_xdr = FALSE;
   globus_object_t *err; 
   globus_result_t  result;
   globus_size_t    nbytes;
@@ -948,29 +973,36 @@ int Consume_data_slice(int    IOTypeIndex,
   switch(DataType){
 
   case REG_INT:
-    num_bytes_to_read = Count*sizeof(int);
+    if(IOTypes_table.io_def[IOTypeIndex].use_xdr){
+      num_bytes_to_read = Count*REG_SIZEOF_XDR_INT;
+    }
+    else{
+      num_bytes_to_read = Count*sizeof(int);
+    }
     break;
+
   case REG_FLOAT:
-    num_bytes_to_read = Count*sizeof(float);
+    if(IOTypes_table.io_def[IOTypeIndex].use_xdr){
+      num_bytes_to_read = Count*REG_SIZEOF_XDR_FLOAT;
+    }
+    else{
+      num_bytes_to_read = Count*sizeof(float);
+    }
     break;
+
   case REG_DBL:
-    num_bytes_to_read = Count*sizeof(double);
+    if(IOTypes_table.io_def[IOTypeIndex].use_xdr){
+      num_bytes_to_read = Count*REG_SIZEOF_XDR_DOUBLE;
+    }
+    else{
+      num_bytes_to_read = Count*sizeof(double);
+    }
     break;
+
   case REG_CHAR:
     num_bytes_to_read = Count*sizeof(char);
     break;
-  case REG_XDR_INT:
-    num_bytes_to_read = Count*REG_SIZEOF_XDR_INT;
-    is_xdr = TRUE;
-    break;
-  case REG_XDR_FLOAT:
-    num_bytes_to_read = Count*REG_SIZEOF_XDR_FLOAT;
-    is_xdr = TRUE;
-    break;
-  case REG_XDR_DOUBLE:
-    num_bytes_to_read = Count*REG_SIZEOF_XDR_DOUBLE;
-    is_xdr = TRUE;
-    break;
+
   default:
     fprintf(stderr, "Consume_data_slice: Unrecognised data type specified "
 	    "in slice header\n");
@@ -1000,6 +1032,13 @@ int Consume_data_slice(int    IOTypeIndex,
 			  num_bytes_to_read, 
 			  &nbytes);
 
+  /*ARPDBG */
+  fprintf(stderr, "Consume_data_slice: globus_io_read read %d bytes\n",
+	  nbytes);
+  if(DataType == REG_CHAR){
+    fprintf(stderr, "Consume_data_slice: got char data:\n>>%s<<\n", (char *)pData);
+  }
+
   if(result != GLOBUS_SUCCESS){
 
     fprintf(stderr, "Consume_data_slice: error globus_io_read\n");
@@ -1028,7 +1067,7 @@ int Consume_data_slice(int    IOTypeIndex,
     return REG_FAILURE;
   }
 
-  if(is_xdr){
+  if(IOTypes_table.io_def[IOTypeIndex].use_xdr){
 
 #if DEBUG
     fprintf(stderr, "Consume_data_slice: doing XDR decode\n");
@@ -1165,6 +1204,9 @@ int Consume_data_slice(int    IOTypeIndex,
   }
 
   */
+
+  /* Reset use_xdr flag set as only valid on a per-slice basis */
+  IOTypes_table.io_def[IOTypeIndex].use_xdr = FALSE;
 
   return REG_SUCCESS;
 }
@@ -1354,7 +1396,9 @@ int Emit_start(int  IOType,
     sprintf(fmt, "%s%ds", "%-", REG_PACKET_SIZE);
     sprintf(buffer, fmt, REG_DATA_HEADER);
 
-    fprintf(stderr, "DBG -  TEST Sending '%s'", buffer);
+#if DEBUG
+    fprintf(stderr, "Emit_start: Sending '%s'\n", buffer);
+#endif
 
     result = globus_io_write(&(IOTypes_table.io_def[*IOTypeIndex].conn_handle), 
 			     buffer, 
@@ -1578,13 +1622,15 @@ int Emit_data_slice(int		      IOTypeIndex,
 
   /* Send data */
 
-  if(IOTypes_table.io_def[IOTypeIndex].use_xdr){
+  if(IOTypes_table.io_def[IOTypeIndex].use_xdr && DataType != REG_CHAR){
+    /* XDR-encoded data stored in buffer associated with IO channel */
     result = globus_io_write(&(IOTypes_table.io_def[IOTypeIndex].conn_handle), 
 			     IOTypes_table.io_def[IOTypeIndex].buffer, 
 			     num_bytes_to_send, 
 			     &nbytes);
   }
   else{
+    /* Just send raw data as provided by calling routine */
     result = globus_io_write(&(IOTypes_table.io_def[IOTypeIndex].conn_handle), 
 			     pData, 
 			     num_bytes_to_send, 
