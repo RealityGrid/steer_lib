@@ -140,9 +140,9 @@ typedef struct {
   int   max_val_valid;
   char  max_val[REG_MAX_STRING_LENGTH];
 
-  void* log;
-  int   log_index;
-  int   log_size;
+  double* log;
+  int     log_index;
+  int     log_size;
 
 } param_entry;
 

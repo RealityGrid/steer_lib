@@ -1205,7 +1205,9 @@ int Consume_param_log(Sim_entry_type *sim,
   int handle;
   int index;
   int i = -1;
-
+  int   dum_int;
+  float dum_float;
+  
   while(param_ptr){
 
     if(!param_ptr->handle){
@@ -1242,15 +1244,19 @@ int Consume_param_log(Sim_entry_type *sim,
 
       case REG_INT:
 	sscanf((char *)(param_ptr->value), "%d",
-	       &( ((int *)(sim->Params_table.param[i].log))[index++]) );
+	       &dum_int);
+	sim->Params_table.param[i].log[index++] = (double)dum_int;
+	/* &( ((int *)(sim->Params_table.param[i].log))[index++]) );*/
         break;
       case REG_FLOAT:
 	sscanf((char *)(param_ptr->value), "%f",
-	       &( ((float *)(sim->Params_table.param[i].log))[index++]) );
+	       &dum_float);
+	sim->Params_table.param[i].log[index++] = (double)dum_float;
+        /* &( ((float *)(sim->Params_table.param[i].log))[index++]) );*/
 	break;
       case REG_DBL:
 	sscanf((char *)(param_ptr->value), "%f",
-	       &( ((double *)(sim->Params_table.param[i].log))[index++]) );
+	       &(sim->Params_table.param[i].log[index++]) );
 	break;
       case REG_CHAR:
 	/* This not implemented yet */
@@ -1265,6 +1271,7 @@ int Consume_param_log(Sim_entry_type *sim,
       switch(sim->Params_table.param[i].type){
 
       /* Store a zero if we have no actual value */
+	/*
       case REG_INT:
 	((int *)(sim->Params_table.param[i].log))[index++] = 0;
         break;
@@ -1274,24 +1281,26 @@ int Consume_param_log(Sim_entry_type *sim,
       case REG_DBL:
 	((double *)(sim->Params_table.param[i].log))[index++] = 0.0;
 	break;
+*/
       case REG_CHAR:
 	/* This not implemented yet */
 	fprintf(stderr, "Consume_param_log: logging of char params not "
 		"implemented!\n");
 	break;
       default:
+	sim->Params_table.param[i].log[index++] = 0.0;
 	break;
       }
-    }
+    } /* end if(param_ptr->value) */
 
     if(index >= sim->Params_table.param[i].log_size){
       Realloc_param_log(&(sim->Params_table.param[i]));
     }
 
+    sim->Params_table.param[i].log_index = index;
+
     param_ptr = param_ptr->next;
   }
-
-  if(i>-1)sim->Params_table.param[i].log_index = index;
 
   return REG_SUCCESS;
 }
@@ -2326,10 +2335,10 @@ int Set_param_values(int    sim_handle,
 
 /*----------------------------------------------------------------*/
 
-int Get_param_log(int    sim_handle,
-		  int    handle,
-		  void **buf, 
-		  int   *num_entries)
+int Get_param_log(int      sim_handle,
+		  int      handle,
+		  double **buf, 
+		  int     *num_entries)
 {
   int isim;
   int index;
@@ -3442,15 +3451,15 @@ int Realloc_param_log(param_entry *param)
 	      " bytes\n", param->log_size*sizeof(double));
       return REG_FAILURE;
     }
-    param->log = dum_ptr;
+    param->log = (double *)dum_ptr;
   }
   else{
     param->log_index = 0;
     param->log_size = chunk_size;
 
-    if( !(param->log = malloc(param->log_size*sizeof(double))) ){
+    if( !(param->log = (double *)malloc(param->log_size*sizeof(double))) ){
       param->log_size = 0;
-      fprintf(stderr, "Consume_param_log: failed to malloc mem for log\n");
+      fprintf(stderr, "Realloc_param_log: failed to malloc mem for log\n");
       return REG_FAILURE;
     }
   }

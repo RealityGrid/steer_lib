@@ -3103,6 +3103,7 @@ int Steering_control(int     SeqNum,
 
   /* Variables for timing */
   float          time_per_step;
+  static float   inv_clocks_per_sec = 0.0;
   clock_t        new_time;
   static clock_t previous_time   = 0;
   static int     first_time      = REG_TRUE;
@@ -3139,6 +3140,44 @@ int Steering_control(int     SeqNum,
   /* Can only call this function if steering lib initialised */
 
   if (!ReG_SteeringInit) return REG_FAILURE;
+
+
+  /* Update any library-controlled monitored variables */
+  if(seq_num_index != -1){
+    sprintf(Params_table.param[seq_num_index].value, "%d", SeqNum);
+    Params_table.param[seq_num_index].modified = REG_TRUE;
+  }
+  else{
+    seq_num_index = Param_index_from_handle(&(Params_table), 
+					    REG_SEQ_NUM_HANDLE);
+    if(seq_num_index != -1){
+      sprintf(Params_table.param[seq_num_index].value, "%d", SeqNum);
+      Params_table.param[seq_num_index].modified = REG_TRUE;
+    }
+  }
+
+  /* Calculate CPU time used since last call */
+  if(step_time_index != -1){
+
+    new_time = clock();
+    /*time_per_step = (float)(new_time - previous_time)/(float)(CLOCKS_PER_SEC*Steerer_connection.steer_interval);*/
+    time_per_step = (float)(new_time - previous_time)*inv_clocks_per_sec;
+    previous_time = new_time;
+
+    /* First value we get will be rubbish because need two passes 
+       through to get a valid difference... */
+    if(!first_time){
+      sprintf(Params_table.param[step_time_index].value, "%.3f", 
+	      time_per_step);
+      Params_table.param[step_time_index].modified = REG_TRUE;
+    }
+    else{
+      step_time_index = Param_index_from_handle(&(Params_table), 
+						REG_STEP_TIME_HANDLE);
+      first_time = REG_FALSE;
+      inv_clocks_per_sec = 1.0/(float)(CLOCKS_PER_SEC);
+    }    
+  }
 
   /* Log current parameter values irrespective of whether a 
      steering client is attached */
@@ -3227,41 +3266,6 @@ int Steering_control(int     SeqNum,
 #endif
 
     /* If we're being steered (no matter how) then... */
-
-    /* Update any library-controlled monitored variables */
-    if(seq_num_index != -1){
-      sprintf(Params_table.param[seq_num_index].value, "%d", SeqNum);
-      Params_table.param[seq_num_index].modified = REG_TRUE;
-    }
-    else{
-      seq_num_index = Param_index_from_handle(&(Params_table), 
-					      REG_SEQ_NUM_HANDLE);
-      if(seq_num_index != -1){
-	sprintf(Params_table.param[seq_num_index].value, "%d", SeqNum);
-	Params_table.param[seq_num_index].modified = REG_TRUE;
-      }
-    }
-
-    /* Calculate CPU time used since last call */
-    if(step_time_index != -1){
-
-      new_time = clock();
-      time_per_step = (float)(new_time - previous_time)/(float)(CLOCKS_PER_SEC*Steerer_connection.steer_interval);
-      previous_time = new_time;
-
-      /* First value we get will be rubbish because need two passes 
-	 through to get a valid difference... */
-      if(!first_time){
-	sprintf(Params_table.param[step_time_index].value, "%.3f", 
-		time_per_step);
-        Params_table.param[step_time_index].modified = REG_TRUE;
-      }
-      else{
-	step_time_index = Param_index_from_handle(&(Params_table), 
-						  REG_STEP_TIME_HANDLE);
-	first_time = REG_FALSE;
-      }    
-    }
 
     /* Read anything that the steerer has sent to us */
     if( Consume_control(&num_commands,
@@ -4725,6 +4729,7 @@ int Detach_from_steerer()
   /* Flag that all entries in log need to be sent to steerer (in case
      another one attaches later on) */
   Chk_log.send_all   = REG_TRUE;
+  Param_log.send_all = REG_TRUE;
 
   ReG_SteeringActive = REG_FALSE;
   ReG_IOTypesChanged = REG_TRUE;

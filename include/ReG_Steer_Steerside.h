@@ -200,10 +200,10 @@ extern PREFIX int Set_param_values(int    sim_handle,
 /* Retrieve pointer to internal buffer holding previous values of
    the parameter with handle 'handle' belonging to 'sim_handle.'
    num_entries holds the no. of entries in the log. */
-extern PREFIX int Get_param_log(int  sim_handle,
-				int  handle,
-				void **buf, 
-				int *num_entries);
+extern PREFIX int Get_param_log(int      sim_handle,
+				int      handle,
+				double **buf, 
+				int     *num_entries);
 
 /* Gets the number of IO types associated with the simulation with
    handle <sim_handle>. */
