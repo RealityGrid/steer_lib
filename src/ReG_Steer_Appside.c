@@ -308,28 +308,12 @@ int Steering_initialize(int  NumSupportedCmds,
 
 int Steering_finalize()
 {
-  int  commands[1];
-
   /* Can only call this function if steering lib initialised */
 
   if (!ReG_SteeringInit) return REG_FAILURE;
 
-  /* Tell the steerer that we are done - if steering via soap
-     then leave this to Finalize_steering_connection 
-ARPDBG - should be down in Finalize_steering_connection somewhere??
-#if !REG_SOAP_STEERING
-  if(ReG_SteeringActive){
-
-    commands[0] = REG_STR_DETACH;
-    Emit_status(0,
-		0,
-		NULL,
-		1,
-		commands);
-  }
-#endif
-  */
-  /* Signal that component no-longer steerable */
+  /* Tell the steerer that we are done - signal that component 
+     no-longer steerable */
   Finalize_steering_connection();
 
   /* Save remaining log entries to file */
@@ -379,9 +363,6 @@ ARPDBG - should be down in Finalize_steering_connection somewhere??
 
   Params_table.num_registered = 0;
   Params_table.max_entries = REG_INITIAL_NUM_IOTYPES;
-
-  /* Signal that component no-longer steerable */
-  /* ARPDBG - moved up Finalize_steering_connection();*/
 
   /* Reset state of library */
 
@@ -3590,6 +3571,7 @@ int Initialize_IOType_transport(const int direction,
 #if REG_GLOBUS_SAMPLES
 
   return Initialize_IOType_transport_globus(direction, index);
+
 #else
 
   return REG_SUCCESS;

@@ -64,6 +64,7 @@ typedef struct
 {
   /* port for socket connection */
   unsigned short int		listener_port;
+  char			        listener_hostname[REG_MAX_STRING_LENGTH];
 
   /* socket attributes */
   globus_io_attr_t		attr;
@@ -80,7 +81,6 @@ typedef struct
   globus_cond_t			cond;
 
   char			        connector_hostname[REG_MAX_STRING_LENGTH];
-
   unsigned short int	        connector_port;
 
 #if REG_GLOBUS_SAMPLES

@@ -196,6 +196,7 @@ void Globus_callback_poll(socket_io_type * const socket_info)
 int Globus_create_listener(socket_io_type * const socket_info)
 {
   globus_result_t	result;
+  char                 *pchar;
 
   /* create listener socket on free port 
    *  - if environment variable GLOBUS_TCP_PORT_RANGE has been set,
@@ -219,6 +220,20 @@ int Globus_create_listener(socket_io_type * const socket_info)
   fprintf(stderr, "DBG: Listener on port %d\n", socket_info->listener_port);
 #endif
 
+  /* Get the hostname of the machine we're running on (so we can publish
+     the endpoint of this connection */
+  if(pchar = Get_fully_qualified_hostname()){
+
+    sprintf(socket_info->listener_hostname, "%s", pchar);
+  }
+  else{
+
+    fprintf(stderr, "Globus_create_listener: WARNING: failed to get "
+	    "hostname\n");
+    sprintf(socket_info->listener_hostname, " ");
+  }
+
+  
   /* now register listener so can accept connections when they happen */
   result = globus_io_tcp_register_listen(&(socket_info->listener_handle),
 					 Globus_listener_callback,
