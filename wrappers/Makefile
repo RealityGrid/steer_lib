@@ -18,6 +18,7 @@ tcl: FORCE
 none:
 
 clean:
+	rm -rf *~ core
 	cd python; ${MAKE} clean
 	cd perl;   ${MAKE} clean
 	cd tcl;    ${MAKE} clean
