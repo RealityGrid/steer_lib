@@ -86,14 +86,14 @@ int main(){
   float temp               = 55.6;
   float str_float          = 0.9;
   char  my_string[REG_MAX_STRING_LENGTH];
+  int   nx = 64;
+  int   ny = 64;
+  int   nz = 64;
 
   int   itag;
   int   finished           = FALSE;
   int   icmd;
   int   i, j;
-  const int NX = 64;
-  const int NY = 64;
-  const int NZ = 64;
   
   double aaxis = 1.5;
   double baxis = 1.5;
@@ -258,7 +258,28 @@ int main(){
   param_min[8]    = "0";
   param_max[8]    = "100";
 
-  status = Register_params(9,
+  param_labels[9] = "nx";
+  param_ptrs[9]   = (void *)(&nx);
+  param_types[9]  = REG_INT;
+  param_strbl[9]  = TRUE;
+  param_min[9]    = "1";
+  param_max[9]    = "";
+
+  param_labels[10] = "ny";
+  param_ptrs[10]   = (void *)(&ny);
+  param_types[10]  = REG_INT;
+  param_strbl[10]  = TRUE;
+  param_min[10]    = "1";
+  param_max[10]    = "";
+
+  param_labels[11] = "nz";
+  param_ptrs[11]   = (void *)(&nz);
+  param_types[11]  = REG_INT;
+  param_strbl[11]  = TRUE;
+  param_min[11]    = "1";
+  param_max[11]    = "";
+
+  status = Register_params(12,
 			   param_labels,
 			   param_strbl,
 			   param_ptrs,
@@ -270,16 +291,6 @@ int main(){
 
     printf("Failed to register parameters\n");
   }
-
-  /* malloc memory for array */
-
-  array = (float *)malloc(NX*NY*NZ*sizeof(float));
-  if( !array ){
-
-    fprintf(stderr, "Malloc failed...\n");
-    return REG_FAILURE;
-  }
-
 
   /* Enter main loop */
 
@@ -344,11 +355,23 @@ int main(){
 
 		if(j==1){
 
-		  if(Make_vtk_header(header, "Some data", NX, NY, NZ, 1, 
+		  if(Make_vtk_header(header, "Some data", nx, ny, nz, 1, 
 				     REG_FLOAT) != REG_SUCCESS) {
 		    continue;
 		  }
-		  if(Make_vtk_buffer(NX, NY, NZ, 1, aaxis, baxis, caxis, 
+
+		  /* malloc memory for array */
+
+		  if( !(array = (float *)malloc(nx*ny*nz*sizeof(float))) ){
+		    
+		    fprintf(stderr, "Malloc of %d bytes failed...\n",
+			    nx*ny*nz*sizeof(float));
+		    status = Steering_finalize();
+		    return REG_FAILURE;
+		  }
+
+
+		  if(Make_vtk_buffer(nx, ny, nz, 1, aaxis, baxis, caxis, 
                                      array)
 		     != REG_SUCCESS){
 
@@ -374,8 +397,8 @@ int main(){
 
 		    /* Construct header for this chunk to allow the recipient 
 		       of this data to reconstruct the data set */
-                    status = Make_chunk_header(header, iohandle, NX, NY, NZ, 
-					       0, 0, 0, NX, NY, NZ);
+                    status = Make_chunk_header(header, iohandle, nx, ny, nz, 
+					       0, 0, 0, nx, ny, nz);
 
 		    printf("Second slice...\n");
 		    data_count = strlen(header);
@@ -384,12 +407,15 @@ int main(){
 					     header);
 
 		    printf("Third slice...\n");
-		    data_count = NX*NY*NZ;
+		    data_count = nx*ny*nz;
 		    data_type  = REG_FLOAT;
 		    status = Emit_data_slice(iohandle, data_type, data_count, 
 					     array);
 
 		    Emit_stop(&iohandle);
+
+		    free(array);
+		    array = NULL;
 		  }
 		}
 	        break;
@@ -442,7 +468,6 @@ int main(){
 
   /* Clean up */
   free(changed_param_labels[0]);
-  free(array);
 
   return 0;
 }
