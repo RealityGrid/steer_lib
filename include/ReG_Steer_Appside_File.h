@@ -70,7 +70,8 @@ int Consume_start_data_check_file(int index);
    does 'ls <fileroot>').
    If any are found, names is malloc'd to point to an array of char*
    and each entry in this array is malloc'd and set to the relevant
-   filename. These ptrs MUST be free'd. */
+   filename. These ptrs MUST be free'd. *num can be zero even if the
+   routine returns REG_SUCCESS. */
 int Get_file_list(char *fileroot,
 		  int  *num,
 		  char ***names);
