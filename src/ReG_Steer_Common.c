@@ -570,8 +570,6 @@ int Write_xml_header(char **buf)
   /* Write header for a ReG steering message */
 
   if(buf){
-    /**buf += sprintf(*buf, "<?xml version=\"1.0\"?>\n");*/
-
     *buf += sprintf(*buf, "<ReG_steer_message xmlns:xsi=\""
 	        "http://www.w3.org/2001/XMLSchema-instance\"\n");
 
