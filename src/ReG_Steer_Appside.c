@@ -48,6 +48,7 @@
 #include <time.h>
 #include <rpc/rpc.h>
 #include <math.h>
+#include <string.h>
 
 /* Allow value of 'DEBUG' to propagate down from Reg_steer_types.h if
    it has been set there */

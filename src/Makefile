@@ -60,12 +60,6 @@ proxy:
         -DREG_SOAP_STEERING=${REG_SOAP_STEERING_FLAG} \
         ${INCLUDE_PATH} -c $< -o $@
 
-.cpp.o:
-	${CXX} ${CXX_FLAGS} -DREG_GLOBUS_SAMPLES=${REG_GLOBUS_SAMPLES_FLAG} \
-	-DREG_GLOBUS_STEERING=${REG_GLOBUS_STEERING_FLAG} \
-        -DREG_SOAP_STEERING=${REG_SOAP_STEERING_FLAG} \
-        ${INCLUDE_PATH} -c $< -o $@
-
 ${LIB_PATH}/libReG_Steer.a: ReG_Steer_Appside_f.o \
 	ReG_Steer_Appside.o \
 	ReG_Steer_Steerside.o \
@@ -182,13 +176,6 @@ ReG_Steer_Steerside_Soap.o: ReG_Steer_Steerside_Soap.c \
         ../include/soapSGS.nsmap \
         ../include/soapH.h \
 	stdsoap2.c soapC.c soapClient.c 
-
-stdsoap2.o: stdsoap2.c \
-	../include/stdsoap2.h
-	${CXX} ${CXX_FLAGS} -DREG_GLOBUS_SAMPLES=${REG_GLOBUS_SAMPLES_FLAG} \
-	-DREG_GLOBUS_STEERING=${REG_GLOBUS_STEERING_FLAG} \
-        -DREG_SOAP_STEERING=${REG_SOAP_STEERING_FLAG} -DDEBUG \
-        ${INCLUDE_PATH} -c stdsoap2.c -o stdsoap2.o
 
 #---------------------------------------------------------------
 
