@@ -1689,6 +1689,21 @@ int Steering_control(int     SeqNum,
   static clock_t previous_time = 0;
   static int     first_time    = TRUE;
 
+#ifdef USE_TIMING
+  static float  sim_time, steer_time;
+  static double time0 = -1.0, time1 = -1.0;
+
+  Get_current_time_seconds(&time0);
+
+  if(time1 > -1.0){
+    sim_time = (float)(time0 - time1);
+    fprintf(stderr, "TIMING: Spent %.4f seconds working\n",
+	    sim_time);
+    fprintf(stderr, "TIMING: Steering overhead = %.2f\%\n", 
+	    100.0*(steer_time/sim_time));
+  }
+#endif
+
   *NumSteerParams   = 0;
   *NumSteerCommands = 0;
 
@@ -1931,6 +1946,14 @@ int Steering_control(int     SeqNum,
 
   /* Record how many commands we're going to pass back to caller */
   *NumSteerCommands = count;
+
+#ifdef USE_TIMING
+  Get_current_time_seconds(&time1);
+  steer_time = (float)(time1 - time0);
+
+  fprintf(stderr, "TIMING: Spent %.4f seconds in Steering_control\n",
+	  steer_time);
+#endif
 
   return return_status;
 }
