@@ -73,6 +73,14 @@ IOdef_table_type ChkTypes_table;
 
 Chk_log_type Chk_log;
 
+static struct  {
+
+  int num_files;
+  int max_num_files;
+  char **filenames;
+
+} Checkpoint_files ;
+
 /* Log of steering commands received */
 
 Steer_log_type Steer_log;
@@ -282,6 +290,24 @@ int Steering_initialize(char *AppName,
   for(i=0; i<ChkTypes_table.max_entries; i++){
 
     ChkTypes_table.io_def[i].handle = REG_IODEF_HANDLE_NOTSET;
+  }
+
+  /* Memory for storing checkpoint filenames */
+
+  Checkpoint_files.num_files = 0;
+  Checkpoint_files.max_num_files = 50;
+  Checkpoint_files.filenames = malloc(Checkpoint_files.max_num_files*sizeof(char*));
+
+  if(!Checkpoint_files.filenames){
+    fprintf(stderr, "Steering_initialize: failed to allocate memory "
+	    "for checkpoint filenames\n");
+
+    free(IOTypes_table.io_def);
+    IOTypes_table.io_def = NULL;
+    free(ChkTypes_table.io_def);
+    ChkTypes_table.io_def = NULL;
+    Steering_enable(FALSE);
+    return REG_FAILURE;
   }
 
   /* Set up table for registered parameters */
@@ -511,6 +537,7 @@ int Steering_finalize()
 	free(IOTypes_table.io_def[i].buffer);
 	IOTypes_table.io_def[i].buffer = NULL;
 	IOTypes_table.io_def[i].buffer_bytes = 0;
+	IOTypes_table.io_def[i].buffer_max_bytes = 0;
       }
     }
     free(IOTypes_table.io_def);
@@ -522,11 +549,19 @@ int Steering_finalize()
 
   /* Clean-up ChkTypes table */
 
-  if(ChkTypes_table.io_def != NULL){
+  if(ChkTypes_table.io_def){
+
+    for(i=0; i<ChkTypes_table.num_registered; i++){
+      if(ChkTypes_table.io_def[i].buffer){
+	free(ChkTypes_table.io_def[i].buffer);
+	ChkTypes_table.io_def[i].buffer = NULL;
+	ChkTypes_table.io_def[i].buffer_bytes = 0;
+	ChkTypes_table.io_def[i].buffer_max_bytes = 0;
+      }
+    }
     free(ChkTypes_table.io_def);
     ChkTypes_table.io_def = NULL;
   }
-
   ChkTypes_table.num_registered = 0;
   ChkTypes_table.max_entries = REG_INITIAL_NUM_IOTYPES;
 
@@ -672,6 +707,7 @@ int Register_IOTypes(int    NumTypes,
       
     IOTypes_table.io_def[current].buffer = NULL;
     IOTypes_table.io_def[current].buffer_bytes = 0;
+    IOTypes_table.io_def[current].buffer_max_bytes = 0;
     IOTypes_table.io_def[current].use_xdr = FALSE;
     IOTypes_table.io_def[current].num_xdr_bytes = 0;
     IOTypes_table.io_def[current].array.nx = 0;
@@ -1123,6 +1159,7 @@ int Record_checkpoint_set(int   ChkType,
   char  *pchar;
   char  *pTag;
   time_t time_now;
+  int    index;
 #endif
 
   /* Can only call this function if steering lib initialised */
@@ -1138,58 +1175,107 @@ int Record_checkpoint_set(int   ChkType,
 
   /* Get list of checkpoint files */
 
-  /* Calc. length of string - 'ls -1' and slashes add 9 chars so
-     add a few more for safety.  Ask for 2*strlen(ChkTag) so that
-     we can use the end of this buffer to hold the trimmed version
-     of the tag. */
-  len = strlen(Path) + 2*strlen(ChkTag) + strlen(ReG_CurrentDir) + 20;
+  index = IOdef_index_from_handle(&ChkTypes_table, ChkType);
+  if(ChkTypes_table.io_def[index].buffer_bytes == 0){
 
-  if( !(pchar = (char *)malloc(len)) ){
+    /* Calc. length of string - 'ls -1' and slashes add 9 chars so
+       add a few more for safety.  Ask for 2*strlen(ChkTag) so that
+       we can use the end of this buffer to hold the trimmed version
+       of the tag. */
+    len = strlen(Path) + 2*strlen(ChkTag) + strlen(ReG_CurrentDir) + 20;
 
-    fprintf(stderr, "Record_checkpoint_set: malloc of %d bytes failed\n",
-	    len);
-    return REG_FAILURE;
-  }
+    if( !(pchar = (char *)malloc(len)) ){
 
-  /* Set our pointer to the 'spare' bit at the end of the buffer
-     we've just malloc'd */
-  pTag = &(pchar[len - strlen(ChkTag) - 1]);
+      fprintf(stderr, "Record_checkpoint_set: malloc of %d bytes failed\n",
+	      len);
+      return REG_FAILURE;
+    }
 
-  /* Trim off leading space... */
-  len = strlen(ChkTag);
-  j = -1;
-  for(i=0; i<len; i++){
+    /* Set our pointer to the 'spare' bit at the end of the buffer
+       we've just malloc'd */
+    pTag = &(pchar[len - strlen(ChkTag) - 1]);
 
-    if(ChkTag[i] != ' '){
-      j = i;
-      break;
+    /* Trim off leading space... */
+    len = strlen(ChkTag);
+    j = -1;
+    for(i=0; i<len; i++){
+
+      if(ChkTag[i] != ' '){
+	j = i;
+	break;
+      }
+    }
+
+    if(j == -1){
+      fprintf(stderr, "Record_checkpoint_set: ChkTag is blank\n");
+      return REG_FAILURE;
+    }
+
+    /* Copy tag until first blank space - i.e. tag must not contain any
+       spaces. */
+    for(i=j; i<len; i++){
+      if(ChkTag[i] == ' ')break;
+      pTag[count++] = ChkTag[i];
+    }
+    pTag[count] = '\0';
+
+    sprintf(pchar, "%s/%s/*%s*", ReG_CurrentDir, Path, pTag);
+
+    filenames = NULL;
+    status = Get_file_list(pchar, &nfiles, &filenames);
+    free(pchar);
+
+    if( (status != REG_SUCCESS) || !nfiles){
+
+      fprintf(stderr, "Record_checkpoint_set: failed to find checkpoint "
+	      "files with tag >%s<\n", ChkTag);
+      return REG_FAILURE;
     }
   }
+  else{
 
-  if(j == -1){
-    fprintf(stderr, "Record_checkpoint_set: ChkTag is blank\n");
-    return REG_FAILURE;
-  }
+    /* Temporarily store the path to the files in the node_data string
+       'cos we don't use that until later */
+    sprintf(node_data, "%s/%s/", ReG_CurrentDir, Path);
 
-  /* Copy tag until first blank space - i.e. tag must not contain any
-     spaces. */
-  for(i=j; i<len; i++){
-    if(ChkTag[i] == ' ')break;
-    pTag[count++] = ChkTag[i];
-  }
-  pTag[count] = '\0';
+    /* Filenames have been added by calls to Record_checkpoint_file */
+    pchar = (char *)ChkTypes_table.io_def[index].buffer;
 
-  sprintf(pchar, "%s/%s/*%s*", ReG_CurrentDir, Path, pTag);
+    nfiles = 0;
+    while(pchar = strchr(++pchar, ' ')){
+      nfiles++;
+    }
+    if(nfiles > 0){
+      filenames = (char **)malloc(nfiles * sizeof(char*));
+      if(!filenames){
+	fprintf(stderr, "Record_checkpoint_set: failed to malloc "
+		"filenames array\n");
+	return REG_FAILURE;
+      }
 
-  filenames = NULL;
-  status = Get_file_list(pchar, &nfiles, &filenames);
-  free(pchar);
+      printf("ARPDBG: path >>%s<<\n", node_data);
+      len = strlen(node_data); /* Get length of path */
+      pchar = (char *)ChkTypes_table.io_def[index].buffer;
+      for(i=0; i<nfiles; i++){
+	pTag = strchr(pchar, ' ');
+	filenames[i] = (char *)malloc((pTag - pchar) + 1 + len);
+	if(!filenames[i]){
+	  fprintf(stderr, "Record_checkpoint_set: malloc for filename "
+		  "%d failed\n", i);
+	  return REG_FAILURE;
+	}
+	strcpy(filenames[i], node_data); /* Put path at beginning of filename */
+	strncat(filenames[i], pchar, (pTag-pchar));
+	filenames[i][(pTag-pchar)+1+len] = '\0';
+	printf("ARPDBG, file %d >>%s<<\n", i, filenames[i]);
+	pchar = ++pTag;
+      }
+    } /* nfiles > 0 */
 
-  if( (status != REG_SUCCESS) || !nfiles){
-
-    fprintf(stderr, "Record_checkpoint_set: failed to find checkpoint "
-	    "files with tag >%s<\n", ChkTag);
-    return REG_FAILURE;
+    /* Reset contents of ChkType buffer ready for next checkpoint */
+    memset(ChkTypes_table.io_def[index].buffer, '\0', 
+	   ChkTypes_table.io_def[index].buffer_max_bytes);
+    ChkTypes_table.io_def[index].buffer_bytes = 0;
   }
 
   /* Construct checkpoint meta-data */
@@ -1205,7 +1291,7 @@ int Record_checkpoint_set(int   ChkType,
   bytes_left -= nbytes;
 
   for(i=0; i<nfiles; i++){
-    
+
     nbytes = snprintf(pchar, bytes_left, "  <file type=\"gsiftp-URL\">\n"
 		      "    gsiftp://%s%s\n    </file>\n",
 		      ReG_Hostname, filenames[i]);
@@ -1221,6 +1307,7 @@ int Record_checkpoint_set(int   ChkType,
     free(filenames[i]);
   }
   free(filenames);
+  filenames = NULL;
 
   nbytes = snprintf(pchar, bytes_left, "</Files>\n</Checkpoint_data>\n");
   pchar += nbytes;
@@ -1228,6 +1315,7 @@ int Record_checkpoint_set(int   ChkType,
 
   /* Store the values of all registered parameters at this point (so
      long as they're not internal to the library) */
+  memset(node_data, '\0', REG_MAX_MSG_SIZE);
   pchar = node_data;
   bytes_left = REG_MAX_MSG_SIZE;
   nbytes = snprintf(pchar, bytes_left, "<Checkpoint_node_data>\n");
@@ -1287,12 +1375,12 @@ int Record_checkpoint_set(int   ChkType,
     return REG_FAILURE;
   }
 
-#if REG_DEBUG
+  /*#if REG_DEBUG*/
   fprintf(stderr, "Record_checkpoint_set: node meta data >>%s<<\n",
 	  node_data);
   fprintf(stderr, "Record_checkpoint_set: cp_data >>%s<<\n",
 	  cp_data);
-#endif
+  /*#endif*/
 
   /* Record checkpoint */
   Record_checkpoint_set_soap(cp_data, node_data);
@@ -1301,6 +1389,64 @@ int Record_checkpoint_set(int   ChkType,
 
 #endif /* REG_SOAP_STEERING */
 
+}
+
+/*----------------------------------------------------------------*/
+
+int Record_checkpoint_file(int   ChkType,
+			   char *filename)
+{
+  int index;
+  int nbytes;
+
+  /* Can only call this function if steering lib initialised */
+  if (!ReG_SteeringInit) return REG_FAILURE;
+
+  if (ChkType == REG_IODEF_HANDLE_NOTSET) return REG_SUCCESS;
+
+  index = IOdef_index_from_handle(&ChkTypes_table, ChkType);
+
+  if (index == REG_IODEF_HANDLE_NOTSET) return REG_FAILURE;
+
+  /* Check that we have sufficient memory; +1 to allow for space delimiter */
+  nbytes = strlen(filename)+1;
+  printf("ARPDBG: nbytes = %d\n", nbytes);
+  printf("ARPDBG: buffer_max_bytes = %d\n", 
+	 ChkTypes_table.io_def[index].buffer_max_bytes);
+  printf("ARPDBG: buffer_bytes = %d\n", 
+	 ChkTypes_table.io_def[index].buffer_bytes);
+
+  if( (ChkTypes_table.io_def[index].buffer_max_bytes - 
+       ChkTypes_table.io_def[index].buffer_bytes) < nbytes ){
+
+    if( Realloc_chktype_buffer(index, 
+			       (ChkTypes_table.io_def[index].buffer_max_bytes + 
+				56*nbytes)) != REG_SUCCESS){
+      return REG_FAILURE;
+    }
+  }
+
+  if(ChkTypes_table.io_def[index].buffer_bytes){
+    nbytes = sprintf( 
+&(( (char *)(ChkTypes_table.io_def[index].buffer) )[ChkTypes_table.io_def[index].buffer_bytes - 1]),
+		   "%s ", filename);
+    printf("ARPDBG: pos should be %d\n",ChkTypes_table.io_def[index].buffer_bytes - 1);
+  }
+  else{
+    nbytes = sprintf( (char *)(ChkTypes_table.io_def[index].buffer),
+		   "%s ", filename);
+  }
+
+  /* Update the count of the bytes stored - include the '\0' (and
+     hence the '-1' above) */
+  ChkTypes_table.io_def[index].buffer_bytes += nbytes + 1;
+
+  printf("ARPDBG, filenames buffer = %s\n", 
+	 ChkTypes_table.io_def[index].buffer);
+  printf("ARPDBG, filenames buffer, count = %d\n", 
+	 ChkTypes_table.io_def[index].buffer_bytes);
+
+  return REG_SUCCESS;
 }
 
 /*----------------------------------------------------------------*/
@@ -1614,6 +1760,7 @@ int Consume_stop(int *IOTypeIndex)
     free(IOTypes_table.io_def[*IOTypeIndex].buffer);
     IOTypes_table.io_def[*IOTypeIndex].buffer = NULL;
     IOTypes_table.io_def[*IOTypeIndex].buffer_bytes = 0;
+    IOTypes_table.io_def[*IOTypeIndex].buffer_max_bytes = 0;
   }
 
   /* Reset handle associated with channel */
@@ -1767,7 +1914,7 @@ int Consume_data_slice(int    IOTypeIndex,
   if(IOTypes_table.io_def[IOTypeIndex].use_xdr ||
      IOTypes_table.io_def[IOTypeIndex].convert_array_order == TRUE){
 
-    if(IOTypes_table.io_def[IOTypeIndex].buffer_bytes < num_bytes_to_read){
+    if(IOTypes_table.io_def[IOTypeIndex].buffer_max_bytes < num_bytes_to_read){
 
       if(Realloc_iotype_buffer(IOTypeIndex, num_bytes_to_read) 
 	 != REG_SUCCESS){
@@ -1976,7 +2123,7 @@ int Emit_data_slice(int		      IOTypeIndex,
       datatype = REG_XDR_INT;
       num_bytes_to_send = actual_count*REG_SIZEOF_XDR_INT;
 
-      if(num_bytes_to_send > IOTypes_table.io_def[IOTypeIndex].buffer_bytes){
+      if(num_bytes_to_send > IOTypes_table.io_def[IOTypeIndex].buffer_max_bytes){
 
 	if(Realloc_iotype_buffer(IOTypeIndex, num_bytes_to_send) 
 	   != REG_SUCCESS){
@@ -2008,7 +2155,7 @@ int Emit_data_slice(int		      IOTypeIndex,
       datatype = REG_XDR_FLOAT;
       num_bytes_to_send = actual_count*REG_SIZEOF_XDR_FLOAT;
 
-      if(num_bytes_to_send > IOTypes_table.io_def[IOTypeIndex].buffer_bytes){
+      if(num_bytes_to_send > IOTypes_table.io_def[IOTypeIndex].buffer_max_bytes){
 
 	if(Realloc_iotype_buffer(IOTypeIndex, num_bytes_to_send) 
 	   != REG_SUCCESS){
@@ -2040,7 +2187,7 @@ int Emit_data_slice(int		      IOTypeIndex,
       datatype = REG_XDR_DOUBLE;
       num_bytes_to_send = actual_count*REG_SIZEOF_XDR_DOUBLE;
 
-      if(num_bytes_to_send > IOTypes_table.io_def[IOTypeIndex].buffer_bytes){
+      if(num_bytes_to_send > IOTypes_table.io_def[IOTypeIndex].buffer_max_bytes){
 
 	/* This function will malloc if buffer not already set */
 	if(Realloc_iotype_buffer(IOTypeIndex, num_bytes_to_send) 
@@ -4901,48 +5048,68 @@ int Emit_iotype_msg_header(int IOTypeIndex,
 int Realloc_iotype_buffer(int index,
 			  int num_bytes)
 {
+  return Realloc_IOdef_entry_buffer(&(IOTypes_table.io_def[index]),
+				    num_bytes);
+}
+
+/*----------------------------------------------------------------*/
+
+int Realloc_chktype_buffer(int index,
+			   int num_bytes)
+{
+  return Realloc_IOdef_entry_buffer(&(ChkTypes_table.io_def[index]),
+				    num_bytes);
+}
+
+/*----------------------------------------------------------------*/
+
+int Realloc_IOdef_entry_buffer(IOdef_entry *iodef, 
+			       int num_bytes)
+{
   void *dum_ptr;
 
-  if(index < 0)return REG_FAILURE;
+  if(!iodef)return REG_FAILURE;
 
 #if REG_DEBUG
-  if(IOTypes_table.io_def[index].buffer){
-    fprintf(stderr, "Realloc_iotype_buffer: realloc'ing pointer %p\n", 
-	    IOTypes_table.io_def[index].buffer);
+  if(iodef->buffer){
+    fprintf(stderr, "Realloc_IOdef_entry_buffer: realloc'ing "
+	    "pointer %p\n", iodef->buffer);
   }
   else{
-    fprintf(stderr, "Realloc_iotype_buffer: doing malloc for IO buffer\n");
+    fprintf(stderr, "Realloc_IOdef_entry_buffer: doing "
+	    "malloc for IO buffer\n");
   }
 #endif
 
-  if(IOTypes_table.io_def[index].buffer){
+  if(iodef->buffer){
 
-    if(!(dum_ptr = realloc(IOTypes_table.io_def[index].buffer, 
+    if(!(dum_ptr = realloc(iodef->buffer, 
 			 (size_t)num_bytes))){
 
-      free(IOTypes_table.io_def[index].buffer);
-      IOTypes_table.io_def[index].buffer = NULL;
-      IOTypes_table.io_def[index].buffer_bytes = 0;
+      free(iodef->buffer);
+      iodef->buffer = NULL;
+      iodef->buffer_bytes = 0;
+      iodef->buffer_max_bytes = 0;
  
-      fprintf(stderr, "Realloc_iotype_buffer: realloc failed for %d bytes\n", 
-	      num_bytes);
+      fprintf(stderr, "Realloc_IOdef_entry_buffer: realloc "
+	      "failed for %d bytes\n", num_bytes);
       return REG_FAILURE;
     }
 
-    IOTypes_table.io_def[index].buffer = dum_ptr;
+    iodef->buffer = dum_ptr;
   }
   else{
-    if(!(IOTypes_table.io_def[index].buffer = malloc(num_bytes))){
+    if(!(iodef->buffer = malloc(num_bytes))){
 
-      IOTypes_table.io_def[index].buffer_bytes = 0;
+      iodef->buffer_max_bytes = 0;
  
-      fprintf(stderr, "Realloc_iotype_buffer: malloc failed for %d bytes\n", 
-	      num_bytes);
+      fprintf(stderr, "Realloc_IOdef_entry_buffer: malloc "
+	      "failed for %d bytes\n", num_bytes);
       return REG_FAILURE;
     }
   }
 
-  IOTypes_table.io_def[index].buffer_bytes = num_bytes;
+  iodef->buffer_max_bytes = num_bytes;
 
   return REG_SUCCESS;
 }

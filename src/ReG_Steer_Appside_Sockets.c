@@ -1169,10 +1169,10 @@ int Consume_start_data_check_sockets(const int index) {
       }
     }
 
-    IOTypes_table.io_def[index].buffer_bytes = REG_IO_BUFSIZE;
+    IOTypes_table.io_def[index].buffer_max_bytes = REG_IO_BUFSIZE;
     IOTypes_table.io_def[index].buffer = (void*) malloc(REG_IO_BUFSIZE);
     if(!IOTypes_table.io_def[index].buffer) {
-      IOTypes_table.io_def[index].buffer_bytes = 0;
+      IOTypes_table.io_def[index].buffer_max_bytes = 0;
       fprintf(stderr, "Consume_start_data_check_sockets: malloc of IO buffer failed\n");
       return REG_FAILURE;
     }
