@@ -96,7 +96,7 @@
 #define REG_MAX_NUM_STR_PARAMS 40
 
 /* Limit on number of log messages we can send in one go */
-#define REG_MAX_NUM_LOG_MSG 20
+#define REG_MAX_NUM_LOG_MSG 30
 
 /* Initial sizes for internal tables of registered IO types 
    and parameters */
@@ -124,10 +124,10 @@
 
 #define REG_STR_STOP             1
 #define REG_STR_PAUSE            2
-#define REG_STR_PAUSE_INTERNAL   3
-#define REG_STR_RESUME           4
-#define REG_STR_DETACH           5
-#define REG_STR_EMIT_PARAM_LOG   6
+#define REG_STR_RESUME           3
+#define REG_STR_DETACH           4
+#define REG_STR_EMIT_PARAM_LOG   5
+#define REG_STR_PAUSE_INTERNAL   6
 
 /* All generated IOtype handles must be >= this value because they
    will be interpreted as commands - this value must therefore be >
@@ -261,5 +261,8 @@ typedef int REG_IOHandleType;
    to poll for connection from steerer - overridden by 
    REG_APP_POLL_INTERVAL environment variable if set */ 
 #define REG_APP_POLL_INTERVAL_DEFAULT 5
+
+/* Size of buffer used for string handling etc - use 1MB for now */
+#define REG_SCRATCH_BUFFER_SIZE 1048576
 
 #endif /* __REG_TYPES_INCLUDED defined */

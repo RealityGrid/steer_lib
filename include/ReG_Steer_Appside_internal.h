@@ -100,9 +100,6 @@ static int Emit_IOType_defs();
    (if any). */
 static int Emit_ChkType_defs();
 
-/* Emit any log entries that steerer doesn't know about */
-static int Emit_log(Chk_log_type *log);
-
 /* Consume a control message (if any present) from the steerer. Returns
    any commands and associated parameters (the latter as a space-separated 
    list in a string) that the application must deal with.  CommandParams is an
@@ -149,14 +146,14 @@ static int Update_ptr_value(param_entry *param);
 /* Update the 'value' field of the param_entry by retrieving the
    value of the variable pointed to by the pointer associated
    with the entry */
-static int Get_ptr_value(param_entry *param);
+int Get_ptr_value(param_entry *param);
 
 /* Catch any signals and thus allow the library to clean up if the
    application crashes or is stopped abruptly */
 static void Steering_signal_handler(int aSignal);
 
 /* Send a status message to the steerer */
-static int Send_status_msg(char *buf);
+int Send_status_msg(char *buf);
 
 /* Create the xml message to tell steerer what standard commands
    the application supports (supplied in array SupportedCmds). */
@@ -237,58 +234,6 @@ static int Emit_iotype_msg_header(int IOTypeIndex,
 				  int Count,
 				  int NumBytes,
 				  int IsFortranArray);
-
-/* Sets the value of the next primary key to be used in generating
-   log entries.  If a log file exists then it pulls the last value out
-   of it and increments it by one, otherwise it sets it to zero. */
-int Set_log_primary_key(Chk_log_type *log);
-
-/* Allocate memory etc. for the log structure supplied */
-int Initialize_log(Chk_log_type *log);
-
-/* Identifies format of log supplied in *buf & converts it to xml if
-   necessary.  Then calls Pack_send_log_entries. */
-static int Emit_log_entries(Chk_log_type *log, char *buf);
-
-/* Open log file (in append mode) */
-static int Open_log_file(Chk_log_type *log);
-
-/* Close the log file */
-static int Close_log_file(Chk_log_type *log);
-
-/* Save current contents of log to file */
-static int Save_log(Chk_log_type *log);
-
-/* Convert current log to xml and store in buffer pointed to by pchar.
-   Length of buffer is returned in count. The memory pointed to by
-   *pchar must be free()'d by the caller once finished.  If
-   not_sent_only == REG_TRUE then only those entries not already returned
-   to the steering client are retrieved */
-static int Log_to_xml(Chk_log_type *log, char **pchar, int *count, 
-		      const int not_sent_only);
-
-/* Called from Log_to_xml for Checkpoint logs */
-int Chk_log_to_xml(Chk_log_type *log, char **pchar, int *count, 
-		   const int not_sent_only);
-
-/* Called from Log_to_xml for Parameter logs */
-int Param_log_to_xml(Chk_log_type *log, char **pchar, int *count, 
-		     const int not_sent_only);
-
-/* As for Log_to_xml except log is stored in columnar format - for
-   storing parameter histories. */
-int Log_to_columns(Chk_log_type *log, char **pchar, int *count, 
-		   const int not_sent_only);
-
-/* Convert a columnar-format log back into xml.  buf points to
-   the columnar data (space delimited data on lines delimited by
-   new-line chars) and out_buf points to a buffer pre-allocated
-   to receive the new format log. */
-int Log_columns_to_xml(char **buf, char* out_buf, int out_buf_size);
-
-/* Takes the xml document describing a log and splits it into separate
-   entries which are packed into messages and sent to client */
-int Pack_send_log_entries(char **pBuf);
 
 /* Wrapper for call to Realloc_IOdef_entry_buffer */
 static int Realloc_iotype_buffer(int index,

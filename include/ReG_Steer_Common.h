@@ -117,6 +117,10 @@ typedef struct {
      a previous occasion) is still in progress.  This feature
      prevents a deluge of log messages being emitted. */
   int                 emit_in_progress;
+  /* Count of how many log messages we've sent in this current call
+     of Steering_control. If this reaches REG_MAX_NUM_LOG_MSG then
+     we set the emit_in_progress flag and continue next time. */
+  int                 num_sent;
   /* Ptr to buffer holding contents of log buffer for log
      emits spread over several calls to Emit_log */
   char               *file_content;
