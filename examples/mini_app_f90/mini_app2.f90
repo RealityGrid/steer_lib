@@ -66,14 +66,15 @@ PROGRAM mini_app
   INTEGER (KIND=REG_SP_KIND), &
                            DIMENSION(REG_INITIAL_NUM_IOTYPES) :: chk_dirn
   CHARACTER(LEN=40)                                           :: chk_tag
+  REAL (KIND=REG_SP_KIND)    :: ran_no
+  INTEGER (KIND=REG_SP_KIND) :: itag
+  CHARACTER(LEN=5)           :: ctag
 
   INTEGER (KIND=REG_SP_KIND) :: output_freq = 5
   INTEGER (KIND=REG_SP_KIND) :: iohandle
   INTEGER (KIND=REG_SP_KIND) :: data_type
   INTEGER (KIND=REG_SP_KIND) :: data_count
-  INTEGER (KIND=REG_SP_KIND), DIMENSION(:), ALLOCATABLE :: i_array
-  REAL    (KIND=REG_SP_KIND), DIMENSION(:), ALLOCATABLE :: f_array
-  REAL    (KIND=REG_DP_KIND), DIMENSION(:), ALLOCATABLE :: d_array
+  INTEGER (KIND=REG_SP_KIND), DIMENSION(:,:,:), ALLOCATABLE :: i_array
 
   ! For parameters
   CHARACTER(LEN=40)          :: param_label
@@ -99,11 +100,11 @@ PROGRAM mini_app
   CHARACTER(LEN=REG_MAX_STRING_LENGTH), &
               DIMENSION(REG_MAX_NUM_STR_PARAMS) :: changed_param_labels
 
-  INTEGER (KIND=4) :: iloop, icmd, iparam, hdr_len, j
+  INTEGER (KIND=4) :: iloop, icmd, iparam, hdr_len, i, j, k
   INTEGER (KIND=4) :: finished = 0
-  INTEGER (KIND=4) :: NX = 32
-  INTEGER (KIND=4) :: NY = 32
-  INTEGER (KIND=4) :: NZ = 32
+  INTEGER (KIND=4) :: NX = 4
+  INTEGER (KIND=4) :: NY = 4
+  INTEGER (KIND=4) :: NZ = 4
   INTEGER (KIND=4) :: veclen = 1
   CHARACTER(LEN=4096) :: header
   CHARACTER(LEN=128)  :: buf
@@ -134,7 +135,8 @@ PROGRAM mini_app
 
   io_labels(2) = "VTK_STRUCTURED_POINTS_OUTPUT"
   io_dirn(2) = REG_IO_OUT
-  io_freqs(2)  = 1
+  ! Attempt to automatically output every timestep
+  io_freqs(2)  = 1 
   
   num_types = 2
 
@@ -152,8 +154,10 @@ PROGRAM mini_app
 
   num_chk_types = 1
   chk_labels(1) = "SOME_CHECKPOINT"
+  ! This checkpoint type can be created and used to restart too
   chk_dirn(1)   = REG_IO_INOUT
-  
+  io_freqs(1)   = 2
+
   ! Register a Checkpoint type
 
   CALL register_chktypes_f(num_chk_types, chk_labels, chk_dirn, &
@@ -174,10 +178,11 @@ PROGRAM mini_app
   param_type  = REG_INT
   param_strbl = reg_true
 
+  ! This parameter is restricted to the range 0 <= dum_int <= 256
   CALL register_param_f(param_label, param_strbl, dum_int, &
                         param_type, "0", "256", status)
 
-  ! Registration uses address of variable so use second 'dum_int' here
+  ! Registration uses ADDRESS of variable so use second 'dum_int' here
   ! rather than simply changing value of first one
   dum_int2 = 123
   param_label = "2nd_test_integer"
@@ -189,7 +194,8 @@ PROGRAM mini_app
   dum_int3 = 123
   param_label = "3rd_test_integer"
   param_strbl = reg_true
-
+  ! The values this parameter can take are not restricted by the
+  ! steering library
   CALL register_param_f(param_label, param_strbl, dum_int3, &
                         param_type, "", "", status)
 
@@ -206,6 +212,7 @@ PROGRAM mini_app
   param_type  = REG_FLOAT
   param_strbl = reg_true
   
+  ! This parameter has no lower bound but cannot be > 80.0
   CALL register_param_f(param_label, param_strbl, dum_real2, &
                         param_type, "", "80.0", status)
 
@@ -291,51 +298,6 @@ PROGRAM mini_app
   iloop = 1
   DO WHILE(iloop<num_sim_loops .AND. (finished .ne. 1))
 
-!!$    CALL consume_start_f(iotype_handles(1), iohandle, status)
-!!$
-!!$    IF( status == REG_SUCCESS )THEN
-!!$	
-!!$      CALL consume_data_slice_header_f(iohandle, data_type, data_count, status)
-!!$
-!!$
-!!$      DO WHILE(status == REG_SUCCESS)
-!!$
-!!$        SELECT CASE(data_type)
-!!$
-!!$        CASE (REG_INT)
-!!$
-!!$          ALLOCATE(i_array(data_count))
-!!$
-!!$          CALL consume_data_slice_f(iohandle, data_type, data_count, &
-!!$                                    i_array, status)
-!!$          DEALLOCATE(i_array)
-!!$
-!!$        CASE (REG_FLOAT)
-!!$
-!!$          ALLOCATE(f_array(data_count))
-!!$
-!!$          CALL consume_data_slice_f(iohandle, data_type, data_count, &
-!!$                                    f_array, status)
-!!$          DEALLOCATE(f_array)
-!!$
-!!$        CASE (REG_DBL)
-!!$
-!!$          ALLOCATE(d_array(data_count))
-!!$
-!!$          CALL consume_data_slice_f(iohandle, data_type, data_count, &
-!!$                                    d_array, status)
-!!$          DEALLOCATE(d_array)
-!!$
-!!$        END SELECT
-!!$
-!!$        CALL consume_data_slice_header_f(iohandle, data_type, &
-!!$                                         data_count, status)
-!!$
-!!$      END DO
-!!$
-!!$      CALL consume_stop_f(iohandle, status)
-!!$    END IF
-
     CALL steering_control_f(iloop, num_params_changed, changed_param_labels, &
                             num_recvd_cmds, recvd_cmds, recvd_cmd_params, &
                             status)
@@ -402,21 +364,13 @@ PROGRAM mini_app
 
                WRITE(*,*) 'Emitting data...'
 
-               ALLOCATE(f_array(veclen*NX*NY*NZ))
-
-               ! Make an array of floats to send to vtk
+               ! Make vtk-style header to describe data
                CALL make_vtk_header_f(header, "My test data", NX, NY, NZ, &
-                                       veclen, REG_FLOAT, status)
+                                       veclen, REG_INT, status)
 
                IF(status .eq. REG_SUCCESS)THEN
-                 CALL make_vtk_buffer_f(NX, NY, NZ, veclen, aaxis, &
-                                        baxis, caxis, f_array, status)
-
-                 IF(status .eq. REG_SUCCESS)THEN
-                   CALL emit_start_f(iotype_handles(2), iloop, &
-                                     iohandle, status)
-                 END IF
-
+                  CALL emit_start_f(iotype_handles(2), iloop, &
+                       iohandle, status)
                END IF
 
                IF( status .eq. REG_SUCCESS )THEN
@@ -427,30 +381,85 @@ PROGRAM mini_app
                                         header, status)
 
                  ! Test with int data
-                 !ALLOCATE(i_array(NX*NY*NZ))
-                 !data_type  = REG_INT
-                 !DO j=1, data_count, 1
-                 !  i_array(j) = NINT(f_array(j))
-                 !END DO
+                 ALLOCATE(i_array(NX,NY,NZ))
+                 data_type  = REG_INT
+                 data_count = NX*NY*NZ;
+                 DO k=1, NZ, 1
+                   DO j=1, NY, 1
+                     DO i=1, NX, 1
+                       i_array(i, j, k) = i*100 + j*10 + k
+                       WRITE(*,FMT='(3I3," = ",I3)') i, j, k, i_array(i,j,k)
+                     END DO
+                   END DO
+                 END DO
 
-                 ! Test with double data
-                 !ALLOCATE(d_array(NX*NY*NZ))
-                 !data_type  = REG_DBL
-                 !DO j=1, data_count, 1
-                 !  d_array(j) = REAL(f_array(j), REG_DP_KIND)
-                 !END DO
+                 ! Now emit the data - we do this in chunks to mimic the case 
+                 ! of a parallel program gathering data process by process.
 
-                 data_count = veclen*NX*NY*NZ
-                 data_type  = REG_FLOAT
+                 ! Make chunk header to describe data
+                 CALL make_chunk_header_f(header, iohandle, NX, NY, NZ, &
+                                          0, 0, 0, &
+                                          NX/2, NY/2, NZ, status)
+
+                 ! Send chunk header to describe data
+                 data_count = LEN_TRIM(header)
+                 data_type  = REG_CHAR
                  CALL emit_data_slice_f(iohandle, data_type, data_count, &
-                                        f_array, status)
+                                        header, status)
+
+                 ! Send data
+                 data_type  = REG_INT
+                 data_count = NX*NY*NZ/4;
+                 CALL emit_data_slice_f(iohandle, data_type, data_count, &
+                                        i_array(1:(NX/2),1:(NY/2),:), status)
+
+                 ! Send chunk header to describe data 
+                 CALL make_chunk_header_f(header, iohandle, NZ, NY, NZ, &
+                                          (NX/2), 0, 0, &
+                                          NX/2, NY/2, NZ, status)
+
+                 data_count = LEN_TRIM(header)
+                 data_type  = REG_CHAR
+                 CALL emit_data_slice_f(iohandle, data_type, data_count, &
+                                        header, status)
+
+                 data_type  = REG_INT
+                 data_count = NX*NY*NZ/4;
+                 CALL emit_data_slice_f(iohandle, data_type, data_count, &
+                                        i_array((1 + NX/2):NX,1:(NY/2),:), status)
+                 ! Send chunk header to describe data 
+                 CALL make_chunk_header_f(header, iohandle, NZ, NY, NZ, &
+                                          0, (NY/2), 0, &
+                                          NX/2, NY/2, NZ, status)
+
+                 data_count = LEN_TRIM(header)
+                 data_type  = REG_CHAR
+                 CALL emit_data_slice_f(iohandle, data_type, data_count, &
+                                        header, status)
+
+                 data_type  = REG_INT
+                 data_count = NX*NY*NZ/4;
+                 CALL emit_data_slice_f(iohandle, data_type, data_count, &
+                                        i_array(1:(NX/2),(1+NY/2):NY,:), status)
+                 ! Send chunk header to describe data 
+                 CALL make_chunk_header_f(header, iohandle, NZ, NY, NZ, &
+                                          (NX/2), (NY/2), 0, &
+                                          NX/2, NY/2, NZ, status)
+
+                 data_count = LEN_TRIM(header)
+                 data_type  = REG_CHAR
+                 CALL emit_data_slice_f(iohandle, data_type, data_count, &
+                                        header, status)
+
+                 data_type  = REG_INT
+                 data_count = NX*NY*NZ/4;
+                 CALL emit_data_slice_f(iohandle, data_type, data_count, &
+                                        i_array((1+NX/2):NX,(1+NY/2):NY,:), status)
 
                  CALL emit_stop_f(iohandle, status)
-               END IF
 
-               DEALLOCATE(f_array)
-               !DEALLOCATE(i_array)
-               !DEALLOCATE(d_array)
+                 DEALLOCATE(i_array)
+               END IF
 
                WRITE (*,*) '...done'
 
@@ -460,9 +469,18 @@ PROGRAM mini_app
 
                IF(INDEX(recvd_cmd_params(icmd), "OUT") /= 0)THEN
                  ! Pretend that we took a checkpoint
-                 WRITE (chk_tag, "(I)") iloop
-                 CALL record_chkpt_f(chk_handles(1), chk_tag, &
-                                     status)
+                 CALL random_number(ran_no)
+                 itag = NINT(100000.0*ran_no)
+                 WRITE(ctag, FMT='(I5)') itag
+                 chk_tag = "fake_chkpoint_"// TRIM(ADJUSTL(ctag))//".dat"
+		 OPEN(99, FILE=chk_tag, STATUS='REPLACE', ACTION='WRITE', &
+                      IOSTAT=status)
+		 IF(status .eq. 0)THEN
+		    WRITE(99, *) "Checkpoint data goes here"
+		    CLOSE(99)
+		    CALL Record_checkpoint_set_f(chk_handles(1), &
+					         TRIM(ADJUSTL(ctag)), ".", status)
+                 END IF
                END IF
              END IF
 

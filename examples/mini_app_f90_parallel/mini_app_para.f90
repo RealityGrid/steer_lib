@@ -111,7 +111,8 @@ PROGRAM para_mini_app
 
   dum_str = "hello"//CHAR(0)
 
-  ! Enable steering
+  ! Enable steering - we only ever call the steering library
+  ! from the master px
   IF(my_id .eq. 0)THEN
 
     CALL steering_enable_f(reg_true)
@@ -178,7 +179,7 @@ PROGRAM para_mini_app
   
   IF(my_id .eq. 0)THEN
     CALL register_chktypes_f(num_chk_types, chk_labels, chk_dirn, &
-                            output_freq, chk_handles(1), status)
+                             output_freq, chk_handles(1), status)
 
     IF(status .ne. REG_SUCCESS)THEN
   
@@ -198,6 +199,7 @@ PROGRAM para_mini_app
   param_strbl = reg_true
   
   IF(my_id .eq. 0)THEN
+     ! This variable restricted to 0 <= dum_int <= 100
     CALL register_param_f(param_labels(1), param_strbl, dum_int, &
                           param_type, "0", "100", status)
   END IF
@@ -313,6 +315,8 @@ PROGRAM para_mini_app
         CALL MPI_BCAST(changed_param_labels(iparam), REG_MAX_STRING_LENGTH, &
                        MPI_CHARACTER, 0, MPI_COMM_WORLD, IERROR)
 
+        ! It would be simpler to just broadcast all of the steerable parameters,
+        ! irrespective of whether they've been edited...
         IF(changed_param_labels(iparam) == param_labels(1))THEN
           CALL MPI_BCAST(dum_int, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, IERROR)
         ELSE IF(changed_param_labels(iparam) == param_labels(4))THEN
@@ -554,7 +558,8 @@ PROGRAM para_mini_app
     IF(finished .ne. 1)THEN
 
       ! Just calls 'sleep' command for a bit as we don't have
-      ! a simulation here
+      ! a simulation here - this is where we would do 'real work' if
+      ! we had any
       CALL steering_sleep_f()
 
       ! Adjust values of monitored variables
