@@ -1568,7 +1568,7 @@ int Consume_stop(int *IOTypeIndex)
     return REG_FAILURE;
   }
 
-#if !REG_GLOBUS_SAMPLES || !REG_SOCKET_SAMPLES
+#if !REG_GLOBUS_SAMPLES && !REG_SOCKET_SAMPLES
   /* Close any file associated with this channel */
   if(IOTypes_table.io_def[*IOTypeIndex].fp){
     fclose(IOTypes_table.io_def[*IOTypeIndex].fp);
@@ -1777,7 +1777,7 @@ int Emit_start(int  IOType,
 	       int  SeqNum,
 	       int *IOTypeIndex)
 {
-#if !REG_GLOBUS_SAMPLES || !REG_SOCKET_SAMPLES
+#if !REG_GLOBUS_SAMPLES && !REG_SOCKET_SAMPLES
   char *pchar;
   int   len;
 #endif
@@ -1814,7 +1814,7 @@ int Emit_start(int  IOType,
   /* Initialise array-ordering flags */
   IOTypes_table.io_def[*IOTypeIndex].convert_array_order = FALSE;
 
-#if !REG_GLOBUS_SAMPLES || !REG_SOCKET_SAMPLES
+#if !REG_GLOBUS_SAMPLES && !REG_SOCKET_SAMPLES
 
   /* Currently have no way of looking up what filename to use so 
      hardwire... */
@@ -1889,7 +1889,7 @@ int Emit_stop(int *IOTypeIndex)
 
   return_status = Emit_footer(*IOTypeIndex, Global_scratch_buffer);
 
-#if !REG_GLOBUS_SAMPLES || !REG_SOCKET_SAMPLES
+#if !REG_GLOBUS_SAMPLES && !REG_SOCKET_SAMPLES
   if(IOTypes_table.io_def[*IOTypeIndex].fp){
     fclose(IOTypes_table.io_def[*IOTypeIndex].fp);
     IOTypes_table.io_def[*IOTypeIndex].fp = NULL;
