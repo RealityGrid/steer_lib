@@ -41,8 +41,8 @@
 
 /* These NEED TO MATCH the names given to the service data elements in
    SGS.pm */
-#define REG_APP_STATUS_SDE "Application_status"
-#define REG_STEER_STATUS_SDE "Steerer_status"
+#define REG_APP_STATUS_SDE "SGS:Application_status"
+#define REG_STEER_STATUS_SDE "SGS:Steerer_status"
 
 /*-------------------------------------------------------------------*/
 

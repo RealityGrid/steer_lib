@@ -207,16 +207,16 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_out_tns__GetStatus(struct soap*, const char*, int
 SOAP_FMAC1 struct tns__GetStatus * SOAP_FMAC2 soap_get_tns__GetStatus(struct soap*, struct tns__GetStatus *, const char*, const char*);
 SOAP_FMAC1 struct tns__GetStatus * SOAP_FMAC2 soap_in_tns__GetStatus(struct soap*, const char*, struct tns__GetStatus *, const char*);
 
-#ifndef SOAP_TYPE_tns__FindServiceData
-#define SOAP_TYPE_tns__FindServiceData (19)
+#ifndef SOAP_TYPE_tns__findServiceData
+#define SOAP_TYPE_tns__findServiceData (19)
 #endif
-SOAP_FMAC1 void SOAP_FMAC2 soap_serialize_tns__FindServiceData(struct soap*, struct tns__FindServiceData const*);
-SOAP_FMAC1 void SOAP_FMAC2 soap_mark_tns__FindServiceData(struct soap*, const struct tns__FindServiceData *);
-SOAP_FMAC1 void SOAP_FMAC2 soap_default_tns__FindServiceData(struct soap*, struct tns__FindServiceData *);
-SOAP_FMAC1 int SOAP_FMAC2 soap_put_tns__FindServiceData(struct soap*, struct tns__FindServiceData *, const char*, const char*);
-SOAP_FMAC1 int SOAP_FMAC2 soap_out_tns__FindServiceData(struct soap*, const char*, int, const struct tns__FindServiceData *, const char*);
-SOAP_FMAC1 struct tns__FindServiceData * SOAP_FMAC2 soap_get_tns__FindServiceData(struct soap*, struct tns__FindServiceData *, const char*, const char*);
-SOAP_FMAC1 struct tns__FindServiceData * SOAP_FMAC2 soap_in_tns__FindServiceData(struct soap*, const char*, struct tns__FindServiceData *, const char*);
+SOAP_FMAC1 void SOAP_FMAC2 soap_serialize_tns__findServiceData(struct soap*, struct tns__findServiceData const*);
+SOAP_FMAC1 void SOAP_FMAC2 soap_mark_tns__findServiceData(struct soap*, const struct tns__findServiceData *);
+SOAP_FMAC1 void SOAP_FMAC2 soap_default_tns__findServiceData(struct soap*, struct tns__findServiceData *);
+SOAP_FMAC1 int SOAP_FMAC2 soap_put_tns__findServiceData(struct soap*, struct tns__findServiceData *, const char*, const char*);
+SOAP_FMAC1 int SOAP_FMAC2 soap_out_tns__findServiceData(struct soap*, const char*, int, const struct tns__findServiceData *, const char*);
+SOAP_FMAC1 struct tns__findServiceData * SOAP_FMAC2 soap_get_tns__findServiceData(struct soap*, struct tns__findServiceData *, const char*, const char*);
+SOAP_FMAC1 struct tns__findServiceData * SOAP_FMAC2 soap_in_tns__findServiceData(struct soap*, const char*, struct tns__findServiceData *, const char*);
 
 #ifndef SOAP_TYPE_tns__Detach
 #define SOAP_TYPE_tns__Detach (20)
@@ -229,16 +229,16 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_out_tns__Detach(struct soap*, const char*, int, c
 SOAP_FMAC1 struct tns__Detach * SOAP_FMAC2 soap_get_tns__Detach(struct soap*, struct tns__Detach *, const char*, const char*);
 SOAP_FMAC1 struct tns__Detach * SOAP_FMAC2 soap_in_tns__Detach(struct soap*, const char*, struct tns__Detach *, const char*);
 
-#ifndef SOAP_TYPE_tns__SetServiceData
-#define SOAP_TYPE_tns__SetServiceData (21)
+#ifndef SOAP_TYPE_tns__setServiceData
+#define SOAP_TYPE_tns__setServiceData (21)
 #endif
-SOAP_FMAC1 void SOAP_FMAC2 soap_serialize_tns__SetServiceData(struct soap*, struct tns__SetServiceData const*);
-SOAP_FMAC1 void SOAP_FMAC2 soap_mark_tns__SetServiceData(struct soap*, const struct tns__SetServiceData *);
-SOAP_FMAC1 void SOAP_FMAC2 soap_default_tns__SetServiceData(struct soap*, struct tns__SetServiceData *);
-SOAP_FMAC1 int SOAP_FMAC2 soap_put_tns__SetServiceData(struct soap*, struct tns__SetServiceData *, const char*, const char*);
-SOAP_FMAC1 int SOAP_FMAC2 soap_out_tns__SetServiceData(struct soap*, const char*, int, const struct tns__SetServiceData *, const char*);
-SOAP_FMAC1 struct tns__SetServiceData * SOAP_FMAC2 soap_get_tns__SetServiceData(struct soap*, struct tns__SetServiceData *, const char*, const char*);
-SOAP_FMAC1 struct tns__SetServiceData * SOAP_FMAC2 soap_in_tns__SetServiceData(struct soap*, const char*, struct tns__SetServiceData *, const char*);
+SOAP_FMAC1 void SOAP_FMAC2 soap_serialize_tns__setServiceData(struct soap*, struct tns__setServiceData const*);
+SOAP_FMAC1 void SOAP_FMAC2 soap_mark_tns__setServiceData(struct soap*, const struct tns__setServiceData *);
+SOAP_FMAC1 void SOAP_FMAC2 soap_default_tns__setServiceData(struct soap*, struct tns__setServiceData *);
+SOAP_FMAC1 int SOAP_FMAC2 soap_put_tns__setServiceData(struct soap*, struct tns__setServiceData *, const char*, const char*);
+SOAP_FMAC1 int SOAP_FMAC2 soap_out_tns__setServiceData(struct soap*, const char*, int, const struct tns__setServiceData *, const char*);
+SOAP_FMAC1 struct tns__setServiceData * SOAP_FMAC2 soap_get_tns__setServiceData(struct soap*, struct tns__setServiceData *, const char*, const char*);
+SOAP_FMAC1 struct tns__setServiceData * SOAP_FMAC2 soap_in_tns__setServiceData(struct soap*, const char*, struct tns__setServiceData *, const char*);
 
 #ifndef SOAP_TYPE_tns__Attach
 #define SOAP_TYPE_tns__Attach (22)
@@ -372,16 +372,16 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_out_tns__ResumeResponse(struct soap*, const char*
 SOAP_FMAC1 struct tns__ResumeResponse * SOAP_FMAC2 soap_get_tns__ResumeResponse(struct soap*, struct tns__ResumeResponse *, const char*, const char*);
 SOAP_FMAC1 struct tns__ResumeResponse * SOAP_FMAC2 soap_in_tns__ResumeResponse(struct soap*, const char*, struct tns__ResumeResponse *, const char*);
 
-#ifndef SOAP_TYPE_tns__FindServiceDataResponse
-#define SOAP_TYPE_tns__FindServiceDataResponse (34)
+#ifndef SOAP_TYPE_tns__findServiceDataResponse
+#define SOAP_TYPE_tns__findServiceDataResponse (34)
 #endif
-SOAP_FMAC1 void SOAP_FMAC2 soap_serialize_tns__FindServiceDataResponse(struct soap*, struct tns__FindServiceDataResponse const*);
-SOAP_FMAC1 void SOAP_FMAC2 soap_mark_tns__FindServiceDataResponse(struct soap*, const struct tns__FindServiceDataResponse *);
-SOAP_FMAC1 void SOAP_FMAC2 soap_default_tns__FindServiceDataResponse(struct soap*, struct tns__FindServiceDataResponse *);
-SOAP_FMAC1 int SOAP_FMAC2 soap_put_tns__FindServiceDataResponse(struct soap*, struct tns__FindServiceDataResponse *, const char*, const char*);
-SOAP_FMAC1 int SOAP_FMAC2 soap_out_tns__FindServiceDataResponse(struct soap*, const char*, int, const struct tns__FindServiceDataResponse *, const char*);
-SOAP_FMAC1 struct tns__FindServiceDataResponse * SOAP_FMAC2 soap_get_tns__FindServiceDataResponse(struct soap*, struct tns__FindServiceDataResponse *, const char*, const char*);
-SOAP_FMAC1 struct tns__FindServiceDataResponse * SOAP_FMAC2 soap_in_tns__FindServiceDataResponse(struct soap*, const char*, struct tns__FindServiceDataResponse *, const char*);
+SOAP_FMAC1 void SOAP_FMAC2 soap_serialize_tns__findServiceDataResponse(struct soap*, struct tns__findServiceDataResponse const*);
+SOAP_FMAC1 void SOAP_FMAC2 soap_mark_tns__findServiceDataResponse(struct soap*, const struct tns__findServiceDataResponse *);
+SOAP_FMAC1 void SOAP_FMAC2 soap_default_tns__findServiceDataResponse(struct soap*, struct tns__findServiceDataResponse *);
+SOAP_FMAC1 int SOAP_FMAC2 soap_put_tns__findServiceDataResponse(struct soap*, struct tns__findServiceDataResponse *, const char*, const char*);
+SOAP_FMAC1 int SOAP_FMAC2 soap_out_tns__findServiceDataResponse(struct soap*, const char*, int, const struct tns__findServiceDataResponse *, const char*);
+SOAP_FMAC1 struct tns__findServiceDataResponse * SOAP_FMAC2 soap_get_tns__findServiceDataResponse(struct soap*, struct tns__findServiceDataResponse *, const char*, const char*);
+SOAP_FMAC1 struct tns__findServiceDataResponse * SOAP_FMAC2 soap_in_tns__findServiceDataResponse(struct soap*, const char*, struct tns__findServiceDataResponse *, const char*);
 
 #ifndef SOAP_TYPE_tns__GetNthDataSourceResponse
 #define SOAP_TYPE_tns__GetNthDataSourceResponse (35)
@@ -416,16 +416,16 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_out_tns__AppStopResponse(struct soap*, const char
 SOAP_FMAC1 struct tns__AppStopResponse * SOAP_FMAC2 soap_get_tns__AppStopResponse(struct soap*, struct tns__AppStopResponse *, const char*, const char*);
 SOAP_FMAC1 struct tns__AppStopResponse * SOAP_FMAC2 soap_in_tns__AppStopResponse(struct soap*, const char*, struct tns__AppStopResponse *, const char*);
 
-#ifndef SOAP_TYPE_tns__SetServiceDataResponse
-#define SOAP_TYPE_tns__SetServiceDataResponse (38)
+#ifndef SOAP_TYPE_tns__setServiceDataResponse
+#define SOAP_TYPE_tns__setServiceDataResponse (38)
 #endif
-SOAP_FMAC1 void SOAP_FMAC2 soap_serialize_tns__SetServiceDataResponse(struct soap*, struct tns__SetServiceDataResponse const*);
-SOAP_FMAC1 void SOAP_FMAC2 soap_mark_tns__SetServiceDataResponse(struct soap*, const struct tns__SetServiceDataResponse *);
-SOAP_FMAC1 void SOAP_FMAC2 soap_default_tns__SetServiceDataResponse(struct soap*, struct tns__SetServiceDataResponse *);
-SOAP_FMAC1 int SOAP_FMAC2 soap_put_tns__SetServiceDataResponse(struct soap*, struct tns__SetServiceDataResponse *, const char*, const char*);
-SOAP_FMAC1 int SOAP_FMAC2 soap_out_tns__SetServiceDataResponse(struct soap*, const char*, int, const struct tns__SetServiceDataResponse *, const char*);
-SOAP_FMAC1 struct tns__SetServiceDataResponse * SOAP_FMAC2 soap_get_tns__SetServiceDataResponse(struct soap*, struct tns__SetServiceDataResponse *, const char*, const char*);
-SOAP_FMAC1 struct tns__SetServiceDataResponse * SOAP_FMAC2 soap_in_tns__SetServiceDataResponse(struct soap*, const char*, struct tns__SetServiceDataResponse *, const char*);
+SOAP_FMAC1 void SOAP_FMAC2 soap_serialize_tns__setServiceDataResponse(struct soap*, struct tns__setServiceDataResponse const*);
+SOAP_FMAC1 void SOAP_FMAC2 soap_mark_tns__setServiceDataResponse(struct soap*, const struct tns__setServiceDataResponse *);
+SOAP_FMAC1 void SOAP_FMAC2 soap_default_tns__setServiceDataResponse(struct soap*, struct tns__setServiceDataResponse *);
+SOAP_FMAC1 int SOAP_FMAC2 soap_put_tns__setServiceDataResponse(struct soap*, struct tns__setServiceDataResponse *, const char*, const char*);
+SOAP_FMAC1 int SOAP_FMAC2 soap_out_tns__setServiceDataResponse(struct soap*, const char*, int, const struct tns__setServiceDataResponse *, const char*);
+SOAP_FMAC1 struct tns__setServiceDataResponse * SOAP_FMAC2 soap_get_tns__setServiceDataResponse(struct soap*, struct tns__setServiceDataResponse *, const char*, const char*);
+SOAP_FMAC1 struct tns__setServiceDataResponse * SOAP_FMAC2 soap_in_tns__setServiceDataResponse(struct soap*, const char*, struct tns__setServiceDataResponse *, const char*);
 
 #ifndef SOAP_TYPE_tns__StopResponse
 #define SOAP_TYPE_tns__StopResponse (39)
@@ -614,16 +614,16 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_out_PointerTotns__GetStatusResponse(struct soap*,
 SOAP_FMAC1 struct tns__GetStatusResponse ** SOAP_FMAC2 soap_get_PointerTotns__GetStatusResponse(struct soap*, struct tns__GetStatusResponse **, const char*, const char*);
 SOAP_FMAC1 struct tns__GetStatusResponse ** SOAP_FMAC2 soap_in_PointerTotns__GetStatusResponse(struct soap*, const char*, struct tns__GetStatusResponse **, const char*);
 
-#ifndef SOAP_TYPE_PointerTotns__FindServiceDataResponse
-#define SOAP_TYPE_PointerTotns__FindServiceDataResponse (56)
+#ifndef SOAP_TYPE_PointerTotns__findServiceDataResponse
+#define SOAP_TYPE_PointerTotns__findServiceDataResponse (56)
 #endif
-SOAP_FMAC1 void SOAP_FMAC2 soap_serialize_PointerTotns__FindServiceDataResponse(struct soap*, struct tns__FindServiceDataResponse *const*);
-SOAP_FMAC1 void SOAP_FMAC2 soap_mark_PointerTotns__FindServiceDataResponse(struct soap*, struct tns__FindServiceDataResponse *const*);
-SOAP_FMAC1 void SOAP_FMAC2 soap_default_PointerTotns__FindServiceDataResponse(struct soap*, struct tns__FindServiceDataResponse **);
-SOAP_FMAC1 int SOAP_FMAC2 soap_put_PointerTotns__FindServiceDataResponse(struct soap*, struct tns__FindServiceDataResponse **, const char*, const char*);
-SOAP_FMAC1 int SOAP_FMAC2 soap_out_PointerTotns__FindServiceDataResponse(struct soap*, const char *, int, struct tns__FindServiceDataResponse *const*, const char *);
-SOAP_FMAC1 struct tns__FindServiceDataResponse ** SOAP_FMAC2 soap_get_PointerTotns__FindServiceDataResponse(struct soap*, struct tns__FindServiceDataResponse **, const char*, const char*);
-SOAP_FMAC1 struct tns__FindServiceDataResponse ** SOAP_FMAC2 soap_in_PointerTotns__FindServiceDataResponse(struct soap*, const char*, struct tns__FindServiceDataResponse **, const char*);
+SOAP_FMAC1 void SOAP_FMAC2 soap_serialize_PointerTotns__findServiceDataResponse(struct soap*, struct tns__findServiceDataResponse *const*);
+SOAP_FMAC1 void SOAP_FMAC2 soap_mark_PointerTotns__findServiceDataResponse(struct soap*, struct tns__findServiceDataResponse *const*);
+SOAP_FMAC1 void SOAP_FMAC2 soap_default_PointerTotns__findServiceDataResponse(struct soap*, struct tns__findServiceDataResponse **);
+SOAP_FMAC1 int SOAP_FMAC2 soap_put_PointerTotns__findServiceDataResponse(struct soap*, struct tns__findServiceDataResponse **, const char*, const char*);
+SOAP_FMAC1 int SOAP_FMAC2 soap_out_PointerTotns__findServiceDataResponse(struct soap*, const char *, int, struct tns__findServiceDataResponse *const*, const char *);
+SOAP_FMAC1 struct tns__findServiceDataResponse ** SOAP_FMAC2 soap_get_PointerTotns__findServiceDataResponse(struct soap*, struct tns__findServiceDataResponse **, const char*, const char*);
+SOAP_FMAC1 struct tns__findServiceDataResponse ** SOAP_FMAC2 soap_in_PointerTotns__findServiceDataResponse(struct soap*, const char*, struct tns__findServiceDataResponse **, const char*);
 
 #ifndef SOAP_TYPE_PointerTotns__DetachResponse
 #define SOAP_TYPE_PointerTotns__DetachResponse (57)
@@ -636,16 +636,16 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_out_PointerTotns__DetachResponse(struct soap*, co
 SOAP_FMAC1 struct tns__DetachResponse ** SOAP_FMAC2 soap_get_PointerTotns__DetachResponse(struct soap*, struct tns__DetachResponse **, const char*, const char*);
 SOAP_FMAC1 struct tns__DetachResponse ** SOAP_FMAC2 soap_in_PointerTotns__DetachResponse(struct soap*, const char*, struct tns__DetachResponse **, const char*);
 
-#ifndef SOAP_TYPE_PointerTotns__SetServiceDataResponse
-#define SOAP_TYPE_PointerTotns__SetServiceDataResponse (58)
+#ifndef SOAP_TYPE_PointerTotns__setServiceDataResponse
+#define SOAP_TYPE_PointerTotns__setServiceDataResponse (58)
 #endif
-SOAP_FMAC1 void SOAP_FMAC2 soap_serialize_PointerTotns__SetServiceDataResponse(struct soap*, struct tns__SetServiceDataResponse *const*);
-SOAP_FMAC1 void SOAP_FMAC2 soap_mark_PointerTotns__SetServiceDataResponse(struct soap*, struct tns__SetServiceDataResponse *const*);
-SOAP_FMAC1 void SOAP_FMAC2 soap_default_PointerTotns__SetServiceDataResponse(struct soap*, struct tns__SetServiceDataResponse **);
-SOAP_FMAC1 int SOAP_FMAC2 soap_put_PointerTotns__SetServiceDataResponse(struct soap*, struct tns__SetServiceDataResponse **, const char*, const char*);
-SOAP_FMAC1 int SOAP_FMAC2 soap_out_PointerTotns__SetServiceDataResponse(struct soap*, const char *, int, struct tns__SetServiceDataResponse *const*, const char *);
-SOAP_FMAC1 struct tns__SetServiceDataResponse ** SOAP_FMAC2 soap_get_PointerTotns__SetServiceDataResponse(struct soap*, struct tns__SetServiceDataResponse **, const char*, const char*);
-SOAP_FMAC1 struct tns__SetServiceDataResponse ** SOAP_FMAC2 soap_in_PointerTotns__SetServiceDataResponse(struct soap*, const char*, struct tns__SetServiceDataResponse **, const char*);
+SOAP_FMAC1 void SOAP_FMAC2 soap_serialize_PointerTotns__setServiceDataResponse(struct soap*, struct tns__setServiceDataResponse *const*);
+SOAP_FMAC1 void SOAP_FMAC2 soap_mark_PointerTotns__setServiceDataResponse(struct soap*, struct tns__setServiceDataResponse *const*);
+SOAP_FMAC1 void SOAP_FMAC2 soap_default_PointerTotns__setServiceDataResponse(struct soap*, struct tns__setServiceDataResponse **);
+SOAP_FMAC1 int SOAP_FMAC2 soap_put_PointerTotns__setServiceDataResponse(struct soap*, struct tns__setServiceDataResponse **, const char*, const char*);
+SOAP_FMAC1 int SOAP_FMAC2 soap_out_PointerTotns__setServiceDataResponse(struct soap*, const char *, int, struct tns__setServiceDataResponse *const*, const char *);
+SOAP_FMAC1 struct tns__setServiceDataResponse ** SOAP_FMAC2 soap_get_PointerTotns__setServiceDataResponse(struct soap*, struct tns__setServiceDataResponse **, const char*, const char*);
+SOAP_FMAC1 struct tns__setServiceDataResponse ** SOAP_FMAC2 soap_in_PointerTotns__setServiceDataResponse(struct soap*, const char*, struct tns__setServiceDataResponse **, const char*);
 
 #ifndef SOAP_TYPE_PointerTotns__AttachResponse
 #define SOAP_TYPE_PointerTotns__AttachResponse (59)
@@ -845,16 +845,16 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_out_xsdl__PauseResponse(struct soap*, const char*
 SOAP_FMAC1 char ** SOAP_FMAC2 soap_get_xsdl__PauseResponse(struct soap*, char **, const char*, const char*);
 SOAP_FMAC1 char * * SOAP_FMAC2 soap_in_xsdl__PauseResponse(struct soap*, const char*, char **, const char*);
 
-#ifndef SOAP_TYPE_xsdl__SetServiceDataRequest
-#define SOAP_TYPE_xsdl__SetServiceDataRequest (77)
+#ifndef SOAP_TYPE_xsdl__setServiceDataRequest
+#define SOAP_TYPE_xsdl__setServiceDataRequest (77)
 #endif
-SOAP_FMAC1 void SOAP_FMAC2 soap_default_xsdl__SetServiceDataRequest(struct soap*, char **);
-SOAP_FMAC1 void SOAP_FMAC2 soap_serialize_xsdl__SetServiceDataRequest(struct soap*, char *const*);
-SOAP_FMAC1 void SOAP_FMAC2 soap_mark_xsdl__SetServiceDataRequest(struct soap*, char *const*);
-SOAP_FMAC1 int SOAP_FMAC2 soap_put_xsdl__SetServiceDataRequest(struct soap*, char **, const char*, const char*);
-SOAP_FMAC1 int SOAP_FMAC2 soap_out_xsdl__SetServiceDataRequest(struct soap*, const char*, int, char*const*, const char*);
-SOAP_FMAC1 char ** SOAP_FMAC2 soap_get_xsdl__SetServiceDataRequest(struct soap*, char **, const char*, const char*);
-SOAP_FMAC1 char * * SOAP_FMAC2 soap_in_xsdl__SetServiceDataRequest(struct soap*, const char*, char **, const char*);
+SOAP_FMAC1 void SOAP_FMAC2 soap_default_xsdl__setServiceDataRequest(struct soap*, char **);
+SOAP_FMAC1 void SOAP_FMAC2 soap_serialize_xsdl__setServiceDataRequest(struct soap*, char *const*);
+SOAP_FMAC1 void SOAP_FMAC2 soap_mark_xsdl__setServiceDataRequest(struct soap*, char *const*);
+SOAP_FMAC1 int SOAP_FMAC2 soap_put_xsdl__setServiceDataRequest(struct soap*, char **, const char*, const char*);
+SOAP_FMAC1 int SOAP_FMAC2 soap_out_xsdl__setServiceDataRequest(struct soap*, const char*, int, char*const*, const char*);
+SOAP_FMAC1 char ** SOAP_FMAC2 soap_get_xsdl__setServiceDataRequest(struct soap*, char **, const char*, const char*);
+SOAP_FMAC1 char * * SOAP_FMAC2 soap_in_xsdl__setServiceDataRequest(struct soap*, const char*, char **, const char*);
 
 #ifndef SOAP_TYPE_xsdl__GetStatusRequest
 #define SOAP_TYPE_xsdl__GetStatusRequest (78)
@@ -867,27 +867,27 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_out_xsdl__GetStatusRequest(struct soap*, const ch
 SOAP_FMAC1 char ** SOAP_FMAC2 soap_get_xsdl__GetStatusRequest(struct soap*, char **, const char*, const char*);
 SOAP_FMAC1 char * * SOAP_FMAC2 soap_in_xsdl__GetStatusRequest(struct soap*, const char*, char **, const char*);
 
-#ifndef SOAP_TYPE_xsdl__FindServiceDataRequest
-#define SOAP_TYPE_xsdl__FindServiceDataRequest (79)
+#ifndef SOAP_TYPE_xsdl__findServiceDataRequest
+#define SOAP_TYPE_xsdl__findServiceDataRequest (79)
 #endif
-SOAP_FMAC1 void SOAP_FMAC2 soap_default_xsdl__FindServiceDataRequest(struct soap*, char **);
-SOAP_FMAC1 void SOAP_FMAC2 soap_serialize_xsdl__FindServiceDataRequest(struct soap*, char *const*);
-SOAP_FMAC1 void SOAP_FMAC2 soap_mark_xsdl__FindServiceDataRequest(struct soap*, char *const*);
-SOAP_FMAC1 int SOAP_FMAC2 soap_put_xsdl__FindServiceDataRequest(struct soap*, char **, const char*, const char*);
-SOAP_FMAC1 int SOAP_FMAC2 soap_out_xsdl__FindServiceDataRequest(struct soap*, const char*, int, char*const*, const char*);
-SOAP_FMAC1 char ** SOAP_FMAC2 soap_get_xsdl__FindServiceDataRequest(struct soap*, char **, const char*, const char*);
-SOAP_FMAC1 char * * SOAP_FMAC2 soap_in_xsdl__FindServiceDataRequest(struct soap*, const char*, char **, const char*);
+SOAP_FMAC1 void SOAP_FMAC2 soap_default_xsdl__findServiceDataRequest(struct soap*, char **);
+SOAP_FMAC1 void SOAP_FMAC2 soap_serialize_xsdl__findServiceDataRequest(struct soap*, char *const*);
+SOAP_FMAC1 void SOAP_FMAC2 soap_mark_xsdl__findServiceDataRequest(struct soap*, char *const*);
+SOAP_FMAC1 int SOAP_FMAC2 soap_put_xsdl__findServiceDataRequest(struct soap*, char **, const char*, const char*);
+SOAP_FMAC1 int SOAP_FMAC2 soap_out_xsdl__findServiceDataRequest(struct soap*, const char*, int, char*const*, const char*);
+SOAP_FMAC1 char ** SOAP_FMAC2 soap_get_xsdl__findServiceDataRequest(struct soap*, char **, const char*, const char*);
+SOAP_FMAC1 char * * SOAP_FMAC2 soap_in_xsdl__findServiceDataRequest(struct soap*, const char*, char **, const char*);
 
-#ifndef SOAP_TYPE_xsdl__SetServiceDataResponse
-#define SOAP_TYPE_xsdl__SetServiceDataResponse (80)
+#ifndef SOAP_TYPE_xsdl__setServiceDataResponse
+#define SOAP_TYPE_xsdl__setServiceDataResponse (80)
 #endif
-SOAP_FMAC1 void SOAP_FMAC2 soap_default_xsdl__SetServiceDataResponse(struct soap*, char **);
-SOAP_FMAC1 void SOAP_FMAC2 soap_serialize_xsdl__SetServiceDataResponse(struct soap*, char *const*);
-SOAP_FMAC1 void SOAP_FMAC2 soap_mark_xsdl__SetServiceDataResponse(struct soap*, char *const*);
-SOAP_FMAC1 int SOAP_FMAC2 soap_put_xsdl__SetServiceDataResponse(struct soap*, char **, const char*, const char*);
-SOAP_FMAC1 int SOAP_FMAC2 soap_out_xsdl__SetServiceDataResponse(struct soap*, const char*, int, char*const*, const char*);
-SOAP_FMAC1 char ** SOAP_FMAC2 soap_get_xsdl__SetServiceDataResponse(struct soap*, char **, const char*, const char*);
-SOAP_FMAC1 char * * SOAP_FMAC2 soap_in_xsdl__SetServiceDataResponse(struct soap*, const char*, char **, const char*);
+SOAP_FMAC1 void SOAP_FMAC2 soap_default_xsdl__setServiceDataResponse(struct soap*, char **);
+SOAP_FMAC1 void SOAP_FMAC2 soap_serialize_xsdl__setServiceDataResponse(struct soap*, char *const*);
+SOAP_FMAC1 void SOAP_FMAC2 soap_mark_xsdl__setServiceDataResponse(struct soap*, char *const*);
+SOAP_FMAC1 int SOAP_FMAC2 soap_put_xsdl__setServiceDataResponse(struct soap*, char **, const char*, const char*);
+SOAP_FMAC1 int SOAP_FMAC2 soap_out_xsdl__setServiceDataResponse(struct soap*, const char*, int, char*const*, const char*);
+SOAP_FMAC1 char ** SOAP_FMAC2 soap_get_xsdl__setServiceDataResponse(struct soap*, char **, const char*, const char*);
+SOAP_FMAC1 char * * SOAP_FMAC2 soap_in_xsdl__setServiceDataResponse(struct soap*, const char*, char **, const char*);
 
 #ifndef SOAP_TYPE_xsdl__StopResponse
 #define SOAP_TYPE_xsdl__StopResponse (81)
@@ -1021,16 +1021,16 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_out_xsdl__DestroyRequest(struct soap*, const char
 SOAP_FMAC1 char ** SOAP_FMAC2 soap_get_xsdl__DestroyRequest(struct soap*, char **, const char*, const char*);
 SOAP_FMAC1 char * * SOAP_FMAC2 soap_in_xsdl__DestroyRequest(struct soap*, const char*, char **, const char*);
 
-#ifndef SOAP_TYPE_xsdl__FindServiceDataResponse
-#define SOAP_TYPE_xsdl__FindServiceDataResponse (93)
+#ifndef SOAP_TYPE_xsdl__findServiceDataResponse
+#define SOAP_TYPE_xsdl__findServiceDataResponse (93)
 #endif
-SOAP_FMAC1 void SOAP_FMAC2 soap_default_xsdl__FindServiceDataResponse(struct soap*, char **);
-SOAP_FMAC1 void SOAP_FMAC2 soap_serialize_xsdl__FindServiceDataResponse(struct soap*, char *const*);
-SOAP_FMAC1 void SOAP_FMAC2 soap_mark_xsdl__FindServiceDataResponse(struct soap*, char *const*);
-SOAP_FMAC1 int SOAP_FMAC2 soap_put_xsdl__FindServiceDataResponse(struct soap*, char **, const char*, const char*);
-SOAP_FMAC1 int SOAP_FMAC2 soap_out_xsdl__FindServiceDataResponse(struct soap*, const char*, int, char*const*, const char*);
-SOAP_FMAC1 char ** SOAP_FMAC2 soap_get_xsdl__FindServiceDataResponse(struct soap*, char **, const char*, const char*);
-SOAP_FMAC1 char * * SOAP_FMAC2 soap_in_xsdl__FindServiceDataResponse(struct soap*, const char*, char **, const char*);
+SOAP_FMAC1 void SOAP_FMAC2 soap_default_xsdl__findServiceDataResponse(struct soap*, char **);
+SOAP_FMAC1 void SOAP_FMAC2 soap_serialize_xsdl__findServiceDataResponse(struct soap*, char *const*);
+SOAP_FMAC1 void SOAP_FMAC2 soap_mark_xsdl__findServiceDataResponse(struct soap*, char *const*);
+SOAP_FMAC1 int SOAP_FMAC2 soap_put_xsdl__findServiceDataResponse(struct soap*, char **, const char*, const char*);
+SOAP_FMAC1 int SOAP_FMAC2 soap_out_xsdl__findServiceDataResponse(struct soap*, const char*, int, char*const*, const char*);
+SOAP_FMAC1 char ** SOAP_FMAC2 soap_get_xsdl__findServiceDataResponse(struct soap*, char **, const char*, const char*);
+SOAP_FMAC1 char * * SOAP_FMAC2 soap_in_xsdl__findServiceDataResponse(struct soap*, const char*, char **, const char*);
 
 #ifndef SOAP_TYPE_xsdl__PutControlRequest
 #define SOAP_TYPE_xsdl__PutControlRequest (94)

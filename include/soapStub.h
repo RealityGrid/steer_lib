@@ -39,14 +39,6 @@ struct tns__StopResponse
 };
 #endif
 
-#ifndef _SOAP_tns__SetServiceDataResponse
-#define _SOAP_tns__SetServiceDataResponse
-struct tns__SetServiceDataResponse
-{
-	char *_result;
-};
-#endif
-
 #ifndef _SOAP_tns__AppStopResponse
 #define _SOAP_tns__AppStopResponse
 struct tns__AppStopResponse
@@ -63,6 +55,14 @@ struct tns__DetachResponse
 };
 #endif
 
+#ifndef _SOAP_tns__setServiceDataResponse
+#define _SOAP_tns__setServiceDataResponse
+struct tns__setServiceDataResponse
+{
+	char *_result;
+};
+#endif
+
 #ifndef _SOAP_tns__GetNthDataSourceResponse
 #define _SOAP_tns__GetNthDataSourceResponse
 struct tns__GetNthDataSourceResponse
@@ -71,9 +71,9 @@ struct tns__GetNthDataSourceResponse
 };
 #endif
 
-#ifndef _SOAP_tns__FindServiceDataResponse
-#define _SOAP_tns__FindServiceDataResponse
-struct tns__FindServiceDataResponse
+#ifndef _SOAP_tns__findServiceDataResponse
+#define _SOAP_tns__findServiceDataResponse
+struct tns__findServiceDataResponse
 {
 	char *_result;
 };
@@ -175,9 +175,17 @@ struct tns__Attach
 };
 #endif
 
-#ifndef _SOAP_tns__SetServiceData
-#define _SOAP_tns__SetServiceData
-struct tns__SetServiceData
+#ifndef _SOAP_tns__findServiceData
+#define _SOAP_tns__findServiceData
+struct tns__findServiceData
+{
+	char *input;
+};
+#endif
+
+#ifndef _SOAP_tns__setServiceData
+#define _SOAP_tns__setServiceData
+struct tns__setServiceData
 {
 	char *input;
 	char *sde_USCORE_value;
@@ -192,9 +200,9 @@ struct tns__Detach
 };
 #endif
 
-#ifndef _SOAP_tns__FindServiceData
-#define _SOAP_tns__FindServiceData
-struct tns__FindServiceData
+#ifndef _SOAP_tns__findServiceData
+#define _SOAP_tns__findServiceData
+struct tns__findServiceData
 {
 	char *input;
 };
@@ -345,7 +353,7 @@ typedef char *xsd__integer;
 typedef char *xsdl__DestroyResponse;
 typedef char *xsdl__GetControlResponse;
 typedef char *xsdl__PutControlRequest;
-typedef char *xsdl__FindServiceDataResponse;
+typedef char *xsdl__findServiceDataResponse;
 typedef char *xsdl__DestroyRequest;
 typedef char *xsdl__SetTerminationTimeRequest;
 typedef char *xsdl__GetNotificationsResponse;
@@ -358,10 +366,10 @@ typedef char *xsdl__AppStopResponse;
 typedef char *xsdl__ResumeRequest;
 typedef char *xsdl__DetachResponse;
 typedef char *xsdl__StopResponse;
-typedef char *xsdl__SetServiceDataResponse;
-typedef char *xsdl__FindServiceDataRequest;
+typedef char *xsdl__setServiceDataResponse;
+typedef char *xsdl__findServiceDataRequest;
 typedef char *xsdl__GetStatusRequest;
-typedef char *xsdl__SetServiceDataRequest;
+typedef char *xsdl__setServiceDataRequest;
 typedef char *xsdl__PauseResponse;
 typedef char *xsdl__SetTerminationTimeResponse;
 typedef char *xsdl__PutControlResponse;
@@ -387,11 +395,11 @@ SOAP_FMAC1 int SOAP_FMAC2 tns__AppDetach(struct soap*, struct tns__AppDetachResp
 
 SOAP_FMAC1 int SOAP_FMAC2 tns__Attach(struct soap*, struct tns__AttachResponse *);
 
-SOAP_FMAC1 int SOAP_FMAC2 tns__SetServiceData(struct soap*, char *, char *, struct tns__SetServiceDataResponse *);
+SOAP_FMAC1 int SOAP_FMAC2 tns__setServiceData(struct soap*, char *, char *, struct tns__setServiceDataResponse *);
 
 SOAP_FMAC1 int SOAP_FMAC2 tns__Detach(struct soap*, struct tns__DetachResponse *);
 
-SOAP_FMAC1 int SOAP_FMAC2 tns__FindServiceData(struct soap*, char *, struct tns__FindServiceDataResponse *);
+SOAP_FMAC1 int SOAP_FMAC2 tns__findServiceData(struct soap*, char *, struct tns__findServiceDataResponse *);
 
 SOAP_FMAC1 int SOAP_FMAC2 tns__GetStatus(struct soap*, struct tns__GetStatusResponse *);
 
@@ -425,11 +433,11 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_call_tns__AppDetach(struct soap*, const char*, co
 
 SOAP_FMAC1 int SOAP_FMAC2 soap_call_tns__Attach(struct soap*, const char*, const char*, struct tns__AttachResponse *);
 
-SOAP_FMAC1 int SOAP_FMAC2 soap_call_tns__SetServiceData(struct soap*, const char*, const char*, char *, char *, struct tns__SetServiceDataResponse *);
+SOAP_FMAC1 int SOAP_FMAC2 soap_call_tns__setServiceData(struct soap*, const char*, const char*, char *, char *, struct tns__setServiceDataResponse *);
 
 SOAP_FMAC1 int SOAP_FMAC2 soap_call_tns__Detach(struct soap*, const char*, const char*, struct tns__DetachResponse *);
 
-SOAP_FMAC1 int SOAP_FMAC2 soap_call_tns__FindServiceData(struct soap*, const char*, const char*, char *, struct tns__FindServiceDataResponse *);
+SOAP_FMAC1 int SOAP_FMAC2 soap_call_tns__findServiceData(struct soap*, const char*, const char*, char *, struct tns__findServiceDataResponse *);
 
 SOAP_FMAC1 int SOAP_FMAC2 soap_call_tns__GetStatus(struct soap*, const char*, const char*, struct tns__GetStatusResponse *);
 
@@ -465,11 +473,11 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_serve_tns__AppDetach(struct soap*);
 
 SOAP_FMAC1 int SOAP_FMAC2 soap_serve_tns__Attach(struct soap*);
 
-SOAP_FMAC1 int SOAP_FMAC2 soap_serve_tns__SetServiceData(struct soap*);
+SOAP_FMAC1 int SOAP_FMAC2 soap_serve_tns__setServiceData(struct soap*);
 
 SOAP_FMAC1 int SOAP_FMAC2 soap_serve_tns__Detach(struct soap*);
 
-SOAP_FMAC1 int SOAP_FMAC2 soap_serve_tns__FindServiceData(struct soap*);
+SOAP_FMAC1 int SOAP_FMAC2 soap_serve_tns__findServiceData(struct soap*);
 
 SOAP_FMAC1 int SOAP_FMAC2 soap_serve_tns__GetStatus(struct soap*);
 
