@@ -808,8 +808,8 @@ int Reorder_array(Array_type *array,
 
       /* Convert F90 array to C array */
 
-      nslab = (array->nz)*(array->ny);
-      nrow  = array->nz;
+      nslab = (array->totz)*(array->toty);
+      nrow  = array->totz;
       /* Order loops so i,j,k vary as they should for an F90-style
 	 array ordered consecutively in memory */
       for(k=0; k<array->nz; k++){
@@ -826,8 +826,8 @@ int Reorder_array(Array_type *array,
       
       /* Convert C array to F90 array */
 
-      nslab = array->nx*array->ny;
-      nrow  = array->nx;
+      nslab = array->totx*array->toty;
+      nrow  = array->totx;
       /* Order loops so i,j,k vary as they should for a C-style
 	 array ordered consecutively in memory */
       for(i=0; i<array->nx; i++){
@@ -862,8 +862,8 @@ int Reorder_array(Array_type *array,
 
       /* Convert F90 array to C array */
       
-      nslab = (array->nz)*(array->ny);
-      nrow  = array->nz;
+      nslab = (array->totz)*(array->toty);
+      nrow  = array->totz;
       /* Order loops so i,j,k vary as they should for an F90-style
 	 array ordered consecutively in memory */
       for(k=0; k<array->nz; k++){
@@ -880,8 +880,8 @@ int Reorder_array(Array_type *array,
       
       /* Convert C array to F90 array */
 
-      nslab = (array->nx)*(array->ny);
-      nrow  = array->nx;
+      nslab = (array->totx)*(array->toty);
+      nrow  = array->totx;
       /* Order loops so i,j,k vary as they should for a C-style
 	 array ordered consecutively in memory */
       for(i=0; i<array->nx; i++){
@@ -917,8 +917,8 @@ int Reorder_array(Array_type *array,
 
       /* Convert F90 array to C array */
       
-      nslab = (array->nz)*(array->ny);
-      nrow  = array->nz;
+      nslab = (array->totz)*(array->toty);
+      nrow  = array->totz;
       /* Order loops so i,j,k vary as they should for an F90-style
 	 array ordered consecutively in memory */
       for(k=0; k<array->nz; k++){
@@ -935,8 +935,8 @@ int Reorder_array(Array_type *array,
       
       /* Convert C array to F90 array */
       
-      nslab = (array->nx)*(array->ny);
-      nrow  = array->nx;
+      nslab = (array->totx)*(array->toty);
+      nrow  = array->totx;
       /* Order loops so i,j,k vary as they should for a C-style
 	 array ordered consecutively in memory */
       for(i=0; i<array->nx; i++){
@@ -960,22 +960,23 @@ int Reorder_array(Array_type *array,
   }
 
   /* In this context, array->is_f90 flags whether we want to
-     convert _to_ an F90-style array */
+     convert _to_ an F90-style array
   if(array->is_f90 != TRUE){
-    /* Convert from F90 to C...
+    * Convert from F90 to C...
        ...convert origin to be zero-indexed - sx etc are converted
-       to be unity-indexed in make_chunk_header_f */
+       to be unity-indexed in make_chunk_header_f *
     array->sx--;
     array->sy--;
     array->sz--;
   }
   else{
-    /* Convert from C to F90...
-       ...convert origin to be unity-indexed */
+    * Convert from C to F90...
+       ...convert origin to be unity-indexed *
     array->sx++;
     array->sy++;
     array->sz++;
   }
+  */
 
   return REG_SUCCESS;
 }

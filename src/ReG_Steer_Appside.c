@@ -3778,15 +3778,19 @@ int Make_vtk_header(char  *header,
 /*--------------------------------------------------------------------*/
 
 int Make_chunk_header(char *header,
-                      int   sx, int sy, int sz,
-                      int   nx, int ny, int nz)
+		      int   totx,int toty, int totz,
+                      int   sx,  int sy,   int sz,
+                      int   nx,  int ny,   int nz)
 {
   char *pchar = header;
 
   pchar += sprintf(pchar, "CHUNK_HDR\n"
+		          "ARRAY  %d %d %d\n"
                           "ORIGIN %d %d %d\n"
                           "EXTENT %d %d %d\n"
-                          "END_CHUNK_HDR\n", sx, sy, sz, nx, ny, nz);
+                          "END_CHUNK_HDR\n", 
+		   totx, toty, totz, 
+		   sx, sy, sz, nx, ny, nz);
 
   return REG_SUCCESS;
 }
@@ -4498,11 +4502,13 @@ int Parse_chunk_header(int IOTypeIndex, char* pData)
     /* ARPDBG - would be much better to use XML for this header */
     if( sscanf(pData, 
 	       "CHUNK_HDR\n"
+	       "ARRAY  %d %d %d\n"
 	       "ORIGIN %d %d %d\n"
 	       "EXTENT %d %d %d\n"
 	       "END_CHUNK_HDR\n", 
+	       &(ptr->totx), &(ptr->toty), &(ptr->totz), 
 	       &(ptr->sx), &(ptr->sy), &(ptr->sz), 
-	       &(ptr->nx), &(ptr->ny), &(ptr->nz)) == 6){
+	       &(ptr->nx), &(ptr->ny), &(ptr->nz)) == 9){
 
       return REG_SUCCESS;
     }
