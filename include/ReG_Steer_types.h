@@ -173,6 +173,7 @@
 #define PARAM_DEFS  3
 #define STATUS      4
 #define CONTROL     5
+#define CHK_DEFS    6
 
 /* Some type definitions - handles are simply integers for
    the moment */

@@ -67,6 +67,26 @@ extern PREFIX int Register_IOTypes(int    NumTypes,
 				   int   *IOFrequency,
 				   int   *IOType);
 
+/* Register the listed Checkpoint types. This is for control and
+   monitoring purposes - no reference is made to the actual location
+   of the checkpoint data */
+extern PREFIX int Register_ChkTypes(int    NumTypes,
+				    char* *ChkLabel,
+				    int   *direction,
+				    int   *ChkFrequency,
+				    int   *ChkType);
+
+/* Record that the application has just read/written a checkpoint
+   of type ChkType - the handle returned by Register_ChkTypes.  Whether
+   it has been read or written is given by the 'direction' of this 
+   registered type.  The caller must supply a string in ChkTag which
+   will allow them to retrieve the data associated with this checkpoint.
+   If the same tag is supplied in multiple calls then the checkpoint is 
+   assumed to be have been overwritten (in the case where it the 
+   'direction' of the associated ChkType is OUT). */
+extern PREFIX int Record_Chkpt(int   ChkType,
+			       char *ChkTag);
+
 /* Register the specified parameters. Since labels are used to 
    identify parameters, they must be unique and not contain
    any white space. */

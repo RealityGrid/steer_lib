@@ -165,10 +165,35 @@ extern PREFIX int Get_iotypes(int    sim_handle,
 /* A utility function that allows the steerer to update the emit/consume
    frequency associated with a given IOtype - the frequency itself is
    stored as a steerable parameter and therefore must be looked-up. */
-extern PREFIX int Set_iotype_freq(int sim_handle,
-				  int num_iotypes,
+extern PREFIX int Set_iotype_freq(int  sim_handle,
+				  int  num_iotypes,
 				  int *iotype_handles,
 				  int *freqs);
+
+/* Gets the number of Chk types associated with the simulation with
+   handle <sim_handle>. */
+extern PREFIX int Get_chktype_number(int  sim_handle,
+				     int *num_chktypes);
+
+/* Gets the first <num_iotypes> Chk types associated with the simulation
+   with hand <sim_handle>. Returns the handle and label associated with
+   each Chk type. Also returns whether Chk type is IN or OUT and
+   frequency (in no. of steps between each emission) of
+   automatic emission. */
+extern PREFIX int Get_chktypes(int    sim_handle,
+			       int    num_chktypes,
+			       int   *handles,
+			       char* *labels,
+			       int   *types,
+			       int   *chk_freqs);
+
+/* A utility function that allows the steerer to update the emit
+   frequency associated with a given Chktype - the frequency itself is
+   stored as a steerable parameter and therefore must be looked-up. */
+extern PREFIX int Set_chktype_freq(int  sim_handle,
+				   int  num_chktypes,
+				   int *chktype_handles,
+				   int *freqs);
 
 /* Gets the number of supported commands registered by the simulation
    with handle <sim_handle>. */

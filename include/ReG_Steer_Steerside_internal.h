@@ -74,6 +74,9 @@ typedef struct {
   /* Table of registered IOTypes for this sim */
   IOdef_table_type    IOdef_table;
 
+  /* Table of registered ChkTypes for this sim */
+  IOdef_table_type    Chkdef_table;
+
 } Sim_entry_type;
 
 /*--------- Prototypes of internal library functions -------------*/

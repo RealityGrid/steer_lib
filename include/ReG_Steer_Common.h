@@ -93,12 +93,8 @@ typedef struct {
   char  label[REG_MAX_STRING_LENGTH];
   char  filename[REG_MAX_STRING_LENGTH];
   int   handle;
-  /* Whether input, output or a checkpoint */
+  /* Whether input, output */
   int   direction;
-  /* Whether this channel supports automatic emission/consumption
-     every frequency steps
-  int   auto_io_support;
-  */
   /* Variable holding the frequency with which emission/consumption is
      to occur (every frequency steps) */
   int   frequency;

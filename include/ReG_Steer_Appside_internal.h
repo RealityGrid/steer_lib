@@ -66,6 +66,10 @@ static int Emit_param_defs();
    (if any). */
 static int Emit_IOType_defs();
 
+/* Emit all of the Chk types that have previously been registered
+   (if any). */
+static int Emit_ChkType_defs();
+
 /* Consume a control message (if any present) from the steerer. Returns
    any commands and associated parameters (the latter as a space-separated 
    list in a string) that the application must deal with.  CommandParams is an
