@@ -35,22 +35,17 @@
 #    Initial version by:   A Porter
 #---------------------------------------------------------------------
 #
-# G and NBIT are passed to make on cmd line
+
+include ../../Makefile.include
 
 TARGET   = mini_app
-CC       = cc
-CC_FLAGS = -ansi $(G) -I${REG_STEER_HOME}/include
-
-# STEER_LIBS is the directory where libReG_Steer.a can be found
-STEER_LIBS = -L${REG_STEER_HOME}/lib$(NBIT)
-XML_LIBS   = -L${REG_XML_LIBDIR}$(NBIT)
 
 .c.o:
-	${CC} ${CC_FLAGS} -c $< -o $@
+	${CC} ${C_FLAGS} ${STEER_INCLUDES} ${GLOBUS_INCLUDES} -c $< -o $@
 
 ${TARGET}: ${TARGET}.o
-	${CC} ${CC_FLAGS} ${TARGET}.o -o $@ \
-${XML_LIBS} ${STEER_LIBS} -lReG_Steer -lxml2 -lz -lm
+	${CC} ${C_FLAGS} ${TARGET}.o -o $@ \
+${STEER_LIBS} ${GLOBUS_LDFLAGS} -lReG_Steer -lm -lxml2 ${GLOBUS_PKG_LIBS}
 	mv ${TARGET} ${HOME}/bin/.
 
 clean:

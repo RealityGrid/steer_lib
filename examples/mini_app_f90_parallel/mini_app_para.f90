@@ -54,7 +54,7 @@ PROGRAM para_mini_app
   INTEGER (KIND=REG_SP_KIND), DIMENSION(REG_INITIAL_NUM_IOTYPES) :: iotype_handles
   INTEGER (KIND=REG_SP_KIND), DIMENSION(REG_INITIAL_NUM_IOTYPES) :: io_dirn
 
-  INTEGER (KIND=REG_SP_KIND) :: input_freq
+  INTEGER (KIND=REG_SP_KIND) :: input_freq  = 0
   INTEGER (KIND=REG_SP_KIND) :: output_freq = 5
 
   ! For parameters

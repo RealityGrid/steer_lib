@@ -35,24 +35,18 @@
 #    Initial version by:  Andrew Porter.
 #-----------------------------------------------------------------------
 #
-# G and NBIT are passed to make on cmd line
+
+include ../../Makefile.include
 
 TARGET   = mini_app_para
 
-F90       = f90
-F90_FLAGS = -C $(G) -check_bounds
-
-# STEER_LIBS is the directory where libReG_Steer.a &
-# libxml2.a can be found
-STEER_LIBS = -L${REG_STEER_HOME}/lib$(NBIT)
-XML_LIBS   = -L${REG_XML_LIBDIR}$(NBIT)
-
 .f90.o:
-	${F90} ${F90_FLAGS} -I${REG_STEER_HOME}/include -c $< -o $@
+	${F90} ${F90_FLAGS} ${STEER_INCLUDES} ${GLOBUS_INCLUDES} -c $< -o $@
 
 ${TARGET}: ${TARGET}.o \
-${REG_STEER_HOME}/include/reg_steer_f90.inc
-	${F90} ${F90_FLAGS} ${TARGET}.o -o $@ ${XML_LIBS} ${STEER_LIBS} -lmpi -lReG_Steer -lxml2 -lz -lm
+mini_app_para.f90 \
+../../include/reg_steer_f90.inc
+	${F90} ${F90_FLAGS} ${TARGET}.o -o $@ ${STEER_LIBS} -lmpi -lReG_Steer -lm -lxml2 ${GLOBUS_PKG_LIBS}
 	mv ${TARGET} ${HOME}/bin/.
 
 clean:

@@ -1,0 +1,85 @@
+#    Include file to allow user configuration of build process.
+#
+#    (C)Copyright 2002 The University of Manchester, United Kingdom,
+#    all rights reserved.
+#
+#    This software is produced by the Supercomputing, Visualization &
+#    e-Science Group, Manchester Computing, the Victoria University of
+#    Manchester as part of the RealityGrid project.
+#
+#    This software has been tested with care but is not guaranteed for
+#    any particular purpose. Neither the copyright holder, nor the
+#    University of Manchester offer any warranties or representations,
+#    nor do they accept any liabilities with respect to this software.
+#
+#    This software must not be used for commercial gain without the
+#    written permission of the authors.
+#    
+#    This software must not be redistributed without the written
+#    permission of the authors.
+#
+#    Permission is granted to modify this software, provided any
+#    modifications are made freely available to the original authors.
+# 
+#    Supercomputing, Visualization & e-Science Group
+#    Manchester Computing
+#    University of Manchester
+#    Manchester M13 9PL
+#    
+#    WWW:    http://www.sve.man.ac.uk  
+#    email:  sve@man.ac.uk
+#    Tel:    +44 161 275 6095
+#    Fax:    +44 161 275 6800    
+#
+#    Initial version by:  A Porter.
+#
+#--------------------------------------------------------------------
+
+# Architecture of this platform.  Choose the most appropriate from
+# those listed in the src/conf directory. Make sure you don't leave
+# any SPACES at the end of this line!
+ARCH = SGI64
+# Edit the two following lines if 32-bit binaries are desired 
+# (NBIT = 32 and C_FLAGS=-n32).
+NBIT = 32
+CC = cc
+C_FLAGS = ${CFLAGS} -g
+F90 = f90
+F90_FLAGS = -g
+# Location of java compiler - used to produce proxy binary
+JAVAC          = 
+# Location of the M4 macro processor (used to generate F90 wrappers)
+M4 = m4
+# Location of the archive command
+AR = ar
+# Flags need to add an object file to an archive
+AR_FLAGS = rv
+# Directory to put executables in (mini_app, mini_steerer etc.)
+LOCAL_BIN_DIR  = ${HOME}/bin
+
+#----------------------------------------------------------------
+
+STEER_INCLUDES = -I${REG_STEER_HOME}/include \
+                 -I${REG_XML_INCDIR}
+STEER_LIBS = -L${REG_STEER_HOME}/lib$(NBIT) \
+             -L${REG_XML_LIBDIR}$(NBIT)
+
+#----------------------------------------------------------------
+
+# The globus_definitions file can be generated using the following globus command
+#  globus-makefile-header globus_io globus_common -flavor=gcc32dbg > globus_defintions
+# subsititue flavor appropriately for your globus installation but use only non-threaded flavour
+
+GLOBUS_INCLUDES=
+GLOBUS_PKG_LIBS=
+GLOBUS_LDFLAGS=
+
+# Either define GLOBUS_INCLUDES, GLOBUS_PKG_LIBS and GLOBUS_LDFLAGS, OR
+# uncomment this line if using Globus for sample AND/OR steering
+#include ${REG_STEER_HOME}/globus_definitions
+
+# Set flag to 1 to use globus for iotype samples communication, 0 to not 
+REG_GLOBUS_SAMPLES_FLAG = 0
+
+# Set flag to 1 to use globus for steering communication, 0 to not 
+REG_GLOBUS_STEERING_FLAG = 0

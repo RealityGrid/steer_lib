@@ -42,42 +42,21 @@
 #include "ReG_Steer_Steerside.h"
 #include "ReG_Steer_Steerside_internal.h"
 #include "ReG_Steer_Proxy_utils.h"
+#include "ReG_Steer_Steerside_Globus.h"
 
 #ifndef DEBUG
 #define DEBUG 0
 #endif
 
-/*----------- Data structures ---------------*/
+/*--------------------- Data structures -------------------*/
 
-/* Main table used to record all simulations currently
-   being steered */
-
-static struct {
-
-  int             num_registered;
-  int             max_entries;
-  Sim_entry_type *sim;
-
-} Sim_table;
-
-/* Structure holding details of the main (java) proxy
-   that is always associated with the steerer */
-
-static struct {
-
-  char buf[REG_MAX_MSG_SIZE];
-  int  pipe_to_proxy;
-  int  pipe_from_proxy;
-  int  available;
-
-} Proxy;
 
 /*----- Routines to be used by the steering component ------*/
 
 int Steerer_initialize()
 {
   int   i;
-  int   status;
+  /* int   status; */
   char *pchar;
   
   /* Actually defined in ReG_Steer_Common.c because both steerer
@@ -138,6 +117,10 @@ int Steerer_initialize()
   /* Create the main proxy - we use this one to query the 'grid' about
      what services are available */
 
+  /* Don't bother for now...*/ 
+  Proxy.available = FALSE;    
+
+  /*
   status = Create_proxy(&(Proxy.pipe_to_proxy), &(Proxy.pipe_from_proxy));
 
   if(status != REG_SUCCESS){
@@ -149,6 +132,7 @@ int Steerer_initialize()
 
     Proxy.available = TRUE;
   }
+  */
 
   return REG_SUCCESS;
 }
@@ -366,13 +350,25 @@ int Sim_attach(char *SimID,
   }
   else{
 
+#if REG_GLOBUS_STEERING
+
+    /* Use Globus */
+#if DEBUG
+    fprintf(stderr, "Sim_attach: calling Sim_attach_globus...\n");
+#endif
+    return_status = Sim_attach_globus(&(Sim_table.sim[current_sim]), SimID);
+
+#else
+
     /* Have no proxy so have no 'grid' - use local file system */
 #if DEBUG
     fprintf(stderr, "Sim_attach: calling Sim_attach_local...\n");
 #endif
     return_status = Sim_attach_local(&(Sim_table.sim[current_sim]), SimID);
-  }
 
+#endif /* REG_GLOBUS_STEERING */
+
+  }
 
   if(return_status == REG_SUCCESS){
 
@@ -464,12 +460,7 @@ int Get_next_message(int         *SimHandle,
 		     REG_MsgType *msg_type)
 {
   int        isim;
-  char       buf[REG_MAX_MSG_SIZE];
-  char       filename[REG_MAX_STRING_LENGTH];
   int        count_active;
-  int        nbytes;
-  int        got_message;
-  FILE      *fp;
   static int last_sim = 0;
   int        return_status = REG_SUCCESS;
 
@@ -484,70 +475,27 @@ int Get_next_message(int         *SimHandle,
 
     if(Sim_table.sim[isim].handle != REG_SIM_HANDLE_NOTSET){
   
-      got_message = FALSE;
-
       if(Sim_table.sim[isim].pipe_to_proxy != REG_PIPE_UNSET){
 
 	/* Have a proxy so communicate with sim. using it */
-
-	Send_proxy_message(Sim_table.sim[isim].pipe_to_proxy, GET_STATUS_MSG);
-
-	/* Check the success of the request */
-	Get_proxy_message(Sim_table.sim[isim].pipe_from_proxy, buf, &nbytes);
-
-	if(!strncmp(buf, OK_MSG, nbytes)){
-
-	  got_message = TRUE;
-
-	  /* Get the message itself */
-	  Get_proxy_message(Sim_table.sim[isim].pipe_from_proxy, buf, &nbytes);
-
-	  /* Parse it and store it in structure pointed to by msg */
-	  if(Sim_table.sim[isim].msg){
-
-	    Delete_msg_struct(Sim_table.sim[isim].msg);
-	    Sim_table.sim[isim].msg = NULL;
-	  }
-
-	  Sim_table.sim[isim].msg = New_msg_struct();
-
-	  return_status = Parse_xml_buf(buf, nbytes, 
-					Sim_table.sim[isim].msg);
-	}
+	Sim_table.sim[isim].msg = Get_status_msg_proxy(&(Sim_table.sim[isim]));
       }
       else{
 
+#if REG_GLOBUS_STEERING
+
+	Sim_table.sim[isim].msg = 
+	                Get_status_msg_globus(&(Sim_table.sim[isim]));
+#else
+
 	/* No proxy available so using 'local' file system */
-
-        sprintf(filename, "%s%s", Sim_table.sim[isim].file_root,
-		APP_TO_STR_FILENAME);
-
-        if(fp = Open_next_file(filename)){
-	
-	  fclose(fp);
-
-	  got_message = TRUE;
-
-	  /* Parse it and store it in structure pointed to by msg */
-	  if(Sim_table.sim[isim].msg){
-
-	    Delete_msg_struct(Sim_table.sim[isim].msg);
-	    Sim_table.sim[isim].msg = NULL;
-	  }
-
-	  Sim_table.sim[isim].msg = New_msg_struct();
-
-	  return_status = Parse_xml_file(filename, 
-	  			         Sim_table.sim[isim].msg);
-
-	  /* Consume the file now that we've read it */
-	  Delete_file(filename);
-	}
+	Sim_table.sim[isim].msg = Get_status_msg_file(&(Sim_table.sim[isim]));
+#endif
       }
 
       /* If we got a message & parsed it successfully then we're done */
 
-      if((return_status == REG_SUCCESS) && (got_message == TRUE)){
+      if(Sim_table.sim[isim].msg){
 
 	/* Pass back the message type */
 	*msg_type = Sim_table.sim[isim].msg->msg_type;
@@ -576,7 +524,71 @@ int Get_next_message(int         *SimHandle,
   return return_status;
 }
 
-/*----------------------------------------------------------*/
+/*--------------------------------------------------------------------*/
+
+struct msg_struct *Get_status_msg_proxy(Sim_entry_type *sim)
+{
+  struct msg_struct *msg = NULL;
+  char   buf[REG_MAX_MSG_SIZE];
+  int    nbytes;
+
+  Send_proxy_message(sim->pipe_to_proxy, GET_STATUS_MSG);
+
+  /* Check the success of the request */
+  Get_proxy_message(sim->pipe_from_proxy, buf, &nbytes);
+
+  if(!strncmp(buf, OK_MSG, nbytes)){
+
+    /* Get the message itself */
+    Get_proxy_message(sim->pipe_from_proxy, buf, &nbytes);
+
+    msg = New_msg_struct();
+
+    if(Parse_xml_buf(buf, nbytes, msg) != REG_SUCCESS){
+
+      Delete_msg_struct(msg);
+      msg = NULL;
+    }
+  }
+
+  return msg;
+}
+
+/*--------------------------------------------------------------------*/
+
+struct msg_struct *Get_status_msg_file(Sim_entry_type *sim)
+{
+  struct msg_struct *msg = NULL;
+  char  filename[REG_MAX_STRING_LENGTH];
+  FILE *fp;
+  int   return_status;
+
+  sprintf(filename, "%s%s", sim->file_root, APP_TO_STR_FILENAME);
+
+  if(fp = Open_next_file(filename)){
+	
+    fclose(fp);
+
+    /* Parse it and store it in structure pointed to by msg */
+
+    msg = New_msg_struct();
+
+    return_status = Parse_xml_file(filename, msg);
+
+    if(return_status != REG_SUCCESS){
+
+      Delete_msg_struct(msg);
+      msg = NULL;
+    }
+
+    /* Consume the file now that we've read it */
+    Delete_file(filename);
+  }
+
+  return msg;
+}
+
+/*------------------------------------------------------------------------*/
 
 int Consume_param_defs(int SimHandle)
 {
@@ -936,17 +948,14 @@ int Emit_control(int    SimHandle,
 		 int   *SysCommands,
 		 char **SysCmdParams)
 {
-  FILE *fp;
   int   i;
   int   simid;
   int   count;
   int   num_to_emit;
-  char  filename[REG_MAX_STRING_LENGTH];
   char  param_buf[REG_MAX_STRING_LENGTH];
   char *param_ptr;
   char  buf[REG_MAX_MSG_SIZE];
   char *pbuf;
-  int   nbytes;
 
   /* Find the simulation referred to */
 
@@ -1038,58 +1047,96 @@ int Emit_control(int    SimHandle,
   pbuf += sprintf(pbuf, "</Steer_control>\n");
   Write_xml_footer(&pbuf);
 
+#if DEBUG
+  fprintf(stderr, "Emit_control: sending:\n>>%s<<\n", buf);
+#endif
 
-  if(Sim_table.sim[simid].pipe_to_proxy != REG_PIPE_UNSET){
+  return Send_control_msg(simid, buf);
+}
 
-    /* Instruct proxy to send control message to application */
+/*--------------------------------------------------------------------*/
 
-    Send_proxy_message(Sim_table.sim[simid].pipe_to_proxy,
-		       SEND_CTRL_MSG);
+int Send_control_msg(int SimIndex, char* buf)
+{
 
-    /* Send buffer to proxy for forwarding to application */
+  if(Sim_table.sim[SimIndex].pipe_to_proxy != REG_PIPE_UNSET){
 
-    Send_proxy_message(Sim_table.sim[simid].pipe_to_proxy,
-		       buf);
-
-    Get_proxy_message(Sim_table.sim[simid].pipe_from_proxy,
-		      buf, &nbytes);
-
-    if(!strncmp(buf, ERR_MSG, nbytes)) return REG_FAILURE;
+    return Send_control_msg_proxy(SimIndex, buf);
   }
   else{
 
-    /* Don't have a proxy... write to a 'local' file */
+#if REG_GLOBUS_STEERING
 
-    if( Generate_control_filename(SimHandle, filename) != REG_SUCCESS){
+    return Send_control_msg_globus(SimIndex, buf);
 
-      fprintf(stderr, "Emit_control: failed to create filename\n");
-      return REG_FAILURE;
-    }
+#else
 
-    if( (fp = fopen(filename, "w")) == NULL){
+    return Send_control_msg_file(SimIndex, buf);
 
-      fprintf(stderr, "Emit_control: failed to open file\n");
-      return REG_FAILURE;
-    }
+#endif
 
-    fprintf(fp, "%s", buf);
-    fclose(fp);
-
-    /* The application only attempts to read files for which it can find an
-       associated lock file */
-    Create_lock_file(filename);
   }
-  
+}
+
+/*--------------------------------------------------------------------*/
+
+int Send_control_msg_proxy(int SimIndex, char* buf)
+{
+  int   nbytes;
+
+  /* Instruct proxy to send control message to application */
+
+  Send_proxy_message(Sim_table.sim[SimIndex].pipe_to_proxy,
+		     SEND_CTRL_MSG);
+
+  /* Send buffer to proxy for forwarding to application */
+
+  Send_proxy_message(Sim_table.sim[SimIndex].pipe_to_proxy,
+		     buf);
+
+  Get_proxy_message(Sim_table.sim[SimIndex].pipe_from_proxy,
+		    buf, &nbytes);
+
+  if(!strncmp(buf, ERR_MSG, nbytes)) return REG_FAILURE;
+
   return REG_SUCCESS;
 }
 
-/*----------------------------------------------------------*/
+/*--------------------------------------------------------------------*/
+
+int Send_control_msg_file(int SimIndex, char* buf)
+{
+  FILE *fp;
+  char  filename[REG_MAX_STRING_LENGTH];
+
+  /* Write to a 'local' file */
+
+  if( Generate_control_filename(SimIndex, filename) != REG_SUCCESS){
+
+    fprintf(stderr, "Emit_control: failed to create filename\n");
+    return REG_FAILURE;
+  }
+
+  if( (fp = fopen(filename, "w")) == NULL){
+
+    fprintf(stderr, "Emit_control: failed to open file\n");
+    return REG_FAILURE;
+  }
+
+  fprintf(fp, "%s", buf);
+  fclose(fp);
+
+  /* The application only attempts to read files for which it can find an
+     associated lock file */
+  return Create_lock_file(filename);
+}
+
+/*--------------------------------------------------------------------*/
 
 int Delete_sim_table_entry(int *SimHandle)
 {
   int             index;
   Sim_entry_type *entry;
-  char            base_name[REG_MAX_STRING_LENGTH];
 
   if(*SimHandle == REG_SIM_HANDLE_NOTSET) return REG_SUCCESS;
   
@@ -1103,13 +1150,7 @@ int Delete_sim_table_entry(int *SimHandle)
 
   entry = &(Sim_table.sim[index]);
 
-  /* Delete any files that the app's produced that we won't now be
-     consuming */
-
-  sprintf(base_name, "%s%s", entry->file_root, 
-	  APP_TO_STR_FILENAME);
-
-  Remove_files(base_name);
+  Finalize_connection(entry);
 
   /* Clean-up the provided entry in the table of connected
      simulations */
@@ -1139,20 +1180,14 @@ int Delete_sim_table_entry(int *SimHandle)
 
 /*----------------------------------------------------------*/
 
-int Generate_control_filename(int SimHandle, char* filename)
+int Generate_control_filename(int SimIndex, char* filename)
 {
   static int output_file_index = 0;
-  int        index;
-
-  if( (index = Sim_index_from_handle(SimHandle)) == REG_SIM_HANDLE_NOTSET){
-
-    return REG_FAILURE;
-  }
 
   /* Generate next filename in sequence for sending data to
      steerer & increment counter */
 
-  sprintf(filename, "%s%s_%d", Sim_table.sim[index].file_root,
+  sprintf(filename, "%s%s_%d", Sim_table.sim[SimIndex].file_root,
 	  STR_TO_APP_FILENAME, output_file_index++);
 
   if(output_file_index == REG_MAX_NUM_FILES) output_file_index = 0;
@@ -2121,9 +2156,7 @@ int Sim_attach_proxy(Sim_entry_type *sim, char *SimID)
   }
 
   /* Parse the returned string */
-  return_status = Parse_xml_buf(buf, nbytes, msg);
-
-  if(return_status == REG_SUCCESS){
+  if(Parse_xml_buf(buf, nbytes, msg) == REG_SUCCESS){
 
     cmd = msg->supp_cmd->first_cmd;
 
@@ -2160,6 +2193,7 @@ int Sim_attach_proxy(Sim_entry_type *sim, char *SimID)
 }
 
 /*-------------------------------------------------------------------*/
+
 
 int Consume_supp_cmds_local(Sim_entry_type *sim)
 {
@@ -2222,3 +2256,58 @@ int Consume_supp_cmds_local(Sim_entry_type *sim)
 
   return return_status;
 }
+
+/*-------------------------------------------------------------------*/
+
+int Finalize_connection(Sim_entry_type *sim)
+{
+
+  if(sim->pipe_to_proxy != REG_PIPE_UNSET){
+
+    return Finalize_connection_proxy(sim);
+  }
+  else{
+
+#if REG_GLOBUS_STEERING
+
+    return Finalize_connection_globus(sim);
+
+#else
+
+    return Finalize_connection_file(sim);
+
+#endif
+  }
+ 
+}
+
+/*-------------------------------------------------------------------*/
+
+int Finalize_connection_proxy(Sim_entry_type *sim)
+{
+  Destroy_proxy(sim->pipe_to_proxy);
+  sim->pipe_to_proxy   = REG_PIPE_UNSET;
+  sim->pipe_from_proxy = REG_PIPE_UNSET;
+
+  return REG_SUCCESS;
+}
+
+/*-------------------------------------------------------------------*/
+
+int Finalize_connection_file(Sim_entry_type *sim)
+{
+  char base_name[REG_MAX_STRING_LENGTH];
+
+  /* Delete any files that the app's produced that we won't now be
+     consuming */
+
+  sprintf(base_name, "%s%s", sim->file_root, 
+	  APP_TO_STR_FILENAME);
+
+  Remove_files(base_name);
+
+  return REG_SUCCESS;
+}
+
+/*-------------------------------------------------------------------*/
+

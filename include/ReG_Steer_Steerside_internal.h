@@ -38,6 +38,9 @@
     Initial version by:  A Porter, 23.7.2002
 
 ---------------------------------------------------------------------------*/
+#ifndef __REG_STEER_STEERSIDE_INTERNAL_H__
+#define __REG_STEER_STEERSIDE_INTERNAL_H__
+
 
 #include "ReG_Steer_Common.h"
 #include "ReG_Steer_XML.h"
@@ -54,16 +57,19 @@
 
 typedef struct {
 
-  int    handle;
+  int                 handle;
 
   /* For connection to applications using local file system*/
-  char   file_root[REG_MAX_STRING_LENGTH];
+  char                file_root[REG_MAX_STRING_LENGTH];
 
   /* File descriptors used to talk to (java) proxy for
      this simulation */
-  int                pipe_to_proxy;
-  int                pipe_from_proxy;
-  struct msg_struct *msg;
+  int                 pipe_to_proxy;
+  int                 pipe_from_proxy;
+  struct msg_struct  *msg;
+
+  /* For steering via globus_io */
+  socket_type_steering      socket_info;
 
   /* Table of registered commands for this sim */
   Supp_cmd_table_type Cmds_table;
@@ -79,11 +85,36 @@ typedef struct {
 
 } Sim_entry_type;
 
+
+/* Main table used to record all simulations currently
+   being steered */
+
+static struct {
+
+  int             num_registered;
+  int             max_entries;
+  Sim_entry_type *sim;
+
+} Sim_table;
+
+/* Structure holding details of the main (java) proxy
+   that is always associated with the steerer */
+
+static struct {
+
+  char buf[REG_MAX_MSG_SIZE];
+  int  pipe_to_proxy;
+  int  pipe_from_proxy;
+  int  available;
+
+} Proxy;
+
+
 /*--------- Prototypes of internal library functions -------------*/
 
 /* Generate a filename for sending steering commands to the application
    referred to by SimHandle. */
-static int Generate_control_filename(int SimHandle, char* filename);
+static int Generate_control_filename(int SimIndex, char* filename);
 
 /* A look-up function - return the index of the simulation with handle 
    SimHandle in the main table.  Returns REG_SIM_HANDLE_NOTSET if no
@@ -99,3 +130,30 @@ static int Next_free_iodef_index(IOdef_table_type *table);
    with handle cmd_id - returns REG_SUCCESS if it does and REG_FAILURE if
    it doesn't */
 static int Command_supported(int sim_id, int cmd_id);
+
+/* Attach to specified simulation using local file system */
+static int Sim_attach_local(Sim_entry_type *sim, char *SimID);
+
+/* Attach to specified simulation via (java) proxy.  SimID is GSH
+   of sim. to attach to. */
+static int Sim_attach_proxy(Sim_entry_type *sim, char *SimID);
+
+static int Consume_supp_cmds_local(Sim_entry_type *sim);
+
+static int Send_control_msg(int SimIndex, char* buf);
+
+static int Send_control_msg_proxy(int SimIndex, char* buf);
+
+static int Send_control_msg_file(int SimIndex, char* buf);
+
+static struct msg_struct *Get_status_msg_proxy(Sim_entry_type *sim);
+
+static struct msg_struct *Get_status_msg_file(Sim_entry_type *sim);
+
+static int Finalize_connection(Sim_entry_type *sim);
+
+static int Finalize_connection_proxy(Sim_entry_type *sim);
+
+static int Finalize_connection_file(Sim_entry_type *sim);
+
+#endif

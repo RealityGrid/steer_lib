@@ -35,15 +35,24 @@
 #    Initial version by: A Porter
 #----------------------------------------------------------------------
 
-# Edit the two following lines if 32-bit binaries are desired 
-# (NBIT = 32 and G=-n32).
-NBIT         = 64
-GLOBAL_FLAGS = G="-64 -g" NBIT=$(NBIT)
-LOCAL_BIN_DIR= ${HOME}/bin
+include Makefile.include
 
 all:
 	make steerer
+	make c_examples
+	make f90_examples
+
+#	make ${LOCAL_BIN_DIR}/ReG_Steer_Proxy.class
+
+no_f90:
+	make steerer
+	make c_examples
+
+c_examples:
 	make app
+	make steerer
+
+f90_examples:
 	make app_f90
 	make app_f90_parallel
 
@@ -51,36 +60,38 @@ lib$(NBIT)/libReG_Steer.a: include/*.h \
  src/*.c \
  src/*.m4 \
  src/*.java
-	cd src; make ${GLOBAL_FLAGS}
+	cd src; make lib
 
 app: lib$(NBIT)/libReG_Steer.a \
  examples/mini_app/*.c
-	cd examples/mini_app; make ${GLOBAL_FLAGS}
+	cd examples/mini_app; make
+
 
 app_f90: lib$(NBIT)/libReG_Steer.a \
  include/*.inc \
  examples/mini_app_f90/*.f90
-	cd examples/mini_app_f90; make ${GLOBAL_FLAGS}
+	cd examples/mini_app_f90; make
 
 app_f90_parallel:  lib$(NBIT)/libReG_Steer.a \
  include/*.inc \
  examples/mini_app_f90_parallel/*.f90
-	cd examples/mini_app_f90_parallel; make ${GLOBAL_FLAGS}
+	cd examples/mini_app_f90_parallel; make
 
 steerer: lib$(NBIT)/libReG_Steer.a \
- ${LOCAL_BIN_DIR}/ReG_Steer_Proxy.class \
  examples/mini_steerer/*.c
-	cd examples/mini_steerer; make ${GLOBAL_FLAGS}
+	cd examples/mini_steerer; make
+
+#	cd src; make proxy
 
 ${LOCAL_BIN_DIR}/ReG_Steer_Proxy.class: src/*.java
-	cd src; make  ${GLOBAL_FLAGS}
+	cd src; make proxy
 
 clean:
-	cd src; make ${GLOBAL_FLAGS} clean 
-	cd examples/mini_app; make ${GLOBAL_FLAGS} clean
-	cd examples/mini_app_f90; make ${GLOBAL_FLAGS} clean
-	cd examples/mini_app_f90_parallel; make ${GLOBAL_FLAGS} clean
-	cd examples/mini_steerer; make ${GLOBAL_FLAGS} clean
+	cd src; make clean 
+	cd examples/mini_app; make clean
+	cd examples/mini_steerer; make clean
+	cd examples/mini_app_f90; make clean
+	cd examples/mini_app_f90_parallel; make clean
 
 tar:
 	make clean

@@ -139,14 +139,34 @@
 
 /* Size (in bytes) of input buffer for each active IO channel */
 
-#define REG_IO_BUFSIZE 1048576
+#define REG_IO_BUFSIZE  1048576
+
+/* Max length of each ASCII packet to be sent down a socket.  This enables
+   headers and footers to be sent. */
+
+#define REG_PACKET_SIZE 128
+#define REG_PACKET_FORMAT "%-128s"
+
+#define REG_DATA_HEADER "<ReG_data>"
+#define REG_DATA_FOOTER "</ReG_data>"
+
+#define BEGIN_SLICE_HEADER "<ReG_data_slice_header>"
+#define END_SLICE_HEADER   "</ReG_data_slice_header>"
+
 
 /* Coding scheme for data types */
 
-#define REG_INT   0
-#define REG_FLOAT 1
-#define REG_DBL   2
-#define REG_CHAR  3
+#define REG_INT        0
+#define REG_FLOAT      1
+#define REG_DBL        2
+#define REG_CHAR       3
+#define REG_XDR_INT    4
+#define REG_XDR_FLOAT  5
+#define REG_XDR_DOUBLE 6
+
+#define REG_SIZEOF_XDR_INT    4
+#define REG_SIZEOF_XDR_FLOAT  8
+#define REG_SIZEOF_XDR_DOUBLE 8
 
 /* Type definitions */
 
@@ -195,5 +215,17 @@ typedef int REG_IOHandleType;
 /* Parameters used to configure table for logging checkpoints */
 
 #define REG_INITIAL_CHK_LOG_SIZE 50
+
+/* Values for IOdef_entry.comms_status */
+
+#define REG_COMMS_STATUS_NULL			0
+#define REG_COMMS_STATUS_LISTENING		1
+#define REG_COMMS_STATUS_WAITING_FOR_ACCEPT	2
+#define REG_COMMS_STATUS_WAITING_TO_CONNECT	3
+#define REG_COMMS_STATUS_CONNECTED		4
+#define REG_COMMS_STATUS_FAILURE		5
+#define REG_COMMS_STATUS_CLOSING		6
+
+#define REG_PORT_NOTSET  -1
 
 #endif /* __REG_TYPES_INCLUDED defined */

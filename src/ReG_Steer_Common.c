@@ -494,20 +494,21 @@ int IOdef_index_from_handle(IOdef_table_type *table, int IOdefHandle)
 
 int Write_xml_header(char **buf)
 {
-  int return_status = REG_SUCCESS;
+  int  return_status = REG_SUCCESS;
 
   /* Write header for a ReG steering message */
 
   if(buf){
-
     *buf += sprintf(*buf, "<?xml version=\"1.0\"?>\n");
 
     *buf += sprintf(*buf, "<ReG_steer_message xmlns:xsi=\""
 	        "http://www.w3.org/2001/XMLSchema-instance\"\n");
+
     *buf += sprintf(*buf, "xmlns=\"%s\"\n", REG_STEER_NAMESPACE);
+
     *buf += sprintf(*buf, "       xsi:SchemaLocation=\"%s %s\">\n", 
-		    REG_STEER_NAMESPACE,
-		    ReG_Steer_Schema_Locn);
+	    REG_STEER_NAMESPACE,
+	    ReG_Steer_Schema_Locn);
   }
   else{
     return_status = REG_FAILURE;
@@ -558,3 +559,41 @@ int Directory_valid(char *directory)
     return REG_FAILURE;
   }
 }
+
+/*----------------------------------------------------------------*/
+
+int Consume_msg_header(socket_type_steering *sock_info,
+		       int *DataType,
+		       int *Count)
+{
+  
+#if REG_GLOBUS_STEERING
+  return Consume_msg_header_globus(sock_info,
+				   DataType,
+				   Count);
+#else
+
+  return REG_FAILURE;
+#endif
+
+}
+
+/*----------------------------------------------------------------*/
+
+int Emit_msg_header(socket_type_steering *sock_info,
+		    int DataType,
+		    int Count)
+{
+
+#if REG_GLOBUS_STEERING
+  return Emit_msg_header_globus(sock_info,
+				DataType,
+				Count);
+#else
+
+  return REG_FAILURE;
+#endif
+
+}
+
+/*----------------------------------------------------------------*/

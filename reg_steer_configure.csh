@@ -4,8 +4,10 @@
 # Set root directory for library installation
 setenv REG_STEER_HOME $HOME/scratch/reg_steer_lib
 
+
 # Set directory location to use for steering communication
 setenv REG_STEER_DIRECTORY /scratch/zzcguap/steering/
+
 
 # Set location of XML parser library and header files
 setenv REG_XML_LIBDIR /usr/freeware/lib
@@ -29,6 +31,7 @@ setenv REGISTRY_GSH http://localhost:8888/Unicore/Registry
 
 # Location of ReG grid service
 setenv REG_GS ${HOME}/projects/ReG-grid-service
+
 
 # Additions to java classpath for grid service and steering proxy
 # Assumes classpath already partially set-up for GLUE package from

@@ -39,6 +39,9 @@
 
 #include "ReG_Steer_Appside.h"
 #include "ReG_Steer_Appside_internal.h"
+#include "ReG_Steer_Appside_Globus.h"
+#include "ReG_Steer_Globus_io.h"
+
 #include <signal.h>
 #include <unistd.h>
 #include <time.h>
@@ -66,16 +69,6 @@ static int ReG_SteeringActive  = FALSE;
 /* Whether steering library has been initialised */
 static int ReG_SteeringInit    = FALSE;
 
-static struct {
-
-  char  file_root[REG_MAX_STRING_LENGTH];
-
-} Steerer_connection;
-
-/* IOdef_table_type is declared in ReG_Steer_Common.h since it is 
-   used in both the steerer-side and app-side libraries */
-
-IOdef_table_type IOTypes_table;
 
 /* Table for registered checkpoint types */
 
@@ -89,6 +82,7 @@ Chk_log_type Chk_log;
    used in both the steerer-side and app-side libraries */
 
 Param_table_type Params_table;
+
 
 /*----------------------------------------------------------------*/
 
@@ -106,10 +100,7 @@ int Steering_initialize(int  NumSupportedCmds,
 			int *SupportedCmds)
 {
   int   i;
-  FILE *fp;
   char *pchar;
-  char  filename[REG_MAX_STRING_LENGTH];
-  char  buf[REG_MAX_MSG_SIZE];
 
   /* Actually defined in ReG_Steer_Common.c because both steerer
      and steered have a variable of this name */
@@ -144,49 +135,8 @@ int Steering_initialize(int  NumSupportedCmds,
     fprintf(stderr, "Steering_initialize: failed to get schema location\n");
     return REG_FAILURE;
   }
-
-  /* Set location of all comms files */
-
-  pchar = getenv("REG_STEER_DIRECTORY");
-
-  if(pchar){
-
-    /* Check that path ends in '/' - if not then add one */
-
-    i = strlen(pchar);
-    if( pchar[i-1] != '/' ){
-
-      sprintf(Steerer_connection.file_root, "%s/", pchar);
-    }
-    else{
-
-      strcpy(Steerer_connection.file_root, pchar);
-    }
-
-    if(Directory_valid(Steerer_connection.file_root) != REG_SUCCESS){
-
-      fprintf(stderr, "Steering_initialize: invalid dir for steering "
-	      "messages: %s\n", Steerer_connection.file_root);
-      return REG_FAILURE;
-    }
-    else{
-      fprintf(stderr, "Using following dir for steering messages: %s\n", 
-	     Steerer_connection.file_root);
-    }
-  }
-  else{
-    fprintf(stderr, "Steering_initialize: failed to get scratch directory\n");
-    return REG_FAILURE;
-  }
-
-  /* Delete any files that may have been written by a steering
-     component previously */
-
-  sprintf(filename, "%s%s", Steerer_connection.file_root, 
-	  STR_TO_APP_FILENAME);
-  Remove_files(filename);
   
-  /* Allocate memory and initialize tables of IO types and 
+  /* Allocate memory and initialise tables of IO types and 
      parameters */
 
   IOTypes_table.num_registered = 0;
@@ -208,10 +158,9 @@ int Steering_initialize(int  NumSupportedCmds,
     IOTypes_table.io_def[i].handle = REG_IODEF_HANDLE_NOTSET;
   }
 
-  /* Initialize table of open IO channels */
+  /* Initialise table of open IO channels */
 
   for(i=0; i<REG_INITIAL_NUM_IOTYPES; i++){
-
     IO_channel[i].buffer = NULL;
   }
 
@@ -264,6 +213,7 @@ int Steering_initialize(int  NumSupportedCmds,
 
     fprintf(stderr, "Steering_initialize: failed to allocate memory "
 	    "for param table\n");
+
     free(IOTypes_table.io_def);
     free(ChkTypes_table.io_def);
     free(Chk_log.entry);
@@ -300,68 +250,14 @@ int Steering_initialize(int  NumSupportedCmds,
   sprintf(Params_table.param[i].value, "-1.0");
   Increment_param_registered(&Params_table);
 
-  /* Clean up any old files... */
+  /* Set-up/prepare for connection to steering client */
+  if(Initialize_steering_connection(NumSupportedCmds, 
+				    SupportedCmds) != REG_SUCCESS){
 
-  /* ...file indicating a steerer is connected (which it can't be since we've
-     only just begun) */ 
-  sprintf(filename, "%s%s", Steerer_connection.file_root, 
-	  STR_CONNECTED_FILENAME);
-  fp = fopen(filename, "w");
-  if(fp != NULL){
-
-    fclose(fp);
-    if(remove(filename)){
-
-      fprintf(stderr, "Steering_initialize: failed to remove %s\n",filename);
-    }
-#if DEBUG
-    else{
-      fprintf(stderr, "Steering_initialize: removed %s\n", filename);
-    }
-#endif
-  }
-
-  /* ...files containing messages from a steerer */
-  sprintf(filename, "%s%s", Steerer_connection.file_root, 
-	  STR_TO_APP_FILENAME);
-
-  Remove_files(filename);
-
-  /* Signal that component is available to be steered */
-
-  sprintf(filename, "%s%s", Steerer_connection.file_root, 
-	                    APP_STEERABLE_FILENAME);
-  fp = fopen(filename,"w");
-
-  if(fp == NULL){
-
-    fprintf(stderr, "Steering_initialize: failed to open %s\n",
-	    filename);
+    free(IOTypes_table.io_def);
+    free(Params_table.param);
     return REG_FAILURE;
   }
-
-#if DEBUG
-  fprintf(stderr, "Writing file: %s\n", filename);
-#endif
-
-  pchar = buf;
-
-  Write_xml_header(&pchar);
-
-  pchar += sprintf(pchar, "<Supported_commands>\n");
-
-  for(i=0; i<NumSupportedCmds; i++){
-    pchar += sprintf(pchar, "<Command>\n");
-    pchar += sprintf(pchar, "<Cmd_id>%d</Cmd_id>\n", SupportedCmds[i]);
-    pchar += sprintf(pchar, "</Command>\n");
-  }
-
-  pchar += sprintf(pchar, "</Supported_commands>\n");
-
-  Write_xml_footer(&pchar);
-
-  fprintf(fp, "%s", buf);
-  fclose(fp);
 
   /* Set up signal handler so can clean up if application 
      exits in a hurry */
@@ -374,7 +270,7 @@ int Steering_initialize(int  NumSupportedCmds,
   signal(SIGABRT, Steering_signal_handler);
   signal(SIGFPE, Steering_signal_handler);
 
-  /* Flag that library has successfully been initialised */
+  /* Flag that library has been successfully initialised */
 
   ReG_SteeringInit = TRUE;
 
@@ -385,9 +281,7 @@ int Steering_initialize(int  NumSupportedCmds,
 
 int Steering_finalize()
 {
-  int  max, max1;
   int  commands[1];
-  char sys_command[REG_MAX_STRING_LENGTH];
 
   /* Can only call this function if steering lib initialised */
 
@@ -408,7 +302,8 @@ int Steering_finalize()
   /* Clean-up IOTypes table */
 
   if(IOTypes_table.io_def != NULL){
-
+    /* cleanup transport mechanism */
+    Finalize_IOType_transport();
     free(IOTypes_table.io_def);
     IOTypes_table.io_def = NULL;
   }
@@ -427,41 +322,7 @@ int Steering_finalize()
   Params_table.max_entries = REG_INITIAL_NUM_IOTYPES;
 
   /* Signal that component no-longer steerable */
-  
-  max = strlen(APP_STEERABLE_FILENAME);
-  max1 = strlen(STR_CONNECTED_FILENAME);
-
-  if(max1 > max) max=max1;
-  
-  max += strlen(Steerer_connection.file_root);
-  if(max > REG_MAX_STRING_LENGTH ){
-
-    fprintf(stderr, "Steering_finalize: WARNING: truncating filename\n");
-  }
-
-  /* Delete the lock file that indicates we are steerable */
-  sprintf(sys_command, "%s%s", Steerer_connection.file_root,
-	  APP_STEERABLE_FILENAME);
-  if(remove(sys_command)){
-
-    fprintf(stderr, "Steering_finalize: failed to remove %s\n", sys_command);
-  }
-
-  /* Delete the lock file that indicates we are being steered */
-  if(ReG_SteeringActive){
-
-    sprintf(sys_command, "%s%s", Steerer_connection.file_root,
-	    STR_CONNECTED_FILENAME);
-    if(remove(sys_command)){
-
-      fprintf(stderr, "Steering_finalize: failed to remove %s\n", sys_command);
-    }
-  }
-
-  /* Delete any files we'd have consumed if we'd lived longer */
-  sprintf(sys_command, "%s%s", Steerer_connection.file_root, 
-	  STR_TO_APP_FILENAME);
-  Remove_files(sys_command);
+  Finalize_steering_connection();
 
   /* Reset state of library */
 
@@ -480,7 +341,7 @@ int Steering_finalize()
 
 int Register_IOTypes(int    NumTypes,
                      char* *IOLabel,
-		     int   *type,
+		     int   *direction,
 		     int   *IOFrequency,
                      int   *IOType)
 {
@@ -494,6 +355,7 @@ int Register_IOTypes(int    NumTypes,
   int          iparam;
   void        *ptr_array[1];
   int          return_status = REG_SUCCESS;
+ 
 
   /* Check that steering is enabled */
 
@@ -508,7 +370,6 @@ int Register_IOTypes(int    NumTypes,
   /* Can only call this function if steering lib initialised */
 
   if (!ReG_SteeringInit) return REG_FAILURE;
-
 
   /* IO types cannot be deleted so is safe to use num_registered to 
      get next free entry */
@@ -535,7 +396,7 @@ int Register_IOTypes(int    NumTypes,
 
     /* Whether input or output (sample data) */
 
-    IOTypes_table.io_def[current].direction = type[i];
+    IOTypes_table.io_def[current].direction = direction[i];
 
     /* Set variables required for registration of associated io
        frequency as a steerable parameter */
@@ -556,22 +417,29 @@ int Register_IOTypes(int    NumTypes,
        immediately succeed the call to Register_params */
 
     IOTypes_table.io_def[current].freq_param_handle = 
-	                                 Params_table.next_handle - 1;
+	                               Params_table.next_handle - 1;
 
     /* Annotate the parameter table entry just created to flag that
        it is a parameter that is internal to the steering library */
     iparam = Param_index_from_handle(&Params_table, 
-				     IOTypes_table.io_def[current].freq_param_handle);
+			      IOTypes_table.io_def[current].freq_param_handle);
+
     if(iparam != REG_PARAM_HANDLE_NOTSET){
       Params_table.param[iparam].is_internal = TRUE;
     }
     else{
+
 #if DEBUG
       fprintf(stderr, "Register_IOTypes: failed to get handle for param\n");
 #endif
       return_status = REG_FAILURE;
     }
       
+    IOTypes_table.io_def[current].buffer = NULL;
+    IOTypes_table.io_def[current].use_xdr = FALSE;
+
+    /* set up transport for sample data - eg sockets */
+    return_status = Initialize_IOType_transport(direction[i], current);
 
     /* Create, store and return a handle for this IOType */
     IOTypes_table.io_def[current].handle = IOTypes_table.next_handle++;
@@ -795,15 +663,9 @@ int Record_Chkpt(int   ChkType,
 
 /*----------------------------------------------------------------*/
 
-int Consume_start(int               IOType,
-		  REG_IOHandleType *IOHandle)
+int Consume_start(int  IOType,
+		  int *IOTypeIndex)
 {
-  int  i;
-  int  index;
-  char text[REG_MAX_STRING_LENGTH];
-  char *pchar1;
-  char *pchar2;
-
   /* Check that steering is enabled */
   if(!ReG_SteeringEnabled) return REG_SUCCESS;
 
@@ -811,54 +673,23 @@ int Consume_start(int               IOType,
   if (!ReG_SteeringInit) return REG_FAILURE;
 
   /* Find corresponding entry in table of IOtypes */
-  index = IOdef_index_from_handle(&IOTypes_table, IOType);
-  if(index == REG_IODEF_HANDLE_NOTSET){
-    fprintf(stderr, "Consume_start: failed to find matching IOType\n");
+  *IOTypeIndex = IOdef_index_from_handle(&IOTypes_table, IOType);
+  if(*IOTypeIndex == REG_IODEF_HANDLE_NOTSET){
+    fprintf(stderr, "Consume_start: failed to find matching IOType, "
+	    "handle = %d\n", IOType);
     return REG_FAILURE;
   }
 
-  /* Find a free input channel and initialise it */
-  for(i=0; i<REG_INITIAL_NUM_IOTYPES; i++){
+  return Consume_start_data_check(*IOTypeIndex);
 
-    if(IO_channel[i].buffer == NULL){
-
-      IO_channel[i].buffer = (void *)malloc(REG_IO_BUFSIZE);
-
-      if(IO_channel[i].buffer == NULL){
-        return REG_FAILURE;
-      }
-      *IOHandle = (REG_IOHandleType)i;
-#if DEBUG
-      fprintf(stderr, "Consume_start: IOHandle = %d\n", (int)*IOHandle);
-#endif
-
-      /* If label consists of two fields separated by a space then we
-	 assume that we have an IP address and port number... */
-      strcpy(text, IOTypes_table.io_def[index].label);
-      pchar1 = strtok(text, " ");
-      pchar2 = strtok(NULL, " ");
-
-      if(pchar2 != NULL){
-
-	fprintf(stderr, "Consume_start: IP address: %s, Port: %s\n", 
-		pchar1, pchar2); 
-      }
-      else{
-	fprintf(stderr, "Consume_start: label = %s\n", pchar1);
-      }
-
-      return REG_SUCCESS;
-    }
-  }
-
-  return REG_FAILURE;
+    /*  return REG_FAILURE; */
 }
 
 /*----------------------------------------------------------------*/
 
-int Consume_stop(REG_IOHandleType *IOHandle)
+int Consume_stop(int *IOTypeIndex)
 {
-  int index;
+  int             return_status = REG_SUCCESS;
 
   /* Check that steering is enabled */
   if(!ReG_SteeringEnabled) return REG_SUCCESS;
@@ -866,23 +697,232 @@ int Consume_stop(REG_IOHandleType *IOHandle)
   /* Can only call this function if steering lib initialised */
   if (!ReG_SteeringInit) return REG_FAILURE;
 
-  index = (int)(*IOHandle);
-
   /* Free memory associated with channel */
-  if( IO_channel[index].buffer ){
-    free(IO_channel[index].buffer);
-    IO_channel[index].buffer = NULL;
+  if( IOTypes_table.io_def[*IOTypeIndex].buffer ){
+    free(IOTypes_table.io_def[*IOTypeIndex].buffer);
+    IOTypes_table.io_def[*IOTypeIndex].buffer = NULL;
+    IOTypes_table.io_def[*IOTypeIndex].buffer_bytes = 0;
   }
 
   /* Reset handle associated with channel */
-  *IOHandle = (REG_IOHandleType) REG_IODEF_HANDLE_NOTSET;
+  *IOTypeIndex = REG_IODEF_HANDLE_NOTSET;
+
+  return return_status;
+}
+
+/*----------------------------------------------------------------*/
+
+int Consume_data_slice_header(int  IOTypeIndex,
+			      int *DataType,
+			      int *Count)
+{
+  int status;
+
+  status = Consume_iotype_msg_header(IOTypeIndex,
+				     DataType,
+				     Count);
+
+  if(status != REG_SUCCESS) return REG_FAILURE;
+
+  /* Use of XDR is internal to library so make sure user doesn't
+     get confused.  use_xdr flag set here for use in subsequent call
+     to consume_data_slice */
+  switch(*DataType){
+
+  case REG_XDR_INT:
+    IOTypes_table.io_def[IOTypeIndex].use_xdr = TRUE;
+    *DataType = REG_INT;
+    break;
+
+  case REG_XDR_FLOAT:
+    IOTypes_table.io_def[IOTypeIndex].use_xdr = TRUE;
+    *DataType = REG_FLOAT;
+    break;
+
+  case REG_XDR_DOUBLE:
+    IOTypes_table.io_def[IOTypeIndex].use_xdr = TRUE;
+    *DataType = REG_DBL;
+    break;
+
+  default:
+    break;
+  }
 
   return REG_SUCCESS;
 }
 
 /*----------------------------------------------------------------*/
 
-int Consume_data_slice(REG_IOHandleType  IOHandle,
+int Consume_data_slice(int    IOTypeIndex,
+		       int    DataType,
+		       int    Count,
+		       void  *pData)
+{
+  int              i;
+  int              return_status = REG_SUCCESS;
+  size_t	   num_bytes_to_read;
+
+  XDR     xdrs;
+  int    *pint;
+  float  *pfloat;
+  double *pdouble;
+  void   *tmp_ptr;
+
+  /* Calculate how many bytes to expect */
+  switch(DataType){
+
+  case REG_INT:
+    if(IOTypes_table.io_def[IOTypeIndex].use_xdr){
+      num_bytes_to_read = Count*REG_SIZEOF_XDR_INT;
+    }
+    else{
+      num_bytes_to_read = Count*sizeof(int);
+    }
+    break;
+
+  case REG_FLOAT:
+    if(IOTypes_table.io_def[IOTypeIndex].use_xdr){
+      num_bytes_to_read = Count*REG_SIZEOF_XDR_FLOAT;
+    }
+    else{
+      num_bytes_to_read = Count*sizeof(float);
+    }
+    break;
+
+  case REG_DBL:
+    if(IOTypes_table.io_def[IOTypeIndex].use_xdr){
+      num_bytes_to_read = Count*REG_SIZEOF_XDR_DOUBLE;
+    }
+    else{
+      num_bytes_to_read = Count*sizeof(double);
+    }
+    break;
+
+  case REG_CHAR:
+    num_bytes_to_read = Count*sizeof(char);
+    break;
+
+  default:
+    fprintf(stderr, "Consume_data_slice: Unrecognised data type specified "
+	    "in slice header\n");
+
+    /* Reset use_xdr flag set as only valid on a per-slice basis */
+    IOTypes_table.io_def[IOTypeIndex].use_xdr = FALSE;
+
+    return REG_FAILURE;
+    break;
+  }
+
+  /* Check that input buffer is large enough (only an issue if have XDR-
+     encoded data) */
+  if(IOTypes_table.io_def[IOTypeIndex].use_xdr){
+    if(IOTypes_table.io_def[IOTypeIndex].buffer_bytes < num_bytes_to_read){
+
+      tmp_ptr = realloc(IOTypes_table.io_def[IOTypeIndex].buffer, 
+			(size_t)num_bytes_to_read);
+            
+      if(!tmp_ptr){
+	fprintf(stderr, "Consume_data_slice: failed to realloc input "
+		"buffer - consume failed\n");
+
+	/* Reset use_xdr flag set as only valid on a per-slice basis */
+	IOTypes_table.io_def[IOTypeIndex].use_xdr = FALSE;
+
+	return REG_FAILURE;
+      }
+
+      IOTypes_table.io_def[IOTypeIndex].buffer_bytes = num_bytes_to_read;
+      IOTypes_table.io_def[IOTypeIndex].buffer = tmp_ptr;
+    }
+  }
+
+  /* Read this number of bytes */
+
+  if (Consume_data_read(IOTypeIndex,
+			DataType,
+			num_bytes_to_read,
+			pData) != REG_SUCCESS)
+    return REG_FAILURE;
+
+
+  if(IOTypes_table.io_def[IOTypeIndex].use_xdr){
+
+#if DEBUG
+    fprintf(stderr, "Consume_data_slice: doing XDR decode\n");
+#endif
+
+    xdrmem_create(&xdrs, 
+		  IOTypes_table.io_def[IOTypeIndex].buffer,
+		  num_bytes_to_read,
+		  XDR_DECODE);
+
+    switch(DataType){
+
+    case REG_INT:
+      
+      pint = (int *)pData;
+
+      for(i=0; i<Count; i++){
+
+	if (1!=xdr_int(&xdrs, pint++)) {
+	  fprintf(stderr, "Consume_data_slice: error decoding datum %d\n",i);
+	  return_status = REG_FAILURE;
+	  break;
+	}
+      }
+      break;
+
+    case REG_FLOAT:
+      
+      pfloat = (float *)pData;
+
+      for(i=0; i<Count; i++){
+
+	if (1!=xdr_float(&xdrs, pfloat++)) {
+	  fprintf(stderr, "Consume_data_slice: error decoding datum %d\n",i);
+	  return_status = REG_FAILURE;
+	  break;
+	}
+      }
+      break;
+
+    case REG_DBL:
+      
+      pdouble = (double *)pData;
+
+      for(i=0; i<Count; i++){
+
+	if (1!=xdr_double(&xdrs, pdouble++)) {
+	  fprintf(stderr, "Consume_data_slice: error decoding datum %d\n",i);
+	  return_status = REG_FAILURE;
+	  break;
+	}
+      }
+      break;
+
+    default:
+      fprintf(stderr, "Consume_data_slice: unexpected datatype\n");
+      return_status = REG_FAILURE;
+      break;
+    }
+
+    xdr_destroy(&xdrs);
+  }
+
+#if DEBUG
+  fprintf(stderr, "Consume_data_slice: done XDR decode\n");
+#endif
+
+  /* Reset use_xdr flag set as only valid on a per-slice basis */
+  IOTypes_table.io_def[IOTypeIndex].use_xdr = FALSE;
+
+  return return_status;
+}
+
+
+/*----------------------------------------------------------------*/
+
+int Consume_data_slice_old(REG_IOHandleType  IOHandle,
 		       int              *DataType,
 		       int              *Count,
 		       void            **pData)
@@ -920,20 +960,20 @@ int Consume_data_slice(REG_IOHandleType  IOHandle,
     *DataType = REG_CHAR;
 
     pdata = (char *)(IO_channel[index].buffer);
-    pdata += sprintf(pdata, "%-128s", "# AVS field file\n");
-    pdata += sprintf(pdata, "%-128s", "ndim=3\n");
-    pdata += sprintf(pdata, "%-128s", "dim1= 16\n");
-    pdata += sprintf(pdata, "%-128s", "dim2= 16\n");
-    pdata += sprintf(pdata, "%-128s", "dim3= 16\n");
-    pdata += sprintf(pdata, "%-128s", "nspace=3\n");
-    pdata += sprintf(pdata, "%-128s", "field=uniform\n");
-    pdata += sprintf(pdata, "%-128s", "veclen=2\n");
-    pdata += sprintf(pdata, "%-128s", "data=xdr_float\n");
-    pdata += sprintf(pdata, "%-128s", "variable 1 filetype=binary "
+    pdata += sprintf(pdata, REG_PACKET_FORMAT, "# AVS field file\n");
+    pdata += sprintf(pdata, REG_PACKET_FORMAT, "ndim=3\n");
+    pdata += sprintf(pdata, REG_PACKET_FORMAT, "dim1= 16\n");
+    pdata += sprintf(pdata, REG_PACKET_FORMAT, "dim2= 16\n");
+    pdata += sprintf(pdata, REG_PACKET_FORMAT, "dim3= 16\n");
+    pdata += sprintf(pdata, REG_PACKET_FORMAT, "nspace=3\n");
+    pdata += sprintf(pdata, REG_PACKET_FORMAT, "field=uniform\n");
+    pdata += sprintf(pdata, REG_PACKET_FORMAT, "veclen=2\n");
+    pdata += sprintf(pdata, REG_PACKET_FORMAT, "data=xdr_float\n");
+    pdata += sprintf(pdata, REG_PACKET_FORMAT, "variable 1 filetype=binary "
     		   "skip=0000000 stride=2\n");
-    pdata += sprintf(pdata, "%-128s", "variable 2 filetype=binary "
+    pdata += sprintf(pdata, REG_PACKET_FORMAT, "variable 2 filetype=binary "
     		   "skip=0000008 stride=2\n");
-    pdata += sprintf(pdata, "%-128s", "END_OF_HEADER\n");
+    pdata += sprintf(pdata, REG_PACKET_FORMAT, "END_OF_HEADER\n");
 
     *Count = strlen((char *)(IO_channel[index].buffer));
 
@@ -989,6 +1029,7 @@ int Consume_data_slice(REG_IOHandleType  IOHandle,
 	  }
 	}
       }
+
     }
 
     xdr_destroy(&xdrs);
@@ -1004,7 +1045,6 @@ int Consume_data_slice(REG_IOHandleType  IOHandle,
     return_status = REG_EOD;
   }
 
-
   /* ARPDBG */
   test_count_call++;
 
@@ -1013,12 +1053,11 @@ int Consume_data_slice(REG_IOHandleType  IOHandle,
 
 /*----------------------------------------------------------------*/
 
-int Emit_start(int               IOType,
-	       int               SeqNum,
-	       REG_IOHandleType *IOHandle)
+int Emit_start(int  IOType,
+	       int  SeqNum,
+	       int  UseXDR,
+	       int *IOTypeIndex)
 {
-  int index;
-  int i;
 
   /* Check that steering is enabled */
   if(!ReG_SteeringEnabled) return REG_SUCCESS;
@@ -1027,42 +1066,38 @@ int Emit_start(int               IOType,
   if (!ReG_SteeringInit) return REG_FAILURE;
 
   /* Find corresponding entry in table of IOtypes */
-  index = IOdef_index_from_handle(&IOTypes_table, IOType);
-  if(index == REG_IODEF_HANDLE_NOTSET){
+  *IOTypeIndex = IOdef_index_from_handle(&IOTypes_table, IOType);
+  if(*IOTypeIndex == REG_IODEF_HANDLE_NOTSET){
+
     fprintf(stderr, "Emit_start: failed to find matching IOType\n");
     return REG_FAILURE;
   }
 
-  /* Find a free input channel and initialise it */
-  for(i=0; i<REG_INITIAL_NUM_IOTYPES; i++){
+  /* Set whether or not to encode as XDR */
+  IOTypes_table.io_def[*IOTypeIndex].use_xdr = UseXDR;
 
-    if(IO_channel[i].buffer == NULL){
+  /* We'll need additional memory to perform conversion to XDR */
+  if(UseXDR){
 
-      IO_channel[i].buffer = (void *)malloc(REG_IO_BUFSIZE);
+    IOTypes_table.io_def[*IOTypeIndex].buffer = (void *)malloc(REG_IO_BUFSIZE);
 
-      if(IO_channel[i].buffer == NULL){
-        return REG_FAILURE;
-      }
-      *IOHandle = (REG_IOHandleType)i;
-#if DEBUG
-      fprintf(stderr, "Emit_start: IOHandle = %d\n", (int)*IOHandle);
-#endif
+    if(!IOTypes_table.io_def[*IOTypeIndex].buffer){
 
-      /* ARPDBG - need code to actually enable a physical IO channel
-	 (eg file or socket) here... */
-
-      return REG_SUCCESS;
+      return REG_FAILURE;
     }
   }
 
-  return REG_FAILURE;
+  return Emit_header(*IOTypeIndex);
+
 }
 
 /*----------------------------------------------------------------*/
 
-int Emit_stop(REG_IOHandleType *IOHandle)
+int Emit_stop(int *IOTypeIndex)
 {
-  int index;
+  char            buffer[REG_PACKET_SIZE];
+  char            fmt[16];
+  int             return_status = REG_SUCCESS;
 
   /* Check that steering is enabled */
   if(!ReG_SteeringEnabled) return REG_SUCCESS;
@@ -1070,28 +1105,40 @@ int Emit_stop(REG_IOHandleType *IOHandle)
   /* Can only call this function if steering lib initialised */
   if (!ReG_SteeringInit) return REG_FAILURE;
 
-  index = (int)(*IOHandle);
+  /* Send footer */
+  sprintf(fmt, "%s%ds", "%-", REG_PACKET_SIZE);
+  sprintf(buffer, fmt, REG_DATA_FOOTER);
 
-  /* Free memory associated with channel */
-  if( IO_channel[index].buffer ){
-    free(IO_channel[index].buffer);
-    IO_channel[index].buffer = NULL;
+  return_status = Emit_footer(*IOTypeIndex, buffer);
+
+  /* Free associated memory (will have been allocated if conversion to
+     XDR performed) */
+  if(IOTypes_table.io_def[*IOTypeIndex].buffer){
+
+    free(IOTypes_table.io_def[*IOTypeIndex].buffer);
+    IOTypes_table.io_def[*IOTypeIndex].buffer = NULL;
   }
 
-  /* Reset handle associated with channel */
-  *IOHandle = (REG_IOHandleType) REG_IODEF_HANDLE_NOTSET;
+  *IOTypeIndex = REG_IODEF_HANDLE_NOTSET;
 
-  return REG_SUCCESS;
+  return return_status;
 }
 
 /*----------------------------------------------------------------*/
 
-int Emit_data_slice(REG_IOHandleType  IOHandle,
+int Emit_data_slice(int		      IOTypeIndex,
 		    int               DataType,
 		    int               Count,
 		    void             *pData)
 {
-  int return_status = REG_SUCCESS;
+  int              datatype;
+  int              i;
+  size_t	   num_bytes_to_send;
+
+  XDR              xdrs;
+  int             *iptr;
+  float           *fptr;
+  double          *dptr;
 
   /* Check that steering is enabled */
   if(!ReG_SteeringEnabled) return REG_SUCCESS;
@@ -1099,7 +1146,115 @@ int Emit_data_slice(REG_IOHandleType  IOHandle,
   /* Can only call this function if steering lib initialised */
   if (!ReG_SteeringInit) return REG_FAILURE;
 
-  return return_status;
+  /* check comms connection has been made */
+  if (Get_communication_status(IOTypeIndex) !=  REG_SUCCESS)
+    return REG_FAILURE;
+
+  /* Check data type, calculate number of bytes to send and convert
+     to XDR if required */
+  switch(DataType){
+
+  case REG_INT:
+    if(IOTypes_table.io_def[IOTypeIndex].use_xdr){
+      datatype = REG_XDR_INT;
+      num_bytes_to_send = Count*REG_SIZEOF_XDR_INT;
+
+      xdrmem_create(&xdrs, 
+		    IOTypes_table.io_def[IOTypeIndex].buffer,
+		    num_bytes_to_send,
+		    XDR_ENCODE);
+
+      iptr = (int *)pData;
+
+      for(i=0; i<Count; i++){
+
+	xdr_int(&xdrs, iptr++);
+      }
+
+      xdr_destroy(&xdrs);
+    }
+    else{
+      datatype = DataType;
+      num_bytes_to_send = Count*sizeof(int);
+    }
+    break;
+
+  case REG_FLOAT:
+    if(IOTypes_table.io_def[IOTypeIndex].use_xdr){
+      datatype = REG_XDR_FLOAT;
+      num_bytes_to_send = Count*REG_SIZEOF_XDR_FLOAT;
+
+      xdrmem_create(&xdrs, 
+		    IOTypes_table.io_def[IOTypeIndex].buffer,
+		    num_bytes_to_send,
+		    XDR_ENCODE);
+
+      fptr = (float *)pData;
+
+      for(i=0; i<Count; i++){
+
+	xdr_float(&xdrs, fptr++);
+      }
+
+      xdr_destroy(&xdrs);
+    }
+    else{
+      datatype = DataType;
+      num_bytes_to_send = Count*sizeof(float);
+    }
+    break;
+
+  case REG_DBL:
+    if(IOTypes_table.io_def[IOTypeIndex].use_xdr){
+      datatype = REG_XDR_DOUBLE;
+      num_bytes_to_send = Count*REG_SIZEOF_XDR_DOUBLE;
+
+      xdrmem_create(&xdrs, 
+		    IOTypes_table.io_def[IOTypeIndex].buffer,
+		    num_bytes_to_send,
+		    XDR_ENCODE);
+
+      dptr = (double *)pData;
+
+      for(i=0; i<Count; i++){
+
+	xdr_double(&xdrs, dptr++);
+      }
+
+      xdr_destroy(&xdrs);
+    }
+    else{
+      datatype = DataType;
+      num_bytes_to_send = Count*sizeof(double);
+    }
+    break;
+
+  case REG_CHAR:
+    datatype = DataType;
+    num_bytes_to_send = Count*sizeof(char);
+    break;
+
+  default:
+    fprintf(stderr, "Emit_data_slice: Unrecognised data type\n");
+    return REG_FAILURE;
+    break;
+  }
+ 
+  /* Send ReG-specific header */
+
+  if( Emit_iotype_msg_header(IOTypeIndex,
+			     datatype,
+			     Count) != REG_SUCCESS){
+
+    return REG_FAILURE;
+  }
+
+  /* Send data */
+  return Emit_data(IOTypeIndex,
+		   datatype,
+		   num_bytes_to_send,
+		   pData);
+
 }
 
 /*----------------------------------------------------------------*/
@@ -1170,7 +1325,6 @@ int Steering_control(int     SeqNum,
 		     int    *SteerCommands,
 		     char  **SteerCmdParams)
 {
-  FILE  *fp;
   int    i;
   int    status;
   int    count;
@@ -1180,7 +1334,6 @@ int Steering_control(int     SeqNum,
   int    commands[REG_MAX_NUM_STR_CMDS];
   int    param_handles[REG_MAX_NUM_STR_PARAMS];
   char*  param_labels[REG_MAX_NUM_STR_PARAMS];
-  char   filename[REG_MAX_STRING_LENGTH];
 
   /* Variables for timing */
   float          time_per_step;
@@ -1204,12 +1357,8 @@ int Steering_control(int     SeqNum,
 
   if(!ReG_SteeringActive){
 
-    sprintf(filename, "%s%s", Steerer_connection.file_root, 
-	    STR_CONNECTED_FILENAME);
+    if(Steerer_connected() == REG_SUCCESS){
 
-    if( (fp = fopen(filename, "r")) ){
-
-      fclose(fp);
       ReG_SteeringActive = TRUE;
       first_time = TRUE;
 #if DEBUG
@@ -1352,7 +1501,6 @@ int Steering_control(int     SeqNum,
 #endif
 
         SteerCommands[count] = commands[i];
-	/*strcpy(SteerCmdParams[count], command_params[i]);*/
 	strcpy(SteerCmdParams[count], SteerCmdParams[i]);
 	count++;
 
@@ -1387,9 +1535,8 @@ int Steering_control(int     SeqNum,
       i++;
     }
 
+    /* Tell the steerer what we've been doing */
     if( !detached ){
-
-      /* Tell the steerer what we've been doing */
 
       /* Currently don't support returning a copy of the data just 
 	 received from the steerer - hence NULL's below */
@@ -1432,9 +1579,9 @@ int Steering_control(int     SeqNum,
 	  SteerCommands[count]  = IOTypes_table.io_def[i].handle;
 	  SteerCmdParams[count] = " ";
 	  count++;
-	  
 	}
       }
+
     }
 
     /* Record how many commands we're going to pass back to caller */
@@ -1604,10 +1751,7 @@ int Steering_pause(int   *NumSteerParams,
 
 int Emit_param_defs(){
 
-  FILE *fp;
   int   i;
-  int   status;
-  char  filename[REG_MAX_STRING_LENGTH];
   char  buf[REG_MAX_MSG_SIZE];
   char *pbuf;
 
@@ -1615,28 +1759,14 @@ int Emit_param_defs(){
   if (Params_table.num_registered == 0) return REG_SUCCESS;
 
   /* Emit all currently registered parameters */
-
-  status = Generate_status_filename(filename);
-  
-  if(status != REG_SUCCESS){
-  
-    return REG_FAILURE;
-  }
-  
-  fp = fopen(filename, "w");
-  
-  if(fp == NULL){
-    fprintf(stderr, "Emit_param_defs: Failed to open file\n");
-    return REG_FAILURE;
-  }
   
   pbuf = buf;
   Write_xml_header(&pbuf);
 
-  pbuf += sprintf(pbuf,"<Param_defs>\n");
+  pbuf += sprintf(pbuf, "<Param_defs>\n");
   
   for(i=0; i<Params_table.max_entries; i++){
-  
+
     /* Check handle because if a parameter is deleted then this is
   	 flagged by unsetting its handle */
   
@@ -1645,50 +1775,47 @@ int Emit_param_defs(){
       /* Update the 'value' part of this parameter's table entry */
       if(Get_ptr_value(&(Params_table.param[i])) == REG_SUCCESS){
     	 
-	pbuf += sprintf(pbuf,"<Param>\n");
-	pbuf += sprintf(pbuf,"<Label>%s</Label>\n", 
+	pbuf += sprintf(pbuf, "<Param>\n");
+
+	pbuf += sprintf(pbuf, "<Label>%s</Label>\n", 
 			Params_table.param[i].label);
-	pbuf += sprintf(pbuf,"<Steerable>%d</Steerable>\n", 
+
+	pbuf += sprintf(pbuf, "<Steerable>%d</Steerable>\n", 
 			Params_table.param[i].steerable);
-	pbuf += sprintf(pbuf,"<Type>%d</Type>\n", 
-			Params_table.param[i].type);
-	pbuf += sprintf(pbuf,"<Handle>%d</Handle>\n",
+
+	pbuf += sprintf(pbuf, "<Type>%d</Type>\n", Params_table.param[i].type);
+
+	pbuf += sprintf(pbuf, "<Handle>%d</Handle>\n",
 			Params_table.param[i].handle);
-	pbuf += sprintf(pbuf,"<Value>%s</Value>\n", 
-			Params_table.param[i].value);
+
+	pbuf += sprintf(pbuf,"<Value>%s</Value>\n", Params_table.param[i].value);
 
 	if(Params_table.param[i].is_internal == TRUE){
 
-	  pbuf += sprintf(pbuf,"<Is_internal>TRUE</Is_internal>\n");
+	  pbuf += sprintf(pbuf, "<Is_internal>TRUE</Is_internal>\n");
 	}
 	else{
 
-	  pbuf += sprintf(pbuf,"<Is_internal>FALSE</Is_internal>\n");
+	  pbuf += sprintf(pbuf, "<Is_internal>FALSE</Is_internal>\n");
 	}
 
-	pbuf += sprintf(pbuf,"</Param>\n");
+	pbuf += sprintf(pbuf, "</Param>\n");
       }
     }
   }
   
-  pbuf += sprintf(pbuf,"</Param_defs>\n");
+  pbuf += sprintf(pbuf, "</Param_defs>\n");
   Write_xml_footer(&pbuf);
 
-  fprintf(fp, "%s", buf);
-  fclose(fp);
-  Create_lock_file(filename);
-
-  return REG_SUCCESS;
+  /* Physically send the message */
+  return Send_status_msg(buf);
 }
 
 /*----------------------------------------------------------------*/
 
 int Emit_IOType_defs(){
 
-  int   status;
   int   i;
-  FILE *fp;
-  char  filename[REG_MAX_STRING_LENGTH];
   char  buf[REG_MAX_MSG_SIZE];
   char *pbuf;
 
@@ -1696,20 +1823,6 @@ int Emit_IOType_defs(){
   if (IOTypes_table.num_registered == 0) return REG_SUCCESS;
 
   /* Emit all currently registered IOTypes */
-
-  status = Generate_status_filename(filename);
-  
-  if(status != REG_SUCCESS){
-  
-    return REG_FAILURE;
-  }
-  
-  fp = fopen(filename, "w");
-  
-  if(fp == NULL){
-    fprintf(stderr, "Emit_IOType_defs: Failed to open file\n");
-    return REG_FAILURE;
-  }
   
   pbuf = buf;
   Write_xml_header(&pbuf);
@@ -1741,11 +1854,10 @@ int Emit_IOType_defs(){
 	fprintf(stderr, 
 		"Emit_IOType_defs: Unrecognised IOType direction\n");
 #endif
-	fclose(fp);
-	remove(filename);
 	return REG_FAILURE;
       }
 
+      /* SMR XXXn -merge ? need auto_io? */
       /* ARPDBG - will always have freq. associated with IO channel now
 	 so need to update schema and parser and get rid of this */
       pbuf += sprintf(pbuf,"<Support_auto_io>TRUE</Support_auto_io>\n");
@@ -1760,12 +1872,8 @@ int Emit_IOType_defs(){
   pbuf += sprintf(pbuf,"</IOType_defs>\n");
   Write_xml_footer(&pbuf);
 
-  fprintf(fp, "%s", buf);
-  fclose(fp);
-  
-  Create_lock_file(filename);
-
-  return REG_SUCCESS;
+  /* Physically send message */
+  return Send_status_msg(buf);
 }
 
 /*----------------------------------------------------------------*/
@@ -1787,11 +1895,9 @@ int Consume_control(int    *NumCommands,
 		    int    *SteerParamHandles,
 		    char  **SteerParamLabels){
 
-  FILE                *fp;
   int                  j;
   int                  count;
   char                *ptr;
-  char                 filename[REG_MAX_STRING_LENGTH];
   struct msg_struct   *msg;
   struct cmd_struct   *cmd;
   struct param_struct *param;
@@ -1801,154 +1907,129 @@ int Consume_control(int    *NumCommands,
   /* Read the file produced by the steerer - may contain commands and/or
      new parameter values */
 
-  sprintf(filename, "%s%s", Steerer_connection.file_root, STR_TO_APP_FILENAME);
+  if((msg = Get_control_msg()) != NULL){
 
-  if( (fp = Open_next_file(filename)) != NULL){
+    if(msg->control){
 
-    fclose(fp);
+      cmd   = msg->control->first_cmd;
+      count = 0;
 
-    msg = New_msg_struct();
+      while(cmd){
 
-    return_status = Parse_xml_file(filename, msg);
+	sscanf((char *)(cmd->id), "%d", &(Commands[count]));
 
-    if(return_status == REG_SUCCESS){
+	if(cmd->first_param){
 
-      if(msg->control){
+	  param = cmd->first_param;
+	  ptr   = CommandParams[count];
+	  while(param){
 
-	cmd   = msg->control->first_cmd;
-	count = 0;
-
-	while(cmd){
-
-	  sscanf((char *)(cmd->id), "%d", &(Commands[count]));
-
-	  if(cmd->first_param){
-
-	    param = cmd->first_param;
-	    ptr   = CommandParams[count];
-	    while(param){
-
-	      if(param->value){
-	        sprintf(ptr, "%s ", (char *)(param->value));
-		ptr += strlen((char *)param->value) + 1;
-	      }
-
-	      param = param->next;
+	    if(param->value){
+	      sprintf(ptr, "%s ", (char *)(param->value));
+	      ptr += strlen((char *)param->value) + 1;
 	    }
-	  }
-	  else{
 
-	    sprintf(CommandParams[count], " ");
+	    param = param->next;
 	  }
+	}
+	else{
+
+	  sprintf(CommandParams[count], " ");
+	}
 #if DEBUG
-	  fprintf(stderr, "Consume_control: cmd[%d] = %d\n", count,
-		  Commands[count]);
-	  fprintf(stderr, "                 params  = %s\n", 
-		  CommandParams[count]);
+	fprintf(stderr, "Consume_control: cmd[%d] = %d\n", count,
+		Commands[count]);
+	fprintf(stderr, "                 params  = %s\n", 
+		CommandParams[count]);
 #endif
-	  count++;
+	count++;
 
-	  if(count >= REG_MAX_NUM_STR_CMDS){
+	if(count >= REG_MAX_NUM_STR_CMDS){
 
-	    fprintf(stderr, 
-		    "Consume_control: WARNING: truncating list of commands\n");
+	  fprintf(stderr, 
+		  "Consume_control: WARNING: truncating list of commands\n");
+	  break;
+	}
+
+	cmd = cmd->next;
+      }
+
+      *NumCommands = count;
+
+#if DEBUG
+      fprintf(stderr, "Consume_control: received %d commands\n", 
+	      *NumCommands);
+#endif
+
+      param = msg->control->first_param;
+      count = 0;
+
+      while(param){
+
+	sscanf((char *)(param->handle), "%d", &handle);
+
+	for(j=0; j<Params_table.max_entries; j++){
+  
+	  if(Params_table.param[j].handle == handle){
+	  
 	    break;
 	  }
-
-	  cmd = cmd->next;
 	}
 
-	*NumCommands = count;
-
-#if DEBUG
-	fprintf(stderr, "Consume_control: received %d commands\n", 
-		*NumCommands);
-#endif
-
-	param = msg->control->first_param;
-	count = 0;
-
-	while(param){
-
-	  sscanf((char *)(param->handle), "%d", &handle);
-
-	  for(j=0; j<Params_table.max_entries; j++){
+	if(j == Params_table.max_entries){
   
-	    if(Params_table.param[j].handle == handle){
-	  
-	      break;
+	  fprintf(stderr, "Consume_control: failed to match param "
+		  "handles\n");
+	  return_status = REG_FAILURE;
+	}
+	else{
+
+	  /* Store char representation of new parameter value */
+	  if(param->value){
+
+	    strcpy(Params_table.param[j].value, (char *)(param->value));
+
+	    /* Update value associated with pointer */
+	    Update_ptr_value(&(Params_table.param[j]));
+
+	    if( !(Params_table.param[j].is_internal) ){
+
+	      SteerParamHandles[count] = handle;
+	      SteerParamLabels[count]  = Params_table.param[j].label;
+	      count++;
 	    }
-	  }
-
-	  if(j == Params_table.max_entries){
-  
-	    fprintf(stderr, "Consume_control: failed to match param handles\n");
-	    return_status = REG_FAILURE;
 	  }
 	  else{
-
-	    /* Store char representation of new parameter value */
-	    if(param->value){
-
-	      strcpy(Params_table.param[j].value, (char *)(param->value));
-
-	      /* Update value associated with pointer */
-	      Update_ptr_value(&(Params_table.param[j]));
-
-	      if( !(Params_table.param[j].is_internal) ){
-
-		SteerParamHandles[count] = handle;
-		SteerParamLabels[count]  = Params_table.param[j].label;
-		count++;
-	      }
-	    }
-	    else{
-	      fprintf(stderr, "Consume_control: empty parameter value field\n");
-	    }
+	    fprintf(stderr, "Consume_control: empty parameter value "
+		    "field\n");
 	  }
-
-	  param = param->next;
 	}
 
-	/* Update the number of parameters received to allow for fact that
-	   some may be internal and are not passed up to the calling routine */
-	*NumSteerParams = count;
+	param = param->next;
+      }
+
+      /* Update the number of parameters received to allow for fact that
+	 some may be internal and are not passed up to the calling routine */
+      *NumSteerParams = count;
 
 #if DEBUG
 	fprintf(stderr, "Consume_control: received %d params\n", *NumSteerParams);
 #endif
-      }
-      else{
-	fprintf(stderr, "Consume_control: error, no control data\n");
-	*NumSteerParams = 0;
-	*NumCommands    = 0;
-	return_status   = REG_FAILURE;
-      }
-
-      /* Delete the file once we've read it */
-
-      if( Delete_file(filename) != REG_SUCCESS){
-
-	fprintf(stderr, "Consume_control: failed to delete %s\n",filename);
-      }
     }
     else{
-
-      fprintf(stderr, "Consume_control: failed to parse <%s>\n", filename);
+      fprintf(stderr, "Consume_control: error, no control data\n");
       *NumSteerParams = 0;
       *NumCommands    = 0;
+      return_status   = REG_FAILURE;
     }
-
-    Delete_msg_struct(msg);
-
   }
   else{
 
 #if DEBUG
-    fprintf(stderr, "Consume_control: failed to open file %s\n", filename);
+    fprintf(stderr, "Consume_control: no message from steerer\n");
 #endif
 
-    /* No file found */
+    /* No message found */
 
     *NumSteerParams = 0;
     *NumCommands = 0;
@@ -2020,7 +2101,6 @@ int Emit_status(int   SeqNum,
 		int   NumCommands,
 		int  *Commands)
 {
-  FILE *fp;
   int   i;
   int   pcount = 0;
   int   tot_pcount = 0;
@@ -2028,7 +2108,6 @@ int Emit_status(int   SeqNum,
   int   num_param;
   int   cmddone   = FALSE;
   int   paramdone = FALSE;
-  char  filename[REG_MAX_STRING_LENGTH];
   char  buf[REG_MAX_MSG_SIZE];
   char *pbuf;
 
@@ -2064,14 +2143,6 @@ int Emit_status(int   SeqNum,
 
   while(!paramdone || !cmddone){
 
-    Generate_status_filename(filename);
-
-    if( (fp = fopen(filename, "w")) == NULL){
-
-      fprintf(stderr, "Emit_status: failed to open file\n");
-      return REG_FAILURE;
-    }
-
     pbuf = buf;
 
     Write_xml_header(&pbuf);
@@ -2088,9 +2159,6 @@ int Emit_status(int   SeqNum,
     	/* Handle value used to indicate whether entry is valid */
     	if(Params_table.param[tot_pcount].handle != REG_PARAM_HANDLE_NOTSET){
 
-	  /* Changed to emit ALL parameters, ARP 19.08.2002 */
-	  /*  && (!Params_table.param[tot_pcount].steerable) ){ */
-  
  	  /* Update the 'value' part of this parameter's table entry
 	     - Get_ptr_value checks to make sure parameter is not library-
 	     controlled (& hence has valid ptr to get value from) */
@@ -2143,10 +2211,8 @@ int Emit_status(int   SeqNum,
 
     Write_xml_footer(&pbuf);
 
-    fprintf(fp, "%s", buf);
-    fclose(fp);
-
-    Create_lock_file(filename);
+    /* Physically send the status message */
+    Send_status_msg(buf);
   }
 
   return REG_SUCCESS;
@@ -2295,53 +2361,638 @@ int Make_vtk_buffer(char  *header,
 		    int    nx,
 		    int    ny,
 		    int    nz,
+		    int    veclen,
+		    double a,
+		    double b,
+		    double c,
 		    float *array)
 {
   int    i, j, k;
-  double a2 = 0.5*0.5;
-  double b2 = 0.3*0.3;
-  double c2 = 0.1*0.1;
+  int    count;
+  double a2, b2, c2;
+  float  mag;
+  float  sum;
   float *fptr;
   char  *pchar;
   char   text[64];
 
+  a2 = a*a;
+  b2 = b*b;
+  c2 = c*c;
+
   /* Make ASCII header to describe data to vtk */
 
   pchar = header;
-  pchar += sprintf(pchar, "%128-s\n", "# AVS field file");
-  pchar += sprintf(pchar, "%128-s\n", "ndim=3");
-  sprintf(text, "dim1= %d", nx);
-  pchar += sprintf(pchar, "%128-s\n", text);
-  sprintf(text, "dim2= %d", ny);
-  pchar += sprintf(pchar, "%128-s\n", text);
-  sprintf(text, "dim3= %d", nz);
-  pchar += sprintf(pchar, "%128-s\n", text);
-  pchar += sprintf(pchar, "%128-s\n", "nspace=3");
-  pchar += sprintf(pchar, "%128-s\n", "field=uniform");
-  pchar += sprintf(pchar, "%128-s\n", "veclen=1");
-  pchar += sprintf(pchar, "%128-s\n", "data=xdr_float");
-  pchar += sprintf(pchar, "%128-s\n", "variable 1 filetype=binary "
-  		   "skip=0000000 stride=2");
-  pchar += sprintf(pchar, "%128-s\n", "variable 2 filetype=binary "
-  		   "skip=0000008 stride=2");
-  pchar += sprintf(pchar, "%128-s\n", "END_OF_HEADER");
+  pchar += sprintf(pchar, REG_PACKET_FORMAT, "# AVS field file\n");
+  pchar += sprintf(pchar, REG_PACKET_FORMAT, "ndim=3\n");
+  sprintf(text, "dim1= %d\n", nx);
+  pchar += sprintf(pchar, REG_PACKET_FORMAT, text);
+  sprintf(text, "dim2= %d\n", ny);
+  pchar += sprintf(pchar, REG_PACKET_FORMAT, text);
+  sprintf(text, "dim3= %d\n", nz);
+  pchar += sprintf(pchar, REG_PACKET_FORMAT, text);
+  pchar += sprintf(pchar, REG_PACKET_FORMAT, "nspace=3\n");
+  pchar += sprintf(pchar, REG_PACKET_FORMAT, "field=uniform\n");
+  sprintf(text, "veclen= %d\n", veclen);
+  pchar += sprintf(pchar, REG_PACKET_FORMAT, text);
+  pchar += sprintf(pchar, REG_PACKET_FORMAT, "data=float\n");
+
+  /* Use 'filetype=stream' because this is _not_ standard AVS because
+     the way we interpret 'skip' at the other end of a socket is
+     not standard either - we use it as the number of objects (floats,
+     ints etc.) to skip rather than the no. of bytes or lines. */
+  if(veclen == 1){
+    pchar += sprintf(pchar, REG_PACKET_FORMAT, "variable 1 filetype=stream "
+		     "skip=0000000 stride=1\n");
+  }
+  else if(veclen == 2){
+    pchar += sprintf(pchar, REG_PACKET_FORMAT, "variable 1 filetype=stream "
+		     "skip=0000000 stride=2\n");
+    pchar += sprintf(pchar, REG_PACKET_FORMAT, "variable 2 filetype=stream "
+		     "skip=0000001 stride=2\n");
+
+  }
+  else if(veclen == 3){
+    pchar += sprintf(pchar, REG_PACKET_FORMAT, "variable 1 filetype=stream "
+		     "skip=0000000 stride=3\n");
+    pchar += sprintf(pchar, REG_PACKET_FORMAT, "variable 2 filetype=stream "
+		     "skip=0000001 stride=3\n");
+    pchar += sprintf(pchar, REG_PACKET_FORMAT, "variable 3 filetype=stream "
+		     "skip=0000002 stride=3\n");
+  }
+  pchar += sprintf(pchar, REG_PACKET_FORMAT, "END_OF_HEADER\n");
 
   /* Make an array of data */
   fptr = array;
 
-  for(i=-nx/2; i<nx/2; i++){
-    for(j=-ny/2; j<ny/2; j++){
-      for(k=-nz/2; k<nz/2; k++){
+  sum = 0.0;
+  count = 0;
 
-  	*(fptr++) = (float)sqrt((double)(i*i*a2 + j*j*b2 + k*k*c2));
+  if(veclen == 1){
+
+    for(i=-nx/2; i<nx/2; i++){
+      for(j=-ny/2; j<ny/2; j++){
+	for(k=-nz/2; k<nz/2; k++){
+          *fptr = (float)sqrt((double)(i*i*a2 + j*j*b2 + k*k*c2));
+	  sum += *(fptr++);
+
+	  count++;
+	}
       }
     }
   }
+  else if(veclen == 2){
+
+    for(i=-nx/2; i<nx/2; i++){
+      for(j=-ny/2; j<ny/2; j++){
+	for(k=-nz/2; k<nz/2; k++){
+
+	  mag = 2.0/(1.0 + (float)sqrt((double)(i*i*a2 + j*j*b2 + k*k*c2)));
+	  *fptr = mag*(float)(i*k);
+	  sum += *(fptr++);
+	  *fptr = mag*(float)(j*k);
+	  sum += *(fptr++);
+
+	  count = count+2;
+	}
+      }
+    }
+  }
+  else if(veclen == 3){
+
+    for(i=-nx/2; i<nx/2; i++){
+      for(j=-ny/2; j<ny/2; j++){
+	for(k=-nz/2; k<nz/2; k++){
+	  /*
+	  mag = 2.0/(1.0 + (float)sqrt((double)(i*i*a2 + j*j*b2 + k*k*c2)));
+	  *fptr = mag*(float)i;
+	  sum += *(fptr++);
+	  *fptr = mag*(float)j;
+	  sum += *(fptr++);
+	  *fptr = mag*(float)k;
+	  sum += *(fptr++);
+	  */
+	  mag = 1.0;
+	  *fptr = mag*(float)i;
+	  sum += *(fptr++);
+	  *fptr = mag*(float)j;
+	  sum += *(fptr++);
+	  *fptr = mag*(float)k;
+	  sum += *(fptr++);
+
+	  count = count+3;
+	}
+      }
+    }
+  }
+  else{
+    fprintf(stderr, "Make_vtk_buffer: error, only  1 <= veclen <= 3 "
+	    "supported\n");
+    return REG_FAILURE;
+  }
+
+  fprintf(stderr, "Make_vtk_buffer: checksum = %f\n", sum/((float) count));
+
+  /*
+  fptr = array;
+  fprintf(stderr, "Array is: \n");
+  for(i=0; i<nx; i++){
+
+    fprintf(stderr, "%.3f %.3f %.3f\n", *(fptr++), *(fptr++), *(fptr++));
+  }
+  */
+  return REG_SUCCESS;
+}
+
+/*--------------------------------------------------------------------*/
+
+int Steerer_connected()
+{
+
+#if REG_GLOBUS_STEERING
+
+  return Steerer_connected_globus();
+#else
+
+  return Steerer_connected_file();
+#endif
+}
+
+/*--------------------------------------------------------------------*/
+
+int Steerer_connected_file()
+{
+  char   filename[REG_MAX_STRING_LENGTH];
+  FILE  *fp;
+
+  sprintf(filename, "%s%s", Steerer_connection.file_root, 
+	  STR_CONNECTED_FILENAME);
+
+  if( (fp = fopen(filename, "r")) ){
+
+      fclose(fp);
+      return REG_SUCCESS;
+  }
+
+  return REG_FAILURE;
+}
+
+/*-------------------------------------------------------------------*/
+
+int Send_status_msg(char *buf)
+{
+#if REG_GLOBUS_STEERING
+
+  return Send_status_msg_globus(buf);
+#else
+
+  return Send_status_msg_file(buf);
+#endif
+}
+
+/*-------------------------------------------------------------------*/
+
+int Send_status_msg_file(char *buf)
+{
+  FILE *fp;
+  char  filename[REG_MAX_STRING_LENGTH];
+
+  Generate_status_filename(filename);
+
+  if( (fp = fopen(filename, "w")) == NULL){
+
+    fprintf(stderr, "Send_status_msg: failed to open file\n");
+    return REG_FAILURE;
+  }
+
+  fprintf(fp, "%s", buf);
+  fclose(fp);
+
+  Create_lock_file(filename);
 
   return REG_SUCCESS;
 }
 
+/*-------------------------------------------------------------------*/
 
+struct msg_struct *Get_control_msg()
+{
 
+#if REG_GLOBUS_STEERING
 
+  return Get_control_msg_globus();
 
+#else
+
+  return Get_control_msg_file();
+
+#endif
+
+}
+
+/*-------------------------------------------------------------------*/
+
+struct msg_struct *Get_control_msg_file()
+{
+  struct msg_struct   *msg = NULL;
+  FILE                *fp;
+  char                 filename[REG_MAX_STRING_LENGTH];
+
+  sprintf(filename, "%s%s", Steerer_connection.file_root, STR_TO_APP_FILENAME);
+
+  if( (fp = Open_next_file(filename)) != NULL){
+
+    fclose(fp);
+
+    msg = New_msg_struct();
+
+    if(Parse_xml_file(filename, msg) != REG_SUCCESS){
+
+      fprintf(stderr, "Read_control: failed to parse <%s>\n", filename);
+      Delete_msg_struct(msg);
+      msg = NULL;
+    }
+
+    /* Delete the file once we've read it */
+    if( Delete_file(filename) != REG_SUCCESS){
+
+      fprintf(stderr, "Read_control: failed to delete %s\n",filename);
+    }
+  }
+
+  return msg;
+}
+
+/*-------------------------------------------------------------------*/
+
+int Initialize_steering_connection(int  NumSupportedCmds,
+				   int *SupportedCmds)
+{
+
+#if REG_GLOBUS_STEERING
+
+  return Initialize_steering_connection_globus(NumSupportedCmds,
+					       SupportedCmds);
+#else
+
+  return Initialize_steering_connection_file(NumSupportedCmds,
+					     SupportedCmds);
+#endif
+
+}
+
+/*-------------------------------------------------------------------*/
+
+int Initialize_steering_connection_file(int  NumSupportedCmds,
+					int *SupportedCmds)
+{
+  FILE *fp;
+  char *pchar;
+  char  buf[REG_MAX_MSG_SIZE];
+  char  filename[REG_MAX_STRING_LENGTH];
+  int   i;
+
+  /* Set location of all comms files */
+
+  pchar = getenv("REG_STEER_DIRECTORY");
+
+  if(pchar){
+
+    /* Check that path ends in '/' - if not then add one */
+
+    i = strlen(pchar);
+    if( pchar[i-1] != '/' ){
+
+      sprintf(Steerer_connection.file_root, "%s/", pchar);
+    }
+    else{
+
+      strcpy(Steerer_connection.file_root, pchar);
+    }
+
+    if(Directory_valid(Steerer_connection.file_root) != REG_SUCCESS){
+
+      fprintf(stderr, "Initialize_steering_connection_file: invalid dir for "
+	      "steering messages: %s\n", Steerer_connection.file_root);
+      return REG_FAILURE;
+    }
+    else{
+      fprintf(stderr, "Using following dir for steering messages: %s\n", 
+	     Steerer_connection.file_root);
+    }
+  }
+  else{
+    fprintf(stderr, "Initialize_steering_connection_file: failed to get "
+	    "scratch directory\n");
+    return REG_FAILURE;
+  }
+
+  /* Clean up any old files... */
+
+  /* ...file indicating a steerer is connected (which it can't be since we've
+     only just begun) */ 
+  sprintf(filename, "%s%s", Steerer_connection.file_root, 
+	  STR_CONNECTED_FILENAME);
+  fp = fopen(filename, "w");
+  if(fp != NULL){
+
+    fclose(fp);
+    if(remove(filename)){
+
+      fprintf(stderr, "Initialize_steering_connection_file: failed to "
+	      "remove %s\n",filename);
+    }
+#if DEBUG
+    else{
+      fprintf(stderr, "Initialize_steering_connection_file: removed "
+	      "%s\n", filename);
+    }
+#endif
+  }
+
+  /* ...files containing messages from a steerer */
+  sprintf(filename, "%s%s", Steerer_connection.file_root, 
+	  STR_TO_APP_FILENAME);
+
+  Remove_files(filename);
+
+  /* Signal that component is available to be steered */
+
+  sprintf(filename, "%s%s", Steerer_connection.file_root, 
+	                    APP_STEERABLE_FILENAME);
+  fp = fopen(filename,"w");
+
+  if(fp == NULL){
+
+    fprintf(stderr, "Initialize_steering_connection_file: failed to open %s\n",
+	    filename);
+    return REG_FAILURE;
+  }
+
+#if DEBUG
+  fprintf(stderr, "Initialize_steering_connection_file: writing file: %s\n", 
+	  filename);
+#endif
+
+  Make_supp_cmds_msg(NumSupportedCmds, SupportedCmds, buf);
+
+  fprintf(fp, "%s", buf);
+  fclose(fp);
+
+  return REG_SUCCESS;
+}
+
+/*-------------------------------------------------------------------*/
+
+int Finalize_steering_connection()
+{
+
+#if REG_GLOBUS_STEERING
+
+  return Finalize_steering_connection_globus();
+#else
+
+  return Finalize_steering_connection_file();
+#endif
+
+}
+
+/*-------------------------------------------------------------------*/
+
+int Finalize_steering_connection_file()
+{
+  int  max, max1;
+  char sys_command[REG_MAX_STRING_LENGTH];
+
+  max = strlen(APP_STEERABLE_FILENAME);
+  max1 = strlen(STR_CONNECTED_FILENAME);
+
+  if(max1 > max) max=max1;
+  
+  max += strlen(Steerer_connection.file_root);
+  if(max > REG_MAX_STRING_LENGTH ){
+
+    fprintf(stderr, "Finalize_steering_connection: WARNING: truncating "
+	    "filename\n");
+  }
+
+  /* Delete the lock file that indicates we are steerable */
+  sprintf(sys_command, "%s%s", Steerer_connection.file_root,
+	  APP_STEERABLE_FILENAME);
+  if(remove(sys_command)){
+
+    fprintf(stderr, "Finalize_steering_connection: failed to remove "
+	    "%s\n", sys_command);
+  }
+
+  /* Delete the lock file that indicates we are being steered */
+  if(ReG_SteeringActive){
+
+    sprintf(sys_command, "%s%s", Steerer_connection.file_root,
+	    STR_CONNECTED_FILENAME);
+    if(remove(sys_command)){
+
+      fprintf(stderr, "Finalize_steering_connection: failed to remove "
+	      "%s\n", sys_command);
+    }
+  }
+
+  /* Delete any files we'd have consumed if we'd lived longer */
+  sprintf(sys_command, "%s%s", Steerer_connection.file_root, 
+	  STR_TO_APP_FILENAME);
+  Remove_files(sys_command);
+
+  return REG_SUCCESS;
+}
+/*---------------------------------------------------*/
+
+int Make_supp_cmds_msg(int   NumSupportedCmds,
+		       int  *SupportedCmds, 
+                       char *msg)
+{
+  char *pchar;
+  int   i;
+
+  pchar = msg;
+
+  Write_xml_header(&pchar);
+
+  pchar += sprintf(pchar, "<Supported_commands>\n");
+
+  for(i=0; i<NumSupportedCmds; i++){
+    pchar += sprintf(pchar, "<Command>\n");
+    pchar += sprintf(pchar, "<Cmd_id>%d</Cmd_id>\n", SupportedCmds[i]);
+    pchar += sprintf(pchar, "</Command>\n");
+  }
+
+  pchar += sprintf(pchar, "</Supported_commands>\n");
+
+  Write_xml_footer(&pchar);
+
+  return REG_SUCCESS;
+}
+
+/*---------------------------------------------------*/
+
+int Initialize_IOType_transport(const int direction,
+				const int index)
+{
+
+#if REG_GLOBUS_SAMPLES
+
+  return Initialize_IOType_transport_globus(direction, index);
+#else
+
+  return REG_SUCCESS;
+#endif
+
+}
+
+/*---------------------------------------------------*/
+
+void Finalize_IOType_transport()
+{
+
+#if REG_GLOBUS_SAMPLES
+
+  Finalize_IOType_transport_globus();
+
+#endif
+
+}
+
+/*---------------------------------------------------*/
+
+int Consume_start_data_check(const int index)
+{
+
+#if REG_GLOBUS_SAMPLES
+
+  return Consume_start_data_check_globus(index);
+#else
+
+  return REG_FAILURE;
+#endif
+
+}
+
+/*---------------------------------------------------*/
+
+int Consume_data_read(const int		index,  
+		      const int		datatype,
+		      const size_t	num_bytes_to_read, 
+		      void		*pData)
+{
+
+#if REG_GLOBUS_SAMPLES
+
+  return Consume_data_read_globus(index,
+				  datatype,
+				  num_bytes_to_read,
+				  pData);
+#else
+
+  return REG_FAILURE;
+#endif
+
+}
+
+/*---------------------------------------------------*/
+
+int Emit_header(const int index)
+{
+#if REG_GLOBUS_SAMPLES
+
+  return Emit_header_globus(index);
+#else
+
+  return REG_FAILURE;
+#endif
+
+}
+
+/*---------------------------------------------------*/
+
+int Emit_footer(const int index,
+		const char * const buffer)
+{
+#if REG_GLOBUS_SAMPLES
+
+  return Emit_footer_globus(index, buffer);
+#else
+
+  return REG_FAILURE;
+#endif
+
+}
+
+/*---------------------------------------------------*/
+
+int Emit_data(const int		index,  
+	      const int		datatype,
+	      const size_t	num_bytes_to_send,
+	      void		*pData )
+{
+#if REG_GLOBUS_SAMPLES
+
+  return Emit_data_globus(index, 
+			  datatype,
+			  num_bytes_to_send,
+			  pData);
+#else
+
+  return REG_FAILURE;
+#endif
+
+}
+
+/*---------------------------------------------------*/
+
+int Get_communication_status(const int	index)
+{
+
+#if REG_GLOBUS_SAMPLES
+
+  return Get_communication_status_globus(index);
+#else
+
+  return REG_FAILURE;
+#endif
+
+}
+
+/*---------------------------------------------------*/
+
+int Consume_iotype_msg_header(int IOTypeIndex, /*socket_io_type *sock_info,*/
+			      int *DataType,
+			      int *Count)
+{
+  
+#if REG_GLOBUS_SAMPLES
+  return Consume_msg_header_globus(&(IOTypes_table.io_def[IOTypeIndex].socket_info), /*sock_info,*/
+				   DataType,
+				   Count);
+#else
+
+  return REG_FAILURE;
+#endif
+
+}
+
+/*----------------------------------------------------------------*/
+
+int Emit_iotype_msg_header(int IOTypeIndex,
+			   int DataType,
+			   int Count)
+{
+
+#if REG_GLOBUS_SAMPLES
+  return Emit_msg_header_globus(&(IOTypes_table.io_def[IOTypeIndex].socket_info),
+				DataType,
+				Count);
+#else
+
+  return REG_FAILURE;
+#endif
+
+}

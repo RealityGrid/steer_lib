@@ -43,7 +43,7 @@
 int main(){
 
   /* No. of 'simulation' loops to do */
-  const int nloops = 20;
+  const int nloops = 100;
 
   /* For steering */
   int    num_iotypes;
@@ -221,7 +221,23 @@ int main(){
     system("sleep 3");
     printf("\ni = %d\n", i);
 
-    Make_vtk_buffer(header, NX, NY, NZ, array);
+    Make_vtk_buffer(header, NX, NY, NZ, 1, 0.3, 0.5, 0.4, array);
+
+    /* ARPDBG for io testing only (should emit in response to a command
+       or maybe every n steps)... */
+    if( Emit_start(iotype_handle[1], i, TRUE, &iohandle) == REG_SUCCESS ){
+	
+      data_count = strlen(header);
+      data_type  = REG_CHAR;
+      Emit_data_slice(iohandle, data_type, data_count, (void *)header);
+
+      data_count = NX*NY*NZ;
+      data_type  = REG_FLOAT;
+      Emit_data_slice(iohandle, data_type, data_count, array);
+
+      Emit_stop(&iohandle);
+    }
+    /*...ARPDBG end */
 
 /*     if(i==0){ */
 
@@ -290,7 +306,7 @@ int main(){
 
 		if(j==1){
 
-		  if( Emit_start(iotype_handle[j], i, &iohandle)
+		  if( Emit_start(iotype_handle[j], i, FALSE, &iohandle)
 		      == REG_SUCCESS ){
 
 

@@ -300,7 +300,182 @@ INT_KIND_1_DECL(Status);
 
 /*----------------------------------------------------------------
 
-SUBROUTINE steering_control_f(SeqNum, NumSteerParams, SteerParamLabels &
+SUBROUTINE consume_data_slice_header_f(IOHandle, DataType, &
+                                       Count, Status)
+
+  INTEGER(KIND=REG_SP_KIND), INTENT(in)  :: IOHandle
+  INTEGER(KIND=REG_SP_KIND), INTENT(out) :: DataType
+  INTEGER(KIND=REG_SP_KIND), INTENT(out) :: Count
+  INTEGER(KIND=REG_SP_KIND), INTENT(out) :: Status
+----------------------------------------------------------------*/
+
+void FUNCTION(consume_data_slice_header_f) ARGS(`IOHandle,
+                                                 DataType,
+                                                 Count,
+                                                 Status')
+INT_KIND_1_DECL(IOHandle);
+INT_KIND_1_DECL(DataType);
+INT_KIND_1_DECL(Count);
+INT_KIND_1_DECL(Status);
+{
+  *Status = INT_KIND_1_CAST( Consume_data_slice_header((int)*IOHandle,
+                                                       (int *)DataType, 
+                                                       (int *)Count));
+  return;
+}
+
+/*----------------------------------------------------------------
+
+SUBROUTINE consume_data_slice_f(IOHandle, pData, Status)
+
+  INTEGER(KIND=REG_SP_KIND), INTENT(in)  :: IOHandle
+  INTEGER(KIND=REG_SP_KIND), INTENT(in)  :: DataType
+  INTEGER(KIND=REG_SP_KIND), INTENT(in)  :: Count
+  XXXXXXX(KIND=REG_DP_KIND), DIMENSION(),INTENT(out) :: pData
+  INTEGER(KIND=REG_SP_KIND), INTENT(out) :: Status
+
+----------------------------------------------------------------*/
+
+void FUNCTION(consume_data_slice_f) ARGS(`IOHandle,
+                                          DataType,
+                                          Count,
+                                          pData, 
+                                          Status')
+INT_KIND_1_DECL(IOHandle);
+INT_KIND_1_DECL(DataType);
+INT_KIND_1_DECL(Count);
+void *pData;
+INT_KIND_1_DECL(Status);
+{
+  *Status = INT_KIND_1_CAST( Consume_data_slice((int)*IOHandle,
+                                                (int)*DataType, 
+                                                (int)*Count, 
+                                                pData) );
+  return;
+}
+
+/*----------------------------------------------------------------
+
+SUBROUTINE emit_start_f(IOType, SeqNum, UseXDR, IOHandle, Status)
+
+  INTEGER(KIND=REG_SP_KIND), INTENT(in)  :: IOType
+  INTEGER(KIND=REG_SP_KIND), INTENT(in)  :: SeqNum
+  INTEGER(KIND=REG_SP_KIND), INTENT(in)  :: UseXDR
+  INTEGER(KIND=REG_SP_KIND), INTENT(out) :: IOHandle
+  INTEGER(KIND=REG_SP_KIND), INTENT(out) :: Status
+
+----------------------------------------------------------------*/
+
+void FUNCTION(emit_start_f) ARGS(`IOType, 
+                                SeqNum, 
+                                UseXDR,
+                                IOHandle,
+                                Status')
+INT_KIND_1_DECL(IOType);
+INT_KIND_1_DECL(SeqNum);
+INT_KIND_1_DECL(UseXDR);
+INT_KIND_1_DECL(IOHandle);
+INT_KIND_1_DECL(Status);
+{
+  *Status = INT_KIND_1_CAST( Emit_start(*IOType, *SeqNum, *UseXDR, 
+                                        IOHandle) );
+  return;
+}
+
+/*----------------------------------------------------------------
+
+SUBROUTINE emit_stop_f(IOHandle, Status)
+
+  INTEGER(KIND=REG_SP_KIND), INTENT(inout) :: IOHandle
+  INTEGER(KIND=REG_SP_KIND), INTENT(out)   :: Status
+
+----------------------------------------------------------------*/
+
+void FUNCTION(emit_stop_f) ARGS(`IOHandle,
+                                 Status')
+INT_KIND_1_DECL(IOHandle);
+INT_KIND_1_DECL(Status);
+{
+  *Status = INT_KIND_1_CAST( Emit_stop(IOHandle) );
+
+  return;
+}
+
+/*----------------------------------------------------------------
+
+SUBROUTINE emit_data_slice_f(IOHandle, DataType, Count, pData, Status)
+
+  INTEGER(KIND=REG_SP_KIND), INTENT(in)  :: IOHandle
+  INTEGER(KIND=REG_SP_KIND), INTENT(in)  :: DataType
+  INTEGER(KIND=REG_SP_KIND), INTENT(in)  :: Count
+  XXXXXXX(KIND=REG_DP_KIND), DIMENSION(),INTENT(in) :: pData
+  INTEGER(KIND=REG_SP_KIND), INTENT(out) :: Status
+
+----------------------------------------------------------------*/
+
+void FUNCTION(emit_data_slice_f) ARGS(`IOHandle,
+                                       DataType,
+                                       Count,
+                                       pData,
+                                       Status')
+INT_KIND_1_DECL(IOHandle);
+INT_KIND_1_DECL(DataType);
+INT_KIND_1_DECL(Count);
+void *pData;
+INT_KIND_1_DECL(Status);
+{
+  *Status = INT_KIND_1_CAST( Emit_data_slice(*IOHandle, *DataType, *Count, 
+                                             pData) );
+
+  return;
+}
+
+/*----------------------------------------------------------------
+
+SUBROUTINE make_vtk_buffer_f(header, nx, ny, nz, veclen, a, b, c, 
+                             array, status)
+
+  CHARACTER (LEN=BUFSIZ), INTENT(out)     :: header
+  INTEGER (KIND=REG_SP_KIND), INTENT(in)  :: nx, ny, nz
+  INTEGER (KIND=REG_SP_KIND), INTENT(in)  :: veclen
+  REAL (KIND=REG_DP_KIND),    INTENT(in)  :: a, b, c
+  REAL (KIND=REG_SP_KIND), DIMENSION(nx*ny*nz), INTENT(out) :: array
+  INTEGER (KIND=REG_SP_KIND), INTENT(out) :: status
+
+----------------------------------------------------------------*/
+
+void FUNCTION(make_vtk_buffer_f) ARGS(`STRING_ARG(header), 
+                                       nx, ny, nz,
+                                       veclen, 
+                                       a, b, c,
+                                       array,
+                                       Status')
+STRING_ARG_DECL(header);
+INT_KIND_1_DECL(nx);
+INT_KIND_1_DECL(ny);
+INT_KIND_1_DECL(nz);
+INT_KIND_1_DECL(veclen);
+/* Really need an M4 macro for this but since this is just a test
+   routine, leave for now ARPDBG */
+double *a;
+double *b;
+double *c;
+float *array;
+INT_KIND_1_DECL(Status);
+{
+  *Status = INT_KIND_1_CAST( Make_vtk_buffer(STRING_PTR(header), 
+                                             (int)*nx, 
+                                             (int)*ny, 
+                                             (int)*nz,
+                                             (int)*veclen,
+                                             *a, *b, *c,
+                                             array) );
+  return;
+}
+
+/*----------------------------------------------------------------
+
+SUBROUTINE steering_control_f(SeqNum, NumSteerParams, SteerParamLabels, &
                               NumSteerCommands, SteerCommands, &
                               SteerCommandParams, Status)
 

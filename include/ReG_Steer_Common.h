@@ -37,11 +37,20 @@
     Initial version by: A Porter, 12/8/2002.
     
 ---------------------------------------------------------------------------*/
+#include "ReG_Steer_Globus_io.h"
 
 /* Following two includes are for use of stat system call 
    in Open_next_file */
+
 #include <sys/types.h>
 #include <sys/stat.h>
+
+
+#if REG_GLOBUS_STEERING
+typedef socket_io_type	socket_type_steering;
+#else
+typedef int		socket_type_steering;
+#endif
 
 /* Structures for checkpoint logging */
 
@@ -61,6 +70,7 @@ typedef struct {
   Chk_log_entry_type *entry;
   
 } Chk_log_type;
+
 
 /* Types and structures for reading parameter defs */
 
@@ -107,19 +117,29 @@ typedef struct {
 
 /* Types and structures for reading IO types */
 
-typedef struct {
 
-  char  label[REG_MAX_STRING_LENGTH];
-  char  filename[REG_MAX_STRING_LENGTH];
-  int   handle;
+typedef struct {
+  char				label[REG_MAX_STRING_LENGTH];
+  char				filename[REG_MAX_STRING_LENGTH];
+  int				handle;
   /* Whether input, output */
-  int   direction;
+  int				direction;
   /* Variable holding the frequency with which emission/consumption is
      to occur (every frequency steps) */
-  int   frequency;
-
+  int                           frequency;
   /* Handle of the (steerable) frequency in the parameter table */
-  int   freq_param_handle;
+  int				freq_param_handle;
+
+  /* Pointer to buffer to hold data */
+  void			       *buffer;
+  /* Size of this buffer */
+  int				buffer_bytes;
+#if REG_GLOBUS_SAMPLES
+  /* structure used to hold all globus_io socket information */
+  socket_io_type		socket_info;
+#endif
+  /* Whether or not to encode non-ASCII data as XDR (set in Emit_start) */
+  int				use_xdr;
 
 } IOdef_entry;
 
@@ -169,8 +189,17 @@ extern REG_MsgType Get_message_type(const char *name);
 
 /* Write ReG-specific XML header & footer information into supplied message
    buffer */
-
 extern int  Write_xml_header(char **pchar);
 
 extern int  Write_xml_footer(char **pchar);
+
+/* Read ReG-specific header */
+extern int Consume_msg_header(socket_type_steering *sock_info,
+			      int *DataType,
+			      int *Count);
+
+/* Construct and send ReG-specific header */
+extern int Emit_msg_header(socket_type_steering *sock_info,
+			   int DataType,
+			   int Count);
 
