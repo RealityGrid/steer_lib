@@ -276,8 +276,9 @@ extern PREFIX int Read_file(char *filename, char **buf, int *size);
 extern PREFIX int Get_current_time_seconds(double *now);
 #endif
 
-extern PREFIX int Reorder_array(Array_type *array, 
-				int         type, 
-				void       *pData);
+extern PREFIX int Reorder_decode_array(IOdef_entry *io,
+				       int          type,
+				       int          count,
+				       void        *pData);
 
 #endif

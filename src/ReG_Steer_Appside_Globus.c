@@ -753,7 +753,8 @@ int Consume_data_read_globus(const int		index,
   Get_current_time_seconds(&time0);
 #endif
 
-  if(IOTypes_table.io_def[index].use_xdr){
+  if(IOTypes_table.io_def[index].use_xdr ||
+     IOTypes_table.io_def[index].convert_array_order == TRUE){
     result = globus_io_read(&(IOTypes_table.io_def[index].socket_info.conn_handle), 
 			    IOTypes_table.io_def[index].buffer, 
 			    (globus_size_t) num_bytes_to_read, 

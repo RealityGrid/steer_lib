@@ -1187,13 +1187,20 @@ int Consume_data_slice_header(int  IOTypeIndex,
     break;
 
   default:
+    IOTypes_table.io_def[IOTypeIndex].use_xdr = FALSE;
     break;
   }
 
   /* Check whether or not we'll need to convert the array ordering */
   if(IOTypes_table.io_def[IOTypeIndex].array.is_f90 != IsFortranArray){
 
-    IOTypes_table.io_def[IOTypeIndex].convert_array_order = TRUE;
+    /* Assume we don't ever want to re-order char data */
+    if(*DataType != REG_CHAR){
+      IOTypes_table.io_def[IOTypeIndex].convert_array_order = TRUE;
+    }
+    else{
+      IOTypes_table.io_def[IOTypeIndex].convert_array_order = FALSE;
+    }
   }
   else{
     IOTypes_table.io_def[IOTypeIndex].convert_array_order = FALSE;
@@ -1211,7 +1218,6 @@ int Consume_data_slice(int    IOTypeIndex,
 {
   int              return_status = REG_SUCCESS;
   size_t	   num_bytes_to_read;
-  XDR              xdrs;
 
   /* Calculate how many bytes to expect */
   switch(DataType){
@@ -1263,8 +1269,10 @@ int Consume_data_slice(int    IOTypeIndex,
   }
 
   /* Check that input buffer is large enough (only an issue if have XDR-
-     encoded data) */
-  if(IOTypes_table.io_def[IOTypeIndex].use_xdr){
+     encoded data or need to reorder it) */
+  if(IOTypes_table.io_def[IOTypeIndex].use_xdr ||
+     IOTypes_table.io_def[IOTypeIndex].convert_array_order == TRUE){
+
     if(IOTypes_table.io_def[IOTypeIndex].buffer_bytes < num_bytes_to_read){
 
       if(Realloc_iotype_buffer(IOTypeIndex, num_bytes_to_read) 
@@ -1278,8 +1286,10 @@ int Consume_data_slice(int    IOTypeIndex,
     }
   }
 
-  /* Read this number of bytes */
-
+  /* Read this number of bytes - if xdr is being used or the array needs to
+     be reordered then the data is read into
+     IOTypes_table.io_def[IOTypeIndex].buffer, else it is stored
+     in the buffer pointed to by pData. */
   if (Consume_data_read(IOTypeIndex,
 			DataType,
 			num_bytes_to_read,
@@ -1287,76 +1297,9 @@ int Consume_data_slice(int    IOTypeIndex,
     return REG_FAILURE;
 
 
-  if(IOTypes_table.io_def[IOTypeIndex].use_xdr){
-
-#if REG_DEBUG
-    fprintf(stderr, "Consume_data_slice: doing XDR decode\n");
-#endif
-
-    xdrmem_create(&xdrs, 
-		  IOTypes_table.io_def[IOTypeIndex].buffer,
-		  num_bytes_to_read,
-		  XDR_DECODE);
-
-    switch(DataType){
-
-    case REG_INT:
-      
-      if(1 != xdr_vector(&xdrs, (char *)pData, (unsigned int)Count, 
-			 (unsigned int)sizeof(int), (xdrproc_t)xdr_int)){
-	fprintf(stderr, "Consume_data_slice: xdr_vector decode failed\n");
-	return_status = REG_FAILURE;
-      }
-
-      if(IOTypes_table.io_def[IOTypeIndex].convert_array_order == TRUE){
-
-	Reorder_array(&(IOTypes_table.io_def[IOTypeIndex].array), 
-		      REG_INT, pData);
-      }
-      break;
-
-    case REG_FLOAT:
-      
-      if(1 != xdr_vector(&xdrs, (char *)pData, (unsigned int)Count, 
-			 (unsigned int)sizeof(float), (xdrproc_t)xdr_float)){
-	fprintf(stderr, "Consume_data_slice: xdr_vector decode failed\n");
-	return_status = REG_FAILURE;
-      }
-
-      if(IOTypes_table.io_def[IOTypeIndex].convert_array_order == TRUE){
-
-	Reorder_array(&(IOTypes_table.io_def[IOTypeIndex].array), 
-		      REG_FLOAT, pData);
-      }
-      break;
-
-    case REG_DBL:
-      
-      if(1 != xdr_vector(&xdrs, (char *)pData, (unsigned int)Count, 
-			 (unsigned int)sizeof(double), (xdrproc_t)xdr_double)){
-	fprintf(stderr, "Consume_data_slice: xdr_vector decode failed\n");
-	return_status = REG_FAILURE;
-      }
-
-      if(IOTypes_table.io_def[IOTypeIndex].convert_array_order == TRUE){
-
-	Reorder_array(&(IOTypes_table.io_def[IOTypeIndex].array), 
-		      REG_DBL, pData);
-      }
-      break;
-
-    default:
-      fprintf(stderr, "Consume_data_slice: unexpected datatype\n");
-      return_status = REG_FAILURE;
-      break;
-    }
-
-    xdr_destroy(&xdrs);
-  }
-
-#if REG_DEBUG
-  fprintf(stderr, "Consume_data_slice: done XDR decode\n");
-#endif
+  /* Re-order and decode (xdr) data as necessary */
+  Reorder_decode_array(&(IOTypes_table.io_def[IOTypeIndex]), 
+		       DataType, Count,  pData);
 
   /* Reset use_xdr flag set as only valid on a per-slice basis */
   IOTypes_table.io_def[IOTypeIndex].use_xdr = FALSE;
