@@ -52,6 +52,7 @@ lib:
 
 .c.o:
 	${CC} ${C_FLAGS} -DREG_GLOBUS_SAMPLES=${REG_GLOBUS_SAMPLES_FLAG} \
+        -DREG_SOCKET_SAMPLES=${REG_SOCKET_SAMPLES_FLAG} \
         -DREG_SOAP_STEERING=${REG_SOAP_STEERING_FLAG} \
         -DREG_DEBUG=${REG_DEBUG_FLAG} \
         ${INCLUDE_PATH} -c $< -o $@
@@ -63,6 +64,7 @@ ${LIB_PATH}/libReG_Steer.a: ReG_Steer_Appside_f.o \
 	ReG_Steer_Proxy_utils.o \
 	ReG_Steer_XML.o \
 	ReG_Steer_Appside_Globus.o \
+	ReG_Steer_Appside_Sockets.o \
         ReG_Steer_Steerside_Soap.o \
         ReG_Steer_Appside_Soap.o \
         ReG_Steer_Appside_File.o \
@@ -77,6 +79,7 @@ ${LIB_PATH}/libReG_Steer.a:
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Proxy_utils.o
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_XML.o
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Appside_Globus.o
+	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Appside_Sockets.o
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Appside_Soap.o
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Appside_File.o
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Steerside_Soap.o
@@ -92,6 +95,7 @@ ReG_Steer_Appside.o: ReG_Steer_Appside.c \
 	 ../include/ReG_Steer_Appside_internal.h \
 	 ../include/ReG_Steer_Common.h \
 	 ../include/ReG_Steer_Appside_Globus.h \
+	 ../include/ReG_Steer_Appside_Sockets.h \
          ../include/ReG_Steer_Appside_Soap.h \
          ../include/ReG_Steer_Appside_File.h
 
@@ -124,7 +128,8 @@ ReG_Steer_Appside_f.o: ReG_Steer_Appside_f.c \
          ../include/ReG_Steer_Appside.h \
 	 ../include/ReG_Steer_types.h \
 	 ../include/ReG_Steer_Common.h \
-	 ../include/ReG_Steer_Appside_Globus.h
+	 ../include/ReG_Steer_Appside_Globus.h \
+	 ../include/ReG_Steer_Appside_Sockets.h
 
 ReG_Steer_XML.o: ReG_Steer_XML.c \
 	../include/ReG_Steer_XML.h \
@@ -132,6 +137,10 @@ ReG_Steer_XML.o: ReG_Steer_XML.c \
 
 ReG_Steer_Appside_Globus.o: ReG_Steer_Appside_Globus.c \
 	../include/ReG_Steer_Appside_Globus.h \
+	../include/ReG_Steer_types.h
+
+ReG_Steer_Appside_Sockets.o: ReG_Steer_Appside_Sockets.c \
+	../include/ReG_Steer_Appside_Sockets.h \
 	../include/ReG_Steer_types.h
 
 ReG_Steer_Appside_Soap.o: ReG_Steer_Appside_Soap.c \
