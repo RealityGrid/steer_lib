@@ -1683,11 +1683,15 @@ int Steering_control(int     SeqNum,
   int    param_handles[REG_MAX_NUM_STR_PARAMS];
   char*  param_labels[REG_MAX_NUM_STR_PARAMS];
 
+  /* Indices to save having to keep looking-up handles */
+  static int     step_time_index = 0;
+  static int     seq_num_index   = -1;
+
   /* Variables for timing */
   float          time_per_step;
   clock_t        new_time;
-  static clock_t previous_time = 0;
-  static int     first_time    = TRUE;
+  static clock_t previous_time   = 0;
+  static int     first_time      = TRUE;
 
   /* For throttling the polling rate */
   static time_t this_wc_time = (time_t)0, last_wc_time = (time_t)0;
@@ -1802,14 +1806,21 @@ int Steering_control(int     SeqNum,
     /* If we're being steered (no matter how) then... */
 
     /* Update any library-controlled monitored variables */
-    i = Param_index_from_handle(&(Params_table), REG_SEQ_NUM_HANDLE);
-    if(i != -1){
-      sprintf(Params_table.param[i].value, "%d", SeqNum);
-      Params_table.param[i].modified = TRUE;
+    if(seq_num_index != -1){
+      sprintf(Params_table.param[seq_num_index].value, "%d", SeqNum);
+      Params_table.param[seq_num_index].modified = TRUE;
+    }
+    else{
+      seq_num_index = Param_index_from_handle(&(Params_table), 
+					      REG_SEQ_NUM_HANDLE);
+      if(seq_num_index != -1){
+	sprintf(Params_table.param[seq_num_index].value, "%d", SeqNum);
+	Params_table.param[seq_num_index].modified = TRUE;
+      }
     }
 
-    i = Param_index_from_handle(&(Params_table), REG_STEP_TIME_HANDLE);
-    if(i != -1){
+    /* Calculate CPU time used since last call */
+    if(step_time_index != -1){
 
       new_time = clock();
       time_per_step = (float)(new_time - previous_time)/(float)CLOCKS_PER_SEC;
@@ -1818,10 +1829,13 @@ int Steering_control(int     SeqNum,
       /* First value we get will be rubbish because need two passes 
 	 through to get a valid difference... */
       if(!first_time){
-	sprintf(Params_table.param[i].value, "%.3f", time_per_step);
-        Params_table.param[i].modified = TRUE;
+	sprintf(Params_table.param[step_time_index].value, "%.3f", 
+		time_per_step);
+        Params_table.param[step_time_index].modified = TRUE;
       }
       else{
+	step_time_index = Param_index_from_handle(&(Params_table), 
+						  REG_STEP_TIME_HANDLE);
 	first_time = FALSE;
       }    
     }
@@ -2675,14 +2689,10 @@ int Emit_log()
       fprintf(stderr, "Emit_log: Open_log_file failed\n");
 #endif
     }
+    /* End of sending buffered entries */
 
-  } /* End of sending buffered entries */
-
-  /* Now send the entries that we have stored in memory */
-
-  if(Chk_log.send_all == TRUE){
-
-    /* Need to send all current log entries to the steerer */
+    /* Now send the entries that we have stored in memory - 
+       need to send all current log entries to the steerer */
     if(Log_to_xml(&pbuf, &size, FALSE) != REG_SUCCESS){
 
       return REG_FAILURE;
@@ -2949,8 +2959,8 @@ int Consume_control(int    *NumCommands,
       *NumSteerParams = count;
 
 #if REG_DEBUG
-	fprintf(stderr, "Consume_control: received %d params\n", 
-		*NumSteerParams);
+      fprintf(stderr, "Consume_control: received %d params\n", 
+	      *NumSteerParams);
 #endif
     }
     else{
