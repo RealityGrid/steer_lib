@@ -4044,7 +4044,7 @@ void Steering_signal_handler(int aSignal)
   fprintf(stderr, "Steering library quitting...\n");
 
   if (Steering_finalize() != REG_SUCCESS){
-    fprintf(stderr, "Steering_signal_handler: Steerer_finalize failed");
+    fprintf(stderr, "Steering_signal_handler: Steerer_finalize failed\n");
   }
 
   exit(0);
