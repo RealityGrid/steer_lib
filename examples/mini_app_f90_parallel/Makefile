@@ -37,7 +37,8 @@ include ${REG_STEER_HOME}/make/Makefile.${ARCH}
 
 TARGET   = mini_app_para
 
-${TARGET}: ${TARGET}.o ../../include/reg_steer_f90.inc
+${TARGET}: ${TARGET}.o ../../include/reg_steer_f90.inc \
+${REG_STEER_HOME}/lib$(NBIT)/libReG_Steer.a
 	-${F90} ${F90_FLAGS} ${TARGET}.o -o $@ ${STEER_LIBS} ${GLOBUS_LDFLAGS} \
 	-lmpi -lReG_Steer ${STEER_LDFLAGS} ${GLOBUS_PKG_LIBS} 
 
