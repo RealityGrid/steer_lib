@@ -165,8 +165,14 @@ int Initialize_steering_connection_soap(int  NumSupportedCmds,
   }
 
 #if REG_DEBUG
-  fprintf(stderr, "Initialize_steering_connection_soap: setServiceData "
-	  "returned: %s\n", setSDE_response._result);
+  if(setSDE_response._result){
+    fprintf(stderr, "Initialize_steering_connection_soap: setServiceData "
+	    "returned: %s\n", setSDE_response._result);
+  }
+  else{
+    fprintf(stderr, "Initialize_steering_connection_soap: setServiceData "
+	    "returned null\n");
+  }
 #endif
 
   /* Publish our location: machine and working directory - these
@@ -188,8 +194,14 @@ int Initialize_steering_connection_soap(int  NumSupportedCmds,
   }
 
 #if REG_DEBUG
-  fprintf(stderr, "Initialize_steering_connection_soap: setServiceData "
-	  "returned: %s\n", setSDE_response._result);
+  if(setSDE_response._result){
+    fprintf(stderr, "Initialize_steering_connection_soap: setServiceData "
+	    "returned: %s\n", setSDE_response._result);
+  }
+  else{
+    fprintf(stderr, "Initialize_steering_connection_soap: setServiceData "
+	    "returned null\n");
+  }
 #endif
 
   return REG_SUCCESS;
@@ -242,8 +254,13 @@ int Steerer_connected_soap()
   }
 
 #if REG_DEBUG
-  fprintf(stderr, "Steerer_connected_soap: findServiceData returned: %s\n", 
-	  findServiceData_response._result);
+  if(findServiceData_response._result){
+    fprintf(stderr, "Steerer_connected_soap: findServiceData returned: %s\n", 
+	    findServiceData_response._result);
+  }
+  else{
+    fprintf(stderr, "Steerer_connected_soap: findServiceData returned null\n");
+  }
 #endif
 
   if(findServiceData_response._result && 
@@ -287,8 +304,13 @@ int Send_status_msg_soap(char* msg)
     }
 
 #if REG_DEBUG
-    fprintf(stderr, "Send_status_msg_soap: PutStatus returned: %s\n", 
-	    putStatus_response._result);
+    if(putStatus_response._result){
+      fprintf(stderr, "Send_status_msg_soap: PutStatus returned: %s\n", 
+	      putStatus_response._result);
+    }
+    else{
+      fprintf(stderr, "Send_status_msg_soap: PutStatus returned null\n");
+    }
 #endif
 
     if(!putStatus_response._result ||
@@ -392,8 +414,13 @@ struct msg_struct *Get_control_msg_soap()
   }
 
 #if REG_DEBUG
-  fprintf(stderr, "Get_control_msg_soap: GetControl returned: %s\n", 
-	  getControl_response._result);
+  if(getControl_response._result){
+    fprintf(stderr, "Get_control_msg_soap: GetControl returned: %s\n", 
+	    getControl_response._result);
+  }
+  else{
+    fprintf(stderr, "Get_control_msg_soap: GetControl returned null\n");
+  }
 #endif
 
   if(getControl_response._result && 
@@ -467,8 +494,15 @@ int Get_data_source_address_soap(int   index,
   }
 
 #if REG_DEBUG
-  fprintf(stderr, "Get_data_source_address_soap: GetNthDataSource (for n=%d)\n"
-	  "returned: >>%s<<\n", index, getNthDataSource_response._result);
+  if(getNthDataSource_response._result){
+    fprintf(stderr, "Get_data_source_address_soap: GetNthDataSource "
+	    "(for n=%d)\nreturned: >>%s<<\n", 
+	    index, getNthDataSource_response._result);
+  }
+  else{
+    fprintf(stderr, "Get_data_source_address_soap: GetNthDataSource "
+	    "(for n=%d)\nreturned null\n", index);
+  }
 #endif
 
   if(getNthDataSource_response._result && 
@@ -598,8 +632,15 @@ int Record_checkpoint_set_soap(char *chk_data,
   }
 
 #if REG_DEBUG
-  fprintf(stderr, "Record_checkpoint_set_soap: \n"
-	  "returned: >>%s<<\n", AppRecordChkpoint_response._result);
+  if(AppRecordChkpoint_response._result){
+    fprintf(stderr, "Record_checkpoint_set_soap: "
+	    "AppRecordChkpoint returned: >>%s<<\n", 
+	    AppRecordChkpoint_response._result);
+  }
+  else{
+    fprintf(stderr, "Record_checkpoint_set_soap: AppRecordChkpoint "
+	    "returned null\n");
+  }
 #endif
 
   if(AppRecordChkpoint_response._result && 

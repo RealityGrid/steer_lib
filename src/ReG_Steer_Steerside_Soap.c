@@ -195,8 +195,13 @@ struct msg_struct *Get_status_msg_soap(Sim_entry_type *sim)
   }
   
 #if REG_DEBUG
-  fprintf(stderr, "Get_status_msg_soap: GetNotifications returned >>%s<<\n",
-	  getNotifications_response._result);
+  if(getNotifications_response._result){
+    fprintf(stderr, "Get_status_msg_soap: GetNotifications returned >>%s<<\n",
+	    getNotifications_response._result);
+  }
+  else{
+    fprintf(stderr, "Get_status_msg_soap: GetNotifications returned null\n");
+  }
 #endif
 
   /* GetNotifications returns a space-delimited list of the names of
@@ -286,8 +291,13 @@ struct msg_struct *Get_service_data(Sim_entry_type *sim, char *sde_name)
   }
 
 #if REG_DEBUG
-  fprintf(stderr, "Get_service_data: findServiceData returned: %s\n", 
-	  findServiceData_response._result);
+  if(findServiceData_response._result){
+    fprintf(stderr, "Get_service_data: findServiceData returned: %s\n", 
+	    findServiceData_response._result);
+  }
+  else{
+    fprintf(stderr, "Get_service_data: findServiceData returned null\n");
+  }
 #endif
 
   if(findServiceData_response._result &&
