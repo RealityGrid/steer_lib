@@ -581,7 +581,6 @@ int recv_non_block(socket_io_type  *sock_info, char *pbuf, int nbytes){
 int Initialize_IOType_transport_sockets(const int direction, const int index) {
 
   int return_status = REG_SUCCESS;
-  /*static int call_count = 1;*/
 
   /* set up socket info stuff */
   if(socket_info_init(index) != REG_SUCCESS) {
@@ -620,10 +619,7 @@ int Initialize_IOType_transport_sockets(const int direction, const int index) {
 	 list of data inputs held by our SGS (configured when it was 
 	 created) */
       IOTypes_table.io_def[index].input_index = ++(IOTypes_table.num_inputs);
-      /*
-      IOTypes_table.io_def[index].input_index = call_count;
-      call_count++;
-      */
+
       /* Don't create socket yet if this flag is set */
       if(IOTypes_table.enable_on_registration == REG_FALSE) {
 	return REG_SUCCESS;
