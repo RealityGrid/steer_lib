@@ -6,7 +6,9 @@
 
 <xs:element name="ReG_steer_message">
 	<xs:complexType>
+		<!-- A single steering message can only contain one type of message -->
 		<xs:choice maxOccurs="1">
+			<!-- Lists the commands an application supports -->
 			<xs:element name="Supported_commands" >
 				<xs:complexType>
 				<xs:sequence>
@@ -15,6 +17,7 @@
 				</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<!-- Defines one or more parameters registered by an application -->
 			<xs:element name="Param_defs" >
 				<xs:complexType>
 				<xs:sequence>
@@ -23,10 +26,13 @@
 				</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<!-- A status report from the application -->
 			<xs:element name="App_status" 
 				    type="StatusType" />
+			<!-- A control message to the application -->
 			<xs:element name="Steer_control" 
 				    type="ControlType" />
+			<!-- Defines one or more IOTypes registered by the application -->
 			<xs:element name="IOType_defs" >
 				<xs:complexType>
 				<xs:sequence>
@@ -35,6 +41,7 @@
 				</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<!-- Defines one or more ChkTypes registered by the application -->
 			<xs:element name="ChkType_defs" >
 				<xs:complexType>
 				<xs:sequence>
@@ -43,6 +50,8 @@
 				</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<!-- Contains logging information on checkpointing/steering 
+			     activity -->
 			<xs:element name="Steer_log" >
 				<xs:complexType>
 				<xs:sequence>
@@ -57,6 +66,8 @@
 
 
 <xs:complexType name="StatusType">
+	<!-- Describes a status message - can consist of both param values and
+	     commands that have just been received -->
 	<xs:sequence>
 		<xs:element name="Param" type="ParamType"
                     minOccurs="0" maxOccurs="unbounded" />
@@ -76,14 +87,21 @@
 
 <xs:complexType name="IOTypeType">
 	<xs:sequence>
+                <!-- The user-specified label for this IOType -->
 		<xs:element name="Label" type="xs:token"
 		    minOccurs="1" maxOccurs="1" />
+                <!-- The internal library identifier for this IOType -->
 		<xs:element name="Handle" type="xs:integer"
 		    minOccurs="1" maxOccurs="1" />
+                <!-- Direction in which app. sends data - IN, OUT or INOUT -->
 		<xs:element name="Direction" type="xs:token"
 		    minOccurs="1" maxOccurs="1" />
+                <!-- Handle of parameter holding interval with which to 
+		     automatically generate this IOType command  -->
 		<xs:element name="Freq_handle" type="xs:integer"
 		    minOccurs="0" maxOccurs="1" />
+		<!-- Endpoint of this IOType.  For sockets is of form: 
+		     <IP.address>:<port> -->
 		<xs:element name="Address" type="xs:token"
 		    minOccurs="0" maxOccurs="1" />
 	</xs:sequence>
@@ -91,20 +109,28 @@
 
 <xs:complexType name="ParamType">
 	<xs:sequence>
+                <!-- The user-specified label for this parameter -->
 		<xs:element name="Label" type="xs:token" 
 	            minOccurs="0" maxOccurs="1" />
+                <!-- Whether this parameter is steerable -->
 		<xs:element name="Steerable" type="xs:boolean" 
-	            minOccurs="0" maxOccurs="1" />	
+	            minOccurs="0" maxOccurs="1" />
+		<!-- The type (REG_INT, REG_FLOAT etc.) of this param -->	
 		<xs:element name="Type" type="xs:integer" 
 	            minOccurs="0" maxOccurs="1" />
+                <!-- The internal library identifier for this param -->
 		<xs:element name="Handle" type="xs:integer" 
 	            minOccurs="0" maxOccurs="1" />
+		<!-- The value of this param when this message generated -->
 		<xs:element name="Value" type="xs:token" 
-	            minOccurs="0" maxOccurs="1" />	
+	            minOccurs="0" maxOccurs="1" />
+		<!-- Whether this parameter is internal to the steering lib -->	
 		<xs:element name="Is_internal" type="xs:token" 
-	            minOccurs="0" maxOccurs="1" />	
+	            minOccurs="0" maxOccurs="1" />
+		<!-- The minimum permissible value of this param, if any -->
 		<xs:element name="Min_value" type="xs:token" 
 	            minOccurs="0" maxOccurs="1" />	
+		<!-- The maximum permissible value of this param, if any -->
 		<xs:element name="Max_value" type="xs:token" 
 	            minOccurs="0" maxOccurs="1" />	
 	</xs:sequence>
@@ -112,29 +138,42 @@
 
 <xs:complexType name="CmdType">
 	<xs:sequence>
+		<!-- Unique identifier - either corresponding to a pre-defined
+		     command or to the handle of an IOType or ChkType -->
 		<xs:element name="Cmd_id" type="xs:integer"
 	            minOccurs="0" maxOccurs="1" />
+		<!-- Alternative identifier for pre-defined commands: 
+		     e.g. STOP, PAUSE etc.--> 
 		<xs:element name="Cmd_name" type="xs:token"
 	            minOccurs="0" maxOccurs="1" />
+		<!-- For any parameters associated with the command -->
 		<xs:element name="Cmd_param" type="ParamType"
 	            minOccurs="0" maxOccurs="unbounded" />
 	</xs:sequence>
 </xs:complexType>
 
 <xs:complexType name="ChkLogEntryType">
+	<!-- Used to describe the creation of a single checkpoint -->
 	<xs:sequence>
+		<!-- UID of entry in log, generated by application -->
 		<xs:element name="Key" type="xs:integer"
 	            minOccurs="1" maxOccurs="1" />
+		<!-- Handle of the ChkType for the checkpoint that's 
+		     been created -->
 		<xs:element name="Chk_handle" type="xs:integer"
 	            minOccurs="1" maxOccurs="1" />
+		<!-- The ID given to this checkpoint by the application -->
 		<xs:element name="Chk_tag" type="xs:token"
 	            minOccurs="1" maxOccurs="1" />
+		<!-- Used to hold the values of all registered parameters at the 
+		     time the application was created -->
 		<xs:element name="Param" type="ParamType"
 	            minOccurs="0" maxOccurs="unbounded" />
 	</xs:sequence>
 </xs:complexType>
 
 <xs:complexType name="SteerLogEntryType">
+	<!-- Used to describe a steering action -->
 	<xs:sequence>
 		<xs:element name="Command" type="CmdType"
 	            minOccurs="0" maxOccurs="unbounded" />
@@ -144,6 +183,8 @@
 </xs:complexType>
 
 <xs:complexType name="LogEntryType">
+	<!-- Holds the application's sequence number for the point at which this
+	     log entry was created plus the log data itself -->
 	<xs:sequence>
 		<xs:element name="Seq_num" type="xs:integer"
 	            minOccurs="1" maxOccurs="1" />
