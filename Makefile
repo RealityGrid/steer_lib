@@ -78,6 +78,12 @@ steerer: lib$(NBIT)/libReG_Steer.a \
  examples/mini_steerer/*.c
 	cd examples/mini_steerer; make
 
+install:
+	cd examples/mini_app; make install
+	cd examples/mini_steerer; make install
+	cd examples/mini_app_f90; make install
+	cd examples/mini_app_f90_parallel; make install
+
 clean:
 	cd src; make clean 
 	cd examples/mini_app; make clean
