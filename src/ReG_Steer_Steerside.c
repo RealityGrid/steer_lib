@@ -1168,6 +1168,11 @@ int Consume_log(int SimHandle)
     entry_ptr = entry_ptr->next;
   }
 
+  /* Clean up */
+
+  Delete_msg_struct(sim->msg);
+  sim->msg = NULL;
+
   return return_status;
 }
 
@@ -1277,8 +1282,13 @@ int Consume_status(int   SimHandle,
     }
 
     /* Update value of this param */
-    strcpy(Sim_table.sim[index].Params_table.param[j].value,
-	   (char *)(param_ptr->value));
+    if(param_ptr->value){
+      strcpy(Sim_table.sim[index].Params_table.param[j].value,
+	     (char *)(param_ptr->value));
+    }
+    else{
+      sprintf(Sim_table.sim[index].Params_table.param[j].value, " ");
+    }
 
     count++;
     param_ptr = param_ptr->next;
