@@ -57,7 +57,7 @@ max_kind: max_kind.f90 sizeof_f.o
 	${F90} ${F90_FLAGS} max_kind.o sizeof_f.o -o max_kind
 
 c_types: c_types.c
-	@CC@ @CFLAGS@  ${EXTRA_C_FLAGS} c_types.c -o c_types
+	${CC} ${C_FLAGS} ${EXTRA_C_FLAGS} c_types.c -o c_types
 
 clean:
 	rm -f *~ *.o max_kind c_types sizeof_f.c
