@@ -86,6 +86,7 @@
 #define REG_EOD       2
 #define REG_MEM_FAIL  3
 #define REG_TIMED_OUT 4
+#define REG_NOT_READY 5
 
 /* Limit on number of commands steerer can send at any one time */
 #define REG_MAX_NUM_STR_CMDS 20
