@@ -266,20 +266,25 @@ static int Emit_iotype_msg_header(int IOTypeIndex,
 				  int DataType,
 				  int Count);
 
-/* Open log file and write necessary xml header text */
-static FILE *New_log_file(char *filename);
+/* Pulls log entries out of the supplied buffer, packs them into
+   messages and sends them to the steerer. Log entries are assumed
+   to be contiguous in the buffer. */
+static int Emit_log_entries(char *buf);
 
-/* Close xml off and then close the log file */
-static int Finalize_log_file(FILE *fp);
+/* Open log file (in append mode) */
+static int Open_log_file();
+
+/* Close the log file */
+static int Close_log_file();
 
 /* Save current contents of log to file */
 static int Save_log();
 
-/* Convert current log to xml and store in buffer of max. length
-   <max_len> pointed to by pchar. If not_sent_only == TRUE then
-   only those entries not already returned to the steering client
-   are retrieved */
-static char* Log_to_xml(char *pchar, const int max_len, 
-			const int not_sent_only);
+/* Convert current log to xml and store in buffer pointed to by pchar.
+   Length of buffer is returned in count. The memory pointed to by
+   *pchar must be free()'d by the caller once finished.  If
+   not_sent_only == TRUE then only those entries not already returned
+   to the steering client are retrieved */
+static int Log_to_xml(char **pchar, int *count, const int not_sent_only);
 
 #endif

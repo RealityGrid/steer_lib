@@ -239,4 +239,9 @@ extern PREFIX int Emit_msg_header(socket_type_steering *sock_info,
 				  int DataType,
 				  int Count);
 
+/* Read the specified ASCII file and return the contents in the buffer
+   pointed to by *buf, the size of which is returned in *size.  It is
+   the caller's responsibility to free() the memory pointed to by buf. */
+extern PREFIX int Read_file(char *filename, char **buf, int *size);
+
 #endif
