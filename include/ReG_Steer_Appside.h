@@ -165,6 +165,15 @@ extern PREFIX int Register_param(char* ParamLabel,
                                  char* ParamMinimum,
                                  char* ParamMaximum);
 
+/* A wrapper for Register_param for variables of type
+   REG_BIN.  Calculates number of bytes that ParamPtr
+   points at.  Mandates that REG_BIN variables are
+   monitored only. */
+extern PREFIX int Register_bin_param(char *ParamLabel, 
+				     void *ParamPtr,
+				     int ParamType, 
+				     int NumObjects);
+
 /* Un-register the parameters identified by the given labels. */
 extern PREFIX int Unregister_params(int    NumParams,
 				    char* *ParamLabels);

@@ -94,6 +94,8 @@
   INTEGER (KIND=REG_SP_KIND), PARAMETER :: REG_FLOAT = 1
   INTEGER (KIND=REG_SP_KIND), PARAMETER :: REG_DBL   = 2
   INTEGER (KIND=REG_SP_KIND), PARAMETER :: REG_CHAR  = 3
+  ! Values 4-6 are used for internal (XDR-related) types in the lib
+  INTEGER (KIND=REG_SP_KIND), PARAMETER :: REG_BIN   = 7
 
 ! Coding scheme for IOType types
 
