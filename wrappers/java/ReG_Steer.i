@@ -4,19 +4,35 @@
 #include "../../include/ReG_Steer_Appside.h"
 %}
 
+/* Ensure that all #defined constants are wrapped in a sensible
+ * mannner and then pull in the ReG_Steer_types header.  */
 %javaconst(1);
-
 %include "../../include/ReG_Steer_types.h"
+
+/* Ensure that the initial module wrapping has package level
+ * access so that the general public use the ReG_SteerAppside
+ * wrapper class for access to the steering library instead. */
+%pragma(java) moduleclassmodifiers="class"
+
+/* Let the JNI bit of the wrapper code load in the native library
+ * seeing as we'll need it every time anyway. */
+%pragma(java) jniclasscode=%{
+  static {
+    try {
+      System.loadLibrary("ReG_SteerJava");
+    } catch(UnsatisfiedLinkError e) {
+      System.err.println("Failed to load native code library:\n" + e);
+      System.exit(1);
+    }
+  }
+%}
 
 /* Set up pointers */
 %include "cpointer.i"
 %pointer_class(int, Intp);
-%pointer_class(float, Floatp);
 %pointer_class(char, Charp);
+%pointer_class(float, Floatp);
 %pointer_class(double, Doublep);
-
-/* Set up typemaps */
-%include "typemaps.i"
 
 /* The following two typemaps add the SWIG baseclass
  * to the SWIGTYPE classes that are auto-generated */
@@ -78,76 +94,71 @@
 %typemap(jstype) char **update "String[]"
 %typemap(javain) char **update "$javainput"
 
-/* Typemaps for the data consumer methods */
-/* int */
-%typemap(java, in) (int count, int* data) {
-  $1 = (*jenv)->GetArrayLength(jenv, $input);
-  $2 = (int*) malloc($1 * sizeof(int));
+/* Typemaps for the data consumer method */
+%typemap(java, in, numinputs=0) void* outdata {
+  /* Just throw outdata away from the inputs! */
 }
-%typemap(java, argout) (int count, int* data) {
-  (*jenv)->SetIntArrayRegion(jenv, $input, 0, $1, $2);
+%typemap(java, check) (int type, int count, void *outdata) {
+  switch($1) {
+  case REG_INT:
+    $3 = (int*) malloc($2 * sizeof(int));
+    break;
+  case REG_CHAR:
+    $3 = (char*) malloc($2 * sizeof(char));
+    break;
+  case REG_FLOAT:
+    $3 = (float*) malloc($2 * sizeof(float));
+    break;
+  case REG_DBL:
+    $3 = (double*) malloc($2 * sizeof(double));
+    break;
+  }
 }
-%typemap(freearg) (int count, int* data) {
-  if($2) free($2);
-}
-%typemap(jni) (int count, int* data) "jintArray"
-%typemap(jtype) (int count, int* data) "int[]"
-%typemap(jstype) (int count, int* data) "int[]"
-%typemap(javain) (int count, int* data) "$javainput"
+%typemap(java, argout) (int type, int count, void* outdata) {
+  int i;
+  jintArray iArray;
+  jstring cString;
+  jfloatArray fArray;
+  jdoubleArray dArray;
 
-/* char */
-%typemap(java, in) (int count, char* data) {
-  $1 = (*jenv)->GetArrayLength(jenv, $input);
-  $2 = (char*) malloc($1 * sizeof(char));
+  switch($1) {
+  case REG_INT:
+    iArray = (*jenv)->NewIntArray(jenv, $2);
+    (*jenv)->SetIntArrayRegion(jenv, iArray, 0, $2, $3);
+    $result = iArray;
+    break;
+  case REG_CHAR:
+    cString = (*jenv)->NewStringUTF(jenv, $3);
+    $result = cString;
+    break;
+  case REG_FLOAT:
+    fArray = (*jenv)->NewFloatArray(jenv, $2);
+    (*jenv)->SetFloatArrayRegion(jenv, fArray, 0, $2, $3);
+    $result = fArray;
+    break;
+  case REG_DBL:
+    dArray = (*jenv)->NewDoubleArray(jenv, $2);
+    (*jenv)->SetDoubleArrayRegion(jenv, dArray, 0, $2, $3);
+    $result = dArray;
+    break;
+  default:
+    $result = $null;
+    break;
+  }
+  
 }
-%typemap(java, argout) (int count, char* data) {
-  (*jenv)->SetByteArrayRegion(jenv, $input, 0, $1, $2);
+%typemap(freearg) void* outdata {
+  if($1) free($1);
 }
-%typemap(freearg) (int count, char* data) {
-  if($2) free($2);
+%typemap(jni) void* outdata "jobject"
+%typemap(jtype) void* outdata "Object"
+%typemap(jstype) void* outdata "Object"
+%typemap(javain) void* outdata "$javainput"
+%typemap(javaout) void* outdata {
+  return $jnicall;
 }
-%typemap(jni) (int count, char* data) "jbyteArray"
-%typemap(jtype) (int count, char* data) "byte[]"
-%typemap(jstype) (int count, char* data) "byte[]"
-%typemap(javain) (int count, char* data) "$javainput"
-
-/* float */
-%typemap(java, in) (int count, float* data) {
-  $1 = (*jenv)->GetArrayLength(jenv, $input);
-  $2 = (float*) malloc($1 * sizeof(float));
-}
-%typemap(java, argout) (int count, float* data) {
-  (*jenv)->SetFloatArrayRegion(jenv, $input, 0, $1, $2);
-}
-%typemap(freearg) (int count, float* data) {
-  if($2) free($2);
-}
-%typemap(jni) (int count, float* data) "jfloatArray"
-%typemap(jtype) (int count, float* data) "float[]"
-%typemap(jstype) (int count, float* data) "float[]"
-%typemap(javain) (int count, float* data) "$javainput"
-
-/* double */
-%typemap(java, in) (int count, double* data) {
-  $1 = (*jenv)->GetArrayLength(jenv, $input);
-  $2 = (double*) malloc($1 * sizeof(double));
-}
-%typemap(java, argout) (int count, double* data) {
-  (*jenv)->SetDoubleArrayRegion(jenv, $input, 0, $1, $2);
-}
-%typemap(freearg) (int count, double* data) {
-  if($2) free($2);
-}
-%typemap(jni) (int count, double* data) "jdoubleArray"
-%typemap(jtype) (int count, double* data) "double[]"
-%typemap(jstype) (int count, double* data) "double[]"
-%typemap(javain) (int count, double* data) "$javainput"
-
-
-
 
 /* Strings and arrays stuff */
-//%include "various.i"
 %include "arrays_java.i"
 
 /* Apply typemaps to the required variables */
@@ -160,51 +171,20 @@
 
 %apply int[] {int *SteerCommands};
 
-%apply (int count, int* data) { (int Count, int* data) }
-%apply (int count, char* data) { (int Count, char* data) }
-%apply (int count, float* data) { (int Count, float* data) }
-%apply (int count, double* data) { (int Count, double* data) }
+%apply (int type, int count, void* outdata) { (int DataType, int Count, void* pDataOUT) }
+%apply void* outdata { void* pDataOUT }
 
-/* %apply int *OUTPUT { */
-/*   int *ChkType, */
-/*   int *IOTypeIndex, */
-/*   int *IOHandle, */
-/*   int *DataType, */
-/*   int *DataCount */
-/* } */
-
-/* %apply int *INOUT { */
-/*   int *IOTypeIndexINOUT, */
-/*   int *IOHandleINOUT */
-/* } */
-
+/* Pull in the common API definition file */
 %include "../ReG_Steer_API.i"
 
-/* These prototypes "overload" the data consumer methods */
+/* Re-define the Consume_data_slice method to return an object
+ * this is done by creating a new version of the method an
+ * calling that instead.: Consume_data_slice_j */
 %inline %{
-  int Consume_data_slice_int(int IOTypeIndex, int Count, int* data) {
-    return Consume_data_slice(IOTypeIndex, REG_INT, Count, data);
+  jobject Consume_data_slice_j(int IOTypeIndex, int DataType, int Count, void* pDataOUT) {
+    Consume_data_slice(IOTypeIndex, DataType, Count, pDataOUT);
+    return 0;
   }
 %}
-int Consume_data_slice_int(int IOTypeIndex, int Count, int* data);
+jobject Consume_data_slice_j(int IOTypeIndex, int DataType, int Count, void* pDataOUT);
 
-%inline %{
-  int Consume_data_slice_char(int IOTypeIndex, int Count, char* data) {
-    return Consume_data_slice(IOTypeIndex, REG_CHAR, Count, data);
-  }
-%}
-int Consume_data_slice_char(int IOTypeIndex, int Count, char* data);
-
-%inline %{
-  int Consume_data_slice_float(int IOTypeIndex, int Count, float* data) {
-    return Consume_data_slice(IOTypeIndex, REG_FLOAT, Count, data);
-  }
-%}
-int Consume_data_slice_float(int IOTypeIndex, int Count, float* data);
-
-%inline %{
-  int Consume_data_slice_double(int IOTypeIndex, int Count, double* data) {
-    return Consume_data_slice(IOTypeIndex, REG_DBL, Count, data);
-  }
-%}
-int Consume_data_slice_double(int IOTypeIndex, int Count, double* data);
