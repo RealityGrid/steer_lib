@@ -181,6 +181,12 @@ static int Send_status_msg(char *buf);
 
 static int Send_status_msg_file(char *buf);
 
+/* Create the xml message to tell steerer what standard commands
+   the application supports (supplied in array SupportedCmds). */
+int Make_supp_cmds_msg(int   NumSupportedCmds,
+		       int  *SupportedCmds, 
+		       char *msg);
+
 /* Read the next control message from the steerer, if any.  Results
    passed back in structure.  Returns NULL if no message. */
 static struct msg_struct *Get_control_msg();
