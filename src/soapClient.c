@@ -8,7 +8,7 @@
 extern "C" {
 #endif
 
-SOAP_SOURCE_STAMP("@(#) soapClient.c ver 2.2.3b 2003-10-07 09:50:48 GMT")
+SOAP_SOURCE_STAMP("@(#) soapClient.c ver 2.2.3b 2003-10-09 15:12:30 GMT")
 
 
 SOAP_FMAC1 int SOAP_FMAC2 soap_call_tns__AppDetach(struct soap *soap, const char *URL, const char *action, struct tns__AppDetachResponse *out)
@@ -241,6 +241,54 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_call_tns__setServiceData(struct soap *soap, const
 	 || soap_body_begin_in(soap))
 		return soap->error;
 	soap_get_tns__setServiceDataResponse(soap, out, "tns:setServiceDataResponse", "tns:setServiceDataResponse");
+	if (soap->error)
+	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
+			soap_recv_fault(soap);
+		return soap->error;
+	}
+	if (soap_body_end_in(soap)
+	 || soap_envelope_end_in(soap)
+	 || soap_getattachments(soap)
+	 || soap_end_recv(soap))
+		return soap->error;
+	soap_closesock(soap);
+	return SOAP_OK;
+}
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_call_tns__destroy(struct soap *soap, const char *URL, const char *action, struct tns__destroyResponse *out)
+{
+	struct tns__destroy soap_tmp_tns__destroy;
+	if (!action)
+		action = "";
+	soap_begin(soap);
+	soap_serializeheader(soap);
+	soap_serialize_tns__destroy(soap, &soap_tmp_tns__destroy);
+	soap_begin_count(soap);
+	if (soap->mode & SOAP_IO_LENGTH)
+	{	soap_envelope_begin_out(soap);
+		soap_putheader(soap);
+		soap_body_begin_out(soap);
+		soap_put_tns__destroy(soap, &soap_tmp_tns__destroy, "tns:destroy", "");
+		soap_body_end_out(soap);
+		soap_envelope_end_out(soap);
+	}
+	if (soap_connect(soap, URL, action)
+	 || soap_envelope_begin_out(soap)
+	 || soap_putheader(soap)
+	 || soap_body_begin_out(soap)
+	 || soap_put_tns__destroy(soap, &soap_tmp_tns__destroy, "tns:destroy", "")
+	 || soap_body_end_out(soap)
+	 || soap_envelope_end_out(soap)
+	 || soap_putattachments(soap)
+	 || soap_end_send(soap))
+		return soap->error;
+	soap_default_tns__destroyResponse(soap, out);
+	if (soap_begin_recv(soap)
+	 || soap_envelope_begin_in(soap)
+	 || soap_recv_header(soap)
+	 || soap_body_begin_in(soap))
+		return soap->error;
+	soap_get_tns__destroyResponse(soap, out, "tns:destroyResponse", "tns:destroyResponse");
 	if (soap->error)
 	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
 			soap_recv_fault(soap);
@@ -820,54 +868,6 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_call_tns__AppStart(struct soap *soap, const char 
 	 || soap_body_begin_in(soap))
 		return soap->error;
 	soap_get_tns__AppStartResponse(soap, out, "tns:AppStartResponse", "tns:AppStartResponse");
-	if (soap->error)
-	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
-			soap_recv_fault(soap);
-		return soap->error;
-	}
-	if (soap_body_end_in(soap)
-	 || soap_envelope_end_in(soap)
-	 || soap_getattachments(soap)
-	 || soap_end_recv(soap))
-		return soap->error;
-	soap_closesock(soap);
-	return SOAP_OK;
-}
-
-SOAP_FMAC1 int SOAP_FMAC2 soap_call_tns__Destroy(struct soap *soap, const char *URL, const char *action, struct tns__DestroyResponse *out)
-{
-	struct tns__Destroy soap_tmp_tns__Destroy;
-	if (!action)
-		action = "";
-	soap_begin(soap);
-	soap_serializeheader(soap);
-	soap_serialize_tns__Destroy(soap, &soap_tmp_tns__Destroy);
-	soap_begin_count(soap);
-	if (soap->mode & SOAP_IO_LENGTH)
-	{	soap_envelope_begin_out(soap);
-		soap_putheader(soap);
-		soap_body_begin_out(soap);
-		soap_put_tns__Destroy(soap, &soap_tmp_tns__Destroy, "tns:Destroy", "");
-		soap_body_end_out(soap);
-		soap_envelope_end_out(soap);
-	}
-	if (soap_connect(soap, URL, action)
-	 || soap_envelope_begin_out(soap)
-	 || soap_putheader(soap)
-	 || soap_body_begin_out(soap)
-	 || soap_put_tns__Destroy(soap, &soap_tmp_tns__Destroy, "tns:Destroy", "")
-	 || soap_body_end_out(soap)
-	 || soap_envelope_end_out(soap)
-	 || soap_putattachments(soap)
-	 || soap_end_send(soap))
-		return soap->error;
-	soap_default_tns__DestroyResponse(soap, out);
-	if (soap_begin_recv(soap)
-	 || soap_envelope_begin_in(soap)
-	 || soap_recv_header(soap)
-	 || soap_body_begin_in(soap))
-		return soap->error;
-	soap_get_tns__DestroyResponse(soap, out, "tns:DestroyResponse", "tns:DestroyResponse");
 	if (soap->error)
 	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
 			soap_recv_fault(soap);
