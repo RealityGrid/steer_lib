@@ -49,7 +49,7 @@ ${TARGET}: ${TARGET}.o
         -lReG_Steer ${STEER_LDFLAGS} ${GLOBUS_PKG_LIBS}
 
 install:
-	mv ${TARGET} ${LOCAL_BIN_DIR}/.
+	-mv ${TARGET} ${LOCAL_BIN_DIR}/.
 
 clean:
 	rm -f *.o *~ core ${TARGET}

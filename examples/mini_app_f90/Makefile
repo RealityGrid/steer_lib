@@ -42,18 +42,15 @@ include ../../make/Makefile.${ARCH}
 
 TARGET   = mini_app2
 
-.f90.o:
-	${F90} ${F90_FLAGS} -C ${STEER_INCLUDES} ${GLOBUS_INCLUDES} -c $< -o $@
-
 ${TARGET}: ${TARGET}.o ${REG_STEER_HOME}/include/reg_steer_f90.inc
-	${F90} ${F90_FLAGS} ${TARGET}.o -o $@ ${STEER_LIBS} ${GLOBUS_LDFLAGS} \
+	-${F90} ${F90_FLAGS} ${TARGET}.o -o $@ ${STEER_LIBS} ${GLOBUS_LDFLAGS} \
 	-lReG_Steer ${STEER_LDFLAGS} ${GLOBUS_PKG_LIBS}
 
 mini_app2.o: mini_app2.f90
-	${F90} ${F90_FLAGS} -C ${STEER_INCLUDES} ${GLOBUS_INCLUDES} -c $< -o $@
+	-${F90} ${F90_FLAGS} -C ${STEER_INCLUDES} ${GLOBUS_INCLUDES} -c $< -o $@
 
 install:
-	mv ${TARGET} ${LOCAL_BIN_DIR}/.
+	-mv ${TARGET} ${LOCAL_BIN_DIR}/.
 clean:
 	rm -f *.o *~ core ${TARGET}
 
