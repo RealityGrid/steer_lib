@@ -180,8 +180,15 @@ static int Finalize_connection_file(Sim_entry_type *sim);
 /* free's any allocated memory held in the parameter table */
 int Delete_param_table(Param_table_type *param_table);
 
+/* Parses the last Checkpoint-log message read in for the 
+   specified simulation */
 int Consume_chk_log(Sim_entry_type *sim, 
 		    struct chk_log_entry_struct *entry);
+
+/* Parses the last parameter-log message read in for the 
+   specified simulation */
+int Consume_param_log(Sim_entry_type *sim, 
+		      struct param_struct *param_ptr);
 
 /* Obtain details associated with the supplied Chk log entry (e.g. values
    of steerable parameters at that point) */
