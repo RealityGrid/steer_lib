@@ -2500,9 +2500,6 @@ int Enable_param_logging(char *ParamLabel,
 	}
 
 	if(found){
-	  printf("ARPDBG: matched >>%s<< with >>%s<<\n",
-		 Params_table.param[i].label,
-		 ParamLabel);
 	  Params_table.param[i].logging_on = lToggle;
 	  i = Params_table.max_entries; /* break out */
 	}
