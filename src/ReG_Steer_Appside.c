@@ -1663,9 +1663,58 @@ int Steering_control(int     SeqNum,
     }
   }
 
-  /* If we're being steered then... */
-
+  /* If we're not steering via SOAP (and a Steering Grid Service)
+     then we can't emit our parameter definitions etc. until
+     a steerer has connected */
+#if !REG_SOAP_STEERING
   if(ReG_SteeringActive){
+#endif /* !REG_SOAP_STEERING */
+
+    /* If registered params have changed since the last time then
+       tell the steerer about the current set */
+    if(ReG_ParamsChanged){
+      
+      Emit_param_defs();
+
+#if DEBUG
+      fprintf(stderr, "Steering_control: done Emit_param_defs\n");
+#endif
+      ReG_ParamsChanged  = FALSE;
+    }
+
+    /* If the registered IO types have changed since the last time
+       then tell the steerer about the current set */
+    if(ReG_IOTypesChanged){
+
+      Emit_IOType_defs();
+
+#if DEBUG
+      fprintf(stderr, "Steering_control: done Emit_IOType_defs\n");
+#endif
+      ReG_IOTypesChanged = FALSE;
+    }
+
+    /* If the registered Chk types have changed since the last time
+       then tell the steerer about the current set */
+    if(ReG_ChkTypesChanged){
+
+      Emit_ChkType_defs();
+
+#if DEBUG
+      fprintf(stderr, "Steering_control: done Emit_ChkType_defs\n");
+#endif
+      ReG_ChkTypesChanged = FALSE;
+    }
+
+    /* If we are steering via SOAP (and associated Steering Grid
+       Service) then we can and should publish our parameter
+       definitions etc., irrespective of whether a steerer is
+       attached */
+#if REG_SOAP_STEERING
+  if(ReG_SteeringActive){
+#endif
+
+    /* If we're being steered (no matter how) then... */
 
     /* Update any library-controlled monitored variables */
     i = Param_index_from_handle(&(Params_table), REG_SEQ_NUM_HANDLE);
@@ -1692,48 +1741,6 @@ int Steering_control(int     SeqNum,
       }    
     }
 
-    /* If registered params have changed since the last time then
-       tell the steerer about the current set */
-    if(ReG_ParamsChanged){
-      
-      Emit_param_defs();
-
-#if DEBUG
-      fprintf(stderr, "Steering_control: done Emit_param_defs\n");
-#endif
-
-      ReG_ParamsChanged  = FALSE;
-    }
-
-
-    /* If the registered IO types have changed since the last time
-       then tell the steerer about the current set */
-    if(ReG_IOTypesChanged){
-
-      Emit_IOType_defs();
-
-#if DEBUG
-      fprintf(stderr, "Steering_control: done Emit_IOType_defs\n");
-#endif
-
-      ReG_IOTypesChanged = FALSE;
-    }
-
-
-    /* If the registered Chk types have changed since the last time
-       then tell the steerer about the current set */
-    if(ReG_ChkTypesChanged){
-
-      Emit_ChkType_defs();
-
-#if DEBUG
-      fprintf(stderr, "Steering_control: done Emit_ChkType_defs\n");
-#endif
-
-      ReG_ChkTypesChanged = FALSE;
-    }
-
-
     /* Emit logging info. */
     if( Emit_log() != REG_SUCCESS ){
 
@@ -1744,7 +1751,6 @@ int Steering_control(int     SeqNum,
       fprintf(stderr, "Steering_control: done Emit_log\n");
     }
 #endif
-
 
     /* Read anything that the steerer has sent to us */
     if( Consume_control(&num_commands,
@@ -1820,14 +1826,6 @@ int Steering_control(int     SeqNum,
 	   mess about */
 
 	if(commands[i] == REG_STR_STOP){
-
-	  /* ARPDBG - Detach_from_steerer should only be called
-	     in response to a detach cmd...
-	  if( Detach_from_steerer() != REG_SUCCESS){
-
-	    return_status = REG_FAILURE;
-	  }
-	  */
 
 	  /* If we are being steered using soap then don't emit
 	     a confirmation - Steering_finalize takes care of this */
