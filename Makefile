@@ -37,12 +37,12 @@ include make/Makefile.${ARCH}
 LIB_PATH       = ${REG_STEER_HOME}/lib$(NBIT)
 
 all:
-	make lib
+	make $(LIB_PATH)/$(LIB_NAME)
 	make c_examples
 	make f90_examples
 
 no_f90:
-	make lib
+	make $(LIB_PATH)/$(LIB_NAME)
 	make c_examples
 
 c_examples:
@@ -54,10 +54,10 @@ f90_examples:
 	make app_f90
 	make app_f90_parallel
 
-lib: include/*.h \
+$(LIB_PATH)/$(LIB_NAME): include/*.h \
  src/*.c \
  src/*.m4
-	rm -f $(LIB_PATH)/libReG_Steer.so
+	rm -f $(LIB_PATH)/$(LIB_NAME)
 	cd src; make lib
 
 libss: include/*.h \
@@ -116,26 +116,26 @@ libfd: include/*.h \
 	rm -f $(LIB_PATH)/libReG_Steer.so
 	ln -s libReG_SteerFileDebug.so $(LIB_PATH)/libReG_Steer.so
 
-app: lib$(NBIT)/$(LIB_NAME) \
+app: $(LIB_PATH)/$(LIB_NAME) \
  examples/mini_app/*.c
 	cd examples/mini_app; make
 
 
-app_f90: lib$(NBIT)/$(LIB_NAME) \
+app_f90: $(LIB_PATH)/$(LIB_NAME) \
  include/*.inc \
  examples/mini_app_f90/*.f90
 	cd examples/mini_app_f90; make
 
-app_f90_parallel:  lib$(NBIT)/$(LIB_NAME) \
+app_f90_parallel:  $(LIB_PATH)/$(LIB_NAME) \
  include/*.inc \
  examples/mini_app_f90_parallel/*.f90
 	cd examples/mini_app_f90_parallel; make
 
-steerer: lib$(NBIT)/$(LIB_NAME) \
+steerer: $(LIB_PATH)/$(LIB_NAME) \
  examples/mini_steerer/*.c
 	cd examples/mini_steerer; make
 
-sink: lib$(NBIT)/$(LIB_NAME) \
+sink: $(LIB_PATH)/$(LIB_NAME) \
  examples/mini_steerer/*.c
 	cd examples/sink; make
 
