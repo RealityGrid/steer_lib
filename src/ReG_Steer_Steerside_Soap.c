@@ -48,7 +48,10 @@ struct soap soap;
 
 int Steerer_initialize_soap()
 {
-  soap_init(&soap);
+  /* soap_init(&soap); */
+  /* Use this form to turn-on keep-alive for both incoming and outgoing
+     http connections */
+  soap_init2(&soap, SOAP_IO_KEEPALIVE, SOAP_IO_KEEPALIVE);
 
   return REG_SUCCESS;
 }

@@ -96,7 +96,11 @@ int Initialize_steering_connection_soap(int  NumSupportedCmds,
     return REG_FAILURE;
   }
 
-  soap_init(&soap);
+  /* Initialise the soap run-time environment */
+  /* soap_init(&soap); */
+  /* Use this form to turn-on keep-alive for both incoming and outgoing
+     http connections */
+  soap_init2(&soap, SOAP_IO_KEEPALIVE, SOAP_IO_KEEPALIVE);
 
   appStart_response._result = NULL;
   if (soap_call_tns__AppStart(&soap, Steerer_connection.SGS_address, "", 
