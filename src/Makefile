@@ -65,7 +65,8 @@ ${LIB_PATH}/libReG_Steer.a: ReG_Steer_Appside_f.o \
 	ReG_Steer_Steerside.o \
 	ReG_Steer_Common.o \
 	ReG_Steer_Proxy_utils.o \
-	ReG_Steer_XML.o
+	ReG_Steer_XML.o \
+	ReG_Steer_Globus_io.o
 
 ${LIB_PATH}/libReG_Steer.a:
 	ar rv ${LIB_PATH}/libReG_Steer.a ReG_Steer_Appside_f.o
@@ -74,6 +75,7 @@ ${LIB_PATH}/libReG_Steer.a:
 	ar rv ${LIB_PATH}/libReG_Steer.a ReG_Steer_Common.o
 	ar rv ${LIB_PATH}/libReG_Steer.a ReG_Steer_Proxy_utils.o
 	ar rv ${LIB_PATH}/libReG_Steer.a ReG_Steer_XML.o
+	ar rv ${LIB_PATH}/libReG_Steer.a ReG_Steer_Globus_io.o
 
 #${BIN_DIR}/ReG_Steer_Proxy.class:
 #	   ${JAVAC} ReG_Steer_Proxy.java
@@ -85,7 +87,8 @@ ReG_Steer_Appside.o: ReG_Steer_Appside.c \
 	 ${REG_INCLUDE_PATH}/ReG_Steer_Appside.h \
 	 ${REG_INCLUDE_PATH}/ReG_Steer_types.h \
 	 ${REG_INCLUDE_PATH}/ReG_Steer_Appside_internal.h \
-	 ${REG_INCLUDE_PATH}/ReG_Steer_Common.h
+	 ${REG_INCLUDE_PATH}/ReG_Steer_Common.h \
+	 ${REG_INCLUDE_PATH}/ReG_Steer_Globus_io.h 
 
 ReG_Steer_Steerside.o: ReG_Steer_Steerside.c \
          ReG_Steer_Proxy.java \
@@ -114,10 +117,15 @@ ReG_Steer_Appside_f.o: ReG_Steer_Appside_f.c \
          ${REG_INCLUDE_PATH}/ReG_Steer_Appside_internal.h \
          ${REG_INCLUDE_PATH}/ReG_Steer_Appside.h \
 	 ${REG_INCLUDE_PATH}/ReG_Steer_types.h \
-	 ${REG_INCLUDE_PATH}/ReG_Steer_Common.h
+	 ${REG_INCLUDE_PATH}/ReG_Steer_Common.h \
+	 ${REG_INCLUDE_PATH}/ReG_Steer_Globus_io.h 
 
 ReG_Steer_XML.o: ReG_Steer_XML.c \
 	${REG_INCLUDE_PATH}/ReG_Steer_XML.h \
+	${REG_INCLUDE_PATH}/ReG_Steer_types.h
+
+ReG_Steer_Globus_io.o: ReG_Steer_Globus_io.c \
+	${REG_INCLUDE_PATH}/ReG_Steer_Globus_io.h \
 	${REG_INCLUDE_PATH}/ReG_Steer_types.h
 
 #---------------------------------------------------------------
