@@ -1150,10 +1150,11 @@ int Emit_status(int   SeqNum,
 
       for(i=0; i<REG_MAX_NUM_STR_PARAMS; i++){
   
-    	/* Handle value used to indicate whether entry is valid and we only
- 	   want to emit monitored parameters */
-    	if( (Params_table.param[tot_pcount].handle != REG_PARAM_HANDLE_NOTSET)
-	    && (!Params_table.param[tot_pcount].steerable) ){
+    	/* Handle value used to indicate whether entry is valid */
+    	if(Params_table.param[tot_pcount].handle != REG_PARAM_HANDLE_NOTSET){
+
+	  /* Changed to emit ALL parameters, ARP 19.08.2002 */
+	  /*  && (!Params_table.param[tot_pcount].steerable) ){ */
   
  	  /* Update the 'value' part of this parameter's table entry */
  	  if(Params_table.param[tot_pcount].handle != REG_SEQ_NUM_HANDLE){
