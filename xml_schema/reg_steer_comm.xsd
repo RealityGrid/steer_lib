@@ -43,6 +43,14 @@
 				</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="Steer_log" >
+				<xs:complexType>
+				<xs:sequence>
+					<xs:element name="LogEntry" type="LogEntryType"
+		    				minOccurs="1" maxOccurs="unbounded" />
+				</xs:sequence>
+				</xs:complexType>
+			</xs:element>
 	        </xs:choice>
 	</xs:complexType>
 </xs:element>
@@ -101,6 +109,20 @@
 		<xs:element name="Cmd_id" type="xs:integer"
 	            minOccurs="1" maxOccurs="1" />
 		<xs:element name="Cmd_param" type="ParamType"
+	            minOccurs="0" maxOccurs="unbounded" />
+	</xs:sequence>
+</xs:complexType>
+
+
+<xs:complexType name="LogEntryType">
+	<xs:sequence>
+		<xs:element name="Key" type="xs:integer"
+	            minOccurs="1" maxOccurs="1" />
+		<xs:element name="Chk_handle" type="xs:integer"
+	            minOccurs="1" maxOccurs="1" />
+		<xs:element name="Chk_tag" type="xs:token"
+	            minOccurs="1" maxOccurs="1" />
+		<xs:element name="Param" type="ParamType"
 	            minOccurs="0" maxOccurs="unbounded" />
 	</xs:sequence>
 </xs:complexType>

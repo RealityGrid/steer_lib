@@ -53,6 +53,7 @@ int main(){
   int	 iotype_frequency[REG_INITIAL_NUM_IOTYPES];
   int    num_chktypes;
   int    chktype_handle[REG_INITIAL_NUM_IOTYPES];
+  char   chk_tag[REG_MAX_STRING_LENGTH];
   REG_IOHandleType iohandle;
   int    data_type;
   int    data_count;
@@ -161,7 +162,11 @@ int main(){
   iotype_dirn[1] = REG_IO_INOUT;
   iotype_frequency[1] = 2;
 
-  num_chktypes = 2;
+  iotype_labels[2] = "YET_ANOTHER_CHECKPOINT";
+ iotype_dirn[2] = REG_IO_INOUT;
+  iotype_frequency[2] = 1;
+
+  num_chktypes = 3;
 
   status = Register_ChkTypes(num_chktypes,
   			    iotype_labels, 
@@ -346,7 +351,8 @@ int main(){
 		       recvd_cmd_params[icmd]);
 
 		/* Pretend we've taken a checkpoint here */
-		Record_Chkpt(chktype_handle[j], "A_TAG");
+		sprintf(chk_tag, "checkpoint_%d.dat", i);
+		Record_Chkpt(chktype_handle[j], chk_tag);
 		break;
 	      }
 	    }

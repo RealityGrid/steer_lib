@@ -54,7 +54,7 @@ int main(){
   REG_MsgType msg_type;
   int    status;
   int    done;
-  int    i;
+  int    i, j, k;
   int    app_seqnum;
   int    num_cmds;
   int    commands[REG_MAX_NUM_STR_CMDS];
@@ -78,6 +78,9 @@ int main(){
   char  *char_ptr;
   char  *sim_name[REG_MAX_NUM_STEERED_SIM];
   char  *sim_gsh[REG_MAX_NUM_STEERED_SIM];
+
+  int                num_entries;
+  Output_log_struct  chk_entries[10];
 
   /* Initialise arrays for querying param values */
 
@@ -362,10 +365,11 @@ int main(){
       fprintf(stderr, "  g - Get next message from application\n");
       fprintf(stderr, "  h - display this help message\n");
       fprintf(stderr, "  l - display List of checkpoint types\n");
-      fprintf(stderr, "  s - send Stop signal to application\n");
       fprintf(stderr, "  p - send Pause signal to application\n");
       fprintf(stderr, "  q - Quit steerer - detaches from application\n");
       fprintf(stderr, "  r - send Resume signal to application\n");
+      fprintf(stderr, "  s - send Stop signal to application\n");
+      fprintf(stderr, "  v - view logged checkpoints\n");
       fprintf(stderr, "\n");
       break;
 
@@ -536,13 +540,70 @@ int main(){
 	fprintf(stderr, "Got control message\n");
 	break;
 
+      case STEER_LOG:
+	fprintf(stderr, "Got log message\n");
+	Consume_log(sim_handle);
+
+	break;
+
       default:
 	fprintf(stderr, "Unrecognised msg returned by Get_next_message\n");
 	break;
       }
       break;
 
+    case 'v':
+      Get_chktype_number(sim_handle,
+			 &num_types);
+
+      if(num_types > 0){
+
+	if(num_types > REG_INITIAL_NUM_IOTYPES){
+	  num_types = REG_INITIAL_NUM_IOTYPES;
+	}
+
+	Get_chktypes(sim_handle,
+		     num_types,
+		     io_handles,
+		     io_labels,
+		     io_types,
+		     io_freqs);
+
+	for(i=0; i<num_types; i++){
+
+	  if(io_types[i] == REG_IO_INOUT){
+
+	    Get_chk_log_number(sim_handle,
+			       io_handles[i],
+			       &num_entries);
+
+	    fprintf(stderr, "We have %d log entries for checkpoint "
+		    "%s:\n", num_entries, io_labels[i]);
+
+	    if(num_entries > 10) num_entries = 10;
+
+	    Get_chk_log_entries_reverse(sim_handle,
+					io_handles[i],
+					num_entries,
+					chk_entries);
+
+	    for(j=0; j<num_entries; j++){
+	      fprintf(stderr, "  Tag: %s\n", chk_entries[j].chk_tag);
+
+	      for(k=0; k<chk_entries[j].num_param; k++){
+
+		fprintf(stderr, "    Param <%s> = %s\n",
+			chk_entries[j].param_labels[k],
+			chk_entries[j].param_values[k]);
+	      }
+	    }
+	  }
+	}
+      }
+      break;
+
     default:
+      fprintf(stderr, "Type h for list of commands...\n");
       break;
     }
   }
