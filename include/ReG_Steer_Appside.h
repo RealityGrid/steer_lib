@@ -55,8 +55,9 @@ extern PREFIX void Steering_enable(const int EnableSteer);
 
 /* Initialise the internal library tables and advertise application
    as being steerable. */
-extern PREFIX int Steering_initialize(int  NumSupportedCmds,
-				      int *SupportedCmds);
+extern PREFIX int Steering_initialize(char *AppName,
+				      int   NumSupportedCmds,
+				      int  *SupportedCmds);
 
 /* Register the specified IO types.  This routine performs some sort of
    mapping between the supplied label and a physical destination for

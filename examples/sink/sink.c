@@ -107,7 +107,7 @@ int main(){
 
   numCommands = 1;
   commands[0] = REG_STR_STOP;
-  status = Steering_initialize(numCommands, commands);
+  status = Steering_initialize("sink v1.0", numCommands, commands);
 
   if(status != REG_SUCCESS){
     return REG_FAILURE;

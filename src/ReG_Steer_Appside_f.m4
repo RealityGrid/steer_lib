@@ -71,21 +71,27 @@ INT_KIND_1_DECL(EnableSteer);
 
 /*----------------------------------------------------------------
 
-SUBROUTINE steering_initialize_f(NumSupportedCmds, SupportedCmds, Status)
+SUBROUTINE steering_initialize_f(AppName, NumSupportedCmds, &
+                                 SupportedCmds, Status)
 
   INTEGER (KIND=REG_SP_KIND), INTENT(in)  :: NumSupportedCmds
   INTEGER (KIND=REG_SP_KIND), INTENT(in)  :: SupportedCmds
   INTEGER (KIND=REG_SP_KIND), INTENT(out) :: Status
 ----------------------------------------------------------------*/
 
-void FUNCTION(steering_initialize_f) ARGS(`NumSupportedCmds,
-			SupportedCmds, Status')
+void FUNCTION(steering_initialize_f) ARGS(`STRING_ARG(AppName), 
+                                           NumSupportedCmds,
+			                   SupportedCmds, Status')
+STRING_ARG_DECL(AppName);
 INT_KIND_1_DECL(NumSupportedCmds);
 INT_KIND_1_DECL(SupportedCmds);
 INT_KIND_1_DECL(Status);
 {
-  int i;
-  int j = 0;
+  int   i;
+  int   j = 0;
+  int   len;
+  char *pchar;
+  int   found = 0;
 
   /* Perform some initialisation of ptrs to memory used by 
      steering_control_f */
@@ -106,7 +112,49 @@ INT_KIND_1_DECL(Status);
     return;
   }
 
-  *Status = INT_KIND_1_CAST( Steering_initialize((int)(*NumSupportedCmds), 
+  len = STRING_LEN(AppName);
+
+  if(len > REG_MAX_STRING_LENGTH){
+
+    fprintf(stderr, "steering_initialize_f: ERROR - length of tag "
+            "exceeds REG_MAX_STRING_LENGTH (%d) chars\n", 
+            REG_MAX_STRING_LENGTH);
+
+    *Status = INT_KIND_1_CAST(REG_FAILURE);
+    return;
+  }
+
+  memcpy(string_buf, STRING_PTR(AppName), len);
+
+  if(len == REG_MAX_STRING_LENGTH){
+
+    found = 0;
+    pchar = STRING_PTR(AppName);
+    for(i = (REG_MAX_STRING_LENGTH-1); i == 0; i--){
+      if(pchar[i] == '\0'){
+        found = 1;
+	break;
+      }
+    }
+    if(!found){
+
+      fprintf(stderr, "steering_initialize_f: ERROR - length of tag "
+                "is REG_MAX_STRING_LENGTH (%d) chars long\nbut contains "
+                "no termination character - shorten label (or its len "
+                "declaration)\n", 
+                REG_MAX_STRING_LENGTH);
+      *Status = INT_KIND_1_CAST(REG_FAILURE);
+      return;
+    }
+  }
+  else{
+
+    /* Terminate string */
+    string_buf[len] = '\0';
+  }
+
+  *Status = INT_KIND_1_CAST( Steering_initialize(string_buf,
+                                                 (int)(*NumSupportedCmds), 
 	 	                                 (int *)(SupportedCmds)) );
   return;
 }

@@ -105,6 +105,8 @@ static int ReG_CalledFromF90   = FALSE;
 char ReG_CurrentDir[REG_MAX_STRING_LENGTH];
 /* Hostname of machine we are executing on */
 char ReG_Hostname[REG_MAX_STRING_LENGTH];
+/* Name (and version) of the application that has called us */
+static char ReG_AppName[REG_MAX_STRING_LENGTH];
 
 /* Global variable used to store next valid handle value for both
    IOTypes and ChkTypes - these MUST have unique handles because
@@ -123,8 +125,9 @@ void Steering_enable(const int EnableSteer)
 
 /*----------------------------------------------------------------*/
 
-int Steering_initialize(int  NumSupportedCmds,
-			int *SupportedCmds)
+int Steering_initialize(char *AppName,
+			int   NumSupportedCmds,
+			int  *SupportedCmds)
 {
   int   i, j;
   char *pchar, *ip_addr;
@@ -190,6 +193,19 @@ int Steering_initialize(int  NumSupportedCmds,
     fprintf(stderr, "Steering_initialize: failed to get working "
 	    "directory\n");
   } 
+
+  /* Store the user-supplied name and version of the calling
+     application */
+  if(strlen(AppName) > REG_MAX_STRING_LENGTH){
+
+    fprintf(stderr, "Steering_initialize: Error - tag specifying "
+	    "application name and version exceeds %d chars\n",
+            REG_MAX_STRING_LENGTH);
+    Steering_enable(FALSE);
+    return REG_FAILURE;
+  }
+  strcpy(ReG_AppName, AppName);
+  fprintf(stderr, "ARPDBG: AppName = >>%s<<\n", ReG_AppName);
 
   /* Get the hostname of this machine - used to tell the outside
      world how to contact us and where the (checkpoint) files we've 
