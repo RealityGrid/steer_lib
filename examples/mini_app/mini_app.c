@@ -469,11 +469,16 @@ int main(){
 		  /* Pretend we've taken a checkpoint here */
 		  itag = rand();
 		  sprintf(chk_tag, "fake_chkpoint_%d.dat", itag);
+
+		  /* Add this filename to the record of the checkpoint */
+		  Add_checkpoint_file(chktype_handle[j], chk_tag);
+
 		  fp = fopen(chk_tag, "w");
 		  if(fp){
 		    fprintf(fp, "Chkpoint data goes here\n");
 		    fclose(fp);
 		    sprintf(chk_tag,"%d", itag);
+		    /* Record that we've taken the checkpoint */
 		    Record_checkpoint_set(chktype_handle[j],
 					  chk_tag,  ".");
 		  }

@@ -43,6 +43,8 @@
   EXTERNAL register_param_f
   EXTERNAL register_string_param_f
   EXTERNAL record_chkpt_f
+  EXTERNAL add_checkpoint_file_f
+  EXTERNAL record_checkpoint_set_f
   EXTERNAL consume_start_f
   EXTERNAL consume_stop_f
   EXTERNAL steering_control_f

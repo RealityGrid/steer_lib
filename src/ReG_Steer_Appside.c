@@ -1217,7 +1217,7 @@ int Record_checkpoint_set(int   ChkType,
        'cos we don't use that until later */
     sprintf(node_data, "%s/%s/", ReG_CurrentDir, Path);
 
-    /* Filenames have been added by calls to Record_checkpoint_file */
+    /* Filenames have been added by calls to Add_checkpoint_file */
     pchar = (char *)ChkTypes_table.io_def[index].buffer;
 
     nfiles = 0;
@@ -1370,8 +1370,8 @@ int Record_checkpoint_set(int   ChkType,
 
 /*----------------------------------------------------------------*/
 
-int Record_checkpoint_file(int   ChkType,
-			   char *filename)
+int Add_checkpoint_file(int   ChkType,
+			char *filename)
 {
   int index;
   int nbytes;

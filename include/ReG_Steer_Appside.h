@@ -96,16 +96,16 @@ extern PREFIX int Record_Chkpt(int   ChkType,
    be called for each file making up a checkpoint prior to a 
    final call to Record_checkpoint_set to actually record 
    the checkpoint. */
-extern PREFIX int Record_checkpoint_file(int   ChkType,
-					 char *filename);
+extern PREFIX int Add_checkpoint_file(int   ChkType,
+				      char *filename);
 
 /* Replacement for Record_Chkpt - to be called by the application once
    it has successfully taken a checkpoint of type ChkType - the handle 
    returned by Register_ChkTypes.  ChkTag should hold a unique
-   identifier for the checkpoint set.  If Record_checkpoint_file has
+   identifier for the checkpoint set.  If Add_checkpoint_file has
    not been called one or more times prior to this call then ChkTag is 
    used by the library to identify all of the files belonging to the 
-   checkpoint.  If one or more calls to Record_checkpoint_file have 
+   checkpoint.  If one or more calls to Add_checkpoint_file have 
    been made since the last call of this routine then the checkpoint 
    set is recorded as consisting of the file(s) specified in those 
    calls.  That list of files is reset following this call.  Path 

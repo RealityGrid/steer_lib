@@ -452,6 +452,77 @@ INT_KIND_1_DECL(Status);
 
 /*----------------------------------------------------------------
 
+SUBROUTINE add_checkpoint_file_f(ChkType, ChkTag, Status)
+
+  INTEGER  (KIND=REG_SP_KIND), INTENT(in)           :: ChkType
+  CHARACTER (LEN=REG_MAX_STRING_LENGTH), INTENT(in) :: ChkTag 
+  INTEGER (KIND=REG_SP_KIND), INTENT(out)           :: Status
+
+----------------------------------------------------------------*/
+
+
+void FUNCTION(add_checkpoint_file_f) ARGS(`ChkType,
+                                           STRING_ARG(Filename),
+                                           Status')
+INT_KIND_1_DECL(ChkType);
+STRING_ARG_DECL(Filename);
+INT_KIND_1_DECL(Status);
+{
+  int   len;
+  char  buf[REG_MAX_STRING_LENGTH];
+  char *pchar;
+  int   found;
+  int   i;
+
+  len = STRING_LEN(Filename);
+
+  if(len > REG_MAX_STRING_LENGTH){
+
+    fprintf(stderr, "add_checkpoint_file_f: ERROR - length of filename "
+            "exceeds REG_MAX_STRING_LENGTH (%d) chars\n", 
+            REG_MAX_STRING_LENGTH);
+
+    *Status = INT_KIND_1_CAST(REG_FAILURE);
+    return;
+  }
+
+  memcpy(buf, STRING_PTR(Filename), len);
+
+  if(len == REG_MAX_STRING_LENGTH){
+
+    found = 0;
+    pchar = STRING_PTR(Filename);
+    for(i = (REG_MAX_STRING_LENGTH-1); i == 0; i--){
+      if(pchar[i] == '\0'){
+        found = 1;
+	break;
+      }
+    }
+    if(!found){
+
+      fprintf(stderr, "add_checkpoint_file_f: ERROR - length of filename "
+                "is REG_MAX_STRING_LENGTH (%d) chars long\nbut contains "
+                "no termination character - shorten label (or its len "
+                "declaration)\n", 
+                REG_MAX_STRING_LENGTH);
+      *Status = INT_KIND_1_CAST(REG_FAILURE);
+      return;
+    }
+  }
+  else{
+
+    /* Terminate string */
+    buf[len] = '\0';
+  }
+
+  *Status = INT_KIND_1_CAST(Add_checkpoint_file((int)*ChkType, 
+                                         	buf) );
+
+  return;
+}
+
+/*----------------------------------------------------------------
+
 SUBROUTINE record_checkpoint_set_f(ChkType, ChkTag, Status)
 
   INTEGER  (KIND=REG_SP_KIND), INTENT(in)           :: ChkType
