@@ -96,8 +96,10 @@ int Steerer_initialize()
   }
   else{
 
-    fprintf(stderr, "Steerer_initialize: failed to get schema location\n");
-    return REG_FAILURE;
+    /* Instead of failing, set the schema location to some nonsense value
+       and continue */
+    fprintf(stderr, "Steerer_initialize: WARNING: failed to get schema location\n");
+    sprintf(ReG_Steer_Schema_Locn, "/tmp/xml_schema/reg_steer_comm.xsd");
   }
 
   /* Initialize table of connected simulations */
