@@ -42,7 +42,7 @@ C_FLAGS = -O2
 F90 = pgf90
 F90_MPI = pgf90
 F90_FLAGS = 
-MPI_FLAGS = -lmpich
+MPI_FLAGS = -lmpich -lgm
 
 # Location of java compiler - used to produce proxy binary
 JAVAC          = /usr/bin/javac
@@ -56,11 +56,17 @@ AR_FLAGS = rv
 
 # include directories
 STEER_INCLUDES = -I${REG_STEER_HOME}/include \
-                 -I${REG_XML_INCDIR}
+                 -I${REG_XML_INCDIR} \
+                 -I${MPI_HOME}/include \
+                 -I${GM_HOME}/include
+
 
 # library directories
 STEER_LIBS = -L${REG_STEER_HOME}/lib${NBIT} \
-             -L${REG_XML_LIBDIR}
+             -L${REG_XML_LIBDIR} \
+             -L${MPI_HOME}/lib \
+             -L${GM_HOME}/lib
+
 
 # Libraries to link example applications against
 STEER_LDFLAGS = -lm -lz -lxml2
