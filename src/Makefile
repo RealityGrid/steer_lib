@@ -76,6 +76,7 @@ ${LIB_PATH}/libReG_Steer.a: ReG_Steer_Appside_f.o \
 	ReG_Steer_Appside_Soap.o \
 	ReG_Steer_Appside_File.o \
 	ReG_Steer_Browser.o \
+	ReG_Steer_Logging.o \
 	stdsoap2.o soapC.o soapClient.o
 
 ${LIB_PATH}/libReG_Steer.a:
@@ -90,6 +91,7 @@ ${LIB_PATH}/libReG_Steer.a:
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Appside_File.o
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Steerside_Soap.o
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Browser.o
+	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Logging.o
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a stdsoap2.o
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a soapC.o
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a soapClient.o
@@ -103,7 +105,8 @@ ReG_Steer_Appside.o: ReG_Steer_Appside.c \
 	 ../include/ReG_Steer_Common.h \
 	 ../include/ReG_Steer_Appside_Sockets.h \
          ../include/ReG_Steer_Appside_Soap.h \
-         ../include/ReG_Steer_Appside_File.h
+         ../include/ReG_Steer_Appside_File.h \
+         ../include/ReG_Steer_Logging.h
 
 ReG_Steer_Steerside.o: ReG_Steer_Steerside.c \
          ReG_Steer_Proxy_utils.c \
@@ -174,6 +177,11 @@ ReG_Steer_Browser.o: ReG_Steer_Browser.c \
         ../include/soapStub.h \
 	stdsoap2.c soapC.c soapClient.c
 
+ReG_Steer_Logging.o: ReG_Steer_Logging.c \
+        ../include/ReG_Steer_Logging.h \
+        ../include/ReG_Steer_types.h \
+        ../include/ReG_Steer_Appside_internal.h
+
 #---------------------------------------------------------------
 
 clean:
@@ -186,5 +194,6 @@ clean:
 tidy:
 	rm -f ReG_Steer_Steerside.o ReG_Steer_Appside.o \
         ReG_Steer_Appside_Sockets.o ReG_Steer_Appside_Soap.o \
-        ReG_Steer_Appside_File.o \
-	ReG_Steer_Common.o ReG_Steer_Appside_f.o ReG_Steer_Appside_f.c *~
+        ReG_Steer_Appside_File.o ReG_Steer_Browser.o \
+	ReG_Steer_Common.o ReG_Steer_Appside_f.o \
+        ReG_Steer_Logging.o ReG_Steer_Appside_f.c *~
