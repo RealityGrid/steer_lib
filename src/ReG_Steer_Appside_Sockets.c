@@ -60,6 +60,7 @@ extern Steerer_connection_table_type Steerer_connection;
 int socket_info_init(const int index) {
 
   char* pchar;
+  char* ip_addr;
   int min = 0;
   int max = 0;
 
@@ -72,6 +73,18 @@ int socket_info_init(const int index) {
 
 #if REG_DEBUG
   fprintf(stderr, "socket_info_init: port range %d - %d\n", min, max);
+#endif
+
+  /* set local TCP interface to use */
+  if(Get_fully_qualified_hostname(&pchar, &ip_addr) == REG_SUCCESS) {
+    strcpy(IOTypes_table.io_def[index].socket_info.tcp_interface, ip_addr);
+  }
+  else {
+    sprintf(IOTypes_table.io_def[index].socket_info.tcp_interface, " ");
+  }
+
+#if REG_DEBUG
+  fprintf(stderr, "socket_info_init: local tcp interface: %s\n", IOTypes_table.io_def[index].socket_info.tcp_interface);
 #endif
 
   IOTypes_table.io_def[index].socket_info.min_port = min;
@@ -134,10 +147,15 @@ int create_listener(const int index) {
     fprintf(stderr, "Sockets_create_listener: WARNING: failed to get hostname\n");
     sprintf(IOTypes_table.io_def[index].socket_info.listener_hostname, "NOT_SET");
   }
-
+  
   /* set up server address */
   myAddr.sin_family = AF_INET;
-  inet_aton(IOTypes_table.io_def[index].socket_info.listener_hostname, &(myAddr.sin_addr));
+  if(strlen(IOTypes_table.io_def[index].socket_info.tcp_interface) == 1) {
+    myAddr.sin_addr.s_addr = INADDR_ANY;
+  }
+  else {
+    inet_aton(IOTypes_table.io_def[index].socket_info.tcp_interface, &(myAddr.sin_addr));
+  }
   memset(&(myAddr.sin_zero), '\0', 8); /* zero the rest */
 
   /* Now bind listener so we can accept connections when they happen */
@@ -160,13 +178,14 @@ int create_listener(const int index) {
   if(listen(listener, 10) == REG_SOCKETS_ERROR) {
     perror("listen");
     close(listener);
-    IOTypes_table.io_def[index].socket_info.comms_status=REG_COMMS_STATUS_FAILURE;
+    IOTypes_table.io_def[index].socket_info.comms_status = REG_COMMS_STATUS_FAILURE;
     IOTypes_table.io_def[index].socket_info.listener_status = REG_COMMS_STATUS_FAILURE;
     return REG_FAILURE;
   }
 
   /* we are listening! */
   IOTypes_table.io_def[index].socket_info.listener_status = REG_COMMS_STATUS_LISTENING;
+  IOTypes_table.io_def[index].socket_info.comms_status = REG_COMMS_STATUS_LISTENING;
 
   return REG_SUCCESS;
 }
@@ -199,7 +218,12 @@ int create_connector(const int index) {
 
   /* ...build local address struct... */
   myAddr.sin_family = AF_INET;
-  myAddr.sin_addr.s_addr = INADDR_ANY;
+  if(strlen(IOTypes_table.io_def[index].socket_info.tcp_interface) == 1) {
+    myAddr.sin_addr.s_addr = INADDR_ANY;
+  }
+  else {
+    inet_aton(IOTypes_table.io_def[index].socket_info.tcp_interface, &(myAddr.sin_addr));
+  }
   memset(&(myAddr.sin_zero), '\0', 8); /* zero the rest */
 
   /* ...and bind connector so we can punch out of firewalls... */
@@ -248,7 +272,12 @@ int connect_connector(const int index) {
   }
 
   if(return_status == REG_SUCCESS) {
-    /* ...build remote address struct... */
+    /* ...look up and then build remote address struct... */
+    if(dns_lookup(IOTypes_table.io_def[index].socket_info.connector_hostname) == REG_FAILURE) {
+      fprintf(stderr, "Could not resolve hostname %s\n", IOTypes_table.io_def[index].socket_info.connector_hostname);
+      return REG_FAILURE;
+    }
+
     theirAddr.sin_family = AF_INET;
     theirAddr.sin_port = htons(IOTypes_table.io_def[index].socket_info.connector_port);
     inet_aton(IOTypes_table.io_def[index].socket_info.connector_hostname, &(theirAddr.sin_addr));
@@ -447,14 +476,14 @@ void poll(const int index) {
   timeout.tv_sec  = 0;
   timeout.tv_usec = 0;
 
-  /* just return if we have no connections */
+  /* just return if we have no handles */
   if((listener == -1) && (connector == -1)) return;
 
   /* clear the socket set and add required handles */
   FD_ZERO(&sockets);
   if(direction == REG_IO_OUT) {
     /* SERVER */
-    if(IOTypes_table.io_def[index].socket_info.comms_status == REG_COMMS_STATUS_LISTENING) {
+    if(IOTypes_table.io_def[index].socket_info.listener_status == REG_COMMS_STATUS_LISTENING) {
       FD_SET(listener, &sockets);
       fd_max = listener;
 
@@ -492,7 +521,28 @@ void poll(const int index) {
 
 /*--------------------------------------------------------------------*/
 
+int dns_lookup(char* hostname) {
+  struct hostent* host;
+
+  if((host = gethostbyname(hostname)) == NULL) {
+    herror("gethostbyname");
+    return REG_FAILURE;
+  }
+
+#if REG_DEBUG
+  fprintf(stderr, "DNS lookup: host: %s\n", host->h_name);
+  fprintf(stderr, "            IP:   %s\n", inet_ntoa(*((struct in_addr*) host->h_addr)));
+#endif
+
+  strcpy(hostname, (char*) inet_ntoa(*((struct in_addr*) host->h_addr)));
+  return REG_SUCCESS;
+}
+
 /*--------------------------------------------------------------------*/
+
+/*--------------------------------------------------------------------*
+ *                         EXTERNAL METHODS                           *
+ *--------------------------------------------------------------------*/
 
 int Initialize_IOType_transport_sockets(const int direction, const int index) {
 
@@ -583,7 +633,6 @@ void Finalize_IOType_transport_sockets() {
 int Disable_IOType_sockets(const int index) {
   /* check index is valid */
   if(index < 0 || index >= IOTypes_table.num_registered) {
-
     fprintf(stderr, "Disable_IOType_sockets: index out of range\n");
     return REG_FAILURE;
   }
@@ -658,8 +707,11 @@ int Write_sockets(const int index, const int size, void* buffer) {
   bytes_left = size;
   pchar = (char*) buffer;
 
+#if REG_DEBUG
+  fprintf(stderr, "Writing...\n");
+#endif
   while(bytes_left > 0) {
-    result = send(connector, pchar, bytes_left, 0);
+    result = send(connector, pchar, bytes_left, MSG_NOSIGNAL);
 
     if(result == REG_SOCKETS_ERROR) {
       perror("send");
@@ -804,7 +856,7 @@ int Consume_msg_header_sockets(int index, int* datatype, int* count, int* num_by
 #endif
 
   /* Blocks until REG_PACKET_SIZE bytes received */
-  if((nbytes = recv(sock_info->connector_handle, buffer, REG_PACKET_SIZE, 0)) <= 0) {
+  if((nbytes = recv(sock_info->connector_handle, buffer, REG_PACKET_SIZE, MSG_WAITALL)) <= 0) {
     if(nbytes == 0) {
       /* closed connection */
       fprintf(stderr, "Consume_msg_header_sockets: hung up!\n");
@@ -832,7 +884,7 @@ int Consume_msg_header_sockets(int index, int* datatype, int* count, int* num_by
   }
 
   /*--- Type of objects in message ---*/
-  if((nbytes = recv(sock_info->connector_handle, buffer, REG_PACKET_SIZE, 0)) <= 0) {
+  if((nbytes = recv(sock_info->connector_handle, buffer, REG_PACKET_SIZE, MSG_WAITALL)) <= 0) {
     if(nbytes == 0) {
       /* closed connection */
       fprintf(stderr, "Consume_msg_header_sockets: hung up!\n");
@@ -856,7 +908,7 @@ int Consume_msg_header_sockets(int index, int* datatype, int* count, int* num_by
   sscanf(buffer, "<Data_type>%d</Data_type>", datatype);
 
   /*--- No. of objects in message ---*/
-  if((nbytes = recv(sock_info->connector_handle, buffer, REG_PACKET_SIZE, 0)) <= 0) {
+  if((nbytes = recv(sock_info->connector_handle, buffer, REG_PACKET_SIZE, MSG_WAITALL)) <= 0) {
     if(nbytes == 0) {
       /* closed connection */
       fprintf(stderr, "Consume_msg_header_sockets: hung up!\n");
@@ -883,7 +935,7 @@ int Consume_msg_header_sockets(int index, int* datatype, int* count, int* num_by
   }
 
   /*--- No. of bytes in message ---*/
-  if((nbytes = recv(sock_info->connector_handle, buffer, REG_PACKET_SIZE, 0)) <= 0) {
+  if((nbytes = recv(sock_info->connector_handle, buffer, REG_PACKET_SIZE, MSG_WAITALL)) <= 0) {
     if(nbytes == 0) {
       /* closed connection */
       fprintf(stderr, "Consume_msg_header_sockets: hung up!\n");
@@ -910,7 +962,7 @@ int Consume_msg_header_sockets(int index, int* datatype, int* count, int* num_by
   }
 
   /*--- Array ordering in message ---*/
-  if((nbytes = recv(sock_info->connector_handle, buffer, REG_PACKET_SIZE, 0)) <= 0) {
+  if((nbytes = recv(sock_info->connector_handle, buffer, REG_PACKET_SIZE, MSG_WAITALL)) <= 0) {
     if(nbytes == 0) {
       /* closed connection */
       fprintf(stderr, "Consume_msg_header_sockets: hung up!\n");
@@ -941,7 +993,7 @@ int Consume_msg_header_sockets(int index, int* datatype, int* count, int* num_by
   }
 
   /*--- End of header ---*/
-  if((nbytes = recv(sock_info->connector_handle, buffer, REG_PACKET_SIZE, 0)) <= 0) {
+  if((nbytes = recv(sock_info->connector_handle, buffer, REG_PACKET_SIZE, MSG_WAITALL)) <= 0) {
     if(nbytes == 0) {
       /* closed connection */
       fprintf(stderr, "Consume_msg_header_sockets: hung up!\n");
@@ -1007,7 +1059,7 @@ int Consume_start_data_check_sockets(const int index) {
   while(!(pstart = strstr(buffer, REG_DATA_HEADER))) {
 
 #if REG_DEBUG
-    fprintf(stderr, ".");
+    fprintf(stderr, "!");
 #endif
 
     if((nbytes = recv(sock_info->connector_handle, buffer, REG_PACKET_SIZE, 0)) <= 0) {
@@ -1113,10 +1165,10 @@ int Consume_data_read_sockets(const int index, const int datatype, const int num
 #endif /* REG_DEBUG */
 
   if(IOTypes_table.io_def[index].use_xdr || IOTypes_table.io_def[index].convert_array_order == TRUE) {
-    nbytes = recv(sock_info->connector_handle, IOTypes_table.io_def[index].buffer, num_bytes_to_read, 0);
+    nbytes = recv(sock_info->connector_handle, IOTypes_table.io_def[index].buffer, num_bytes_to_read, MSG_WAITALL);
   }
   else {
-    nbytes = recv(sock_info->connector_handle, pData, num_bytes_to_read, 0);
+    nbytes = recv(sock_info->connector_handle, pData, num_bytes_to_read, MSG_WAITALL);
   }
 
 #if REG_DEBUG
@@ -1152,9 +1204,5 @@ int Consume_data_read_sockets(const int index, const int datatype, const int num
 }
 
 /*---------------------------------------------------*/
-
-
-
-
 
 #endif
