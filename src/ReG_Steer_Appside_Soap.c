@@ -251,6 +251,14 @@ int Steerer_connected_soap()
      strstr(findServiceData_response._result, "ATTACHED")){
     return REG_SUCCESS;
   }
+  else if(findServiceData_response._result && 
+	  strstr(findServiceData_response._result, "DETACHING")){
+    /* Steerer has attached and detached without us noticing and thus SGS
+       is in 'detaching' state.  We have to 'detach' properly now to reset.*/
+    Detach_from_steerer_soap();
+
+    /* But we still return 'failure' because no steerer is attached */
+  }
 
   return REG_FAILURE;
 }
