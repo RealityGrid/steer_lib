@@ -230,11 +230,11 @@ SUBROUTINE enable_iotype_acks_f(IOType, Status)
 ----------------------------------------------------------------*/
 
 void FUNCTION(enable_iotype_acks_f) ARGS(`IOType,
-                                                      Status')
+                                          Status')
 INT_KIND_1_DECL(IOType);
 INT_KIND_1_DECL(Status);
 {
-  *Status = INT_KIND_1_CAST( Enable_IOType_acknowledgements((int)(*IOType)) );
+  *Status = INT_KIND_1_CAST( Enable_IOType_acks((int)(*IOType)) );
 
   return;
 }
@@ -248,11 +248,11 @@ SUBROUTINE disable_iotype_acks_f(IOType, Status)
 ----------------------------------------------------------------*/
 
 void FUNCTION(disable_iotype_acks_f) ARGS(`IOType,
-                                                       Status')
+                                           Status')
 INT_KIND_1_DECL(IOType);
 INT_KIND_1_DECL(Status);
 {
-  *Status = INT_KIND_1_CAST( Disable_IOType_acknowledgements((int)(*IOType)) );
+  *Status = INT_KIND_1_CAST( Disable_IOType_acks((int)(*IOType)) );
 
   return;
 }

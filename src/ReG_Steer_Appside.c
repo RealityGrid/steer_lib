@@ -851,7 +851,7 @@ int Enable_IOType(int IOType){
 
 /*----------------------------------------------------------------*/
 
-int Enable_IOType_acknowledgements(int IOType){
+int Enable_IOType_acks(int IOType){
 
   int index;
 
@@ -860,7 +860,7 @@ int Enable_IOType_acknowledgements(int IOType){
 
   /* Can only call this function if steering lib initialised */
   if(!ReG_SteeringInit){
-    fprintf(stderr, "ERROR: Enable_IOType_acknowledgements: "
+    fprintf(stderr, "ERROR: Enable_IOType_acks: "
 	    "steering library not initialised\n");
     return REG_FAILURE;
   }
@@ -869,7 +869,7 @@ int Enable_IOType_acknowledgements(int IOType){
   index = IOdef_index_from_handle(&IOTypes_table, IOType);
   if(index == REG_IODEF_HANDLE_NOTSET){
 
-    fprintf(stderr, "ERROR: Enable_IOType_acknowledgements: "
+    fprintf(stderr, "ERROR: Enable_IOType_acks: "
 	    "failed to find matching IOType\n");
     return REG_FAILURE;
   }
@@ -882,7 +882,7 @@ int Enable_IOType_acknowledgements(int IOType){
 
 /*----------------------------------------------------------------*/
 
-int Disable_IOType_acknowledgements(int IOType){
+int Disable_IOType_acks(int IOType){
 
   int index;
 
@@ -891,7 +891,7 @@ int Disable_IOType_acknowledgements(int IOType){
 
   /* Can only call this function if steering lib initialised */
   if(!ReG_SteeringInit){
-    fprintf(stderr, "ERROR: Disable_IOType_acknowledgements: "
+    fprintf(stderr, "ERROR: Disable_IOType_acks: "
 	    "steering library not initialised\n");
     return REG_FAILURE;
   }
@@ -900,7 +900,7 @@ int Disable_IOType_acknowledgements(int IOType){
   index = IOdef_index_from_handle(&IOTypes_table, IOType);
   if(index == REG_IODEF_HANDLE_NOTSET){
 
-    fprintf(stderr, "ERROR: Disable_IOType_acknowledgements: "
+    fprintf(stderr, "ERROR: Disable_IOType_acks: "
 	    "failed to find matching IOType\n");
     return REG_FAILURE;
   }
