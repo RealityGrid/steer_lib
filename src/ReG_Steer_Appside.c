@@ -41,6 +41,7 @@
 #include "ReG_Steer_Appside_internal.h"
 #include "ReG_Steer_Appside_Globus.h"
 #include "ReG_Steer_Appside_Soap.h"
+#include "ReG_Steer_Appside_File.h"
 
 #include <signal.h>
 #include <unistd.h>
@@ -651,6 +652,7 @@ int Register_IOTypes(int    NumTypes,
     IOTypes_table.io_def[current].array.sy = 0;
     IOTypes_table.io_def[current].array.sz = 0;
     IOTypes_table.io_def[current].convert_array_order = FALSE;
+    IOTypes_table.io_def[current].is_enabled = IOTypes_table.enable_on_registration;
 
     /* set up transport for sample data - eg sockets */
     return_status = Initialize_IOType_transport(direction[i], current);
@@ -769,8 +771,8 @@ int Enable_IOType(int IOType){
 
 #if REG_GLOBUS_SAMPLES
     Enable_IOType_globus(index);
-    IOTypes_table.io_def[index].is_enabled = TRUE;
 #endif
+    IOTypes_table.io_def[index].is_enabled = TRUE;
   }
 #if REG_DEBUG
   else{
@@ -4784,7 +4786,6 @@ int Initialize_IOType_transport(const int direction,
   return Initialize_IOType_transport_globus(direction, index);
 
 #else
-  IOTypes_table.io_def[index].is_enabled = TRUE;
 
   return REG_SUCCESS;
 #endif
@@ -4969,6 +4970,7 @@ int Emit_header(const int index)
 #if REG_GLOBUS_SAMPLES
 
   return Emit_header_globus(index);
+		   
 #else
 
   sprintf(Global_scratch_buffer, REG_PACKET_FORMAT, REG_DATA_HEADER);
@@ -4995,15 +4997,18 @@ int Emit_header(const int index)
 int Emit_footer(const int index,
 		const char * const buffer)
 {
-#if REG_GLOBUS_SAMPLES
-
-  return Emit_footer_globus(index, buffer);
-#else
-  int n_written;
   int nbytes_to_send;
 
   /* strlen + 1 because it doesn't count '\0' */
   nbytes_to_send = strlen(buffer)+1;
+
+#if REG_GLOBUS_SAMPLES
+
+  return Emit_data_globus(index, nbytes_to_send, buffer);
+
+#else
+  int n_written;
+
   if(IOTypes_table.io_def[index].fp){
 
     n_written = (int)fwrite((void *)buffer, sizeof(char), nbytes_to_send, 
@@ -5025,7 +5030,6 @@ int Emit_data(const int		index,
 #if REG_GLOBUS_SAMPLES
 
   return Emit_data_globus(index, 
-			  datatype,
 			  num_bytes_to_send,
 			  pData);
 #else

@@ -452,6 +452,9 @@ int Get_data_source_address_soap(int   index,
   char   index_string[10];
   struct tns__GetNthDataSourceResponse getNthDataSource_response;
 
+  /* Port returned as zero on failure */
+  *port = 0;
+
   sprintf(index_string, "%d", index);
   getNthDataSource_response._result = NULL;
   if(soap_call_tns__GetNthDataSource(&soap, Steerer_connection.SGS_address, 
@@ -476,12 +479,15 @@ int Get_data_source_address_soap(int   index,
       if(pchar = strtok(NULL, ":")){
 
 	*port = (unsigned short int)atoi(pchar);
-	return REG_SUCCESS;
       }
     }
   }
 
-  return REG_FAILURE;
+  /* So long as soap call did return something we return success - even
+     if we didn't actually get a valid address.  This consistent with
+     polling a GS for valid address - success is indicated by non-zero
+     port no. */
+  return REG_SUCCESS;
 }
 
 /*----------------------------------------------------------------------*/

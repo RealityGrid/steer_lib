@@ -53,6 +53,7 @@
 #include "ReG_Steer_Common.h"
 #include "ReG_Steer_Appside_internal.h"
 #include "ReG_Steer_Appside_Globus.h"
+#include "ReG_Steer_Appside_File.h"
 #include <string.h>
 
 #ifndef REG_DEBUG
@@ -408,6 +409,8 @@ int Globus_create_connector(socket_io_type * const socket_info)
   /* Register connector using port and hostname parameter
    * - will connect and call callback function when port listens
    */
+
+  if (socket_info->connector_port == 0) return REG_FAILURE;
 
   result = globus_io_tcp_register_connect(socket_info->connector_hostname,
 					  socket_info->connector_port,
@@ -1111,7 +1114,8 @@ int Write_globus_non_blocking(const globus_io_handle_t *handle,
 
   if(bytes_left > 0){
 #if REG_DEBUG
-    fprintf(stderr, "Write_globus_non_blocking: timed-out trying to write data\n");
+    fprintf(stderr, "Write_globus_non_blocking: timed-out trying to "
+	    "write data\n");
 #endif
     return REG_TIMED_OUT;
   }
@@ -1126,16 +1130,7 @@ int Initialize_IOType_transport_globus(const int direction,
 				       const int index)
 {
   int          return_status = REG_SUCCESS;
-  int	       hostname_ok = 0;
-  int	       port_ok = 0;
-#if REG_SOAP_STEERING	  
   static int   call_count = 1;
-#else
-  char	      *pchar;
-  int	       len;
-#endif
-
-  IOTypes_table.io_def[index].is_enabled = FALSE;
 
   /* set up socket_info for callback */
   if (Globus_socket_info_init(&(IOTypes_table.io_def[index].socket_info)) 
@@ -1158,7 +1153,6 @@ int Initialize_IOType_transport_globus(const int direction,
       if (Globus_create_listener(&(IOTypes_table.io_def[index].socket_info)) 
 	  != REG_SUCCESS) {
 
-	IOTypes_table.io_def[index].is_enabled = FALSE;
 #if REG_DEBUG
 	fprintf(stderr, "Initialize_IOType_transport_globus: failed to "
 		"create listener "
@@ -1168,7 +1162,6 @@ int Initialize_IOType_transport_globus(const int direction,
       }
       else{
 	  
-	IOTypes_table.io_def[index].is_enabled = TRUE;
 #if REG_DEBUG
 	fprintf(stderr, "Initialize_IOType_transport_globus: Created "
 		"listener on port %d, "
@@ -1180,58 +1173,40 @@ int Initialize_IOType_transport_globus(const int direction,
     }
     else if (direction == REG_IO_IN){
 
-      /* register connector against port */
+      IOTypes_table.io_def[index].input_index = call_count;
+      call_count++;
 
 #if REG_SOAP_STEERING	  
 
       /* Go out into the world of grid services... */
-      if( Get_data_source_address_soap(call_count, 
+      return_status = Get_data_source_address_soap(IOTypes_table.io_def[index].input_index, 
 		   IOTypes_table.io_def[index].socket_info.connector_hostname,
-	           &(IOTypes_table.io_def[index].socket_info.connector_port)) 
-	  == REG_SUCCESS){
-
-	call_count++;
-	hostname_ok = 1;
-	port_ok = 1;
-      }
+	           &(IOTypes_table.io_def[index].socket_info.connector_port));
 #else
       /* get hostname and port from environment variables */
-
-      pchar = getenv("REG_CONNECTOR_HOSTNAME");
-      if (pchar) {
-	len = strlen(pchar);
-	if (len < REG_MAX_STRING_LENGTH) {
-	  sprintf(IOTypes_table.io_def[index].socket_info.connector_hostname,
-		  pchar);
-	  hostname_ok = 1;
-	}
-	else{
-	  fprintf(stderr, "Initialize_IOType_transport_globus: content of "
-		  "REG_CONNECTOR_HOSTNAME exceeds max. string length of "
-		  "%d chars\n", REG_MAX_STRING_LENGTH);
-	}
-      }
-
-      pchar = getenv("REG_CONNECTOR_PORT");
-      if (pchar) {
-	IOTypes_table.io_def[index].socket_info.connector_port = atoi(pchar);
-	port_ok = 1;
-      }
+      return_status = Get_data_source_address_file(IOTypes_table.io_def[index].input_index, 
+		   IOTypes_table.io_def[index].socket_info.connector_hostname,
+		   &(IOTypes_table.io_def[index].socket_info.connector_port));
 
 #endif /* !REG_SOAP_STEERING */
-	  
-      if (port_ok && hostname_ok) {
+
+      /* register connector against port */
+  
+      if (return_status == REG_SUCCESS) {
 	
 	/* Don't create socket yet if this flag is set */
 	if (IOTypes_table.enable_on_registration == FALSE) {
-	  IOTypes_table.io_def[index].is_enabled = FALSE;
+	  return REG_SUCCESS;
+	}
+
+	/* Check that we did get a valid port to connect to */
+	if (IOTypes_table.io_def[index].socket_info.connector_port == 0){
 	  return REG_SUCCESS;
 	}
 
 	if (Globus_create_connector(&(IOTypes_table.io_def[index].socket_info)) 
 	    != REG_SUCCESS) {
 
-	  IOTypes_table.io_def[index].is_enabled = FALSE;
 #if REG_DEBUG
 	  fprintf(stderr, "Initialize_IOType_transport_globus: failed to "
 		  "register connector for IOType\n");
@@ -1240,7 +1215,6 @@ int Initialize_IOType_transport_globus(const int direction,
 	}
 	else{
 
-	  IOTypes_table.io_def[index].is_enabled = TRUE;
 #if REG_DEBUG
 	  fprintf(stderr, "Initialize_IOType_transport_globus: registered"
 		  " connector on port %d, hostname = %s, index %d, "
@@ -1338,6 +1312,32 @@ int Enable_IOType_globus(int index)
   }
   else if (IOTypes_table.io_def[index].direction == REG_IO_IN){
 
+    if(IOTypes_table.io_def[index].socket_info.connector_port == 0){
+
+#if REG_SOAP_STEERING	  
+
+      /* Go out into the world of grid services... */
+      if( Get_data_source_address_soap(IOTypes_table.io_def[index].input_index, 
+		   IOTypes_table.io_def[index].socket_info.connector_hostname,
+	           &(IOTypes_table.io_def[index].socket_info.connector_port)) 
+	  != REG_SUCCESS  || 
+	  IOTypes_table.io_def[index].socket_info.connector_port == 0){
+
+	return REG_FAILURE;
+      }
+#else
+      /* Attempt to get port and hostname from env. variables */
+      if( Get_data_source_address_file(IOTypes_table.io_def[index].input_index, 
+		   IOTypes_table.io_def[index].socket_info.connector_hostname,
+	           &(IOTypes_table.io_def[index].socket_info.connector_port)) 
+	  != REG_SUCCESS || 
+	  IOTypes_table.io_def[index].socket_info.connector_port == 0){
+
+	return REG_FAILURE;
+      }      
+#endif
+    }
+
     if (Globus_create_connector(&(IOTypes_table.io_def[index].socket_info)) 
 	!= REG_SUCCESS) {
 #if REG_DEBUG
@@ -1361,10 +1361,45 @@ int Consume_start_data_check_globus(const int index)
   globus_result_t result;
   globus_object_t *error;
   int             attempt_reconnect;
+  int             status;
+
+  fprintf(stderr,"ARPDBG - entered Consume_start_data_check_globus\n");
 
   /* if not connected attempt to connect now */
   if (IOTypes_table.io_def[index].socket_info.comms_status 
       != REG_COMMS_STATUS_CONNECTED){
+
+    fprintf(stderr,"ARPDBG - Consume_start_data_check_globus not connected\n");
+
+    /* Check to see that we know where we're supposed to be connecting to */
+    if(IOTypes_table.io_def[index].socket_info.connector_port == 0){
+#if REG_SOAP_STEERING	  
+
+      fprintf(stderr,"ARPDBG - Consume_start_data_check_globus calling Get_data_source_address_soap\n");
+      /* Go out into the world of grid services... */
+      status = Get_data_source_address_soap(IOTypes_table.io_def[index].input_index, 
+		   IOTypes_table.io_def[index].socket_info.connector_hostname,
+		   &(IOTypes_table.io_def[index].socket_info.connector_port)) ;
+
+      if(status != REG_SUCCESS || 
+	 IOTypes_table.io_def[index].socket_info.connector_port == 0){
+
+	return REG_FAILURE;
+      }
+#else
+      /* Attempt to get port and hostname from env. variables */
+      status = Get_data_source_address_file(IOTypes_table.io_def[index].input_index, 
+		   IOTypes_table.io_def[index].socket_info.connector_hostname,
+		   &(IOTypes_table.io_def[index].socket_info.connector_port));
+
+      if(status != REG_SUCCESS || 
+	 IOTypes_table.io_def[index].socket_info.connector_port == 0){
+	
+	return REG_FAILURE;
+      }      
+#endif
+    }
+
     Globus_attempt_connector_connect(&(IOTypes_table.io_def[index].socket_info));
   }
 
@@ -1637,28 +1672,7 @@ int Emit_header_globus(const int index)
 
 /*---------------------------------------------------*/
 
-int Emit_footer_globus(const int index,
- 		       const char * const buffer)
-{
-#if REG_DEBUG
-  fprintf(stderr, "Emit_footer_globus: Sending >>%s<<\n", buffer);
-#endif
-
-  if(Write_globus(&(IOTypes_table.io_def[index].socket_info.conn_handle),
-		  strlen(buffer)+1,
-		  (void *)buffer) != REG_SUCCESS){
-
-    fprintf(stderr, "Emit_footer_globus: call to globus_io_write failed\n");
-    return REG_FAILURE;
-  }
-
-  return REG_SUCCESS;
-}
-
-/*---------------------------------------------------*/
-
 int Emit_data_globus(const int		index,
-		     const int		datatype,
 		     const size_t	num_bytes_to_send,
 		     void		*pData)
 {
