@@ -82,6 +82,28 @@ Steer_log_type Steer_log;
 
 Param_table_type Params_table;
 
+/* Whether steering is enabled (set by user) */
+static int ReG_SteeringEnabled = FALSE;
+/* Whether the set of registered params has changed */
+static int ReG_ParamsChanged   = FALSE;
+/* Whether the set of registered IO types has changed */
+static int ReG_IOTypesChanged  = FALSE;
+/* Whether the set of registered Chk types has changed */
+static int ReG_ChkTypesChanged  = FALSE;
+/* Whether app. is currently being steered */
+static int ReG_SteeringActive  = FALSE;
+/* Whether steering library has been initialised */
+static int ReG_SteeringInit    = FALSE;
+/* Absolute path of directory we are executing in */
+char ReG_CurrentDir[REG_MAX_STRING_LENGTH];
+/* Hostname of machine we are executing on */
+char ReG_Hostname[REG_MAX_STRING_LENGTH];
+
+/* Global variable used to store next valid handle value for both
+   IOTypes and ChkTypes - these MUST have unique handles because
+   they are used as command IDs */
+static int Next_IO_Chk_handle = REG_MIN_IOTYPE_HANDLE;
+
 /*----------------------------------------------------------------*/
 
 void Steering_enable(const int EnableSteer)
@@ -166,7 +188,6 @@ int Steering_initialize(int  NumSupportedCmds,
 
   /* Get the hostname of this machine */
   strcpy(ReG_Hostname, Get_fully_qualified_hostname());
-
 
   /* Allocate memory and initialise tables of IO types and 
      parameters */

@@ -52,8 +52,14 @@ extern Param_table_type Params_table;
 
 extern Chk_log_type Chk_log;
 
+/* Absolute path of directory we are executing in */
+extern char ReG_CurrentDir[REG_MAX_STRING_LENGTH];
+
+/* Hostname of machine we are executing on */
+extern char ReG_Hostname[REG_MAX_STRING_LENGTH];
+
 /* Soap-specific declarations */
-struct soap soap;
+static struct soap soap;
 
 /* Names of the SGS' service data elements - MUST match those
    used in SGS.pm (as launched by container) */
@@ -62,6 +68,9 @@ char *PARAM_DEFS_SDE     = "SGS:Param_defs";
 char *IOTYPE_DEFS_SDE    = "SGS:IOType_defs";
 char *CHKTYPE_DEFS_SDE   = "SGS:ChkType_defs";
 char *STEER_STATUS_SDE   = "SGS:Steerer_status";
+char *MACHINE_ADDRESS_SDE= "SGS:Machine_address";
+char *WORKING_DIR_SDE    = "SGS:Working_directory";
+
 /*-------------------------------------------------------------------------*/
 
 int Initialize_steering_connection_soap(int  NumSupportedCmds,
@@ -145,6 +154,29 @@ int Initialize_steering_connection_soap(int  NumSupportedCmds,
   snprintf(query_buf, REG_MAX_MSG_SIZE, 
 	   "<ogsi:setByServiceDataNames><%s>%s</%s></ogsi:setByServiceDataNames>", 
 	  SUPPORTED_CMDS_SDE, pchar, SUPPORTED_CMDS_SDE);
+
+  if (soap_call_tns__setServiceData(&soap, 
+				    Steerer_connection.SGS_address, "", 
+				    query_buf, 
+				    &setSDE_response)){
+
+    fprintf(stderr, "Initialize_steering_connection_soap: failure\n");
+    soap_print_fault(&soap, stderr);
+    return REG_FAILURE;
+  }
+
+#if REG_DEBUG
+  fprintf(stderr, "Initialize_steering_connection_soap: setServiceData "
+	  "returned: %s\n", setSDE_response._result);
+#endif
+
+  /* Publish our location: machine and working directory - these
+     are set in Steering_initialize prior to calling us */
+  snprintf(query_buf, REG_MAX_MSG_SIZE, 
+	   "<ogsi:setByServiceDataNames><%s>%s</%s>"
+	   "<%s>%s</%s></ogsi:setByServiceDataNames>", 
+	   WORKING_DIR_SDE, ReG_CurrentDir, WORKING_DIR_SDE,
+	   MACHINE_ADDRESS_SDE, ReG_Hostname, MACHINE_ADDRESS_SDE);
 
   if (soap_call_tns__setServiceData(&soap, 
 				    Steerer_connection.SGS_address, "", 
