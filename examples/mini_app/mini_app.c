@@ -82,6 +82,7 @@ int main(){
   int   opacity_step_stop  = 130;
   int   output_freq        = 5;
   float temp               = 55.6;
+  float str_float          = 0.9;
   char  my_string[REG_MAX_STRING_LENGTH];
 
   int   finished           = FALSE;
@@ -241,7 +242,14 @@ int main(){
   param_min[6]    = "0.01";
   param_max[6]    = "10.0";
 
-   status = Register_params(7,
+  param_labels[7] = "str_float";
+  param_ptrs[7]   = (void *)(&str_float);
+  param_types[7]  = REG_FLOAT;
+  param_strbl[7]  = TRUE;
+  param_min[7]    = "-10.0";
+  param_max[7]    = "10.0";
+
+   status = Register_params(8,
 			    param_labels,
 			    param_strbl,
 			    param_ptrs,
@@ -285,6 +293,7 @@ int main(){
       printf("temp               = %f\n", temp);
       printf("my_string          = %s\n", my_string);
       printf("output_freq        = %d\n", output_freq);
+      printf("str_float          = %f\n", str_float);
 
       if(num_recvd_cmds > 0){
   

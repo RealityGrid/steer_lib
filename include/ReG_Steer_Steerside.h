@@ -62,8 +62,8 @@ typedef struct {
 
 } Output_log_struct;
 
-/* Possible data structure used to return details of steerable/monitored
-   parameters ARPDBG */
+/* Data structure used to return details of steerable/monitored
+   parameters */
 
 typedef struct {
 

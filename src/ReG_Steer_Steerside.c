@@ -1488,6 +1488,15 @@ int Emit_control(int    SimHandle,
     }
   }
 
+  /* No parameters or commands to send so we're done */
+  if(count==0 && num_to_emit==0){
+
+#if DEBUG
+    fprintf(stderr, "Emit_control: nothing to send\n", buf);
+#endif
+    return REG_SUCCESS;
+  }
+
   pbuf += sprintf(pbuf, "</Steer_control>\n");
   Write_xml_footer(&pbuf);
 
@@ -1719,6 +1728,8 @@ int Dump_sim_table()
  	  fprintf(fp, "type   = %d\n", paramptr->type);
  	  fprintf(fp, "handle = %d\n", paramptr->handle);
  	  fprintf(fp, "value  = %s\n\n", paramptr->value);
+ 	  fprintf(fp, "min    = %s\n\n", paramptr->min_val);
+ 	  fprintf(fp, "max    = %s\n\n", paramptr->max_val);
   
  	  paramptr++;
         }
@@ -1933,6 +1944,10 @@ int Set_param_values(int    sim_handle,
   int index;
   int i;
 
+  int    ivalue, imin, imax;
+  float  fvalue, fmin, fmax;
+  double dvalue, dmin, dmax;
+
   /* Set the 'values' (held as strings) of the listed params */
 
   isim = Sim_index_from_handle(sim_handle);
@@ -1949,6 +1964,71 @@ int Set_param_values(int    sim_handle,
       /* Only set the value if parameter is steerable */
 
       if(Sim_table.sim[isim].Params_table.param[index].steerable){
+
+	fprintf(stderr, "ARPDBG: val = %s, min = %s, max = %s\n",
+		vals[i],
+		Sim_table.sim[isim].Params_table.param[index].min_val,
+		Sim_table.sim[isim].Params_table.param[index].max_val);
+
+	/* Enforce limits specified when parameter was registered */
+	switch(Sim_table.sim[isim].Params_table.param[index].type){
+
+	case REG_INT:
+	  sscanf(vals[i], "%d", &ivalue);
+	  sscanf(Sim_table.sim[isim].Params_table.param[index].min_val, "%d",
+		 &imin);
+	  sscanf(Sim_table.sim[isim].Params_table.param[index].max_val, "%d",
+		 &imax);
+
+	  if(ivalue > imax || ivalue < imin){
+	    fprintf(stderr, "Set_param_values: new value (%d) of %s is outside\n"
+		    "permitted range (%d,%d) - skipping...\n", 
+		    ivalue, Sim_table.sim[isim].Params_table.param[index].label, 
+		    imin, imax);
+	    continue;
+	  }
+
+	case REG_FLOAT:
+	  sscanf(vals[i], "%f", &fvalue);
+	  sscanf(Sim_table.sim[isim].Params_table.param[index].min_val, "%f",
+		 &fmin);
+	  sscanf(Sim_table.sim[isim].Params_table.param[index].max_val, "%f",
+		 &fmax);
+
+	  if(fvalue > fmax || fvalue < fmin){
+	    fprintf(stderr, "Set_param_values: new value (%f) of %s is outside\n"
+		    "permitted range (%f,%f) - skipping...\n", 
+		    fvalue, Sim_table.sim[isim].Params_table.param[index].label, 
+		    fmin, fmax);
+	    continue;
+	  }
+	  break;
+
+	case REG_DBL:
+	  sscanf(vals[i], "%lf", &dvalue);
+	  sscanf(Sim_table.sim[isim].Params_table.param[index].min_val, "%lf",
+		 &dmin);
+	  sscanf(Sim_table.sim[isim].Params_table.param[index].max_val, "%lf",
+		 &dmax);
+
+	  if(dvalue > dmax || dvalue < dmin){
+	    fprintf(stderr, "Set_param_values: new value (%f) of %s is outside\n"
+		    "permitted range (%f,%f) - skipping...\n", 
+		    (float)dvalue, 
+		    Sim_table.sim[isim].Params_table.param[index].label, 
+		    (float)dmin, (float)dmax);
+	    continue;
+	  }
+	  break;
+
+	case REG_CHAR:
+	  /* Limits not applicable to character strings */
+	  break;
+
+	default:
+	  break;
+
+	}
 
 	sprintf(Sim_table.sim[isim].Params_table.param[index].value,
 		"%s", vals[i]);
