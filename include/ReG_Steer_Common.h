@@ -1,40 +1,36 @@
 /*----------------------------------------------------------------------------
-    Header file containing prototypes and datatype definitions for
-    entities that are common to both the application- and steerer-side
-    of the RealityGrid steering library.
+  Header file containing prototypes and datatype definitions for
+  entities that are common to both the application- and steerer-side
+  of the RealityGrid steering library.
 
-    (C)Copyright 2002 The University of Manchester, United Kingdom,
-    all rights reserved.
+  (C) Copyright 2002, 2004, University of Manchester, United Kingdom,
+  all rights reserved.
 
-    This software is produced by the Supercomputing, Visualization &
-    e-Science Group, Manchester Computing, the Victoria University of
-    Manchester as part of the RealityGrid project.
+  This software is produced by the Supercomputing, Visualization and
+  e-Science Group, Manchester Computing, University of Manchester
+  as part of the RealityGrid project (http://www.realitygrid.org),
+  funded by the EPSRC under grants GR/R67699/01 and GR/R67699/02.
 
-    This software has been tested with care but is not guaranteed for
-    any particular purpose. Neither the copyright holder, nor the
-    University of Manchester offer any warranties or representations,
-    nor do they accept any liabilities with respect to this software.
+  LICENCE TERMS
 
-    This software must not be used for commercial gain without the
-    written permission of the authors.
-    
-    This software must not be redistributed without the written
-    permission of the authors.
+  Redistribution and use in source and binary forms, with or without
+  modification, are permitted provided that the following conditions
+  are met:
+  1. Redistributions of source code must retain the above copyright
+     notice, this list of conditions and the following disclaimer.
+  2. Redistributions in binary form must reproduce the above copyright
+     notice, this list of conditions and the following disclaimer in the
+     documentation and/or other materials provided with the distribution.
 
-    Permission is granted to modify this software, provided any
-    modifications are made freely available to the original authors.
- 
-    Supercomputing, Visualization & e-Science Group
-    Manchester Computing
-    University of Manchester
-    Manchester M13 9PL
-    
-    WWW:    http://www.sve.man.ac.uk  
-    email:  sve@man.ac.uk
-    Tel:    +44 161 275 6095
-    Fax:    +44 161 275 6800    
+  THIS MATERIAL IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+  A PARTICULAR PURPOSE ARE DISCLAIMED. THE ENTIRE RISK AS TO THE QUALITY
+  AND PERFORMANCE OF THE PROGRAM IS WITH YOU.  SHOULD THE PROGRAM PROVE
+  DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR
+  CORRECTION.
 
-    Initial version by: A Porter, 12/8/2002.
+  Authors........: Andrew Porter, Robert Haines
     
 ---------------------------------------------------------------------------*/
 
