@@ -39,7 +39,7 @@
 #ifndef __REG_STEER_SOCKETS_IO_H__
 #define __REG_STEER_SOCKETS_IO_H__
 
-#if REG_GLOBUS_SAMPLES
+#if REG_SOCKET_SAMPLES
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -48,8 +48,6 @@
 #include "ReG_Steer_types.h"
 
 #define REG_SOCKETS_ERROR -1
-/* a default port if no others available */
-#define REG_SOCKETS_PORT  50000
 
 /* structure used for socket information */
 typedef struct
@@ -74,32 +72,67 @@ typedef struct
 
 } socket_io_type;
 
+/*-------- Function prototypes --------*/
+
+int Initialize_IOType_transport_sockets(const int direction, const int index);
+
+void Finalize_IOType_transport_sockets();
+
+int Enable_IOType_sockets(const int index);
+
+int Disable_IOType_sockets(const int index);
+
+int Get_communication_status_sockets(const int index);
+
+int Write_sockets(const int index, const int size, void* buffer);
+
+int Write_non_blocking_sockets(const int index, const int size, void* buffer);
+
+int Emit_header_sockets(const int index);
+
+int Emit_data_sockets(const int index, const size_t num_bytes_to_send, void* pData);
+
+int Consume_msg_header_sockets(int index, int* datatype, int* count, int* num_bytes, int* is_fortran_array);
+
+int Consume_start_data_check_sockets(const int index);
+
+int Consume_data_read_sockets(const int index, const int datatype, const int num_bytes_to_read, void *pData);
+
+/*************************************
+ * Internal Methods.
+ * Should NOT be called from outside
+ * of ReG_Steer_Appside_Sockets.h
+ ************************************/
+
 /* Initialise socket_io_type structure */
-extern int Sockets_socket_info_init(const int index);
+int socket_info_init(const int index);
 
 /* Clean up members of socket_io_type structure */
-extern void Sockets_socket_info_cleanup(const int index);
+void socket_info_cleanup(const int index);
 
-/* Create a listener socket (server) */
-extern int Sockets_create_listener(const int index);
+int create_listener(const int index);
 
-/* Create a connector socket (client) */
-extern int Sockets_create_connector(const int index);
+int create_connector(const int index);
 
-/* Clean up listener socket */
-extern void Sockets_cleanup_listener_connection(const int index);
+int connect_connector(const int index);
 
-/* Clean up connector socket */
-extern void Sockets_cleanup_connector_connection(const int index);
+void cleanup_listener_connection(const int index);
 
-/* Close the listener handle */
-void Sockets_close_listener_handle(const int index);
+void cleanup_connector_connection(const int index);
 
-/* Close the connector handle */
-void Sockets_close_connector_handle(const int index);
+void close_listener_handle(const int index);
 
-/* Initialize the IOType transport for sockets */
-extern int Sockets_initialize_IOType_transport(const int direction, const int index);
+void close_connector_handle(const int index);
 
-#endif /* REG_GLOBUS_SAMPLES */
+void attempt_listener_connect(const int index);
+
+void retry_accept_connect(const int index);
+
+void attempt_connector_connect(const int index);
+
+void retry_connect(const int index);
+
+void poll(const int index);
+
+#endif /* REG_SOCKET_SAMPLES */
 #endif /* __REG_STEER_SOCKETS_IO_H__ */
