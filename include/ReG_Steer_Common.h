@@ -57,6 +57,7 @@ typedef int		socket_type_steering;
 typedef struct {
 
   int   key;
+  int   seq_num_value;
   int   chk_handle;
   char  chk_tag[REG_MAX_STRING_LENGTH];
   

@@ -108,6 +108,7 @@ static struct msg_struct{
   struct control_struct   *control;
   struct supp_cmd_struct  *supp_cmd;
   struct io_def_struct    *io_def;
+  struct io_def_struct    *chk_def;
 } msg;
 
 /*-----------------------------------------------------------------*/
@@ -126,6 +127,10 @@ int parseParam(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 	       struct param_struct *param);
 int parseCmd(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 	     struct cmd_struct *cmd);
+int parseChkTypeDef(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
+		    struct io_def_struct *chk_def);
+int parseIOTypeDef(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
+		   struct io_def_struct *io_def);
 
 struct msg_struct       *New_msg_struct();
 struct status_struct    *New_status_struct();

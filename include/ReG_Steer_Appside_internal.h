@@ -85,6 +85,37 @@ static struct {
 IOdef_table_type IOTypes_table;
 
 
+/* Table for registered checkpoint types */
+
+IOdef_table_type ChkTypes_table;
+
+/* Log of checkpoints taken */
+
+Chk_log_type Chk_log;
+
+/* Param_table_type is declared in ReG_Steer_Common.h since it is 
+   used in both the steerer-side and app-side libraries */
+
+Param_table_type Params_table;
+
+/* Whether steering is enabled (set by user) */
+static int ReG_SteeringEnabled = FALSE;
+/* Whether the set of registered params has changed */
+static int ReG_ParamsChanged   = FALSE;
+/* Whether the set of registered IO types has changed */
+static int ReG_IOTypesChanged  = FALSE;
+/* Whether the set of registered Chk types has changed */
+static int ReG_ChkTypesChanged  = FALSE;
+/* Whether app. is currently being steered */
+static int ReG_SteeringActive  = FALSE;
+/* Whether steering library has been initialised */
+static int ReG_SteeringInit    = FALSE;
+
+/* Global variable used to store next valid handle value for both
+   IOTypes and ChkTypes - these MUST have unique handles because
+   they are used as command IDs */
+static int Next_IO_Chk_handle = REG_MIN_IOTYPE_HANDLE;
+
 /*--------- Prototypes of internal library functions -------------*/
 
 /* Emit all of the parameters that have previously been registered 
@@ -124,6 +155,16 @@ static int Emit_status(int   SeqNum,
 		       int  *ParamHandles,
 		       int   NumCommands,
 		       int  *Commands);
+
+/* Generate steering commands independently of the steerer. e.g. this
+   implements the automatic emission/consumption of those IOTypes and
+   ChkTypes with a non-zero auto. emit/consume frequency. *posn is 
+   the point at which to start adding commands and associated parameters
+   to the SteerCommands and SteerCmdParams arrays. */
+static int Auto_generate_steer_cmds(int    SeqNum,
+				    int   *posn, 
+				    int   *SteerCommands, 
+				    char **SteerCmdParams);
 
 /* Generate a filename (for a status message) from supplied root and 
    internally-generated index */
