@@ -351,11 +351,8 @@ void Set_supp_cmd_field_type(void *ptr, const char* name)
   if(strcmp(name, "Cmd_id") == 0){
     supp_cmds_struct->field_type = CMD_ID;
   }
-  else if(strcmp(name, "Cmd_data_int") == 0){
-    supp_cmds_struct->field_type = CMD_DATA_INT;
-  }
-  else if(strcmp(name, "Cmd_data_flt") == 0){
-    supp_cmds_struct->field_type = CMD_DATA_FLT;
+  else if(strcmp(name, "Cmd_param") == 0){
+    supp_cmds_struct->field_type = CMD_PARAM;
   }
   else{
 #if DEBUG
@@ -467,11 +464,25 @@ void endElement(void *userData, const char *name)
 
     if(supp_cmds_struct->field_type != CMD_NOTSET){
 
-      /* Have reached end of a command element */
-      supp_cmds_struct->field_type = CMD_NOTSET;
+      if(supp_cmds_struct->field_type == CMD_PARAM){
 
-      /* Increment counter & allocate more memory if required */
-      Increment_cmd_registered(supp_cmds_struct->table);
+	if(supp_cmds_struct->param_struct->field_type != PARAM_NOTSET){
+
+	  /* End of a parameter sub-element */
+	  supp_cmds_struct->param_struct->field_type = PARAM_NOTSET;
+	}
+	else{
+
+	  /* Have reached end of a parameter element */
+	  Increment_param_registered(supp_cmds_struct->param_struct->table);
+	  supp_cmds_struct->field_type = CMD_NOTSET;
+	}
+      }
+      else{
+
+	/* Have reached end of a command sub-element */
+	supp_cmds_struct->field_type = CMD_NOTSET;
+      }
     }
     else{
 
@@ -481,6 +492,10 @@ void endElement(void *userData, const char *name)
       if( Get_message_type(name) != MSG_NOTSET ){
 
         data->msg_type = MSG_NOTSET;
+      }
+      else{
+	/* Increment counter & allocate more memory if required */
+	Increment_cmd_registered(supp_cmds_struct->table);
       }
     }
     break;
@@ -841,12 +856,8 @@ void Store_supp_cmds_field_value(void *ptr, char *buf)
 #endif
     break;
 
-  case CMD_DATA_INT:
-    sscanf(buf, "%d", &(cmd_struct->table->cmd[index].data_int));
-    break;
-
-  case CMD_DATA_FLT:
-    sscanf(buf, "%f", &(cmd_struct->table->cmd[index].data_flt));
+  case CMD_PARAM:
+    Store_param_field_value((void*)cmd_struct->param_struct, buf);
     break;
 
   default:
