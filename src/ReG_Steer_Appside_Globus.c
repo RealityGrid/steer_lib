@@ -480,6 +480,7 @@ int Initialize_IOType_transport_globus(const int direction,
   int	       port_ok = 0;
   char	      *pchar;
   int	       len;
+  static int   call_count = 0;
 
     /* set up socket_info for callback */
     if (Globus_socket_info_init(&(IOTypes_table.io_def[index].socket_info)) 
@@ -521,8 +522,17 @@ int Initialize_IOType_transport_globus(const int direction,
       else if (direction == REG_IO_IN){
 
 	/* register connector against port */
+
+#if REG_STEERING_SOAP	  
+
+	/* Go out into the world of grid services... */
+	Get_data_source_address_soap(call_count, 
+		       IOTypes_table.io_def[index].socket_info.connector_hostname,
+		       &IOTypes_table.io_def[index].socket_info.connector_port);
+	call_count++;
+#else
 	/* get hostname and port from environment variables */
-	  
+
 	pchar = getenv("REG_CONNECTOR_HOSTNAME");
 	if (pchar) {
 	  len = strlen(pchar);
@@ -531,13 +541,20 @@ int Initialize_IOType_transport_globus(const int direction,
 		    pchar);
 	    hostname_ok = 1;
 	  }
+	  else{
+	    fprintf(stderr, "Initialize_IOType_transport_globus: content of "
+		    "REG_CONNECTOR_HOSTNAME exceeds max. string length of "
+		    "%d chars\n", REG_MAX_STRING_LENGTH);
+	  }
 	}
-	/* SMR XXX add error handling */
+
 	pchar = getenv("REG_CONNECTOR_PORT");
 	if (pchar) {
 	  IOTypes_table.io_def[index].socket_info.connector_port = atoi(pchar);
 	  port_ok = 1;
 	}
+
+#endif /* !REG_STEERING_SOAP */
 	  
 	if (port_ok && hostname_ok) {
 	    

@@ -306,3 +306,45 @@ int Finalize_steering_connection_soap()
 
   return REG_FAILURE;
 }
+
+/*-------------------------------------------------------------------------*/
+
+int Get_data_source_address_soap(int   index, 
+				 char *hostname,
+				 int  *port)
+{
+  char  *pchar;
+  char   index_string[10];
+  struct tns__GetNthDataSourceResponse getNthDataSource_response;
+
+  sprintf(index_string, "%d", index);
+  getNthDataSource_response._result = NULL;
+  if(soap_call_tns__GetNthDataSource(&soap, Steerer_connection.SGS_address, 
+				     "", index_string,  
+				     &getNthDataSource_response)){
+    fprintf(stderr, "Get_data_source_address_soap: soap call failed:\n");
+    soap_print_fault(&soap, stderr);
+    return REG_FAILURE;
+  }
+
+#if DEBUG
+  fprintf(stderr, "Get_data_source_address_soap: GetNthDataSource (for n=%d)\n"
+	  "returned: >>%s<<\n", index, getNthDataSource_response._result);
+#endif
+
+  if(getNthDataSource_response._result && 
+     !strstr(getNthDataSource_response._result, "SGS_ERROR")){
+
+    if(pchar = strtok(getNthDataSource_response._result, ":")){
+
+      strcpy(hostname, pchar);
+      if(pchar = strtok(NULL, ":")){
+
+	*port = atoi(pchar);
+	return REG_SUCCESS;
+      }
+    }
+  }
+
+  return REG_FAILURE;
+}
