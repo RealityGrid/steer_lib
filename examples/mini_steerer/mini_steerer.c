@@ -71,7 +71,6 @@ int main(){
   int    io_handles[REG_INITIAL_NUM_IOTYPES];
   char  *io_labels[REG_INITIAL_NUM_IOTYPES];
   int    io_types[REG_INITIAL_NUM_IOTYPES];
-  int    io_auto[REG_INITIAL_NUM_IOTYPES];
   int    io_freqs[REG_INITIAL_NUM_IOTYPES];
   int    new_freq;
 
@@ -249,7 +248,6 @@ int main(){
 		    io_handles,
 		    io_labels,
 		    io_types,
-		    io_auto,
 		    io_freqs);
 
 	/* Another cludge - should ask user which IOtype they want to
@@ -325,36 +323,32 @@ int main(){
 		    io_handles,
 		    io_labels,
 		    io_types,
-		    io_auto,
 		    io_freqs);
 
 	for(i=0; i<num_types; i++){
 
 	  /* Just edit the first one we find... */
-	  if(io_auto[i] == TRUE){
-	    
-	    fprintf(stderr, 
-		    "Freq. of iotype %s = %d\n", io_labels[i], io_freqs[i]);
-	    fprintf(stderr, "Enter new value: ");
+	  fprintf(stderr, 
+	  	    "Freq. of iotype %s = %d\n", io_labels[i], io_freqs[i]);
+	  fprintf(stderr, "Enter new value: ");
 
-	    while(TRUE){
-	      scanf("%s", user_str);
-	      if(user_str[0] != '\n' && user_str[0] != ' ')break;
-	    }
-
-	    sscanf(user_str, "%d", &new_freq);
-
-	    fprintf(stderr, "\nSetting frequency to %d\n", new_freq);
-
-	    Set_iotype_freq(sim_handle, 1, &(io_handles[i]), &new_freq);
-
-	    Emit_control(sim_handle,
-			 0,
-			 NULL,
-			 NULL);
-
-	    break;
+	  while(TRUE){
+	    scanf("%s", user_str);
+	    if(user_str[0] != '\n' && user_str[0] != ' ')break;
 	  }
+
+	  sscanf(user_str, "%d", &new_freq);
+
+	  fprintf(stderr, "\nSetting frequency to %d\n", new_freq);
+
+	  Set_iotype_freq(sim_handle, 1, &(io_handles[i]), &new_freq);
+
+	  Emit_control(sim_handle,
+	  		 0,
+	  		 NULL,
+	  		 NULL);
+
+	  break;
 	}
       }
       break;

@@ -96,3 +96,13 @@ static int Next_free_iodef_index(IOdef_table_type *table);
    with handle cmd_id - returns REG_SUCCESS if it does and REG_FAILURE if
    it doesn't */
 static int Command_supported(int sim_id, int cmd_id);
+
+/* Attach to specified simulation using local file system */
+static int Sim_attach_local(Sim_entry_type *sim, char *SimID);
+
+/* Attach to specified simulation via (java) proxy.  SimID is GSH
+   of sim. to attach to. */
+static int Sim_attach_proxy(Sim_entry_type *sim, char *SimID);
+
+/* Attach to specified simulation using globus_io */
+static int Sim_attach_globus(Sim_entry_type *sim, char *SimID);

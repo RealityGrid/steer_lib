@@ -105,10 +105,7 @@ int Steering_initialize(int  NumSupportedCmds,
 			int *SupportedCmds)
 {
   int   i;
-  FILE *fp;
   char *pchar;
-  char  filename[REG_MAX_STRING_LENGTH];
-  char  buf[REG_MAX_MSG_SIZE];
 
   /* Actually defined in ReG_Steer_Common.c because both steerer
      and steered have a variable of this name */
@@ -143,49 +140,8 @@ int Steering_initialize(int  NumSupportedCmds,
     fprintf(stderr, "Steering_initialize: failed to get schema location\n");
     return REG_FAILURE;
   }
-
-  /* Set location of all comms files */
-
-  pchar = getenv("REG_STEER_DIRECTORY");
-
-  if(pchar){
-
-    /* Check that path ends in '/' - if not then add one */
-
-    i = strlen(pchar);
-    if( pchar[i-1] != '/' ){
-
-      sprintf(Steerer_connection.file_root, "%s/", pchar);
-    }
-    else{
-
-      strcpy(Steerer_connection.file_root, pchar);
-    }
-
-    if(Directory_valid(Steerer_connection.file_root) != REG_SUCCESS){
-
-      fprintf(stderr, "Steering_initialize: invalid dir for steering "
-	      "messages: %s\n", Steerer_connection.file_root);
-      return REG_FAILURE;
-    }
-    else{
-      fprintf(stderr, "Using following dir for steering messages: %s\n", 
-	     Steerer_connection.file_root);
-    }
-  }
-  else{
-    fprintf(stderr, "Steering_initialize: failed to get scratch directory\n");
-    return REG_FAILURE;
-  }
-
-  /* Delete any files that may have been written by a steering
-     component previously */
-
-  sprintf(filename, "%s%s", Steerer_connection.file_root, 
-	  STR_TO_APP_FILENAME);
-  Remove_files(filename);
   
-  /* Allocate memory and initialize tables of IO types and 
+  /* Allocate memory and initialise tables of IO types and 
      parameters */
 
   IOTypes_table.num_registered = 0;
@@ -207,7 +163,7 @@ int Steering_initialize(int  NumSupportedCmds,
     IOTypes_table.io_def[i].handle = REG_IODEF_HANDLE_NOTSET;
   }
 
-  /* Initialize table of open IO channels */
+  /* Initialise table of open IO channels */
 
   for(i=0; i<REG_INITIAL_NUM_IOTYPES; i++){
     IO_channel[i].buffer = NULL;
@@ -225,6 +181,7 @@ int Steering_initialize(int  NumSupportedCmds,
 
     fprintf(stderr, "Steering_initialize: failed to allocate memory "
 	    "for param table\n");
+    free(IOTypes_table.io_def);
     return REG_FAILURE;
   }
 
@@ -258,68 +215,14 @@ int Steering_initialize(int  NumSupportedCmds,
   sprintf(Params_table.param[i].value, "-1.0");
   Increment_param_registered(&Params_table);
 
-  /* Clean up any old files... */
+  /* Set-up/prepare for connection to steering client */
+  if(Initialize_steering_connection(NumSupportedCmds, 
+				    SupportedCmds) != REG_SUCCESS){
 
-  /* ...file indicating a steerer is connected (which it can't be since we've
-     only just begun) */ 
-  sprintf(filename, "%s%s", Steerer_connection.file_root, 
-	  STR_CONNECTED_FILENAME);
-  fp = fopen(filename, "w");
-  if(fp != NULL){
-
-    fclose(fp);
-    if(remove(filename)){
-
-      fprintf(stderr, "Steering_initialize: failed to remove %s\n",filename);
-    }
-#if DEBUG
-    else{
-      fprintf(stderr, "Steering_initialize: removed %s\n", filename);
-    }
-#endif
-  }
-
-  /* ...files containing messages from a steerer */
-  sprintf(filename, "%s%s", Steerer_connection.file_root, 
-	  STR_TO_APP_FILENAME);
-
-  Remove_files(filename);
-
-  /* Signal that component is available to be steered */
-
-  sprintf(filename, "%s%s", Steerer_connection.file_root, 
-	                    APP_STEERABLE_FILENAME);
-  fp = fopen(filename,"w");
-
-  if(fp == NULL){
-
-    fprintf(stderr, "Steering_initialize: failed to open %s\n",
-	    filename);
+    free(IOTypes_table.io_def);
+    free(Params_table.param);
     return REG_FAILURE;
   }
-
-#if DEBUG
-  fprintf(stderr, "Writing file: %s\n", filename);
-#endif
-
-  pchar = buf;
-
-  Write_xml_header(&pchar);
-
-  pchar += sprintf(pchar, "<Supported_commands>\n");
-
-  for(i=0; i<NumSupportedCmds; i++){
-    pchar += sprintf(pchar, "<Command>\n");
-    pchar += sprintf(pchar, "<Cmd_id>%d</Cmd_id>\n", SupportedCmds[i]);
-    pchar += sprintf(pchar, "</Command>\n");
-  }
-
-  pchar += sprintf(pchar, "</Supported_commands>\n");
-
-  Write_xml_footer(&pchar);
-
-  fprintf(fp, "%s", buf);
-  fclose(fp);
 
   /* Set up signal handler so can clean up if application 
      exits in a hurry */
@@ -332,7 +235,7 @@ int Steering_initialize(int  NumSupportedCmds,
   signal(SIGABRT, Steering_signal_handler);
   signal(SIGFPE, Steering_signal_handler);
 
-  /* Flag that library has successfully been initialised */
+  /* Flag that library has been successfully initialised */
 
   ReG_SteeringInit = TRUE;
 
@@ -344,9 +247,7 @@ int Steering_initialize(int  NumSupportedCmds,
 int Steering_finalize()
 {
   int  index;
-  int  max, max1;
   int  commands[1];
-  char sys_command[REG_MAX_STRING_LENGTH];
 
   /* Can only call this function if steering lib initialised */
 
@@ -399,41 +300,7 @@ int Steering_finalize()
   Params_table.max_entries = REG_INITIAL_NUM_IOTYPES;
 
   /* Signal that component no-longer steerable */
-  
-  max = strlen(APP_STEERABLE_FILENAME);
-  max1 = strlen(STR_CONNECTED_FILENAME);
-
-  if(max1 > max) max=max1;
-  
-  max += strlen(Steerer_connection.file_root);
-  if(max > REG_MAX_STRING_LENGTH ){
-
-    fprintf(stderr, "Steering_finalize: WARNING: truncating filename\n");
-  }
-
-  /* Delete the lock file that indicates we are steerable */
-  sprintf(sys_command, "%s%s", Steerer_connection.file_root,
-	  APP_STEERABLE_FILENAME);
-  if(remove(sys_command)){
-
-    fprintf(stderr, "Steering_finalize: failed to remove %s\n", sys_command);
-  }
-
-  /* Delete the lock file that indicates we are being steered */
-  if(ReG_SteeringActive){
-
-    sprintf(sys_command, "%s%s", Steerer_connection.file_root,
-	    STR_CONNECTED_FILENAME);
-    if(remove(sys_command)){
-
-      fprintf(stderr, "Steering_finalize: failed to remove %s\n", sys_command);
-    }
-  }
-
-  /* Delete any files we'd have consumed if we'd lived longer */
-  sprintf(sys_command, "%s%s", Steerer_connection.file_root, 
-	  STR_TO_APP_FILENAME);
-  Remove_files(sys_command);
+  Finalize_steering_connection();
 
   /* Reset state of library */
 
@@ -451,9 +318,8 @@ int Steering_finalize()
 
 int Register_IOTypes(int    NumTypes,
                      char* *IOLabel,
-		     int   *type,
-		     int   *support_auto_io,
-		     int  **IOFrequency,
+		     int   *direction,
+		     int   *IOFrequency,
                      int   *IOType)
 {
   int          i;
@@ -464,8 +330,9 @@ int Register_IOTypes(int    NumTypes,
   int          iofreq_strbl;
   int          iofreq_type;
   int          iparam;
+  void        *ptr_array[1];
   int          return_status = REG_SUCCESS;
-  char	       *pchar;
+  char	      *pchar;
   int	       len;
   int	       hostname_ok = 0;
   int	       port_ok = 0;
@@ -510,56 +377,45 @@ int Register_IOTypes(int    NumTypes,
 
     /* Whether input or output (sample data) or a checkpoint */
 
-    IOTypes_table.io_def[current].direction = type[i];
+    IOTypes_table.io_def[current].direction = direction[i];
 
-    /* Whether automatic emission/consumption is supported */
+    /* Set variables required for registration of associated io
+       frequency as a steerable parameter */
 
-    IOTypes_table.io_def[current].auto_io_support = support_auto_io[i];
+    iofreq_label = "IO_Frequency";
+    iofreq_strbl = TRUE;
+    iofreq_type  = REG_INT;
+    IOTypes_table.io_def[current].frequency = IOFrequency[i];
+    ptr_array[0] = (void *)&(IOTypes_table.io_def[current].frequency);
 
-    /* We only expect a frequency variable to register if the application
-       claims to support automatic emission/consumption */
-    if(support_auto_io[i] == TRUE){
+    Register_params(1,
+		    &iofreq_label,
+		    &iofreq_strbl,
+		    ptr_array,
+		    &iofreq_type);
 
-      /* Set variables required for registration of associated io
-	 frequency as a steerable parameter */
+    /* Store the handle given to this parameter - this line must
+       immediately succeed the call to Register_params */
 
-      iofreq_label = "IO_Frequency";
-      iofreq_strbl = TRUE;
-      iofreq_type  = REG_INT;
+    IOTypes_table.io_def[current].freq_param_handle = 
+	                               Params_table.next_handle - 1;
 
-      Register_params(1,
-		      &iofreq_label,
-		      &iofreq_strbl,
-		      (void **)(&(IOFrequency[i])),
-		      &iofreq_type);
+    /* Annotate the parameter table entry just created to flag that
+       it is a parameter that is internal to the steering library */
+    iparam = Param_index_from_handle(&Params_table, 
+			      IOTypes_table.io_def[current].freq_param_handle);
 
-      /* Store the handle given to this parameter - this line must
-	 immediately succeed the call to Register_params */
-
-      IOTypes_table.io_def[current].freq_param_handle = 
-	                                 Params_table.next_handle - 1;
-
-      /* Annotate the parameter table entry just created to flag that
-	 it is a parameter that is internal to the steering library */
-      iparam = Param_index_from_handle(&Params_table, 
-				       IOTypes_table.io_def[current].freq_param_handle);
-      if(iparam != REG_PARAM_HANDLE_NOTSET){
-	Params_table.param[iparam].is_internal = TRUE;
-      }
-      else{
-#if DEBUG
-	fprintf(stderr, "Register_IOTypes: failed to get handle for param\n");
-#endif
-	return_status = REG_FAILURE;
-      }
-      
+    if(iparam != REG_PARAM_HANDLE_NOTSET){
+      Params_table.param[iparam].is_internal = TRUE;
     }
     else{
 
-      IOTypes_table.io_def[current].freq_param_handle = 
-	                                 REG_PARAM_HANDLE_NOTSET;
+#if DEBUG
+      fprintf(stderr, "Register_IOTypes: failed to get handle for param\n");
+#endif
+      return_status = REG_FAILURE;
     }
-
+      
     /* deal with the globus sockets for sample data */
     IOTypes_table.io_def[current].buffer = NULL;
     IOTypes_table.io_def[current].port = 0;
@@ -571,14 +427,15 @@ int Register_IOTypes(int    NumTypes,
     /* set up monitor for callback */
     Globus_monitor_init(current);
 
-    if (type[i] == REG_IO_OUT)
+    if (direction[i] == REG_IO_OUT)
     {
       /* open socket and register callback function to listen for and
 	 accept connections */
       if (Globus_create_listener( &(IOTypes_table.io_def[current].port),
-				 &(IOTypes_table.io_def[current].index)) != REG_SUCCESS) {
+		     &(IOTypes_table.io_def[current].index)) != REG_SUCCESS) {
 #if DEBUG
-	fprintf(stderr, "Register_IOTypes: failed to create listener for IOType\n");
+	fprintf(stderr, "Register_IOTypes: failed to create listener "
+		"for IOType\n");
 #endif
 	return_status = REG_FAILURE;
       }
@@ -589,12 +446,10 @@ int Register_IOTypes(int    NumTypes,
 #endif
 	/* attempt to kick the callback function (in case accept callback) */
 	Globus_callback_poll(current);
-
       }
 	
-
     }
-    else if (type[i] == REG_IO_IN)
+    else if (direction[i] == REG_IO_IN)
     {
       /* register connector against port */
       /* get hostname and port from environment variables */
@@ -619,14 +474,17 @@ int Register_IOTypes(int    NumTypes,
 
 	if (Globus_create_connector(&(IOTypes_table.io_def[current].index)) != REG_SUCCESS) {
 #if DEBUG
-	fprintf(stderr, "Register_IOTypes: failed to register connector for IOType\n");
+	fprintf(stderr, "Register_IOTypes: failed to register connector "
+		"for IOType\n");
 #endif
 	  return_status = REG_FAILURE;
 	}
 	else{
 
 #if DEBUG
-	  fprintf(stderr, "Register_IOTypes: registered connector on port %d, hostname = %s, index %d, label %s\n", connector_port, connector_hostname, current, IOLabel[i] );
+	  fprintf(stderr, "Register_IOTypes: registered connector on "
+		  "port %d, hostname = %s, index %d, label %s\n", 
+		  connector_port, connector_hostname, current, IOLabel[i] );
 #endif
 
 	}
@@ -641,8 +499,10 @@ int Register_IOTypes(int    NumTypes,
     IOType[i] = IOTypes_table.io_def[current].handle;
 
     /* ARPDBG */
+#if DEBUG
     fprintf(stderr, "Register_IOTypes: handle = %d\n", IOType[i]);
     fprintf(stderr, "Register_IOTypes: index  = %d\n", current);
+#endif
 
     current++;
 
@@ -705,13 +565,17 @@ int Consume_start(int  IOType,
     if (Globus_create_connector(&(IOTypes_table.io_def[*IOTypeIndex].index)) != REG_SUCCESS)
     {
 #if DEBUG
-      fprintf(stderr, "Register_IOTypes: failed to register connector for IOType\n");
+      fprintf(stderr, "Register_IOTypes: failed to register connector "
+	      "for IOType\n");
 #endif
     }
     else{
       
 #if DEBUG
-      fprintf(stderr, "Register_IOTypes: registered connector on port %d, hostname = %s, index %d, label %s\n", connector_port, connector_hostname, *IOTypeIndex, IOTypes_table.io_def[*IOTypeIndex].label );
+      fprintf(stderr, "Register_IOTypes: registered connector on port %d, "
+	      "hostname = %s, index %d, label %s\n", connector_port, 
+	      connector_hostname, *IOTypeIndex, 
+	      IOTypes_table.io_def[*IOTypeIndex].label );
 #endif
       
     }
@@ -733,17 +597,11 @@ int Consume_start(int  IOType,
 				(globus_byte_t *)buffer,
 				REG_PACKET_SIZE,
 				&nbytes);
-    /*
-    result = globus_io_read(&(IOTypes_table.io_def[*IOTypeIndex].conn_handle),
-			    buffer,
- 			    REG_PACKET_SIZE,
- 			    REG_PACKET_SIZE,
- 			    &nbytes); */
-
 
     if (result != GLOBUS_SUCCESS){
 #if DEBUG
-      fprintf(stderr, "Consume_start: globus_io_try_read failed - try immediate reconnect for index %d\n", *IOTypeIndex);
+      fprintf(stderr, "Consume_start: globus_io_try_read failed - "
+	      "try immediate reconnect for index %d\n", *IOTypeIndex);
 #endif
     
       Globus_retry_connect(*IOTypeIndex);
@@ -758,7 +616,9 @@ int Consume_start(int  IOType,
       }
       else {
 #if DEBUG
-      fprintf(stderr, "Consume_start: reconnect attempt failed - socket is not connected status id %d\n", IOTypes_table.io_def[*IOTypeIndex].comms_status);
+      fprintf(stderr, "Consume_start: reconnect attempt failed - "
+	      "socket is not connected status id %d\n", 
+	      IOTypes_table.io_def[*IOTypeIndex].comms_status);
 #endif
       return REG_FAILURE;
 
@@ -792,7 +652,8 @@ int Consume_start(int  IOType,
     else {
     
 #if DEBUG
-    fprintf(stderr, "Consume_start: reconnect attempt success - but globus_io_try_read failed\n");
+    fprintf(stderr, "Consume_start: reconnect attempt success - but "
+	    "globus_io_try_read failed\n");
 #endif
     }
 
@@ -801,10 +662,10 @@ int Consume_start(int  IOType,
   }
   else {
 #if DEBUG
-    fprintf(stderr, "Consume_start: socket is NOT connected, index = %d\n",*IOTypeIndex );
+    fprintf(stderr, "Consume_start: socket is NOT connected, index = "
+	    "%d\n",*IOTypeIndex );
 #endif
   }
-
 
   return REG_FAILURE;
 }
@@ -859,8 +720,10 @@ int Consume_data_slice_header(int  IOTypeIndex,
 
   /* Read header */
 
+#if DEBUG
   /* ARPDBG */
   fprintf(stderr, "Consume_data_slice_header: calling globus_io_read...\n");
+#endif
 
   /* Blocks until REG_PACKET_SIZE bytes received */
   result = globus_io_read(&(IOTypes_table.io_def[IOTypeIndex].conn_handle), 
@@ -1114,7 +977,7 @@ int Consume_data_slice(int    IOTypeIndex,
 
   fprintf(stderr, "Consume_data_slice: globus_io_read read %d bytes\n",
 	  nbytes);
-  fprintf(stderr, "                    in %.2f seconds\n", read_time);
+  fprintf(stderr, "                    in %.3f seconds\n", read_time);
 
   if(DataType == REG_CHAR){
     fprintf(stderr, "Consume_data_slice: got char data:\n>>%s<<\n", 
@@ -1201,9 +1064,7 @@ int Consume_data_slice(int    IOTypeIndex,
 
       for(i=0; i<Count; i++){
 
-	/*fprintf(stderr, "Consume_data_slice: i = %d\n", i);*/
-
-	if (1!=xdr_double(&xdrs, pdouble++)) {/*&dum_double)) {*/
+	if (1!=xdr_double(&xdrs, pdouble++)) {
 	  fprintf(stderr, "Consume_data_slice: error decoding datum %d\n",i);
 	  return_status = REG_FAILURE;
 	  break;
@@ -1340,6 +1201,7 @@ int Consume_data_slice_old(REG_IOHandleType  IOHandle,
 	  }
 	}
       }
+
     }
 
     xdr_destroy(&xdrs);
@@ -1465,7 +1327,8 @@ int Emit_start(int  IOType,
   }
   else {
 #if DEBUG
-    fprintf(stderr, "Emit_start: socket not connected, index = %d\n",*IOTypeIndex );
+    fprintf(stderr, "Emit_start: socket not connected, index = %d\n",
+	    *IOTypeIndex );
 #endif
     return REG_FAILURE;
   }
@@ -1542,9 +1405,6 @@ int Emit_data_slice(int		      IOTypeIndex,
   int             *iptr;
   float           *fptr;
   double          *dptr;
-
-  /*char	hbt_buffer[4];	      simple HBT */
-  /*char  reply[REG_MAX_LINE_LEN];  */
 
   /* Check that steering is enabled */
   if(!ReG_SteeringEnabled) return REG_SUCCESS;
@@ -1734,47 +1594,7 @@ int Emit_data_slice(int		      IOTypeIndex,
     return REG_FAILURE;
   }
 
-  /* wait for ACK *
-  result = globus_io_read(&(IOTypes_table.io_def[IOTypeIndex].conn_handle), 
-			  reply, 
-			  REG_MAX_LINE_LEN-1, 
-			  1, 
-			  &nbytes);
-
-  if (result == GLOBUS_SUCCESS ) {  
-    reply[nbytes]='\0';
-    fprintf(stderr, "DBG - TEST Received back '%s'",reply);   
-  }
-  else{
-    fprintf(stderr, "error globus_io_read\n");
-    err =  globus_error_get(result);
-
-    if (globus_object_type_match(GLOBUS_IO_ERROR_TYPE_NULL_PARAMETER,
-				 globus_object_get_type(err))) {
-     fprintf(stderr, " - globus error type: null parameter\n");
-    }
-    else if (globus_object_type_match(GLOBUS_IO_ERROR_TYPE_NOT_INITIALIZED,
-				      globus_object_get_type(err))) {
-     fprintf(stderr, " - globus error type: not initialised\n");
-    }
-    else if (globus_object_type_match(GLOBUS_IO_ERROR_TYPE_CLOSE_ALREADY_REGISTERED,
-				      globus_object_get_type(err))) {
-     fprintf(stderr, " - globus error type: close already registered\n");
-    }
-    else if (globus_object_type_match(GLOBUS_IO_ERROR_TYPE_READ_ALREADY_REGISTERED, 
-				      globus_object_get_type(err))) {
-     fprintf(stderr, " - globus error type: read already registered\n");
-    }
-    else if (globus_object_type_match(GLOBUS_ERROR_TYPE_TYPE_MISMATCH,
-				      globus_object_get_type(err))) {
-     fprintf(stderr, " - globus error type: type mismatch\n");
-    }
-
-    return REG_FAILURE;
-  }
- */
-
- return return_status;
+  return return_status;
 }
 
 /*----------------------------------------------------------------*/
@@ -1845,7 +1665,6 @@ int Steering_control(int     SeqNum,
 		     int    *SteerCommands,
 		     char  **SteerCmdParams)
 {
-  FILE  *fp;
   int    i;
   int    status;
   int    count;
@@ -1855,7 +1674,6 @@ int Steering_control(int     SeqNum,
   int    commands[REG_MAX_NUM_STR_CMDS];
   int    param_handles[REG_MAX_NUM_STR_PARAMS];
   char*  param_labels[REG_MAX_NUM_STR_PARAMS];
-  char   filename[REG_MAX_STRING_LENGTH];
 
   /* Variables for timing */
   float          time_per_step;
@@ -1879,12 +1697,8 @@ int Steering_control(int     SeqNum,
 
   if(!ReG_SteeringActive){
 
-    sprintf(filename, "%s%s", Steerer_connection.file_root, 
-	    STR_CONNECTED_FILENAME);
+    if(Steerer_connected() == REG_SUCCESS){
 
-    if( (fp = fopen(filename, "r")) ){
-
-      fclose(fp);
       ReG_SteeringActive = TRUE;
       first_time = TRUE;
 #if DEBUG
@@ -2014,7 +1828,6 @@ int Steering_control(int     SeqNum,
 #endif
 
         SteerCommands[count] = commands[i];
-	/*strcpy(SteerCmdParams[count], command_params[i]);*/
 	strcpy(SteerCmdParams[count], SteerCmdParams[i]);
 	count++;
 
@@ -2049,9 +1862,6 @@ int Steering_control(int     SeqNum,
       i++;
     }
 
-    /* Record how many commands we're going to pass back to caller */
-    *NumSteerCommands = count;
-
     /* Tell the steerer what we've been doing */
     if( !detached ){
 
@@ -2068,7 +1878,41 @@ int Steering_control(int     SeqNum,
 	fprintf(stderr, "Steering_control: call to Emit_status failed\n");
 	return_status = REG_FAILURE;
       }
+
+      /* Deal with automatic emission/consumption of data */
+
+      /* IOTypes cannot be deleted so the num_registered entries that
+	 we have will be contiguous within the table */
+      for(i=0; i<IOTypes_table.num_registered; i++){
+
+	/* A freq. of zero indicates no automatic emit/consume */
+	if(IOTypes_table.io_def[i].frequency == 0) continue;
+
+	if(fmod(SeqNum, IOTypes_table.io_def[i].frequency) < REG_TOL_ZERO){
+
+	  if( count >= REG_MAX_NUM_STR_CMDS ){
+	    fprintf(stderr, "Steering_control: WARNING: discarding "
+		    "steering cmds as max number (%d) exceeded\n", 
+		    REG_MAX_NUM_STR_CMDS);
+
+	    return_status = REG_FAILURE;
+	    break;
+	  }
+ 
+	  /* Add command to list to send back to caller */
+	  /* ARPDBG - this isn't going to work for checkpoints as things
+	     stand 'cos we need to specify IN or OUT in the associated
+	     param entry */
+	  SteerCommands[count]  = IOTypes_table.io_def[i].handle;
+	  SteerCmdParams[count] = " ";
+	  count++;
+	}
+      }
+
     }
+
+    /* Record how many commands we're going to pass back to caller */
+    *NumSteerCommands = count;
 
   } /* End if steering active */
 
@@ -2234,10 +2078,7 @@ int Steering_pause(int   *NumSteerParams,
 
 int Emit_param_defs(){
 
-  FILE *fp;
   int   i;
-  int   status;
-  char  filename[REG_MAX_STRING_LENGTH];
   char  buf[REG_MAX_MSG_SIZE];
   char *pbuf;
 
@@ -2245,20 +2086,6 @@ int Emit_param_defs(){
   if (Params_table.num_registered == 0) return REG_SUCCESS;
 
   /* Emit all currently registered parameters */
-
-  status = Generate_status_filename(filename);
-  
-  if(status != REG_SUCCESS){
-  
-    return REG_FAILURE;
-  }
-  
-  fp = fopen(filename, "w");
-  
-  if(fp == NULL){
-    fprintf(stderr, "Emit_param_defs: Failed to open file\n");
-    return REG_FAILURE;
-  }
   
   pbuf = buf;
   Write_xml_header(&pbuf);
@@ -2304,21 +2131,15 @@ int Emit_param_defs(){
   pbuf += sprintf(pbuf,"</Param_defs>\n");
   Write_xml_footer(&pbuf);
 
-  fprintf(fp, "%s", buf);
-  fclose(fp);
-  Create_lock_file(filename);
-
-  return REG_SUCCESS;
+  /* Physically send the message */
+  return Send_status_msg(buf);
 }
 
 /*----------------------------------------------------------------*/
 
 int Emit_IOType_defs(){
 
-  int   status;
   int   i;
-  FILE *fp;
-  char  filename[REG_MAX_STRING_LENGTH];
   char  buf[REG_MAX_MSG_SIZE];
   char *pbuf;
 
@@ -2326,20 +2147,6 @@ int Emit_IOType_defs(){
   if (IOTypes_table.num_registered == 0) return REG_SUCCESS;
 
   /* Emit all currently registered IOTypes */
-
-  status = Generate_status_filename(filename);
-  
-  if(status != REG_SUCCESS){
-  
-    return REG_FAILURE;
-  }
-  
-  fp = fopen(filename, "w");
-  
-  if(fp == NULL){
-    fprintf(stderr, "Emit_IOType_defs: Failed to open file\n");
-    return REG_FAILURE;
-  }
   
   pbuf = buf;
   Write_xml_header(&pbuf);
@@ -2375,22 +2182,11 @@ int Emit_IOType_defs(){
 	fprintf(stderr, 
 		"Emit_IOType_defs: Unrecognised IOType direction\n");
 #endif
-	fclose(fp);
-	remove(filename);
 	return REG_FAILURE;
       }
 
-      if(IOTypes_table.io_def[i].auto_io_support){
-
-	pbuf += sprintf(pbuf,"<Support_auto_io>TRUE</Support_auto_io>\n");
-
-	pbuf += sprintf(pbuf,"<Freq_handle>%d</Freq_handle>\n",
-		IOTypes_table.io_def[i].freq_param_handle);
-      }
-      else{
-
-	pbuf += sprintf(pbuf,"<Support_auto_io>FALSE</Support_auto_io>\n");
-      }
+      pbuf += sprintf(pbuf,"<Freq_handle>%d</Freq_handle>\n",
+	      IOTypes_table.io_def[i].freq_param_handle);
 
       pbuf += sprintf(pbuf,"</IOType>\n");
     }
@@ -2399,12 +2195,8 @@ int Emit_IOType_defs(){
   pbuf += sprintf(pbuf,"</IOType_defs>\n");
   Write_xml_footer(&pbuf);
 
-  fprintf(fp, "%s", buf);
-  fclose(fp);
-  
-  Create_lock_file(filename);
-
-  return REG_SUCCESS;
+  /* Physically send message */
+  return Send_status_msg(buf);
 }
 
 /*----------------------------------------------------------------*/
@@ -2416,11 +2208,9 @@ int Consume_control(int    *NumCommands,
 		    int    *SteerParamHandles,
 		    char  **SteerParamLabels){
 
-  FILE                *fp;
   int                  j;
   int                  count;
   char                *ptr;
-  char                 filename[REG_MAX_STRING_LENGTH];
   struct msg_struct   *msg;
   struct cmd_struct   *cmd;
   struct param_struct *param;
@@ -2430,154 +2220,129 @@ int Consume_control(int    *NumCommands,
   /* Read the file produced by the steerer - may contain commands and/or
      new parameter values */
 
-  sprintf(filename, "%s%s", Steerer_connection.file_root, STR_TO_APP_FILENAME);
+  if((msg = Get_control_msg()) != NULL){
 
-  if( (fp = Open_next_file(filename)) != NULL){
+    if(msg->control){
 
-    fclose(fp);
+      cmd   = msg->control->first_cmd;
+      count = 0;
 
-    msg = New_msg_struct();
+      while(cmd){
 
-    return_status = Parse_xml_file(filename, msg);
+	sscanf((char *)(cmd->id), "%d", &(Commands[count]));
 
-    if(return_status == REG_SUCCESS){
+	if(cmd->first_param){
 
-      if(msg->control){
+	  param = cmd->first_param;
+	  ptr   = CommandParams[count];
+	  while(param){
 
-	cmd   = msg->control->first_cmd;
-	count = 0;
-
-	while(cmd){
-
-	  sscanf((char *)(cmd->id), "%d", &(Commands[count]));
-
-	  if(cmd->first_param){
-
-	    param = cmd->first_param;
-	    ptr   = CommandParams[count];
-	    while(param){
-
-	      if(param->value){
-	        sprintf(ptr, "%s ", (char *)(param->value));
-		ptr += strlen((char *)param->value) + 1;
-	      }
-
-	      param = param->next;
+	    if(param->value){
+	      sprintf(ptr, "%s ", (char *)(param->value));
+	      ptr += strlen((char *)param->value) + 1;
 	    }
-	  }
-	  else{
 
-	    sprintf(CommandParams[count], " ");
+	    param = param->next;
 	  }
+	}
+	else{
+
+	  sprintf(CommandParams[count], " ");
+	}
 #if DEBUG
-	  fprintf(stderr, "Consume_control: cmd[%d] = %d\n", count,
-		  Commands[count]);
-	  fprintf(stderr, "                 params  = %s\n", 
-		  CommandParams[count]);
+	fprintf(stderr, "Consume_control: cmd[%d] = %d\n", count,
+		Commands[count]);
+	fprintf(stderr, "                 params  = %s\n", 
+		CommandParams[count]);
 #endif
-	  count++;
+	count++;
 
-	  if(count >= REG_MAX_NUM_STR_CMDS){
+	if(count >= REG_MAX_NUM_STR_CMDS){
 
-	    fprintf(stderr, 
-		    "Consume_control: WARNING: truncating list of commands\n");
+	  fprintf(stderr, 
+		  "Consume_control: WARNING: truncating list of commands\n");
+	  break;
+	}
+
+	cmd = cmd->next;
+      }
+
+      *NumCommands = count;
+
+#if DEBUG
+      fprintf(stderr, "Consume_control: received %d commands\n", 
+	      *NumCommands);
+#endif
+
+      param = msg->control->first_param;
+      count = 0;
+
+      while(param){
+
+	sscanf((char *)(param->handle), "%d", &handle);
+
+	for(j=0; j<Params_table.max_entries; j++){
+  
+	  if(Params_table.param[j].handle == handle){
+	  
 	    break;
 	  }
-
-	  cmd = cmd->next;
 	}
 
-	*NumCommands = count;
-
-#if DEBUG
-	fprintf(stderr, "Consume_control: received %d commands\n", 
-		*NumCommands);
-#endif
-
-	param = msg->control->first_param;
-	count = 0;
-
-	while(param){
-
-	  sscanf((char *)(param->handle), "%d", &handle);
-
-	  for(j=0; j<Params_table.max_entries; j++){
+	if(j == Params_table.max_entries){
   
-	    if(Params_table.param[j].handle == handle){
-	  
-	      break;
+	  fprintf(stderr, "Consume_control: failed to match param "
+		  "handles\n");
+	  return_status = REG_FAILURE;
+	}
+	else{
+
+	  /* Store char representation of new parameter value */
+	  if(param->value){
+
+	    strcpy(Params_table.param[j].value, (char *)(param->value));
+
+	    /* Update value associated with pointer */
+	    Update_ptr_value(&(Params_table.param[j]));
+
+	    if( !(Params_table.param[j].is_internal) ){
+
+	      SteerParamHandles[count] = handle;
+	      SteerParamLabels[count]  = Params_table.param[j].label;
+	      count++;
 	    }
-	  }
-
-	  if(j == Params_table.max_entries){
-  
-	    fprintf(stderr, "Consume_control: failed to match param handles\n");
-	    return_status = REG_FAILURE;
 	  }
 	  else{
-
-	    /* Store char representation of new parameter value */
-	    if(param->value){
-
-	      strcpy(Params_table.param[j].value, (char *)(param->value));
-
-	      /* Update value associated with pointer */
-	      Update_ptr_value(&(Params_table.param[j]));
-
-	      if( !(Params_table.param[j].is_internal) ){
-
-		SteerParamHandles[count] = handle;
-		SteerParamLabels[count]  = Params_table.param[j].label;
-		count++;
-	      }
-	    }
-	    else{
-	      fprintf(stderr, "Consume_control: empty parameter value field\n");
-	    }
+	    fprintf(stderr, "Consume_control: empty parameter value "
+		    "field\n");
 	  }
-
-	  param = param->next;
 	}
 
-	/* Update the number of parameters received to allow for fact that
-	   some may be internal and are not passed up to the calling routine */
-	*NumSteerParams = count;
+	param = param->next;
+      }
+
+      /* Update the number of parameters received to allow for fact that
+	 some may be internal and are not passed up to the calling routine */
+      *NumSteerParams = count;
 
 #if DEBUG
 	fprintf(stderr, "Consume_control: received %d params\n", *NumSteerParams);
 #endif
-      }
-      else{
-	fprintf(stderr, "Consume_control: error, no control data\n");
-	*NumSteerParams = 0;
-	*NumCommands    = 0;
-	return_status   = REG_FAILURE;
-      }
-
-      /* Delete the file once we've read it */
-
-      if( Delete_file(filename) != REG_SUCCESS){
-
-	fprintf(stderr, "Consume_control: failed to delete %s\n",filename);
-      }
     }
     else{
-
-      fprintf(stderr, "Consume_control: failed to parse <%s>\n", filename);
+      fprintf(stderr, "Consume_control: error, no control data\n");
       *NumSteerParams = 0;
       *NumCommands    = 0;
+      return_status   = REG_FAILURE;
     }
-
-    Delete_msg_struct(msg);
-
   }
   else{
 
 #if DEBUG
-    fprintf(stderr, "Consume_control: failed to open file %s\n", filename);
+    fprintf(stderr, "Consume_control: no message from steerer\n");
 #endif
 
-    /* No file found */
+    /* No message found */
 
     *NumSteerParams = 0;
     *NumCommands = 0;
@@ -2649,7 +2414,6 @@ int Emit_status(int   SeqNum,
 		int   NumCommands,
 		int  *Commands)
 {
-  FILE *fp;
   int   i;
   int   pcount = 0;
   int   tot_pcount = 0;
@@ -2657,7 +2421,6 @@ int Emit_status(int   SeqNum,
   int   num_param;
   int   cmddone   = FALSE;
   int   paramdone = FALSE;
-  char  filename[REG_MAX_STRING_LENGTH];
   char  buf[REG_MAX_MSG_SIZE];
   char *pbuf;
 
@@ -2693,14 +2456,6 @@ int Emit_status(int   SeqNum,
 
   while(!paramdone || !cmddone){
 
-    Generate_status_filename(filename);
-
-    if( (fp = fopen(filename, "w")) == NULL){
-
-      fprintf(stderr, "Emit_status: failed to open file\n");
-      return REG_FAILURE;
-    }
-
     pbuf = buf;
 
     Write_xml_header(&pbuf);
@@ -2717,9 +2472,6 @@ int Emit_status(int   SeqNum,
     	/* Handle value used to indicate whether entry is valid */
     	if(Params_table.param[tot_pcount].handle != REG_PARAM_HANDLE_NOTSET){
 
-	  /* Changed to emit ALL parameters, ARP 19.08.2002 */
-	  /*  && (!Params_table.param[tot_pcount].steerable) ){ */
-  
  	  /* Update the 'value' part of this parameter's table entry
 	     - Get_ptr_value checks to make sure parameter is not library-
 	     controlled (& hence has valid ptr to get value from) */
@@ -2772,10 +2524,8 @@ int Emit_status(int   SeqNum,
 
     Write_xml_footer(&pbuf);
 
-    fprintf(fp, "%s", buf);
-    fclose(fp);
-
-    Create_lock_file(filename);
+    /* Physically send the status message */
+    Send_status_msg(buf);
   }
 
   return REG_SUCCESS;
@@ -2924,6 +2674,7 @@ int Make_vtk_buffer(char  *header,
 		    int    nx,
 		    int    ny,
 		    int    nz,
+		    int    veclen,
 		    double a,
 		    double b,
 		    double c,
@@ -2932,6 +2683,7 @@ int Make_vtk_buffer(char  *header,
   int    i, j, k;
   int    count;
   double a2, b2, c2;
+  float  mag;
   float  sum;
   float *fptr;
   char  *pchar;
@@ -2954,12 +2706,33 @@ int Make_vtk_buffer(char  *header,
   pchar += sprintf(pchar, "%-128s", text);
   pchar += sprintf(pchar, "%-128s", "nspace=3\n");
   pchar += sprintf(pchar, "%-128s", "field=uniform\n");
-  pchar += sprintf(pchar, "%-128s", "veclen=1\n");
+  sprintf(text, "veclen= %d\n", veclen);
+  pchar += sprintf(pchar, "%-128s", text);
   pchar += sprintf(pchar, "%-128s", "data=float\n");
-  pchar += sprintf(pchar, "%-128s", "variable 1 filetype=binary "
-  		   "skip=0000000 stride=2\n");
-/*   pchar += sprintf(pchar, "%-128s", "variable 2 filetype=binary " */
-/*   		   "skip=0000008 stride=2\n"); */
+
+  /* Use 'filetype=stream' because this is _not_ standard AVS because
+     the way we interpret 'skip' at the other end of a socket is
+     not standard either - we use it as the number of objects (floats,
+     ints etc.) to skip rather than the no. of bytes or lines. */
+  if(veclen == 1){
+    pchar += sprintf(pchar, "%-128s", "variable 1 filetype=stream "
+		     "skip=0000000 stride=1\n");
+  }
+  else if(veclen == 2){
+    pchar += sprintf(pchar, "%-128s", "variable 1 filetype=stream "
+		     "skip=0000000 stride=2\n");
+    pchar += sprintf(pchar, "%-128s", "variable 2 filetype=stream "
+		     "skip=0000001 stride=2\n");
+
+  }
+  else if(veclen == 3){
+    pchar += sprintf(pchar, "%-128s", "variable 1 filetype=stream "
+		     "skip=0000000 stride=3\n");
+    pchar += sprintf(pchar, "%-128s", "variable 2 filetype=stream "
+		     "skip=0000001 stride=3\n");
+    pchar += sprintf(pchar, "%-128s", "variable 3 filetype=stream "
+		     "skip=0000002 stride=3\n");
+  }
   pchar += sprintf(pchar, "%-128s", "END_OF_HEADER\n");
 
   /* Make an array of data */
@@ -2967,19 +2740,80 @@ int Make_vtk_buffer(char  *header,
 
   sum = 0.0;
   count = 0;
-  for(i=-nx/2; i<nx/2; i++){
-    for(j=-ny/2; j<ny/2; j++){
-      for(k=-nz/2; k<nz/2; k++){
 
-  	*fptr = (float)sqrt((double)(i*i*a2 + j*j*b2 + k*k*c2));
-	sum += *(fptr++);
-	count++;
+  if(veclen == 1){
+
+    for(i=-nx/2; i<nx/2; i++){
+      for(j=-ny/2; j<ny/2; j++){
+	for(k=-nz/2; k<nz/2; k++){
+          *fptr = (float)sqrt((double)(i*i*a2 + j*j*b2 + k*k*c2));
+	  sum += *(fptr++);
+
+	  count++;
+	}
       }
     }
+  }
+  else if(veclen == 2){
+
+    for(i=-nx/2; i<nx/2; i++){
+      for(j=-ny/2; j<ny/2; j++){
+	for(k=-nz/2; k<nz/2; k++){
+
+	  mag = 2.0/(1.0 + (float)sqrt((double)(i*i*a2 + j*j*b2 + k*k*c2)));
+	  *fptr = mag*(float)(i*k);
+	  sum += *(fptr++);
+	  *fptr = mag*(float)(j*k);
+	  sum += *(fptr++);
+
+	  count = count+2;
+	}
+      }
+    }
+  }
+  else if(veclen == 3){
+
+    for(i=-nx/2; i<nx/2; i++){
+      for(j=-ny/2; j<ny/2; j++){
+	for(k=-nz/2; k<nz/2; k++){
+	  /*
+	  mag = 2.0/(1.0 + (float)sqrt((double)(i*i*a2 + j*j*b2 + k*k*c2)));
+	  *fptr = mag*(float)i;
+	  sum += *(fptr++);
+	  *fptr = mag*(float)j;
+	  sum += *(fptr++);
+	  *fptr = mag*(float)k;
+	  sum += *(fptr++);
+	  */
+	  mag = 1.0;
+	  *fptr = mag*(float)i;
+	  sum += *(fptr++);
+	  *fptr = mag*(float)j;
+	  sum += *(fptr++);
+	  *fptr = mag*(float)k;
+	  sum += *(fptr++);
+
+	  count = count+3;
+	}
+      }
+    }
+  }
+  else{
+    fprintf(stderr, "Make_vtk_buffer: error, only  1 <= veclen <= 3 "
+	    "supported\n");
+    return REG_FAILURE;
   }
 
   fprintf(stderr, "Make_vtk_buffer: checksum = %f\n", sum/((float) count));
 
+  /*
+  fptr = array;
+  fprintf(stderr, "Array is: \n");
+  for(i=0; i<nx; i++){
+
+    fprintf(stderr, "%.3f %.3f %.3f\n", *(fptr++), *(fptr++), *(fptr++));
+  }
+  */
   return REG_SUCCESS;
 }
 
@@ -3258,13 +3092,15 @@ Globus_accept_callback (void			*callback_arg,
     globus_mutex_lock(&lmonitor->mutex);
 
     if (resultparam != GLOBUS_SUCCESS) {
-      fprintf(stderr, "DBG: Entered Globus_accept_callback resultparam FALSE, no connection\n");
+      fprintf(stderr, "DBG: Entered Globus_accept_callback resultparam "
+	      "FALSE, no connection\n");
       err = globus_error_get(resultparam);
       IOTypes_table.io_def[index].comms_status=REG_COMMS_STATUS_FAILURE;
     }
     else {
 #if DEBUG
-      fprintf(stderr, "DBG: Globus_accept_callback has connected, index =%d\n", index);
+      fprintf(stderr, "DBG: Globus_accept_callback has connected, "
+"index =%d\n", index);
 #endif
       IOTypes_table.io_def[index].comms_status=REG_COMMS_STATUS_CONNECTED;
     }
@@ -3646,3 +3482,239 @@ void Globus_retry_connect(int index){
 }
 
 /*--------------------------------------------------------------------*/
+
+int Steerer_connected()
+{
+  char   filename[REG_MAX_STRING_LENGTH];
+  FILE  *fp;
+
+  sprintf(filename, "%s%s", Steerer_connection.file_root, 
+	  STR_CONNECTED_FILENAME);
+
+  if( (fp = fopen(filename, "r")) ){
+
+      fclose(fp);
+      return REG_SUCCESS;
+  }
+
+  return REG_FAILURE;
+}
+
+/*-------------------------------------------------------------------*/
+
+int Send_status_msg(char *buf)
+{
+  FILE *fp;
+  char  filename[REG_MAX_STRING_LENGTH];
+
+  Generate_status_filename(filename);
+
+  if( (fp = fopen(filename, "w")) == NULL){
+
+    fprintf(stderr, "Send_status_msg: failed to open file\n");
+    return REG_FAILURE;
+  }
+
+  fprintf(fp, "%s", buf);
+  fclose(fp);
+
+  Create_lock_file(filename);
+
+  return REG_SUCCESS;
+}
+
+/*-------------------------------------------------------------------*/
+
+struct msg_struct *Get_control_msg()
+{
+  struct msg_struct   *msg = NULL;
+  FILE                *fp;
+  char                 filename[REG_MAX_STRING_LENGTH];
+
+  sprintf(filename, "%s%s", Steerer_connection.file_root, STR_TO_APP_FILENAME);
+
+  if( (fp = Open_next_file(filename)) != NULL){
+
+    fclose(fp);
+
+    msg = New_msg_struct();
+
+    if(Parse_xml_file(filename, msg) != REG_SUCCESS){
+
+      fprintf(stderr, "Read_control: failed to parse <%s>\n", filename);
+      Delete_msg_struct(msg);
+      msg = NULL;
+    }
+
+    /* Delete the file once we've read it */
+    if( Delete_file(filename) != REG_SUCCESS){
+
+      fprintf(stderr, "Read_control: failed to delete %s\n",filename);
+    }
+  }
+
+  return msg;
+}
+
+/*-------------------------------------------------------------------*/
+
+int Initialize_steering_connection(int  NumSupportedCmds,
+				   int *SupportedCmds)
+{
+  FILE *fp;
+  char *pchar;
+  char  buf[REG_MAX_MSG_SIZE];
+  char  filename[REG_MAX_STRING_LENGTH];
+  int   i;
+
+  /* Set location of all comms files */
+
+  pchar = getenv("REG_STEER_DIRECTORY");
+
+  if(pchar){
+
+    /* Check that path ends in '/' - if not then add one */
+
+    i = strlen(pchar);
+    if( pchar[i-1] != '/' ){
+
+      sprintf(Steerer_connection.file_root, "%s/", pchar);
+    }
+    else{
+
+      strcpy(Steerer_connection.file_root, pchar);
+    }
+
+    if(Directory_valid(Steerer_connection.file_root) != REG_SUCCESS){
+
+      fprintf(stderr, "Initialize_steering_connection: invalid dir for "
+	      "steering messages: %s\n", Steerer_connection.file_root);
+      return REG_FAILURE;
+    }
+    else{
+      fprintf(stderr, "Using following dir for steering messages: %s\n", 
+	     Steerer_connection.file_root);
+    }
+  }
+  else{
+    fprintf(stderr, "Initialize_steering_connection: failed to get "
+	    "scratch directory\n");
+    return REG_FAILURE;
+  }
+
+  /* Clean up any old files... */
+
+  /* ...file indicating a steerer is connected (which it can't be since we've
+     only just begun) */ 
+  sprintf(filename, "%s%s", Steerer_connection.file_root, 
+	  STR_CONNECTED_FILENAME);
+  fp = fopen(filename, "w");
+  if(fp != NULL){
+
+    fclose(fp);
+    if(remove(filename)){
+
+      fprintf(stderr, "Initialize_steering_connection: failed to "
+	      "remove %s\n",filename);
+    }
+#if DEBUG
+    else{
+      fprintf(stderr, "Initialize_steering_connection: removed "
+	      "%s\n", filename);
+    }
+#endif
+  }
+
+  /* ...files containing messages from a steerer */
+  sprintf(filename, "%s%s", Steerer_connection.file_root, 
+	  STR_TO_APP_FILENAME);
+
+  Remove_files(filename);
+
+  /* Signal that component is available to be steered */
+
+  sprintf(filename, "%s%s", Steerer_connection.file_root, 
+	                    APP_STEERABLE_FILENAME);
+  fp = fopen(filename,"w");
+
+  if(fp == NULL){
+
+    fprintf(stderr, "Initialize_steering_connection: failed to open %s\n",
+	    filename);
+    return REG_FAILURE;
+  }
+
+#if DEBUG
+  fprintf(stderr, "Initialize_steering_connection: writing file: %s\n", 
+	  filename);
+#endif
+
+  pchar = buf;
+
+  Write_xml_header(&pchar);
+
+  pchar += sprintf(pchar, "<Supported_commands>\n");
+
+  for(i=0; i<NumSupportedCmds; i++){
+    pchar += sprintf(pchar, "<Command>\n");
+    pchar += sprintf(pchar, "<Cmd_id>%d</Cmd_id>\n", SupportedCmds[i]);
+    pchar += sprintf(pchar, "</Command>\n");
+  }
+
+  pchar += sprintf(pchar, "</Supported_commands>\n");
+
+  Write_xml_footer(&pchar);
+
+  fprintf(fp, "%s", buf);
+  fclose(fp);
+
+  return REG_SUCCESS;
+}
+
+/*-------------------------------------------------------------------*/
+
+int Finalize_steering_connection()
+{
+  int  max, max1;
+  char sys_command[REG_MAX_STRING_LENGTH];
+
+  max = strlen(APP_STEERABLE_FILENAME);
+  max1 = strlen(STR_CONNECTED_FILENAME);
+
+  if(max1 > max) max=max1;
+  
+  max += strlen(Steerer_connection.file_root);
+  if(max > REG_MAX_STRING_LENGTH ){
+
+    fprintf(stderr, "Finalize_steering_connection: WARNING: truncating "
+	    "filename\n");
+  }
+
+  /* Delete the lock file that indicates we are steerable */
+  sprintf(sys_command, "%s%s", Steerer_connection.file_root,
+	  APP_STEERABLE_FILENAME);
+  if(remove(sys_command)){
+
+    fprintf(stderr, "Finalize_steering_connection: failed to remove "
+	    "%s\n", sys_command);
+  }
+
+  /* Delete the lock file that indicates we are being steered */
+  if(ReG_SteeringActive){
+
+    sprintf(sys_command, "%s%s", Steerer_connection.file_root,
+	    STR_CONNECTED_FILENAME);
+    if(remove(sys_command)){
+
+      fprintf(stderr, "Finalize_steering_connection: failed to remove "
+	      "%s\n", sys_command);
+    }
+  }
+
+  /* Delete any files we'd have consumed if we'd lived longer */
+  sprintf(sys_command, "%s%s", Steerer_connection.file_root, 
+	  STR_TO_APP_FILENAME);
+  Remove_files(sys_command);
+
+  return REG_SUCCESS;
+}

@@ -53,8 +53,8 @@ PROGRAM mini_app
   CHARACTER(LEN=REG_MAX_STRING_LENGTH), DIMENSION(REG_INITIAL_NUM_IOTYPES) :: io_labels
   INTEGER (KIND=REG_SP_KIND), DIMENSION(REG_INITIAL_NUM_IOTYPES) :: iotype_handles
   INTEGER (KIND=REG_SP_KIND), DIMENSION(REG_INITIAL_NUM_IOTYPES) :: io_dirn
-  INTEGER (KIND=REG_SP_KIND), DIMENSION(REG_INITIAL_NUM_IOTYPES) :: io_supp_auto
-  INTEGER (KIND=REG_SP_KIND) :: input_freq
+
+  INTEGER (KIND=REG_SP_KIND) :: input_freq  = 0
   INTEGER (KIND=REG_SP_KIND) :: output_freq = 5
   INTEGER (KIND=REG_SP_KIND) :: iohandle
   INTEGER (KIND=REG_SP_KIND) :: data_type
@@ -93,6 +93,7 @@ PROGRAM mini_app
   INTEGER (KIND=4) :: NX = 32
   INTEGER (KIND=4) :: NY = 32
   INTEGER (KIND=4) :: NZ = 32
+  INTEGER (KIND=4) :: veclen = 1
   CHARACTER(LEN=4096) :: header
   CHARACTER(LEN=128)  :: buf
   REAL (KIND=REG_DP_KIND) :: aaxis=1.5
@@ -123,9 +124,8 @@ PROGRAM mini_app
   io_labels(1)(28:28) = CHAR(0)
 
   io_dirn(1) = REG_IO_IN
-  io_supp_auto(1) = reg_false
   
-  CALL register_iotypes_f(num_types, io_labels, io_dirn, io_supp_auto, &
+  CALL register_iotypes_f(num_types, io_labels, io_dirn, &
                           input_freq, iotype_handles(1), status)
 
   IF(status .ne. REG_SUCCESS)THEN
@@ -140,9 +140,8 @@ PROGRAM mini_app
   io_labels(1)(29:29) = CHAR(0)
 
   io_dirn(1) = REG_IO_OUT
-  io_supp_auto(1) = reg_true
   
-  CALL register_iotypes_f(num_types, io_labels, io_dirn, io_supp_auto, &
+  CALL register_iotypes_f(num_types, io_labels, io_dirn, &
                           output_freq, iotype_handles(2), status)
 
   IF(status .ne. REG_SUCCESS)THEN
@@ -154,12 +153,11 @@ PROGRAM mini_app
   WRITE(*,*) 'Returned IOtype = ', iotype_handles(2)
 
   io_labels(1) = "SOME_CHECKPOINT"
-  io_labels(1)(12:12) = CHAR(0)
+  io_labels(1)(16:16) = CHAR(0)
 
   io_dirn(1) = REG_IO_CHKPT
-  io_supp_auto(1) = reg_false
   
-  CALL register_iotypes_f(num_types, io_labels, io_dirn, io_supp_auto, &
+  CALL register_iotypes_f(num_types, io_labels, io_dirn, &
                           output_freq, iotype_handles(3), status)
 
   IF(status .ne. REG_SUCCESS)THEN
@@ -232,6 +230,14 @@ PROGRAM mini_app
   param_strbl = reg_true
 
   CALL register_params_f(num_params, param_label, param_strbl, dum_dbl, &
+                         param_type, status)
+
+  param_label = "veclen"
+  param_label(7:7) = CHAR(0)
+  param_type  = REG_INT
+  param_strbl = reg_true
+
+  CALL register_params_f(num_params, param_label, param_strbl, veclen, &
                          param_type, status)
 
   param_label = "a_axis"
@@ -382,11 +388,6 @@ PROGRAM mini_app
 
                WRITE(*,*) 'Emitting data...'
 
-               ALLOCATE(f_array(NX*NY*NZ))
-
-               CALL make_vtk_buffer_f(header, NX, NY, NZ, aaxis, baxis, &
-                                      caxis, f_array, status)
-
 ! Example of how to make a vtk header in F90...
 !!$               buf(1:128) = "# vtk DataFile Version 2.1"//ACHAR(10)
 !!$               hdr_len = 0
@@ -436,21 +437,21 @@ PROGRAM mini_app
 !!$               header(hdr_len+1:hdr_len+1) = ACHAR(0)
 ! ...end of example
 
+               ALLOCATE(f_array(veclen*NX*NY*NZ))
+
+               CALL make_vtk_buffer_f(header, NX, NY, NZ, veclen, aaxis, &
+                                      baxis, caxis, f_array, status)
+
                CALL emit_start_f(iotype_handles(2), iloop, reg_true, iohandle,&
                                  status)
 
                IF( status .eq. REG_SUCCESS )THEN
 	
-                 data_count = hdr_len
+                 !data_count = hdr_len
+                 data_count = LEN(header)
                  data_type  = REG_CHAR
                  CALL emit_data_slice_f(iohandle, data_type, data_count, &
                                         header, status)
-
-                 data_count = NX*NY*NZ
-
-                 !data_type  = REG_FLOAT
-                 !CALL emit_data_slice_f(iohandle, data_type, data_count, &
-                 !                       f_array, status)
 
                  ! Test with int data
                  !ALLOCATE(i_array(NX*NY*NZ))
@@ -466,6 +467,8 @@ PROGRAM mini_app
                  !  d_array(j) = REAL(f_array(j), REG_DP_KIND)
                  !END DO
 
+                 data_count = veclen*NX*NY*NZ
+                 data_type  = REG_FLOAT
                  CALL emit_data_slice_f(iohandle, data_type, data_count, &
                                         f_array, status)
 

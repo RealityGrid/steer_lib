@@ -37,12 +37,13 @@
 
 # Edit the two following lines if 32-bit binaries are desired 
 # (NBIT = 32 and G=-n32).
-NBIT         = 64
-GLOBAL_FLAGS = G="-64 -g" NBIT=$(NBIT)
+NBIT         = 32
+GLOBAL_FLAGS = G="-n32 -g" NBIT=$(NBIT)
 LOCAL_BIN_DIR= ${HOME}/bin
 
 all:
 	make steerer
+	make mini_vis
 	make app
 	make app_f90
 	make app_f90_parallel
@@ -52,6 +53,10 @@ lib$(NBIT)/libReG_Steer.a: include/*.h \
  src/*.m4 \
  src/*.java
 	cd src; make ${GLOBAL_FLAGS}
+
+mini_vis: lib$(NBIT)/libReG_Steer.a \
+ examples/mini_vis/*.c
+	cd examples/mini_vis; make ${GLOBAL_FLAGS}
 
 app: lib$(NBIT)/libReG_Steer.a \
  examples/mini_app/*.c
@@ -77,6 +82,7 @@ ${LOCAL_BIN_DIR}/ReG_Steer_Proxy.class: src/*.java
 
 clean:
 	cd src; make ${GLOBAL_FLAGS} clean 
+	cd examples/mini_vis; make ${GLOBAL_FLAGS} clean
 	cd examples/mini_app; make ${GLOBAL_FLAGS} clean
 	cd examples/mini_app_f90; make ${GLOBAL_FLAGS} clean
 	cd examples/mini_app_f90_parallel; make ${GLOBAL_FLAGS} clean

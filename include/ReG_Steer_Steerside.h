@@ -160,7 +160,6 @@ extern PREFIX int Get_iotypes(int    sim_handle,
 			      int   *handles,
 			      char* *labels,
 			      int   *types,
-			      int   *auto_io_supported,
 			      int   *io_freqs);
 
 /* A utility function that allows the steerer to update the emit/consume

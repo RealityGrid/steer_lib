@@ -77,7 +77,7 @@ static struct {
 int Steerer_initialize()
 {
   int   i;
-  int   status;
+  /* int   status; */
   char *pchar;
   
   /* Actually defined in ReG_Steer_Common.c because both steerer
@@ -138,6 +138,10 @@ int Steerer_initialize()
   /* Create the main proxy - we use this one to query the 'grid' about
      what services are available */
 
+  /* Don't bother for now...*/ 
+  Proxy.available = FALSE;    
+
+  /*
   status = Create_proxy(&(Proxy.pipe_to_proxy), &(Proxy.pipe_from_proxy));
 
   if(status != REG_SUCCESS){
@@ -149,6 +153,7 @@ int Steerer_initialize()
 
     Proxy.available = TRUE;
   }
+  */
 
   return REG_SUCCESS;
 }
@@ -371,8 +376,14 @@ int Sim_attach(char *SimID,
     fprintf(stderr, "Sim_attach: calling Sim_attach_local...\n");
 #endif
     return_status = Sim_attach_local(&(Sim_table.sim[current_sim]), SimID);
-  }
 
+    /* Use Globus
+#if DEBUG
+    fprintf(stderr, "Sim_attach: calling Sim_attach_globus...\n");
+#endif
+    return_status = Sim_attach_globus(&(Sim_table.sim[current_sim]), SimID);
+    */
+  }
 
   if(return_status == REG_SUCCESS){
 
@@ -757,17 +768,6 @@ int Consume_IOType_defs(int SimHandle)
 	else{
 	  fprintf(stderr, "Consume_IOType_defs: ERROR: unrecognised "
 		  "direction value\n");
-	}
-      }
-
-      if(ptr->support_auto){
-
-        if(!xmlStrcmp(ptr->support_auto, (const xmlChar *) "TRUE")){
-
-	  Sim_table.sim[index].IOdef_table.io_def[j].auto_io_support = TRUE;
-	}
-	else{
-	  Sim_table.sim[index].IOdef_table.io_def[j].auto_io_support = FALSE;
 	}
       }
 
@@ -1545,7 +1545,6 @@ int Get_iotypes(int    sim_handle,
 		int   *handles,
 		char* *labels,
 		int   *types,
-		int   *auto_io_supported,
 		int   *io_freqs)
 {
   int isim;
@@ -1575,37 +1574,31 @@ int Get_iotypes(int    sim_handle,
 
 	types[count] = Sim_table.sim[isim].IOdef_table.io_def[i].direction;
 
-	auto_io_supported[count] = 
-	             Sim_table.sim[isim].IOdef_table.io_def[i].auto_io_support;
+	/* Get the current frequency at which this occurs */
+	iparam = Param_index_from_handle(&(Sim_table.sim[isim].Params_table),
+		                         Sim_table.sim[isim].IOdef_table.io_def[i].freq_param_handle);
 
-	/* If this IO type supports automatic emission/consumption then get
-	   the current frequency at which this occurs */
-	if(auto_io_supported[count]){
+	if(iparam != REG_PARAM_HANDLE_NOTSET){
 
-	  iparam = Param_index_from_handle(&(Sim_table.sim[isim].Params_table),
-		                           Sim_table.sim[isim].IOdef_table.io_def[i].freq_param_handle);
-
-	  if(iparam != REG_PARAM_HANDLE_NOTSET){
-
-	    nitem = sscanf(Sim_table.sim[isim].Params_table.param[iparam].value, 
+	  nitem = sscanf(Sim_table.sim[isim].Params_table.param[iparam].value, 
 			   "%d", &(io_freqs[count]) );
-	    if(nitem != 1){
+	  if(nitem != 1){
 
 #if DEBUG
-	      fprintf(stderr, "Get_iotypes: failed to retrieve freq value\n");
-#endif
-	      io_freqs[count] = 0;
-	      return_status = REG_FAILURE;
-	    }
-	  }
-	  else{
-#if DEBUG
-	    fprintf(stderr, "Get_iotypes: failed to match param handle\n");
+	    fprintf(stderr, "Get_iotypes: failed to retrieve freq value\n");
 #endif
 	    io_freqs[count] = 0;
 	    return_status = REG_FAILURE;
 	  }
 	}
+	else{
+#if DEBUG
+	  fprintf(stderr, "Get_iotypes: failed to match param handle\n");
+#endif
+	  io_freqs[count] = 0;
+	  return_status = REG_FAILURE;
+	}
+	
 	count++;
 
 	if(count == num_iotypes)break;
@@ -1970,6 +1963,15 @@ int Sim_attach_proxy(Sim_entry_type *sim, char *SimID)
 
   Delete_msg_struct(msg);
   msg = NULL;
+
+  return return_status;
+}
+
+/*-------------------------------------------------------------------*/
+
+int Sim_attach_globus(Sim_entry_type *sim, char *SimID)
+{
+  int return_status = REG_SUCCESS;
 
   return return_status;
 }

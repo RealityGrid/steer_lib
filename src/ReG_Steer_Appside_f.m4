@@ -97,12 +97,12 @@ INT_KIND_1_DECL(Status);
 
 /*----------------------------------------------------------------
 
-SUBROUTINE register_iotypes_f(NumTypes, IOLabel, IODirn, IOSupport_auto, IOFrequency, IOType, Status)
+SUBROUTINE register_iotypes_f(NumTypes, IOLabel, IODirn, IOFrequency, 
+                              IOType, Status)
 
   INTEGER (KIND=REG_SP_KIND), INTENT(in)                      :: NumTypes
   CHARACTER (LEN=*), DIMENSION(NumTypes), INTENT(in)          :: IOLabel
   INTEGER (KIND=REG_SP_KIND), DIMENSION(NumTypes), INTENT(in) :: IODirn
-  INTEGER (KIND=REG_SP_KIND), DIMENSION(NumTypes), INTENT(in) :: IOSupport_auto
   INTEGER (KIND=REG_SP_KIND), DIMENSION(NumTypes), INTENT(in) :: IOFrequency
   INTEGER (KIND=REG_SP_KIND), DIMENSION(NumTypes), INTENT(out):: IOType
   INTEGER (KIND=REG_SP_KIND), INTENT(out)                     :: Status
@@ -111,14 +111,12 @@ SUBROUTINE register_iotypes_f(NumTypes, IOLabel, IODirn, IOSupport_auto, IOFrequ
 void FUNCTION(register_iotypes_f) ARGS(`NumTypes, 
 				        STRING_ARG(IOLabel),
 					IODirn,
-					IOSupport_auto,
 					IOFrequency,
 				        IOType,
 				        Status')
 INT_KIND_1_DECL(NumTypes);
 STRING_ARG_DECL(IOLabel);
 INT_KIND_1_DECL(IODirn);
-INT_KIND_1_DECL(IOSupport_auto);
 INT_KIND_1_DECL(IOFrequency);
 INT_KIND_1_DECL(IOType);
 INT_KIND_1_DECL(Status);
@@ -143,28 +141,22 @@ INT_KIND_1_DECL(Status);
   }
 
   /* Put pointers to integers in a form suitable for passing in
-     to the C code */
+     to the C code
 
   ptr_array = (int**)malloc((*NumTypes)*sizeof(int*));
 
   for(i=0; i<(int)(*NumTypes); i++){
 
-    if(IOSupport_auto[i] == TRUE){
-
       ptr_array[i] = &(IOFrequency[i]);
-    }
-    else{
-      ptr_array[i] = NULL;
-    }
   }
+  */
 
   *Status = INT_KIND_1_CAST( Register_IOTypes((int)*NumTypes,
 			                             str_array,
                                               (int *)IODirn,
-                                              (int *)IOSupport_auto,
-                                                     ptr_array,
+                                              (int *)IOFrequency,
 			                      (int *)IOType) );
-  free(ptr_array);
+  /*free(ptr_array);*/
   free(str_array);
   return;
 }
@@ -452,10 +444,12 @@ INT_KIND_1_DECL(Status);
 
 /*----------------------------------------------------------------
 
-SUBROUTINE make_vtk_buffer_f(header, nx, ny, nz, a, b, c, array, status)
+SUBROUTINE make_vtk_buffer_f(header, nx, ny, nz, veclen, a, b, c, 
+                             array, status)
 
   CHARACTER (LEN=BUFSIZ), INTENT(out)     :: header
   INTEGER (KIND=REG_SP_KIND), INTENT(in)  :: nx, ny, nz
+  INTEGER (KIND=REG_SP_KIND), INTENT(in)  :: veclen
   REAL (KIND=REG_DP_KIND),    INTENT(in)  :: a, b, c
   REAL (KIND=REG_SP_KIND), DIMENSION(nx*ny*nz), INTENT(out) :: array
   INTEGER (KIND=REG_SP_KIND), INTENT(out) :: status
@@ -463,7 +457,8 @@ SUBROUTINE make_vtk_buffer_f(header, nx, ny, nz, a, b, c, array, status)
 ----------------------------------------------------------------*/
 
 void FUNCTION(make_vtk_buffer_f) ARGS(`STRING_ARG(header), 
-                                       nx, ny, nz, 
+                                       nx, ny, nz,
+                                       veclen, 
                                        a, b, c,
                                        array,
                                        Status')
@@ -471,6 +466,7 @@ STRING_ARG_DECL(header);
 INT_KIND_1_DECL(nx);
 INT_KIND_1_DECL(ny);
 INT_KIND_1_DECL(nz);
+INT_KIND_1_DECL(veclen);
 /* Really need an M4 macro for this but since this is just a test
    routine, leave for now ARPDBG */
 double *a;
@@ -483,6 +479,7 @@ INT_KIND_1_DECL(Status);
                                              (int)*nx, 
                                              (int)*ny, 
                                              (int)*nz,
+                                             (int)*veclen,
                                              *a, *b, *c,
                                              array) );
   return;

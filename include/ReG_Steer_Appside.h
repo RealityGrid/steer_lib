@@ -65,9 +65,8 @@ extern PREFIX int Steering_initialize(int  NumSupportedCmds,
    framework. Returns an integer handle for each IO type. */
 extern PREFIX int Register_IOTypes(int    NumTypes,
 				   char* *IOLabel,
-				   int   *type,
-				   int   *support_auto_io,
-				   int  **IOFrequency,
+				   int   *direction,
+				   int   *IOFrequency,
 				   int   *IOType);
 
 /* Register the specified parameters. Since labels are used to 
@@ -164,6 +163,7 @@ extern PREFIX int Make_vtk_buffer(char  *header,
 				  int    nx,
 				  int    ny,
 				  int    nz,
+				  int    veclen,
 				  double a,
 				  double b,
 				  double c,

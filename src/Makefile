@@ -126,9 +126,7 @@ clean:
 	rm -f *.o ReG_Steer.ln *~ 
 	rm -f ReG_Steer_Appside_f.c
 	rm -f ${REG_INCLUDE_PATH}/*~
-	ar dv ${LIB_PATH}/libReG_Steer.a ReG_Steer_Steerside.o \
-		ReG_Steer_Appside.o ReG_Steer_Appside_f.o \
-                ReG_Steer_Common.o ReG_Steer_Proxy_utils.o
+	rm -f ${LIB_PATH}/libReG_Steer.a
 
 tidy:
 	rm -f ReG_Steer_Steerside.o ReG_Steer_Appside.o \
