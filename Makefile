@@ -2,6 +2,7 @@
 # (NBIT = 32 and G=-n32).
 NBIT         = 32
 GLOBAL_FLAGS = G=-n32 NBIT=$(NBIT)
+LOCAL_BIN_DIR= ${HOME}/bin
 
 all:
 	make app
@@ -24,13 +25,17 @@ app_f90_parallel:  lib$(NBIT)/libReG_Steer.a \
 	cd examples/mini_app_f90_parallel; make ${GLOBAL_FLAGS}
 
 steerer: lib$(NBIT)/libReG_Steer.a \
+ ${LOCAL_BIN_DIR}/ReG_Steer_Proxy.class \
  examples/mini_steerer/*.c
 	cd examples/mini_steerer; make ${GLOBAL_FLAGS}
 
 lib$(NBIT)/libReG_Steer.a: expat/xmlparse/libexpat.a \
  include/*.h \
- src/*.c src/*.m4
+ src/*.c src/*.m4 src/*.java
 	cd src; make ${GLOBAL_FLAGS}
+
+${LOCAL_BIN_DIR}/ReG_Steer_Proxy.class: src/*.java
+	cd src; make  ${GLOBAL_FLAGS}
 
 expat/xmlparse/libexpat.a: 
 	cd expat; make ${GLOBAL_FLAGS}
