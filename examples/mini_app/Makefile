@@ -45,8 +45,7 @@ TARGET   = mini_app
 
 ${TARGET}: ${TARGET}.o
 	${CC} ${C_FLAGS} ${TARGET}.o -o $@ ${STEER_LIBS} ${GLOBUS_LDFLAGS} \
-        ${SOAP_LDFLAGS} -lReG_Steer -lm -lxml2 ${GLOBUS_PKG_LIBS} \
-	${SOAP_PKG_LIBS}
+        -lReG_Steer -lm -lxml2 ${GLOBUS_PKG_LIBS}
 	mv ${TARGET} ${HOME}/bin/.
 
 clean:

@@ -45,8 +45,7 @@ TARGET   = mini_app_para
 
 ${TARGET}: ${TARGET}.o ../../include/reg_steer_f90.inc
 	${F90} ${F90_FLAGS} ${TARGET}.o -o $@ ${STEER_LIBS} ${GLOBUS_LDFLAGS} \
-	${SOAP_LDFLAGS} -lmpi -lReG_Steer -lm -lz -lxml2 ${GLOBUS_PKG_LIBS} \
-	${SOAP_PKG_LIBS}
+	-lmpi -lReG_Steer -lm -lz -lxml2 ${GLOBUS_PKG_LIBS} 
 	mv ${TARGET} ${HOME}/bin/.
 
 mini_app_para.o: mini_app_para.f90
