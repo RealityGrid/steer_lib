@@ -2468,7 +2468,7 @@ int Enable_all_param_logging(int toggle)
 int Enable_param_logging(char *ParamLabel,
 			 int   toggle)
 {
-  int i;
+  int i, len1, len2;
   int found = 0;
   int lToggle = REG_FALSE;
 
@@ -2476,12 +2476,21 @@ int Enable_param_logging(char *ParamLabel,
     lToggle = REG_TRUE;
   }
 
+  /* Take special care to avoid problems with trailing white
+     space in labels passed to us from F90 */
+  len1 = strlen(ParamLabel);
+
   for(i=0; i<Params_table.max_entries; i++){
     if(Params_table.param[i].handle != REG_PARAM_HANDLE_NOTSET){
-      if( !(strcmp(Params_table.param[i].label, ParamLabel)) ){
+
+      len2 = strlen(Params_table.param[i].label);
+      if(len1<len2)len2 = len1;
+
+      if( !(strncmp(Params_table.param[i].label, ParamLabel, len2)) ){
+
 	Params_table.param[i].logging_on = lToggle;
 	found = 1;
-	break;
+	i = Params_table.max_entries; /* break out */
       }
     }
   }
