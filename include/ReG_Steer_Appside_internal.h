@@ -284,14 +284,13 @@ static int Realloc_iotype_buffer(int index,
 static int Log_control_msg(char *msg_txt);
 
 
-/* Searches the directory given by *Path relative to the current working
-   directory for a set of files with the string *ChkTag in common.
+/* Searches for files matching the pattern specified in fileroot (i.e.
+   does 'ls <fileroot>').
    If any are found, names is malloc'd to point to an array of char*
    and each entry in this array is malloc'd and set to the relevant
-   filename. These ptrs must be free'd. */
-static int Get_checkpoint_files(char *ChkTag,
-				char *Path,
-				int  *num,
-				char ***names);
+   filename. These ptrs MUST be free'd. */
+static int Get_file_list(char *fileroot,
+			 int  *num,
+			 char ***names);
 
 #endif

@@ -240,6 +240,10 @@ typedef int REG_IOHandleType;
 #define REG_COMMS_STATUS_FAILURE		5
 #define REG_COMMS_STATUS_CLOSING		6
 
+#define REG_COMMS_NOT_READY   0
+#define REG_COMMS_READY_READ  1
+#define REG_COMMS_READY_WRITE 2
+
 #define REG_PORT_NOTSET  -1
 
 /* Max no. of service-data elements on SGS */

@@ -41,8 +41,6 @@
 #define __REG_STEER_STEERSIDE_H__
 
 #include "ReG_Steer_types.h"
-#include "ReG_Steer_Globus_io.h"
-
 
 #ifdef __cplusplus
   #define PREFIX "C"

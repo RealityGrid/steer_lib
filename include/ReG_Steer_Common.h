@@ -41,7 +41,7 @@
 #ifndef __REG_STEER_COMMON_H__
 #define __REG_STEER_COMMON_H__
 
-#include "ReG_Steer_Globus_io.h"
+#include "ReG_Steer_Appside_Globus.h"
 
 /* Following two includes are for use of stat system call 
    in Open_next_file */
@@ -183,7 +183,10 @@ typedef struct {
 
 typedef struct {
   char				label[REG_MAX_STRING_LENGTH];
+#if !REG_GLOBUS_SAMPLES
   char				filename[REG_MAX_STRING_LENGTH];
+  FILE                         *fp;
+#endif
   int				handle;
   /* Whether input, output */
   int				direction;
