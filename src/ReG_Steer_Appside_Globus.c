@@ -478,120 +478,120 @@ int Initialize_IOType_transport_globus(const int direction,
   int          return_status = REG_SUCCESS;
   int	       hostname_ok = 0;
   int	       port_ok = 0;
-  char	      *pchar;
-  int	       len;
 #if REG_SOAP_STEERING	  
   static int   call_count = 1;
+#else
+  char	      *pchar;
+  int	       len;
 #endif
 
-    /* set up socket_info for callback */
-    if (Globus_socket_info_init(&(IOTypes_table.io_def[index].socket_info)) 
-	!= REG_SUCCESS) {
+  /* set up socket_info for callback */
+  if (Globus_socket_info_init(&(IOTypes_table.io_def[index].socket_info)) 
+      != REG_SUCCESS) {
+#if DEBUG
+    fprintf(stderr, "Initialize_IOType_transport_globus: failed to "
+	    "initialise socket info for IOType\n");
+#endif
+    return_status = REG_FAILURE;
+  } 
+  else {
+      
+    if (direction == REG_IO_OUT){
+
+      /* open socket and register callback function to listen for and
+	 accept connections */
+      if (Globus_create_listener(&(IOTypes_table.io_def[index].socket_info)) != REG_SUCCESS) {
 #if DEBUG
 	fprintf(stderr, "Initialize_IOType_transport_globus: failed to "
-		"initialise socket info for IOType\n");
+		"create listener "
+		"for IOType\n");
 #endif
 	return_status = REG_FAILURE;
-    } 
-    else {
-      
-      if (direction == REG_IO_OUT){
+      }
+      else{
+	  
+#if DEBUG
+	fprintf(stderr, "Initialize_IOType_transport_globus: Created "
+		"listener on port %d, "
+		"index %d, label %s\n", 
+		IOTypes_table.io_def[index].socket_info.listener_port, 
+		index, IOTypes_table.io_def[index].label );
+#endif
+	/* attempt to kick the callback function (in case accept callback) */
+	Globus_callback_poll(&(IOTypes_table.io_def[index].socket_info));
+      }
+    }
+    else if (direction == REG_IO_IN){
 
-	/* open socket and register callback function to listen for and
-	   accept connections */
-	if (Globus_create_listener(&(IOTypes_table.io_def[index].socket_info)) != REG_SUCCESS) {
+      /* register connector against port */
+
+#if REG_SOAP_STEERING	  
+
+      /* Go out into the world of grid services... */
+      if( Get_data_source_address_soap(call_count, 
+		   IOTypes_table.io_def[index].socket_info.connector_hostname,
+	           &IOTypes_table.io_def[index].socket_info.connector_port) 
+	  == REG_SUCCESS){
+
+	call_count++;
+	hostname_ok = 1;
+	port_ok = 1;
+      }
+#else
+      /* get hostname and port from environment variables */
+
+      pchar = getenv("REG_CONNECTOR_HOSTNAME");
+      if (pchar) {
+	len = strlen(pchar);
+	if (len < REG_MAX_STRING_LENGTH) {
+	  sprintf(IOTypes_table.io_def[index].socket_info.connector_hostname,
+		  pchar);
+	  hostname_ok = 1;
+	}
+	else{
+	  fprintf(stderr, "Initialize_IOType_transport_globus: content of "
+		  "REG_CONNECTOR_HOSTNAME exceeds max. string length of "
+		  "%d chars\n", REG_MAX_STRING_LENGTH);
+	}
+      }
+
+      pchar = getenv("REG_CONNECTOR_PORT");
+      if (pchar) {
+	IOTypes_table.io_def[index].socket_info.connector_port = atoi(pchar);
+	port_ok = 1;
+      }
+
+#endif /* !REG_SOAP_STEERING */
+	  
+      if (port_ok && hostname_ok) {
+	
+	if (Globus_create_connector(&(IOTypes_table.io_def[index].socket_info)) != REG_SUCCESS) {
 #if DEBUG
 	  fprintf(stderr, "Initialize_IOType_transport_globus: failed to "
-		  "create listener "
-		  "for IOType\n");
+		  "register connector for IOType\n");
 #endif
 	  return_status = REG_FAILURE;
 	}
 	else{
-	  
+
 #if DEBUG
-	  fprintf(stderr, "Initialize_IOType_transport_globus: Created "
-		  "listener on port %d, "
-		  "index %d, label %s\n", 
-		  IOTypes_table.io_def[index].socket_info.listener_port, 
+	  fprintf(stderr, "Initialize_IOType_transport_globus: registered"
+		  " connector on port %d, hostname = %s, index %d, "
+		  "label %s\n", 
+		  IOTypes_table.io_def[index].socket_info.connector_port,
+		  IOTypes_table.io_def[index].socket_info.connector_hostname,
 		  index, IOTypes_table.io_def[index].label );
 #endif
-	  /* attempt to kick the callback function (in case accept callback) */
-	  Globus_callback_poll(&(IOTypes_table.io_def[index].socket_info));
 	}
-	
       }
-      else if (direction == REG_IO_IN){
-
-	/* register connector against port */
-
-#if REG_SOAP_STEERING	  
-
-	/* Go out into the world of grid services... */
-	if( Get_data_source_address_soap(call_count, 
-		       IOTypes_table.io_def[index].socket_info.connector_hostname,
-		       &IOTypes_table.io_def[index].socket_info.connector_port) 
-	    == REG_SUCCESS){
-
-	  call_count++;
-	  hostname_ok = 1;
-	  port_ok = 1;
-	}
-#else
-	/* get hostname and port from environment variables */
-
-	pchar = getenv("REG_CONNECTOR_HOSTNAME");
-	if (pchar) {
-	  len = strlen(pchar);
-	  if (len < REG_MAX_STRING_LENGTH) {
-	    sprintf(IOTypes_table.io_def[index].socket_info.connector_hostname,
-		    pchar);
-	    hostname_ok = 1;
-	  }
-	  else{
-	    fprintf(stderr, "Initialize_IOType_transport_globus: content of "
-		    "REG_CONNECTOR_HOSTNAME exceeds max. string length of "
-		    "%d chars\n", REG_MAX_STRING_LENGTH);
-	  }
-	}
-
-	pchar = getenv("REG_CONNECTOR_PORT");
-	if (pchar) {
-	  IOTypes_table.io_def[index].socket_info.connector_port = atoi(pchar);
-	  port_ok = 1;
-	}
-
-#endif /* !REG_SOAP_STEERING */
-	  
-	if (port_ok && hostname_ok) {
-	    
-	  if (Globus_create_connector(&(IOTypes_table.io_def[index].socket_info)) != REG_SUCCESS) {
-#if DEBUG
-	    fprintf(stderr, "Initialize_IOType_transport_globus: failed to "
-		    "register connector for IOType\n");
-#endif
-	    return_status = REG_FAILURE;
-	  }
-	  else{
-
-#if DEBUG
-	    fprintf(stderr, "Initialize_IOType_transport_globus: registered"
-		    " connector on port %d, hostname = %s, index %d, "
-		    "label %s\n", 
-		    IOTypes_table.io_def[index].socket_info.connector_port,
-		    IOTypes_table.io_def[index].socket_info.connector_hostname,
-		    index, IOTypes_table.io_def[index].label );
-#endif
-	  }
-	}
-	else{
-	  fprintf(stderr, "Initialize_IOType_transport_globus: cannot "
-		  "create connector as port and hostname not set\n");
-	}
+      else{
+	fprintf(stderr, "Initialize_IOType_transport_globus: cannot "
+		"create connector as port and hostname not set\n");
       }
     }
+  }
 
-    return return_status;
+  return return_status;
 }
 #endif
 

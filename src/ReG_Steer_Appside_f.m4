@@ -124,18 +124,26 @@ INT_KIND_1_DECL(Status);
   int    i;
   int    len;
   char **str_array;
-  char  *buf;
+/*  char  *buf;*/
 
   len = STRING_LEN(IOLabel);
   if(len >= REG_MAX_STRING_LENGTH){
+    fprintf(stderr, 
+            "register_iotypes_f: WARNING: truncating label\n");
     /* Allow space for terminating '/0' */
     len = REG_MAX_STRING_LENGTH - 1;
   }
 
   str_array = (char**)malloc((*NumTypes)*sizeof(char*));
-  buf       = (char*)malloc((*NumTypes)*(len+1));
+ /* buf       = (char*)malloc((*NumTypes)*(len+1));*/
 
-  if(!str_array || !buf){
+  for(i=0; i<(*NumTypes); i++){
+
+    str_array[i] = (char *)malloc(REG_MAX_STRING_LENGTH);
+  }
+
+/*  if(!str_array || !buf){*/
+  if(!str_array){
 
     fprintf(stderr, "Register_IOTypes_f: malloc failed\n");
     *Status = INT_KIND_1_CAST( REG_FAILURE );
@@ -146,7 +154,7 @@ INT_KIND_1_DECL(Status);
 
   for(i=0; i<(int)(*NumTypes); i++){
 
-    str_array[i] = &(buf[i*(len + 1)]);
+    /*str_array[i] = &(buf[i*(len + 1)]);*/
     memcpy(str_array[i], 
            &(STRING_PTR(IOLabel)[i*STRING_LEN(IOLabel)]),
            len);
@@ -158,11 +166,16 @@ INT_KIND_1_DECL(Status);
                                               (int *)IODirn,
                                               (int *)IOFrequency,
 			                      (int *)IOType) );
+  for(i=0; i<(*NumTypes); i++){
+
+    free(str_array[i]);
+  }
 
   free(str_array);
   str_array = NULL;
-  free(buf);
+/*  free(buf);
   buf = NULL;
+*/
   return;
 }
 
@@ -200,6 +213,8 @@ INT_KIND_1_DECL(Status);
 
   len = STRING_LEN(ChkLabel);
   if(len >= REG_MAX_STRING_LENGTH){
+    fprintf(stderr, 
+            "register_chktypes_f: WARNING: truncating label\n");
     /* Allow space for terminating '/0' */
     len = REG_MAX_STRING_LENGTH - 1;
   }
@@ -256,9 +271,55 @@ INT_KIND_1_DECL(ChkType);
 STRING_ARG_DECL(ChkTag);
 INT_KIND_1_DECL(Status);
 {
+  char *pchar;
+  char  buf[REG_MAX_STRING_LENGTH];
+  int   len;
+  int   i;
+  int   found = 1;
+
+  len = STRING_LEN(ChkTag);
+
+  if(len > REG_MAX_STRING_LENGTH){
+
+    fprintf(stderr, "record_chkpt_f: ERROR - length of tag "
+            "exceeds REG_MAX_STRING_LENGTH (%d) chars\n", 
+            REG_MAX_STRING_LENGTH);
+
+    *Status = INT_KIND_1_CAST(REG_FAILURE);
+    return;
+  }
+
+  memcpy(buf, STRING_PTR(ChkTag), len);
+
+  if(len == REG_MAX_STRING_LENGTH){
+
+    found = 0;
+    pchar = STRING_PTR(ChkTag);
+    for(i = (REG_MAX_STRING_LENGTH-1); i == 0; i--){
+      if(pchar[i] == '\0'){
+        found = 1;
+	break;
+      }
+    }
+    if(!found){
+
+      fprintf(stderr, "record_chkpt_f: ERROR - length of label "
+                "is REG_MAX_STRING_LENGTH (%d) chars long\nbut contains "
+                "no termination character - shorten label (or its len "
+                "declaration)\n", 
+                REG_MAX_STRING_LENGTH);
+      *Status = INT_KIND_1_CAST(REG_FAILURE);
+      return;
+    }
+  }
+  else{
+
+    /* Terminate string */
+    buf[len] = '\0';
+  }
 
   *Status = INT_KIND_1_CAST(Record_Chkpt((int)*ChkType, 
-                            STRING_PTR(ChkTag)));
+                                         buf));
 
   return;
 }
@@ -334,9 +395,10 @@ INT_KIND_1_DECL(Status);
     }
   }
 
-#if DEBUG
-  if( (STRING_LEN(ParamMin) > REG_MAX_STRING_LENGTH) ||
-      (STRING_LEN(ParamMin) > REG_MAX_STRING_LENGTH) ){
+  /* Use >= here because I don't want to have to check for '\0'
+     if these strings are REG_MAX_STRING_LENGTH long */
+  if( (STRING_LEN(ParamMin) >= REG_MAX_STRING_LENGTH) ||
+      (STRING_LEN(ParamMax) >= REG_MAX_STRING_LENGTH) ){
     fprintf(stderr, "register_param_f: ERROR - string specifying "
             "max. and/or min. param. value exceeds "
             "REG_MAX_STRING_LENGTH (%d) chars in length\n", 
@@ -345,7 +407,6 @@ INT_KIND_1_DECL(Status);
     *Status = INT_KIND_1_CAST(REG_FAILURE);
     return;
   }
-#endif
 
   if(!(pbuf[0] = (char*)malloc(3*REG_MAX_STRING_LENGTH)) ){
 
@@ -403,8 +464,8 @@ INT_KIND_1_DECL(ParamSteerable);
 STRING_ARG_DECL(StringParam);
 INT_KIND_1_DECL(Status);
 {
-  char *min  = "0";
-  char *max  = "1";
+  char *min  = " ";
+  char *max  = " ";
   char *pbuf[1];
   char *pchar;
   int   type = REG_CHAR;
@@ -458,7 +519,7 @@ INT_KIND_1_DECL(Status);
   /* Terminate string just in case */
   memcpy(pbuf[0], STRING_PTR(ParamLabel), STRING_LEN(ParamLabel));
   if(!found){
-    pbuf[0][STRING_LEN(ParamLabel) + 1] = '\0';
+    pbuf[0][STRING_LEN(ParamLabel)] = '\0';
   }
 
   *Status = INT_KIND_1_CAST( Register_params(1,
@@ -592,8 +653,10 @@ INT_KIND_1_DECL(UseXDR);
 INT_KIND_1_DECL(IOHandle);
 INT_KIND_1_DECL(Status);
 {
-  *Status = INT_KIND_1_CAST( Emit_start(*IOType, *SeqNum, *UseXDR, 
-                                        IOHandle) );
+  *Status = INT_KIND_1_CAST( Emit_start((int)*IOType, 
+                                        (int)*SeqNum, 
+                                        (int)*UseXDR, 
+                                        (int *)IOHandle) );
   return;
 }
 
@@ -686,12 +749,14 @@ INT_KIND_1_DECL(Status);
 
 /*----------------------------------------------------------------
 
-SUBROUTINE make_vtk_header_f(header, nx, ny, nz, veclen, type, status)
+SUBROUTINE make_vtk_header_f(header, title, nx, ny, nz, veclen, 
+                             type, status)
 
-  CHARACTER (LEN=BUFSIZ), INTENT(out)     :: header
-  INTEGER (KIND=REG_SP_KIND), INTENT(in)  :: nx, ny, nz
-  INTEGER (KIND=REG_SP_KIND), INTENT(in)  :: veclen
-  INTEGER (KIND=REG_SP_KIND), INTENT(out) :: status
+  CHARACTER (LEN=BUFSIZ), INTENT(out)               :: header
+  CHARACTER (LEN=REG_MAX_STRING_LENGTH), INTENT(in) :: title
+  INTEGER (KIND=REG_SP_KIND), INTENT(in)            :: nx, ny, nz
+  INTEGER (KIND=REG_SP_KIND), INTENT(in)            :: veclen
+  INTEGER (KIND=REG_SP_KIND), INTENT(out)           :: status
 
 ----------------------------------------------------------------*/
 
@@ -717,7 +782,6 @@ INT_KIND_1_DECL(Status);
                                              (int)*nz,
                                              (int)*veclen,
                                              (int)*type) );
-
   return;
 }
 

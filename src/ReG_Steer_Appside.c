@@ -108,9 +108,7 @@ int Steering_initialize(int  NumSupportedCmds,
   /* Set the location of the file containing the schema describing all 
      steering communication */
 
-  pchar = getenv("REG_STEER_HOME");
-
-  if(pchar){
+  if(pchar = getenv("REG_STEER_HOME")){
 
     /* Check that path ends in '/' - if not then add one */
 
@@ -235,9 +233,9 @@ int Steering_initialize(int  NumSupportedCmds,
   sprintf(Params_table.param[0].value, "-1");
   sprintf(Params_table.param[0].min_val, "-1");
   Params_table.param[0].min_val_valid = TRUE;
-  /* Max. value for sequence number is 100 million */
-  sprintf(Params_table.param[0].max_val, "100000000");
-  Params_table.param[0].max_val_valid = TRUE;
+  /* Max. value for sequence number is unlimited */
+  sprintf(Params_table.param[0].max_val, " ");
+  Params_table.param[0].max_val_valid = FALSE;
   Increment_param_registered(&Params_table);
 
   /* Parameter for monitoring CPU time per step */
@@ -414,15 +412,17 @@ int Register_IOTypes(int    NumTypes,
   int          current;
   int          new_size;
   IOdef_entry *dum_ptr;
-  char*        iofreq_label;
+  char        *iofreq_labels[1];
+  char        *freq_label = "IO_Frequency";
   int          iofreq_strbl;
   int          iofreq_type;
   int          iparam;
   void        *ptr_array[1];
   char        *min_array[1];
   char        *max_array[1];
+  char        *min_val = "0";
+  char        *max_val = " ";
   int          return_status = REG_SUCCESS;
- 
 
   /* Check that steering is enabled */
 
@@ -469,16 +469,16 @@ int Register_IOTypes(int    NumTypes,
     /* Set variables required for registration of associated io
        frequency as a steerable parameter */
 
-    iofreq_label = "IO_Frequency";
+    iofreq_labels[0] = freq_label;
     iofreq_strbl = TRUE;
     iofreq_type  = REG_INT;
     IOTypes_table.io_def[current].frequency = IOFrequency[i];
     ptr_array[0] = (void *)&(IOTypes_table.io_def[current].frequency);
-    min_array[0] = "0";
-    max_array[0] = "100";
+    min_array[0] = min_val;
+    max_array[0] = max_val;
 
     Register_params(1,
-		    &iofreq_label,
+		    iofreq_labels,
 		    &iofreq_strbl,
 		    ptr_array,
 		    &iofreq_type,
@@ -560,12 +560,15 @@ int Register_ChkTypes(int    NumTypes,
   int 	       current;
   int 	       iparam;
   int          new_size;
-  char*        chkfreq_label;
+  char        *chkfreq_labels[1];
+  char        *freq_label = "Chk_Frequency";
   int          chkfreq_strbl;
   int          chkfreq_type;
   void        *ptr_array[1];
   char        *min_array[1];
   char        *max_array[1];
+  char        *min_val = "0";
+  char        *max_val = " ";
   IOdef_entry *dum_ptr;
   int          return_status = REG_SUCCESS;
 
@@ -605,16 +608,16 @@ int Register_ChkTypes(int    NumTypes,
       /* Set variables required for registration of associated io
          frequency as a steerable parameter */
 
-      chkfreq_label = "Chk_Frequency";
+      chkfreq_labels[0] = freq_label;
       chkfreq_strbl = TRUE;
       chkfreq_type  = REG_INT;
       ChkTypes_table.io_def[current].frequency = ChkFrequency[i];
       ptr_array[0]  = (void *)&(ChkTypes_table.io_def[current].frequency);
-      min_array[0]  = "0";
-      max_array[0]  = "100";
+      min_array[0]  = min_val;
+      max_array[0]  = max_val;
 
       Register_params(1,
-		      &chkfreq_label,
+		      chkfreq_labels,
 		      &chkfreq_strbl,
 		      ptr_array,
 		      &chkfreq_type,
@@ -1258,7 +1261,6 @@ int Emit_start(int  IOType,
 	       int  UseXDR,
 	       int *IOTypeIndex)
 {
-
   /* Check that steering is enabled */
   if(!ReG_SteeringEnabled) return REG_SUCCESS;
 
