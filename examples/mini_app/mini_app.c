@@ -38,6 +38,7 @@
 ---------------------------------------------------------------------------*/
 #include "ReG_Steer_Appside.h"
 #include <string.h>
+#include <unistd.h>
 
 /*-------------------------------------------------------------------------*/
 
@@ -81,6 +82,7 @@ int main(){
   int   opacity_step_start = 120;
   int   opacity_step_stop  = 130;
   int   output_freq        = 5;
+  int   sleep_time         = 1;
   float temp               = 55.6;
   float str_float          = 0.9;
   char  my_string[REG_MAX_STRING_LENGTH];
@@ -208,8 +210,8 @@ int main(){
   param_ptrs[2]   = (void *)(&temp);
   param_types[2]  = REG_FLOAT;
   param_strbl[2]  = FALSE;
-  param_min[2]    = "0.0";
-  param_max[2]    = "1000.0";
+  param_min[2]    = "";
+  param_max[2]    = "";
 
   param_labels[3] = "A_STRING";
   sprintf(my_string, "running");
@@ -217,9 +219,8 @@ int main(){
   param_types[3]  = REG_CHAR;
   param_strbl[3]  = TRUE;
   /* Max. and min. not applicable to strings */
-  param_min[3]    = "0";
-  param_max[3]    = "1";
-
+  param_min[3]    = "";
+  param_max[3]    = "";
 
   param_labels[4] = "a_axis";
   param_ptrs[4]   = (void *)(&aaxis);
@@ -247,15 +248,22 @@ int main(){
   param_types[7]  = REG_FLOAT;
   param_strbl[7]  = TRUE;
   param_min[7]    = "-10.0";
-  param_max[7]    = "10.0";
+  param_max[7]    = "";
 
-   status = Register_params(8,
-			    param_labels,
-			    param_strbl,
-			    param_ptrs,
-			    param_types,
-			    param_min,
-			    param_max);
+  param_labels[8] = "time_to_sleep";
+  param_ptrs[8]   = (void *)(&sleep_time);
+  param_types[8]  = REG_INT;
+  param_strbl[8]  = TRUE;
+  param_min[8]    = "0";
+  param_max[8]    = "100";
+
+  status = Register_params(9,
+			   param_labels,
+			   param_strbl,
+			   param_ptrs,
+			   param_types,
+			   param_min,
+			   param_max);
 
   if(status != REG_SUCCESS){
 
@@ -276,7 +284,7 @@ int main(){
 
   for(i=0; i<nloops; i++){
 
-    system("sleep 3");
+    sleep(sleep_time);
     printf("\ni = %d\n", i);
 
     status = Steering_control(i,
