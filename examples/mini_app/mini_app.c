@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------
-  This file contains a very simple example of a steering-enabled 
-  application.
+  This file contains an example of a steering-enabled 
+  application using most of the steering lib's features.
 
   (C) Copyright 2002, 2004, University of Manchester, United Kingdom,
   all rights reserved.
@@ -56,27 +56,24 @@ int main(){
   int    status;
   int    numCommands;
   int    commands[REG_INITIAL_NUM_CMDS];
-	 
   int    num_recvd_cmds;
   int    recvd_cmds[REG_MAX_NUM_STR_CMDS];
-  char*  recvd_cmd_params[REG_MAX_NUM_STR_CMDS];
+  char** recvd_cmd_params;
   int    num_params_changed;
-  char*  changed_param_labels[REG_MAX_NUM_STR_PARAMS];
+  char** changed_param_labels;
 
   /* Some example variables */
 
-  int   opacity_step_start = 120;
   int   opacity_step_stop  = 130;
   int   sleep_time         = 1;
   float temp               = 55.6;
-  float str_float          = 0.9;
   char  my_string[REG_MAX_STRING_LENGTH];
   int   nx = 16;
   int   ny = 16;
   int   nz = 16;
 
   int   itag;
-  int   finished           = REG_FALSE;
+  int   finished = REG_FALSE;
   int   icmd;
   int   i, j;
   
@@ -93,25 +90,16 @@ int main(){
 
   /*---------- End of declarations ------------*/
 
-  changed_param_labels[0] = (char *)malloc((REG_MAX_NUM_STR_CMDS+
-		    REG_MAX_NUM_STR_PARAMS)*REG_MAX_STRING_LENGTH*sizeof(char));
+  /* Use library utility routines to allocate arrays of strings
+     for passing in to Steering_control */
+  changed_param_labels = Alloc_string_array(REG_MAX_STRING_LENGTH,
+					    REG_MAX_NUM_STR_PARAMS);
+  recvd_cmd_params = Alloc_string_array(REG_MAX_STRING_LENGTH,
+					REG_MAX_NUM_STR_CMDS);
 
-  if(!changed_param_labels[0]){
-
-    printf("Failed to allocate memory for strings\n");
+  if(!changed_param_labels || !recvd_cmd_params){
+    printf("Failed to allocate string arrays :-(\n");
     return REG_FAILURE;
-  }
-
-  for(i=1; i<REG_MAX_NUM_STR_PARAMS; i++){
-
-    changed_param_labels[i]=changed_param_labels[i-1] + REG_MAX_STRING_LENGTH;
-  }
-
-  recvd_cmd_params[0] = changed_param_labels[REG_MAX_NUM_STR_PARAMS-1]
-                     + REG_MAX_STRING_LENGTH;
-  for(i=1; i<REG_MAX_NUM_STR_CMDS; i++){
-
-    recvd_cmd_params[i] = recvd_cmd_params[i-1] + REG_MAX_STRING_LENGTH;
   }
 
   /* Initialise & enable the steering library */
@@ -129,57 +117,53 @@ int main(){
 
   /* Register the input and output IO channels */
 
-  status = Register_IOType("SOME_INPUT_DATA", 
-			   REG_IO_IN, 
-			   0, /* Don't do any auto consumption */
-			   &(iotype_handle[0]));
-
-  if(status == REG_SUCCESS){
-
-    status = Register_IOType("VTK_STRUCTURED_POINTS",
-			     REG_IO_OUT, 
-			     1, /* Attempt to do output every timestep */
-			     &(iotype_handle[1]));
-  }
-  num_iotypes = 2;
-
-  if(status != REG_SUCCESS){
-
-    printf("Failed to register 2nd IO type\n");
+  if( Register_IOType("SOME_INPUT_DATA", 
+		      REG_IO_IN, 
+		      0, /* Don't do any auto consumption */
+		      &(iotype_handle[0])) != REG_SUCCESS){
+    printf("Failed to register IO type SOME_INPUT_DATA\n");
     Steering_finalize();
     return REG_FAILURE;
   }
+  if( Register_IOType("VTK_STRUCTURED_POINTS",
+		      REG_IO_OUT, 
+		      1, /* Attempt to do output every timestep */
+		      &(iotype_handle[1])) != REG_SUCCESS){
+    printf("Failed to register IO type VTK_STRUCTURED_POINTS\n");
+    Steering_finalize();
+    return REG_FAILURE;
+  }
+  num_iotypes = 2;
 
   /* Register checkpoint emission */
 
-  status = Register_ChkType("MY_CHECKPOINT", 
-			    REG_IO_OUT, 
-			    0, /* No auto checkpointing */
-			    &(chktype_handle[0]));
-
-  status = Register_ChkType("MY_OTHER_CHECKPOINT", 
-			    REG_IO_INOUT, 
-			    0, /* No auto checkpointing */
-			    &(chktype_handle[1]));
-
-  status = Register_ChkType("YET_ANOTHER_CHECKPOINT", 
-			    REG_IO_INOUT, 
-			    0, /* No auto checkpointing */
-			    &(chktype_handle[2]));
-
-  num_chktypes = 3;
-
-  if(status != REG_SUCCESS){
-
-    printf("Failed to register Chk types\n");
+  if( Register_ChkType("MY_CHECKPOINT", 
+		       REG_IO_OUT, 
+		       0, /* No auto checkpointing */
+		       &(chktype_handle[0])) != REG_SUCCESS){
+    printf("Failed to register Chk type MY_CHECKPOINT\n");
     return REG_FAILURE;
   }
 
+  if( Register_ChkType("MY_OTHER_CHECKPOINT", 
+		       REG_IO_INOUT, 
+		       0, /* No auto checkpointing */
+		       &(chktype_handle[1])) != REG_SUCCESS){
+    printf("Failed to register Chk type MY_OTHER_CHECKPOINT\n");
+    return REG_FAILURE;
+  }
+
+  if( Register_ChkType("YET_ANOTHER_CHECKPOINT", 
+		       REG_IO_INOUT, 
+		       0, /* No auto checkpointing */
+		       &(chktype_handle[2])) != REG_SUCCESS){
+    printf("Failed to register Chk type YET_ANOTHER_CHECKPOINT\n");
+    return REG_FAILURE;
+  }
+  num_chktypes = 3;
+
   /* Register some parameters */
 
-  status = Register_param("OPACITY_STEP_START", REG_TRUE, 
-			  (void *)(&opacity_step_start),
-			  REG_INT, "0", "256");
   status = Register_param("OPACITY_STEP_STOP", REG_TRUE, 
 			  (void *)(&opacity_step_stop),
 			  REG_INT, "0", "256");
@@ -194,8 +178,6 @@ int main(){
 			  REG_DBL, "0.01", "10.0");
   status = Register_param("c_axis", REG_TRUE, (void *)(&caxis),
 			  REG_DBL, "0.01", "10.0");
-  status = Register_param("str_float", REG_TRUE, (void *)(&str_float),
-			  REG_FLOAT, "-10.0", "");
   status = Register_param("time_to_sleep", REG_TRUE, (void *)(&sleep_time),
 			  REG_INT, "0", "100");
   status = Register_param("nx", REG_TRUE, (void *)(&nx),
@@ -227,11 +209,9 @@ int main(){
 
     if(status == REG_SUCCESS){
 
-      printf("opacity_step_start = %d\n", opacity_step_start);
       printf("opacity_step_stop  = %d\n", opacity_step_stop);
       printf("temp               = %f\n", temp);
       printf("my_string          = %s\n", my_string);
-      printf("str_float          = %f\n", str_float);
 
       if(num_recvd_cmds > 0){
   
@@ -342,12 +322,13 @@ int main(){
 		      /* Construct header for this chunk to allow the recipient 
 			 of this data to reconstruct the data set */
 		      status = Make_chunk_header(header, iohandle, nx, ny, nz, 
-						 (ichunk*chunk_dim), 0, 0, chunk_dim, ny, nz);
+						 (ichunk*chunk_dim), 0, 0, 
+						 chunk_dim, ny, nz);
 
 		      data_count = strlen(header);
 		      data_type  = REG_CHAR;
-		      status = Emit_data_slice(iohandle, data_type, data_count, &
-					       header);
+		      status = Emit_data_slice(iohandle, data_type, data_count,
+					       &header);
 		      if(status != REG_SUCCESS){
 			printf("Emit_data_slice failed - end emit\n");
 			break;
@@ -420,9 +401,6 @@ int main(){
 
   /* Clean up the steering library */
   status = Steering_finalize();
-
-  /* Clean up locals */
-  free(changed_param_labels[0]);
 
   return 0;
 }

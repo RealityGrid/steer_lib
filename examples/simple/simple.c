@@ -129,7 +129,7 @@ int main(){
  	  }
 
 	  /* Break out if steerer told us to stop */  
- 	  if(finished)break; /* out of loop over rec'd commands */
+ 	  if(finished)break; /* out of loop over recv'd commands */
     	}
 	if(finished)break; /* out of main sim. loop */
       }
@@ -140,7 +140,7 @@ int main(){
   } /* End of main loop */
 
   /* Clean up the steering library */
-  status = Steering_finalize();
+  Steering_finalize();
 
   return 0;
 }
