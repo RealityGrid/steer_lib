@@ -38,14 +38,14 @@
 ---------------------------------------------------------------------------*/
 
 #include "ReG_Steer_types.h"
-#include <globus_io.h>
-#include <globus_common.h> /*SMR XXX */
+#include "ReG_Steer_Globus_io.h"
 
 #ifdef __cplusplus
   #define PREFIX "C"
 #else
   #define PREFIX 
 #endif
+
 
 /*-------------- Application-side function prototypes -------------*/
 
@@ -169,84 +169,3 @@ extern PREFIX int Make_vtk_buffer(char  *header,
 				  double c,
 				  float *array);
 
-/* Activate the globus IO module if it hasn't already been activated */
-extern PREFIX int Globus_io_activate(void);
-
-/* Deactivate the globus module if it was ever activated */
-extern PREFIX void Globus_io_deactivate(void);
-
-/* Initialise Globus_callback_monitor structure - this is member of 
-   IOdef_entry structure in in IOTypes_table */
-extern PREFIX void Globus_monitor_init(const int index);
-
-/* Kick the Globus callback mechanism */
-extern PREFIX void Globus_callback_poll(const int index);
-
-
-/* Register listener callback function Globus_listener_callback on any
-   available port (within GLOBUS_TCP_PORT_RANGE environment varaible
-   if set) */
-extern PREFIX int Globus_create_listener(unsigned short int	*port,
-					 int			*index);
-
-/* The callback function called when connector connects to socket -
-   this function accepts the connection - the function is executed
-   when kicked via a call to Globus_callback_poll, thus there could be
-   time delay between connection being made and connection being
-   accepted */
-extern PREFIX void Globus_listener_callback (void		*callback_arg,
-					     globus_io_handle_t	*handle,
-					     globus_result_t	result);
-
-
-extern PREFIX void Globus_accept_callback (void			*callback_arg,
-					   globus_io_handle_t	*handle,
-					   globus_result_t	resultparam);
-
-
-/* Register callback function Globus_connector_callback to attempt to
-   connect using globals connector_hostname and connector_port - use
-   of globals will be removed eventually */
-extern PREFIX int Globus_create_connector(int			*index);
-
-
-/* The connector callback function - this callback is kicked within Globus_create_connector
-   as is called immediately after registration to attempt a connect */
-extern PREFIX void Globus_connector_callback (void			*callback_arg,
-					      globus_io_handle_t	*handle,
-					      globus_result_t		result);
-
-/* Close and clean up a listener connection */
-extern PREFIX void Globus_cleanup_listener_connection(const int index);
-
-/* Close and clean up a connector connection */
-extern PREFIX void Globus_cleanup_connector_connection(const int index);
-
-/* Call globus funtion close connections for the conn_handle */
-extern PREFIX void Globus_close_conn_handle(const int index);
-
-/* Call globus funtions to close listener handle */
-extern PREFIX void Globus_close_listener_handle(const int index);
-
-/* Callback function for globus_io_register_close in
-   Globus_close_conn_handle */
-extern PREFIX void Globus_close_callback (void			*callback_arg,
-					   globus_io_handle_t	*handle,
-					   globus_result_t	resultparam);
-
-/* Callback function for globus_io_register_close in
-   Globus_close_listener_handle */
-void
-Globus_close_listener_callback (void			*callback_arg,
-				globus_io_handle_t	*handle,
-				globus_result_t		resultparam);
-
-/* Call globus functions to accept pending connections */
-void Globus_attempt_listener_connect(const int index);
-
-
-/* Call globus functions to close failed socket and accept any pending connection attempts */
-extern PREFIX void Globus_retry_accept_connect(const int index);
-
-/* Call globus functions to close failed socket and retry to connect */
-extern PREFIX void Globus_retry_connect(int index);
