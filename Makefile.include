@@ -49,7 +49,9 @@ CXX_FLAGS = ${CFLAGS} -g
 F90 =
 F90_FLAGS = -g
 # Location of java compiler - used to produce proxy binary
-JAVAC          = 
+JAVAC =
+# Java needed for production of SOAP stubs
+JAVA = java 
 # Location of the M4 macro processor (used to generate F90 wrappers)
 M4 = m4
 # Location of the archive command
@@ -89,5 +91,8 @@ REG_GLOBUS_STEERING_FLAG = 0
 
 # Set flag to 1 to use SOAP for steering communication, 0 to not 
 REG_SOAP_STEERING_FLAG = 1
+SOAP_CLASS_PATH = /home/zzcgumk/src/gsoap-2.1.10/soapcpp2/wsdlcpp
+SOAPCPP2 = /usr/local/bin/soapcpp2
+SOAP_INCLUDES = 
 SOAP_PKG_LIBS = -lgsoap
 SOAP_LDFLAGS = 
