@@ -217,9 +217,15 @@ int main(){
 	for(i=0; i<num_params; i++){
 
 	  fprintf(stderr, "Handle: %d, Label: %s, Value: %s, Type: %d\n", 
-		  param_details[i].handle, 
-		  param_details[i].label, param_details[i].value, 
-		  param_details[i].type);
+		  param_details[i].handle, param_details[i].label, 
+		  param_details[i].value, param_details[i].type);
+
+	  if(param_details[i].type == REG_BIN){
+	    fprintf(stderr, "        Have %d bytes of raw data at %p\n", 
+		    atoi(param_details[i].max_val), 
+		    param_details[i].raw_data);
+	  }
+
 	}
       }
     }
@@ -228,7 +234,7 @@ int main(){
 
     if(Get_param_number(sim_handle, REG_TRUE, &num_params) != REG_FAILURE){
 
-      fprintf(stderr, "Have %d steerable parameters:\n", num_params);
+      fprintf(stderr, "\nHave %d steerable parameters:\n", num_params);
 
       /* This is simple cludge - should really realloc to make arrays
 	 big enough */
@@ -711,14 +717,9 @@ int main(){
 int Choose_parameter(int sim_handle, int steerable)
 {
   int    num_params;
-  char  *param_val[1];
   Param_details_struct param_details[REG_INITIAL_NUM_PARAMS];
-  int    i;
-  int    input;
+  int    i, input;
   char   user_str[REG_MAX_STRING_LENGTH];
-
-  param_val[0] = (char *)malloc(REG_MAX_STRING_LENGTH*sizeof(char));
-  if (!param_val[0]) return REG_FAILURE;
 
   /* Find out what parameters there are available */
   
@@ -761,6 +762,8 @@ int Choose_parameter(int sim_handle, int steerable)
       }
     }
   }
+
+
   return REG_PARAM_HANDLE_NOTSET;
 }
 
@@ -771,8 +774,7 @@ int Edit_parameter(int sim_handle)
   int    num_params;
   char  *param_val[1];
   Param_details_struct param_details[REG_INITIAL_NUM_PARAMS];
-  int    i;
-  int    input;
+  int    i, index;
   char   user_str[REG_MAX_STRING_LENGTH];
   int    return_status = REG_SUCCESS;
   int    handle;
@@ -803,13 +805,14 @@ int Edit_parameter(int sim_handle)
 	  fprintf(stderr, "%d: %s = %s (%s,%s)\n", i, param_details[i].label, 
 		  param_details[i].value, param_details[i].min_val, 
 		  param_details[i].max_val);
+	  index = i;
 	  break;
 	}
       }
 
       fprintf(stderr, "Editing parameter with handle %d, "
 	      "current value = %s...\n", 
-	      handle, input, param_details[input].value);
+	      handle, param_details[index].value);
 
       fprintf(stderr, "New value: ");
 
@@ -821,7 +824,7 @@ int Edit_parameter(int sim_handle)
       strcpy(param_val[0], user_str);
       return_status = Set_param_values(sim_handle,
 				       1,
-				       &(param_details[input].handle),
+				       &(param_details[index].handle),
 				       param_val);
     }
   }
