@@ -56,15 +56,6 @@ REG_LIB_OBJECTS=ReG_Steer_Appside_f.o \
  Base64.o \
  ReG_Steering_Initialize.o
 
-.f90.o:
-	${F90} ${F90_FLAGS} \
-        -DREG_SOCKET_SAMPLES=${REG_SOCKET_SAMPLES_FLAG} \
-        -DREG_SOAP_STEERING=${REG_SOAP_STEERING_FLAG} \
-        -DREG_DEBUG=${REG_DEBUG_FLAG} \
-        -DREG_DEBUG_FULL=${REG_DEBUG_FULL_FLAG} \
-        -DREG_STEER_LIB_VERSION=\"${REG_STEER_LIB_VERSION}\" \
-        ${INCLUDE_PATH} -c $< -o $@
-
 .c.o:
 	${CC} ${C_FLAGS} \
         -DREG_SOCKET_SAMPLES=${REG_SOCKET_SAMPLES_FLAG} \
@@ -111,7 +102,8 @@ ${LIB_PATH}/libReG_Steer.a: ${REG_LIB_OBJECTS}
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a soapC.o
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a soapClient.o
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a Base64.o
-	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steering_Initialize.o
+# '-' is to allow for failure in case we don't have an F90 compiler
+	-${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steering_Initialize.o
 
 #---------------------------------------------------------------
 
@@ -202,8 +194,17 @@ ReG_Steer_Logging.o: ReG_Steer_Logging.c \
 Base64.o: Base64.c \
         ../include/Base64.h
 
+# Leading '-' is to allow for failure in case we don't have an 
+# F90 compiler
 ReG_Steering_Initialize.o: ReG_Steering_Initialize.f90 \
         ../include/reg_steer_f90.inc
+	-${F90} ${F90_FLAGS} \
+        -DREG_SOCKET_SAMPLES=${REG_SOCKET_SAMPLES_FLAG} \
+        -DREG_SOAP_STEERING=${REG_SOAP_STEERING_FLAG} \
+        -DREG_DEBUG=${REG_DEBUG_FLAG} \
+        -DREG_DEBUG_FULL=${REG_DEBUG_FULL_FLAG} \
+        -DREG_STEER_LIB_VERSION=\"${REG_STEER_LIB_VERSION}\" \
+        ${INCLUDE_PATH} -c $< -o $@
 
 #---------------------------------------------------------------
 
