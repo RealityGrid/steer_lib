@@ -1530,42 +1530,42 @@ int Register_params(int    NumParams,
     switch(ParamTypes[i]){
 
     case REG_INT:
-      if(strtok(ParamMinima[i], " ")){
+      /*if(strtok(ParamMinima[i], " ")){*/
 	if(sscanf(ParamMinima[i], "%d", &dum_int) == 1){
 	  Params_table.param[current].min_val_valid = TRUE;
 	}
-      }
-      if(strtok(ParamMaxima[i], " ")){
+	/*}*/
+	/*if(strtok(ParamMaxima[i], " ")){*/
 	if(sscanf(ParamMaxima[i], "%d", &dum_int) == 1){
 	  Params_table.param[current].max_val_valid = TRUE;
 	}
-      }
+	/*}*/
       break;
 
     case REG_FLOAT:
-      if(strtok(ParamMinima[i], " ")){
+      /*if(strtok(ParamMinima[i], " ")){*/
 	if(sscanf(ParamMinima[i], "%f", &dum_flt) == 1){
 	  Params_table.param[current].min_val_valid = TRUE;
 	}
-      }
-      if(strtok(ParamMaxima[i], " ")){
+	/*}*/
+	/*if(strtok(ParamMaxima[i], " ")){*/
 	if(sscanf(ParamMaxima[i], "%f", &dum_flt) == 1){
 	  Params_table.param[current].max_val_valid = TRUE;
 	}
-      }
+	/*}*/
       break;
 
     case REG_DBL:
-      if(strtok(ParamMinima[i], " ")){
+      /*if(strtok(ParamMinima[i], " ")){*/
 	if(sscanf(ParamMinima[i], "%lf", &dum_dbl) == 1){
 	  Params_table.param[current].min_val_valid = TRUE;
 	}
-      }
-      if(strtok(ParamMaxima[i], " ")){
+	/*}*/
+	/*if(strtok(ParamMaxima[i], " ")){*/
 	if(sscanf(ParamMaxima[i], "%lf", &dum_dbl) == 1){
 	  Params_table.param[current].max_val_valid = TRUE;
 	}
-      }
+	/*}*/
       break;
 
     case REG_CHAR:
