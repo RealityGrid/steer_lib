@@ -1274,13 +1274,11 @@ int Consume_param_log(Sim_entry_type *sim,
 	sscanf((char *)(param_ptr->value), "%d",
 	       &dum_int);
 	sim->Params_table.param[i].log[index++] = (double)dum_int;
-	/* &( ((int *)(sim->Params_table.param[i].log))[index++]) );*/
         break;
       case REG_FLOAT:
 	sscanf((char *)(param_ptr->value), "%f",
 	       &dum_float);
 	sim->Params_table.param[i].log[index++] = (double)dum_float;
-        /* &( ((float *)(sim->Params_table.param[i].log))[index++]) );*/
 	break;
       case REG_DBL:
 	sscanf((char *)(param_ptr->value), "%lf",
@@ -1300,18 +1298,6 @@ int Consume_param_log(Sim_entry_type *sim,
     else{
       switch(sim->Params_table.param[i].type){
 
-      /* Store a zero if we have no actual value */
-	/*
-      case REG_INT:
-	((int *)(sim->Params_table.param[i].log))[index++] = 0;
-        break;
-      case REG_FLOAT:
-	((float *)(sim->Params_table.param[i].log))[index++] = 0.0;
-	break;
-      case REG_DBL:
-	((double *)(sim->Params_table.param[i].log))[index++] = 0.0;
-	break;
-*/
       case REG_CHAR:
 	/* This not implemented yet */
 	fprintf(stderr, "Consume_param_log: logging of char params not "
