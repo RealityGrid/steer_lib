@@ -46,7 +46,7 @@ TARGET   = mini_steerer
 ${TARGET}: ${TARGET}.o
 	${CC} ${C_FLAGS} ${TARGET}.o -o $@ ${STEER_LIBS} ${GLOBUS_LDFLAGS} \
 	-lReG_Steer -lxml2 ${GLOBUS_PKG_LIBS}
-	mv ${TARGET} ${HOME}/bin/.
+	mv ${TARGET} ${LOCAL_BIN_DIR}/.
 
 clean:
 	rm -f *.o *~ core ${TARGET}
