@@ -1028,11 +1028,12 @@ int Record_checkpoint_set(int   ChkType,
     bytes_left -= nbytes;
   }
 
-  /* ARPDBG */
+#if REG_DEBUG
   fprintf(stderr, "Record_checkpoint_set: node meta data >>%s<<\n",
 	  node_data);
   fprintf(stderr, "Record_checkpoint_set: cp_data >>%s<<\n",
 	  cp_data);
+#endif
 
   /* Record checkpoint */
   Record_checkpoint_set_soap(cp_data, node_data);
@@ -3049,7 +3050,6 @@ int Emit_log()
   /* Send log of steering commands */
   if(strlen(Chk_log.pSteer_cmds) > 0){
 
-    fprintf(stderr, "Emit_log: logged commands >>%s<<\n", Chk_log.pSteer_cmds);
     Emit_log_entries(Chk_log.pSteer_cmds);
     Chk_log.pSteer_cmds[0]='\0';
     Chk_log.pSteer_cmds_slot = Chk_log.pSteer_cmds;
