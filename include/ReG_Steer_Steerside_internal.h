@@ -183,4 +183,8 @@ static int Get_log_entry_details(Param_table_type   *param_table,
 				 Chk_log_entry_type *in,
 				 Output_log_struct  *out);
 
+/* Returns the index of the next free entry in the table of simulations
+   being steered */
+static int Next_free_sim_index();
+
 #endif

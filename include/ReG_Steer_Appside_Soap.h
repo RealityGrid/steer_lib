@@ -48,6 +48,8 @@ int Steerer_connected_soap();
 
 int Send_status_msg_soap(char* msg);
 
+int Detach_from_steerer_soap();
+
 struct msg_struct *Get_control_msg_soap();
 
 int Finalize_steering_connection_soap();

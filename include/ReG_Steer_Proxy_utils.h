@@ -72,3 +72,7 @@ int Get_proxy_message(int pipe_from_proxy, char *buf, int *nbytes);
 /* Function to check that the specified java executable (assumed to
    need ".class" appending to it) is on the specified class path */
 int Proxy_is_in_path(const char *class_path, const char *exec);
+
+/* Utility function to read next line from stream attached to fd */
+int getline(char s[], int lim, int fd);
+

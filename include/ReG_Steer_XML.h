@@ -151,6 +151,8 @@ int parseChkTypeDef(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 		    struct io_def_struct *chk_def);
 int parseIOTypeDef(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 		   struct io_def_struct *io_def);
+int parseIOType(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
+                 struct io_struct *io);
 int parseSteerLog(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 	          struct log_struct *log);
 int parseSteerLogEntry(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
