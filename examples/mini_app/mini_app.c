@@ -358,32 +358,13 @@ int main(){
 
 		if(j==1){
 
-		  if(Make_vtk_header(header, "Some data", nx, ny, nz, 1, 
-				     REG_FLOAT) != REG_SUCCESS) {
-		    continue;
-		  }
-
-		  /* malloc memory for array */
-
-		  if( !(array = (float *)malloc(nx*ny*nz*sizeof(float))) ){
-		    
-		    fprintf(stderr, "Malloc of %d bytes failed...\n",
-			    (int)(nx*ny*nz*sizeof(float)));
-		    status = Steering_finalize();
-		    return REG_FAILURE;
-		  }
-
-
-		  if(Make_vtk_buffer(nx, ny, nz, 1, aaxis, baxis, caxis, 
-                                     array)
-		     != REG_SUCCESS){
-
-		    continue;
-		  }
-
 		  if( Emit_start(iotype_handle[j], i, &iohandle)
 		      == REG_SUCCESS ){
 
+		    if(Make_vtk_header(header, "Some data", nx, ny, nz, 1, 
+				       REG_FLOAT) != REG_SUCCESS) {
+		      continue;
+		    }
 
 		    printf("First slice...\n");
 		    data_count = strlen(header);
@@ -395,6 +376,24 @@ int main(){
 
 		      printf("Call to Emit_data_slice failed\n");
 		      Emit_stop(&iohandle);
+		      continue;
+		    }
+
+		    /* malloc memory for array */
+
+		    if( !(array = (float *)malloc(nx*ny*nz*sizeof(float))) ){
+		    
+		      fprintf(stderr, "Malloc of %d bytes failed...\n",
+			      (int)(nx*ny*nz*sizeof(float)));
+		      status = Steering_finalize();
+		      return REG_FAILURE;
+		    }
+
+
+		    if(Make_vtk_buffer(nx, ny, nz, 1, aaxis, baxis, caxis, 
+				       array)
+		       != REG_SUCCESS){
+		      
 		      continue;
 		    }
 
