@@ -97,7 +97,8 @@ INT_KIND_1_DECL(Status);
 
 /*----------------------------------------------------------------
 
-SUBROUTINE register_iotypes_f(NumTypes, IOLabel, IODirn, IOFrequency, IOType, Status)
+SUBROUTINE register_iotypes_f(NumTypes, IOLabel, IODirn, IOFrequency, 
+                              IOType, Status)
 
   INTEGER (KIND=REG_SP_KIND), INTENT(in)                      :: NumTypes
   CHARACTER (LEN=*), DIMENSION(NumTypes), INTENT(in)          :: IOLabel
@@ -121,7 +122,6 @@ INT_KIND_1_DECL(IOType);
 INT_KIND_1_DECL(Status);
 {
   int    i;
-  int  **ptr_array;
   char **str_array;
 
   str_array = (char**)malloc((*NumTypes)*sizeof(char));
@@ -139,29 +139,12 @@ INT_KIND_1_DECL(Status);
     str_array[i] = &(STRING_PTR(IOLabel)[i*STRING_LEN(IOLabel)]);
   }
 
-  /* Put pointers to integers in a form suitable for passing in
-     to the C code
-
-  ptr_array = (int**)malloc((*NumTypes)*sizeof(int*));
-
-  for(i=0; i<(int)(*NumTypes); i++){
-
-    if(IOSupport_auto[i] == TRUE){
-
-      ptr_array[i] = &(IOFrequency[i]);
-    }
-    else{
-      ptr_array[i] = NULL;
-    }
-  }
-  */
-
   *Status = INT_KIND_1_CAST( Register_IOTypes((int)*NumTypes,
 			                             str_array,
                                               (int *)IODirn,
                                               (int *)IOFrequency,
 			                      (int *)IOType) );
-  /*free(ptr_array);*/
+
   free(str_array);
   return;
 }
