@@ -204,6 +204,8 @@ int Get_sim_list(int   *nSims,
 
 #if REG_SOAP_STEERING
 
+    /* ARPDBG - ultimately we will contact a registry here
+       and ask it for the location of any SGSs it knows of */
     *nSims = 1;
     sprintf(simName[0], "Simulation");
     sprintf(simGSH[0], "http://vermont.mvc.mcc.ac.uk:50005/");
@@ -407,6 +409,12 @@ int Sim_attach(char *SimID,
     }
   }
 
+  /* Initialise Steering Grid Service-related data if steering via SOAP */
+#if REG_SOAP_STEERING
+  sim_ptr->SGS_info.sde_count = 0;
+  sim_ptr->SGS_info.sde_index = 0;
+#endif
+
   /* Now we actually connect to the application */
 
   if(Proxy.available){
@@ -555,9 +563,7 @@ int Get_next_message(int         *SimHandle,
 	Sim_table.sim[isim].msg = 
 	                Get_status_msg_globus(&(Sim_table.sim[isim]));
 #elif REG_SOAP_STEERING
-	fprintf(stderr, "Get_next_message: calling Get_status_msg_soap...\n");
 	Sim_table.sim[isim].msg = Get_status_msg_soap(&(Sim_table.sim[isim]));
-	fprintf(stderr, "Get_next_message: done call to Get_status_msg_soap\n");
 #else
 
 	/* No proxy available so using 'local' file system */
@@ -1128,7 +1134,34 @@ int Consume_status(int   SimHandle,
   count = 0;
   while(cmd_ptr){
 
-    sscanf((char *)(cmd_ptr->id), "%d", &(Commands[count]));
+    if(cmd_ptr->id){
+      sscanf((char *)(cmd_ptr->id), "%d", &(Commands[count]));
+    }
+    else if(cmd_ptr->name){
+
+	  if(strncmp(cmd_ptr->name, "STOP", 4) == 0){
+	    Commands[count] = REG_STR_STOP;
+	  }
+	  else if(strncmp(cmd_ptr->name, "PAUSE", 5) == 0){
+	    Commands[count] = REG_STR_PAUSE;
+	  }
+	  else if(strncmp(cmd_ptr->name, "DETACH", 6) == 0){
+	    Commands[count] = REG_STR_DETACH;
+	  }
+	  else if(strncmp(cmd_ptr->name, "RESUME", 6) == 0){
+	    Commands[count] = REG_STR_RESUME;
+	  }
+	  else{
+	    fprintf(stderr, "Consume_status: unrecognised cmd name: %s\n", 
+		    (char *)cmd_ptr->name);
+	    cmd_ptr = cmd_ptr->next;
+	  }
+    }
+    else{
+      fprintf(stderr, "Consume_status: error - skipping cmd because is missing "
+	      "both id and name\n");
+      cmd_ptr = cmd_ptr->next;
+    }
 
     count++;
 
@@ -2869,10 +2902,14 @@ int Finalize_connection(Sim_entry_type *sim)
 
     return Finalize_connection_globus(sim);
 
+#elif REG_SOAP_STEERING
+
+    /* Detaching from the SGS should be enough to take everything
+       down */
+    return Send_detach_msg_soap(sim);
 #else
 
     return Finalize_connection_file(sim);
-
 #endif
   }
  

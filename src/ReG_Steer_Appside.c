@@ -2422,7 +2422,34 @@ int Consume_control(int    *NumCommands,
 
       while(cmd){
 
-	sscanf((char *)(cmd->id), "%d", &(Commands[count]));
+	if(cmd->id){
+	  sscanf((char *)(cmd->id), "%d", &(Commands[count]));
+	}
+	else if(cmd->name){
+
+	  if(strncmp(cmd->name, "STOP", 4) == 0){
+	    Commands[count] = REG_STR_STOP;
+	  }
+	  else if(strncmp(cmd->name, "PAUSE", 5) == 0){
+	    Commands[count] = REG_STR_PAUSE;
+	  }
+	  else if(strncmp(cmd->name, "DETACH", 6) == 0){
+	    Commands[count] = REG_STR_DETACH;
+	  }
+	  else if(strncmp(cmd->name, "RESUME", 6) == 0){
+	    Commands[count] = REG_STR_RESUME;
+	  }
+	  else{
+	    fprintf(stderr, "Consume_control: unrecognised cmd name: %s\n", 
+		    (char *)cmd->name);
+	    cmd = cmd->next;
+	  }
+	}
+	else{
+	  fprintf(stderr, "Consume_control: error - skipping cmd because is missing "
+		  "both id and name\n");
+	  cmd = cmd->next;
+	}
 
 	if(cmd->first_param){
 

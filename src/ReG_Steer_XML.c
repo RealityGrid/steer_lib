@@ -613,6 +613,10 @@ int parseCmd(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 
       cmd->id = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
     }
+    else if( !xmlStrcmp(cur->name, (const xmlChar *) "Cmd_name") ){
+
+      cmd->name = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
+    }
     else if( !xmlStrcmp(cur->name, (const xmlChar *) "Cmd_param") ){
 
       if(cmd->first_param){
@@ -781,6 +785,7 @@ struct cmd_struct *New_cmd_struct()
   if(cmd){
 
     cmd->id          = NULL;
+    cmd->name        = NULL;
     cmd->first_param = NULL;
     cmd->param       = NULL;
     cmd->next        = NULL;
@@ -945,6 +950,7 @@ void Delete_cmd_struct(struct cmd_struct *cmd)
   while(cmd){
 
     if(cmd->id) xmlFree(cmd->id);
+    if(cmd->name) xmlFree(cmd->name);
 
     if(cmd->first_param){
       Delete_param_struct(cmd->first_param);
@@ -1171,7 +1177,8 @@ void Print_cmd_struct(struct cmd_struct *cmd)
 
   while(ptr){
     fprintf(stderr, "Command no. %d:\n", count);
-    if(ptr->id) fprintf(stderr, "   ID = %s\n", (char *)(ptr->id));
+    if(ptr->id)   fprintf(stderr, "   ID = %s\n", (char *)(ptr->id));
+    if(ptr->name) fprintf(stderr, " name = %s\n", (char *)(ptr->name));
     if(ptr->first_param) Print_param_struct(cmd->first_param);
 
     count++;

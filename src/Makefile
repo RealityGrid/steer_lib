@@ -147,34 +147,60 @@ ReG_Steer_Globus_io.o: ReG_Steer_Globus_io.c \
 	../include/ReG_Steer_Globus_io.h \
 	../include/ReG_Steer_types.h
 
-
 ReG_Steer_Appside_Globus.o: ReG_Steer_Appside_Globus.c \
+	../include/ReG_Steer_Globus_io.h
 	../include/ReG_Steer_Appside_Globus.h \
-	../include/ReG_Steer_Appside_internal.h
+	../include/ReG_Steer_Appside_internal.h \
+	../include/ReG_Steer_types.h \
+	../include/ReG_Steer_Common.h
 
 ReG_Steer_Steerside_Globus.o: ReG_Steer_Steerside_Globus.c \
 	../include/ReG_Steer_Steerside_Globus.h \
+        ../include/ReG_Steer_Steerside.h \
 	../include/ReG_Steer_Steerside_internal.h
 
 ReG_Steer_Appside_Soap.o: ReG_Steer_Appside_Soap.c \
         ../include/ReG_Steer_Appside_Soap.h \
-        ../include/ReG_Steer_Appside_internal.h
+        ../include/ReG_Steer_Appside_internal.h \
+	../include/ReG_Steer_types.h \
+        ../include/soapSGS.nsmap \
+	soapC.c soapClient.c ../include/soapH.h
 
 ReG_Steer_Steerside_Soap.o: ReG_Steer_Steerside_Soap.c \
         ../include/ReG_Steer_Steerside_Soap.h \
-        ../include/ReG_Steer_Steerside_internal.h
+        ../include/ReG_Steer_Steerside_internal.h \
+        ../include/ReG_Steer_Steerside.h \
+	../include/ReG_Steer_types.h \
+        ../include/soapSGS.nsmap \
+	soapC.c soapClient.c ../include/soapH.h
+
+soapC.c: ../SGS/SGS.wsdl
+	cd ../SGS; make
 
 soapC.o: soapC.c \
          ../include/soapH.h
 
+soapClient.c: ../SGS/SGS.wsdl
+	cd ../SGS; make
+
 soapClient.o: soapClient.c \
          ../include/soapH.h
+
+../include/soapH.h: ../SGS/SGS.wsdl
+	cd ../SGS; make
+
+../include/soapSGS.nsmap: ../SGS/SGS.wsdl
+	cd ../SGS; make
+
+../include/soapStub.h: ../SGS/SGS.wsdl
+	cd ../SGS; make
 
 #---------------------------------------------------------------
 
 clean:
 	rm -f *.o ReG_Steer.ln *~ 
 	rm -f ReG_Steer_Appside_f.c
+	rm -f soapC.c soapClient.c
 	rm -f ../include/*~
 	rm -f ${LIB_PATH}/libReG_Steer.a
 

@@ -44,10 +44,6 @@
 
 struct soap soap;
 
-/* Hardwire address of Steering Grid Service (SGS) for the mo'
-   - will eventually discover this from a registry */
-const char *SGS_address = "http://vermont.mvc.mcc.ac.uk:50005/";
-
 /*-------------------------------------------------------------------------*/
 
 int Steerer_initialize_soap()
@@ -79,8 +75,7 @@ int Sim_attach_soap(Sim_entry_type *sim, char *SimID)
   }
 
   /* That worked OK so store address of SGS */
-  sprintf(sim->SGS_address, SimID);
-  fprintf(stderr, "Just put address into address %p\n", &(sim->SGS_address));
+  sprintf(sim->SGS_info.address, SimID);
 
 #if DEBUG
   fprintf(stderr, "Sim_attach_soap: Attach returned:\n>>%s<<\n",
@@ -133,10 +128,10 @@ int Send_control_msg_soap(Sim_entry_type *sim, char* buf)
 {
   struct tns__PutControlResponse putControl_response;
 
-  fprintf(stderr, "Send_control_msg_soap: address = %s\n", sim->SGS_address);
+  fprintf(stderr, "Send_control_msg_soap: address = %s\n", sim->SGS_info.address);
 
   /* Send message */
-  if(soap_call_tns__PutControl(&soap, sim->SGS_address, 
+  if(soap_call_tns__PutControl(&soap, sim->SGS_info.address, 
 			       "", buf, &putControl_response )){
 
     fprintf(stderr, "Send_control_msg_soap: PutControl failed:\n");
@@ -159,23 +154,21 @@ struct msg_struct *Get_status_msg_soap(Sim_entry_type *sim)
   struct tns__GetNotificationsResponse getNotifications_response;
   struct tns__GetStatusResponse        getStatus_response;
   struct msg_struct                   *msg = NULL;
-  char       *ptr;
-  static char sde_names[10][REG_MAX_STRING_LENGTH];
-  static int  sde_count = 0;
-  static int  sde_index = 0;
+  char                                *ptr;
 
-  fprintf(stderr, "Get_status_msg_soap: sde_count = %d\n", sde_count);
+  fprintf(stderr, "Get_status_msg_soap: sde_count = %d\n", sim->SGS_info.sde_count);
 
   /* Check for pending notifications first */
-  if(sde_count > 0){
+  if(sim->SGS_info.sde_count > 0){
 
-    sde_count--;
-    return Get_service_data(sim, sde_names[sde_index++]); 
+    sim->SGS_info.sde_count--;
+    return Get_service_data(sim, 
+			    sim->SGS_info.notifications[sim->SGS_info.sde_index++]); 
   }
-  fprintf(stderr, "Get_status_msg_soap: address = %s\n", sim->SGS_address);
+  fprintf(stderr, "Get_status_msg_soap: address = %s\n", sim->SGS_info.address);
 
   /* Check SGS for new notifications */
-  if(soap_call_tns__GetNotifications(&soap, sim->SGS_address, 
+  if(soap_call_tns__GetNotifications(&soap, sim->SGS_info.address, 
 				     "", &getNotifications_response )){
 
     fprintf(stderr, "Get_status_msg_soap: GetNotifications failed:\n");
@@ -193,23 +186,31 @@ struct msg_struct *Get_status_msg_soap(Sim_entry_type *sim)
      the SDE's that have changed since we last looked at them */
   if(ptr = strtok(getNotifications_response._result, " ")){
 
-    sde_count = 0;
+    sim->SGS_info.sde_count = 0;
     while(ptr){
 
-      sprintf(sde_names[sde_count++], "%s", ptr);
+      if(sim->SGS_info.sde_count >= REG_MAX_NUM_SGS_SDE){
+
+	fprintf(stderr, "Get_status_msg_soap: ERROR - max. no. of service data "
+		"elements (%d) exceeded\n", REG_MAX_NUM_SGS_SDE);
+	break;
+      }
+
+      sprintf(sim->SGS_info.notifications[sim->SGS_info.sde_count++], "%s", ptr);
+
       ptr = strtok(NULL, " ");
     }
 
-    /* sde_index holds the index of the sde_name to use _next time_ 
-       we call Get_service_data - the zeroth sde_name is always
+    /* sde_index holds the index of the notification to use _next time_ 
+       we call Get_service_data - the zeroth notification is always
        dealt with here. */
-    sde_index = 1;
-    sde_count--;
-    return Get_service_data(sim, sde_names[0]);
+    sim->SGS_info.sde_index = 1;
+    sim->SGS_info.sde_count--;
+    return Get_service_data(sim, sim->SGS_info.notifications[0]);
   }
 
   /* Only ask for a status msg if had no notifications */
-  if(soap_call_tns__GetStatus(&soap, sim->SGS_address, 
+  if(soap_call_tns__GetStatus(&soap, sim->SGS_info.address, 
 			       "", &getStatus_response )){
 
     fprintf(stderr, "Get_status_msg_soap: GetStatus failed:\n");
@@ -248,7 +249,7 @@ struct msg_struct *Get_service_data(Sim_entry_type *sim, char *sde_name)
 	  sde_name);
 #endif
 
-  if(soap_call_tns__FindServiceData(&soap, sim->SGS_address, 
+  if(soap_call_tns__FindServiceData(&soap, sim->SGS_info.address, 
 				    "", sde_name, 
 				    &findServiceData_response )){
 
@@ -265,8 +266,9 @@ struct msg_struct *Get_service_data(Sim_entry_type *sim, char *sde_name)
 
   if(findServiceData_response._result){
 
-    /* Not all SDEs will contain XML that we can parse */
-    if(strstr(sde_name, "Steerer_status")){
+    /* Not all SDEs will contain XML that we can parse - in particular, 
+       those that hold the state of the steerer and application. */
+    if(strstr(sde_name, REG_STEER_STATUS_SDE)){
 
       if(strstr(findServiceData_response._result, "DETACHED")){
 	/* Convert from a notification that steerer is now detached
@@ -275,37 +277,21 @@ struct msg_struct *Get_service_data(Sim_entry_type *sim, char *sde_name)
 	msg->status = New_status_struct();
 	msg->status->first_cmd = New_cmd_struct();
 	msg->status->cmd = msg->status->first_cmd;
-	/* ARPDBG - must move away from integer-encoding of std commands
-	   in XML */
-	msg->status->cmd->id = (xmlChar *)xmlMalloc(REG_MAX_STRING_LENGTH);
-	sprintf((char *)msg->status->cmd->id, "4");
+	msg->status->cmd->name = (xmlChar *)xmlMalloc(REG_MAX_STRING_LENGTH);
+	sprintf((char *)msg->status->cmd->name, "DETACH");
       }
     }
-    else if(strstr(sde_name, "Application_status")){
+    else if(strstr(sde_name, REG_APP_STATUS_SDE)){
 
-      if(strstr(findServiceData_response._result, "DETACHED")){
+      if(strstr(findServiceData_response._result, "STOPPED")){
 	/* Convert from a notification that application is now detached
 	   to a message that fits the library spec. */
 	msg = New_msg_struct();
 	msg->status = New_status_struct();
 	msg->status->first_cmd = New_cmd_struct();
 	msg->status->cmd = msg->status->first_cmd;
-	/* ARPDBG - must move away from integer-encoding of std commands
-	   in XML */
-	msg->status->cmd->id = (xmlChar *)xmlMalloc(REG_MAX_STRING_LENGTH);
-	sprintf((char *)msg->status->cmd->id, "4");
-      }
-      else if(strstr(findServiceData_response._result, "STOPPED")){
-	/* Convert from a notification that application is now detached
-	   to a message that fits the library spec. */
-	msg = New_msg_struct();
-	msg->status = New_status_struct();
-	msg->status->first_cmd = New_cmd_struct();
-	msg->status->cmd = msg->status->first_cmd;
-	/* ARPDBG - must move away from integer-encoding of std commands
-	   in XML */
-	msg->status->cmd->id = (xmlChar *)xmlMalloc(REG_MAX_STRING_LENGTH);
-	sprintf((char *)msg->status->cmd->id, "1");
+	msg->status->cmd->name = (xmlChar *)xmlMalloc(REG_MAX_STRING_LENGTH);
+	sprintf((char *)msg->status->cmd->name, "STOP");
       }
     }
     else{
@@ -333,7 +319,7 @@ int Send_pause_msg_soap(Sim_entry_type *sim)
   fprintf(stderr, "Send_pause_msg_soap: calling Pause...\n");
 #endif
 
-  if(soap_call_tns__Pause(&soap, sim->SGS_address, 
+  if(soap_call_tns__Pause(&soap, sim->SGS_info.address, 
 			   "", &pause_response )){
 
     fprintf(stderr, "Send_pause_msg_soap: Pause failed:\n");
@@ -355,7 +341,7 @@ int Send_resume_msg_soap(Sim_entry_type *sim)
   fprintf(stderr, "Send_resume_msg_soap: calling Resume...\n");
 #endif
 
-  if(soap_call_tns__Resume(&soap, sim->SGS_address, 
+  if(soap_call_tns__Resume(&soap, sim->SGS_info.address, 
 			   "", &resume_response )){
 
     fprintf(stderr, "Send_resume_msg_soap: Resume failed:\n");
@@ -377,7 +363,7 @@ int Send_detach_msg_soap(Sim_entry_type *sim)
   fprintf(stderr, "Send_detach_msg_soap: calling Detach...\n");
 #endif
 
-  if(soap_call_tns__Detach(&soap, sim->SGS_address, 
+  if(soap_call_tns__Detach(&soap, sim->SGS_info.address, 
 			   "", &detach_response )){
 
     fprintf(stderr, "Send_detach_msg_soap: Detach failed:\n");
@@ -399,7 +385,7 @@ int Send_stop_msg_soap(Sim_entry_type *sim)
   fprintf(stderr, "Send_stop_msg_soap: calling Stop...\n");
 #endif
 
-  if(soap_call_tns__Stop(&soap, sim->SGS_address, 
+  if(soap_call_tns__Stop(&soap, sim->SGS_info.address, 
 			   "", &stop_response )){
 
     fprintf(stderr, "Send_stop_msg_soap: Stop failed:\n");
