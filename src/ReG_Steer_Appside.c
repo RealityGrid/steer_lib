@@ -2111,6 +2111,139 @@ int Emit_data_slice(int		      IOTypeIndex,
 
 /*----------------------------------------------------------------*/
 
+int Register_param(char* ParamLabel,
+                   int   ParamSteerable,
+                   void *ParamPtr,
+                   int   ParamType,
+                   char* ParamMinimum,
+                   char* ParamMaximum)
+{
+  int    current;
+  int    dum_int;
+  float  dum_flt;
+  double dum_dbl;
+
+  /* Check that steering is enabled */
+
+  if(!ReG_SteeringEnabled) return REG_SUCCESS;
+
+  /* Can only call this function if steering lib initialised */
+
+  if (!ReG_SteeringInit) return REG_FAILURE;
+
+  /* Find next free entry - allocates more memory if required */
+  current = Next_free_param_index(&Params_table);
+
+  if(current == -1){
+
+    fprintf(stderr, "Register_param: failed to find free "
+            "param entry\n");
+    return REG_FAILURE;
+  }
+
+  if(String_contains_xml_chars(ParamLabel) == TRUE){
+
+    fprintf(stderr, "Register_param: ERROR: Param label "
+            "contains reserved xml characters (<,>,&): %s\n"
+            "     - skipping this parameter.\n", ParamLabel);
+    return REG_FAILURE;
+  }
+
+  /* Store label */
+  strncpy(Params_table.param[current].label,
+          ParamLabel,
+          REG_MAX_STRING_LENGTH);
+
+  /* Store 'steerable' */
+  Params_table.param[current].steerable = ParamSteerable;
+
+  /* Store pointer */
+  Params_table.param[current].ptr = ParamPtr;
+
+  /* Store type */
+  Params_table.param[current].type = ParamType;
+
+  /* This set to TRUE external to this routine if this param.
+     has been created by the steering library itself */
+  Params_table.param[current].is_internal = FALSE;
+
+  /* Range of validity for this parameter - assume invalid
+     first and check second */
+  Params_table.param[current].min_val_valid = FALSE;
+  Params_table.param[current].max_val_valid = FALSE;
+  switch(ParamType){
+
+  case REG_INT:
+    if(sscanf(ParamMinimum, "%d", &dum_int) == 1){
+      Params_table.param[current].min_val_valid = TRUE;
+    }
+    if(sscanf(ParamMaximum, "%d", &dum_int) == 1){
+      Params_table.param[current].max_val_valid = TRUE;
+    }
+    break;
+
+  case REG_FLOAT:
+    if(sscanf(ParamMinimum, "%f", &dum_flt) == 1){
+      Params_table.param[current].min_val_valid = TRUE;
+    }
+    if(sscanf(ParamMaximum, "%f", &dum_flt) == 1){
+      Params_table.param[current].max_val_valid = TRUE;
+    }
+    break;
+
+  case REG_DBL:
+    if(sscanf(ParamMinimum, "%lf", &dum_dbl) == 1){
+      Params_table.param[current].min_val_valid = TRUE;
+    }
+    if(sscanf(ParamMaximum, "%lf", &dum_dbl) == 1){
+      Params_table.param[current].max_val_valid = TRUE;
+    }
+    break;
+
+  case REG_CHAR:
+    /* Limits are taken as lengths for a string */
+    if(sscanf(ParamMinimum, "%d", &dum_int) == 1){
+      Params_table.param[current].min_val_valid = TRUE;
+    }
+    if(sscanf(ParamMaximum, "%d", &dum_int) == 1){
+      Params_table.param[current].max_val_valid = TRUE;
+    }
+    break;
+
+  default:
+    fprintf(stderr, "Register_param: unrecognised parameter "
+            "type - skipping parameter >%s<\n", ParamLabel);
+    return REG_FAILURE;
+  }
+  if(Params_table.param[current].min_val_valid == TRUE){
+    strncpy(Params_table.param[current].min_val, ParamMinimum,
+            REG_MAX_STRING_LENGTH);
+  }
+  else{
+    sprintf(Params_table.param[current].min_val, " ");
+  }
+
+  if(Params_table.param[current].max_val_valid == TRUE){
+    strncpy(Params_table.param[current].max_val, ParamMaximum,
+            REG_MAX_STRING_LENGTH);
+  }
+  else{
+    sprintf(Params_table.param[current].max_val, " ");
+  }
+
+  /* Create handle for this parameter */
+  Params_table.param[current].handle = Params_table.next_handle++;
+
+  Params_table.num_registered++;
+
+  /* Flag that the registered parameters have changed */
+  ReG_ParamsChanged = TRUE;
+
+  return REG_SUCCESS;
+}
+
+/*----------------------------------------------------------------*/
+
 int Register_params(int    NumParams,
 		    char* *ParamLabels,
 		    int   *ParamSteerable,

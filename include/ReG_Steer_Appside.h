@@ -113,6 +113,13 @@ extern PREFIX int Register_params(int    NumParams,
 				  char* *ParamMinima,
 				  char* *ParamMaxima);
 
+extern PREFIX int Register_param(char* ParamLabel,
+                                 int   ParamSteerable,
+                                 void *ParamPtr,
+                                 int   ParamType,
+                                 char* ParamMinimum,
+                                 char* ParamMaximum);
+
 /* Un-register the parameters identified by the given labels. */
 extern PREFIX int Unregister_params(int    NumParams,
 				    char* *ParamLabels);
