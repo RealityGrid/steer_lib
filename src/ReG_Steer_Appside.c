@@ -478,13 +478,6 @@ int Register_IOTypes(int    NumTypes,
 
   if (!ReG_SteeringInit) return REG_FAILURE;
 
-  /* Set variables required for registration of associated io
-     frequency as a steerable parameter */
-
-  iofreq_label = "IO_Frequency";
-  iofreq_strbl = TRUE;
-  iofreq_type  = REG_INT;
-
   /* IO types cannot be deleted so is safe to use num_registered to 
      get next free entry */
   current = IOTypes_table.num_registered;
@@ -519,6 +512,13 @@ int Register_IOTypes(int    NumTypes,
     /* We only expect a frequency variable to register if the application
        claims to support automatic emission/consumption */
     if(support_auto_io[i] == TRUE){
+
+      /* Set variables required for registration of associated io
+	 frequency as a steerable parameter */
+
+      iofreq_label = "IO_Frequency";
+      iofreq_strbl = TRUE;
+      iofreq_type  = REG_INT;
 
       Register_params(1,
 		      &iofreq_label,
@@ -561,7 +561,8 @@ int Register_IOTypes(int    NumTypes,
 
     if (type[i] == REG_IO_OUT)
     {
-      /* open socket and register callback function to list for and accept connections */
+      /* open socket and register callback function to listen for and
+	 accept connections */
       if (Globus_create_listener( &(IOTypes_table.io_def[current].port),
 				 &(IOTypes_table.io_def[current].index)) != REG_SUCCESS) {
 #if DEBUG
@@ -602,25 +603,32 @@ int Register_IOTypes(int    NumTypes,
       if (port_ok && hostname_ok) {
 	if (Globus_create_connector_callback(&(IOTypes_table.io_def[current].index)) != REG_SUCCESS) {
 #if DEBUG
-	fprintf(stderr, "Register_IOTypes: failed to create connector for IOType\n");
+	  fprintf(stderr, "Register_IOTypes: failed to create connector "
+		  "for IOType\n");
 #endif
-	return_status = REG_FAILURE;
+	  return_status = REG_FAILURE;
 	}
 	else{
 
 #if DEBUG
-	  fprintf(stderr, "Register_IOTypes: Created connector on port %d, hostname = %s, index %d, label %s\n", connector_port, connector_hostname, current, IOLabel[i] );
+	  fprintf(stderr, "Register_IOTypes: Created connector on "
+		  "port %d, hostname = %s, index %d, label %s\n", 
+		  connector_port, connector_hostname, current, IOLabel[i] );
 #endif
 	}
       }
       else
-	fprintf(stderr, "Register_IOTypes: cannot create connector as port and hostname not set\n");
-
+	fprintf(stderr, "Register_IOTypes: cannot create connector as "
+		"port and hostname not set\n");
     }
 
     /* Create, store and return a handle for this IOType */
     IOTypes_table.io_def[current].handle = IOTypes_table.next_handle++;
     IOType[i] = IOTypes_table.io_def[current].handle;
+
+    /* ARPDBG */
+    fprintf(stderr, "Register_IOTypes: handle = %d\n", IOType[i]);
+    fprintf(stderr, "Register_IOTypes: index  = %d\n", current);
 
     current++;
 
@@ -655,13 +663,12 @@ int Register_IOTypes(int    NumTypes,
 
 /*----------------------------------------------------------------*/
 
-int Consume_start(int               IOType,
-		  int		    *IOTypeIndex)
+int Consume_start(int  IOType,
+		  int *IOTypeIndex)
 {
-  int  i;
-  char text[REG_MAX_STRING_LENGTH];
-  char *pchar1;
-  char *pchar2;
+  char buffer[REG_PACKET_SIZE];
+  globus_size_t   nbytes;
+  globus_result_t result;
 
   /* Check that steering is enabled */
   if(!ReG_SteeringEnabled) return REG_SUCCESS;
@@ -672,7 +679,7 @@ int Consume_start(int               IOType,
   /* Find corresponding entry in table of IOtypes */
   *IOTypeIndex = IOdef_index_from_handle(&IOTypes_table, IOType);
   if(*IOTypeIndex == REG_IODEF_HANDLE_NOTSET){
-    fprintf(stderr, "Consume_start: failed to find matching IOType\n");
+    fprintf(stderr, "Consume_start: failed to find matching IOType, handle = %d\n", IOType);
     return REG_FAILURE;
   }
 
@@ -682,9 +689,35 @@ int Consume_start(int               IOType,
     fprintf(stderr, "Consume_start: socket IS connected, index = %d\n",*IOTypeIndex );
 #endif
 
-    IOTypes_table.io_def[*IOTypeIndex].buffer = (void *)malloc(REG_IO_BUFSIZE);
+    /* Check for data on socket */
 
-    return REG_SUCCESS;
+    result = globus_io_try_read(&(IOTypes_table.io_def[*IOTypeIndex].conn_handle), 
+				buffer, 
+				REG_PACKET_SIZE, 
+				&nbytes);
+
+    if(result == GLOBUS_SUCCESS){
+
+#if DEBUG
+      fprintf(stderr, "Consume_start: read <%s> from socket\n", buffer);
+#endif
+      /* ARPDBG - globus_io_try_read always returns 0 bytes if connection
+	 configugured to use GSSAPI or SSL data wrapping. */
+      if(nbytes > 0){
+
+	if(!strncmp(buffer, REG_DATA_HEADER, strlen(REG_DATA_HEADER))){
+
+	  IOTypes_table.io_def[*IOTypeIndex].buffer =
+	                                     (void *)malloc(REG_IO_BUFSIZE);
+
+	  if(!IOTypes_table.io_def[*IOTypeIndex].buffer) return REG_FAILURE;
+
+	  return REG_SUCCESS;
+	}
+      }
+    }
+
+    return REG_FAILURE;
   }
 
   return REG_FAILURE;
@@ -692,8 +725,13 @@ int Consume_start(int               IOType,
 
 /*----------------------------------------------------------------*/
 
-int Consume_stop(int		 *IOTypeIndex)
+int Consume_stop(int *IOTypeIndex)
 {
+  int             return_status = REG_SUCCESS;
+  char            buffer[REG_PACKET_SIZE];
+  globus_size_t   nbytes;
+  globus_result_t result;
+
   /* Check that steering is enabled */
   if(!ReG_SteeringEnabled) return REG_SUCCESS;
 
@@ -706,43 +744,339 @@ int Consume_stop(int		 *IOTypeIndex)
     IOTypes_table.io_def[*IOTypeIndex].buffer = NULL;
   }
 
+  /* Expect message footer *
+
+  *ARPDBG*
+  fprintf(stderr, "Consume_stop: calling globus_io_try_read...\n");
+
+  result = globus_io_try_read(&(IOTypes_table.io_def[*IOTypeIndex].conn_handle), 
+				buffer, 
+				REG_PACKET_SIZE, 
+				&nbytes);
+
+  return_status = REG_FAILURE;
+
+  if(result == GLOBUS_SUCCESS){
+
+    * ARPDBG - globus_io_try_read always returns 0 bytes if connection
+	 configugured to use GSSAPI or SSL data wrapping. *
+    if(nbytes > 0){
+
+      * ARPDBG *
+      fprintf(stderr, "Consume_stop: read <%s> from socket\n", buffer);
+
+      if(!strncmp(buffer, REG_DATA_FOOTER, strlen(REG_DATA_FOOTER))){
+
+	return_status = REG_SUCCESS;
+      }
+      else{
+	fprintf(stderr, "Consume_stop: failed to get valid footer\n");
+      }
+    }
+  }
+  else{
+
+    fprintf(stderr, "Consume_stop: globus_io_try_read failed\n");
+  }
+  */
+
   /* Reset handle associated with channel */
   *IOTypeIndex = REG_IODEF_HANDLE_NOTSET;
 
-  return REG_SUCCESS;
+  return return_status;
 }
+
 /*----------------------------------------------------------------*/
-int Consume_data_slice(int		 IOTypeIndex,
-		       int              *DataType,
-		       int              *Count,
-		       void            **pData)
+
+int Consume_data_slice_header(int  IOTypeIndex,
+			      int *DataType,
+			      int *Count)
 {
-  int			return_status = REG_SUCCESS;
-  int			index;
-  globus_object_t	*err; 
-  globus_result_t	result;
+  globus_object_t *err; 
+  globus_result_t  result;
+  globus_size_t    nbytes;
+  char             buffer[REG_PACKET_SIZE];
 
-  /* SMR XXX tmp tester code
-   * - just receive HBT msg and reply with ACK 
-   * - this funtion needs writing properly
-   */
-  char	ack_buffer[4];	     /* simple HBT */
-  char  reply[REG_MAX_LINE_LEN];  
-  globus_size_t nbytes;
-  char      buffer[REG_MAX_LINE_LEN]; 
+  char *begin_slice_header = "<ReG_data_slice_header>";
+  char *end_slice_header   = "</ReG_data_slice_header>";
 
- /* Check that steering is enabled */
+  /* Check that steering is enabled */
   if(!ReG_SteeringEnabled) return REG_SUCCESS;
 
   /* Can only call this function if steering lib initialised */
   if (!ReG_SteeringInit) return REG_FAILURE;
 
   /* check socket connection has been made */
-  if (IOTypes_table.io_def[IOTypeIndex].comms_status != REG_COMMS_STATUS_CONNECTED) 
+  if (IOTypes_table.io_def[IOTypeIndex].comms_status != 
+      REG_COMMS_STATUS_CONNECTED) return REG_FAILURE;
+
+  /* Read header */
+
+  /* ARPDBG */
+  fprintf(stderr, "Consume_data_slice_header: calling globus_io_read...\n");
+
+  /* Blocks until REG_PACKET_SIZE bytes received */
+  result = globus_io_read(&(IOTypes_table.io_def[IOTypeIndex].conn_handle), 
+			  buffer, 
+			  REG_PACKET_SIZE, 
+			  REG_PACKET_SIZE, 
+			  &nbytes);
+
+  if(result != GLOBUS_SUCCESS){
+
+    fprintf(stderr, "Consume_data_slice_header: globus_io_read failed\n");
     return REG_FAILURE;
+  }
 
+#if DEBUG
+  fprintf(stderr, "Consume_data_slice_header: read <%s> from socket\n",
+	  buffer);
+#endif
 
-  /* SMR XXX tmp tester code - just rcv HBT and send back ACK*/
+  /* Check for end of data */
+  if(!strncmp(buffer, REG_DATA_FOOTER, strlen(REG_DATA_FOOTER))){
+
+    return REG_EOD;
+  }
+  else if(strncmp(buffer, begin_slice_header, strlen(begin_slice_header))){
+
+    fprintf(stderr, "Consume_data_slice_header: incorrect header on slice\n");
+    return REG_FAILURE;
+  }
+
+  result = globus_io_read(&(IOTypes_table.io_def[IOTypeIndex].conn_handle), 
+			  buffer, 
+			  REG_PACKET_SIZE, 
+			  REG_PACKET_SIZE, 
+			  &nbytes);
+
+  if(result != GLOBUS_SUCCESS){
+
+    fprintf(stderr, "Consume_data_slice_header: globus_io_read failed\n");
+    return REG_FAILURE;
+  }
+
+#if DEBUG
+  fprintf(stderr, "Consume_data_slice_header: read <%s> from socket\n", 
+	  buffer);
+#endif
+
+  if(!strstr(buffer, "<Data_type>")){
+
+    return REG_FAILURE;
+  }
+
+  sscanf(buffer, "<Data_type>%d</Data_type>", DataType);
+
+  result = globus_io_read(&(IOTypes_table.io_def[IOTypeIndex].conn_handle), 
+			  buffer, 
+			  REG_PACKET_SIZE, 
+			  REG_PACKET_SIZE, 
+			  &nbytes);
+
+  if(result != GLOBUS_SUCCESS){
+
+    return REG_FAILURE;
+  }
+
+#if DEBUG
+  fprintf(stderr, "Consume_data_slice_header: read <%s> from socket\n", 
+	  buffer);
+#endif
+
+  if(!strstr(buffer, "<Num_objects>")){
+
+    return REG_FAILURE;
+  }
+
+  sscanf(buffer, "<Num_objects>%d</Num_objects>", Count);
+
+  result = globus_io_read(&(IOTypes_table.io_def[IOTypeIndex].conn_handle), 
+			  buffer, 
+			  REG_PACKET_SIZE, 
+			  REG_PACKET_SIZE, 
+			  &nbytes);
+
+  if(result != GLOBUS_SUCCESS){
+
+    fprintf(stderr, "Consume_data_slice_header: globus_io_read failed\n");
+    return REG_FAILURE;
+  }
+
+#if DEBUG
+  fprintf(stderr, "Consume_data_slice_header: read <%s> from socket\n", 
+	  buffer);
+#endif
+
+  if(strncmp(buffer, end_slice_header, strlen(end_slice_header))){
+
+    return REG_FAILURE;
+  }
+
+  return REG_SUCCESS;
+}
+
+/*----------------------------------------------------------------*/
+
+int Consume_data_slice(int    IOTypeIndex,
+		       int    DataType,
+		       int    Count,
+		       void  *pData)
+{
+  int		   index;
+  int              i;
+  int              is_xdr = FALSE;
+  globus_object_t *err; 
+  globus_result_t  result;
+  globus_size_t    nbytes;
+  globus_size_t    num_bytes_to_read;
+
+  XDR     xdrs;
+  int     dum_int;
+  int    *pint;
+  float   dum_float;
+  float  *pfloat;
+  double  dum_double;
+  double *pdouble;
+
+  /* Calculate how many bytes to expect */
+  switch(DataType){
+
+  case REG_INT:
+    num_bytes_to_read = Count*sizeof(int);
+    break;
+  case REG_FLOAT:
+    num_bytes_to_read = Count*sizeof(float);
+    break;
+  case REG_DBL:
+    num_bytes_to_read = Count*sizeof(double);
+    break;
+  case REG_CHAR:
+    num_bytes_to_read = Count*sizeof(char);
+    break;
+  case REG_XDR_INT:
+    num_bytes_to_read = Count*REG_SIZEOF_XDR_INT;
+    is_xdr = TRUE;
+    break;
+  case REG_XDR_FLOAT:
+    num_bytes_to_read = Count*REG_SIZEOF_XDR_FLOAT;
+    is_xdr = TRUE;
+    break;
+  case REG_XDR_DOUBLE:
+    num_bytes_to_read = Count*REG_SIZEOF_XDR_DOUBLE;
+    is_xdr = TRUE;
+    break;
+  default:
+    fprintf(stderr, "Consume_data_slice: Unrecognised data type specified "
+	    "in slice header\n");
+    return REG_FAILURE;
+    break;
+  }
+
+  if(num_bytes_to_read > REG_IO_BUFSIZE){
+
+    /* ARPDBG - temporary hack - should at the very least read data and 
+       throw it away.  Better still, should be a bit smarter and read it
+       in chunks */
+    fprintf(stderr, "Consume_data_slice: size of slice exceeds input "
+	    "buffer\n");
+    return REG_FAILURE;
+  }
+
+  /* Read this number of bytes */
+
+  /*ARPDBG */
+  fprintf(stderr, "Consume_data_slice: calling globus_io_read for %d bytes\n",
+	  num_bytes_to_read);
+
+  result = globus_io_read(&(IOTypes_table.io_def[IOTypeIndex].conn_handle), 
+			  pData, 
+			  num_bytes_to_read, 
+			  num_bytes_to_read, 
+			  &nbytes);
+
+  if(result != GLOBUS_SUCCESS){
+
+    fprintf(stderr, "Consume_data_slice: error globus_io_read\n");
+    err =  globus_error_get(result);
+
+    if (globus_object_type_match(GLOBUS_IO_ERROR_TYPE_NULL_PARAMETER,
+				 globus_object_get_type(err))) {
+     fprintf(stderr, " - globus error type: null parameter\n");
+    }
+    else if (globus_object_type_match(GLOBUS_IO_ERROR_TYPE_NOT_INITIALIZED,
+				      globus_object_get_type(err))) {
+     fprintf(stderr, " - globus error type: not initialised\n");
+    }
+    else if (globus_object_type_match(GLOBUS_IO_ERROR_TYPE_CLOSE_ALREADY_REGISTERED,
+				      globus_object_get_type(err))) {
+     fprintf(stderr, " - globus error type: close already registered\n");
+    }
+    else if (globus_object_type_match(GLOBUS_IO_ERROR_TYPE_READ_ALREADY_REGISTERED, 
+				      globus_object_get_type(err))) {
+     fprintf(stderr, " - globus error type: read already registered\n");
+    }
+    else if (globus_object_type_match(GLOBUS_ERROR_TYPE_TYPE_MISMATCH,
+				      globus_object_get_type(err))) {
+     fprintf(stderr, " - globus error type: type mismatch\n");
+    }
+    return REG_FAILURE;
+  }
+
+  if(is_xdr){
+
+#if DEBUG
+    fprintf(stderr, "Consume_data_slice: doing XDR decode\n");
+#endif
+
+    xdrmem_create(&xdrs, 
+		  pData,
+		  num_bytes_to_read,
+		  XDR_DECODE);
+
+    switch(DataType){
+
+    case REG_XDR_INT:
+      
+      pint = (int *)pData;
+
+      for(i=0; i<Count; i++){
+
+	if (1!=xdr_int(&xdrs, &dum_int)) {
+	}
+	*(pint++) = dum_int;
+      }
+      break;
+
+    case REG_XDR_FLOAT:
+      
+      pfloat = (float *)pData;
+
+      for(i=0; i<Count; i++){
+
+	if (1!=xdr_float(&xdrs, &dum_float)) {
+	}
+	*(pfloat++) = dum_float;
+      }
+      break;
+
+    case REG_XDR_DOUBLE:
+      
+      pdouble = (double *)pData;
+
+      for(i=0; i<Count; i++){
+
+	if (1!=xdr_double(&xdrs, &dum_double)) {
+	}
+	*(pdouble++) = dum_double;
+      }
+      break;
+    }
+
+    xdr_destroy(&xdrs);
+  }
+
+  /* SMR XXX tmp tester code - just rcv HBT and send back ACK*
   result = globus_io_read(&(IOTypes_table.io_def[IOTypeIndex].conn_handle), 
 			  buffer, 
 			  REG_MAX_LINE_LEN-1, 
@@ -825,9 +1159,9 @@ int Consume_data_slice(int		 IOTypeIndex,
     return REG_FAILURE;
   }
 
+  */
 
-
-  return return_status;
+  return REG_SUCCESS;
 }
 
 
@@ -955,7 +1289,6 @@ int Consume_data_slice_old(REG_IOHandleType  IOHandle,
     return_status = REG_EOD;
   }
 
-
   /* ARPDBG */
   test_count_call++;
 
@@ -969,6 +1302,11 @@ int Emit_start(int  IOType,
 	       int  UseXDR,
 	       int *IOTypeIndex)
 {
+  char            buffer[REG_PACKET_SIZE];
+  char            fmt[16];
+  globus_size_t   nbytes;
+  globus_result_t result;
+
   /* Check that steering is enabled */
   if(!ReG_SteeringEnabled) return REG_SUCCESS;
 
@@ -978,6 +1316,7 @@ int Emit_start(int  IOType,
   /* Find corresponding entry in table of IOtypes */
   *IOTypeIndex = IOdef_index_from_handle(&IOTypes_table, IOType);
   if(*IOTypeIndex == REG_IODEF_HANDLE_NOTSET){
+
     fprintf(stderr, "Emit_start: failed to find matching IOType\n");
     return REG_FAILURE;
   }
@@ -985,21 +1324,54 @@ int Emit_start(int  IOType,
   /* Set whether or not to encode as XDR */
   IOTypes_table.io_def[*IOTypeIndex].use_xdr = UseXDR;
 
+  /* We'll need additional memory to perform conversion to XDR */
+  if(UseXDR){
+
+    IOTypes_table.io_def[*IOTypeIndex].buffer = (void *)malloc(REG_IO_BUFSIZE);
+
+    if(!IOTypes_table.io_def[*IOTypeIndex].buffer){
+
+      return REG_FAILURE;
+    }
+  }
+
   /* check if socket connection has been made */
-  if (IOTypes_table.io_def[*IOTypeIndex].comms_status == REG_COMMS_STATUS_CONNECTED) {
+  if (IOTypes_table.io_def[*IOTypeIndex].comms_status == 
+      REG_COMMS_STATUS_CONNECTED) {
 
 #if DEBUG
-    fprintf(stderr, "Emit_start: socket IS connected, index = %d\n",*IOTypeIndex );
+    fprintf(stderr, "Emit_start: socket IS connected, index = %d\n",
+	    *IOTypeIndex );
 #endif
 
-    /* SMR XXX send header here in future? */
-    return REG_SUCCESS;
+    /* Send header */
+    
+    sprintf(fmt, "%s%ds", "%-", REG_PACKET_SIZE);
+    sprintf(buffer, fmt, REG_DATA_HEADER);
+
+    fprintf(stderr, "DBG -  TEST Sending '%s'", buffer);
+
+    result = globus_io_write(&(IOTypes_table.io_def[*IOTypeIndex].conn_handle), 
+			     buffer, 
+			     strlen(buffer), 
+			     &nbytes);
+
+    if(result == GLOBUS_SUCCESS){
+
+      return REG_SUCCESS;
+    }
+    else{
+
+      /* ARPDBG add check on error code */
+      return REG_FAILURE;
+    }
   }
   else {
     /* SMR XXX - add stuff to close and recreate listener if lost connection*/
 
 #if DEBUG
-    fprintf(stderr, "Emit_start: socket not connected, index = %d\n",*IOTypeIndex );
+    fprintf(stderr, "Emit_start: socket not connected, index = %d\n",
+	    *IOTypeIndex );
 #endif
     return REG_FAILURE;
   }
@@ -1008,17 +1380,41 @@ int Emit_start(int  IOType,
 
 /*----------------------------------------------------------------*/
 
-int Emit_stop(int		 *IOTypeIndex)
+int Emit_stop(int *IOTypeIndex)
 {
+  char            buffer[REG_PACKET_SIZE];
+  char            fmt[16];
+  globus_size_t   nbytes;
+  globus_result_t result;
+
   /* Check that steering is enabled */
   if(!ReG_SteeringEnabled) return REG_SUCCESS;
 
   /* Can only call this function if steering lib initialised */
   if (!ReG_SteeringInit) return REG_FAILURE;
 
+  /* Send footer */
+  sprintf(fmt, "%s%ds", "%-", REG_PACKET_SIZE);
+  sprintf(buffer, fmt, REG_DATA_FOOTER);
 
-  /* SMR XXX send footer here in future? */
+  /* ARPDBG */
+  fprintf(stderr, "DBG -  TEST Sending '%s'\n", buffer);
+
+  result = globus_io_write(&(IOTypes_table.io_def[*IOTypeIndex].conn_handle), 
+			   buffer, 
+			   strlen(buffer), 
+			   &nbytes);
   
+  /* ARPDBG add check on return value */
+
+  /* Free associated memory (will have been allocated if conversion to
+     XDR performed) */
+  if(IOTypes_table.io_def[*IOTypeIndex].buffer){
+
+    free(IOTypes_table.io_def[*IOTypeIndex].buffer);
+    IOTypes_table.io_def[*IOTypeIndex].buffer = NULL;
+  }
+
   *IOTypeIndex = REG_IODEF_HANDLE_NOTSET;
 
   return REG_SUCCESS;
@@ -1031,18 +1427,25 @@ int Emit_data_slice(int		      IOTypeIndex,
 		    int               Count,
 		    void             *pData)
 {
-  int return_status = REG_SUCCESS;
-  globus_object_t	*err; 
-  globus_result_t	result;
+  int              return_status = REG_SUCCESS;
+  int              datatype;
+  int              i;
+  globus_object_t *err; 
+  globus_result_t  result;
+  globus_size_t    nbytes;
+  globus_size_t    num_bytes_to_send;
+  char             buffer[5*REG_PACKET_SIZE];
+  char             tmp_buffer[REG_PACKET_SIZE];
+  char            *pchar;
+  char             fmt[16];
 
-  /* SMR XXX tmp tester code
-   * - just send HBT msg 
-   * - this funtion needs writing properly
-   */
+  XDR              xdrs;
+  int             *iptr;
+  float           *fptr;
+  double          *dptr;
 
   char	hbt_buffer[4];	     /* simple HBT */
   char  reply[REG_MAX_LINE_LEN];  
-  globus_size_t nbytes;
 
   /* Check that steering is enabled */
   if(!ReG_SteeringEnabled) return REG_SUCCESS;
@@ -1051,28 +1454,148 @@ int Emit_data_slice(int		      IOTypeIndex,
   if (!ReG_SteeringInit) return REG_FAILURE;
 
   /* check socket connection has been made */
-  if (IOTypes_table.io_def[IOTypeIndex].comms_status != REG_COMMS_STATUS_CONNECTED) 
+  if (IOTypes_table.io_def[IOTypeIndex].comms_status != 
+      REG_COMMS_STATUS_CONNECTED) return REG_FAILURE;
+
+  /* Check data type, calculate number of bytes to send and convert
+     to XDR if required */
+  switch(DataType){
+
+  case REG_INT:
+    if(IOTypes_table.io_def[IOTypeIndex].use_xdr){
+      datatype = REG_XDR_INT;
+      num_bytes_to_send = Count*REG_SIZEOF_XDR_INT;
+
+      xdrmem_create(&xdrs, 
+		    IOTypes_table.io_def[IOTypeIndex].buffer,
+		    num_bytes_to_send,
+		    XDR_ENCODE);
+
+      iptr = (int *)pData;
+
+      for(i=0; i<Count; i++){
+
+	xdr_int(&xdrs, iptr++);
+      }
+
+      xdr_destroy(&xdrs);
+    }
+    else{
+      datatype = DataType;
+      num_bytes_to_send = Count*sizeof(int);
+    }
+    break;
+
+  case REG_FLOAT:
+    if(IOTypes_table.io_def[IOTypeIndex].use_xdr){
+      datatype = REG_XDR_FLOAT;
+      num_bytes_to_send = Count*REG_SIZEOF_XDR_FLOAT;
+
+      xdrmem_create(&xdrs, 
+		    IOTypes_table.io_def[IOTypeIndex].buffer,
+		    num_bytes_to_send,
+		    XDR_ENCODE);
+
+      fptr = (float *)pData;
+
+      for(i=0; i<Count; i++){
+
+	xdr_float(&xdrs, fptr++);
+      }
+
+      xdr_destroy(&xdrs);
+    }
+    else{
+      datatype = DataType;
+      num_bytes_to_send = Count*sizeof(float);
+    }
+    break;
+
+  case REG_DBL:
+    if(IOTypes_table.io_def[IOTypeIndex].use_xdr){
+      datatype = REG_XDR_DOUBLE;
+      num_bytes_to_send = Count*REG_SIZEOF_XDR_DOUBLE;
+
+      xdrmem_create(&xdrs, 
+		    IOTypes_table.io_def[IOTypeIndex].buffer,
+		    num_bytes_to_send,
+		    XDR_ENCODE);
+
+      dptr = (double *)pData;
+
+      for(i=0; i<Count; i++){
+
+	xdr_double(&xdrs, dptr++);
+      }
+
+      xdr_destroy(&xdrs);
+    }
+    else{
+      datatype = DataType;
+      num_bytes_to_send = Count*sizeof(double);
+    }
+    break;
+
+  case REG_CHAR:
+    datatype = DataType;
+    num_bytes_to_send = Count*sizeof(char);
+    break;
+
+  default:
+    fprintf(stderr, "Emit_data_slice: Unrecognised data type\n");
     return REG_FAILURE;
-
-  if(IOTypes_table.io_def[IOTypeIndex].use_xdr){
-
-    /* ARPDBG - need code to convert data to XDR */
+    break;
   }
  
   /* Send ReG-specific header */
 
+  sprintf(fmt, "%s%ds", "%-", REG_PACKET_SIZE);
+
+  pchar = (char *)(&buffer);
+  pchar += sprintf(pchar, fmt, "<ReG_data_slice_header>");
+  sprintf(tmp_buffer, "<Data_type>%d</Data_type>", datatype);
+  pchar += sprintf(pchar, fmt, tmp_buffer);
+  sprintf(tmp_buffer, "<Num_objects>%d</Num_objects>", Count);
+  pchar += sprintf(pchar, fmt, tmp_buffer);
+  pchar += sprintf(pchar, fmt, "</ReG_data_slice_header>");
+
+  result = globus_io_write(&(IOTypes_table.io_def[IOTypeIndex].conn_handle), 
+			   buffer, 
+			   strlen(buffer), 
+			   &nbytes);
+
+  if (result != GLOBUS_SUCCESS ) {
+
+    /* ARPDBG - some stuff here */
+
+    return REG_FAILURE;
+  }
+
   /* Send data */
 
-  /* Send HBT, expect ACK back */
+  if(IOTypes_table.io_def[IOTypeIndex].use_xdr){
+    result = globus_io_write(&(IOTypes_table.io_def[IOTypeIndex].conn_handle), 
+			     IOTypes_table.io_def[IOTypeIndex].buffer, 
+			     num_bytes_to_send, 
+			     &nbytes);
+  }
+  else{
+    result = globus_io_write(&(IOTypes_table.io_def[IOTypeIndex].conn_handle), 
+			     pData, 
+			     num_bytes_to_send, 
+			     &nbytes);
+  }
+  /* Send HBT, expect ACK back *
   sprintf(hbt_buffer, "HBT");
   fprintf(stderr, "DBG -  TEST Sending '%s'", hbt_buffer);
   result = globus_io_write(&(IOTypes_table.io_def[IOTypeIndex].conn_handle), 
 			   hbt_buffer, 
 			   strlen(hbt_buffer), 
 			   &nbytes);
+  */
 
   if (result != GLOBUS_SUCCESS ) {
-    fprintf(stderr, "error globus_io_write\n");
+    fprintf(stderr, "Emit_data_slice: error globus_io_write\n");
     err =  globus_error_get(result);
 
     if (globus_object_type_match(GLOBUS_IO_ERROR_TYPE_NULL_PARAMETER,
@@ -1107,7 +1630,7 @@ int Emit_data_slice(int		      IOTypeIndex,
     return REG_FAILURE;
   }
 
-  /* wait for ACK */
+  /* wait for ACK *
   result = globus_io_read(&(IOTypes_table.io_def[IOTypeIndex].conn_handle), 
 			  reply, 
 			  REG_MAX_LINE_LEN-1, 
@@ -1145,8 +1668,7 @@ int Emit_data_slice(int		      IOTypeIndex,
 
     return REG_FAILURE;
   }
-
-  
+ */
 
  return return_status;
 }
@@ -2301,9 +2823,11 @@ int Make_vtk_buffer(char  *header,
 		    float *array)
 {
   int    i, j, k;
+  int    count;
   double a2 = 0.5*0.5;
   double b2 = 0.3*0.3;
   double c2 = 0.1*0.1;
+  float  sum;
   float *fptr;
   char  *pchar;
   char   text[64];
@@ -2332,14 +2856,20 @@ int Make_vtk_buffer(char  *header,
   /* Make an array of data */
   fptr = array;
 
+  sum = 0.0;
+  count = 0;
   for(i=-nx/2; i<nx/2; i++){
     for(j=-ny/2; j<ny/2; j++){
       for(k=-nz/2; k<nz/2; k++){
 
-  	*(fptr++) = (float)sqrt((double)(i*i*a2 + j*j*b2 + k*k*c2));
+  	*fptr = (float)sqrt((double)(i*i*a2 + j*j*b2 + k*k*c2));
+	sum += *(fptr++);
+	count++;
       }
     }
   }
+
+  fprintf(stderr, "Make_vtk_buffer: checksum = %f\n", sum/((float) count));
 
   return REG_SUCCESS;
 }
@@ -2790,7 +3320,7 @@ void Globus_close_connection(globus_io_handle_t	*conn_handle)
     }
     else if (globus_object_type_match(GLOBUS_IO_ERROR_TYPE_NOT_INITIALIZED,
 				 globus_object_get_type(err))) {
-     fprintf(stderr, " - globus error type: handle not initialised\\n");
+     fprintf(stderr, " - globus error type: handle not initialised\n");
     }
     else if (globus_object_type_match(GLOBUS_IO_ERROR_TYPE_CLOSE_ALREADY_REGISTERED,
 				      globus_object_get_type(err))) {
