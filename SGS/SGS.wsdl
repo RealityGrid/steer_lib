@@ -36,6 +36,8 @@
 			<xsd:element name="AppStartResponse" type="xsd:string" />
 			<xsd:element name="AppStopRequest" type="xsd:string" />
 			<xsd:element name="AppStopResponse" type="xsd:string" />
+                        <xsd:element name="GetNthDataSourceRequest" type="xsd:string" />
+			<xsd:element name="GetNthDataSourceResponse" type="xsd:string" />
 		</xsd:schema>
 	</types>
 	<message name="AppStartRequest">
@@ -92,6 +94,12 @@
 	<message name="GetNotificationsResponse">
 		<part name="result" type="xsd:string"/>
 	</message>
+        <message name="GetNthDataSourceRequest">
+                <part name="input" type="xsd:integer"/>
+        </message>
+        <message name="GetNthDataSourceResponse">
+		<part name="result" type="xsd:string"/>
+        </message>
 	<message name="GetStatusRequest">
 
 	</message>
@@ -177,6 +185,10 @@
 		<operation name="GetNotifications">
 			<input message="tns:GetNotificationsRequest" />
 			<output message="tns:GetNotificationsResponse" />
+		</operation>
+		<operation name="GetNthDataSource">
+			<input message="tns:GetNthDataSourceRequest" />
+			<output message="tns:GetNthDataSourceResponse" />
 		</operation>
 		<operation name="GetStatus">
 			<input message="tns:GetStatusRequest" />
@@ -286,6 +298,15 @@
 				</output>
 			</operation>
 			<operation name="GetNotifications">
+				<soap:operation style="document" soapAction=""/>
+				<input>
+					<soap:body use="literal" namespace="SGS"/>
+				</input>
+				<output>
+					<soap:body use="literal" namespace="SGS"/>
+				</output>
+			</operation>
+			<operation name="GetNthDataSource">
 				<soap:operation style="document" soapAction=""/>
 				<input>
 					<soap:body use="literal" namespace="SGS"/>
