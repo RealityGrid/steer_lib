@@ -107,7 +107,9 @@
 <xs:complexType name="CmdType">
 	<xs:sequence>
 		<xs:element name="Cmd_id" type="xs:integer"
-	            minOccurs="1" maxOccurs="1" />
+	            minOccurs="0" maxOccurs="1" />
+		<xs:element name="Cmd_name" type="xs:token"
+	            minOccurs="0" maxOccurs="1" />
 		<xs:element name="Cmd_param" type="ParamType"
 	            minOccurs="0" maxOccurs="unbounded" />
 	</xs:sequence>
