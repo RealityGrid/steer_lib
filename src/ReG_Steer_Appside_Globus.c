@@ -772,7 +772,6 @@ int Consume_data_read_globus(const int		index,
 #if REG_DEBUG
   fprintf(stderr, "Consume_data_read_globus: globus_io_read read %d bytes\n",
 	  (int) nbytes);
-#endif
 
 #ifdef USE_REG_TIMING
   Get_current_time_seconds(&time1);
@@ -780,12 +779,11 @@ int Consume_data_read_globus(const int		index,
 	  (float)(time1-time0));
 #endif
 
-#if REG_DEBUG
   if(datatype == REG_CHAR){
     fprintf(stderr, "Consume_data_read_globus: got char data:\n>>%s<<\n", 
 	    (char *)pData);
   }
-#endif
+#endif /* REG_DEBUG */
 
   if(result != GLOBUS_SUCCESS){
 
