@@ -37,11 +37,12 @@
 #include <string.h>
 #include <unistd.h>
 
-#ifndef DEBUG
-#define DEBUG 0
+#ifndef REG_DEBUG
+#define REG_DEBUG 0
 #endif
 
 static int Edit_parameter(int sim_handle);
+static int Choose_parameter(int sim_handle);
 
 /*-------------------------------------------------------------------------*/
 
@@ -63,6 +64,7 @@ int main(){
   char  *param_vals[REG_INITIAL_NUM_PARAMS];
   Param_details_struct param_details[REG_INITIAL_NUM_PARAMS];
   int    num_types;
+  int    handle;
 
   int    io_handles[REG_INITIAL_NUM_IOTYPES];
   char  *io_labels[REG_INITIAL_NUM_IOTYPES];
@@ -322,6 +324,7 @@ int main(){
       break;
 
     case 'e':
+
       if( Edit_parameter(sim_handle) == REG_SUCCESS){
 
 	/* Emit_control automatically emits the values of any steerable
@@ -435,7 +438,10 @@ int main(){
 
     case 'o':
       /* Get the log of parameters back */
-      Emit_retrieve_param_log_cmd(sim_handle);
+      handle = Choose_parameter(sim_handle);
+
+      if(handle != REG_PARAM_HANDLE_NOTSET)
+	Emit_retrieve_param_log_cmd(sim_handle, handle);
       break;
 
     case 'p':
@@ -480,19 +486,19 @@ int main(){
       case SUPP_CMDS:
 	/* Supported commands should only be output once (as part
 	   of handshaking process - read in Sim_attach) */
-#if DEBUG
+#if REG_DEBUG
 	fprintf(stderr, "ERROR: Got supported cmds message\n");
 #endif
 	break;
 
       case MSG_NOTSET:
-#if DEBUG
+#if REG_DEBUG
 	fprintf(stderr, "No messages to retrieve\n");
 #endif
 	break;
 
       case IO_DEFS:
-#if DEBUG
+#if REG_DEBUG
 	fprintf(stderr, "Got IOdefs message\n");
 #endif
 	if(Consume_IOType_defs(sim_handle) != REG_SUCCESS){
@@ -502,7 +508,7 @@ int main(){
 	break;
 
       case CHK_DEFS:
-#if DEBUG
+#if REG_DEBUG
 	fprintf(stderr, "Got Chkdefs message\n");
 #endif
 	if(Consume_ChkType_defs(sim_handle) != REG_SUCCESS){
@@ -512,20 +518,20 @@ int main(){
 	break;
 
       case PARAM_DEFS:
-#if DEBUG
+#if REG_DEBUG
 	fprintf(stderr, "Got param defs message\n");
 #endif
 	if(Consume_param_defs(sim_handle) != REG_SUCCESS){
 
 	  fprintf(stderr, "Consume_param_defs failed\n");
 	}
-#if DEBUG
+#if REG_DEBUG
 	Dump_sim_table();
 #endif
 	break;
 
       case STATUS:
-#if DEBUG
+#if REG_DEBUG
 	fprintf(stderr, "Got status message\n");
 #endif
 	status = Consume_status(sim_handle,
@@ -537,19 +543,20 @@ int main(){
 	  done = REG_TRUE;
 	}
 	else{
-#if DEBUG
+#if REG_DEBUG
 	  Dump_sim_table();
 #endif
 	  /* Parse commands */
 	  for(i=0; i<num_cmds; i++){
 
-#if DEBUG
+#if REG_DEBUG
 	    fprintf(stderr, "Cmd %d = %d\n", i, commands[i]);
 #endif
 	    switch(commands[i]){
 
+	    case REG_STR_STOP:
 	    case REG_STR_DETACH:
-#if DEBUG
+#if REG_DEBUG
 	      fprintf(stderr, "App has signalled that it has finished\n");
 #endif
 	      Delete_sim_table_entry(&sim_handle);
@@ -563,7 +570,7 @@ int main(){
 	    if (done) break;
 	  }
 
-#if DEBUG
+#if REG_DEBUG
 	  fprintf(stderr, "Application SeqNum = %d\n", app_seqnum);
 #endif
 	}
@@ -701,7 +708,7 @@ int main(){
 
 /*--------------------------------------------------------------------*/
 
-int Edit_parameter(int sim_handle)
+int Choose_parameter(int sim_handle)
 {
   int    num_params;
   char  *param_val[1];
@@ -709,12 +716,11 @@ int Edit_parameter(int sim_handle)
   int    i;
   int    input;
   char   user_str[REG_MAX_STRING_LENGTH];
-  int    return_status = REG_SUCCESS;
 
   param_val[0] = (char *)malloc(REG_MAX_STRING_LENGTH*sizeof(char));
   if (!param_val[0]) return REG_FAILURE;
 
-  /* Find out what parameters there are to edit */
+  /* Find out what parameters there are available */
   
   if(Get_param_number(sim_handle, REG_TRUE, &num_params) != REG_FAILURE){
 
@@ -727,7 +733,7 @@ int Edit_parameter(int sim_handle)
     			num_params,
 			param_details) != REG_FAILURE){
     
-      fprintf(stderr, "Which of the following do you wish to edit?\n\n");
+      fprintf(stderr, "Which parameter to select?\n\n");
     
       for(i=0; i<num_params; i++){
     	fprintf(stderr, "%d: %s = %s (%s,%s)\n", i, param_details[i].label, 
@@ -742,36 +748,81 @@ int Edit_parameter(int sim_handle)
 	if(user_str[0] != '\n' && user_str[0] != ' ')break;
       }
 
-      if( !strchr(user_str, 'c') ){
+      if( strchr(user_str, 'c') ){return REG_PARAM_HANDLE_NOTSET;}
 
-	if(sscanf(user_str, "%d", &input) == 1){
+      if(sscanf(user_str, "%d", &input) == 1){
 
-	  if(input >= 0 && input < num_params){
-
-	    fprintf(stderr, "Editing parameter %d, current value = %s...\n", 
-		    input, param_details[input].value);
-
-	    fprintf(stderr, "New value: ");
-
-	    while(REG_TRUE){
-	      scanf("%s", user_str);
-	      if(user_str[0] != '\n' && user_str[0] != ' ')break;
-	    }
-
-	    strcpy(param_val[0], user_str);
-	    return_status = Set_param_values(sim_handle,
-					     1,
-					     &(param_details[input].handle),
-					     param_val);
-	  }
-	  else{
-	    fprintf(stderr, "That is not a valid selection.\n");
-	  }
+	if(input < 0 || input >= num_params){
+	  fprintf(stderr, "That is not a valid selection.\n");
+	  return REG_PARAM_HANDLE_NOTSET;
 	}
-	else{
-	  fprintf(stderr, "Failed to get integer from input string\n");
+
+	return param_details[input].handle;
+      }
+    }
+  }
+  return REG_PARAM_HANDLE_NOTSET;
+}
+
+/*--------------------------------------------------------------------*/
+
+int Edit_parameter(int sim_handle)
+{
+  int    num_params;
+  char  *param_val[1];
+  Param_details_struct param_details[REG_INITIAL_NUM_PARAMS];
+  int    i;
+  int    input;
+  char   user_str[REG_MAX_STRING_LENGTH];
+  int    return_status = REG_SUCCESS;
+  int    handle;
+
+  /* Choose a parameter to edit */
+  handle = Choose_parameter(sim_handle);
+
+  if(handle == REG_PARAM_HANDLE_NOTSET)return REG_FAILURE;
+
+  param_val[0] = (char *)malloc(REG_MAX_STRING_LENGTH*sizeof(char));
+  if (!param_val[0]) return REG_FAILURE;
+
+  /* Get the details of this parameter */  
+  if(Get_param_number(sim_handle, REG_TRUE, &num_params) != REG_FAILURE){
+
+    if(num_params > REG_INITIAL_NUM_PARAMS){
+      num_params = REG_INITIAL_NUM_PARAMS;
+    }
+    
+    if(Get_param_values(sim_handle, 
+    			REG_TRUE,
+    			num_params,
+			param_details) != REG_FAILURE){
+    
+      for(i=0; i<num_params; i++){
+
+	if(param_details[i].handle == handle){
+	  fprintf(stderr, "%d: %s = %s (%s,%s)\n", i, param_details[i].label, 
+		  param_details[i].value, param_details[i].min_val, 
+		  param_details[i].max_val);
+	  break;
 	}
       }
+
+      fprintf(stderr, "Editing parameter with handle %d, "
+	      "current value = %s...\n", 
+	      handle, input, param_details[input].value);
+
+      fprintf(stderr, "New value: ");
+
+      while(REG_TRUE){
+	scanf("%s", user_str);
+	if(user_str[0] != '\n' && user_str[0] != ' ')break;
+      }
+
+      strcpy(param_val[0], user_str);
+      return_status = Set_param_values(sim_handle,
+				       1,
+				       &(param_details[input].handle),
+				       param_val);
     }
   }
   else{
