@@ -33,6 +33,10 @@
   Authors........: Andrew Porter, Robert Haines
 ---------------------------------------------------------------------------*/
 
+/** @file ReG_Steer_Common.c
+    @brief Source file for utility routines used in both Appside and Steerside
+  */
+
 #include "ReG_Steer_types.h"
 #include "ReG_Steer_Common.h"
 #ifndef WIN32
@@ -60,7 +64,8 @@
 #define snprintf _snprintf
 #endif
 
-/* Location of file specifying the schema/namespace to which all
+/**
+   Location of file specifying the schema/namespace to which all
    steering messages should belong.  Set in Steerer_initialize or
    Steering_initialize (depending on whether we are steerer or
    application side) using the REG_STEER_HOME environment variable.
