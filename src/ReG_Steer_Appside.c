@@ -1143,11 +1143,9 @@ int Steering_control(int     SeqNum,
       i++;
     }
 
-    /* Record how many commands we're going to pass back to caller */
-    *NumSteerCommands = count;
-
-    /* Tell the steerer what we've been doing */
     if( !detached ){
+
+      /* Tell the steerer what we've been doing */
 
       /* Currently don't support returning a copy of the data just 
 	 received from the steerer - hence NULL's below */
@@ -1162,7 +1160,41 @@ int Steering_control(int     SeqNum,
 	fprintf(stderr, "Steering_control: call to Emit_status failed\n");
 	return_status = REG_FAILURE;
       }
+
+      /* Deal with automatic emission/consumption of data */
+
+      /* IOTypes cannot be deleted so the num_registered entries that
+	 we have will be contiguous within the table */
+      for(i=0; i<IOTypes_table.num_registered; i++){
+
+	/* A freq. of zero indicates no automatic emit/consume */
+	if(IOTypes_table.io_def[i].frequency == 0) continue;
+
+	if(fmod(SeqNum, IOTypes_table.io_def[i].frequency) < REG_TOL_ZERO){
+
+	  if( count >= REG_MAX_NUM_STR_CMDS ){
+	    fprintf(stderr, "Steering_control: WARNING: discarding "
+		    "steering cmds as max number (%d) exceeded\n", 
+		    REG_MAX_NUM_STR_CMDS);
+
+	    return_status = REG_FAILURE;
+	    break;
+	  }
+ 
+	  /* Add command to list to send back to caller */
+	  /* ARPDBG - this isn't going to work for checkpoints as things
+	     stand 'cos we need to specify IN or OUT in the associated
+	     param entry */
+	  SteerCommands[count]  = IOTypes_table.io_def[i].handle;
+	  SteerCmdParams[count] = " ";
+	  count++;
+	  
+	}
+      }
     }
+
+    /* Record how many commands we're going to pass back to caller */
+    *NumSteerCommands = count;
 
   } /* End if steering active */
 
