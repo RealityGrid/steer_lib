@@ -137,6 +137,12 @@ int Steering_initialize(char *AppName,
   extern char ReG_Steer_Schema_Locn[REG_MAX_STRING_LENGTH];
   char       *schema_path = "xml_schema/reg_steer_comm.xsd";
 
+#if REG_DEBUG
+  /* Print out version information */
+  fprintf(stderr, "**** RealityGrid Computational Steering Library "
+	  "v.%s ****\n\n", REG_STEER_LIB_VERSION);
+#endif
+
   /* Don't do anything if steering is not enabled */
   if (!ReG_SteeringEnabled){
     fprintf(stderr, "Steering_initialize: WARNING: steering library "

@@ -74,6 +74,12 @@ int Steerer_initialize()
      and steered have a variable of this name */
   extern char ReG_Steer_Schema_Locn[REG_MAX_STRING_LENGTH];
 
+#if REG_DEBUG
+  /* Print out version information */
+  fprintf(stderr, "**** RealityGrid Computational Steering Library "
+	  "v.%s ****\n\n", REG_STEER_LIB_VERSION);
+#endif
+
   /* Set the location of the file containing the schema describing all 
      steering communication */
 
@@ -149,7 +155,6 @@ int Steerer_initialize()
 
     SOAP_available = FALSE;
   }
-
 
   return REG_SUCCESS;
 }

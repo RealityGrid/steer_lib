@@ -56,6 +56,7 @@ lib:
         -DREG_SOCKET_SAMPLES=${REG_SOCKET_SAMPLES_FLAG} \
         -DREG_SOAP_STEERING=${REG_SOAP_STEERING_FLAG} \
         -DREG_DEBUG=${REG_DEBUG_FLAG} \
+        -DREG_STEER_LIB_VERSION=\"${REG_STEER_LIB_VERSION}\" \
         ${INCLUDE_PATH} -c $< -o $@
 
 ${LIB_PATH}/libReG_Steer.a: ReG_Steer_Appside_f.o \
@@ -176,5 +177,6 @@ clean:
 
 tidy:
 	rm -f ReG_Steer_Steerside.o ReG_Steer_Appside.o \
+        ReG_Steer_Appside_Sockets.o ReG_Steer_Appside_Soap.o \
+        ReG_Steer_Appside_File.o ReG_Steer_Appside_Globus.o \
 	ReG_Steer_Common.o ReG_Steer_Appside_f.o ReG_Steer_Appside_f.c *~
-
