@@ -8,24 +8,23 @@
 extern "C" {
 #endif
 
-SOAP_SOURCE_STAMP("@(#) soapClient.c ver 2.2.3b 2005-02-08 16:41:21 GMT")
+SOAP_SOURCE_STAMP("@(#) soapClient.c ver 2.2.3b 2005-02-09 12:24:00 GMT")
 
 
-SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__setServiceData(struct soap *soap, const char *URL, const char *action, char *in0, struct sgs__setServiceDataResponse *out)
+SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__Attach(struct soap *soap, const char *URL, const char *action, struct sgs__AttachResponse *out)
 {
-	struct sgs__setServiceData soap_tmp_sgs__setServiceData;
+	struct sgs__Attach soap_tmp_sgs__Attach;
 	if (!action)
 		action = "";
-	soap_tmp_sgs__setServiceData.in0=in0;
 	soap_begin(soap);
 	soap_serializeheader(soap);
-	soap_serialize_sgs__setServiceData(soap, &soap_tmp_sgs__setServiceData);
+	soap_serialize_sgs__Attach(soap, &soap_tmp_sgs__Attach);
 	soap_begin_count(soap);
 	if (soap->mode & SOAP_IO_LENGTH)
 	{	soap_envelope_begin_out(soap);
 		soap_putheader(soap);
 		soap_body_begin_out(soap);
-		soap_put_sgs__setServiceData(soap, &soap_tmp_sgs__setServiceData, "sgs:setServiceData", "");
+		soap_put_sgs__Attach(soap, &soap_tmp_sgs__Attach, "sgs:Attach", "");
 		soap_body_end_out(soap);
 		soap_envelope_end_out(soap);
 	}
@@ -33,309 +32,19 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__setServiceData(struct soap *soap, const
 	 || soap_envelope_begin_out(soap)
 	 || soap_putheader(soap)
 	 || soap_body_begin_out(soap)
-	 || soap_put_sgs__setServiceData(soap, &soap_tmp_sgs__setServiceData, "sgs:setServiceData", "")
+	 || soap_put_sgs__Attach(soap, &soap_tmp_sgs__Attach, "sgs:Attach", "")
 	 || soap_body_end_out(soap)
 	 || soap_envelope_end_out(soap)
 	 || soap_putattachments(soap)
 	 || soap_end_send(soap))
 		return soap->error;
-	soap_default_sgs__setServiceDataResponse(soap, out);
+	soap_default_sgs__AttachResponse(soap, out);
 	if (soap_begin_recv(soap)
 	 || soap_envelope_begin_in(soap)
 	 || soap_recv_header(soap)
 	 || soap_body_begin_in(soap))
 		return soap->error;
-	soap_get_sgs__setServiceDataResponse(soap, out, "sgs:setServiceDataResponse", "sgs:setServiceDataResponse");
-	if (soap->error)
-	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
-			soap_recv_fault(soap);
-		return soap->error;
-	}
-	if (soap_body_end_in(soap)
-	 || soap_envelope_end_in(soap)
-	 || soap_getattachments(soap)
-	 || soap_end_recv(soap))
-		return soap->error;
-	soap_closesock(soap);
-	return SOAP_OK;
-}
-
-SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__destroy(struct soap *soap, const char *URL, const char *action, struct sgs__destroyResponse *out)
-{
-	struct sgs__destroy soap_tmp_sgs__destroy;
-	if (!action)
-		action = "";
-	soap_begin(soap);
-	soap_serializeheader(soap);
-	soap_serialize_sgs__destroy(soap, &soap_tmp_sgs__destroy);
-	soap_begin_count(soap);
-	if (soap->mode & SOAP_IO_LENGTH)
-	{	soap_envelope_begin_out(soap);
-		soap_putheader(soap);
-		soap_body_begin_out(soap);
-		soap_put_sgs__destroy(soap, &soap_tmp_sgs__destroy, "sgs:destroy", "");
-		soap_body_end_out(soap);
-		soap_envelope_end_out(soap);
-	}
-	if (soap_connect(soap, URL, action)
-	 || soap_envelope_begin_out(soap)
-	 || soap_putheader(soap)
-	 || soap_body_begin_out(soap)
-	 || soap_put_sgs__destroy(soap, &soap_tmp_sgs__destroy, "sgs:destroy", "")
-	 || soap_body_end_out(soap)
-	 || soap_envelope_end_out(soap)
-	 || soap_putattachments(soap)
-	 || soap_end_send(soap))
-		return soap->error;
-	soap_default_sgs__destroyResponse(soap, out);
-	if (soap_begin_recv(soap)
-	 || soap_envelope_begin_in(soap)
-	 || soap_recv_header(soap)
-	 || soap_body_begin_in(soap))
-		return soap->error;
-	soap_get_sgs__destroyResponse(soap, out, "sgs:destroyResponse", "sgs:destroyResponse");
-	if (soap->error)
-	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
-			soap_recv_fault(soap);
-		return soap->error;
-	}
-	if (soap_body_end_in(soap)
-	 || soap_envelope_end_in(soap)
-	 || soap_getattachments(soap)
-	 || soap_end_recv(soap))
-		return soap->error;
-	soap_closesock(soap);
-	return SOAP_OK;
-}
-
-SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__AppDetach(struct soap *soap, const char *URL, const char *action, struct sgs__AppDetachResponse *out)
-{
-	struct sgs__AppDetach soap_tmp_sgs__AppDetach;
-	if (!action)
-		action = "";
-	soap_begin(soap);
-	soap_serializeheader(soap);
-	soap_serialize_sgs__AppDetach(soap, &soap_tmp_sgs__AppDetach);
-	soap_begin_count(soap);
-	if (soap->mode & SOAP_IO_LENGTH)
-	{	soap_envelope_begin_out(soap);
-		soap_putheader(soap);
-		soap_body_begin_out(soap);
-		soap_put_sgs__AppDetach(soap, &soap_tmp_sgs__AppDetach, "sgs:AppDetach", "");
-		soap_body_end_out(soap);
-		soap_envelope_end_out(soap);
-	}
-	if (soap_connect(soap, URL, action)
-	 || soap_envelope_begin_out(soap)
-	 || soap_putheader(soap)
-	 || soap_body_begin_out(soap)
-	 || soap_put_sgs__AppDetach(soap, &soap_tmp_sgs__AppDetach, "sgs:AppDetach", "")
-	 || soap_body_end_out(soap)
-	 || soap_envelope_end_out(soap)
-	 || soap_putattachments(soap)
-	 || soap_end_send(soap))
-		return soap->error;
-	soap_default_sgs__AppDetachResponse(soap, out);
-	if (soap_begin_recv(soap)
-	 || soap_envelope_begin_in(soap)
-	 || soap_recv_header(soap)
-	 || soap_body_begin_in(soap))
-		return soap->error;
-	soap_get_sgs__AppDetachResponse(soap, out, "sgs:AppDetachResponse", "sgs:AppDetachResponse");
-	if (soap->error)
-	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
-			soap_recv_fault(soap);
-		return soap->error;
-	}
-	if (soap_body_end_in(soap)
-	 || soap_envelope_end_in(soap)
-	 || soap_getattachments(soap)
-	 || soap_end_recv(soap))
-		return soap->error;
-	soap_closesock(soap);
-	return SOAP_OK;
-}
-
-SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__PutStatus(struct soap *soap, const char *URL, const char *action, char *in0, struct sgs__PutStatusResponse *out)
-{
-	struct sgs__PutStatus soap_tmp_sgs__PutStatus;
-	if (!action)
-		action = "";
-	soap_tmp_sgs__PutStatus.in0=in0;
-	soap_begin(soap);
-	soap_serializeheader(soap);
-	soap_serialize_sgs__PutStatus(soap, &soap_tmp_sgs__PutStatus);
-	soap_begin_count(soap);
-	if (soap->mode & SOAP_IO_LENGTH)
-	{	soap_envelope_begin_out(soap);
-		soap_putheader(soap);
-		soap_body_begin_out(soap);
-		soap_put_sgs__PutStatus(soap, &soap_tmp_sgs__PutStatus, "sgs:PutStatus", "");
-		soap_body_end_out(soap);
-		soap_envelope_end_out(soap);
-	}
-	if (soap_connect(soap, URL, action)
-	 || soap_envelope_begin_out(soap)
-	 || soap_putheader(soap)
-	 || soap_body_begin_out(soap)
-	 || soap_put_sgs__PutStatus(soap, &soap_tmp_sgs__PutStatus, "sgs:PutStatus", "")
-	 || soap_body_end_out(soap)
-	 || soap_envelope_end_out(soap)
-	 || soap_putattachments(soap)
-	 || soap_end_send(soap))
-		return soap->error;
-	soap_default_sgs__PutStatusResponse(soap, out);
-	if (soap_begin_recv(soap)
-	 || soap_envelope_begin_in(soap)
-	 || soap_recv_header(soap)
-	 || soap_body_begin_in(soap))
-		return soap->error;
-	soap_get_sgs__PutStatusResponse(soap, out, "sgs:PutStatusResponse", "sgs:PutStatusResponse");
-	if (soap->error)
-	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
-			soap_recv_fault(soap);
-		return soap->error;
-	}
-	if (soap_body_end_in(soap)
-	 || soap_envelope_end_in(soap)
-	 || soap_getattachments(soap)
-	 || soap_end_recv(soap))
-		return soap->error;
-	soap_closesock(soap);
-	return SOAP_OK;
-}
-
-SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__AppStop(struct soap *soap, const char *URL, const char *action, struct sgs__AppStopResponse *out)
-{
-	struct sgs__AppStop soap_tmp_sgs__AppStop;
-	if (!action)
-		action = "";
-	soap_begin(soap);
-	soap_serializeheader(soap);
-	soap_serialize_sgs__AppStop(soap, &soap_tmp_sgs__AppStop);
-	soap_begin_count(soap);
-	if (soap->mode & SOAP_IO_LENGTH)
-	{	soap_envelope_begin_out(soap);
-		soap_putheader(soap);
-		soap_body_begin_out(soap);
-		soap_put_sgs__AppStop(soap, &soap_tmp_sgs__AppStop, "sgs:AppStop", "");
-		soap_body_end_out(soap);
-		soap_envelope_end_out(soap);
-	}
-	if (soap_connect(soap, URL, action)
-	 || soap_envelope_begin_out(soap)
-	 || soap_putheader(soap)
-	 || soap_body_begin_out(soap)
-	 || soap_put_sgs__AppStop(soap, &soap_tmp_sgs__AppStop, "sgs:AppStop", "")
-	 || soap_body_end_out(soap)
-	 || soap_envelope_end_out(soap)
-	 || soap_putattachments(soap)
-	 || soap_end_send(soap))
-		return soap->error;
-	soap_default_sgs__AppStopResponse(soap, out);
-	if (soap_begin_recv(soap)
-	 || soap_envelope_begin_in(soap)
-	 || soap_recv_header(soap)
-	 || soap_body_begin_in(soap))
-		return soap->error;
-	soap_get_sgs__AppStopResponse(soap, out, "sgs:AppStopResponse", "sgs:AppStopResponse");
-	if (soap->error)
-	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
-			soap_recv_fault(soap);
-		return soap->error;
-	}
-	if (soap_body_end_in(soap)
-	 || soap_envelope_end_in(soap)
-	 || soap_getattachments(soap)
-	 || soap_end_recv(soap))
-		return soap->error;
-	soap_closesock(soap);
-	return SOAP_OK;
-}
-
-SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__GetControl(struct soap *soap, const char *URL, const char *action, struct sgs__GetControlResponse *out)
-{
-	struct sgs__GetControl soap_tmp_sgs__GetControl;
-	if (!action)
-		action = "";
-	soap_begin(soap);
-	soap_serializeheader(soap);
-	soap_serialize_sgs__GetControl(soap, &soap_tmp_sgs__GetControl);
-	soap_begin_count(soap);
-	if (soap->mode & SOAP_IO_LENGTH)
-	{	soap_envelope_begin_out(soap);
-		soap_putheader(soap);
-		soap_body_begin_out(soap);
-		soap_put_sgs__GetControl(soap, &soap_tmp_sgs__GetControl, "sgs:GetControl", "");
-		soap_body_end_out(soap);
-		soap_envelope_end_out(soap);
-	}
-	if (soap_connect(soap, URL, action)
-	 || soap_envelope_begin_out(soap)
-	 || soap_putheader(soap)
-	 || soap_body_begin_out(soap)
-	 || soap_put_sgs__GetControl(soap, &soap_tmp_sgs__GetControl, "sgs:GetControl", "")
-	 || soap_body_end_out(soap)
-	 || soap_envelope_end_out(soap)
-	 || soap_putattachments(soap)
-	 || soap_end_send(soap))
-		return soap->error;
-	soap_default_sgs__GetControlResponse(soap, out);
-	if (soap_begin_recv(soap)
-	 || soap_envelope_begin_in(soap)
-	 || soap_recv_header(soap)
-	 || soap_body_begin_in(soap))
-		return soap->error;
-	soap_get_sgs__GetControlResponse(soap, out, "sgs:GetControlResponse", "sgs:GetControlResponse");
-	if (soap->error)
-	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
-			soap_recv_fault(soap);
-		return soap->error;
-	}
-	if (soap_body_end_in(soap)
-	 || soap_envelope_end_in(soap)
-	 || soap_getattachments(soap)
-	 || soap_end_recv(soap))
-		return soap->error;
-	soap_closesock(soap);
-	return SOAP_OK;
-}
-
-SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__AppPutLog(struct soap *soap, const char *URL, const char *action, char *in0, struct sgs__AppPutLogResponse *out)
-{
-	struct sgs__AppPutLog soap_tmp_sgs__AppPutLog;
-	if (!action)
-		action = "";
-	soap_tmp_sgs__AppPutLog.in0=in0;
-	soap_begin(soap);
-	soap_serializeheader(soap);
-	soap_serialize_sgs__AppPutLog(soap, &soap_tmp_sgs__AppPutLog);
-	soap_begin_count(soap);
-	if (soap->mode & SOAP_IO_LENGTH)
-	{	soap_envelope_begin_out(soap);
-		soap_putheader(soap);
-		soap_body_begin_out(soap);
-		soap_put_sgs__AppPutLog(soap, &soap_tmp_sgs__AppPutLog, "sgs:AppPutLog", "");
-		soap_body_end_out(soap);
-		soap_envelope_end_out(soap);
-	}
-	if (soap_connect(soap, URL, action)
-	 || soap_envelope_begin_out(soap)
-	 || soap_putheader(soap)
-	 || soap_body_begin_out(soap)
-	 || soap_put_sgs__AppPutLog(soap, &soap_tmp_sgs__AppPutLog, "sgs:AppPutLog", "")
-	 || soap_body_end_out(soap)
-	 || soap_envelope_end_out(soap)
-	 || soap_putattachments(soap)
-	 || soap_end_send(soap))
-		return soap->error;
-	soap_default_sgs__AppPutLogResponse(soap, out);
-	if (soap_begin_recv(soap)
-	 || soap_envelope_begin_in(soap)
-	 || soap_recv_header(soap)
-	 || soap_body_begin_in(soap))
-		return soap->error;
-	soap_get_sgs__AppPutLogResponse(soap, out, "sgs:AppPutLogResponse", "sgs:AppPutLogResponse");
+	soap_get_sgs__AttachResponse(soap, out, "sgs:AttachResponse", "sgs:AttachResponse");
 	if (soap->error)
 	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
 			soap_recv_fault(soap);
@@ -398,201 +107,6 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__GetStatus(struct soap *soap, const char
 	return SOAP_OK;
 }
 
-SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__Restart(struct soap *soap, const char *URL, const char *action, char *in0, struct sgs__RestartResponse *out)
-{
-	struct sgs__Restart soap_tmp_sgs__Restart;
-	if (!action)
-		action = "";
-	soap_tmp_sgs__Restart.in0=in0;
-	soap_begin(soap);
-	soap_serializeheader(soap);
-	soap_serialize_sgs__Restart(soap, &soap_tmp_sgs__Restart);
-	soap_begin_count(soap);
-	if (soap->mode & SOAP_IO_LENGTH)
-	{	soap_envelope_begin_out(soap);
-		soap_putheader(soap);
-		soap_body_begin_out(soap);
-		soap_put_sgs__Restart(soap, &soap_tmp_sgs__Restart, "sgs:Restart", "");
-		soap_body_end_out(soap);
-		soap_envelope_end_out(soap);
-	}
-	if (soap_connect(soap, URL, action)
-	 || soap_envelope_begin_out(soap)
-	 || soap_putheader(soap)
-	 || soap_body_begin_out(soap)
-	 || soap_put_sgs__Restart(soap, &soap_tmp_sgs__Restart, "sgs:Restart", "")
-	 || soap_body_end_out(soap)
-	 || soap_envelope_end_out(soap)
-	 || soap_putattachments(soap)
-	 || soap_end_send(soap))
-		return soap->error;
-	soap_default_sgs__RestartResponse(soap, out);
-	if (soap_begin_recv(soap)
-	 || soap_envelope_begin_in(soap)
-	 || soap_recv_header(soap)
-	 || soap_body_begin_in(soap))
-		return soap->error;
-	soap_get_sgs__RestartResponse(soap, out, "sgs:RestartResponse", "sgs:RestartResponse");
-	if (soap->error)
-	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
-			soap_recv_fault(soap);
-		return soap->error;
-	}
-	if (soap_body_end_in(soap)
-	 || soap_envelope_end_in(soap)
-	 || soap_getattachments(soap)
-	 || soap_end_recv(soap))
-		return soap->error;
-	soap_closesock(soap);
-	return SOAP_OK;
-}
-
-SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__GetParamLog(struct soap *soap, const char *URL, const char *action, char *in0, struct sgs__GetParamLogResponse *out)
-{
-	struct sgs__GetParamLog soap_tmp_sgs__GetParamLog;
-	if (!action)
-		action = "";
-	soap_tmp_sgs__GetParamLog.in0=in0;
-	soap_begin(soap);
-	soap_serializeheader(soap);
-	soap_serialize_sgs__GetParamLog(soap, &soap_tmp_sgs__GetParamLog);
-	soap_begin_count(soap);
-	if (soap->mode & SOAP_IO_LENGTH)
-	{	soap_envelope_begin_out(soap);
-		soap_putheader(soap);
-		soap_body_begin_out(soap);
-		soap_put_sgs__GetParamLog(soap, &soap_tmp_sgs__GetParamLog, "sgs:GetParamLog", "");
-		soap_body_end_out(soap);
-		soap_envelope_end_out(soap);
-	}
-	if (soap_connect(soap, URL, action)
-	 || soap_envelope_begin_out(soap)
-	 || soap_putheader(soap)
-	 || soap_body_begin_out(soap)
-	 || soap_put_sgs__GetParamLog(soap, &soap_tmp_sgs__GetParamLog, "sgs:GetParamLog", "")
-	 || soap_body_end_out(soap)
-	 || soap_envelope_end_out(soap)
-	 || soap_putattachments(soap)
-	 || soap_end_send(soap))
-		return soap->error;
-	soap_default_sgs__GetParamLogResponse(soap, out);
-	if (soap_begin_recv(soap)
-	 || soap_envelope_begin_in(soap)
-	 || soap_recv_header(soap)
-	 || soap_body_begin_in(soap))
-		return soap->error;
-	soap_get_sgs__GetParamLogResponse(soap, out, "sgs:GetParamLogResponse", "sgs:GetParamLogResponse");
-	if (soap->error)
-	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
-			soap_recv_fault(soap);
-		return soap->error;
-	}
-	if (soap_body_end_in(soap)
-	 || soap_envelope_end_in(soap)
-	 || soap_getattachments(soap)
-	 || soap_end_recv(soap))
-		return soap->error;
-	soap_closesock(soap);
-	return SOAP_OK;
-}
-
-SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__Attach(struct soap *soap, const char *URL, const char *action, struct sgs__AttachResponse *out)
-{
-	struct sgs__Attach soap_tmp_sgs__Attach;
-	if (!action)
-		action = "";
-	soap_begin(soap);
-	soap_serializeheader(soap);
-	soap_serialize_sgs__Attach(soap, &soap_tmp_sgs__Attach);
-	soap_begin_count(soap);
-	if (soap->mode & SOAP_IO_LENGTH)
-	{	soap_envelope_begin_out(soap);
-		soap_putheader(soap);
-		soap_body_begin_out(soap);
-		soap_put_sgs__Attach(soap, &soap_tmp_sgs__Attach, "sgs:Attach", "");
-		soap_body_end_out(soap);
-		soap_envelope_end_out(soap);
-	}
-	if (soap_connect(soap, URL, action)
-	 || soap_envelope_begin_out(soap)
-	 || soap_putheader(soap)
-	 || soap_body_begin_out(soap)
-	 || soap_put_sgs__Attach(soap, &soap_tmp_sgs__Attach, "sgs:Attach", "")
-	 || soap_body_end_out(soap)
-	 || soap_envelope_end_out(soap)
-	 || soap_putattachments(soap)
-	 || soap_end_send(soap))
-		return soap->error;
-	soap_default_sgs__AttachResponse(soap, out);
-	if (soap_begin_recv(soap)
-	 || soap_envelope_begin_in(soap)
-	 || soap_recv_header(soap)
-	 || soap_body_begin_in(soap))
-		return soap->error;
-	soap_get_sgs__AttachResponse(soap, out, "sgs:AttachResponse", "sgs:AttachResponse");
-	if (soap->error)
-	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
-			soap_recv_fault(soap);
-		return soap->error;
-	}
-	if (soap_body_end_in(soap)
-	 || soap_envelope_end_in(soap)
-	 || soap_getattachments(soap)
-	 || soap_end_recv(soap))
-		return soap->error;
-	soap_closesock(soap);
-	return SOAP_OK;
-}
-
-SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__GetNthDataSource(struct soap *soap, const char *URL, const char *action, int in0, struct sgs__GetNthDataSourceResponse *out)
-{
-	struct sgs__GetNthDataSource soap_tmp_sgs__GetNthDataSource;
-	if (!action)
-		action = "";
-	soap_tmp_sgs__GetNthDataSource.in0=in0;
-	soap_begin(soap);
-	soap_serializeheader(soap);
-	soap_serialize_sgs__GetNthDataSource(soap, &soap_tmp_sgs__GetNthDataSource);
-	soap_begin_count(soap);
-	if (soap->mode & SOAP_IO_LENGTH)
-	{	soap_envelope_begin_out(soap);
-		soap_putheader(soap);
-		soap_body_begin_out(soap);
-		soap_put_sgs__GetNthDataSource(soap, &soap_tmp_sgs__GetNthDataSource, "sgs:GetNthDataSource", "");
-		soap_body_end_out(soap);
-		soap_envelope_end_out(soap);
-	}
-	if (soap_connect(soap, URL, action)
-	 || soap_envelope_begin_out(soap)
-	 || soap_putheader(soap)
-	 || soap_body_begin_out(soap)
-	 || soap_put_sgs__GetNthDataSource(soap, &soap_tmp_sgs__GetNthDataSource, "sgs:GetNthDataSource", "")
-	 || soap_body_end_out(soap)
-	 || soap_envelope_end_out(soap)
-	 || soap_putattachments(soap)
-	 || soap_end_send(soap))
-		return soap->error;
-	soap_default_sgs__GetNthDataSourceResponse(soap, out);
-	if (soap_begin_recv(soap)
-	 || soap_envelope_begin_in(soap)
-	 || soap_recv_header(soap)
-	 || soap_body_begin_in(soap))
-		return soap->error;
-	soap_get_sgs__GetNthDataSourceResponse(soap, out, "sgs:GetNthDataSourceResponse", "sgs:GetNthDataSourceResponse");
-	if (soap->error)
-	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
-			soap_recv_fault(soap);
-		return soap->error;
-	}
-	if (soap_body_end_in(soap)
-	 || soap_envelope_end_in(soap)
-	 || soap_getattachments(soap)
-	 || soap_end_recv(soap))
-		return soap->error;
-	soap_closesock(soap);
-	return SOAP_OK;
-}
-
 SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__Stop(struct soap *soap, const char *URL, const char *action, struct sgs__StopResponse *out)
 {
 	struct sgs__Stop soap_tmp_sgs__Stop;
@@ -627,6 +141,54 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__Stop(struct soap *soap, const char *URL
 	 || soap_body_begin_in(soap))
 		return soap->error;
 	soap_get_sgs__StopResponse(soap, out, "sgs:StopResponse", "sgs:StopResponse");
+	if (soap->error)
+	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
+			soap_recv_fault(soap);
+		return soap->error;
+	}
+	if (soap_body_end_in(soap)
+	 || soap_envelope_end_in(soap)
+	 || soap_getattachments(soap)
+	 || soap_end_recv(soap))
+		return soap->error;
+	soap_closesock(soap);
+	return SOAP_OK;
+}
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__ClearStatusMsgQueue(struct soap *soap, const char *URL, const char *action, struct sgs__ClearStatusMsgQueueResponse *out)
+{
+	struct sgs__ClearStatusMsgQueue soap_tmp_sgs__ClearStatusMsgQueue;
+	if (!action)
+		action = "";
+	soap_begin(soap);
+	soap_serializeheader(soap);
+	soap_serialize_sgs__ClearStatusMsgQueue(soap, &soap_tmp_sgs__ClearStatusMsgQueue);
+	soap_begin_count(soap);
+	if (soap->mode & SOAP_IO_LENGTH)
+	{	soap_envelope_begin_out(soap);
+		soap_putheader(soap);
+		soap_body_begin_out(soap);
+		soap_put_sgs__ClearStatusMsgQueue(soap, &soap_tmp_sgs__ClearStatusMsgQueue, "sgs:ClearStatusMsgQueue", "");
+		soap_body_end_out(soap);
+		soap_envelope_end_out(soap);
+	}
+	if (soap_connect(soap, URL, action)
+	 || soap_envelope_begin_out(soap)
+	 || soap_putheader(soap)
+	 || soap_body_begin_out(soap)
+	 || soap_put_sgs__ClearStatusMsgQueue(soap, &soap_tmp_sgs__ClearStatusMsgQueue, "sgs:ClearStatusMsgQueue", "")
+	 || soap_body_end_out(soap)
+	 || soap_envelope_end_out(soap)
+	 || soap_putattachments(soap)
+	 || soap_end_send(soap))
+		return soap->error;
+	soap_default_sgs__ClearStatusMsgQueueResponse(soap, out);
+	if (soap_begin_recv(soap)
+	 || soap_envelope_begin_in(soap)
+	 || soap_recv_header(soap)
+	 || soap_body_begin_in(soap))
+		return soap->error;
+	soap_get_sgs__ClearStatusMsgQueueResponse(soap, out, "sgs:ClearStatusMsgQueueResponse", "sgs:ClearStatusMsgQueueResponse");
 	if (soap->error)
 	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
 			soap_recv_fault(soap);
@@ -689,21 +251,20 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__Detach(struct soap *soap, const char *U
 	return SOAP_OK;
 }
 
-SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__PutControl(struct soap *soap, const char *URL, const char *action, char *in0, struct sgs__PutControlResponse *out)
+SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__Resume(struct soap *soap, const char *URL, const char *action, struct sgs__ResumeResponse *out)
 {
-	struct sgs__PutControl soap_tmp_sgs__PutControl;
+	struct sgs__Resume soap_tmp_sgs__Resume;
 	if (!action)
 		action = "";
-	soap_tmp_sgs__PutControl.in0=in0;
 	soap_begin(soap);
 	soap_serializeheader(soap);
-	soap_serialize_sgs__PutControl(soap, &soap_tmp_sgs__PutControl);
+	soap_serialize_sgs__Resume(soap, &soap_tmp_sgs__Resume);
 	soap_begin_count(soap);
 	if (soap->mode & SOAP_IO_LENGTH)
 	{	soap_envelope_begin_out(soap);
 		soap_putheader(soap);
 		soap_body_begin_out(soap);
-		soap_put_sgs__PutControl(soap, &soap_tmp_sgs__PutControl, "sgs:PutControl", "");
+		soap_put_sgs__Resume(soap, &soap_tmp_sgs__Resume, "sgs:Resume", "");
 		soap_body_end_out(soap);
 		soap_envelope_end_out(soap);
 	}
@@ -711,68 +272,19 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__PutControl(struct soap *soap, const cha
 	 || soap_envelope_begin_out(soap)
 	 || soap_putheader(soap)
 	 || soap_body_begin_out(soap)
-	 || soap_put_sgs__PutControl(soap, &soap_tmp_sgs__PutControl, "sgs:PutControl", "")
+	 || soap_put_sgs__Resume(soap, &soap_tmp_sgs__Resume, "sgs:Resume", "")
 	 || soap_body_end_out(soap)
 	 || soap_envelope_end_out(soap)
 	 || soap_putattachments(soap)
 	 || soap_end_send(soap))
 		return soap->error;
-	soap_default_sgs__PutControlResponse(soap, out);
+	soap_default_sgs__ResumeResponse(soap, out);
 	if (soap_begin_recv(soap)
 	 || soap_envelope_begin_in(soap)
 	 || soap_recv_header(soap)
 	 || soap_body_begin_in(soap))
 		return soap->error;
-	soap_get_sgs__PutControlResponse(soap, out, "sgs:PutControlResponse", "sgs:PutControlResponse");
-	if (soap->error)
-	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
-			soap_recv_fault(soap);
-		return soap->error;
-	}
-	if (soap_body_end_in(soap)
-	 || soap_envelope_end_in(soap)
-	 || soap_getattachments(soap)
-	 || soap_end_recv(soap))
-		return soap->error;
-	soap_closesock(soap);
-	return SOAP_OK;
-}
-
-SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__findServiceData(struct soap *soap, const char *URL, const char *action, char *in0, struct sgs__findServiceDataResponse *out)
-{
-	struct sgs__findServiceData soap_tmp_sgs__findServiceData;
-	if (!action)
-		action = "";
-	soap_tmp_sgs__findServiceData.in0=in0;
-	soap_begin(soap);
-	soap_serializeheader(soap);
-	soap_serialize_sgs__findServiceData(soap, &soap_tmp_sgs__findServiceData);
-	soap_begin_count(soap);
-	if (soap->mode & SOAP_IO_LENGTH)
-	{	soap_envelope_begin_out(soap);
-		soap_putheader(soap);
-		soap_body_begin_out(soap);
-		soap_put_sgs__findServiceData(soap, &soap_tmp_sgs__findServiceData, "sgs:findServiceData", "");
-		soap_body_end_out(soap);
-		soap_envelope_end_out(soap);
-	}
-	if (soap_connect(soap, URL, action)
-	 || soap_envelope_begin_out(soap)
-	 || soap_putheader(soap)
-	 || soap_body_begin_out(soap)
-	 || soap_put_sgs__findServiceData(soap, &soap_tmp_sgs__findServiceData, "sgs:findServiceData", "")
-	 || soap_body_end_out(soap)
-	 || soap_envelope_end_out(soap)
-	 || soap_putattachments(soap)
-	 || soap_end_send(soap))
-		return soap->error;
-	soap_default_sgs__findServiceDataResponse(soap, out);
-	if (soap_begin_recv(soap)
-	 || soap_envelope_begin_in(soap)
-	 || soap_recv_header(soap)
-	 || soap_body_begin_in(soap))
-		return soap->error;
-	soap_get_sgs__findServiceDataResponse(soap, out, "sgs:findServiceDataResponse", "sgs:findServiceDataResponse");
+	soap_get_sgs__ResumeResponse(soap, out, "sgs:ResumeResponse", "sgs:ResumeResponse");
 	if (soap->error)
 	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
 			soap_recv_fault(soap);
@@ -837,20 +349,21 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__AppRecordChkpoint(struct soap *soap, co
 	return SOAP_OK;
 }
 
-SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__Pause(struct soap *soap, const char *URL, const char *action, struct sgs__PauseResponse *out)
+SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__PutStatus(struct soap *soap, const char *URL, const char *action, char *in0, struct sgs__PutStatusResponse *out)
 {
-	struct sgs__Pause soap_tmp_sgs__Pause;
+	struct sgs__PutStatus soap_tmp_sgs__PutStatus;
 	if (!action)
 		action = "";
+	soap_tmp_sgs__PutStatus.in0=in0;
 	soap_begin(soap);
 	soap_serializeheader(soap);
-	soap_serialize_sgs__Pause(soap, &soap_tmp_sgs__Pause);
+	soap_serialize_sgs__PutStatus(soap, &soap_tmp_sgs__PutStatus);
 	soap_begin_count(soap);
 	if (soap->mode & SOAP_IO_LENGTH)
 	{	soap_envelope_begin_out(soap);
 		soap_putheader(soap);
 		soap_body_begin_out(soap);
-		soap_put_sgs__Pause(soap, &soap_tmp_sgs__Pause, "sgs:Pause", "");
+		soap_put_sgs__PutStatus(soap, &soap_tmp_sgs__PutStatus, "sgs:PutStatus", "");
 		soap_body_end_out(soap);
 		soap_envelope_end_out(soap);
 	}
@@ -858,67 +371,19 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__Pause(struct soap *soap, const char *UR
 	 || soap_envelope_begin_out(soap)
 	 || soap_putheader(soap)
 	 || soap_body_begin_out(soap)
-	 || soap_put_sgs__Pause(soap, &soap_tmp_sgs__Pause, "sgs:Pause", "")
+	 || soap_put_sgs__PutStatus(soap, &soap_tmp_sgs__PutStatus, "sgs:PutStatus", "")
 	 || soap_body_end_out(soap)
 	 || soap_envelope_end_out(soap)
 	 || soap_putattachments(soap)
 	 || soap_end_send(soap))
 		return soap->error;
-	soap_default_sgs__PauseResponse(soap, out);
+	soap_default_sgs__PutStatusResponse(soap, out);
 	if (soap_begin_recv(soap)
 	 || soap_envelope_begin_in(soap)
 	 || soap_recv_header(soap)
 	 || soap_body_begin_in(soap))
 		return soap->error;
-	soap_get_sgs__PauseResponse(soap, out, "sgs:PauseResponse", "sgs:PauseResponse");
-	if (soap->error)
-	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
-			soap_recv_fault(soap);
-		return soap->error;
-	}
-	if (soap_body_end_in(soap)
-	 || soap_envelope_end_in(soap)
-	 || soap_getattachments(soap)
-	 || soap_end_recv(soap))
-		return soap->error;
-	soap_closesock(soap);
-	return SOAP_OK;
-}
-
-SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__GetNotifications(struct soap *soap, const char *URL, const char *action, struct sgs__GetNotificationsResponse *out)
-{
-	struct sgs__GetNotifications soap_tmp_sgs__GetNotifications;
-	if (!action)
-		action = "";
-	soap_begin(soap);
-	soap_serializeheader(soap);
-	soap_serialize_sgs__GetNotifications(soap, &soap_tmp_sgs__GetNotifications);
-	soap_begin_count(soap);
-	if (soap->mode & SOAP_IO_LENGTH)
-	{	soap_envelope_begin_out(soap);
-		soap_putheader(soap);
-		soap_body_begin_out(soap);
-		soap_put_sgs__GetNotifications(soap, &soap_tmp_sgs__GetNotifications, "sgs:GetNotifications", "");
-		soap_body_end_out(soap);
-		soap_envelope_end_out(soap);
-	}
-	if (soap_connect(soap, URL, action)
-	 || soap_envelope_begin_out(soap)
-	 || soap_putheader(soap)
-	 || soap_body_begin_out(soap)
-	 || soap_put_sgs__GetNotifications(soap, &soap_tmp_sgs__GetNotifications, "sgs:GetNotifications", "")
-	 || soap_body_end_out(soap)
-	 || soap_envelope_end_out(soap)
-	 || soap_putattachments(soap)
-	 || soap_end_send(soap))
-		return soap->error;
-	soap_default_sgs__GetNotificationsResponse(soap, out);
-	if (soap_begin_recv(soap)
-	 || soap_envelope_begin_in(soap)
-	 || soap_recv_header(soap)
-	 || soap_body_begin_in(soap))
-		return soap->error;
-	soap_get_sgs__GetNotificationsResponse(soap, out, "sgs:GetNotificationsResponse", "sgs:GetNotificationsResponse");
+	soap_get_sgs__PutStatusResponse(soap, out, "sgs:PutStatusResponse", "sgs:PutStatusResponse");
 	if (soap->error)
 	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
 			soap_recv_fault(soap);
@@ -981,20 +446,21 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__AppStart(struct soap *soap, const char 
 	return SOAP_OK;
 }
 
-SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__Resume(struct soap *soap, const char *URL, const char *action, struct sgs__ResumeResponse *out)
+SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__GetParamLog(struct soap *soap, const char *URL, const char *action, int in0, struct sgs__GetParamLogResponse *out)
 {
-	struct sgs__Resume soap_tmp_sgs__Resume;
+	struct sgs__GetParamLog soap_tmp_sgs__GetParamLog;
 	if (!action)
 		action = "";
+	soap_tmp_sgs__GetParamLog.in0=in0;
 	soap_begin(soap);
 	soap_serializeheader(soap);
-	soap_serialize_sgs__Resume(soap, &soap_tmp_sgs__Resume);
+	soap_serialize_sgs__GetParamLog(soap, &soap_tmp_sgs__GetParamLog);
 	soap_begin_count(soap);
 	if (soap->mode & SOAP_IO_LENGTH)
 	{	soap_envelope_begin_out(soap);
 		soap_putheader(soap);
 		soap_body_begin_out(soap);
-		soap_put_sgs__Resume(soap, &soap_tmp_sgs__Resume, "sgs:Resume", "");
+		soap_put_sgs__GetParamLog(soap, &soap_tmp_sgs__GetParamLog, "sgs:GetParamLog", "");
 		soap_body_end_out(soap);
 		soap_envelope_end_out(soap);
 	}
@@ -1002,19 +468,19 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__Resume(struct soap *soap, const char *U
 	 || soap_envelope_begin_out(soap)
 	 || soap_putheader(soap)
 	 || soap_body_begin_out(soap)
-	 || soap_put_sgs__Resume(soap, &soap_tmp_sgs__Resume, "sgs:Resume", "")
+	 || soap_put_sgs__GetParamLog(soap, &soap_tmp_sgs__GetParamLog, "sgs:GetParamLog", "")
 	 || soap_body_end_out(soap)
 	 || soap_envelope_end_out(soap)
 	 || soap_putattachments(soap)
 	 || soap_end_send(soap))
 		return soap->error;
-	soap_default_sgs__ResumeResponse(soap, out);
+	soap_default_sgs__GetParamLogResponse(soap, out);
 	if (soap_begin_recv(soap)
 	 || soap_envelope_begin_in(soap)
 	 || soap_recv_header(soap)
 	 || soap_body_begin_in(soap))
 		return soap->error;
-	soap_get_sgs__ResumeResponse(soap, out, "sgs:ResumeResponse", "sgs:ResumeResponse");
+	soap_get_sgs__GetParamLogResponse(soap, out, "sgs:GetParamLogResponse", "sgs:GetParamLogResponse");
 	if (soap->error)
 	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
 			soap_recv_fault(soap);
@@ -1029,20 +495,21 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__Resume(struct soap *soap, const char *U
 	return SOAP_OK;
 }
 
-SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__ClearStatusMsgQueue(struct soap *soap, const char *URL, const char *action, struct sgs__ClearStatusMsgQueueResponse *out)
+SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__setServiceData(struct soap *soap, const char *URL, const char *action, char *in0, struct sgs__setServiceDataResponse *out)
 {
-	struct sgs__ClearStatusMsgQueue soap_tmp_sgs__ClearStatusMsgQueue;
+	struct sgs__setServiceData soap_tmp_sgs__setServiceData;
 	if (!action)
 		action = "";
+	soap_tmp_sgs__setServiceData.in0=in0;
 	soap_begin(soap);
 	soap_serializeheader(soap);
-	soap_serialize_sgs__ClearStatusMsgQueue(soap, &soap_tmp_sgs__ClearStatusMsgQueue);
+	soap_serialize_sgs__setServiceData(soap, &soap_tmp_sgs__setServiceData);
 	soap_begin_count(soap);
 	if (soap->mode & SOAP_IO_LENGTH)
 	{	soap_envelope_begin_out(soap);
 		soap_putheader(soap);
 		soap_body_begin_out(soap);
-		soap_put_sgs__ClearStatusMsgQueue(soap, &soap_tmp_sgs__ClearStatusMsgQueue, "sgs:ClearStatusMsgQueue", "");
+		soap_put_sgs__setServiceData(soap, &soap_tmp_sgs__setServiceData, "sgs:setServiceData", "");
 		soap_body_end_out(soap);
 		soap_envelope_end_out(soap);
 	}
@@ -1050,19 +517,552 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__ClearStatusMsgQueue(struct soap *soap, 
 	 || soap_envelope_begin_out(soap)
 	 || soap_putheader(soap)
 	 || soap_body_begin_out(soap)
-	 || soap_put_sgs__ClearStatusMsgQueue(soap, &soap_tmp_sgs__ClearStatusMsgQueue, "sgs:ClearStatusMsgQueue", "")
+	 || soap_put_sgs__setServiceData(soap, &soap_tmp_sgs__setServiceData, "sgs:setServiceData", "")
 	 || soap_body_end_out(soap)
 	 || soap_envelope_end_out(soap)
 	 || soap_putattachments(soap)
 	 || soap_end_send(soap))
 		return soap->error;
-	soap_default_sgs__ClearStatusMsgQueueResponse(soap, out);
+	soap_default_sgs__setServiceDataResponse(soap, out);
 	if (soap_begin_recv(soap)
 	 || soap_envelope_begin_in(soap)
 	 || soap_recv_header(soap)
 	 || soap_body_begin_in(soap))
 		return soap->error;
-	soap_get_sgs__ClearStatusMsgQueueResponse(soap, out, "sgs:ClearStatusMsgQueueResponse", "sgs:ClearStatusMsgQueueResponse");
+	soap_get_sgs__setServiceDataResponse(soap, out, "sgs:setServiceDataResponse", "sgs:setServiceDataResponse");
+	if (soap->error)
+	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
+			soap_recv_fault(soap);
+		return soap->error;
+	}
+	if (soap_body_end_in(soap)
+	 || soap_envelope_end_in(soap)
+	 || soap_getattachments(soap)
+	 || soap_end_recv(soap))
+		return soap->error;
+	soap_closesock(soap);
+	return SOAP_OK;
+}
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__AppPutLog(struct soap *soap, const char *URL, const char *action, char *in0, struct sgs__AppPutLogResponse *out)
+{
+	struct sgs__AppPutLog soap_tmp_sgs__AppPutLog;
+	if (!action)
+		action = "";
+	soap_tmp_sgs__AppPutLog.in0=in0;
+	soap_begin(soap);
+	soap_serializeheader(soap);
+	soap_serialize_sgs__AppPutLog(soap, &soap_tmp_sgs__AppPutLog);
+	soap_begin_count(soap);
+	if (soap->mode & SOAP_IO_LENGTH)
+	{	soap_envelope_begin_out(soap);
+		soap_putheader(soap);
+		soap_body_begin_out(soap);
+		soap_put_sgs__AppPutLog(soap, &soap_tmp_sgs__AppPutLog, "sgs:AppPutLog", "");
+		soap_body_end_out(soap);
+		soap_envelope_end_out(soap);
+	}
+	if (soap_connect(soap, URL, action)
+	 || soap_envelope_begin_out(soap)
+	 || soap_putheader(soap)
+	 || soap_body_begin_out(soap)
+	 || soap_put_sgs__AppPutLog(soap, &soap_tmp_sgs__AppPutLog, "sgs:AppPutLog", "")
+	 || soap_body_end_out(soap)
+	 || soap_envelope_end_out(soap)
+	 || soap_putattachments(soap)
+	 || soap_end_send(soap))
+		return soap->error;
+	soap_default_sgs__AppPutLogResponse(soap, out);
+	if (soap_begin_recv(soap)
+	 || soap_envelope_begin_in(soap)
+	 || soap_recv_header(soap)
+	 || soap_body_begin_in(soap))
+		return soap->error;
+	soap_get_sgs__AppPutLogResponse(soap, out, "sgs:AppPutLogResponse", "sgs:AppPutLogResponse");
+	if (soap->error)
+	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
+			soap_recv_fault(soap);
+		return soap->error;
+	}
+	if (soap_body_end_in(soap)
+	 || soap_envelope_end_in(soap)
+	 || soap_getattachments(soap)
+	 || soap_end_recv(soap))
+		return soap->error;
+	soap_closesock(soap);
+	return SOAP_OK;
+}
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__AppDetach(struct soap *soap, const char *URL, const char *action, struct sgs__AppDetachResponse *out)
+{
+	struct sgs__AppDetach soap_tmp_sgs__AppDetach;
+	if (!action)
+		action = "";
+	soap_begin(soap);
+	soap_serializeheader(soap);
+	soap_serialize_sgs__AppDetach(soap, &soap_tmp_sgs__AppDetach);
+	soap_begin_count(soap);
+	if (soap->mode & SOAP_IO_LENGTH)
+	{	soap_envelope_begin_out(soap);
+		soap_putheader(soap);
+		soap_body_begin_out(soap);
+		soap_put_sgs__AppDetach(soap, &soap_tmp_sgs__AppDetach, "sgs:AppDetach", "");
+		soap_body_end_out(soap);
+		soap_envelope_end_out(soap);
+	}
+	if (soap_connect(soap, URL, action)
+	 || soap_envelope_begin_out(soap)
+	 || soap_putheader(soap)
+	 || soap_body_begin_out(soap)
+	 || soap_put_sgs__AppDetach(soap, &soap_tmp_sgs__AppDetach, "sgs:AppDetach", "")
+	 || soap_body_end_out(soap)
+	 || soap_envelope_end_out(soap)
+	 || soap_putattachments(soap)
+	 || soap_end_send(soap))
+		return soap->error;
+	soap_default_sgs__AppDetachResponse(soap, out);
+	if (soap_begin_recv(soap)
+	 || soap_envelope_begin_in(soap)
+	 || soap_recv_header(soap)
+	 || soap_body_begin_in(soap))
+		return soap->error;
+	soap_get_sgs__AppDetachResponse(soap, out, "sgs:AppDetachResponse", "sgs:AppDetachResponse");
+	if (soap->error)
+	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
+			soap_recv_fault(soap);
+		return soap->error;
+	}
+	if (soap_body_end_in(soap)
+	 || soap_envelope_end_in(soap)
+	 || soap_getattachments(soap)
+	 || soap_end_recv(soap))
+		return soap->error;
+	soap_closesock(soap);
+	return SOAP_OK;
+}
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__Pause(struct soap *soap, const char *URL, const char *action, struct sgs__PauseResponse *out)
+{
+	struct sgs__Pause soap_tmp_sgs__Pause;
+	if (!action)
+		action = "";
+	soap_begin(soap);
+	soap_serializeheader(soap);
+	soap_serialize_sgs__Pause(soap, &soap_tmp_sgs__Pause);
+	soap_begin_count(soap);
+	if (soap->mode & SOAP_IO_LENGTH)
+	{	soap_envelope_begin_out(soap);
+		soap_putheader(soap);
+		soap_body_begin_out(soap);
+		soap_put_sgs__Pause(soap, &soap_tmp_sgs__Pause, "sgs:Pause", "");
+		soap_body_end_out(soap);
+		soap_envelope_end_out(soap);
+	}
+	if (soap_connect(soap, URL, action)
+	 || soap_envelope_begin_out(soap)
+	 || soap_putheader(soap)
+	 || soap_body_begin_out(soap)
+	 || soap_put_sgs__Pause(soap, &soap_tmp_sgs__Pause, "sgs:Pause", "")
+	 || soap_body_end_out(soap)
+	 || soap_envelope_end_out(soap)
+	 || soap_putattachments(soap)
+	 || soap_end_send(soap))
+		return soap->error;
+	soap_default_sgs__PauseResponse(soap, out);
+	if (soap_begin_recv(soap)
+	 || soap_envelope_begin_in(soap)
+	 || soap_recv_header(soap)
+	 || soap_body_begin_in(soap))
+		return soap->error;
+	soap_get_sgs__PauseResponse(soap, out, "sgs:PauseResponse", "sgs:PauseResponse");
+	if (soap->error)
+	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
+			soap_recv_fault(soap);
+		return soap->error;
+	}
+	if (soap_body_end_in(soap)
+	 || soap_envelope_end_in(soap)
+	 || soap_getattachments(soap)
+	 || soap_end_recv(soap))
+		return soap->error;
+	soap_closesock(soap);
+	return SOAP_OK;
+}
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__PutControl(struct soap *soap, const char *URL, const char *action, char *in0, struct sgs__PutControlResponse *out)
+{
+	struct sgs__PutControl soap_tmp_sgs__PutControl;
+	if (!action)
+		action = "";
+	soap_tmp_sgs__PutControl.in0=in0;
+	soap_begin(soap);
+	soap_serializeheader(soap);
+	soap_serialize_sgs__PutControl(soap, &soap_tmp_sgs__PutControl);
+	soap_begin_count(soap);
+	if (soap->mode & SOAP_IO_LENGTH)
+	{	soap_envelope_begin_out(soap);
+		soap_putheader(soap);
+		soap_body_begin_out(soap);
+		soap_put_sgs__PutControl(soap, &soap_tmp_sgs__PutControl, "sgs:PutControl", "");
+		soap_body_end_out(soap);
+		soap_envelope_end_out(soap);
+	}
+	if (soap_connect(soap, URL, action)
+	 || soap_envelope_begin_out(soap)
+	 || soap_putheader(soap)
+	 || soap_body_begin_out(soap)
+	 || soap_put_sgs__PutControl(soap, &soap_tmp_sgs__PutControl, "sgs:PutControl", "")
+	 || soap_body_end_out(soap)
+	 || soap_envelope_end_out(soap)
+	 || soap_putattachments(soap)
+	 || soap_end_send(soap))
+		return soap->error;
+	soap_default_sgs__PutControlResponse(soap, out);
+	if (soap_begin_recv(soap)
+	 || soap_envelope_begin_in(soap)
+	 || soap_recv_header(soap)
+	 || soap_body_begin_in(soap))
+		return soap->error;
+	soap_get_sgs__PutControlResponse(soap, out, "sgs:PutControlResponse", "sgs:PutControlResponse");
+	if (soap->error)
+	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
+			soap_recv_fault(soap);
+		return soap->error;
+	}
+	if (soap_body_end_in(soap)
+	 || soap_envelope_end_in(soap)
+	 || soap_getattachments(soap)
+	 || soap_end_recv(soap))
+		return soap->error;
+	soap_closesock(soap);
+	return SOAP_OK;
+}
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__Restart(struct soap *soap, const char *URL, const char *action, char *in0, struct sgs__RestartResponse *out)
+{
+	struct sgs__Restart soap_tmp_sgs__Restart;
+	if (!action)
+		action = "";
+	soap_tmp_sgs__Restart.in0=in0;
+	soap_begin(soap);
+	soap_serializeheader(soap);
+	soap_serialize_sgs__Restart(soap, &soap_tmp_sgs__Restart);
+	soap_begin_count(soap);
+	if (soap->mode & SOAP_IO_LENGTH)
+	{	soap_envelope_begin_out(soap);
+		soap_putheader(soap);
+		soap_body_begin_out(soap);
+		soap_put_sgs__Restart(soap, &soap_tmp_sgs__Restart, "sgs:Restart", "");
+		soap_body_end_out(soap);
+		soap_envelope_end_out(soap);
+	}
+	if (soap_connect(soap, URL, action)
+	 || soap_envelope_begin_out(soap)
+	 || soap_putheader(soap)
+	 || soap_body_begin_out(soap)
+	 || soap_put_sgs__Restart(soap, &soap_tmp_sgs__Restart, "sgs:Restart", "")
+	 || soap_body_end_out(soap)
+	 || soap_envelope_end_out(soap)
+	 || soap_putattachments(soap)
+	 || soap_end_send(soap))
+		return soap->error;
+	soap_default_sgs__RestartResponse(soap, out);
+	if (soap_begin_recv(soap)
+	 || soap_envelope_begin_in(soap)
+	 || soap_recv_header(soap)
+	 || soap_body_begin_in(soap))
+		return soap->error;
+	soap_get_sgs__RestartResponse(soap, out, "sgs:RestartResponse", "sgs:RestartResponse");
+	if (soap->error)
+	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
+			soap_recv_fault(soap);
+		return soap->error;
+	}
+	if (soap_body_end_in(soap)
+	 || soap_envelope_end_in(soap)
+	 || soap_getattachments(soap)
+	 || soap_end_recv(soap))
+		return soap->error;
+	soap_closesock(soap);
+	return SOAP_OK;
+}
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__GetNthDataSource(struct soap *soap, const char *URL, const char *action, int in0, struct sgs__GetNthDataSourceResponse *out)
+{
+	struct sgs__GetNthDataSource soap_tmp_sgs__GetNthDataSource;
+	if (!action)
+		action = "";
+	soap_tmp_sgs__GetNthDataSource.in0=in0;
+	soap_begin(soap);
+	soap_serializeheader(soap);
+	soap_serialize_sgs__GetNthDataSource(soap, &soap_tmp_sgs__GetNthDataSource);
+	soap_begin_count(soap);
+	if (soap->mode & SOAP_IO_LENGTH)
+	{	soap_envelope_begin_out(soap);
+		soap_putheader(soap);
+		soap_body_begin_out(soap);
+		soap_put_sgs__GetNthDataSource(soap, &soap_tmp_sgs__GetNthDataSource, "sgs:GetNthDataSource", "");
+		soap_body_end_out(soap);
+		soap_envelope_end_out(soap);
+	}
+	if (soap_connect(soap, URL, action)
+	 || soap_envelope_begin_out(soap)
+	 || soap_putheader(soap)
+	 || soap_body_begin_out(soap)
+	 || soap_put_sgs__GetNthDataSource(soap, &soap_tmp_sgs__GetNthDataSource, "sgs:GetNthDataSource", "")
+	 || soap_body_end_out(soap)
+	 || soap_envelope_end_out(soap)
+	 || soap_putattachments(soap)
+	 || soap_end_send(soap))
+		return soap->error;
+	soap_default_sgs__GetNthDataSourceResponse(soap, out);
+	if (soap_begin_recv(soap)
+	 || soap_envelope_begin_in(soap)
+	 || soap_recv_header(soap)
+	 || soap_body_begin_in(soap))
+		return soap->error;
+	soap_get_sgs__GetNthDataSourceResponse(soap, out, "sgs:GetNthDataSourceResponse", "sgs:GetNthDataSourceResponse");
+	if (soap->error)
+	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
+			soap_recv_fault(soap);
+		return soap->error;
+	}
+	if (soap_body_end_in(soap)
+	 || soap_envelope_end_in(soap)
+	 || soap_getattachments(soap)
+	 || soap_end_recv(soap))
+		return soap->error;
+	soap_closesock(soap);
+	return SOAP_OK;
+}
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__findServiceData(struct soap *soap, const char *URL, const char *action, char *in0, struct sgs__findServiceDataResponse *out)
+{
+	struct sgs__findServiceData soap_tmp_sgs__findServiceData;
+	if (!action)
+		action = "";
+	soap_tmp_sgs__findServiceData.in0=in0;
+	soap_begin(soap);
+	soap_serializeheader(soap);
+	soap_serialize_sgs__findServiceData(soap, &soap_tmp_sgs__findServiceData);
+	soap_begin_count(soap);
+	if (soap->mode & SOAP_IO_LENGTH)
+	{	soap_envelope_begin_out(soap);
+		soap_putheader(soap);
+		soap_body_begin_out(soap);
+		soap_put_sgs__findServiceData(soap, &soap_tmp_sgs__findServiceData, "sgs:findServiceData", "");
+		soap_body_end_out(soap);
+		soap_envelope_end_out(soap);
+	}
+	if (soap_connect(soap, URL, action)
+	 || soap_envelope_begin_out(soap)
+	 || soap_putheader(soap)
+	 || soap_body_begin_out(soap)
+	 || soap_put_sgs__findServiceData(soap, &soap_tmp_sgs__findServiceData, "sgs:findServiceData", "")
+	 || soap_body_end_out(soap)
+	 || soap_envelope_end_out(soap)
+	 || soap_putattachments(soap)
+	 || soap_end_send(soap))
+		return soap->error;
+	soap_default_sgs__findServiceDataResponse(soap, out);
+	if (soap_begin_recv(soap)
+	 || soap_envelope_begin_in(soap)
+	 || soap_recv_header(soap)
+	 || soap_body_begin_in(soap))
+		return soap->error;
+	soap_get_sgs__findServiceDataResponse(soap, out, "sgs:findServiceDataResponse", "sgs:findServiceDataResponse");
+	if (soap->error)
+	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
+			soap_recv_fault(soap);
+		return soap->error;
+	}
+	if (soap_body_end_in(soap)
+	 || soap_envelope_end_in(soap)
+	 || soap_getattachments(soap)
+	 || soap_end_recv(soap))
+		return soap->error;
+	soap_closesock(soap);
+	return SOAP_OK;
+}
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__destroy(struct soap *soap, const char *URL, const char *action, struct sgs__destroyResponse *out)
+{
+	struct sgs__destroy soap_tmp_sgs__destroy;
+	if (!action)
+		action = "";
+	soap_begin(soap);
+	soap_serializeheader(soap);
+	soap_serialize_sgs__destroy(soap, &soap_tmp_sgs__destroy);
+	soap_begin_count(soap);
+	if (soap->mode & SOAP_IO_LENGTH)
+	{	soap_envelope_begin_out(soap);
+		soap_putheader(soap);
+		soap_body_begin_out(soap);
+		soap_put_sgs__destroy(soap, &soap_tmp_sgs__destroy, "sgs:destroy", "");
+		soap_body_end_out(soap);
+		soap_envelope_end_out(soap);
+	}
+	if (soap_connect(soap, URL, action)
+	 || soap_envelope_begin_out(soap)
+	 || soap_putheader(soap)
+	 || soap_body_begin_out(soap)
+	 || soap_put_sgs__destroy(soap, &soap_tmp_sgs__destroy, "sgs:destroy", "")
+	 || soap_body_end_out(soap)
+	 || soap_envelope_end_out(soap)
+	 || soap_putattachments(soap)
+	 || soap_end_send(soap))
+		return soap->error;
+	soap_default_sgs__destroyResponse(soap, out);
+	if (soap_begin_recv(soap)
+	 || soap_envelope_begin_in(soap)
+	 || soap_recv_header(soap)
+	 || soap_body_begin_in(soap))
+		return soap->error;
+	soap_get_sgs__destroyResponse(soap, out, "sgs:destroyResponse", "sgs:destroyResponse");
+	if (soap->error)
+	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
+			soap_recv_fault(soap);
+		return soap->error;
+	}
+	if (soap_body_end_in(soap)
+	 || soap_envelope_end_in(soap)
+	 || soap_getattachments(soap)
+	 || soap_end_recv(soap))
+		return soap->error;
+	soap_closesock(soap);
+	return SOAP_OK;
+}
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__GetControl(struct soap *soap, const char *URL, const char *action, struct sgs__GetControlResponse *out)
+{
+	struct sgs__GetControl soap_tmp_sgs__GetControl;
+	if (!action)
+		action = "";
+	soap_begin(soap);
+	soap_serializeheader(soap);
+	soap_serialize_sgs__GetControl(soap, &soap_tmp_sgs__GetControl);
+	soap_begin_count(soap);
+	if (soap->mode & SOAP_IO_LENGTH)
+	{	soap_envelope_begin_out(soap);
+		soap_putheader(soap);
+		soap_body_begin_out(soap);
+		soap_put_sgs__GetControl(soap, &soap_tmp_sgs__GetControl, "sgs:GetControl", "");
+		soap_body_end_out(soap);
+		soap_envelope_end_out(soap);
+	}
+	if (soap_connect(soap, URL, action)
+	 || soap_envelope_begin_out(soap)
+	 || soap_putheader(soap)
+	 || soap_body_begin_out(soap)
+	 || soap_put_sgs__GetControl(soap, &soap_tmp_sgs__GetControl, "sgs:GetControl", "")
+	 || soap_body_end_out(soap)
+	 || soap_envelope_end_out(soap)
+	 || soap_putattachments(soap)
+	 || soap_end_send(soap))
+		return soap->error;
+	soap_default_sgs__GetControlResponse(soap, out);
+	if (soap_begin_recv(soap)
+	 || soap_envelope_begin_in(soap)
+	 || soap_recv_header(soap)
+	 || soap_body_begin_in(soap))
+		return soap->error;
+	soap_get_sgs__GetControlResponse(soap, out, "sgs:GetControlResponse", "sgs:GetControlResponse");
+	if (soap->error)
+	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
+			soap_recv_fault(soap);
+		return soap->error;
+	}
+	if (soap_body_end_in(soap)
+	 || soap_envelope_end_in(soap)
+	 || soap_getattachments(soap)
+	 || soap_end_recv(soap))
+		return soap->error;
+	soap_closesock(soap);
+	return SOAP_OK;
+}
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__GetNotifications(struct soap *soap, const char *URL, const char *action, struct sgs__GetNotificationsResponse *out)
+{
+	struct sgs__GetNotifications soap_tmp_sgs__GetNotifications;
+	if (!action)
+		action = "";
+	soap_begin(soap);
+	soap_serializeheader(soap);
+	soap_serialize_sgs__GetNotifications(soap, &soap_tmp_sgs__GetNotifications);
+	soap_begin_count(soap);
+	if (soap->mode & SOAP_IO_LENGTH)
+	{	soap_envelope_begin_out(soap);
+		soap_putheader(soap);
+		soap_body_begin_out(soap);
+		soap_put_sgs__GetNotifications(soap, &soap_tmp_sgs__GetNotifications, "sgs:GetNotifications", "");
+		soap_body_end_out(soap);
+		soap_envelope_end_out(soap);
+	}
+	if (soap_connect(soap, URL, action)
+	 || soap_envelope_begin_out(soap)
+	 || soap_putheader(soap)
+	 || soap_body_begin_out(soap)
+	 || soap_put_sgs__GetNotifications(soap, &soap_tmp_sgs__GetNotifications, "sgs:GetNotifications", "")
+	 || soap_body_end_out(soap)
+	 || soap_envelope_end_out(soap)
+	 || soap_putattachments(soap)
+	 || soap_end_send(soap))
+		return soap->error;
+	soap_default_sgs__GetNotificationsResponse(soap, out);
+	if (soap_begin_recv(soap)
+	 || soap_envelope_begin_in(soap)
+	 || soap_recv_header(soap)
+	 || soap_body_begin_in(soap))
+		return soap->error;
+	soap_get_sgs__GetNotificationsResponse(soap, out, "sgs:GetNotificationsResponse", "sgs:GetNotificationsResponse");
+	if (soap->error)
+	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
+			soap_recv_fault(soap);
+		return soap->error;
+	}
+	if (soap_body_end_in(soap)
+	 || soap_envelope_end_in(soap)
+	 || soap_getattachments(soap)
+	 || soap_end_recv(soap))
+		return soap->error;
+	soap_closesock(soap);
+	return SOAP_OK;
+}
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__AppStop(struct soap *soap, const char *URL, const char *action, struct sgs__AppStopResponse *out)
+{
+	struct sgs__AppStop soap_tmp_sgs__AppStop;
+	if (!action)
+		action = "";
+	soap_begin(soap);
+	soap_serializeheader(soap);
+	soap_serialize_sgs__AppStop(soap, &soap_tmp_sgs__AppStop);
+	soap_begin_count(soap);
+	if (soap->mode & SOAP_IO_LENGTH)
+	{	soap_envelope_begin_out(soap);
+		soap_putheader(soap);
+		soap_body_begin_out(soap);
+		soap_put_sgs__AppStop(soap, &soap_tmp_sgs__AppStop, "sgs:AppStop", "");
+		soap_body_end_out(soap);
+		soap_envelope_end_out(soap);
+	}
+	if (soap_connect(soap, URL, action)
+	 || soap_envelope_begin_out(soap)
+	 || soap_putheader(soap)
+	 || soap_body_begin_out(soap)
+	 || soap_put_sgs__AppStop(soap, &soap_tmp_sgs__AppStop, "sgs:AppStop", "")
+	 || soap_body_end_out(soap)
+	 || soap_envelope_end_out(soap)
+	 || soap_putattachments(soap)
+	 || soap_end_send(soap))
+		return soap->error;
+	soap_default_sgs__AppStopResponse(soap, out);
+	if (soap_begin_recv(soap)
+	 || soap_envelope_begin_in(soap)
+	 || soap_recv_header(soap)
+	 || soap_body_begin_in(soap))
+		return soap->error;
+	soap_get_sgs__AppStopResponse(soap, out, "sgs:AppStopResponse", "sgs:AppStopResponse");
 	if (soap->error)
 	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
 			soap_recv_fault(soap);

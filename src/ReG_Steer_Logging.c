@@ -66,7 +66,13 @@ int Initialize_log(Chk_log_type *log)
   log->num_entries 	= 0;
   log->max_entries 	= REG_INITIAL_CHK_LOG_SIZE;
   log->num_unsent  	= 0;
-  log->send_all    	= REG_TRUE;
+#if REG_SOAP_STEERING
+  /* logs cached on SGS so we don't need to send everything
+     if/when we get a request */
+    log->send_all    	= REG_FALSE;
+#else
+    log->send_all    	= REG_TRUE;
+#endif
   log->emit_in_progress = REG_FALSE;
   log->file_content     = NULL;
 
@@ -173,7 +179,7 @@ int Save_log(Chk_log_type *log)
     }
     else{
     
-       /* 3rd argument says we want all entries - not just those that
+       /* 4th argument says we want all entries - not just those that
 	  haven't already been sent to the steerer */
       status = Log_to_xml(log, &buf, &len, REG_FALSE);
     }
@@ -478,7 +484,7 @@ int Log_to_columns(Chk_log_type *log, char **pchar, int *count,
     if (not_sent_only && (log->entry[i].sent_to_steerer == REG_TRUE)) continue;
     bytes_left = size;
     pentry = entry;
-    nbytes = snprintf(pentry, bytes_left, "%d ", log->entry[i].key);
+    nbytes = snprintf(pentry, bytes_left, "%d", log->entry[i].key);
 
 #if REG_DEBUG
     /* Check for truncation of message */
@@ -710,7 +716,7 @@ int Log_param_values()
 
 /*----------------------------------------------------------------*/
 
-int Emit_log(Chk_log_type *log)
+int Emit_log(Chk_log_type *log, int handle)
 {
   char  filename[REG_MAX_STRING_LENGTH];
   int   size;
@@ -794,7 +800,7 @@ int Emit_log(Chk_log_type *log)
 #if REG_DEBUG_FULL
     fprintf(stderr, "Emit_log: sending unsent log entries...\n");
 #endif
-    /* Third argument specifies that we only want those entries that haven't
+    /* Fourth argument specifies that we only want those entries that haven't
        already been sent to the steerer */
     if(Log_to_xml(log, &(log->file_content), &size, REG_TRUE) != REG_SUCCESS){
 

@@ -15,35 +15,19 @@ extern "C" {
 
 /* Classes and Structs */
 
-#ifndef _SOAP_sgs__GetStatusResponse
-#define _SOAP_sgs__GetStatusResponse
-struct sgs__GetStatusResponse
+#ifndef _SOAP_sgs__GetParamLogResponse
+#define _SOAP_sgs__GetParamLogResponse
+struct sgs__GetParamLogResponse
 {
-	char *_GetStatusReturn;
+	char *_GetParamLogReturn;
 };
 #endif
 
-#ifndef _SOAP_sgs__PauseResponse
-#define _SOAP_sgs__PauseResponse
-struct sgs__PauseResponse
+#ifndef _SOAP_sgs__DetachResponse
+#define _SOAP_sgs__DetachResponse
+struct sgs__DetachResponse
 {
-	char *_PauseReturn;
-};
-#endif
-
-#ifndef _SOAP_sgs__AppStartResponse
-#define _SOAP_sgs__AppStartResponse
-struct sgs__AppStartResponse
-{
-	char *_AppStartReturn;
-};
-#endif
-
-#ifndef _SOAP_sgs__RestartResponse
-#define _SOAP_sgs__RestartResponse
-struct sgs__RestartResponse
-{
-	char *_RestartReturn;
+	char *_DetachReturn;
 };
 #endif
 
@@ -55,19 +39,43 @@ struct sgs__AppRecordChkpointResponse
 };
 #endif
 
-#ifndef _SOAP_sgs__AppDetachResponse
-#define _SOAP_sgs__AppDetachResponse
-struct sgs__AppDetachResponse
+#ifndef _SOAP_sgs__PutStatusResponse
+#define _SOAP_sgs__PutStatusResponse
+struct sgs__PutStatusResponse
 {
-	char *_AppDetachReturn;
+	char *_PutStatusReturn;
 };
 #endif
 
-#ifndef _SOAP_sgs__GetNthDataSourceResponse
-#define _SOAP_sgs__GetNthDataSourceResponse
-struct sgs__GetNthDataSourceResponse
+#ifndef _SOAP_sgs__setServiceDataResponse
+#define _SOAP_sgs__setServiceDataResponse
+struct sgs__setServiceDataResponse
 {
-	char *_GetNthDataSourceReturn;
+	char *_setServiceDataReturn;
+};
+#endif
+
+#ifndef _SOAP_sgs__PauseResponse
+#define _SOAP_sgs__PauseResponse
+struct sgs__PauseResponse
+{
+	char *_PauseReturn;
+};
+#endif
+
+#ifndef _SOAP_sgs__findServiceDataResponse
+#define _SOAP_sgs__findServiceDataResponse
+struct sgs__findServiceDataResponse
+{
+	char *_findServiceDataReturn;
+};
+#endif
+
+#ifndef _SOAP_sgs__RestartResponse
+#define _SOAP_sgs__RestartResponse
+struct sgs__RestartResponse
+{
+	char *_RestartReturn;
 };
 #endif
 
@@ -79,11 +87,51 @@ struct sgs__PutControlResponse
 };
 #endif
 
+#ifndef _SOAP_sgs__ResumeResponse
+#define _SOAP_sgs__ResumeResponse
+struct sgs__ResumeResponse
+{
+	char *_ResumeReturn;
+};
+#endif
+
+#ifndef _SOAP_sgs__AttachResponse
+#define _SOAP_sgs__AttachResponse
+struct sgs__AttachResponse
+{
+	char *_AttachReturn;
+};
+#endif
+
+#ifndef _SOAP_sgs__GetNotificationsResponse
+#define _SOAP_sgs__GetNotificationsResponse
+struct sgs__GetNotificationsResponse
+{
+	char *_GetNotificationsReturn;
+};
+#endif
+
 #ifndef _SOAP_sgs__StopResponse
 #define _SOAP_sgs__StopResponse
 struct sgs__StopResponse
 {
 	char *_StopReturn;
+};
+#endif
+
+#ifndef _SOAP_sgs__GetControlResponse
+#define _SOAP_sgs__GetControlResponse
+struct sgs__GetControlResponse
+{
+	char *_GetControlReturn;
+};
+#endif
+
+#ifndef _SOAP_sgs__GetStatusResponse
+#define _SOAP_sgs__GetStatusResponse
+struct sgs__GetStatusResponse
+{
+	char *_GetStatusReturn;
 };
 #endif
 
@@ -102,35 +150,11 @@ struct sgs__destroyResponse
 };
 #endif
 
-#ifndef _SOAP_sgs__PutStatusResponse
-#define _SOAP_sgs__PutStatusResponse
-struct sgs__PutStatusResponse
-{
-	char *_PutStatusReturn;
-};
-#endif
-
-#ifndef _SOAP_sgs__DetachResponse
-#define _SOAP_sgs__DetachResponse
-struct sgs__DetachResponse
-{
-	char *_DetachReturn;
-};
-#endif
-
 #ifndef _SOAP_sgs__ClearStatusMsgQueueResponse
 #define _SOAP_sgs__ClearStatusMsgQueueResponse
 struct sgs__ClearStatusMsgQueueResponse
 {
 	char *_ClearStatusMsgQueueReturn;
-};
-#endif
-
-#ifndef _SOAP_sgs__GetParamLogResponse
-#define _SOAP_sgs__GetParamLogResponse
-struct sgs__GetParamLogResponse
-{
-	char *_GetParamLogResult;
 };
 #endif
 
@@ -142,126 +166,27 @@ struct sgs__AppPutLogResponse
 };
 #endif
 
-#ifndef _SOAP_sgs__GetNotificationsResponse
-#define _SOAP_sgs__GetNotificationsResponse
-struct sgs__GetNotificationsResponse
+#ifndef _SOAP_sgs__GetNthDataSourceResponse
+#define _SOAP_sgs__GetNthDataSourceResponse
+struct sgs__GetNthDataSourceResponse
 {
-	char *_GetNotificationsReturn;
+	char *_GetNthDataSourceReturn;
 };
 #endif
 
-#ifndef _SOAP_sgs__GetControlResponse
-#define _SOAP_sgs__GetControlResponse
-struct sgs__GetControlResponse
+#ifndef _SOAP_sgs__AppStartResponse
+#define _SOAP_sgs__AppStartResponse
+struct sgs__AppStartResponse
 {
-	char *_GetControlReturn;
+	char *_AppStartReturn;
 };
 #endif
 
-#ifndef _SOAP_sgs__AttachResponse
-#define _SOAP_sgs__AttachResponse
-struct sgs__AttachResponse
+#ifndef _SOAP_sgs__AppDetachResponse
+#define _SOAP_sgs__AppDetachResponse
+struct sgs__AppDetachResponse
 {
-	char *_AttachReturn;
-};
-#endif
-
-#ifndef _SOAP_sgs__ResumeResponse
-#define _SOAP_sgs__ResumeResponse
-struct sgs__ResumeResponse
-{
-	char *_ResumeReturn;
-};
-#endif
-
-#ifndef _SOAP_sgs__setServiceDataResponse
-#define _SOAP_sgs__setServiceDataResponse
-struct sgs__setServiceDataResponse
-{
-	char *_setServiceDataReturn;
-};
-#endif
-
-#ifndef _SOAP_sgs__findServiceDataResponse
-#define _SOAP_sgs__findServiceDataResponse
-struct sgs__findServiceDataResponse
-{
-	char *_findServiceDataReturn;
-};
-#endif
-
-#ifndef _SOAP_sgs__setServiceData
-#define _SOAP_sgs__setServiceData
-struct sgs__setServiceData
-{
-	char *in0;
-};
-#endif
-
-#ifndef _SOAP_sgs__destroy
-#define _SOAP_sgs__destroy
-struct sgs__destroy
-{
-};
-#endif
-
-#ifndef _SOAP_sgs__AppDetach
-#define _SOAP_sgs__AppDetach
-struct sgs__AppDetach
-{
-};
-#endif
-
-#ifndef _SOAP_sgs__PutStatus
-#define _SOAP_sgs__PutStatus
-struct sgs__PutStatus
-{
-	char *in0;
-};
-#endif
-
-#ifndef _SOAP_sgs__AppStop
-#define _SOAP_sgs__AppStop
-struct sgs__AppStop
-{
-};
-#endif
-
-#ifndef _SOAP_sgs__GetControl
-#define _SOAP_sgs__GetControl
-struct sgs__GetControl
-{
-};
-#endif
-
-#ifndef _SOAP_sgs__AppPutLog
-#define _SOAP_sgs__AppPutLog
-struct sgs__AppPutLog
-{
-	char *in0;
-};
-#endif
-
-#ifndef _SOAP_sgs__GetStatus
-#define _SOAP_sgs__GetStatus
-struct sgs__GetStatus
-{
-};
-#endif
-
-#ifndef _SOAP_sgs__Restart
-#define _SOAP_sgs__Restart
-struct sgs__Restart
-{
-	char *in0;
-};
-#endif
-
-#ifndef _SOAP_sgs__GetParamLog
-#define _SOAP_sgs__GetParamLog
-struct sgs__GetParamLog
-{
-	char *in0;
+	char *_AppDetachReturn;
 };
 #endif
 
@@ -272,17 +197,23 @@ struct sgs__Attach
 };
 #endif
 
-#ifndef _SOAP_sgs__GetNthDataSource
-#define _SOAP_sgs__GetNthDataSource
-struct sgs__GetNthDataSource
+#ifndef _SOAP_sgs__GetStatus
+#define _SOAP_sgs__GetStatus
+struct sgs__GetStatus
 {
-	int in0;
 };
 #endif
 
 #ifndef _SOAP_sgs__Stop
 #define _SOAP_sgs__Stop
 struct sgs__Stop
+{
+};
+#endif
+
+#ifndef _SOAP_sgs__ClearStatusMsgQueue
+#define _SOAP_sgs__ClearStatusMsgQueue
+struct sgs__ClearStatusMsgQueue
 {
 };
 #endif
@@ -294,19 +225,10 @@ struct sgs__Detach
 };
 #endif
 
-#ifndef _SOAP_sgs__PutControl
-#define _SOAP_sgs__PutControl
-struct sgs__PutControl
+#ifndef _SOAP_sgs__Resume
+#define _SOAP_sgs__Resume
+struct sgs__Resume
 {
-	char *in0;
-};
-#endif
-
-#ifndef _SOAP_sgs__findServiceData
-#define _SOAP_sgs__findServiceData
-struct sgs__findServiceData
-{
-	char *in0;
 };
 #endif
 
@@ -319,9 +241,101 @@ struct sgs__AppRecordChkpoint
 };
 #endif
 
+#ifndef _SOAP_sgs__PutStatus
+#define _SOAP_sgs__PutStatus
+struct sgs__PutStatus
+{
+	char *in0;
+};
+#endif
+
+#ifndef _SOAP_sgs__AppStart
+#define _SOAP_sgs__AppStart
+struct sgs__AppStart
+{
+};
+#endif
+
+#ifndef _SOAP_sgs__GetParamLog
+#define _SOAP_sgs__GetParamLog
+struct sgs__GetParamLog
+{
+	int in0;
+};
+#endif
+
+#ifndef _SOAP_sgs__setServiceData
+#define _SOAP_sgs__setServiceData
+struct sgs__setServiceData
+{
+	char *in0;
+};
+#endif
+
+#ifndef _SOAP_sgs__AppPutLog
+#define _SOAP_sgs__AppPutLog
+struct sgs__AppPutLog
+{
+	char *in0;
+};
+#endif
+
+#ifndef _SOAP_sgs__AppDetach
+#define _SOAP_sgs__AppDetach
+struct sgs__AppDetach
+{
+};
+#endif
+
 #ifndef _SOAP_sgs__Pause
 #define _SOAP_sgs__Pause
 struct sgs__Pause
+{
+};
+#endif
+
+#ifndef _SOAP_sgs__PutControl
+#define _SOAP_sgs__PutControl
+struct sgs__PutControl
+{
+	char *in0;
+};
+#endif
+
+#ifndef _SOAP_sgs__Restart
+#define _SOAP_sgs__Restart
+struct sgs__Restart
+{
+	char *in0;
+};
+#endif
+
+#ifndef _SOAP_sgs__GetNthDataSource
+#define _SOAP_sgs__GetNthDataSource
+struct sgs__GetNthDataSource
+{
+	int in0;
+};
+#endif
+
+#ifndef _SOAP_sgs__findServiceData
+#define _SOAP_sgs__findServiceData
+struct sgs__findServiceData
+{
+	char *in0;
+};
+#endif
+
+#ifndef _SOAP_sgs__destroy
+#define _SOAP_sgs__destroy
+struct sgs__destroy
+{
+};
+#endif
+
+#ifndef _SOAP_sgs__GetControl
+#define _SOAP_sgs__GetControl
+struct sgs__GetControl
 {
 };
 #endif
@@ -333,23 +347,9 @@ struct sgs__GetNotifications
 };
 #endif
 
-#ifndef _SOAP_sgs__AppStart
-#define _SOAP_sgs__AppStart
-struct sgs__AppStart
-{
-};
-#endif
-
-#ifndef _SOAP_sgs__Resume
-#define _SOAP_sgs__Resume
-struct sgs__Resume
-{
-};
-#endif
-
-#ifndef _SOAP_sgs__ClearStatusMsgQueue
-#define _SOAP_sgs__ClearStatusMsgQueue
-struct sgs__ClearStatusMsgQueue
+#ifndef _SOAP_sgs__AppStop
+#define _SOAP_sgs__AppStop
+struct sgs__AppStop
 {
 };
 #endif
@@ -784,55 +784,54 @@ struct SOAP_ENV__Fault
 /* Typedefs */
 typedef char *xsd__string;
 typedef int xsd__int;
-typedef char *xsd__integer;
 
 /* Variables */
 
 /* Remote Methods */
 
-SOAP_FMAC1 int SOAP_FMAC2 sgs__setServiceData(struct soap*, char *, struct sgs__setServiceDataResponse *);
-
-SOAP_FMAC1 int SOAP_FMAC2 sgs__destroy(struct soap*, struct sgs__destroyResponse *);
-
-SOAP_FMAC1 int SOAP_FMAC2 sgs__AppDetach(struct soap*, struct sgs__AppDetachResponse *);
-
-SOAP_FMAC1 int SOAP_FMAC2 sgs__PutStatus(struct soap*, char *, struct sgs__PutStatusResponse *);
-
-SOAP_FMAC1 int SOAP_FMAC2 sgs__AppStop(struct soap*, struct sgs__AppStopResponse *);
-
-SOAP_FMAC1 int SOAP_FMAC2 sgs__GetControl(struct soap*, struct sgs__GetControlResponse *);
-
-SOAP_FMAC1 int SOAP_FMAC2 sgs__AppPutLog(struct soap*, char *, struct sgs__AppPutLogResponse *);
+SOAP_FMAC1 int SOAP_FMAC2 sgs__Attach(struct soap*, struct sgs__AttachResponse *);
 
 SOAP_FMAC1 int SOAP_FMAC2 sgs__GetStatus(struct soap*, struct sgs__GetStatusResponse *);
 
-SOAP_FMAC1 int SOAP_FMAC2 sgs__Restart(struct soap*, char *, struct sgs__RestartResponse *);
-
-SOAP_FMAC1 int SOAP_FMAC2 sgs__GetParamLog(struct soap*, char *, struct sgs__GetParamLogResponse *);
-
-SOAP_FMAC1 int SOAP_FMAC2 sgs__Attach(struct soap*, struct sgs__AttachResponse *);
-
-SOAP_FMAC1 int SOAP_FMAC2 sgs__GetNthDataSource(struct soap*, int, struct sgs__GetNthDataSourceResponse *);
-
 SOAP_FMAC1 int SOAP_FMAC2 sgs__Stop(struct soap*, struct sgs__StopResponse *);
+
+SOAP_FMAC1 int SOAP_FMAC2 sgs__ClearStatusMsgQueue(struct soap*, struct sgs__ClearStatusMsgQueueResponse *);
 
 SOAP_FMAC1 int SOAP_FMAC2 sgs__Detach(struct soap*, struct sgs__DetachResponse *);
 
-SOAP_FMAC1 int SOAP_FMAC2 sgs__PutControl(struct soap*, char *, struct sgs__PutControlResponse *);
-
-SOAP_FMAC1 int SOAP_FMAC2 sgs__findServiceData(struct soap*, char *, struct sgs__findServiceDataResponse *);
+SOAP_FMAC1 int SOAP_FMAC2 sgs__Resume(struct soap*, struct sgs__ResumeResponse *);
 
 SOAP_FMAC1 int SOAP_FMAC2 sgs__AppRecordChkpoint(struct soap*, char *, char *, struct sgs__AppRecordChkpointResponse *);
 
-SOAP_FMAC1 int SOAP_FMAC2 sgs__Pause(struct soap*, struct sgs__PauseResponse *);
-
-SOAP_FMAC1 int SOAP_FMAC2 sgs__GetNotifications(struct soap*, struct sgs__GetNotificationsResponse *);
+SOAP_FMAC1 int SOAP_FMAC2 sgs__PutStatus(struct soap*, char *, struct sgs__PutStatusResponse *);
 
 SOAP_FMAC1 int SOAP_FMAC2 sgs__AppStart(struct soap*, struct sgs__AppStartResponse *);
 
-SOAP_FMAC1 int SOAP_FMAC2 sgs__Resume(struct soap*, struct sgs__ResumeResponse *);
+SOAP_FMAC1 int SOAP_FMAC2 sgs__GetParamLog(struct soap*, int, struct sgs__GetParamLogResponse *);
 
-SOAP_FMAC1 int SOAP_FMAC2 sgs__ClearStatusMsgQueue(struct soap*, struct sgs__ClearStatusMsgQueueResponse *);
+SOAP_FMAC1 int SOAP_FMAC2 sgs__setServiceData(struct soap*, char *, struct sgs__setServiceDataResponse *);
+
+SOAP_FMAC1 int SOAP_FMAC2 sgs__AppPutLog(struct soap*, char *, struct sgs__AppPutLogResponse *);
+
+SOAP_FMAC1 int SOAP_FMAC2 sgs__AppDetach(struct soap*, struct sgs__AppDetachResponse *);
+
+SOAP_FMAC1 int SOAP_FMAC2 sgs__Pause(struct soap*, struct sgs__PauseResponse *);
+
+SOAP_FMAC1 int SOAP_FMAC2 sgs__PutControl(struct soap*, char *, struct sgs__PutControlResponse *);
+
+SOAP_FMAC1 int SOAP_FMAC2 sgs__Restart(struct soap*, char *, struct sgs__RestartResponse *);
+
+SOAP_FMAC1 int SOAP_FMAC2 sgs__GetNthDataSource(struct soap*, int, struct sgs__GetNthDataSourceResponse *);
+
+SOAP_FMAC1 int SOAP_FMAC2 sgs__findServiceData(struct soap*, char *, struct sgs__findServiceDataResponse *);
+
+SOAP_FMAC1 int SOAP_FMAC2 sgs__destroy(struct soap*, struct sgs__destroyResponse *);
+
+SOAP_FMAC1 int SOAP_FMAC2 sgs__GetControl(struct soap*, struct sgs__GetControlResponse *);
+
+SOAP_FMAC1 int SOAP_FMAC2 sgs__GetNotifications(struct soap*, struct sgs__GetNotificationsResponse *);
+
+SOAP_FMAC1 int SOAP_FMAC2 sgs__AppStop(struct soap*, struct sgs__AppStopResponse *);
 
 SOAP_FMAC1 int SOAP_FMAC2 sgsf__registerSelf(struct soap*, char *, char *, struct sgsf__registerSelfResponse *);
 
@@ -884,49 +883,49 @@ SOAP_FMAC1 int SOAP_FMAC2 rgt__addNode(struct soap*, char *, char *, char *, cha
 
 /* Stubs */
 
-SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__setServiceData(struct soap*, const char*, const char*, char *, struct sgs__setServiceDataResponse *);
-
-SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__destroy(struct soap*, const char*, const char*, struct sgs__destroyResponse *);
-
-SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__AppDetach(struct soap*, const char*, const char*, struct sgs__AppDetachResponse *);
-
-SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__PutStatus(struct soap*, const char*, const char*, char *, struct sgs__PutStatusResponse *);
-
-SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__AppStop(struct soap*, const char*, const char*, struct sgs__AppStopResponse *);
-
-SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__GetControl(struct soap*, const char*, const char*, struct sgs__GetControlResponse *);
-
-SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__AppPutLog(struct soap*, const char*, const char*, char *, struct sgs__AppPutLogResponse *);
+SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__Attach(struct soap*, const char*, const char*, struct sgs__AttachResponse *);
 
 SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__GetStatus(struct soap*, const char*, const char*, struct sgs__GetStatusResponse *);
 
-SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__Restart(struct soap*, const char*, const char*, char *, struct sgs__RestartResponse *);
-
-SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__GetParamLog(struct soap*, const char*, const char*, char *, struct sgs__GetParamLogResponse *);
-
-SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__Attach(struct soap*, const char*, const char*, struct sgs__AttachResponse *);
-
-SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__GetNthDataSource(struct soap*, const char*, const char*, int, struct sgs__GetNthDataSourceResponse *);
-
 SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__Stop(struct soap*, const char*, const char*, struct sgs__StopResponse *);
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__ClearStatusMsgQueue(struct soap*, const char*, const char*, struct sgs__ClearStatusMsgQueueResponse *);
 
 SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__Detach(struct soap*, const char*, const char*, struct sgs__DetachResponse *);
 
-SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__PutControl(struct soap*, const char*, const char*, char *, struct sgs__PutControlResponse *);
-
-SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__findServiceData(struct soap*, const char*, const char*, char *, struct sgs__findServiceDataResponse *);
+SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__Resume(struct soap*, const char*, const char*, struct sgs__ResumeResponse *);
 
 SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__AppRecordChkpoint(struct soap*, const char*, const char*, char *, char *, struct sgs__AppRecordChkpointResponse *);
 
-SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__Pause(struct soap*, const char*, const char*, struct sgs__PauseResponse *);
-
-SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__GetNotifications(struct soap*, const char*, const char*, struct sgs__GetNotificationsResponse *);
+SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__PutStatus(struct soap*, const char*, const char*, char *, struct sgs__PutStatusResponse *);
 
 SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__AppStart(struct soap*, const char*, const char*, struct sgs__AppStartResponse *);
 
-SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__Resume(struct soap*, const char*, const char*, struct sgs__ResumeResponse *);
+SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__GetParamLog(struct soap*, const char*, const char*, int, struct sgs__GetParamLogResponse *);
 
-SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__ClearStatusMsgQueue(struct soap*, const char*, const char*, struct sgs__ClearStatusMsgQueueResponse *);
+SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__setServiceData(struct soap*, const char*, const char*, char *, struct sgs__setServiceDataResponse *);
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__AppPutLog(struct soap*, const char*, const char*, char *, struct sgs__AppPutLogResponse *);
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__AppDetach(struct soap*, const char*, const char*, struct sgs__AppDetachResponse *);
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__Pause(struct soap*, const char*, const char*, struct sgs__PauseResponse *);
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__PutControl(struct soap*, const char*, const char*, char *, struct sgs__PutControlResponse *);
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__Restart(struct soap*, const char*, const char*, char *, struct sgs__RestartResponse *);
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__GetNthDataSource(struct soap*, const char*, const char*, int, struct sgs__GetNthDataSourceResponse *);
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__findServiceData(struct soap*, const char*, const char*, char *, struct sgs__findServiceDataResponse *);
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__destroy(struct soap*, const char*, const char*, struct sgs__destroyResponse *);
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__GetControl(struct soap*, const char*, const char*, struct sgs__GetControlResponse *);
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__GetNotifications(struct soap*, const char*, const char*, struct sgs__GetNotificationsResponse *);
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__AppStop(struct soap*, const char*, const char*, struct sgs__AppStopResponse *);
 
 SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgsf__registerSelf(struct soap*, const char*, const char*, char *, char *, struct sgsf__registerSelfResponse *);
 
@@ -980,49 +979,49 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_call_rgt__addNode(struct soap*, const char*, cons
 
 SOAP_FMAC1 int SOAP_FMAC2 soap_serve(struct soap*);
 
-SOAP_FMAC1 int SOAP_FMAC2 soap_serve_sgs__setServiceData(struct soap*);
-
-SOAP_FMAC1 int SOAP_FMAC2 soap_serve_sgs__destroy(struct soap*);
-
-SOAP_FMAC1 int SOAP_FMAC2 soap_serve_sgs__AppDetach(struct soap*);
-
-SOAP_FMAC1 int SOAP_FMAC2 soap_serve_sgs__PutStatus(struct soap*);
-
-SOAP_FMAC1 int SOAP_FMAC2 soap_serve_sgs__AppStop(struct soap*);
-
-SOAP_FMAC1 int SOAP_FMAC2 soap_serve_sgs__GetControl(struct soap*);
-
-SOAP_FMAC1 int SOAP_FMAC2 soap_serve_sgs__AppPutLog(struct soap*);
+SOAP_FMAC1 int SOAP_FMAC2 soap_serve_sgs__Attach(struct soap*);
 
 SOAP_FMAC1 int SOAP_FMAC2 soap_serve_sgs__GetStatus(struct soap*);
 
-SOAP_FMAC1 int SOAP_FMAC2 soap_serve_sgs__Restart(struct soap*);
-
-SOAP_FMAC1 int SOAP_FMAC2 soap_serve_sgs__GetParamLog(struct soap*);
-
-SOAP_FMAC1 int SOAP_FMAC2 soap_serve_sgs__Attach(struct soap*);
-
-SOAP_FMAC1 int SOAP_FMAC2 soap_serve_sgs__GetNthDataSource(struct soap*);
-
 SOAP_FMAC1 int SOAP_FMAC2 soap_serve_sgs__Stop(struct soap*);
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_serve_sgs__ClearStatusMsgQueue(struct soap*);
 
 SOAP_FMAC1 int SOAP_FMAC2 soap_serve_sgs__Detach(struct soap*);
 
-SOAP_FMAC1 int SOAP_FMAC2 soap_serve_sgs__PutControl(struct soap*);
-
-SOAP_FMAC1 int SOAP_FMAC2 soap_serve_sgs__findServiceData(struct soap*);
+SOAP_FMAC1 int SOAP_FMAC2 soap_serve_sgs__Resume(struct soap*);
 
 SOAP_FMAC1 int SOAP_FMAC2 soap_serve_sgs__AppRecordChkpoint(struct soap*);
 
-SOAP_FMAC1 int SOAP_FMAC2 soap_serve_sgs__Pause(struct soap*);
-
-SOAP_FMAC1 int SOAP_FMAC2 soap_serve_sgs__GetNotifications(struct soap*);
+SOAP_FMAC1 int SOAP_FMAC2 soap_serve_sgs__PutStatus(struct soap*);
 
 SOAP_FMAC1 int SOAP_FMAC2 soap_serve_sgs__AppStart(struct soap*);
 
-SOAP_FMAC1 int SOAP_FMAC2 soap_serve_sgs__Resume(struct soap*);
+SOAP_FMAC1 int SOAP_FMAC2 soap_serve_sgs__GetParamLog(struct soap*);
 
-SOAP_FMAC1 int SOAP_FMAC2 soap_serve_sgs__ClearStatusMsgQueue(struct soap*);
+SOAP_FMAC1 int SOAP_FMAC2 soap_serve_sgs__setServiceData(struct soap*);
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_serve_sgs__AppPutLog(struct soap*);
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_serve_sgs__AppDetach(struct soap*);
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_serve_sgs__Pause(struct soap*);
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_serve_sgs__PutControl(struct soap*);
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_serve_sgs__Restart(struct soap*);
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_serve_sgs__GetNthDataSource(struct soap*);
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_serve_sgs__findServiceData(struct soap*);
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_serve_sgs__destroy(struct soap*);
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_serve_sgs__GetControl(struct soap*);
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_serve_sgs__GetNotifications(struct soap*);
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_serve_sgs__AppStop(struct soap*);
 
 SOAP_FMAC1 int SOAP_FMAC2 soap_serve_sgsf__registerSelf(struct soap*);
 

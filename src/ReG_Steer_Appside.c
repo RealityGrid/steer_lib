@@ -500,10 +500,6 @@ int Steering_finalize()
 
   if (!ReG_SteeringInit) return REG_FAILURE;
 
-  /* Tell the steerer that we are done - signal that component 
-     no-longer steerable */
-  Finalize_steering_connection();
-
   /* Save remaining log entries to file */
   Save_log(&Chk_log);
   Save_log(&Param_log);
@@ -511,6 +507,10 @@ int Steering_finalize()
   /* Close log file */
   Close_log_file(&Chk_log);
   Close_log_file(&Param_log);
+
+  /* Tell the steerer that we are done - signal that component 
+     no-longer steerable */
+  Finalize_steering_connection();
 
   /* Clean-up IOTypes table */
 
@@ -2710,9 +2710,10 @@ int Steering_control(int     SeqNum,
     }
 
     /* Emit checkpoint logging info. (parameter logs are only sent
-       on demand because they are large.) */
+       on demand because they are large.) 'Handle' argument of Emit_log
+       is not used for checkpoint logs. */
 
-    if( Emit_log(&Chk_log) != REG_SUCCESS ){
+    if( Emit_log(&Chk_log, 0) != REG_SUCCESS ){
 
       fprintf(stderr, "Steering_control: Emit chk log failed\n");
     }
@@ -2721,9 +2722,11 @@ int Steering_control(int     SeqNum,
       fprintf(stderr, "Steering_control: done Emit_log\n");
     }
 #endif
+    /*
     if(Param_log.emit_in_progress == REG_TRUE){
       Emit_log(&Param_log);
     }
+    */
 
 #if REG_DEBUG_FULL
     fprintf(stderr, "Steering_control: done Consume_control\n");
@@ -2764,8 +2767,10 @@ int Steering_control(int     SeqNum,
 
       case REG_STR_EMIT_PARAM_LOG:
 
-	/* Emit the parameter log */
-	if( Emit_log(&Param_log) != REG_SUCCESS ){
+	/* Emit the requested parameter log */
+	if(sscanf(SteerCmdParams[i], "%d", &status) != 1)break;
+
+	if( Emit_log(&Param_log, status) != REG_SUCCESS ){
 
 	  fprintf(stderr, "Steering_control: Emit param log failed\n");
 	}

@@ -56,6 +56,10 @@ Sim_table_type Sim_table;
    via files or SOAP over http) */
 Proxy_table_type Proxy;
 
+/* This function's prototype is in ReG_Steer_Appside.c 'cos it's
+   a utility that may be used by an application developer too */
+extern char** Alloc_string_array(int, int);
+
 /*----- Routines to be used by the steering component ------*/
 
 int Steerer_initialize()
@@ -1557,10 +1561,11 @@ int Emit_resume_cmd(int SimHandle)
 
 /*----------------------------------------------------------*/
 
-int Emit_retrieve_param_log_cmd(int SimHandle)
+int Emit_retrieve_param_log_cmd(int SimHandle, int ParamHandle)
 {
-  int index;
-  int SysCommands[1];
+  int           index;
+  int           SysCommands[1];
+  static char **CommandParams = NULL;
 
   /* Check that handle is valid */
   if(SimHandle == REG_SIM_HANDLE_NOTSET) return REG_SUCCESS;
@@ -1570,12 +1575,25 @@ int Emit_retrieve_param_log_cmd(int SimHandle)
     return REG_FAILURE;
   }
 
+  if(Sim_table.sim[index].SGS_info.active){
+
+    /* Get all of the log entries cached on the SGS */
+    fprintf(stderr, "ARPDBG, calling Get_param_log_soap...\n");
+    Get_param_log_soap(&(Sim_table.sim[index]), ParamHandle);
+  }
+  
+  /* Now send command to app to emit the rest of them (this will
+     mean all of them for file-based steering) */
   SysCommands[0] = REG_STR_EMIT_PARAM_LOG;
+
+  /* Which parameter to get the log of */
+  if(!CommandParams) CommandParams = Alloc_string_array(32, 1);
+  sprintf(CommandParams[0], "%d", ParamHandle);
 
   return Emit_control(SimHandle,
 		      1,
 		      SysCommands,
-		      NULL);
+		      CommandParams);
 }
 
 /*----------------------------------------------------------*/

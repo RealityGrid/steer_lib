@@ -521,5 +521,123 @@ int Finalize_connection_soap(Sim_entry_type *sim)
   sim->SGS_info.soap = NULL;
 
   return REG_SUCCESS;  
+}
 
+/*-------------------------------------------------------------------------*/
+
+int Get_param_log_soap(Sim_entry_type *sim, int handle)
+{
+  struct sgs__GetParamLogResponse response;
+  int    index, lindex;
+  char  *ptr1;
+  int    dum_int;
+  float  dum_float;
+  response._GetParamLogReturn = NULL;
+
+  if( (index=Param_index_from_handle(&(sim->Params_table),
+				     handle)) == -1){
+
+      fprintf(stderr, "Get_param_log_soap: failed to match param handle\n");
+      fprintf(stderr, "                    handle = %d\n", handle);
+
+      return REG_FAILURE;
+  }
+
+  if(!sim->Params_table.param[index].log){
+    
+    if(Realloc_param_log(&(sim->Params_table.param[index])) !=
+       REG_SUCCESS){
+
+      return REG_FAILURE;
+    }
+  }
+
+  lindex = sim->Params_table.param[index].log_index;
+
+
+  if(soap_call_sgs__GetParamLog(sim->SGS_info.soap, sim->SGS_info.address, 
+				"", (xsd__int)handle, &response )){
+
+    fprintf(stderr, "Get_param_log_soap: failed for handle %d:\n",
+	    handle);
+    soap_print_fault(sim->SGS_info.soap, stderr);
+
+    return REG_FAILURE;
+  }
+
+  if(!(response._GetParamLogReturn) ||
+     strstr(response._GetParamLogReturn, REG_SGS_ERROR)){
+     return REG_FAILURE;
+  }
+
+  fprintf(stderr, "ARPDBG, got log from SGS>>%s<<", 
+	  (char*)response._GetParamLogReturn);
+  ptr1 = (char*)response._GetParamLogReturn;
+
+  switch(sim->Params_table.param[index].type){
+
+  case REG_INT:
+
+    while(1){
+
+      /* Parse space-delimited list of parameter values */
+      sscanf(ptr1, "%d ", &dum_int);
+      sim->Params_table.param[index].log[lindex++] = (double)dum_int;
+
+      if(!(ptr1 = strstr(ptr1, " ")))break;
+      if(*(++ptr1) == '\0')break;
+
+      if(lindex >= sim->Params_table.param[index].log_size){
+	Realloc_param_log(&(sim->Params_table.param[index]));
+      }
+    }
+    sim->Params_table.param[index].log_index = lindex;
+    break;
+
+  case REG_FLOAT:
+
+    while(1){
+
+      sscanf(ptr1, "%f", &dum_float);
+      sim->Params_table.param[index].log[lindex++] = (double)dum_float;
+
+      if(!(ptr1 = strstr(ptr1, " ")))break;
+      if(*(++ptr1) == '\0')break;
+
+      if(lindex >= sim->Params_table.param[index].log_size){
+	Realloc_param_log(&(sim->Params_table.param[index]));
+      }
+    }
+    sim->Params_table.param[index].log_index = lindex;
+    break;
+
+  case REG_DBL:
+
+    while(1){
+
+      sscanf(ptr1, "%f", &(sim->Params_table.param[index].log[lindex++]) );
+
+      if(!(ptr1 = strstr(ptr1, " ")))break;
+      if(*(++ptr1) == '\0')break;
+
+      if(lindex >= sim->Params_table.param[index].log_size){
+	Realloc_param_log(&(sim->Params_table.param[index]));
+      }
+    }
+    sim->Params_table.param[index].log_index = lindex;
+    break;
+
+  case REG_CHAR:
+    /* This not implemented yet */
+#if REG_DEBUG
+    fprintf(stderr, "Get_param_log_soap: logging of char params not "
+	    "implemented!\n");
+#endif
+    break;
+
+  default:
+    break;
+  }
+
+  return REG_SUCCESS;
 }

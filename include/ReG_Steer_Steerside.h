@@ -140,7 +140,8 @@ extern PREFIX int Emit_detach_cmd(int SimHandle);
 extern PREFIX int Emit_stop_cmd(int SimHandle);
 extern PREFIX int Emit_pause_cmd(int SimHandle);
 extern PREFIX int Emit_resume_cmd(int SimHandle);
-extern PREFIX int Emit_retrieve_param_log_cmd(int SimHandle);
+extern PREFIX int Emit_retrieve_param_log_cmd(int SimHandle, 
+					      int ParamHandle);
 /* This one is SGS-specific as it uses the Checkpoint Tree */
 extern PREFIX int Emit_restart_cmd(int SimHandle, char *chkGSH);
 

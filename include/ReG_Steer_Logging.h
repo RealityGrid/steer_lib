@@ -36,8 +36,10 @@
 #define __REG_STEER_APPSIDE_LOGGING_H__
 
 
-/* Emit any log entries that steerer doesn't know about */
-int Emit_log(Chk_log_type *log);
+/* Emit any log entries that steerer doesn't know about.  The handle
+   argument is used to identify which parameter log to emit if the
+   log is of the appropriate type. */
+int Emit_log(Chk_log_type *log, int handle);
 
 /* Sets the value of the next primary key to be used in generating
    log entries.  If a log file exists then it pulls the last value out

@@ -662,7 +662,18 @@ int Save_log_soap(char *log_data)
 
   AppPutLog_response._AppPutLogReturn = NULL;
 
+  if(strlen(log_data) > REG_SCRATCH_BUFFER_SIZE){
+
+    fprintf(stderr, "Save_log_soap: log data exceeds scratch buffer "
+	    "size of %d btes.  More code needed here...\n", 
+	    REG_SCRATCH_BUFFER_SIZE);
+    return REG_FAILURE;
+  }
+
   pmsg_buf = Global_scratch_buffer;
+
+  /* We just send the data as it comes and therefore have to wrap it
+     with CDATA tag to stop the parser getting upset */
   pmsg_buf += sprintf(pmsg_buf, "<Steer_log><Raw_param_log><![CDATA[");
   strcpy(pmsg_buf, log_data);
   pmsg_buf += strlen(log_data);

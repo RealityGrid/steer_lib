@@ -185,17 +185,17 @@ int Consume_chk_log(Sim_entry_type *sim,
 
 /* Obtain details associated with the supplied Chk log entry (e.g. values
    of steerable parameters at that point) */
-static int Get_log_entry_details(Param_table_type   *param_table,
-				 Chk_log_entry_type *in,
-				 Output_log_struct  *out);
+int Get_log_entry_details(Param_table_type   *param_table,
+			  Chk_log_entry_type *in,
+			  Output_log_struct  *out);
 
 /* Returns the index of the next free entry in the table of simulations
    being steered */
-static int Next_free_sim_index();
+int Next_free_sim_index();
 
 /* Mallocs or reallocs the logging buffer associated with the
    supplied parameter.  Updates the log_size member of
    the parameter struct. */
-static int Realloc_param_log(param_entry *param);
+int Realloc_param_log(param_entry *param);
 
 #endif
