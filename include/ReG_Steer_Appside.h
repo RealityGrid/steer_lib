@@ -88,6 +88,17 @@ extern PREFIX int Register_ChkTypes(int    NumTypes,
 extern PREFIX int Record_Chkpt(int   ChkType,
 			       char *ChkTag);
 
+/* Replacement for Record_Chkpt - to be called by the application once
+   it has successfully taken a checkpoint of type ChkType - the handle 
+   returned by Register_ChkTypes.  ChkTag should hold a unique
+   identifier for the checkpoint set - it is used by the library to
+   identify all of the files belonging to the checkpoint.  Path should
+   hold the location of the checkpoint set, relative to the current
+   working directory. */
+extern PREFIX int Record_checkpoint_set(int   ChkType,
+					char *ChkTag,
+					char *Path);
+
 /* Register the specified parameters. Since labels are used to 
    identify parameters, they must be unique and not contain
    any white space. */
