@@ -105,7 +105,7 @@
 
 /* Initial limit on no. of sims being steered at any one time */
 
-#define REG_MAX_NUM_STEERED_SIM 5
+#define REG_MAX_NUM_STEERED_SIM 20
 
 /* Limit on number of files used in communication - filenames
    wrap back on themselves once this limit reached */
