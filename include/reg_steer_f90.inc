@@ -43,7 +43,9 @@
   EXTERNAL steering_initialize_f
   EXTERNAL steering_finalize_f
   EXTERNAL register_iotypes_f
+  EXTERNAL register_chktypes_f
   EXTERNAL register_params_f
+  EXTERNAL record_chkpt_f
   EXTERNAL consume_start_f
   EXTERNAL consume_stop_f
   EXTERNAL steering_control_f
@@ -119,4 +121,4 @@
 
   INTEGER (KIND=4), PARAMETER :: REG_IO_IN    = 0
   INTEGER (KIND=4), PARAMETER :: REG_IO_OUT   = 1
-  INTEGER (KIND=4), PARAMETER :: REG_IO_CHKPT = 2
+  INTEGER (KIND=4), PARAMETER :: REG_IO_INOUT = 2

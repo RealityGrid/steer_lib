@@ -178,8 +178,7 @@ extern PREFIX int Steering_pause(int   *NumSteerParams,
    suitable ASCII header.  Both header and array should point to 
    big enough chunks of memory (BUFSIZ for header and nx*ny*nz floats
    for array) */
-extern PREFIX int Make_vtk_buffer(char  *header,
-				  int    nx,
+extern PREFIX int Make_vtk_buffer(int    nx,
 				  int    ny,
 				  int    nz,
 				  int    veclen,
@@ -188,3 +187,12 @@ extern PREFIX int Make_vtk_buffer(char  *header,
 				  double c,
 				  float *array);
 
+/* Create a vtk header for a structured points data set of nx*ny*nz
+   points of type <type> (coded as REG_INT etc.) */
+extern PREFIX int Make_vtk_header(char  *header,
+				  char  *title,
+				  int    nx,
+				  int    ny,
+				  int    nz,
+				  int    veclen,
+				  int    type);

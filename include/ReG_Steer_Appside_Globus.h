@@ -41,8 +41,6 @@
 
 #if REG_GLOBUS_STEERING
 
-#include "ReG_Steer_Appside_internal.h"
-
 int Send_status_msg_globus(char *buf);
 
 struct msg_struct *Get_control_msg_globus();
@@ -57,8 +55,6 @@ int Finalize_steering_connection_globus();
 #endif
 
 #if REG_GLOBUS_SAMPLES
-
-#include "ReG_Steer_Appside_internal.h"
 
 int Initialize_IOType_transport_globus(const int direction,
 				       const int index);
