@@ -174,7 +174,7 @@
 	            minOccurs="1" maxOccurs="1" />
 		<!-- Can only contain one type of log message -->
 		<xs:choice maxOccurs="1">
-			<xs:element name="Param_log_entry" 
+			<xs:element name="Param" 
 			    type="ParamType" maxOccurs="unbounded" />
 			<xs:element name="Steer_log_entry" 
 	            	    type="ControlType"  />
