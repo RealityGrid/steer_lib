@@ -36,8 +36,9 @@
     Initial version by:  A Porter, 23.7.2002
 
 ---------------------------------------------------------------------------*/
-
 #include "ReG_Steer_Appside.h"
+
+/*-------------------------------------------------------------------------*/
 
 int main(){
 
@@ -51,6 +52,9 @@ int main(){
   int	 iotype_dirn[REG_INITIAL_NUM_IOTYPES];
   int	 iotype_auto[REG_INITIAL_NUM_IOTYPES];
   int	*iotype_frequency[REG_INITIAL_NUM_IOTYPES];
+  REG_IOHandleType iohandle;
+  int    data_type;
+  int    data_count;
 
   char  *param_labels[REG_INITIAL_NUM_PARAMS];
   void  *param_ptrs[REG_INITIAL_NUM_PARAMS];
@@ -78,6 +82,12 @@ int main(){
   int   finished           = FALSE;
   int   icmd;
   int   i, j;
+  const int NX = 16;
+  const int NY = 16;
+  const int NZ = 16;
+  
+  float *array;
+  char   header[BUFSIZ];
 
   /*---------- End of declarations ------------*/
 
@@ -122,7 +132,7 @@ int main(){
   iotype_auto[0] = FALSE;
   iotype_frequency[0] = NULL;
 
-  iotype_labels[1] = "SOME_OUTPUT_DATA";
+  iotype_labels[1] = "VTK_OUTPUT_GLOBUS_IO";
   iotype_dirn[1] = REG_IO_OUT;
   iotype_auto[1] = TRUE;
   iotype_frequency[1] = &output_freq;
@@ -181,6 +191,15 @@ int main(){
     printf("Failed to register parameters\n");
   }
 
+  /* malloc memory for array */
+
+  array = (float *)malloc(NX*NY*NZ*sizeof(float));
+  if( !array ){
+
+    fprintf(stderr, "Malloc failed...\n");
+    return REG_FAILURE;
+  }
+
 
   /* Enter main loop */
 
@@ -188,6 +207,8 @@ int main(){
 
     system("sleep 3");
     printf("\ni = %d\n", i);
+
+    Make_vtk_buffer(header, NX, NY, NZ, array);
 
     status = Steering_control(i,
 			      &num_params_changed,
@@ -242,7 +263,19 @@ int main(){
 
 	        printf("Some IO command received\n");
 
-		if(j==2){
+		if(j==1){
+
+		  if( Emit_start(iotype_handle[j], i, &iohandle)
+		      == REG_SUCCESS ){
+
+		    data_count = NX*NY*NZ;
+		    data_type  = REG_FLOAT;
+		    Emit_data_slice(iohandle, data_type, data_count, array);
+
+		    Emit_stop(&iohandle);
+		  }
+		}
+		else if(j==2){
 
 		  printf("Got checkpoint command, parameters: %s\n", 
 			 recvd_cmd_params[icmd]);
@@ -277,6 +310,8 @@ int main(){
 
   /* Clean up */
   free(changed_param_labels[0]);
+  free(array);
 
   return 0;
 }
+
