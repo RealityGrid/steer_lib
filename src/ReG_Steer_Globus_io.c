@@ -55,11 +55,6 @@
 #include "ReG_Steer_Globus_io.h"
 #include "ReG_Steer_Common.h"
 
-/* The 'public' hostname of the machine we're running on - this process
-   itself may be running on a back-end node with no external network 
-   connection.  This variable set in Steering_intialize */
-extern char ReG_Hostname[REG_MAX_STRING_LENGTH];
-
 int Globus_io_activate()
 {
   /* Activate the globus module if it hasn't been activated yet */
@@ -220,6 +215,8 @@ void Globus_callback_poll(socket_io_type * const socket_info)
 int Globus_create_listener(socket_io_type * const socket_info)
 {
   globus_result_t	result;
+  char                 *pchar;
+  char                 *ip_addr;
 
   /* create listener socket on free port 
    *  - if environment variable GLOBUS_TCP_PORT_RANGE has been set,
@@ -243,13 +240,16 @@ int Globus_create_listener(socket_io_type * const socket_info)
 	  socket_info->listener_port);
 
   /* Get the hostname of the machine we're running on (so we can publish
-     the endpoint of this connection). ReG_Hostname is set to 
-     REG_MACHINE_NAME if set.  If not then it is set using 
-     Get_fully_qualified_hostname which itself uses  REG_TCP_INTERFACE 
-     if set. */
-  if(ReG_Hostname[0] != '\0'){
+     the endpoint of this connection). If REG_IO_ADDRESS is set then
+     that's what we use.  If not, call Get_fully_qualified_hostname which 
+     itself uses  REG_TCP_INTERFACE if set. */
+  if(pchar = getenv("REG_IO_ADDRESS")){
 
-    strcpy(socket_info->listener_hostname, ReG_Hostname);
+    strcpy(socket_info->listener_hostname, pchar);
+  }
+  else if(Get_fully_qualified_hostname(&pchar, &ip_addr) == REG_SUCCESS){
+
+    strcpy(socket_info->listener_hostname, pchar);
   }
   else{
 
