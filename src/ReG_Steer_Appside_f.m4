@@ -662,8 +662,7 @@ STRING_ARG_DECL(StringParam);
 INT_KIND_1_DECL(Status);
 {
   char *min  = " ";
-  char *max  = " ";
-  char *pbuf[1];
+  char *pbuf[2];
   char *pchar;
   int   type = REG_CHAR;
   int   i;
@@ -706,18 +705,22 @@ INT_KIND_1_DECL(Status);
     }
   }
 
-  if(!(pbuf[0] = (char*)malloc(REG_MAX_STRING_LENGTH)) ){
+  if(!(pbuf[0] = (char*)malloc(2*REG_MAX_STRING_LENGTH)) ){
 
     fprintf(stderr, "register_string_param_f: ERROR - malloc failed\n");
     *Status = INT_KIND_1_CAST(REG_FAILURE);
     return;
   }
-  
+  pbuf[1] = pbuf[0] + REG_MAX_STRING_LENGTH;
+
   /* Terminate string just in case */
   memcpy(pbuf[0], STRING_PTR(ParamLabel), STRING_LEN(ParamLabel));
   if(!found){
     pbuf[0][STRING_LEN(ParamLabel)] = '\0';
   }
+
+  /* Max. string length */
+  sprintf(pbuf[1], "%d", STRING_LEN(StringParam));
 
   *Status = INT_KIND_1_CAST( Register_params(1,
  	                      		     pbuf,
@@ -725,10 +728,11 @@ INT_KIND_1_DECL(Status);
 			      		     (void **)&STRING_PTR(StringParam),
 			      		     &type,
                                              &min,
-                                             &max) );
+                                             &(pbuf[1])) );
 
   free(pbuf[0]);
   pbuf[0] = NULL;
+  pbuf[1] = NULL;
 }
 
 /*----------------------------------------------------------------

@@ -2136,6 +2136,13 @@ int Register_params(int    NumParams,
       break;
 
     case REG_CHAR:
+      /* Limits are taken as lengths for a string */
+      if(sscanf(ParamMinima[i], "%d", &dum_int) == 1){
+	Params_table.param[current].min_val_valid = TRUE;
+      }
+      if(sscanf(ParamMaxima[i], "%d", &dum_int) == 1){
+	Params_table.param[current].max_val_valid = TRUE;
+      }
       break;
 
     default:
@@ -3857,6 +3864,9 @@ int Update_ptr_value(param_entry *param)
 	 is F90 */
       strncpy((char *)(param->ptr), param->value, 
 	      strlen(param->value));
+      /* Blank the remainder of the string */
+      memset((char *)(param->ptr) + strlen(param->value), ' ',
+	     atoi(param->max_val)-strlen(param->value));
     }
     else{
       strcpy((char *)(param->ptr), param->value);
@@ -3904,7 +3914,16 @@ int Get_ptr_value(param_entry *param)
     break;
   
   case REG_CHAR:
-    strcpy(param->value, (char *)(param->ptr));
+    if(ReG_CalledFromF90 == TRUE && param->max_val_valid){
+      /* We've got a ptr to a F90 string here and they aren't 
+	 terminated with a '\0'.  We know how long it is though
+	 because we save that information when it was registered. */
+      strncpy(param->value, (char *)(param->ptr), atoi(param->max_val));
+      param->value[atoi(param->max_val)-1] = '\0';
+    }
+    else{
+      strcpy(param->value, (char *)(param->ptr));
+    }
     break;
   
   default:
