@@ -986,7 +986,8 @@ int Record_checkpoint_set(int   ChkType,
   nbytes = snprintf(pchar, bytes_left, "<Checkpoint_data>\n"		    
 		    "<Chk_type>%d</Chk_type>\n"
 		    "<Chk_UID>%s</Chk_UID>\n"
-		    "<Files>\n", ChkType, ChkTag);
+		    "<Files location=\"%s\">\n", 
+		    ChkType, ChkTag, ReG_Hostname);
   pchar += nbytes;
   bytes_left -= nbytes;
 
@@ -1110,10 +1111,10 @@ int Get_checkpoint_files(char *ChkTag,
   len = strlen(Path) + 2*strlen(ChkTag) + strlen(ReG_CurrentDir) + 
         strlen(redirection) + 20;
 
-  printf("Get_checkpoint_files: malloc'ing %d bytes...\n", len);
-
   if( !(pchar = (char *)malloc(len)) ){
 
+    fprintf(stderr, "Get_checkpoint_files: malloc of %d bytes failed\n",
+	    len);
     return REG_FAILURE;
   }
 
