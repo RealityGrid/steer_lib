@@ -409,7 +409,8 @@ int Consume_start_data_check_file(int index){
   strcat(fileroot, "_*.lock");
 
   filenames = NULL;
-  if(Get_file_list(fileroot, &nfiles, &filenames) != REG_SUCCESS){
+  if(Get_file_list(fileroot, &nfiles, &filenames) != REG_SUCCESS ||
+     nfiles == 0){
     return REG_FAILURE;
   }
 
@@ -479,6 +480,8 @@ int Get_file_list(char *fileroot,
   int   i, j;
   FILE *fp;
 
+  *num = 0;
+
   /* Calc. length of string - 'ls -1' and slashes add 9 chars so
      add a few more for safety.  Ask for 2*strlen(ChkTag) so that
      we can use the end of this buffer to hold the trimmed version
@@ -500,13 +503,14 @@ int Get_file_list(char *fileroot,
 
   if( (fp = fopen("ReG_files.tmp", "r")) ){
 
-    *num = 0;
-
     while(fgets(bufline, REG_MAX_STRING_LENGTH, fp)){
       (*num)++;
     }
 
-    if(*num == 0)return REG_FAILURE;
+    if(*num == 0){
+      remove("ReG_files.tmp");
+      return REG_FAILURE;
+    }
 
     *names = (char **)malloc(*num * sizeof(char*));
     rewind(fp);
@@ -525,7 +529,7 @@ int Get_file_list(char *fileroot,
 	}
 	free(*names);
 	*names = NULL;
-
+	remove("ReG_files.tmp");
 	return REG_FAILURE;
       }
       memcpy((*names)[i], bufline, len);
