@@ -673,14 +673,12 @@ int Consume_start_data_check_globus(const int index)
       }
       else {
 #if DEBUG
-      fprintf(stderr, "Consume_start_data_check_globus: reconnect "
-	      "attempt failed - socket is not connected status id %d\n", 
-	      IOTypes_table.io_def[index].socket_info.comms_status);
+	fprintf(stderr, "Consume_start_data_check_globus: reconnect "
+		"attempt failed - socket is not connected status id %d\n", 
+		IOTypes_table.io_def[index].socket_info.comms_status);
 #endif
-      return REG_FAILURE;
-
+	return REG_FAILURE;
       }
-
     }
 
     if(result == GLOBUS_SUCCESS){
@@ -688,13 +686,15 @@ int Consume_start_data_check_globus(const int index)
 #if DEBUG
       fprintf(stderr, "Consume_start_data_check_globus: read %d "
 	      "bytes from socket\n", nbytes);
-      fprintf(stderr, "Consume_start_data_check_globus: read >>%s<< "
-	      "from socket\n", buffer);
 #endif
       /* ARPDBG - globus_io_try_read always returns 0 bytes if connection
 	 configugured to use GSSAPI or SSL data wrapping. */
       if(nbytes > 0){
 
+#if DEBUG
+      fprintf(stderr, "Consume_start_data_check_globus: read >>%s<< "
+	      "from socket\n", buffer);
+#endif
 	if(!strncmp(buffer, REG_DATA_HEADER, strlen(REG_DATA_HEADER))){
 
 	  IOTypes_table.io_def[index].buffer_bytes = REG_IO_BUFSIZE;

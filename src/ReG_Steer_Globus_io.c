@@ -886,12 +886,15 @@ int Emit_msg_header_globus(socket_io_type *sock_info,
 
   pchar = buffer;
   pchar += sprintf(pchar, REG_PACKET_FORMAT, "<ReG_data_slice_header>");
+  /* Put terminating char within the 128-byte packet */
+  *(pchar-1) = '\0';
   sprintf(tmp_buffer, "<Data_type>%d</Data_type>", DataType);
   pchar += sprintf(pchar, REG_PACKET_FORMAT, tmp_buffer);
+  *(pchar-1) = '\0';
   sprintf(tmp_buffer, "<Num_objects>%d</Num_objects>", Count);
   pchar += sprintf(pchar, REG_PACKET_FORMAT, tmp_buffer);
+  *(pchar-1) = '\0';
   pchar += sprintf(pchar, REG_PACKET_FORMAT, "</ReG_data_slice_header>");
-  /* Put terminating char within the 128-byte packet */
   *(pchar-1) = '\0';
 
 #if DEBUG
@@ -900,8 +903,7 @@ int Emit_msg_header_globus(socket_io_type *sock_info,
 
   result = globus_io_write(&(sock_info->conn_handle), 
 			   (globus_byte_t *)buffer, 
-			   /* strlen doesn't count the '\0' */
-			   strlen(buffer)+1, 
+			   4*128, /* Can't use strlen 'cos of multiple '\0' */
 			   &nbytes);
 
   if (result != GLOBUS_SUCCESS ) {
