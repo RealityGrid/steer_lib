@@ -56,13 +56,26 @@ static struct {
 
 } Sim_table;
 
+/* Structure holding details of the main (java) proxy
+   that is always associated with the steerer */
+
+static struct {
+
+  char buf[MAX_MSG_SIZE];
+  int  pipe_to_proxy;
+  int  pipe_from_proxy;
+  int  available;
+
+} Proxy;
+
 /*----- Routines to be used by the steering component ------*/
 
 int Steerer_initialize()
 {
   int   i;
+  int   status;
   char *pchar;
-
+  
   /* Actually defined in ReG_Steer_Common.c because both steerer
      and steered have a variable of this name */
   extern char ReG_Steer_Schema_Locn[REG_MAX_STRING_LENGTH];
@@ -78,7 +91,7 @@ int Steerer_initialize()
   }
   else{
 
-    printf("Steerer_initialize: failed to get schema location\n");
+    fprintf(stderr, "Steerer_initialize: failed to get schema location\n");
     return REG_FAILURE;
   }
 
@@ -89,7 +102,7 @@ int Steerer_initialize()
 
   if(Sim_table.sim == NULL){
     
-    printf("Steerer_initialize: failed to allocate memory\n");
+    fprintf(stderr, "Steerer_initialize: failed to allocate memory\n");
     return REG_FAILURE;
   }
 
@@ -102,6 +115,21 @@ int Steerer_initialize()
   for(i=0; i<Sim_table.max_entries; i++){
 
     Sim_table.sim[i].handle = REG_SIM_HANDLE_NOTSET;
+  }
+
+  /* Create the main proxy - we use this one to query the 'grid' about
+     what services are available */
+
+  status = Create_proxy(&(Proxy.pipe_to_proxy), &(Proxy.pipe_from_proxy));
+
+  if(status != REG_SUCCESS){
+
+    fprintf(stderr, "Steerer_initialize: Create_proxy failed\n");
+    Proxy.available = FALSE;    
+  }
+  else{
+
+    Proxy.available = TRUE;
   }
 
   return REG_SUCCESS;
@@ -126,14 +154,86 @@ int Steerer_finalize()
 
   Sim_table.num_registered = 0;
   Sim_table.max_entries    = 0;
-  
+ 
+  /* Finished with the proxy */
+
+  if(Proxy.available == TRUE){
+
+    Destroy_proxy(Proxy.pipe_to_proxy);
+    Proxy.pipe_to_proxy   = REG_PIPE_UNSET;
+    Proxy.pipe_from_proxy = REG_PIPE_UNSET;
+    Proxy.available       = FALSE;
+  }
+
   return REG_SUCCESS;
 }
 
 /*----------------------------------------------------------------*/
 
-int Sim_attach(REG_SimIDType SimID,
-	       int          *SimHandle)
+int Get_sim_list(int   *nSims,
+		 char **simName,
+		 char **simGSH)
+{
+  char *ptr;
+  int   count;
+  int   nbytes;
+
+  /* Routine to get list of available steerable applications.
+     Assumes that simName and simGSH are arrays of 
+     REG_MAX_NUM_STEERED_SIM pointers to char arrays of length
+     REG_MAX_STRING_LENGTH. */
+
+  /* This routine requires that the proxy be up and running... */
+  if(Proxy.available != TRUE){
+
+#if DEBUG
+    fprintf(stderr, "Get_sim_list: no proxy available\n");
+#endif
+    return REG_FAILURE;
+  }
+
+  /* Get (space-delimited) list of steerable apps & associated
+     grid-service handles */
+
+  Send_proxy_message(Proxy.pipe_to_proxy, "GET_APPS");
+
+  Get_proxy_message(Proxy.pipe_from_proxy, Proxy.buf, &nbytes);
+
+  if(Proxy.buf[0] == ' '){
+
+    ptr = strtok(&(Proxy.buf[1]), " ");
+  }
+  else{
+    ptr = strtok(Proxy.buf, " ");
+  }
+
+  count = 0;
+
+  while(ptr){
+
+    strcpy(simName[count], ptr);
+    ptr = strtok(NULL, " ");
+    strcpy(simGSH[count], ptr);
+    ptr = strtok(NULL, " ");
+
+    count++;
+
+    if(count == REG_MAX_NUM_STEERED_SIM){
+
+      fprintf(stderr, "Get_sim_list: truncating list of steerable apps\n");
+      break;
+    }
+  }
+
+  *nSims = count;
+
+  return REG_SUCCESS;
+}
+
+/*----------------------------------------------------------------*/
+
+int Sim_attach(char *SimID,
+	       int  *SimHandle)
 {
   int                  current_sim;
   int                  i;
@@ -154,11 +254,11 @@ int Sim_attach(REG_SimIDType SimID,
   int                  return_status = REG_SUCCESS;
 
   /* Get next free entry in simulation table (allocates more memory if
-     required ) */
+     required) */
 
   if( (current_sim = Next_free_sim_index()) == -1){
 
-    printf("Sim_attach: failed to find free sim. table entry\n");
+    fprintf(stderr, "Sim_attach: failed to find free sim. table entry\n");
     return REG_FAILURE;
   }
 
@@ -171,7 +271,7 @@ int Sim_attach(REG_SimIDType SimID,
 
   if(Sim_table.sim[current_sim].Params_table.param == NULL){
 
-    printf("Sim_attach: failed to allocate memory\n");
+    fprintf(stderr, "Sim_attach: failed to allocate memory\n");
     return REG_MEM_FAIL;
   }
 
@@ -195,7 +295,7 @@ int Sim_attach(REG_SimIDType SimID,
 
   if(Sim_table.sim[current_sim].Cmds_table.cmd == NULL){
 
-    printf("Sim_attach: failed to allocate memory\n");
+    fprintf(stderr, "Sim_attach: failed to allocate memory\n");
     free(Sim_table.sim[current_sim].Params_table.param);
     return REG_MEM_FAIL;
   }
@@ -215,7 +315,7 @@ int Sim_attach(REG_SimIDType SimID,
 
   if(Sim_table.sim[current_sim].IOdef_table.io_def == NULL){
 
-    printf("Sim_attach: failed to allocate memory\n");
+    fprintf(stderr, "Sim_attach: failed to allocate memory\n");
     free(Sim_table.sim[current_sim].Params_table.param);
     free(Sim_table.sim[current_sim].Cmds_table.cmd);
     return REG_MEM_FAIL;
@@ -231,18 +331,16 @@ int Sim_attach(REG_SimIDType SimID,
       REG_IODEF_HANDLE_NOTSET;
   }
 
-  /* Long-term - will need access to info on where sim. is
-     running in order to setup info about how to access it */
+  /* Now we actually connect to the application */
 
-  pchar = getenv("REG_STEER_DIRECTORY");
+  if( (strcmp(SimID, "DEFAULT") != 0) && Proxy.available){
 
-  if(pchar){
-    strcpy(file_root, pchar);
+    return_status = Create_proxy(&(Sim_table.sim[current_sim].pipe_to_proxy),
+			       &(Sim_table.sim[current_sim].pipe_from_proxy));
 
-    if(Directory_valid(file_root) != REG_SUCCESS){
+    if(return_status != REG_SUCCESS){
 
-      printf("Steerer_initialize: invalid dir for steering messages: %s\n",
-	     file_root);
+      fprintf(stderr, "Sim_attach: failed to launch proxy\n");
 
       free(Sim_table.sim[current_sim].Params_table.param);
       free(Sim_table.sim[current_sim].Cmds_table.cmd);
@@ -250,21 +348,51 @@ int Sim_attach(REG_SimIDType SimID,
 
       return REG_FAILURE;
     }
-    else{
 
-      printf("Using following dir for steering messages: %s\n", 
-	   file_root);
-    }
+    Send_proxy_message(Sim_table.sim[current_sim].pipe_to_proxy,
+		       "ATTACH");
+
+    Send_proxy_message(Sim_table.sim[current_sim].pipe_to_proxy,
+		       SimID);
+    /* ARPDBG - work in progress */
   }
   else{
-    printf("Sim_attach: failed to get scratch directory\n");
-    
-    free(Sim_table.sim[current_sim].Params_table.param);
-    free(Sim_table.sim[current_sim].Cmds_table.cmd);
-    free(Sim_table.sim[current_sim].IOdef_table.io_def);
-    return REG_FAILURE;
-  }
 
+    /* Long-term - will need access to info on where sim. is
+       running in order to setup info about how to access it */
+
+    pchar = getenv("REG_STEER_DIRECTORY");
+
+    if(pchar){
+      strcpy(file_root, pchar);
+
+      if(Directory_valid(file_root) != REG_SUCCESS){
+
+	fprintf(stderr, "Steerer_initialize: invalid dir for "
+		"steering messages: %s\n",
+		file_root);
+
+	free(Sim_table.sim[current_sim].Params_table.param);
+	free(Sim_table.sim[current_sim].Cmds_table.cmd);
+	free(Sim_table.sim[current_sim].IOdef_table.io_def);
+
+	return REG_FAILURE;
+      }
+      else{
+
+        fprintf(stderr, "Using following dir for steering messages: %s\n", 
+		file_root);
+      }
+    }
+    else{
+      fprintf(stderr, "Sim_attach: failed to get scratch directory\n");
+    
+      free(Sim_table.sim[current_sim].Params_table.param);
+      free(Sim_table.sim[current_sim].Cmds_table.cmd);
+      free(Sim_table.sim[current_sim].IOdef_table.io_def);
+      return REG_FAILURE;
+    }
+  }
   /* Delete any old communication files written by an app 
      in this location */
 
@@ -306,9 +434,9 @@ int Sim_attach(REG_SimIDType SimID,
 
       if (!XML_Parse(parser, buf, len, done)) {
 
-	printf("%s at line %d\n",
-	       XML_ErrorString(XML_GetErrorCode(parser)),
-	       XML_GetCurrentLineNumber(parser));
+	fprintf(stderr, "%s at line %d\n",
+		XML_ErrorString(XML_GetErrorCode(parser)),
+		XML_GetCurrentLineNumber(parser));
 	return_status = REG_FAILURE;
 	break;
       }
@@ -336,7 +464,7 @@ int Sim_attach(REG_SimIDType SimID,
 
     for(i=0; i<Sim_table.sim[current_sim].Cmds_table.num_registered; i++){
 
-      printf("Sim_attach: cmd[%d] = %d\n", i, 
+      fprintf(stderr, "Sim_attach: cmd[%d] = %d\n", i, 
 	     Sim_table.sim[current_sim].Cmds_table.cmd[i].cmd_id);
 
       if(Sim_table.sim[current_sim].Cmds_table.cmd[i].cmd_id == REG_STR_PAUSE){
@@ -360,7 +488,8 @@ int Sim_attach(REG_SimIDType SimID,
 	  }
 	  else{
 
-	    printf("Sim_attach: failed to realloc memory for supp commands\n");
+	    fprintf(stderr, 
+		   "Sim_attach: failed to realloc memory for supp commands\n");
 	    return REG_FAILURE;
 	  }
 	}
@@ -459,9 +588,9 @@ int Get_next_message(int         *SimHandle,
   
 	  if (!XML_Parse(parser, buf, len, done)) {
   
-	    printf("%s at line %d\n",
-		   XML_ErrorString(XML_GetErrorCode(parser)),
-		   XML_GetCurrentLineNumber(parser));
+	    fprintf(stderr, "%s at line %d\n",
+		    XML_ErrorString(XML_GetErrorCode(parser)),
+		    XML_GetCurrentLineNumber(parser));
 	    break;
 	  }
 
@@ -518,7 +647,7 @@ int Consume_param_defs(int SimHandle)
 
   if( (index = Sim_index_from_handle(SimHandle)) == REG_SIM_HANDLE_NOTSET){
 
-    printf("Consume_param_defs: failed to find sim table entry\n");
+    fprintf(stderr, "Consume_param_defs: failed to find sim table entry\n");
     return REG_FAILURE;
   }
 
@@ -560,7 +689,7 @@ int Consume_param_defs(int SimHandle)
   fp = Open_next_file(base_name);
 
   if(fp == NULL){
-    printf("Consume_param_defs: failed to find file to read\n");
+    fprintf(stderr, "Consume_param_defs: failed to find file to read\n");
     XML_ParserFree(parser);
     free(param_table.param);
     return REG_FAILURE;
@@ -575,9 +704,9 @@ int Consume_param_defs(int SimHandle)
   
     if (!XML_Parse(parser, buf, len, done)) {
   
-  	printf("%s at line %d\n",
-  	       XML_ErrorString(XML_GetErrorCode(parser)),
-  	       XML_GetCurrentLineNumber(parser));
+  	fprintf(stderr, "%s at line %d\n",
+		XML_ErrorString(XML_GetErrorCode(parser)),
+		XML_GetCurrentLineNumber(parser));
   	return REG_FAILURE;
     }
   } while (!done);
@@ -597,7 +726,7 @@ int Consume_param_defs(int SimHandle)
       j = Next_free_param_index(&(Sim_table.sim[index].Params_table));
 
       if(j == -1){
-	printf("Consume_param_defs: failed to add param to table\n");
+	fprintf(stderr, "Consume_param_defs: failed to add param to table\n");
 	return_status = REG_FAILURE;
 	break;
       }
@@ -651,7 +780,7 @@ int Consume_IOType_defs(int     SimHandle)
 
   if( (index = Sim_index_from_handle(SimHandle)) == REG_SIM_HANDLE_NOTSET){
 
-    printf("Consume_IOType_defs: failed to find sim table entry\n");
+    fprintf(stderr, "Consume_IOType_defs: failed to find sim table entry\n");
     return REG_FAILURE;
   }
 
@@ -663,7 +792,7 @@ int Consume_IOType_defs(int     SimHandle)
 
   if(iodef_table.io_def == NULL){
 
-    printf("Consume_IOType_defs: failed to allocate memory\n");
+    fprintf(stderr, "Consume_IOType_defs: failed to allocate memory\n");
     return REG_FAILURE;
   }
 
@@ -696,7 +825,7 @@ int Consume_IOType_defs(int     SimHandle)
   fp = Open_next_file(base_name);
 
   if(fp == NULL){
-    printf("Consume_IOType_defs: failed to find file to read\n");
+    fprintf(stderr, "Consume_IOType_defs: failed to find file to read\n");
     XML_ParserFree(parser);
     return REG_FAILURE;
   }
@@ -710,9 +839,9 @@ int Consume_IOType_defs(int     SimHandle)
   
     if (!XML_Parse(parser, buf, len, done)) {
   
-  	printf("%s at line %d\n",
-  	       XML_ErrorString(XML_GetErrorCode(parser)),
-  	       XML_GetCurrentLineNumber(parser));
+  	fprintf(stderr, "%s at line %d\n",
+		XML_ErrorString(XML_GetErrorCode(parser)),
+		XML_GetCurrentLineNumber(parser));
   	return REG_FAILURE;
     }
   } while (!done);
@@ -731,7 +860,7 @@ int Consume_IOType_defs(int     SimHandle)
       j = Next_free_iodef_index(&(Sim_table.sim[index].IOdef_table));
 
       if(j==-1){
-	printf("Consume_IOdefs: failed to add IOdef to table\n");
+	fprintf(stderr, "Consume_IOdefs: failed to add IOdef to table\n");
 	return_status = REG_FAILURE;
 	break;
       }
@@ -798,7 +927,7 @@ int Consume_status(int   SimHandle,
 
   if( (index = Sim_index_from_handle(SimHandle)) == REG_SIM_HANDLE_NOTSET){
 
-    printf("Consume_status: failed to find sim table entry\n");
+    fprintf(stderr, "Consume_status: failed to find sim table entry\n");
     return REG_FAILURE;
   }
 
@@ -813,7 +942,7 @@ int Consume_status(int   SimHandle,
 
   if(recvd_params.param == NULL){
 
-    printf("Consume_control: failed to allocate memory");
+    fprintf(stderr, "Consume_control: failed to allocate memory");
     return REG_MEM_FAIL;
   }
 
@@ -831,7 +960,7 @@ int Consume_status(int   SimHandle,
 
   if(recvd_cmds.cmd == NULL){
 
-    printf("Consume_status: failed to allocate memory");
+    fprintf(stderr, "Consume_status: failed to allocate memory");
     free(recvd_params.param);
     return REG_MEM_FAIL;
   }
@@ -890,9 +1019,9 @@ int Consume_status(int   SimHandle,
   
       if (!XML_Parse(parser, buf, len, done)) {
   
-  	  printf("%s at line %d\n",
-  	         XML_ErrorString(XML_GetErrorCode(parser)),
-  	         XML_GetCurrentLineNumber(parser));
+  	  fprintf(stderr, "%s at line %d\n",
+		  XML_ErrorString(XML_GetErrorCode(parser)),
+		  XML_GetCurrentLineNumber(parser));
   	  return_status = REG_FAILURE;
 	  break;
       }
@@ -907,7 +1036,7 @@ int Consume_status(int   SimHandle,
     *NumCmds = recvd_cmds.num_registered;
 
 #if DEBUG
-    printf("Consume_status: got %d commands\n", (*NumCmds));
+    fprintf(stderr, "Consume_status: got %d commands\n", (*NumCmds));
 #endif
     for(i=0; i<(*NumCmds); i++){
 
@@ -923,8 +1052,9 @@ int Consume_status(int   SimHandle,
       if( (j=Param_index_from_handle(&(Sim_table.sim[index].Params_table),
 	           recvd_params.param[i].handle)) == REG_PARAM_HANDLE_NOTSET){
 
-	printf("Consume_status: failed to match param handles\n");
-	printf("                handle = %d\n", recvd_params.param[i].handle);
+	fprintf(stderr, "Consume_status: failed to match param handles\n");
+	fprintf(stderr, "                handle = %d\n", 
+		recvd_params.param[i].handle);
 	continue;
       }
 
@@ -944,7 +1074,7 @@ int Consume_status(int   SimHandle,
 
   if( (j=Param_index_from_handle(&(Sim_table.sim[index].Params_table),
 			    REG_SEQ_NUM_HANDLE)) == REG_PARAM_HANDLE_NOTSET){
-    printf("Consume_status: failed to find SeqNum entry\n");
+    fprintf(stderr, "Consume_status: failed to find SeqNum entry\n");
   }
   else{
 
@@ -978,19 +1108,19 @@ int Emit_control(int    SimHandle,
 
   if( (simid = Sim_index_from_handle(SimHandle)) == REG_SIM_HANDLE_NOTSET){
 
-    printf("Emit_control: failed to find sim table entry\n");
+    fprintf(stderr, "Emit_control: failed to find sim table entry\n");
     return REG_FAILURE;
   }
 
   if( Generate_control_filename(SimHandle, filename) != REG_SUCCESS){
 
-    printf("Emit_control: failed to create filename\n");
+    fprintf(stderr, "Emit_control: failed to create filename\n");
     return REG_FAILURE;
   }
 
   if( (fp = fopen(filename, "w")) == NULL){
 
-    printf("Emit_control: failed to open file\n");
+    fprintf(stderr, "Emit_control: failed to open file\n");
     return REG_FAILURE;
   }
 
@@ -1004,8 +1134,8 @@ int Emit_control(int    SimHandle,
   if(NumCommands >= REG_MAX_NUM_STR_CMDS){
 
     num_to_emit = REG_MAX_NUM_STR_CMDS;
-    printf("Emit_control: WARNING - no. of emitted commands is "
-	   "limited to %d\n", REG_MAX_NUM_STR_CMDS);
+    fprintf(stderr, "Emit_control: WARNING - no. of emitted commands is "
+	    "limited to %d\n", REG_MAX_NUM_STR_CMDS);
   }
 
   for(i=0; i<num_to_emit; i++){
@@ -1034,8 +1164,8 @@ int Emit_control(int    SimHandle,
 
       if(count == REG_MAX_NUM_STR_PARAMS){
 
-	printf("Emit_control: WARNING - no. of emitted params is "
-	       "limited to %d\n", REG_MAX_NUM_STR_PARAMS);
+	fprintf(stderr, "Emit_control: WARNING - no. of emitted params is "
+	        "limited to %d\n", REG_MAX_NUM_STR_PARAMS);
 	break;
       }
 
@@ -1078,7 +1208,7 @@ int Delete_sim_table_entry(int *SimHandle)
 
   if( (index = Sim_index_from_handle(*SimHandle)) == REG_SIM_HANDLE_NOTSET){
 
-    printf("Delete_sim_table_entry: failed to match handles\n");
+    fprintf(stderr, "Delete_sim_table_entry: failed to match handles\n");
     return REG_FAILURE;
   }
 
@@ -1161,7 +1291,7 @@ int Sim_index_from_handle(int SimHandle)
   }
 
   if(index == REG_SIM_HANDLE_NOTSET){
-    printf("Sim_index_from_handle: failed to find matching handle\n");
+    fprintf(stderr, "Sim_index_from_handle: failed to find matching handle\n");
   }
 
   return index;
@@ -1422,7 +1552,7 @@ int Set_param_values(int    sim_handle,
 	Sim_table.sim[isim].Params_table.param[index].modified = TRUE;
       }
       else{
-	printf("Set_param_values: can only edit steerable parameters\n");
+	fprintf(stderr, "Set_param_values: can only edit steerable parameters\n");
       }
     }
   }
@@ -1680,7 +1810,7 @@ int Set_iotype_freq(int sim_handle,
   else{
 
 #if DEBUG
-    printf("Set_iotype_freq: failed to match sim_handle\n");
+    fprintf(stderr, "Set_iotype_freq: failed to match sim_handle\n");
 #endif
     return_status = REG_FAILURE;
   }
@@ -1730,8 +1860,9 @@ int Command_supported(int sim_id,
 #if DEBUG
   if(return_status != REG_SUCCESS){
 
-    printf("Command_supported: command %d is not supported by the sim.\n", 
-	   cmd_id);
+    fprintf(stderr, 
+	    "Command_supported: command %d is not supported by the sim.\n", 
+	    cmd_id);
   }
 #endif
 
