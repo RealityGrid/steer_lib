@@ -33,10 +33,7 @@
 
 ---------------------------------------------------------------------------*/
 #include "ReG_Steer_Appside.h"
-#include <string.h>
-#include <unistd.h>
-
-/*-------------------------------------------------------------------------*/
+#include <unistd.h> /* for 'sleep' */
 
 int main(){
 
@@ -47,55 +44,43 @@ int main(){
   int    status;
   int    numCommands;
   int    commands[REG_INITIAL_NUM_CMDS];
-	 
   int    num_recvd_cmds;
   int    recvd_cmds[REG_MAX_NUM_STR_CMDS];
-  char*  recvd_cmd_params[REG_MAX_NUM_STR_CMDS];
+  char** recvd_cmd_params;
   int    num_params_changed;
-  char*  changed_param_labels[REG_MAX_NUM_STR_PARAMS];
+  char** changed_param_labels;
 
-  float temp               = 55.6;
-  int   finished           = REG_FALSE;
-  int   icmd;
-  int   i;
+  float temp     = 55.6;
+  int   finished = REG_FALSE;
+  int   i, icmd;
   
   /*---------- End of declarations ------------*/
-
-  changed_param_labels[0] = (char *)malloc((REG_MAX_NUM_STR_CMDS+
-		    REG_MAX_NUM_STR_PARAMS)*REG_MAX_STRING_LENGTH*sizeof(char));
-
-  if(!changed_param_labels[0]){
-
-    printf("Failed to allocate memory for strings\n");
-    return REG_FAILURE;
-  }
-
-  for(i=1; i<REG_MAX_NUM_STR_PARAMS; i++){
-
-    changed_param_labels[i]=changed_param_labels[i-1] + REG_MAX_STRING_LENGTH;
-  }
-
-  recvd_cmd_params[0] = changed_param_labels[REG_MAX_NUM_STR_PARAMS-1]
-                     + REG_MAX_STRING_LENGTH;
-  for(i=1; i<REG_MAX_NUM_STR_CMDS; i++){
-
-    recvd_cmd_params[i] = recvd_cmd_params[i-1] + REG_MAX_STRING_LENGTH;
-  }
 
   /* Initialise & enable the steering library */
 
   Steering_enable(REG_TRUE);
 
-  numCommands = 2;
+  numCommands = 1;
   commands[0] = REG_STR_STOP;
-  commands[1] = REG_STR_PAUSE;
   status = Steering_initialize("simple v.1.0", numCommands, commands);
 
   if(status != REG_SUCCESS){
-    return REG_FAILURE;
+    return 1;
   }
 
-  /* Register a steerable parameters */
+  /* Use library utility routines to allocate arrays of strings
+     for passing in to Steering_control */
+  changed_param_labels = Alloc_string_array(REG_MAX_STRING_LENGTH,
+					    REG_MAX_NUM_STR_PARAMS);
+  recvd_cmd_params = Alloc_string_array(REG_MAX_STRING_LENGTH,
+					REG_MAX_NUM_STR_CMDS);
+
+  if(!changed_param_labels || !recvd_cmd_params){
+    printf("Failed to allocate string arrays :-(\n");
+    return 1;
+  }
+
+  /* Register a steerable parameter */
   status = Register_param("TEMP", REG_TRUE, (void *)(&temp),
 			  REG_FLOAT, "", "");
   if(status != REG_SUCCESS){
@@ -106,7 +91,9 @@ int main(){
 
   for(i=0; i<nloops; i++){
 
-    sleep(1); /* Pretend to do some work */
+    /* This is where the code would do some physics... */
+    sleep(1);
+    /* ...but we just pretend in this case */
 
     printf("\ni = %d\n", i);
 
@@ -120,6 +107,7 @@ int main(){
 
     if(status == REG_SUCCESS){
 
+      /* Print out the current value of steered parameter */
       printf("temp  = %f\n", temp);
 
       if(num_recvd_cmds > 0){
@@ -129,22 +117,6 @@ int main(){
     	for(icmd=0; icmd<num_recvd_cmds; icmd++){
   
  	  switch (recvd_cmds[icmd]){
-  
-	  case REG_STR_PAUSE:
-	    if(Steering_pause(&num_params_changed,
-			      changed_param_labels,
-			      &num_recvd_cmds,
-			      recvd_cmds,
-			      recvd_cmd_params) != REG_SUCCESS){
-
-	      printf("Steering_pause returned error\n");
-	    }
-
-	    /* Reset loop to parse commands received following the
-	       resume/stop command that broke us out of pause */
-	    icmd = -1;
-	    break;
-
 
  	  case REG_STR_STOP:
     	    finished = REG_TRUE;
@@ -152,7 +124,7 @@ int main(){
 
  	  default:
 
-	    /* Deal with user-defined IO types etc.if any */
+	    /* Deal with user-defined IO types etc. if any */
  	    break;
  	  }
 
@@ -169,9 +141,6 @@ int main(){
 
   /* Clean up the steering library */
   status = Steering_finalize();
-
-  /* Clean up locals */
-  free(changed_param_labels[0]);
 
   return 0;
 }

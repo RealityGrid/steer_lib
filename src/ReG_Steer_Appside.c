@@ -108,6 +108,15 @@ char ReG_AppName[REG_MAX_STRING_LENGTH];
    they are used as command IDs */
 static int Next_IO_Chk_handle = REG_MIN_IOTYPE_HANDLE;
 
+/* Linked list of arrays we've alloc'ed for the user */
+struct ReG_array_list {
+
+  char **array;
+  struct ReG_array_list* next;
+};
+
+static struct ReG_array_list* ReG_list_head;
+
 /*----------------------------------------------------------------*/
 
 void Steering_enable(const int EnableSteer)
@@ -479,6 +488,9 @@ int Steering_initialize(char *AppName,
 #endif
 #endif
 
+  /* Initialise the linked list of allocated string arrays */
+  ReG_list_head = NULL;
+
   /* Flag that library has been successfully initialised */
 
   ReG_SteeringInit = REG_TRUE;
@@ -571,6 +583,9 @@ int Steering_finalize()
 
   Params_table.num_registered = 0;
   Params_table.max_entries = REG_INITIAL_NUM_IOTYPES;
+
+  /* Free memory allocated for string arrays for user */
+  Free_string_arrays();
 
   /* Reset state of library */
 
@@ -5577,6 +5592,88 @@ int Reorder_array(int          ndims,
   default:
     break;
   }
+
+  return REG_SUCCESS;
+}
+
+/*------------------------------------------------------------------*/
+
+char **Alloc_string_array(int String_len,
+			  int Array_len)
+{
+  int                    i;
+  struct ReG_array_list* current;
+  struct ReG_array_list* new;
+
+  if(ReG_list_head){
+
+    current = ReG_list_head;
+    while(current->next){
+
+      current = current->next;
+    }
+  }
+
+  new = (struct ReG_array_list*)malloc(sizeof(struct ReG_array_list));
+  if(!new){
+    return NULL;
+  }
+
+  new->next = NULL;
+
+  new->array = (char **)malloc(Array_len*sizeof(char*));
+  if(!(new->array)){
+    free(new);
+    return NULL;
+  }
+  new->array[0] = (char *)malloc(Array_len*String_len*sizeof(char));
+
+  if(!(new->array)){
+
+    fprintf(stderr, "Alloc_string_array: array malloc failed\n");
+    free(new->array);
+    free(new);
+    return NULL;
+  }
+
+  for(i=1; i<Array_len; i++){
+
+    new->array[i]=new->array[i-1] + String_len;
+  }
+
+  if(ReG_list_head){
+    current->next = new;
+  }
+  else{
+    ReG_list_head = new;
+  }
+
+  return new->array;
+}
+
+/*------------------------------------------------------------------*/
+
+int Free_string_arrays()
+{
+  struct ReG_array_list* current;
+  struct ReG_array_list* tmp;
+
+  current = ReG_list_head;
+
+  while(current){
+
+    tmp = current->next;
+
+    if(current->array){
+      free((current->array)[0]);
+      free(current->array);
+    }
+    free(current);
+
+    current = tmp;
+  }
+
+  ReG_list_head = NULL;
 
   return REG_SUCCESS;
 }

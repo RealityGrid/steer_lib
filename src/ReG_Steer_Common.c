@@ -1063,7 +1063,6 @@ int Reorder_decode_array(IOdef_entry *io,
   return return_status;
 }
 
-
 /*------------------------------------------------------------------*/
 
 int Get_fully_qualified_hostname(char **hostname, char **ip_addr_ptr)
@@ -1125,4 +1124,3 @@ int Get_fully_qualified_hostname(char **hostname, char **ip_addr_ptr)
 
   return REG_SUCCESS;
 }
-

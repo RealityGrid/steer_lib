@@ -254,6 +254,18 @@ extern PREFIX int Steering_pause(int   *NumSteerParams,
 				 int   *SteerCommands,
 				 char **SteerCmdParams);
 
+/* Two utility routines to allow the user to not have to worry about
+   allocating arrays of strings to be passed to Steering_control.  This
+   routine allocates an array containing Array_len strings, each of
+   length String_len.  Returns NULL if mallocs fail, otherwise pointer
+   to array of char* */
+extern PREFIX char **Alloc_string_array(int String_len,
+					int Array_len);
+
+/* This frees ALL of the string arrays allocated by (possibly several)
+   calls to Alloc_string_array.  Returns REG_SUCCESS. */
+extern PREFIX int Free_string_arrays();
+
 /* For testing only, generates a buffer containing vtk data plus a 
    suitable ASCII header.  Both header and array should point to 
    big enough chunks of memory (BUFSIZ for header and nx*ny*nz floats
