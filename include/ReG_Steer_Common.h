@@ -96,8 +96,13 @@ typedef struct {
   /* Whether input, output or a checkpoint */
   int   direction;
   /* Whether this channel supports automatic emission/consumption
-     every frequency steps */
+     every frequency steps
   int   auto_io_support;
+  */
+  /* Variable holding the frequency with which emission/consumption is
+     to occur (every frequency steps) */
+  int   frequency;
+
   /* Handle of the (steerable) frequency in the parameter table */
   int   freq_param_handle;
 

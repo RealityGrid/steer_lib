@@ -77,7 +77,6 @@ struct io_struct{
   xmlChar  	   *label;
   xmlChar  	   *handle;
   xmlChar  	   *direction;
-  xmlChar  	   *support_auto;
   xmlChar  	   *freq_handle;
   struct io_struct *next;
 };
