@@ -57,8 +57,6 @@ int Create_proxy(int *to_proxy, int *from_proxy)
 
   char *registry_gsh;
   char  registry_arg[REG_MAX_STRING_LENGTH];
-  /* ARPDBG - exec_path should not be hardwired... */
-  /* char *exec_path = "/home/bezier1/zzcguap/bin/SteererProxy"; */
   char *exec_path = "ReG_Steer_Proxy";
   char *class_path;
 
@@ -66,7 +64,15 @@ int Create_proxy(int *to_proxy, int *from_proxy)
      the java proxy */
   if( (class_path = getenv("CLASSPATH")) == NULL){
 
-    fprintf(stderr, "Failed to get CLASSPATH env. variable\n");
+    fprintf(stderr, "Create_proxy: failed to get CLASSPATH env. variable\n");
+    return REG_FAILURE;
+  }
+
+  /* Check that the proxy we're going to launch can be found in the 
+     classpath - otherwise we get stuck after the execlp */
+  if( Proxy_is_in_path(class_path, exec_path) != REG_SUCCESS ){
+
+    fprintf(stderr, "Create_proxy: proxy is not on specified CLASSPATH\n");
     return REG_FAILURE;
   }
 
@@ -75,7 +81,8 @@ int Create_proxy(int *to_proxy, int *from_proxy)
      bind to */
   if( (registry_gsh = getenv("REGISTRY_GSH")) == NULL){
 
-    fprintf(stderr, "Failed to get REGISTRY_GSH env. variable\n");
+    fprintf(stderr, "Create_proxy: failed to get REGISTRY_GSH env. "
+	            "variable\n");
     return REG_FAILURE;
   }
 
@@ -136,7 +143,7 @@ int Create_proxy(int *to_proxy, int *from_proxy)
       exit(1);
     }
 
-    /*  Make the exec call to run the javac program. */
+    /*  Make the exec call to run the java program. */
     execlp("java","java", "-Xmx20m", registry_arg, 
 	   "-classpath", class_path, exec_path, (char *)0);
 
@@ -350,4 +357,44 @@ int getline(char s[], int lim, int fd)
   s[i] = '\0';
 
   return i;
+}
+
+/*-------------------------------------------------------------*/
+
+int Proxy_is_in_path(const char *class_path, const char *exec)
+{
+  char       *path;
+  char       *tmp_path;
+  char        full_path[256];
+  int         return_status;
+  struct stat stbuf;
+
+  return_status = REG_FAILURE;
+
+  /* Take a copy of the class path passed to us because what we're 
+     about to do will trash it */
+  tmp_path = (char *)malloc((strlen(class_path)+1)*sizeof(char));
+  strcpy(tmp_path, class_path);
+
+  path = strtok(tmp_path, ":");
+
+  while(path){
+
+    /* Construct full path to the named class */
+    sprintf(full_path, "%s/%s.class", path, exec); 
+
+    if(stat(full_path, &stbuf) != -1){
+
+#if DEBUG
+      fprintf(stderr, "Proxy_is_in_path: found >%s<\n", full_path);
+#endif
+      return_status = REG_SUCCESS;
+      break;
+    }
+    path = strtok(NULL, ":");
+  }
+
+  free(tmp_path);
+
+  return return_status;
 }
