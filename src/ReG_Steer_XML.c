@@ -595,11 +595,11 @@ int parseParam(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
     }
     else if( !xmlStrcmp(cur->name, (const xmlChar *) "Min_value") ){
 
-      param->min_value = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
+      param->min_val = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
     }
     else if( !xmlStrcmp(cur->name, (const xmlChar *) "Max_value") ){
 
-      param->max_value = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
+      param->max_val = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
     }
 
     cur = cur->next;
@@ -763,6 +763,8 @@ struct param_struct *New_param_struct()
     param->steerable   = NULL;
     param->type        = NULL;
     param->is_internal = NULL;
+    param->min_val     = NULL;
+    param->max_val     = NULL;
     param->next        = NULL;
   }
 
@@ -1031,6 +1033,8 @@ void Delete_param_struct(struct param_struct *param)
     if (param->type)        xmlFree(param->type);
     if (param->steerable)   xmlFree(param->steerable);
     if (param->is_internal) xmlFree(param->is_internal);
+    if (param->min_val)     xmlFree(param->min_val);
+    if (param->max_val)     xmlFree(param->max_val);
 
     dum_ptr = param->next;
     free(param);

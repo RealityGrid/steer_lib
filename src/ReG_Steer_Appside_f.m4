@@ -234,97 +234,86 @@ INT_KIND_1_DECL(Status);
 
 /*----------------------------------------------------------------
 
-SUBROUTINE register_params_f(ParamLabel, ParamSteerable, ParamPtr, &
+SUBROUTINE register_param_f(ParamLabel, ParamSteerable, ParamPtr, &
                              ParamType, ParamMin, ParamMax, Status)
 
-  CHARACTER (LEN=REG_MAX_STRING_LENGTH) DIMENSION(NumParams), &
-                                              INTENT(in)     :: ParamLabel
-  INTEGER (KIND=REG_SP_KIND), DIMENSION(NumTypes),INTENT(in) :: ParamSteerable
-  XXXXXXX (KIND=REG_DP_KIND), DIMENSION(NumTypes),INTENT(in) :: ParamPtr
-  INTEGER (KIND=REG_SP_KIND), DIMENSION(NumTypes),INTENT(in) :: ParamType
-  XXXXXXX (KIND=REG_DP_KIND), DIMENSION(NumTypes),INTENT(in) :: ParamMin
-  XXXXXXX (KIND=REG_DP_KIND), DIMENSION(NumTypes),INTENT(in) :: ParamMax
-  INTEGER (KIND=REG_SP_KIND), INTENT(out)                    :: Status
+  CHARACTER (LEN=REG_MAX_STRING_LENGTH), INTENT(in) :: ParamLabel
+  INTEGER (KIND=REG_SP_KIND), INTENT(in)            :: ParamSteerable
+  XXXXXXX (KIND=REG_DP_KIND), INTENT(in)            :: ParamPtr
+  INTEGER (KIND=REG_SP_KIND), INTENT(in)            :: ParamType
+  CHARACTER (LEN=REG_MAX_STRING_LENGTH), INTENT(in) :: ParamMin
+  CHARACTER (LEN=REG_MAX_STRING_LENGTH), INTENT(in) :: ParamMax
+  INTEGER (KIND=REG_SP_KIND), INTENT(out)           :: Status
 
 where XXXXXXX can be INTEGER or REAL of a KIND to give storage no
-larger than required by KIND=REG_DP_KIND.  If it is desired to 
-register a CHARACTER string then the routine steering_char_to_ptr_f
-(see later) must be used to get an INTEGER to be passed as
-ParamPtr to this routine.
+larger than required by KIND=REG_DP_KIND.  The routine
+register_string_param_f should be used if the monitored/steerable
+parameter is a CHARACTER string.
 ----------------------------------------------------------------*/
 
-void FUNCTION(register_params_f) ARGS(`STRING_ARG(ParamLabel),
-		                       ParamSteerable,
-		                       ParamPtr,
-		                       ParamType,
-                                       ParamMin,
-                                       ParamMax,
-	                               Status')
+void FUNCTION(register_param_f) ARGS(`STRING_ARG(ParamLabel),
+		                      ParamSteerable,
+		                      ParamPtr,
+		                      ParamType,
+                                      STRING_ARG(ParamMin),
+                                      STRING_ARG(ParamMax),
+	                              Status')
 STRING_ARG_DECL(ParamLabel);
 INT_KIND_1_DECL(ParamSteerable);
 void   *ParamPtr;
 INT_KIND_1_DECL(ParamType);
+STRING_ARG_DECL(ParamMin);
+STRING_ARG_DECL(ParamMax);
 INT_KIND_1_DECL(Status);
-void   *ParamMin;
-void   *ParamMax;
 {
-  int    i;
-  void  *ptr_array;
-
-  *Status = INT_KIND_1_CAST( REG_SUCCESS );
-
-  /* Convert pointer *
-
-  switch(*ParamType){
-
-  case REG_INT:
-
-    ptr_array = (void *)( &((int *)ParamPtr) );
-    break;
-
-  case REG_FLOAT:
-
-    ptr_array = (void *)( &((float *)ParamPtr)[i] );
-    break;
-
-  case REG_CHAR:
-
-    * IMPORTANT - this assumes that ParamPtr has been obtained from a
-       call to steering_char_to_ptr_f *
-    ptr_array = ((void **)ParamPtr)[i];
-
-#if DEBUG
-    fprintf(stderr, 
-	    "register_params_f: got string %s\n", (char *)(ptr_array[i]));
-#endif
-    break;
-
-  case REG_DBL:
-
-    ptr_array = (void *)( &((double *)ParamPtr)[i] );
-    break;
-
-  default:
-    fprintf(stderr, "register_params_f: unrecognised data type\n");
-   *Status = REG_FAILURE;
-      break;
-  }
-*/
-
-  if(*Status != INT_KIND_1_CAST(REG_FAILURE)){
-
-    *Status = INT_KIND_1_CAST( Register_params(1,
- 	                      		       STRING_PTR(ParamLabel),
-			      		       (int *)ParamSteerable,
-			      		       &ParamPtr,
-			      		       (int *)ParamType,
-                                               (void *)ParamMin,
-                                               (void *)ParamMax) );
-  }
-
-  if(ptr_array != NULL)free(ptr_array);
+  *Status = INT_KIND_1_CAST( Register_params(1,
+ 	                      		     &STRING_PTR(ParamLabel),
+			      		     (int *)ParamSteerable,
+			      		     &ParamPtr,
+			      		     (int *)ParamType,
+                                             &STRING_PTR(ParamMin),
+                                             &STRING_PTR(ParamMax)) );
 
   return;
+}
+
+/*----------------------------------------------------------------
+
+SUBROUTINE register_string_param_f(ParamLabel, ParamSteerable, &
+                                   StringParam, Status)
+
+  CHARACTER (LEN=REG_MAX_STRING_LENGTH), INTENT(in) :: ParamLabel
+  INTEGER (KIND=REG_SP_KIND), INTENT(in)            :: ParamSteerable
+  CHARACTER (LEN=REG_MAX_STRING_LENGTH), INTENT(in) :: StringParam
+  INTEGER (KIND=REG_SP_KIND), INTENT(out)           :: Status
+
+----------------------------------------------------------------*/
+
+void FUNCTION(register_string_param_f) ARGS(`STRING_ARG(ParamLabel),
+		                       ParamSteerable,
+		                       STRING_ARG(StringParam),
+	                               Status')
+STRING_ARG_DECL(ParamLabel);
+INT_KIND_1_DECL(ParamSteerable);
+STRING_ARG_DECL(StringParam);
+INT_KIND_1_DECL(Status);
+{
+  char *min  = "0";
+  char *max  = "1";
+  int   type = REG_CHAR;
+
+#if DEBUG
+  fprintf(stderr, "register_string_param_f: Entered routine, "
+	  "string = %s\n", STRING_PTR(StringParam));
+#endif
+
+  *Status = INT_KIND_1_CAST( Register_params(1,
+ 	                      		     &STRING_PTR(ParamLabel),
+			      		     (int *)ParamSteerable,
+			      		     (void **)&STRING_PTR(StringParam),
+			      		     &type,
+                                             &min,
+                                             &max) );
 }
 
 /*----------------------------------------------------------------

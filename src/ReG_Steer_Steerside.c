@@ -761,6 +761,17 @@ int Consume_param_defs(int SimHandle)
 	}
       }
 
+      if(ptr->min_val){
+	strcpy(Sim_table.sim[index].Params_table.param[j].min_val, 
+	       (char *)ptr->min_val);
+      }
+
+      if(ptr->max_val){
+	strcpy(Sim_table.sim[index].Params_table.param[j].max_val, 
+	       (char *)ptr->max_val);
+      }
+
+
       Sim_table.sim[index].Params_table.num_registered++;
     }
     ptr = ptr->next;
@@ -1844,7 +1855,9 @@ int Get_param_values(int    sim_handle,
 		     int   *handles,
 		     char* *labels,
 		     char* *vals,
-		     int   *types)
+		     int   *types,
+		     char* *min_vals,
+		     char* *max_vals)
 {
   int return_status = REG_SUCCESS;
   int isim;
@@ -1861,7 +1874,9 @@ int Get_param_values(int    sim_handle,
      if steerable == TRUE (1) then return steerable params, if FALSE 
      (0) then return monitoring params */
 
-  if(handles == NULL || labels == NULL || vals == NULL) return REG_FAILURE;
+  if(!handles || !labels || !vals || !min_vals || !max_vals) {
+    return REG_FAILURE;
+  }
 
   isim = Sim_index_from_handle(sim_handle);
   if(isim != -1){
@@ -1882,7 +1897,13 @@ int Get_param_values(int    sim_handle,
 	  strcpy(labels[count], 
 		 Sim_table.sim[isim].Params_table.param[i].label);
 	  strcpy(vals[count], Sim_table.sim[isim].Params_table.param[i].value);
+
           types[count] = Sim_table.sim[isim].Params_table.param[i].type;
+
+	  strcpy(min_vals[count], 
+		 Sim_table.sim[isim].Params_table.param[i].min_val);
+	  strcpy(max_vals[count], 
+		 Sim_table.sim[isim].Params_table.param[i].max_val);
 
 	  count++;
 

@@ -402,10 +402,10 @@ int Register_IOTypes(int    NumTypes,
   char*        iofreq_label;
   int          iofreq_strbl;
   int          iofreq_type;
-  int          iofreq_min;
-  int          iofreq_max;
   int          iparam;
   void        *ptr_array[1];
+  char        *min_array[1];
+  char        *max_array[1];
   int          return_status = REG_SUCCESS;
  
 
@@ -458,16 +458,16 @@ int Register_IOTypes(int    NumTypes,
     iofreq_type  = REG_INT;
     IOTypes_table.io_def[current].frequency = IOFrequency[i];
     ptr_array[0] = (void *)&(IOTypes_table.io_def[current].frequency);
-    iofreq_min   = 0;
-    iofreq_max   = 1000;
+    min_array[0] = "0";
+    max_array[0] = "100";
 
     Register_params(1,
 		    &iofreq_label,
 		    &iofreq_strbl,
 		    ptr_array,
 		    &iofreq_type,
-		    &iofreq_min,
-		    &iofreq_max);
+		    min_array,
+		    max_array);
 
     /* Store the handle given to this parameter - this line must
        immediately succeed the call to Register_params */
@@ -547,9 +547,9 @@ int Register_ChkTypes(int    NumTypes,
   char*        chkfreq_label;
   int          chkfreq_strbl;
   int          chkfreq_type;
-  int          chkfreq_min;
-  int          chkfreq_max;
   void        *ptr_array[1];
+  char        *min_array[1];
+  char        *max_array[1];
   IOdef_entry *dum_ptr;
   int          return_status = REG_SUCCESS;
 
@@ -594,16 +594,16 @@ int Register_ChkTypes(int    NumTypes,
       chkfreq_type  = REG_INT;
       ChkTypes_table.io_def[current].frequency = ChkFrequency[i];
       ptr_array[0]  = (void *)&(ChkTypes_table.io_def[current].frequency);
-      chkfreq_min   = 0;
-      chkfreq_max   = 1000;
+      min_array[0]  = "0";
+      max_array[0]  = "100";
 
       Register_params(1,
 		      &chkfreq_label,
 		      &chkfreq_strbl,
 		      ptr_array,
 		      &chkfreq_type,
-		      &chkfreq_min, 
-		      &chkfreq_max);
+		      min_array, 
+		      max_array);
 
       /* Store the handle given to this parameter - this line MUST
          immediately succeed the call to Register_params */
@@ -1555,8 +1555,8 @@ int Register_params(int    NumParams,
 		    int   *ParamSteerable,
 		    void **ParamPtrs,
 		    int   *ParamTypes,
-		    void  *ParamMinima,
-		    void  *ParamMaxima)
+		    char* *ParamMinima,
+		    char* *ParamMaxima)
 {
   int i;
   int current;
@@ -1596,6 +1596,10 @@ int Register_params(int    NumParams,
     /* This set to TRUE external to this routine if this param.
        has been created by the steering library itself */
     Params_table.param[current].is_internal = FALSE;
+
+    /* Range of validity for this parameter */
+    strcpy(Params_table.param[current].min_val, ParamMinima[i]);
+    strcpy(Params_table.param[current].max_val, ParamMaxima[i]);
 
     /* Create handle for this parameter */
     Params_table.param[current].handle = Params_table.next_handle++;
@@ -2155,17 +2159,16 @@ int Emit_param_defs(){
 
 	if(Params_table.param[i].is_internal == TRUE){
 
-	  pbuf += sprintf(pbuf, "<Is_internal>TRUE</Is_internal>\n"
-			        "</Param>\n");
+	  pbuf += sprintf(pbuf, "<Is_internal>TRUE</Is_internal>\n");
 	}
 	else{
 
-	  pbuf += sprintf(pbuf, "<Is_internal>FALSE</Is_internal>\n"
-			        "</Param>\n");
+	  pbuf += sprintf(pbuf, "<Is_internal>FALSE</Is_internal>\n");
 	}
 
 	pbuf += sprintf(pbuf, "<Min_value>%s</Min_value>"
-			"<Max_value>%s</Max_value>\n", 
+			"<Max_value>%s</Max_value>\n"
+			"</Param>\n", 
 			Params_table.param[i].min_val, 
 			Params_table.param[i].max_val);
       }
