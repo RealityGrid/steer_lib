@@ -40,7 +40,7 @@ NBIT = 64
 
 # Location of C compiler and flags to use
 CC = cc
-C_FLAGS = -O2 -g -64
+C_FLAGS = -O2 -64
 
 # Location of F90 compiler (if any) and flags to use
 F90 = f90
