@@ -189,3 +189,51 @@ void Print_steer_log_entry_struct(struct log_entry_struct *entry);
 
 int  String_contains_xml_chars(char *string);
 
+struct xtndString {
+  int   lenFree;
+  char *str;
+};
+
+/* Enumeration of the various possible states of our parser
+   - corresponds to the elements of the doc we're interested in */
+enum doc_state {UNKNOWN, STARTING, OGSI_ENTRY, MEMBER_SERVICE_LOCATOR, 
+		HANDLE, CONTENT, SERVICE_TYPE, COMPONENT_CONTENT, 
+		COMPONENT_START_DATE_TIME,
+		COMPONENT_CREATOR_NAME, COMPONENT_CREATOR_GROUP, 
+		COMPONENT_SOFTWARE_PACKAGE, COMPONENT_TASK_DESCRIPTION, 
+		FINISHING};
+
+struct ParserState {
+
+  int return_val;
+  /* How many entries we currently have */
+  int num_entries;
+  /* How many entries we can store */
+  int max_entries;
+  /* Where we are in the document tree */
+  enum doc_state depth;
+  /* Pointer to array of structs holding entry details */
+  struct registry_entry *entries;
+};
+
+/* Uses SAX to parse the document returned by doing a findServiceData
+ * on a serviceGroupRegistration service.
+ */
+int Parse_registry_entries(char* buf, int size, 
+			   int *num_entries, 
+			   struct registry_entry **entries);
+
+/* SAX event handler */
+void Start_element_handler(void           *user_data,
+			   const xmlChar  *name,
+			   const xmlChar **attrs);
+
+/* SAX event handler */
+void End_element_handler(void          *user_data,
+			 const xmlChar *name);
+
+/* SAX event handler */
+void Characters_handler(void          *user_data,
+			const xmlChar *ch,
+			int  	       len);
+

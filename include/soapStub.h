@@ -322,6 +322,54 @@ struct sgs__ClearStatusMsgQueue
 };
 #endif
 
+#ifndef _SOAP_sgsf__createServiceResponse
+#define _SOAP_sgsf__createServiceResponse
+struct sgsf__createServiceResponse
+{
+	char *_createServiceReturn;
+};
+#endif
+
+#ifndef _SOAP_sgsf__destroyResponse
+#define _SOAP_sgsf__destroyResponse
+struct sgsf__destroyResponse
+{
+};
+#endif
+
+#ifndef _SOAP_sgsf__registerSelfResponse
+#define _SOAP_sgsf__registerSelfResponse
+struct sgsf__registerSelfResponse
+{
+	char *_registerSelfReturn;
+};
+#endif
+
+#ifndef _SOAP_sgsf__registerSelf
+#define _SOAP_sgsf__registerSelf
+struct sgsf__registerSelf
+{
+	char *in0;
+	char *in1;
+};
+#endif
+
+#ifndef _SOAP_sgsf__destroy
+#define _SOAP_sgsf__destroy
+struct sgsf__destroy
+{
+};
+#endif
+
+#ifndef _SOAP_sgsf__createService
+#define _SOAP_sgsf__createService
+struct sgsf__createService
+{
+	char *in0;
+	char *in1;
+};
+#endif
+
 #ifndef _SOAP_sgr__findServiceDataResponse
 #define _SOAP_sgr__findServiceDataResponse
 struct sgr__findServiceDataResponse
@@ -749,6 +797,12 @@ SOAP_FMAC1 int SOAP_FMAC2 sgs__Resume(struct soap*, struct sgs__ResumeResponse *
 
 SOAP_FMAC1 int SOAP_FMAC2 sgs__ClearStatusMsgQueue(struct soap*, struct sgs__ClearStatusMsgQueueResponse *);
 
+SOAP_FMAC1 int SOAP_FMAC2 sgsf__registerSelf(struct soap*, char *, char *, struct sgsf__registerSelfResponse *);
+
+SOAP_FMAC1 int SOAP_FMAC2 sgsf__destroy(struct soap*, struct sgsf__destroyResponse *);
+
+SOAP_FMAC1 int SOAP_FMAC2 sgsf__createService(struct soap*, char *, char *, struct sgsf__createServiceResponse *);
+
 SOAP_FMAC1 int SOAP_FMAC2 sgr__remove(struct soap*, char *, struct sgr__removeResponse *);
 
 SOAP_FMAC1 int SOAP_FMAC2 sgr__add(struct soap*, char *, char *, char *, struct sgr__addResponse *);
@@ -832,6 +886,12 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__AppStart(struct soap*, const char*, con
 SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__Resume(struct soap*, const char*, const char*, struct sgs__ResumeResponse *);
 
 SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgs__ClearStatusMsgQueue(struct soap*, const char*, const char*, struct sgs__ClearStatusMsgQueueResponse *);
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgsf__registerSelf(struct soap*, const char*, const char*, char *, char *, struct sgsf__registerSelfResponse *);
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgsf__destroy(struct soap*, const char*, const char*, struct sgsf__destroyResponse *);
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgsf__createService(struct soap*, const char*, const char*, char *, char *, struct sgsf__createServiceResponse *);
 
 SOAP_FMAC1 int SOAP_FMAC2 soap_call_sgr__remove(struct soap*, const char*, const char*, char *, struct sgr__removeResponse *);
 
@@ -918,6 +978,12 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_serve_sgs__AppStart(struct soap*);
 SOAP_FMAC1 int SOAP_FMAC2 soap_serve_sgs__Resume(struct soap*);
 
 SOAP_FMAC1 int SOAP_FMAC2 soap_serve_sgs__ClearStatusMsgQueue(struct soap*);
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_serve_sgsf__registerSelf(struct soap*);
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_serve_sgsf__destroy(struct soap*);
+
+SOAP_FMAC1 int SOAP_FMAC2 soap_serve_sgsf__createService(struct soap*);
 
 SOAP_FMAC1 int SOAP_FMAC2 soap_serve_sgr__remove(struct soap*);
 

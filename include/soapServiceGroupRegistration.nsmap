@@ -6,10 +6,10 @@ SOAP_NMAC struct Namespace namespaces[] =
   {"SOAP-ENC", "http://schemas.xmlsoap.org/soap/encoding/", "http://www.w3.org/*/soap-encoding"},
   {"xsi", "http://www.w3.org/2001/XMLSchema-instance", "http://www.w3.org/*/XMLSchema-instance"},
   {"xsd", "http://www.w3.org/2001/XMLSchema", "http://www.w3.org/*/XMLSchema"},
+  {"sgs", "http://vermont.mvc.mcc.ac.uk/SGS"},
   {"sgsf", "http://vermont.mvc.mcc.ac.uk/SGS/factory"},
-  {"sgr", "http://vermont.mvc.mcc.ac.uk/ServiceGroupRegistration"},
   {"rgtf", "http://www.RealityGrid.org/factory"},
   {"rgt", "http://www.RealityGrid.org/RealityGridTree/service"},
-  {"sgs", "http://vermont.mvc.mcc.ac.uk/SGS"},
+  {"sgr", "http://vermont.mvc.mcc.ac.uk/ServiceGroupRegistration"},
   {NULL, NULL}
 };
