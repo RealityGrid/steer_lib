@@ -186,4 +186,4 @@
   int *IOHandleINOUT
 }
 
-%include "../ReG_Steer_Wrap.i"
+%include "../ReG_Steer_API.i"
