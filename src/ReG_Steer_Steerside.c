@@ -1000,7 +1000,7 @@ int Consume_log(int SimHandle)
   /* Get_next_message has already parsed the (xml) message and stored
      it in the structure pointed to by sim->msg */
 
-  if(!sim->msg->log){
+  if(!sim->msg || !sim->msg->log){
 
     return REG_FAILURE;
   }
@@ -1032,12 +1032,14 @@ int Consume_log(int SimHandle)
 
     while(param_ptr){
 
-      sscanf((char *)(param_ptr->handle), "%d", 
-	     &(sim->Chk_log.entry[index].param[count].handle));
-
-      strcpy(sim->Chk_log.entry[index].param[count].value,
+      if(param_ptr->handle){
+	sscanf((char *)(param_ptr->handle), "%d", 
+	       &(sim->Chk_log.entry[index].param[count].handle));
+      }
+      if(param_ptr->value){
+	strcpy(sim->Chk_log.entry[index].param[count].value,
 	     (char *)(param_ptr->value));
-
+      }
       param_ptr = param_ptr->next;
 
       if(++count >= REG_MAX_NUM_STR_PARAMS){

@@ -159,6 +159,13 @@ int Steering_initialize(int  NumSupportedCmds,
   Chk_log.num_entries = 0;
   Chk_log.max_entries = REG_INITIAL_CHK_LOG_SIZE;
   Chk_log.num_unsent  = 0;
+  Chk_log.send_all    = FALSE;
+
+  if( !(Chk_log.file_ptr = New_log_file(REG_LOG_FILENAME)) ){
+    fprintf(stderr, "Steering_initialize: failed to create log file, "
+	    "log will not be saved to file\n");
+  }
+
   Chk_log.entry = (Chk_log_entry_type *)malloc(Chk_log.max_entries
 					  *sizeof(Chk_log_entry_type));
   if(Chk_log.entry == NULL){
@@ -277,6 +284,12 @@ int Steering_finalize()
 		1,
 		commands);
   }
+
+  /* Save remaining log entries to file */
+  Save_log();
+
+  /* Write necessary xml to log file and close it */
+  Finalize_log_file(Chk_log.file_ptr);
 
   /* Clean-up IOTypes table */
 
@@ -615,11 +628,9 @@ int Register_ChkTypes(int    NumTypes,
 int Record_Chkpt(int   ChkType,
 		 char *ChkTag)
 {
-  int   j;
   int   index;
   int   count;
   int   new_size;
-  void *ptr;
 
   /* Can only call this function if steering lib initialised */
 
@@ -629,30 +640,7 @@ int Record_Chkpt(int   ChkType,
 
   if(Chk_log.num_entries == Chk_log.max_entries){
 
-    new_size = Chk_log.max_entries + REG_INITIAL_CHK_LOG_SIZE;
-
-    ptr = realloc((void *)(Chk_log.entry), 
-		  new_size*sizeof(Chk_log_entry_type));
-
-    if(!ptr){
-
-      fprintf(stderr, "Record_Chkpt: failed to allocate memory to extend"
-	      " chkpt log\n");
-      return REG_FAILURE;
-    }
-
-    Chk_log.entry = (Chk_log_entry_type *)ptr;
-    Chk_log.max_entries = new_size;
-
-    for(index=Chk_log.num_entries; index<Chk_log.max_entries; index++){
-
-      Chk_log.entry[index].sent_to_steerer = TRUE;
-      Chk_log.entry[index].num_param       = 0;
-
-      for(j=0; j<REG_MAX_NUM_STR_PARAMS; j++){
-	Chk_log.entry[index].param[j].handle = REG_PARAM_HANDLE_NOTSET;
-      }
-    }
+    Save_log();
   }
 
   Chk_log.entry[Chk_log.num_entries].key = Chk_log.primary_key_value++;
@@ -673,6 +661,11 @@ int Record_Chkpt(int   ChkType,
     /* This is one we want - store its handle and current value */
     Chk_log.entry[Chk_log.num_entries].param[count].handle = 
                                            Params_table.param[index].handle;
+
+    /* Update value associated with pointer */
+    Get_ptr_value(&(Params_table.param[index]));
+
+    /* Save this value */
     strcpy(Chk_log.entry[Chk_log.num_entries].param[count].value,
            Params_table.param[index].value);
     
@@ -689,6 +682,109 @@ int Record_Chkpt(int   ChkType,
   Chk_log.num_entries++;
 
   return REG_SUCCESS;
+}
+
+/*----------------------------------------------------------------*/
+
+FILE *New_log_file(char *filename)
+{
+  FILE *fp;
+  
+  fp = fopen(filename, "w");
+
+  if(fp){
+
+    fprintf(fp, "<Steer_log>\n");
+  }
+
+  return fp;
+}
+
+/*----------------------------------------------------------------*/
+
+int Finalize_log_file(FILE *fp)
+{
+  if(fp){
+    fprintf(fp, "</Steer_log>\n");
+    fclose(fp);
+  }
+
+  return REG_SUCCESS;
+}
+
+/*----------------------------------------------------------------*/
+
+int Save_log()
+{
+  int  i, j;
+  char buf[REG_MAX_MSG_SIZE];
+
+  if(!Chk_log.file_ptr){
+
+    return REG_FAILURE;
+  }
+
+  /* Third argument says we want all entries - not just those that
+     haven't already been sent to the steerer */
+  if(Log_to_xml(buf, REG_MAX_MSG_SIZE, FALSE)){
+
+    fprintf(Chk_log.file_ptr, "%s", buf);
+  }
+
+  Chk_log.num_entries = 0;
+
+  return REG_SUCCESS;
+}
+
+/*----------------------------------------------------------------*/
+
+char* Log_to_xml(char *pchar, const int max_len, 
+		 const int not_sent_only)
+{
+  int   count = 0;
+  int   i, j;
+  char *pbuf;
+
+  pbuf = pchar;
+
+  for(i=0; i<Chk_log.num_entries; i++){
+
+    /* Check to see whether steerer already has this entry */
+    if (not_sent_only && (Chk_log.entry[i].sent_to_steerer == TRUE)) continue;
+
+    /* Crude check to prevent us going out-of-bounds */
+    if( (pbuf - pchar) > (max_len - 200) ){
+
+      fprintf(stderr, "Log_to_xml: supplied buffer not large enough\n");
+      return NULL;
+    }
+
+    pbuf += sprintf(pbuf, "<Log_entry>\n"
+		          "<Key>%d</Key>\n"
+		          "<Chk_handle>%d</Chk_handle>\n"
+		          "<Chk_tag>%s</Chk_tag>\n", 
+		    Chk_log.entry[i].key, 
+		    Chk_log.entry[i].chk_handle, 
+		    Chk_log.entry[i].chk_tag);
+
+    /* Associated parameters are stored contiguously so need only
+       loop over the no. of params that this entry has */
+    for(j=0; j<Chk_log.entry[i].num_param; j++){
+
+      pbuf += sprintf(pbuf, "<Param>\n"
+		            "<Handle>%d</Handle>\n" 
+		            "<Value>%s</Value>\n"
+		            "</Param>\n", 
+		      Chk_log.entry[i].param[j].handle,
+		      Chk_log.entry[i].param[j].value);
+    }
+    pbuf += sprintf(pbuf, "</Log_entry>\n");
+
+    /* Flag this entry as having been sent to steerer */
+    Chk_log.entry[i].sent_to_steerer = TRUE;
+  }
+
+  return pbuf;
 }
 
 /*----------------------------------------------------------------*/
@@ -1368,9 +1464,9 @@ int Steering_control(int     SeqNum,
 {
   int    i;
   int    status;
-  int    count;
   int    detached;
-  int    return_status;
+  int    count         = 0;
+  int    return_status = REG_SUCCESS;
   int    num_commands;
   int    commands[REG_MAX_NUM_STR_CMDS];
   int    param_handles[REG_MAX_NUM_STR_PARAMS];
@@ -1382,7 +1478,6 @@ int Steering_control(int     SeqNum,
   static clock_t previous_time = 0;
   static int     first_time    = TRUE;
 
-  return_status     = REG_SUCCESS;
   *NumSteerParams   = 0;
   *NumSteerCommands = 0;
 
@@ -1476,7 +1571,6 @@ int Steering_control(int     SeqNum,
       ReG_ChkTypesChanged = FALSE;
     }
 
-
     /* Emit logging info. */
     Emit_log();
 
@@ -1510,7 +1604,6 @@ int Steering_control(int     SeqNum,
 
     /* Parse list of commands for any that we can handle ourselves */
 
-    count = 0;
     i     = 0;
     detached = FALSE;
 
@@ -1597,16 +1690,15 @@ int Steering_control(int     SeqNum,
 	fprintf(stderr, "Steering_control: call to Emit_status failed\n");
 	return_status = REG_FAILURE;
       }
-
-      /* Deal with automatic emission/consumption of data */
-      Auto_generate_steer_cmds(SeqNum, &count, SteerCommands, SteerCmdParams);
-
     }
-
-    /* Record how many commands we're going to pass back to caller */
-    *NumSteerCommands = count;
-
   } /* End if steering active */
+
+  /* Deal with automatic emission/consumption of data - this is done
+     whether or not a steering client is connected */
+  Auto_generate_steer_cmds(SeqNum, &count, SteerCommands, SteerCmdParams);
+
+  /* Record how many commands we're going to pass back to caller */
+  *NumSteerCommands = count;
 
   return return_status;
 }
@@ -2036,62 +2128,110 @@ int Emit_log()
   char  buf[REG_MAX_MSG_SIZE];
   char *pbuf;
   FILE* fp;
+  xmlDocPtr doc;
+  xmlChar  *pchar;
+  xmlChar  *pchar2 = NULL;
+  xmlChar  *pchar3 = NULL;
+  int       size;
+  int       len;
+
+  /* ARPDBG... */
+  fprintf(stderr, "Emit_log: num_unsent = %d, num_entries = %d\n", 
+	  Chk_log.num_unsent, Chk_log.num_entries);
+  /*...END */
 
   if (Chk_log.num_unsent == 0) return REG_SUCCESS;
+
+  /*if(Chk_log.num_unsent > Chk_log.num_entries){*/
+  if(Chk_log.send_all == TRUE){
+
+    /* Then we have to send any entries we've saved to file too... */
+    Finalize_log_file(Chk_log.file_ptr);
+
+    doc = xmlParseFile(REG_LOG_FILENAME);
+
+    if (doc == NULL){
+      fprintf(stderr, "Emit_log: Hit error parsing file %s\n", 
+	      REG_LOG_FILENAME);
+      return REG_FAILURE;
+    }
+    
+    xmlDocDumpMemory(doc, &pchar, &size);
+
+    pchar2 = (xmlChar *)xmlStrstr(pchar, (const xmlChar *)"<Log_entry>");
+
+    if(pchar2){
+      pchar3 = (xmlChar *)xmlStrstr((pchar2+1), 
+				    (const xmlChar *)"<Log_entry>");
+    }
+
+    while(pchar3){
+
+      pbuf = buf;
+      Write_xml_header(&pbuf);
+      pbuf += sprintf(pbuf, "<Steer_log>\n");
+
+      len = xmlStrlen(pchar2) - xmlStrlen(pchar3);
+      strncpy(pbuf, (char *)pchar2, len);
+      pbuf += len;
+
+      pbuf += sprintf(pbuf, "</Steer_log>\n");
+
+      /* Complete the xml message */
+      Write_xml_footer(&pbuf);
+
+      fp = fopen("MyTestFile.xml", "a");
+      if(fp){
+
+        fprintf(fp, "%s\n", (char *)buf);
+        fclose(fp);
+        fp = NULL;
+      }
+
+      Send_status_msg(buf);
+
+      pchar2 = pchar3;
+      pchar3 = (xmlChar *)xmlStrstr((pchar2+1), 
+				    (const xmlChar *)"<Log_entry>");
+    }
+
+    xmlFree(pchar);
+
+  }
 
   pbuf = buf;
   Write_xml_header(&pbuf);
 
   pbuf += sprintf(pbuf, "<Steer_log>\n");
 
-  for(i=0; i<Chk_log.num_entries; i++){
+  if(Chk_log.send_all == TRUE){
 
-    /* Check to see whether steerer already has this entry */
-    if (Chk_log.entry[i].sent_to_steerer == TRUE) continue;
-
-    pbuf += sprintf(pbuf, "<Log_entry>\n"
-		          "<Key>%d</Key>\n"
-		          "<Chk_handle>%d</Chk_handle>\n"
-		          "<Chk_tag>%s</Chk_tag>\n", 
-		    Chk_log.entry[i].key, 
-		    Chk_log.entry[i].chk_handle, 
-		    Chk_log.entry[i].chk_tag);
-
-    /* Associated parameters are stored contiguously so need only
-       loop over the no. of params that this entry has */
-    for(j=0; j<Chk_log.entry[i].num_param; j++){
-
-      pbuf += sprintf(pbuf, "<Param>\n"
-		            "<Handle>%d</Handle>\n" 
-		            "<Value>%s</Value>\n"
-		            "</Param>\n", 
-		      Chk_log.entry[i].param[j].handle,
-		      Chk_log.entry[i].param[j].value);
-    }
-    pbuf += sprintf(pbuf, "</Log_entry>\n");
-
-    /* Flag this entry as having been sent to steerer */
-    Chk_log.entry[i].sent_to_steerer = TRUE;
+    /* Need to send all current log entries to the steerer */
+    pbuf = Log_to_xml(pbuf, REG_MAX_MSG_SIZE, FALSE);
+    Chk_log.send_all = FALSE;
+  }
+  else{
+    /* Third argument specifies that we only want those entries that haven't
+       already been sent to the steerer */
+    pbuf = Log_to_xml(pbuf, REG_MAX_MSG_SIZE, TRUE);
   }
 
   pbuf += sprintf(pbuf, "</Steer_log>\n");
 
-  /* Zero counter since we're just about to tell steerer all about any log
-     entries it hasn't got */
-  Chk_log.num_unsent = 0;
-
   /* Complete the xml message */
   Write_xml_footer(&pbuf);
 
-  /* ARPDBG */
-  fp = fopen("SteeringLog.xml", "a");
-  if(fp){
-    fprintf(fp, "%s", buf);
-    fclose(fp);
+  /* Physically send message */
+  if(Send_status_msg(buf) == REG_SUCCESS){
+
+    /* Zero counter since we've just told steerer all about any log
+       entries it hadn't got */
+    Chk_log.num_unsent = 0;
+
+    return REG_SUCCESS;
   }
 
-  /* Physically send message */
-  return Send_status_msg(buf);
+  return REG_FAILURE;
 }
 
 /*----------------------------------------------------------------*/
@@ -2300,7 +2440,11 @@ int Detach_from_steerer()
   sprintf(filename, "%s%s", Steerer_connection.file_root, 
 	  STR_TO_APP_FILENAME);
   Remove_files(filename);
-  
+
+  /* Flag that all entries in log need to be sent to steerer (in case
+     another one attaches later on) */
+  Chk_log.send_all   = TRUE;
+
   ReG_SteeringActive = FALSE;
   ReG_IOTypesChanged = TRUE;
   ReG_ChkTypesChanged= TRUE;
@@ -2439,6 +2583,8 @@ int Emit_status(int   SeqNum,
 
 int Update_ptr_value(param_entry *param)
 {
+
+  if (!param->ptr) return REG_SUCCESS;
 
   switch(param->type){
 
@@ -2632,6 +2778,8 @@ int Make_vtk_buffer(int    nx,
   }
   else if(veclen == 3){
 
+    mag = 10.0/(float)(nx*ny*nz);
+
     for(i=-nx/2; i<nx/2; i++){
       for(j=-ny/2; j<ny/2; j++){
 	for(k=-nz/2; k<nz/2; k++){
@@ -2644,7 +2792,6 @@ int Make_vtk_buffer(int    nx,
 	  *fptr = mag*(float)k;
 	  sum += *(fptr++);
 	  */
-	  mag = 1.0;
 	  *fptr = mag*(float)i;
 	  sum += *(fptr++);
 	  *fptr = mag*(float)j;
@@ -2692,7 +2839,7 @@ int Make_vtk_header(char  *header,
 
   /* Flag to switch between AVS- and vtk-style headers 
      - for testing */
-  const int AVS_STYLE = 1;
+  const int AVS_STYLE = 0;
 
   if (!pchar) return REG_FAILURE;
 
