@@ -67,8 +67,6 @@ PROGRAM mini_app
   INTEGER (KIND=REG_SP_KIND), &
                            DIMENSION(REG_INITIAL_NUM_IOTYPES) :: chk_dirn
 
-
-  INTEGER (KIND=REG_SP_KIND) :: input_freq  = 0
   INTEGER (KIND=REG_SP_KIND) :: output_freq = 5
   INTEGER (KIND=REG_SP_KIND) :: iohandle
   INTEGER (KIND=REG_SP_KIND) :: data_type
@@ -131,22 +129,11 @@ PROGRAM mini_app
     STOP 'Call to steering_initialize_f failed!'
   END IF
 
-  ! Register the input IO channel
+  ! Register some IO channels
 
   io_labels(1) = "VTK_STRUCTURED_POINTS_INPUT"//CHAR(0)
   io_dirn(1)   = REG_IO_IN
   io_freqs(1)  = 0
-
-!!$  CALL register_iotypes_f(num_types, io_labels, io_dirn, &
-!!$                          input_freq, iotype_handles(1), status)
-!!$
-!!$  IF(status .ne. REG_SUCCESS)THEN
-!!$
-!!$    CALL steering_finalize_f(status)
-!!$    STOP 'Failed to register IO type'
-!!$  END IF
-!!$
-!!$  WRITE(*,*) 'Returned IOtype = ', iotype_handles(1)
 
   io_labels(2) = "VTK_STRUCTURED_POINTS_OUTPUT"//CHAR(0)
   io_dirn(2) = REG_IO_OUT
@@ -160,7 +147,7 @@ PROGRAM mini_app
   IF(status .ne. REG_SUCCESS)THEN
 
     CALL steering_finalize_f(status)
-    STOP 'Failed to register IO type'
+    STOP 'Failed to register IO types'
   END IF
 
   WRITE(*,*) 'Returned IOtype = ', iotype_handles(1)
@@ -170,8 +157,10 @@ PROGRAM mini_app
   chk_labels(1) = "SOME_CHECKPOINT"//CHAR(0)
   chk_dirn(1)   = REG_IO_INOUT
   
+  ! Register a Checkpoint type
+
   CALL register_chktypes_f(num_chk_types, chk_labels, chk_dirn, &
-                           output_freq, chk_handles(1), status)
+                           5, chk_handles(1), status)
 
   IF(status .ne. REG_SUCCESS)THEN
 
@@ -337,7 +326,6 @@ PROGRAM mini_app
       WRITE(*,*) '2nd_test_real = ', dum_real2
       WRITE(*,*) 'test_string = ', TRIM(dum_str)
       WRITE(*,*) 'test_double = ', dum_dbl
-      WRITE(*,*) 'output_freq = ', output_freq
 
       IF(num_params_changed > 0)THEN
 
