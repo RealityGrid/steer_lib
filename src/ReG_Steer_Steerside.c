@@ -1623,3 +1623,67 @@ int Command_supported(int sim_id,
 
   return return_status;
 }
+
+/*-------------------------------------------------------------------*/
+
+int Get_supp_cmd_number(int sim_handle,
+		        int *num_cmds)
+{
+  int isim;
+  int return_status = REG_SUCCESS;
+  
+  /* Returns the number of commands supported by the specified sim */
+
+  if (num_cmds == NULL) return REG_FAILURE;
+
+  if((isim = Sim_index_from_handle(sim_handle)) != -1){
+
+    *num_cmds = Sim_table.sim[isim].Cmds_table.num_registered;
+  }
+  else{
+    return_status = REG_FAILURE;
+  }
+
+  return return_status;
+}
+
+/*-------------------------------------------------------------------*/
+
+int Get_supp_cmds(int  sim_handle,
+		  int  num_cmds,
+		  int  *cmd_ids)
+{
+  int i;
+  int isim;
+  int loop_limit;
+  int return_status = REG_SUCCESS;
+
+  /* Returns the first num_cmds commands supported by the specified sim.
+     Assumes that Get_supp_cmd_number has been called first to get the
+     no. of entries in the table */
+
+  if (cmd_ids == NULL) return REG_FAILURE;
+
+  if((isim = Sim_index_from_handle(sim_handle)) != -1){
+
+    if(num_cmds < Sim_table.sim[isim].Cmds_table.num_registered){
+
+      loop_limit = num_cmds;
+    }
+    else{
+      loop_limit = Sim_table.sim[isim].Cmds_table.num_registered;
+    }
+    
+    /* Copy command id's out of table and into supplied array */
+
+    for(i=0; i<loop_limit; i++){
+
+      cmd_ids[i] = Sim_table.sim[isim].Cmds_table.cmd[i].cmd_id;
+    }
+  }
+  else{
+    return_status = REG_FAILURE;
+  }
+
+  return return_status;
+}

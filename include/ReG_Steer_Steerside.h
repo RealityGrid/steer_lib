@@ -139,3 +139,16 @@ extern PREFIX int Get_iotypes(int    sim_handle,
 			      int    num_iotypes,
 			      int   *handles,
 			      char* *labels);
+
+/* Gets the number of supported commands registered by the simulation
+   with handle <sim_handle>. */
+extern PREFIX int Get_supp_cmd_number(int  sim_handle,
+				      int *num_cmds);
+
+/* Get the first <num_cmds> supported commands registered for the
+   simulation with handle <sim_handle>.  Returns the id of each
+   command in the array pointed to by cmd_ids.  This array must be
+   large enough to hold <num_cmds> integers */
+extern PREFIX int Get_supp_cmds(int  sim_handle,
+				int  num_cmds,
+				int *cmd_ids);
