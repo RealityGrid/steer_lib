@@ -39,8 +39,6 @@
 #ifndef __REG_STEER_STEERSIDE_GLOBUS_H__
 #define __REG_STEER_STEERSIDE_GLOBUS_H__
 
-/*#include "ReG_Steer_Steerside_internal.h"*/
-
 #if REG_GLOBUS_STEERING
 
 /* Attach to specified simulation using globus_io */

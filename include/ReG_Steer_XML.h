@@ -59,6 +59,7 @@ struct param_struct{
 struct cmd_struct{
 
   xmlChar             *id;
+  xmlChar             *name;
   struct param_struct *first_param;
   struct param_struct *param;
   struct cmd_struct   *next;

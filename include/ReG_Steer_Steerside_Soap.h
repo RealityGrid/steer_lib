@@ -39,6 +39,11 @@
 #ifndef __REG_STEER_STEERSIDE_SOAP_H__
 #define __REG_STEER_STEERSIDE_SOAP_H__
 
+/* These NEED TO MATCH the names given to the service data elements in
+   SGS.pm */
+#define REG_APP_STATUS_SDE "Application_status"
+#define REG_STEER_STATUS_SDE "Steerer_status"
+
 /*-------------------------------------------------------------------*/
 
 /* Initialise soap-specific structures etc. */

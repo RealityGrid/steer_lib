@@ -69,6 +69,9 @@ typedef struct {
   /* structure used to hold all globus_io socket information */
   socket_type_steering	socket_info;
 
+  /* Address of the Steering Grid Service (for SOAP-based steering) */
+  char                  SGS_address[REG_MAX_STRING_LENGTH];
+
   /* String to hold 'supported commands' message 'cos we can't 
      actually send it until a steerer has connected in the case
      where we're using globus_io */

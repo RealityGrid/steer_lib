@@ -230,4 +230,7 @@ typedef int REG_IOHandleType;
 
 #define REG_PORT_NOTSET  -1
 
+/* Max no. of service-data elements on SGS */
+#define REG_MAX_NUM_SGS_SDE 15
+
 #endif /* __REG_TYPES_INCLUDED defined */

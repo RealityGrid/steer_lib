@@ -66,13 +66,25 @@ typedef struct {
      this simulation */
   int                  pipe_to_proxy;
   int                  pipe_from_proxy;
-  struct msg_struct   *msg;
 
   /* For steering via globus_io */
   socket_type_steering socket_info;
 
   /* For steering via SOAP */
-  char                 SGS_address[REG_MAX_STRING_LENGTH];
+  struct {
+    char address[REG_MAX_STRING_LENGTH];
+    /* Holds list of names of service data elements on the SGS for which
+       notifications are pending */
+    char notifications[REG_MAX_NUM_SGS_SDE][REG_MAX_STRING_LENGTH];
+    /* Used to keep track of notifications that we've yet to process */
+    int  sde_count;
+    int  sde_index;
+  } SGS_info;
+
+  /* Last status message received from this simulation - filled in
+     Get_next_message and used by whichever Consume_... routine
+     is called in response to the message type */
+  struct msg_struct   *msg;
 
   /* Table of registered commands for this sim */
   Supp_cmd_table_type  Cmds_table;
