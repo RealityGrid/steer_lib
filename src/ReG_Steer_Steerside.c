@@ -306,7 +306,6 @@ int Sim_attach(char *SimID,
     fprintf(stderr, "Sim_attach: failed to find free sim. table entry\n");
     return REG_FAILURE;
   }
-
   sim_ptr = &(Sim_table.sim[current_sim]);
 
   /* Initialise table entry for this simulation... */
@@ -568,7 +567,9 @@ int Get_next_message(int   *SimHandle,
 {
   int        isim;
   int        count_active;
-  static int last_sim = 0;
+  int        loop_count;
+  int        got_msg;
+  static int last_sim = -1;
   int        return_status = REG_SUCCESS;
 
   /* This routine checks for any messages from connected
@@ -577,8 +578,16 @@ int Get_next_message(int   *SimHandle,
   *msg_type  = MSG_NOTSET;
 
   count_active = 0;
+  got_msg = FALSE;
+  /* Search for next message from the sim. stored immediately
+     following the one we got a message from last time */
+  isim = ++last_sim;
+  loop_count = 0;
 
-  for(isim=last_sim; isim<Sim_table.max_entries; isim++){
+  while(loop_count<Sim_table.max_entries){
+    
+    /* Wrap simulation index around */
+    if(isim >= Sim_table.max_entries)isim = 0;
 
     if(Sim_table.sim[isim].handle != REG_SIM_HANDLE_NOTSET){
   
@@ -596,6 +605,7 @@ int Get_next_message(int   *SimHandle,
       else{
 
         if(Sim_table.sim[isim].SGS_info.active){
+
   	  Sim_table.sim[isim].msg = Get_status_msg_soap(&(Sim_table.sim[isim]));
 	}
 	else{
@@ -617,6 +627,7 @@ int Get_next_message(int   *SimHandle,
 	/* Keep a record of the last sim we received a msg
 	   from and then breakout */
 	last_sim = isim;
+	got_msg = TRUE;
 
 	break;
       }
@@ -631,7 +642,12 @@ int Get_next_message(int   *SimHandle,
          messages to retrieve */
       if (++count_active == Sim_table.num_registered) break;
     }
+    isim++;
+    loop_count++;
   }
+
+  /* Didn't find a message so reset last_sim */
+  if(got_msg == FALSE)last_sim=-1;
 
   return return_status;
 }
