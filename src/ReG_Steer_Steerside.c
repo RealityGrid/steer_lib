@@ -1879,8 +1879,9 @@ int Get_param_values(int    sim_handle,
 {
   int return_status = REG_SUCCESS;
   int isim;
-  int i;
+  int i, j;
   int count;
+  char *pchar;
 
   /* Return lists of registered parameter handles and associated
      values (as strings), types and limits for the steered simulation 
@@ -1917,6 +1918,16 @@ int Get_param_values(int    sim_handle,
 
 	  strcpy(param_details[count].label, 
 		 Sim_table.sim[isim].Params_table.param[i].label);
+	  /* Strip off any trailing space (often an issue with strings
+	     supplied from F90) */
+	  pchar = param_details[count].label;
+	  j = strlen(pchar);
+	  while(pchar[--j] == ' ');
+
+	  if(pchar[j] != '\0'){
+
+	    pchar[j+1] = '\0';
+	  }
 
 	  strcpy(param_details[count].value, 
 		 Sim_table.sim[isim].Params_table.param[i].value);
@@ -2179,11 +2190,12 @@ int Get_iotypes(int    sim_handle,
 		int   *io_freqs)
 {
   int isim;
-  int i;
+  int i, j;
   int count;
   int iparam;
   int nitem;
   int return_status = REG_SUCCESS;
+  char *pchar;
 
   /* Get the first num_iotype IO defs out of the table.  Assumes
      that Get_iotype_number has been called first to get the number
@@ -2201,7 +2213,19 @@ int Get_iotypes(int    sim_handle,
 	 REG_IODEF_HANDLE_NOTSET){
 
 	handles[count] = Sim_table.sim[isim].IOdef_table.io_def[i].handle;
-	strcpy(labels[count], Sim_table.sim[isim].IOdef_table.io_def[i].label);
+
+	strcpy(labels[count], 
+	       Sim_table.sim[isim].IOdef_table.io_def[i].label);
+	/* Strip off any trailing space (often an issue with strings
+	   supplied from F90) */
+	pchar = labels[count];
+	j = strlen(pchar);
+	while(pchar[--j] == ' ');
+
+	if(pchar[j] != '\0'){
+
+	  pchar[j+1] = '\0';
+	}
 
 	types[count] = Sim_table.sim[isim].IOdef_table.io_def[i].direction;
 
@@ -2349,11 +2373,12 @@ int Get_chktypes(int    sim_handle,
 		 int   *chk_freqs)
 {
   int isim;
-  int i;
+  int i, j;
   int count;
   int iparam;
   int nitem;
   int return_status = REG_SUCCESS;
+  char *pchar;
 
   /* Get the first num_chktype Chk defs out of the table.  Assumes
      that Get_chktype_number has been called first to get the number
@@ -2371,7 +2396,20 @@ int Get_chktypes(int    sim_handle,
 	 REG_IODEF_HANDLE_NOTSET){
 
 	handles[count] = Sim_table.sim[isim].Chkdef_table.io_def[i].handle;
-	strcpy(labels[count],Sim_table.sim[isim].Chkdef_table.io_def[i].label);
+
+	strcpy(labels[count], 
+	       Sim_table.sim[isim].Chkdef_table.io_def[i].label);
+
+	/* Strip off any trailing space (often an issue with strings
+	   supplied from F90) */
+	pchar = labels[count];
+	j = strlen(pchar);
+	while(pchar[--j] == ' ');
+
+	if(pchar[j] != '\0'){
+
+	  pchar[j+1] = '\0';
+	}
 
 	types[count] = Sim_table.sim[isim].Chkdef_table.io_def[i].direction;
 
@@ -2717,18 +2755,6 @@ int Get_chk_log_entries_reverse(int                 sim_handle,
 			      &(sim->Chk_log.entry[i]),
 			      &(entries[count]));
 
-	/*
-	index = IOdef_index_from_handle(&(sim->Chk_log), chk_handle);
-
-	if(index == -1){
-	  fprintf(stderr, "Get_chk_log_entries_reverse: error - failed"
-		  " to match chk handle: %d\n", chk_handle);
-	}
-	else{
-	  sim->Chk_log.io_def[index].
-	}
-	*/
-
 	count++;
 	if (count >= num_entries) break;
       }
@@ -2748,8 +2774,9 @@ int Get_log_entry_details(Param_table_type *param_table,
 			  Chk_log_entry_type *in,
 			  Output_log_struct  *out)
 {
-  int i;
-  int index;
+  int   i, j;
+  int   index;
+  char *pchar;
 
   strcpy(out->chk_tag, in->chk_tag);
 
@@ -2770,9 +2797,20 @@ int Get_log_entry_details(Param_table_type *param_table,
     strcpy(out->param_labels[i], 
 	   param_table->param[index].label);
 
+    /* Strip off any trailing space (often an issue with strings
+       supplied from F90) */
+    pchar = out->param_labels[i];
+    j = strlen(pchar);
+
+    while(pchar[--j] == ' ');
+
+    if(pchar[j] != '\0'){
+
+      pchar[j+1] = '\0';
+    }
+
     strcpy(out->param_values[i],
 	   in->param[i].value);
-
   }
   out->num_param = i;
 

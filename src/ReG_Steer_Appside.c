@@ -100,6 +100,7 @@ int Steering_initialize(int  NumSupportedCmds,
   /* Actually defined in ReG_Steer_Common.c because both steerer
      and steered have a variable of this name */
   extern char ReG_Steer_Schema_Locn[REG_MAX_STRING_LENGTH];
+  char       *schema_path = "xml_schema/reg_steer_comm.xsd";
 
   /* Don't do anything if steering is not enabled */
   if (!ReG_SteeringEnabled) return REG_SUCCESS;
@@ -114,15 +115,25 @@ int Steering_initialize(int  NumSupportedCmds,
     /* Check that path ends in '/' - if not then add one */
 
     i = strlen(pchar);
+
+#if DEBUG
+    /* Check that path of schema location fits in the string we've
+       put aside for it */
+    if((i + strlen(schema_path) + 1) > REG_MAX_STRING_LENGTH){
+
+      fprintf(stderr, "Steering_initialize: schema path exceeds "
+	      "REG_MAX_STRING_LENGTH (%d chars)\n", REG_MAX_STRING_LENGTH);
+      return REG_FAILURE;
+    }
+#endif
+
     if( pchar[i-1] != '/' ){
 
-      sprintf(ReG_Steer_Schema_Locn, "%s/xml_schema/reg_steer_comm.xsd",
-                                     pchar);
+      sprintf(ReG_Steer_Schema_Locn, "%s/%s", pchar, schema_path);
     }
     else{
 
-      sprintf(ReG_Steer_Schema_Locn, "%sxml_schema/reg_steer_comm.xsd",
-                                     pchar);
+      sprintf(ReG_Steer_Schema_Locn, "%s%s", pchar, schema_path);
     }
   }
   else{
@@ -201,8 +212,6 @@ int Steering_initialize(int  NumSupportedCmds,
     IOTypes_table.io_def = NULL;
     free(ChkTypes_table.io_def);
     ChkTypes_table.io_def = NULL;
-    free(Chk_log.entry);
-    Chk_log.entry = NULL;
     return REG_FAILURE;
   }
 
@@ -810,8 +819,11 @@ int Log_to_xml(char **pchar, int *count, const int not_sent_only)
   void *ptr;
   int   len;
   int   size = BUFSIZ;
+  int   nbytes = 0;
+  int   bytes_left;
 
   *count = 0;
+  bytes_left = size;
 
   if( !(*pchar = (char *)malloc(size*sizeof(char))) ){
 
@@ -827,26 +839,65 @@ int Log_to_xml(char **pchar, int *count, const int not_sent_only)
     if (not_sent_only && (Chk_log.entry[i].sent_to_steerer == TRUE)) continue;
 
     pentry = entry;
-    pentry += sprintf(pentry, "<Log_entry>\n"
-		          "<Key>%d</Key>\n"
-		          "<Chk_handle>%d</Chk_handle>\n"
-		            "<Chk_tag>%s</Chk_tag>\n", 
+    nbytes = snprintf(pentry, bytes_left, "<Log_entry>\n"
+		      "<Key>%d</Key>\n"
+		      "<Chk_handle>%d</Chk_handle>\n"
+		      "<Chk_tag>%s</Chk_tag>\n", 
 		      Chk_log.entry[i].key, 
 		      Chk_log.entry[i].chk_handle, 
 		      Chk_log.entry[i].chk_tag);
+
+#if DEBUG
+    /* Check for truncation of message */
+    if(nbytes >= bytes_left){
+      fprintf(stderr, "Log_to_xml: message size exceeds BUFSIZ (%d)\n", 
+	      BUFSIZ);
+      free(*pchar);
+      *pchar = NULL;
+      return REG_FAILURE;
+    }
+#endif
+    bytes_left -= nbytes;
+    pentry += nbytes;
 
     /* Associated parameters are stored contiguously so need only
        loop over the no. of params that this entry has */
     for(j=0; j<Chk_log.entry[i].num_param; j++){
 
-      pentry += sprintf(pentry, "<Param>\n"
-		            "<Handle>%d</Handle>\n" 
-		            "<Value>%s</Value>\n"
-		            "</Param>\n", 
+      nbytes = snprintf(pentry, bytes_left, "<Param>\n"
+			"<Handle>%d</Handle>\n" 
+			"<Value>%s</Value>\n"
+			"</Param>\n", 
 		        Chk_log.entry[i].param[j].handle,
 		        Chk_log.entry[i].param[j].value);
+
+#if DEBUG
+      /* Check for truncation of message */
+      if(nbytes >= bytes_left){
+	fprintf(stderr, "Log_to_xml: message size exceeds BUFSIZ (%d)\n", 
+		BUFSIZ);
+	free(*pchar);
+	*pchar = NULL;
+	return REG_FAILURE;
+      }
+#endif
+      bytes_left -= nbytes;
+      pentry += nbytes;
     }
-    pentry += sprintf(pentry, "</Log_entry>\n");
+    
+    nbytes = snprintf(pentry, bytes_left, "</Log_entry>\n");
+#if DEBUG
+    /* Check for truncation of message */
+    if(nbytes >= bytes_left){
+      fprintf(stderr, "Log_to_xml: message size exceeds BUFSIZ (%d)\n", 
+	      BUFSIZ);
+      free(*pchar);
+      *pchar = NULL;
+      return REG_FAILURE;
+    }
+#endif
+    bytes_left -= nbytes;
+    pentry += nbytes;
     
     len = strlen(entry);
 
@@ -1196,138 +1247,6 @@ int Consume_data_slice(int    IOTypeIndex,
   return return_status;
 }
 
-
-/*----------------------------------------------------------------*/
-
-int Consume_data_slice_old(REG_IOHandleType  IOHandle,
-		       int              *DataType,
-		       int              *Count,
-		       void            **pData)
-{
-  int return_status = REG_SUCCESS;
-  int index;
-
-  /* ARPDBG - for testing */
-  static int test_count_call = 0;
-  int   i, j, k, ivar;
-  int   nx = 16;
-  int   ny = 16;
-  int   nz = 16;
-  char *pdata;
-  float value;
-  double sum;
-  XDR   xdrs;
-  /* ...end of test variables */
-
-  index = (int)(IOHandle);
-
-  if( IO_channel[index].buffer == NULL ){
-
-    fprintf(stderr, "Consume_data_slice: io channel not open\n");
-    fprintf(stderr, "                    IOHandle = %d\n", index);
-    return REG_FAILURE;
-  }
-
-  /* ARPDGB For testing purposes ONLY */
-  fprintf(stderr, "Consume_data_slice: test_count_call = %d\n", 
-	  test_count_call);
-
-  if(test_count_call == 0){
-
-    *DataType = REG_CHAR;
-
-    pdata = (char *)(IO_channel[index].buffer);
-    pdata += sprintf(pdata, REG_PACKET_FORMAT, "# AVS field file\n");
-    pdata += sprintf(pdata, REG_PACKET_FORMAT, "ndim=3\n");
-    pdata += sprintf(pdata, REG_PACKET_FORMAT, "dim1= 16\n");
-    pdata += sprintf(pdata, REG_PACKET_FORMAT, "dim2= 16\n");
-    pdata += sprintf(pdata, REG_PACKET_FORMAT, "dim3= 16\n");
-    pdata += sprintf(pdata, REG_PACKET_FORMAT, "nspace=3\n");
-    pdata += sprintf(pdata, REG_PACKET_FORMAT, "field=uniform\n");
-    pdata += sprintf(pdata, REG_PACKET_FORMAT, "veclen=2\n");
-    pdata += sprintf(pdata, REG_PACKET_FORMAT, "data=xdr_float\n");
-    pdata += sprintf(pdata, REG_PACKET_FORMAT, "variable 1 filetype=binary "
-    		   "skip=0000000 stride=2\n");
-    pdata += sprintf(pdata, REG_PACKET_FORMAT, "variable 2 filetype=binary "
-    		   "skip=0000008 stride=2\n");
-    pdata += sprintf(pdata, REG_PACKET_FORMAT, "END_OF_HEADER\n");
-
-    *Count = strlen((char *)(IO_channel[index].buffer));
-
-    *pData = IO_channel[index].buffer;
-  }
-  else if(test_count_call == 1){
-
-    fprintf(stderr, "Consume_data_slice: Creating xdr data buffer...\n");
-
-    xdrmem_create(&xdrs, IO_channel[index].buffer, REG_IO_BUFSIZE, 
-		  XDR_ENCODE);
-
-    sum = 0.0;
-    for(i=0; i<nx/2; i++){
-      for(j=0; j<ny; j++){
-	for(k=0; k<nz; k++){
-	  for(ivar=0; ivar<2; ivar++){
-
-	    value = (float)sqrt((double)(i*i*(ivar+1)*0.1 + j*j*0.1 +k*k*0.1));
-
-	    sum += value;
-	    if( xdr_float(&xdrs, &(value)) != 1){
-	      fprintf(stderr, "Failed to write xdr datum no. %d\n", i);
-	      break;
-	    }
-	  }
-	}
-      }
-    }
-
-    xdr_destroy(&xdrs);
-
-    *DataType = REG_FLOAT;
-    *Count = nx*ny*nz;
-    *pData = IO_channel[index].buffer;
-  }
-  else if(test_count_call == 2){
-
-    xdrmem_create(&xdrs, IO_channel[index].buffer, REG_IO_BUFSIZE, 
-		  XDR_ENCODE);
-
-    for(i=nx/2; i<nx; i++){
-      for(j=0; j<ny; j++){
-	for(k=0; k<nz; k++){
-	  for(ivar=0; ivar<2; ivar++){
-
-	    value = sqrt((float)(i*i*(ivar+1)*0.1 + j*j*0.1 +k*k*0.1));
-
-	    if( xdr_float(&xdrs, &(value)) != 1){
-	      fprintf(stderr, "Failed to write xdr datum no. %d\n", i);
-	      break;
-	    }
-	  }
-	}
-      }
-
-    }
-
-    xdr_destroy(&xdrs);
-
-    *DataType = REG_FLOAT;
-    *Count = nx*ny*nz;
-    /**pData = &(((double *)IO_channel[index].buffer)[nx*ny*nz]);
-    *pData = &(((char *)IO_channel[index].buffer)[nx*ny*nz*8]);*/
-    *pData = IO_channel[index].buffer;
-  }
-  else{
-
-    return_status = REG_EOD;
-  }
-
-  /* ARPDBG */
-  test_count_call++;
-
-  return return_status;
-}
-
 /*----------------------------------------------------------------*/
 
 int Emit_start(int  IOType,
@@ -1387,7 +1306,6 @@ int Emit_start(int  IOType,
 int Emit_stop(int *IOTypeIndex)
 {
   char            buffer[REG_PACKET_SIZE];
-  char            fmt[16];
   int             return_status = REG_SUCCESS;
 
   /* Check that steering is enabled */
@@ -1397,8 +1315,7 @@ int Emit_stop(int *IOTypeIndex)
   if (!ReG_SteeringInit) return REG_FAILURE;
 
   /* Send footer */
-  sprintf(fmt, "%s%ds", "%-", REG_PACKET_SIZE);
-  sprintf(buffer, fmt, REG_DATA_FOOTER);
+  sprintf(buffer, REG_PACKET_FORMAT, REG_DATA_FOOTER);
 
   return_status = Emit_footer(*IOTypeIndex, buffer);
 
@@ -1576,7 +1493,7 @@ int Register_params(int    NumParams,
 
     if(current == -1){
 
-      fprintf(stderr, "Register_params: failed to get find free "
+      fprintf(stderr, "Register_params: failed to find free "
 	      "param entry\n");
       return REG_FAILURE;
     }
@@ -2122,6 +2039,8 @@ int Emit_param_defs(){
   int   i;
   char  buf[REG_MAX_MSG_SIZE];
   char *pbuf;
+  int   nbytes;
+  int   bytes_left;
 
   /* Check to see that we do actually have something to emit */
   if (Params_table.num_registered == 0) return REG_SUCCESS;
@@ -2129,51 +2048,104 @@ int Emit_param_defs(){
   /* Emit all currently registered parameters */
   
   pbuf = buf;
+  bytes_left = REG_MAX_MSG_SIZE;
+
+  /* Assume header and following line fit comfortably within
+     REG_MAX_MSG_SIZE so don't check for truncation yet */
   Write_xml_header(&pbuf);
 
   pbuf += sprintf(pbuf, "<Param_defs>\n");
+  bytes_left -= (int)(pbuf - buf);
   
   for(i=0; i<Params_table.max_entries; i++){
 
     /* Check handle because if a parameter is deleted then this is
-  	 flagged by unsetting its handle */
+       flagged by unsetting its handle */
   
     if(Params_table.param[i].handle != REG_PARAM_HANDLE_NOTSET){
   
       /* Update the 'value' part of this parameter's table entry */
       if(Get_ptr_value(&(Params_table.param[i])) == REG_SUCCESS){
     	 
-	pbuf += sprintf(pbuf, "<Param>\n"
-                              "<Label>%s</Label>\n"
-			      "<Steerable>%d</Steerable>\n"
-			      "<Type>%d</Type>\n"
-			      "<Handle>%d</Handle>\n"
-			      "<Value>%s</Value>\n", 
-			Params_table.param[i].label, 
-			Params_table.param[i].steerable,
-			Params_table.param[i].type,
-			Params_table.param[i].handle, 
-			Params_table.param[i].value);
+        nbytes = snprintf(pbuf, bytes_left, "<Param>\n"
+			  "<Label>%s</Label>\n"
+			  "<Steerable>%d</Steerable>\n"
+			  "<Type>%d</Type>\n"
+			  "<Handle>%d</Handle>\n"
+			  "<Value>%s</Value>\n", 
+			  Params_table.param[i].label, 
+			  Params_table.param[i].steerable,
+			  Params_table.param[i].type,
+			  Params_table.param[i].handle, 
+			  Params_table.param[i].value);
+
+#if DEBUG
+	/* Check for truncation */
+	if(nbytes >= bytes_left){
+
+	  fprintf(stderr, "Emit_param_defs: message exceeds max. "
+		  "msg. size of %d bytes\n", REG_MAX_MSG_SIZE);
+	  return REG_FAILURE;
+	}
+#endif
+	bytes_left -= nbytes;
+	pbuf += nbytes;
 
 	if(Params_table.param[i].is_internal == TRUE){
 
-	  pbuf += sprintf(pbuf, "<Is_internal>TRUE</Is_internal>\n");
+	  nbytes = snprintf(pbuf, bytes_left, 
+			    "<Is_internal>TRUE</Is_internal>\n");
 	}
 	else{
 
-	  pbuf += sprintf(pbuf, "<Is_internal>FALSE</Is_internal>\n");
+	  nbytes = snprintf(pbuf, bytes_left, 
+			   "<Is_internal>FALSE</Is_internal>\n");
 	}
+#if DEBUG
+	/* Check for truncation */
+	if(nbytes >= bytes_left){
 
-	pbuf += sprintf(pbuf, "<Min_value>%s</Min_value>"
-			"<Max_value>%s</Max_value>\n"
-			"</Param>\n", 
-			Params_table.param[i].min_val, 
-			Params_table.param[i].max_val);
+	  fprintf(stderr, "Emit_param_defs: message exceeds max. "
+		  "msg. size of %d bytes\n", REG_MAX_MSG_SIZE);
+	  return REG_FAILURE;
+	}
+#endif
+	bytes_left -= nbytes;
+	pbuf += nbytes;
+
+	nbytes = snprintf(pbuf, bytes_left, "<Min_value>%s</Min_value>"
+			  "<Max_value>%s</Max_value>\n"
+			  "</Param>\n", 
+			  Params_table.param[i].min_val, 
+			  Params_table.param[i].max_val);
+#if DEBUG
+	/* Check for truncation */
+	if(nbytes >= bytes_left){
+
+	  fprintf(stderr, "Emit_param_defs: message exceeds max. "
+		  "msg. size of %d bytes\n", REG_MAX_MSG_SIZE);
+	  return REG_FAILURE;
+	}
+#endif
+	bytes_left -= nbytes;
+	pbuf += nbytes;
       }
     }
   }
   
-  pbuf += sprintf(pbuf, "</Param_defs>\n");
+  nbytes = snprintf(pbuf, bytes_left, "</Param_defs>\n");
+#if DEBUG
+  /* Check for truncation */
+  if(nbytes >= bytes_left){
+
+    fprintf(stderr, "Emit_param_defs: message exceeds max. "
+	    "msg. size of %d bytes\n", REG_MAX_MSG_SIZE);
+    return REG_FAILURE;
+  }
+#endif
+  bytes_left -= nbytes;
+  pbuf += nbytes;
+
   Write_xml_footer(&pbuf);
 
   /* Physically send the message */
@@ -2187,35 +2159,52 @@ int Emit_IOType_defs(){
   int   i;
   char  buf[REG_MAX_MSG_SIZE];
   char *pbuf;
+  int   nbytes, bytes_left;
 
   /* Check that we do actually have something to emit */
   if (IOTypes_table.num_registered == 0) return REG_SUCCESS;
 
   /* Emit all currently registered IOTypes */
   
+  bytes_left = REG_MAX_MSG_SIZE;
   pbuf = buf;
   Write_xml_header(&pbuf);
 
-  pbuf += sprintf(pbuf, "<IOType_defs>\n");
+  nbytes = sprintf(pbuf, "<IOType_defs>\n");
   
+  pbuf += nbytes;
+  bytes_left -= nbytes;
+
   for(i=0; i<IOTypes_table.max_entries; i++){
   
     if(IOTypes_table.io_def[i].handle != REG_IODEF_HANDLE_NOTSET){
   
-      pbuf += sprintf(pbuf,"<IOType>\n"
-		           "<Label>%s</Label>\n"
-		           "<Handle>%d</Handle>\n", 
-		      IOTypes_table.io_def[i].label, 
-		      IOTypes_table.io_def[i].handle);
+      nbytes = snprintf(pbuf, bytes_left, "<IOType>\n"
+			"<Label>%s</Label>\n"
+			"<Handle>%d</Handle>\n", 
+			IOTypes_table.io_def[i].label, 
+			IOTypes_table.io_def[i].handle);
+
+#if DEBUG
+      /* Check for truncation */
+      if(nbytes >= bytes_left){
+
+	fprintf(stderr, "Emit_IOType_defs: message exceeds max. "
+		"msg. size of %d bytes\n", REG_MAX_MSG_SIZE);
+	return REG_FAILURE;
+      }
+#endif
+      pbuf += nbytes;
+      bytes_left -= nbytes;
 
       switch(IOTypes_table.io_def[i].direction){
 
       case REG_IO_IN:
-        pbuf += sprintf(pbuf,"<Direction>IN</Direction>\n");
+        nbytes = snprintf(pbuf, bytes_left, "<Direction>IN</Direction>\n");
 	break;
 
       case REG_IO_OUT:
-        pbuf += sprintf(pbuf,"<Direction>OUT</Direction>\n");
+        nbytes = snprintf(pbuf, bytes_left, "<Direction>OUT</Direction>\n");
 	break;
 
       default:
@@ -2225,26 +2214,58 @@ int Emit_IOType_defs(){
 #endif
 	return REG_FAILURE;
       }
+      pbuf += nbytes;
+      bytes_left -= nbytes;
 
-      pbuf += sprintf(pbuf,"<Freq_handle>%d</Freq_handle>\n",
-		      IOTypes_table.io_def[i].freq_param_handle);
+
+      nbytes = snprintf(pbuf, bytes_left, "<Freq_handle>%d</Freq_handle>\n",
+			IOTypes_table.io_def[i].freq_param_handle);
+#if DEBUG
+      /* Check for truncation */
+      if(nbytes >= bytes_left){
+
+	fprintf(stderr, "Emit_IOType_defs: message exceeds max. "
+		"msg. size of %d bytes\n", REG_MAX_MSG_SIZE);
+	return REG_FAILURE;
+      }
+#endif
+      pbuf += nbytes;
+      bytes_left -= nbytes;
+
 
 #if REG_GLOBUS_SAMPLES
-	if(IOTypes_table.io_def[i].direction == REG_IO_OUT){
+      if(IOTypes_table.io_def[i].direction == REG_IO_OUT){
 
-	  if(!strstr(IOTypes_table.io_def[i].socket_info.listener_hostname,
+	if(!strstr(IOTypes_table.io_def[i].socket_info.listener_hostname,
 		     "NOT_SET")){
-	    pbuf += sprintf(pbuf,"<Address>%s:%d</Address>\n",
+	  nbytes = snprintf(pbuf, bytes_left, "<Address>%s:%d</Address>\n",
 		     IOTypes_table.io_def[i].socket_info.listener_hostname,
 		     (int)(IOTypes_table.io_def[i].socket_info.listener_port));
+
+#if DEBUG
+	  /* Check for truncation */
+	  if(nbytes >= bytes_left){
+
+	    fprintf(stderr, "Emit_IOType_defs: message exceeds max. "
+		    "msg. size of %d bytes\n", REG_MAX_MSG_SIZE);
+	    return REG_FAILURE;
 	  }
+#endif /* DEBUG */
+	  pbuf += nbytes;
+	  bytes_left -= nbytes;
 	}
-#endif
-      pbuf += sprintf(pbuf, "</IOType>\n");
+      }
+#endif /* REG_GLOBUS_SAMPLES */
+      nbytes = snprintf(pbuf, bytes_left, "</IOType>\n");
+      pbuf += nbytes;
+      bytes_left -= nbytes;
     }
   }
   
-  pbuf += sprintf(pbuf,"</IOType_defs>\n");
+  nbytes = snprintf(pbuf, bytes_left, "</IOType_defs>\n");
+  pbuf += nbytes;
+  bytes_left -= nbytes;
+
   Write_xml_footer(&pbuf);
 
   /* Physically send message */
@@ -2258,39 +2279,56 @@ int Emit_ChkType_defs(){
   int   i;
   char  buf[REG_MAX_MSG_SIZE];
   char *pbuf;
+  int   nbytes, bytes_left;
 
   /* Check that we do actually have something to emit */
   if (ChkTypes_table.num_registered == 0) return REG_SUCCESS;
 
   /* Emit all currently registered ChkTypes */
   
+  bytes_left = REG_MAX_MSG_SIZE;
   pbuf = buf;
   Write_xml_header(&pbuf);
 
-  pbuf += sprintf(pbuf, "<ChkType_defs>\n");
+  nbytes = sprintf(pbuf, "<ChkType_defs>\n");
   
+  pbuf += nbytes;
+  bytes_left -= nbytes;
+
   for(i=0; i<ChkTypes_table.max_entries; i++){
   
     if(ChkTypes_table.io_def[i].handle != REG_IODEF_HANDLE_NOTSET){
   
-      pbuf += sprintf(pbuf,"<ChkType>\n"
-		           "<Label>%s</Label>\n"
-		           "<Handle>%d</Handle>\n", 
-		      ChkTypes_table.io_def[i].label, 
-		      ChkTypes_table.io_def[i].handle);
+      nbytes = snprintf(pbuf, bytes_left, "<ChkType>\n"
+		       "<Label>%s</Label>\n"
+		       "<Handle>%d</Handle>\n", 
+		       ChkTypes_table.io_def[i].label, 
+		       ChkTypes_table.io_def[i].handle);
+#if DEBUG
+      /* Check for truncation */
+      if(nbytes >= bytes_left){
+
+	fprintf(stderr, "Emit_ChkType_defs: message exceeds max. "
+		"msg. size of %d bytes\n", REG_MAX_MSG_SIZE);
+	return REG_FAILURE;
+      }
+#endif /* DEBUG */
+      pbuf += nbytes;
+      bytes_left -= nbytes;
+
 
       switch(ChkTypes_table.io_def[i].direction){
 
       case REG_IO_IN:
-        pbuf += sprintf(pbuf,"<Direction>IN</Direction>\n");
+        nbytes = snprintf(pbuf,bytes_left,"<Direction>IN</Direction>\n");
 	break;
 
       case REG_IO_OUT:
-        pbuf += sprintf(pbuf,"<Direction>OUT</Direction>\n");
+        nbytes = snprintf(pbuf,bytes_left,"<Direction>OUT</Direction>\n");
 	break;
 
       case REG_IO_INOUT:
-	pbuf += sprintf(pbuf,"<Direction>INOUT</Direction>\n");
+	nbytes = snprintf(pbuf,bytes_left,"<Direction>INOUT</Direction>\n");
 	break;
 
       default:
@@ -2298,17 +2336,50 @@ int Emit_ChkType_defs(){
 
 	fprintf(stderr, 
 		"Emit_ChkType_defs: Unrecognised ChkType direction\n");
-#endif
+#endif /* DEBUG */
 	return REG_FAILURE;
       }
+#if DEBUG
+      /* Check for truncation */
+      if(nbytes >= bytes_left){
 
-      pbuf += sprintf(pbuf,"<Freq_handle>%d</Freq_handle>\n"
-		           "</ChkType>\n",
-	      ChkTypes_table.io_def[i].freq_param_handle);
+	fprintf(stderr, "Emit_ChkType_defs: message exceeds max. "
+		"msg. size of %d bytes\n", REG_MAX_MSG_SIZE);
+	return REG_FAILURE;
+      }
+#endif /* DEBUG */
+      pbuf += nbytes;
+      bytes_left -= nbytes;
+
+
+      nbytes = snprintf(pbuf,bytes_left,"<Freq_handle>%d</Freq_handle>\n"
+			"</ChkType>\n",
+			ChkTypes_table.io_def[i].freq_param_handle);
+#if DEBUG
+      /* Check for truncation */
+      if(nbytes >= bytes_left){
+	fprintf(stderr, "Emit_ChkType_defs: message exceeds max. "
+		"msg. size of %d bytes\n", REG_MAX_MSG_SIZE);
+	return REG_FAILURE;
+      }
+#endif /* DEBUG */
+      pbuf += nbytes;
+      bytes_left -= nbytes;
     }
   }
   
-  pbuf += sprintf(pbuf,"</ChkType_defs>\n");
+  nbytes = snprintf(pbuf,bytes_left,"</ChkType_defs>\n");
+#if DEBUG
+  /* Check for truncation */
+  if(nbytes >= bytes_left){
+    fprintf(stderr, "Emit_ChkType_defs: message exceeds max. "
+	    "msg. size of %d bytes\n", REG_MAX_MSG_SIZE);
+    return REG_FAILURE;
+  }
+#endif /* DEBUG */
+  pbuf += nbytes;
+  bytes_left -= nbytes;
+
   Write_xml_footer(&pbuf);
 
   /* Physically send message */
@@ -2702,24 +2773,39 @@ int Detach_from_steerer()
 
   Detach_from_steerer_soap();
 
-#else
+#else /* File-based steering */
 
   char  filename[REG_MAX_STRING_LENGTH];
 
   /* Remove lock file that indicates app is being steered */
 
-  sprintf(filename, "%s%s", Steerer_connection.file_root, 
-	  STR_CONNECTED_FILENAME);
+  if( snprintf(filename, REG_MAX_STRING_LENGTH, "%s%s", 
+	       Steerer_connection.file_root, 
+	       STR_CONNECTED_FILENAME) >= REG_MAX_STRING_LENGTH ){
+
+    fprintf(stderr, "Detach_from_steerer: name of lock-file exceeds %d"
+	    " characters - increase REG_MAX_STRING_LENGTH\n", 
+	    REG_MAX_STRING_LENGTH);
+    return REG_FAILURE;
+  }
+
   remove(filename);
 
   /* Remove any files that steerer has produced that we won't
      now be consuming */
 
-  sprintf(filename, "%s%s", Steerer_connection.file_root, 
-	  STR_TO_APP_FILENAME);
+  if( snprintf(filename, REG_MAX_STRING_LENGTH, "%s%s", 
+	       Steerer_connection.file_root, 
+	       STR_TO_APP_FILENAME) >= REG_MAX_STRING_LENGTH ){
+
+    fprintf(stderr, "Detach_from_steerer: name of steerer ctrl files "
+	    "exceeds %d characters - increase REG_MAX_STRING_LENGTH\n", 
+	    REG_MAX_STRING_LENGTH);
+    return REG_FAILURE;
+  }
   Remove_files(filename);
 
-#endif
+#endif /* File-based steering */
 
   /* Flag that all entries in log need to be sent to steerer (in case
      another one attaches later on) */
@@ -2750,6 +2836,7 @@ int Emit_status(int   SeqNum,
   int   paramdone = FALSE;
   char  buf[REG_MAX_MSG_SIZE];
   char *pbuf;
+  int   nbytes, bytes_left;
 
   /* Emit a status report - this is complicated because we must ensure we
      don't write too many params or commands to a single file (self-imposed
@@ -2775,18 +2862,24 @@ int Emit_status(int   SeqNum,
       paramdone = TRUE;
     }
   }
+  else{
+    cmddone = TRUE;
+  }
 
-  if(NumCommands == 0) cmddone = TRUE;
   if(num_param == 0) paramdone = TRUE;
 
   /* Loop until all params and commands have been emitted */
 
   while(!paramdone || !cmddone){
 
+    bytes_left = REG_MAX_MSG_SIZE;
     pbuf = buf;
 
     Write_xml_header(&pbuf);
-    pbuf += sprintf(pbuf, "<App_status>\n");
+    nbytes = sprintf(pbuf, "<App_status>\n");
+
+    pbuf += nbytes;
+    bytes_left -= nbytes;
 
     /* Parameter values section */
 
@@ -2804,13 +2897,25 @@ int Emit_status(int   SeqNum,
 	     controlled (& hence has valid ptr to get value from) */
  	  Get_ptr_value(&(Params_table.param[tot_pcount]));
 
- 	  pbuf += sprintf(pbuf, "<Param>\n"
-			        "<Handle>%d</Handle>\n"
-			        "<Value>%s</Value>\n"
-			        "</Param>\n", 
- 		  Params_table.param[tot_pcount].handle, 
-		  Params_table.param[tot_pcount].value);
-  
+ 	  nbytes = snprintf(pbuf, bytes_left, "<Param>\n"
+			    "<Handle>%d</Handle>\n"
+			    "<Value>%s</Value>\n"
+			    "</Param>\n", 
+			    Params_table.param[tot_pcount].handle, 
+			    Params_table.param[tot_pcount].value);
+#if DEBUG
+	  /* Check for truncation */
+	  if(nbytes >= bytes_left){
+
+	    fprintf(stderr, "Emit_status: message exceeds max. "
+		    "msg. size of %d bytes\n", REG_MAX_MSG_SIZE);
+	    return REG_FAILURE;
+	  }
+#endif /* DEBUG */
+ 
+	  pbuf += nbytes;
+	  bytes_left -= nbytes;
+
  	  pcount++;
     	}
   
@@ -2835,10 +2940,22 @@ int Emit_status(int   SeqNum,
 
       for(i=0; i<REG_MAX_NUM_STR_CMDS; i++){
   
-    	pbuf += sprintf(pbuf, "<Command>\n"
-			      "<Cmd_id>%d</Cmd_id>\n"
-			      "</Command>\n", 
-			Commands[ccount]);
+    	nbytes = snprintf(pbuf, bytes_left, "<Command>\n"
+			  "<Cmd_id>%d</Cmd_id>\n"
+			  "</Command>\n", 
+			  Commands[ccount]);
+#if DEBUG
+	/* Check for truncation */
+	if(nbytes >= bytes_left){
+
+	  fprintf(stderr, "Emit_status: message exceeds max. "
+		  "msg. size of %d bytes\n", REG_MAX_MSG_SIZE);
+	  return REG_FAILURE;
+	}
+#endif /* DEBUG */
+	pbuf += nbytes;
+	bytes_left -= nbytes;
+
     	ccount++;
   
     	if(ccount >= NumCommands){
@@ -2848,7 +2965,10 @@ int Emit_status(int   SeqNum,
       }
     }
 
-    pbuf += sprintf(pbuf, "</App_status>\n");
+    nbytes = snprintf(pbuf, bytes_left, "</App_status>\n");
+
+    pbuf += nbytes;
+    bytes_left -= nbytes;
 
     Write_xml_footer(&pbuf);
 
@@ -3252,8 +3372,20 @@ int Steerer_connected_file()
   char   filename[REG_MAX_STRING_LENGTH];
   FILE  *fp;
 
+#if DEBUG
+  if( snprintf(filename, REG_MAX_STRING_LENGTH, "%s%s", 
+	       Steerer_connection.file_root, 
+	       STR_CONNECTED_FILENAME) >= REG_MAX_STRING_LENGTH){
+
+    fprintf(stderr, "Steerer_connected_file: full path name of lockfile "
+	    "indicating steerrer connected exceeds %d chars - increase "
+	    "REG_MAX_STRING_LENGTH\n", REG_MAX_STRING_LENGTH);
+    return REG_FAILURE;
+  }
+#else
   sprintf(filename, "%s%s", Steerer_connection.file_root, 
 	  STR_CONNECTED_FILENAME);
+#endif /* DEBUG */
 
   if( (fp = fopen(filename, "r")) ){
 
@@ -3338,7 +3470,18 @@ struct msg_struct *Get_control_msg_file()
   FILE                *fp;
   char                 filename[REG_MAX_STRING_LENGTH];
 
+#if DEBUG
+  if( snprintf(filename, REG_MAX_STRING_LENGTH, "%s%s", 
+	       Steerer_connection.file_root, 
+	       STR_TO_APP_FILENAME) >= REG_MAX_STRING_LENGTH){
+
+    fprintf(stderr, "Get_control_msg_file: length of ctrl msg filename "
+	    "exceeds %d chars - increase REG_MAX_STRING_LENGTH\n", 
+	    REG_MAX_STRING_LENGTH);
+  }
+#else
   sprintf(filename, "%s%s", Steerer_connection.file_root, STR_TO_APP_FILENAME);
+#endif
 
   if( (fp = Open_next_file(filename)) != NULL){
 
@@ -3397,6 +3540,7 @@ int Initialize_steering_connection_file(int  NumSupportedCmds,
   char  buf[REG_MAX_MSG_SIZE];
   char  filename[REG_MAX_STRING_LENGTH];
   int   i;
+  int   len, max_len;
 
   /* Set location of all comms files */
 
@@ -3407,6 +3551,34 @@ int Initialize_steering_connection_file(int  NumSupportedCmds,
     /* Check that path ends in '/' - if not then add one */
 
     i = strlen(pchar);
+
+#if DEBUG
+    /* Check that we've got enough memory to hold full path
+       for steering-message filenames */
+    max_len = strlen(REG_LOG_FILENAME);
+    if((len = strlen(APP_STEERABLE_FILENAME)) > max_len){
+      max_len = len;
+    }
+    if((len = strlen(STR_CONNECTED_FILENAME)) > max_len){
+      max_len = len;
+    }
+    if((len = strlen(APP_TO_STR_FILENAME "_1000.lock")) > max_len){
+      max_len = len;
+    }
+    if((len = strlen(STR_TO_APP_FILENAME "_1000.lock")) > max_len){
+      max_len = len;
+    }
+
+    if((i + max_len + 1) > REG_MAX_STRING_LENGTH){
+
+      fprintf(stderr, "Initialize_steering_connection_file: "
+	      "REG_MAX_STRING_LENGTH (%d chars) less\nthan predicted "
+	      "string length of %d chars\n", REG_MAX_STRING_LENGTH, 
+	      (i+max_len+1));
+      return REG_FAILURE;
+    }
+#endif
+
     if( pchar[i-1] != '/' ){
 
       sprintf(Steerer_connection.file_root, "%s/", pchar);
@@ -3534,8 +3706,10 @@ int Finalize_steering_connection()
 
 int Finalize_steering_connection_file()
 {
-  int  max, max1;
   char sys_command[REG_MAX_STRING_LENGTH];
+
+#if DEBUG
+  int  max, max1;
 
   max = strlen(APP_STEERABLE_FILENAME);
   max1 = strlen(STR_CONNECTED_FILENAME);
@@ -3548,6 +3722,7 @@ int Finalize_steering_connection_file()
     fprintf(stderr, "Finalize_steering_connection: WARNING: truncating "
 	    "filename\n");
   }
+#endif
 
   /* Delete the lock file that indicates we are steerable */
   sprintf(sys_command, "%s%s", Steerer_connection.file_root,
@@ -3737,13 +3912,13 @@ int Get_communication_status(const int	index)
 
 /*---------------------------------------------------*/
 
-int Consume_iotype_msg_header(int IOTypeIndex, /*socket_io_type *sock_info,*/
+int Consume_iotype_msg_header(int  IOTypeIndex,
 			      int *DataType,
 			      int *Count)
 {
   
 #if REG_GLOBUS_SAMPLES
-  return Consume_msg_header_globus(&(IOTypes_table.io_def[IOTypeIndex].socket_info), /*sock_info,*/
+  return Consume_msg_header_globus(&(IOTypes_table.io_def[IOTypeIndex].socket_info),
 				   DataType,
 				   Count);
 #else
