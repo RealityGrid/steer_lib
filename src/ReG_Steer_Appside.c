@@ -341,6 +341,26 @@ int Steering_initialize(int  NumSupportedCmds,
   Params_table.param[i].max_val_valid = FALSE;
   Increment_param_registered(&Params_table);
 
+  /* Set-up a steerable parameter to control how often the steering lib.
+     attempts to do steering stuff (a value of 1 means everytime that
+     Steering_control is called, 10 means once for every ten calls etc.) */
+  Steerer_connection.steer_interval = 1;
+
+  i = Params_table.num_registered;
+  Params_table.param[i].ptr       = (void *)(&(Steerer_connection.steer_interval));
+  Params_table.param[i].type      = REG_INT;
+  Params_table.param[i].handle    = REG_STEER_INTERVAL_HANDLE;
+  Params_table.param[i].steerable = TRUE;
+  Params_table.param[i].modified  = FALSE;
+  Params_table.param[i].is_internal=FALSE;
+  sprintf(Params_table.param[i].label, "STEERING INTERVAL");
+  sprintf(Params_table.param[i].value, "1");
+  sprintf(Params_table.param[i].min_val, "1");
+  Params_table.param[i].min_val_valid = TRUE;
+  sprintf(Params_table.param[i].max_val, "");
+  Params_table.param[i].max_val_valid = FALSE;
+  Increment_param_registered(&Params_table);
+
   /* Set-up/prepare for connection to steering client */
   if(Initialize_steering_connection(NumSupportedCmds, 
 				    SupportedCmds) != REG_SUCCESS){
@@ -2005,6 +2025,7 @@ int Steering_control(int     SeqNum,
 {
   int    i;
   int    status;
+  int    do_steer;
   int    detached;
   int    count         = 0;
   int    return_status = REG_SUCCESS;
@@ -2079,11 +2100,15 @@ int Steering_control(int     SeqNum,
     }
   }
 
+  /* Throttle how often we perform steering-related activity - for
+     use when a simulation step is v. short */
+  do_steer = ((SeqNum % Steerer_connection.steer_interval) == 0);
+
   /* If we're not steering via SOAP (and a Steering Grid Service)
      then we can't emit our parameter definitions etc. until
      a steerer has connected */
 #if !REG_SOAP_STEERING
-  if(ReG_SteeringActive){
+  if(ReG_SteeringActive && do_steer){
 #endif /* !REG_SOAP_STEERING */
 
     /* If registered params have changed since the last time then
@@ -2130,7 +2155,7 @@ int Steering_control(int     SeqNum,
        definitions etc., irrespective of whether a steerer is
        attached */
 #if REG_SOAP_STEERING
-  if(ReG_SteeringActive){
+  if(ReG_SteeringActive && do_steer){
 #endif
 
     /* If we're being steered (no matter how) then... */
@@ -2153,7 +2178,7 @@ int Steering_control(int     SeqNum,
     if(step_time_index != -1){
 
       new_time = clock();
-      time_per_step = (float)(new_time - previous_time)/(float)CLOCKS_PER_SEC;
+      time_per_step = (float)(new_time - previous_time)/(float)(CLOCKS_PER_SEC*Steerer_connection.steer_interval);
       previous_time = new_time;
 
       /* First value we get will be rubbish because need two passes 
@@ -2335,7 +2360,7 @@ int Auto_generate_steer_cmds(int    SeqNum,
     /* A freq. of zero indicates no automatic emit/consume */
     if(IOTypes_table.io_def[i].frequency == 0) continue;
 
-    if(fmod(SeqNum, IOTypes_table.io_def[i].frequency) >= REG_TOL_ZERO)continue;
+    if((SeqNum % IOTypes_table.io_def[i].frequency) != 0)continue;
 
     if( *posn >= REG_MAX_NUM_STR_CMDS ){
       fprintf(stderr, "Auto_generate_steer_cmds: WARNING: discarding "
@@ -2373,7 +2398,7 @@ int Auto_generate_steer_cmds(int    SeqNum,
     /* A freq. of zero indicates no automatic emit/consume */
     if(ChkTypes_table.io_def[i].frequency == 0) continue;
 
-    if(fmod(SeqNum, ChkTypes_table.io_def[i].frequency) >= REG_TOL_ZERO)continue;
+    if( (SeqNum % ChkTypes_table.io_def[i].frequency) != 0)continue;
 
     if( *posn >= REG_MAX_NUM_STR_CMDS ){
       fprintf(stderr, "Auto_generate_steer_cmds: WARNING: discarding "
@@ -4280,6 +4305,7 @@ int Initialize_steering_connection(int  NumSupportedCmds,
       Steerer_connection.polling_interval = (double)interval;
     }
   }
+
 #if REG_DEBUG
   fprintf(stderr, "Initialize_steering_connection: polling "
 	  "interval = %d\n", (int)Steerer_connection.polling_interval);
