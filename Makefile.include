@@ -93,10 +93,6 @@ GLOBUS_LDFLAGS =
 # Set flag to 1 to use globus for iotype samples communication, 0 to not 
 REG_GLOBUS_SAMPLES_FLAG = 0
 
-# Set flag to 1 to use globus for steering communication, 0 to not
-# NOT FULLY IMPLEMENTED - should always be set to 0.
-REG_GLOBUS_STEERING_FLAG = 0
-
 # Set flag to 1 to use SOAP for steering communication, 0 to not 
 REG_SOAP_STEERING_FLAG = 0
 
