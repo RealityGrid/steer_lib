@@ -81,18 +81,22 @@
 
 /* Return values */
 
-#define REG_SUCCESS   0
-#define REG_FAILURE   1
-#define REG_EOD       2
-#define REG_MEM_FAIL  3
-#define REG_TIMED_OUT 4
-#define REG_NOT_READY 5
+#define REG_SUCCESS    0
+#define REG_FAILURE    1
+#define REG_EOD        2
+#define REG_MEM_FAIL   3
+#define REG_TIMED_OUT  4
+#define REG_NOT_READY  5
+#define REG_UNFINISHED 6
 
 /* Limit on number of commands steerer can send at any one time */
 #define REG_MAX_NUM_STR_CMDS 20
 
 /* Limit on number of parameters steerer can modify at any one time */
 #define REG_MAX_NUM_STR_PARAMS 40
+
+/* Limit on number of log messages we can send in one go */
+#define REG_MAX_NUM_LOG_MSG 20
 
 /* Initial sizes for internal tables of registered IO types 
    and parameters */
