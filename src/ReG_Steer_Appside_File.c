@@ -409,10 +409,10 @@ int Consume_start_data_check_file(int index){
   fileroot[++i] = '\0';
 
   /* Replace any spaces with '_' */
-  pchar = strchr(fileroot, ' ');
+  pchar = (char*) strchr(fileroot, ' ');
   while( pchar && ((pchar - fileroot + 1) < i) ){
     *pchar = '_';
-    pchar = strchr(++pchar,' ');
+    pchar = (char*) strchr(++pchar,' ');
   }
 
   strcat(fileroot, "_*.lock");
@@ -434,7 +434,7 @@ int Consume_start_data_check_file(int index){
   remove(IOTypes_table.io_def[index].filename);
 
   /* Remove the '.lock' from the filename */
-  pchar = strstr(IOTypes_table.io_def[index].filename, ".lock");
+  pchar = (char*) strstr(IOTypes_table.io_def[index].filename, ".lock");
 
   if(!pchar){
     fprintf(stderr, "Consume_start_data_check_file: failed to strip .lock!\n");
