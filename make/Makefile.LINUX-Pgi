@@ -1,0 +1,66 @@
+#  Include file for Linux specific configuration.
+#
+#  (C) Copyright 2002, 2004, University of Manchester, United Kingdom,
+#  all rights reserved.
+#
+#  This software is produced by the Supercomputing, Visualization and
+#  e-Science Group, Manchester Computing, University of Manchester
+#  as part of the RealityGrid project (http://www.realitygrid.org),
+#  funded by the EPSRC under grants GR/R67699/01 and GR/R67699/02.
+#
+#  LICENCE TERMS
+#
+#  Redistribution and use in source and binary forms, with or without
+#  modification, are permitted provided that the following conditions
+#  are met:
+#  1. Redistributions of source code must retain the above copyright
+#     notice, this list of conditions and the following disclaimer.
+#  2. Redistributions in binary form must reproduce the above copyright
+#     notice, this list of conditions and the following disclaimer in the
+#     documentation and/or other materials provided with the distribution.
+#
+#  THIS MATERIAL IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+#  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+#  LIMITED  TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+#  A PARTICULAR PURPOSE ARE DISCLAIMED. THE ENTIRE RISK AS TO THE QUALITY
+#  AND PERFORMANCE OF THE PROGRAM IS WITH YOU.  SHOULD THE PROGRAM PROVE
+#  DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR
+#  CORRECTION.
+#
+#  Authors........: Andrew Porter, Robert Haines
+#
+#--------------------------------------------------------------------
+
+# Number of bits... 32 or 64...
+NBIT = 32
+
+# Location of C compiler and flags to use
+CC = pgcc
+C_FLAGS = -O2
+
+# Location of F90 compiler (if any) and flags to use
+F90 = pgf90
+F90_MPI = pgf90
+F90_FLAGS = 
+MPI_FLAGS = -lmpich
+
+# Location of java compiler - used to produce proxy binary
+JAVAC          = /usr/bin/javac
+
+# Location of the M4 macro processor (used to generate F90 wrappers)
+M4 = m4
+
+# Location of the ar command and flags needed to add an object to an archive
+AR = ar
+AR_FLAGS = rv
+
+# include directories
+STEER_INCLUDES = -I${REG_STEER_HOME}/include \
+                 -I${REG_XML_INCDIR}
+
+# library directories
+STEER_LIBS = -L${REG_STEER_HOME}/lib${NBIT} \
+             -L${REG_XML_LIBDIR}
+
+# Libraries to link example applications against
+STEER_LDFLAGS = -lm -lz -lxml2
