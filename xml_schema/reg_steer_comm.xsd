@@ -74,6 +74,10 @@
 
 <xs:complexType name="ControlType">
 	<xs:sequence>
+                <!-- Optional element to specify a simulation time (S) before 
+                     which this control message is not valid -->
+                <xs:element name="Valid_after" type="xs:double" 
+                    minOccurs="0" maxOccurs="1" />
                 <!-- A command such as STOP or emit data (== handle of IOType) -->
 		<xs:element name="Command" type="CmdType"
 		    minOccurs="0" maxOccurs="unbounded" />
