@@ -44,7 +44,8 @@
   EXTERNAL steering_finalize_f
   EXTERNAL register_iotypes_f
   EXTERNAL register_chktypes_f
-  EXTERNAL register_params_f
+  EXTERNAL register_param_f
+  EXTERNAL register_string_param_f
   EXTERNAL record_chkpt_f
   EXTERNAL consume_start_f
   EXTERNAL consume_stop_f

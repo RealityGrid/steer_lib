@@ -63,6 +63,8 @@ int main(){
   void  *param_ptrs[REG_INITIAL_NUM_PARAMS];
   int    param_types[REG_INITIAL_NUM_PARAMS];
   int    param_strbl[REG_INITIAL_NUM_PARAMS];
+  char  *param_min[REG_INITIAL_NUM_PARAMS];
+  char  *param_max[REG_INITIAL_NUM_PARAMS];
 	 
   int    status;
   int    numCommands;
@@ -168,7 +170,7 @@ int main(){
   iotype_frequency[1] = 0;
 
   iotype_labels[2] = "YET_ANOTHER_CHECKPOINT";
- iotype_dirn[2] = REG_IO_INOUT;
+  iotype_dirn[2] = REG_IO_INOUT;
   iotype_frequency[2] = 0;
 
   num_chktypes = 3;
@@ -191,43 +193,61 @@ int main(){
   param_ptrs[0]   = (void *)(&opacity_step_start);
   param_types[0]  = REG_INT;
   param_strbl[0]  = TRUE;
+  param_min[0]    = "0";
+  param_max[0]    = "256";
 
   param_labels[1] = "OPACITY_STEP_STOP";
   param_ptrs[1]   = (void *)(&opacity_step_stop);
   param_types[1]  = REG_INT;
   param_strbl[1]  = TRUE;
+  param_min[1]    = "0";
+  param_max[1]    = "256";
 
   param_labels[2] = "TEMP";
   param_ptrs[2]   = (void *)(&temp);
   param_types[2]  = REG_FLOAT;
   param_strbl[2]  = FALSE;
+  param_min[2]    = "0.0";
+  param_max[2]    = "1000.0";
 
   param_labels[3] = "A_STRING";
   sprintf(my_string, "running");
   param_ptrs[3]   = (void *)(my_string);
   param_types[3]  = REG_CHAR;
   param_strbl[3]  = TRUE;
+  /* Max. and min. not applicable to strings */
+  param_min[3]    = "0";
+  param_max[3]    = "1";
+
 
   param_labels[4] = "a_axis";
   param_ptrs[4]   = (void *)(&aaxis);
   param_types[4]  = REG_DBL;
   param_strbl[4]  = TRUE;
+  param_min[4]    = "0.01";
+  param_max[4]    = "10.0";
 
   param_labels[5] = "b_axis";
   param_ptrs[5]   = (void *)(&baxis);
   param_types[5]  = REG_DBL;
   param_strbl[5]  = TRUE;
+  param_min[5]    = "0.01";
+  param_max[5]    = "10.0";
 
   param_labels[6] = "c_axis";
   param_ptrs[6]   = (void *)(&caxis);
   param_types[6]  = REG_DBL;
   param_strbl[6]  = TRUE;
+  param_min[6]    = "0.01";
+  param_max[6]    = "10.0";
 
    status = Register_params(7,
-			   param_labels,
-			   param_strbl,
-			   param_ptrs,
-			   param_types);
+			    param_labels,
+			    param_strbl,
+			    param_ptrs,
+			    param_types,
+			    param_min,
+			    param_max);
 
   if(status != REG_SUCCESS){
 

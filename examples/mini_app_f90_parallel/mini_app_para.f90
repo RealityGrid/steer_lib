@@ -67,7 +67,6 @@ PROGRAM para_mini_app
   INTEGER (KIND=REG_SP_KIND) :: output_freq = 5
 
   ! For parameters
-  INTEGER (KIND=REG_SP_KIND) :: num_params
   CHARACTER(LEN=REG_MAX_STRING_LENGTH) :: param_label
   INTEGER (KIND=REG_SP_KIND) :: param_type
   INTEGER (KIND=REG_SP_KIND) :: param_strbl
@@ -111,9 +110,7 @@ PROGRAM para_mini_app
   dum_real  = 123.45
   dum_int   = 5
 
-  dum_str = " "
-  dum_str = "hello"
-  dum_str(6:6) = CHAR(0)
+  dum_str = "hello"//CHAR(0)
 
   ! Enable steering
   IF(my_id .eq. 0)THEN
@@ -136,12 +133,9 @@ PROGRAM para_mini_app
 
     ! Register the input IO channel
 
-    num_types = 1
-    io_labels(1) = " "
-    io_labels(1) = "VTK_STRUCTURED_POINTS_INPUT"
-    io_labels(1)(28:28) = CHAR(0)
-
-    io_dirn(1) = REG_IO_IN
+    num_types    = 1
+    io_labels(1) = "VTK_STRUCTURED_POINTS_INPUT"//CHAR(0)
+    io_dirn(1)   = REG_IO_IN
     
     CALL register_iotypes_f(num_types, io_labels, io_dirn, &
                             input_freq, iotype_handles(1), status)
@@ -156,11 +150,8 @@ PROGRAM para_mini_app
   
     WRITE(*,*) 'Returned IOtype = ', iotype_handles(1)
   
-    io_labels(1) = " "
-    io_labels(1) = "SOME_OUTPUT"
-    io_labels(1)(12:12) = CHAR(0)
-  
-    io_dirn(1) = REG_IO_OUT
+    io_labels(1) = "SOME_OUTPUT"//CHAR(0)
+    io_dirn(1)   = REG_IO_OUT
     
     CALL register_iotypes_f(num_types, io_labels, io_dirn, &
                             output_freq, iotype_handles(2), status)
@@ -176,11 +167,8 @@ PROGRAM para_mini_app
     WRITE(*,*) 'Returned IOtype = ', iotype_handles(2)
 
     num_chk_types = 1
-    chk_labels(1) = " "
-    chk_labels(1) = "SOME_CHECKPOINT"
-    chk_labels(1)(12:12) = CHAR(0)
-
-    chk_dirn(1) = REG_IO_INOUT
+    chk_labels(1) = "SOME_CHECKPOINT"//CHAR(0)
+    chk_dirn(1)   = REG_IO_INOUT
   
     CALL register_chktypes_f(num_chk_types, chk_labels, chk_dirn, &
                             output_freq, chk_handles(1), status)
@@ -197,67 +185,50 @@ PROGRAM para_mini_app
 
     ! Register some parameters
   
-    num_params  = 1
-
-    param_label = " "
-    param_label = "test_integer"
-    param_label(13:13) = CHAR(0)
+    param_label = "test_integer"//CHAR(0)
     param_type  = REG_INT
     param_strbl = reg_true
   
-    CALL register_params_f(num_params, param_label, param_strbl, dum_int, &
-                           param_type, status)
+    CALL register_param_f(param_label, param_strbl, dum_int, &
+                          param_type, "0", "100", status)
   
     ! Registration uses address of variable so use second 'dum_int' here
     ! rather than simply changing value of first one
-    param_label = " "
-    param_label = "2nd_test_integer"
-    param_label(17:17) = CHAR(0)
+    param_label = "2nd_test_integer"//CHAR(0)
     param_strbl = reg_false
   
-    CALL register_params_f(num_params, param_label, param_strbl, dum_int2, &
-                           param_type, status)
+    CALL register_param_f(param_label, param_strbl, dum_int2, &
+                          param_type, "-50", "50", status)
   
-    param_label = " "
-    param_label = "test_real"
-    param_label(10:10) = CHAR(0)
+    param_label = "test_real"//CHAR(0)
     param_type  = REG_FLOAT
     param_strbl = reg_false
     
-    CALL register_params_f(num_params, param_label, param_strbl, dum_real, &
-                           param_type, status)
+    CALL register_param_f(param_label, param_strbl, dum_real, &
+                          param_type, "-200.0", "200.0", status)
   
-    param_label = " "
-    param_label = "2nd_test_real"
-    param_label(14:14) = CHAR(0)
+    param_label = "2nd_test_real"//CHAR(0)
     param_type  = REG_FLOAT
     param_strbl = reg_true
     
-    CALL register_params_f(num_params, param_label, param_strbl, dum_real2, &
-                           param_type, status)
+    CALL register_param_f(param_label, param_strbl, dum_real2, &
+                          param_type, "-200.0", "200.0", status)
   
-    param_label = " "
-    param_label = "test_string"
-    param_label(12:12) = CHAR(0)
+    param_label = "test_string"//CHAR(0)
     param_type  = REG_CHAR
     param_strbl = reg_true
     
     ! Getting a pointer to a string from F90 is a bit tricky so use
-    ! the following function to produce the quantity that is actually
-    ! passed to register_params_f
-    CALL steering_char_to_ptr_f(dum_str, ptr);
+    ! the following string-specific function to register a string for
+    ! steering/monitoring  
+    CALL register_string_param_f(param_label, param_strbl, dum_str, status)
   
-    CALL register_params_f(num_params, param_label, param_strbl, ptr, &
-                           param_type, status)
-  
-    param_label = " "
-    param_label = "test_double"
-    param_label(12:12) = CHAR(0)
+    param_label = "test_double"//CHAR(0)
     param_type  = REG_DBL
     param_strbl = reg_true
   
-    CALL register_params_f(num_params, param_label, param_strbl, dum_dbl, &
-                           param_type, status)
+    CALL register_param_f(param_label, param_strbl, dum_dbl, &
+                          param_type, "50.0d0", "150.0d0", status)
   
   
     IF(status .ne. REG_SUCCESS)THEN
@@ -296,6 +267,8 @@ PROGRAM para_mini_app
 
     ! Steering is all done on master px only...
     IF(my_id .eq. 0)THEN
+
+      WRITE (*,*) 'Starting loop ',iloop
 
       CALL steering_control_f(iloop, num_params_changed, changed_param_labels,&
                               num_recvd_cmds, recvd_cmds, recvd_cmd_params, &

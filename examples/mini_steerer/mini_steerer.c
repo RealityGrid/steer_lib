@@ -66,6 +66,8 @@ int main(){
   int    param_types[REG_INITIAL_NUM_PARAMS];
   char  *param_vals[REG_INITIAL_NUM_PARAMS];
   char  *param_labels[REG_INITIAL_NUM_PARAMS];
+  char  *param_vals_min[REG_INITIAL_NUM_PARAMS];
+  char  *param_vals_max[REG_INITIAL_NUM_PARAMS];
   int    num_types;
 
   int    io_handles[REG_INITIAL_NUM_IOTYPES];
@@ -88,8 +90,11 @@ int main(){
 
     param_vals[i]   = (char *)malloc(REG_MAX_STRING_LENGTH*sizeof(char));
     param_labels[i] = (char *)malloc(REG_MAX_STRING_LENGTH*sizeof(char));
+    param_vals_min[i] = (char *)malloc(REG_MAX_STRING_LENGTH*sizeof(char));
+    param_vals_max[i] = (char *)malloc(REG_MAX_STRING_LENGTH*sizeof(char));
 
-    if(param_vals[i]==NULL || param_labels[i]==NULL){
+    if(param_vals[i]==NULL || param_labels[i]==NULL || 
+       param_vals_min[i]==NULL || param_vals_max[i]==NULL){
       fprintf(stderr, "Error allocating memory for params - quitting\n");
       return 1;
     }
@@ -182,7 +187,9 @@ int main(){
 			  param_handles,
 			  param_labels,
 			  param_vals,
-			  param_types) != REG_FAILURE){
+			  param_types,
+			  param_vals_min,
+			  param_vals_max) != REG_FAILURE){
 
 	for(i=0; i<num_params; i++){
 
@@ -211,7 +218,9 @@ int main(){
 			  param_handles,
 			  param_labels,
 			  param_vals,
-			  param_types) != REG_FAILURE){
+			  param_types,
+			  param_vals_min,
+			  param_vals_max) != REG_FAILURE){
 
 	for(i=0; i<num_params; i++){
 
@@ -619,6 +628,8 @@ int main(){
 
     if (param_vals[i]) free(param_vals[i]);
     if (param_labels[i]) free(param_labels[i]);
+    if (param_vals_min[i]) free(param_vals_min[i]);
+    if (param_vals_max[i]) free(param_vals_max[i]);
   }
 
   /* Stuff for IO definitions */
@@ -640,6 +651,8 @@ int Edit_parameter(int sim_handle)
   int    param_types[REG_INITIAL_NUM_PARAMS];
   char  *param_vals[REG_INITIAL_NUM_PARAMS];
   char  *param_labels[REG_INITIAL_NUM_PARAMS];
+  char  *param_vals_min[REG_INITIAL_NUM_PARAMS];
+  char  *param_vals_max[REG_INITIAL_NUM_PARAMS];
   int    i;
   int    input;
   char   user_str[REG_MAX_STRING_LENGTH];
@@ -651,8 +664,11 @@ int Edit_parameter(int sim_handle)
 
     param_vals[i]   = (char *)malloc(REG_MAX_STRING_LENGTH*sizeof(char));
     param_labels[i] = (char *)malloc(REG_MAX_STRING_LENGTH*sizeof(char));
+    param_vals_min[i] = (char *)malloc(REG_MAX_STRING_LENGTH*sizeof(char));
+    param_vals_max[i] = (char *)malloc(REG_MAX_STRING_LENGTH*sizeof(char));
 
-    if(param_vals[i]==NULL || param_labels[i]==NULL){
+    if(param_vals[i]==NULL || param_labels[i]==NULL || 
+       param_vals_min[i]==NULL || param_vals_max[i]==NULL){
       fprintf(stderr, "Error allocating memory for params - quitting\n");
       return REG_FAILURE;
     }
@@ -672,12 +688,15 @@ int Edit_parameter(int sim_handle)
     			param_handles,
     			param_labels,
     			param_vals,
-			param_types) != REG_FAILURE){
+			param_types,
+			param_vals_min,
+			param_vals_max) != REG_FAILURE){
     
       fprintf(stderr, "Which of the following do you wish to edit?\n\n");
     
       for(i=0; i<num_params; i++){
-    	fprintf(stderr, "%d: %s = %s\n", i, param_labels[i], param_vals[i]);
+    	fprintf(stderr, "%d: %s = %s (%s,%s)\n", i, param_labels[i], 
+		param_vals[i], param_vals_min[i], param_vals_max[i]);
       }
 
       fprintf(stderr, "Enter choice or 'c' to cancel: ");

@@ -62,6 +62,20 @@ typedef struct {
 
 } Output_log_struct;
 
+/* Possible data structure used to return details of steerable/monitored
+   parameters ARPDBG */
+
+typedef struct {
+
+  char  label[REG_MAX_STRING_LENGTH];
+  int   type;
+  int   handle;
+  char  value[REG_MAX_STRING_LENGTH];
+  char  min_val[REG_MAX_STRING_LENGTH];
+  char  max_val[REG_MAX_STRING_LENGTH];
+
+} Param_details_struct;
+
 /*-------------- Steerer-side function prototypes -------------*/
 
 /* Returns list of steerable applications returned by UNICORE 
@@ -157,16 +171,18 @@ extern PREFIX int Get_param_number(int  sim_handle,
 
 /* Gets the first <num_params> <steerable> parameters assocaited with the
    simulation with handle sim_handle.  Returns the handles, labels and
-   values (as strings) of these parameters. handles, labels and vals
-   must all point to chunks of memory large enough to receive num_params
-   entries. */
+   values (as strings) of these parameters. handles, labels, vals, min_vals
+   and max_vals must all point to chunks of memory large enough to receive
+   num_params entries. */
 extern PREFIX int Get_param_values(int    sim_handle,
 				   int    steerable,
 				   int    num_params,
 				   int   *handles,
 				   char* *labels,
 				   char* *vals,
-				   int   *types);
+				   int   *types,
+				   char* *min_vals,
+				   char* *max_vals);
 
 /* Sets the values of the parameters with the specified handles for the
    simulation with handle sim_handle. Causes internal flags to be set

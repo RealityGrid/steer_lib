@@ -76,7 +76,6 @@ PROGRAM mini_app
   REAL    (KIND=REG_DP_KIND), DIMENSION(:), ALLOCATABLE :: d_array
 
   ! For parameters
-  INTEGER (KIND=REG_SP_KIND) :: num_params
   CHARACTER(LEN=REG_MAX_STRING_LENGTH) :: param_label
   INTEGER (KIND=REG_SP_KIND) :: param_type
   INTEGER (KIND=REG_SP_KIND) :: param_strbl
@@ -172,14 +171,13 @@ PROGRAM mini_app
 
   ! Register some parameters
 
-  num_params  = 1
   dum_int     = 5
   param_label = "test_integer"//CHAR(0)
   param_type  = REG_INT
   param_strbl = reg_true
 
-  CALL register_params_f(num_params, param_label, param_strbl, dum_int, &
-                         param_type, status)
+  CALL register_param_f(param_label, param_strbl, dum_int, &
+                         param_type, "0", "100", status)
 
   ! Registration uses address of variable so use second 'dum_int' here
   ! rather than simply changing value of first one
@@ -187,24 +185,24 @@ PROGRAM mini_app
   param_label = "2nd_test_integer"//CHAR(0)
   param_strbl = reg_false
 
-  CALL register_params_f(num_params, param_label, param_strbl, dum_int2, &
-                         param_type, status)
+  CALL register_param_f(param_label, param_strbl, dum_int2, &
+                         param_type, "-345", "908", status)
 
   dum_real = 123.45
   param_label = "test_real"//CHAR(0)
   param_type  = REG_FLOAT
   param_strbl = reg_false
   
-  CALL register_params_f(num_params, param_label, param_strbl, dum_real, &
-                         param_type, status)
+  CALL register_param_f(param_label, param_strbl, dum_real, &
+                         param_type, "0.0", "800.0", status)
 
   dum_real2 = -23.456
   param_label = "2nd_test_real"//CHAR(0)
   param_type  = REG_FLOAT
   param_strbl = reg_true
   
-  CALL register_params_f(num_params, param_label, param_strbl, dum_real2, &
-                         param_type, status)
+  CALL register_param_f(param_label, param_strbl, dum_real2, &
+                         param_type, "-50.0", "50.0", status)
 
   dum_str = "hello"//CHAR(0)
   param_label = "test_string"//CHAR(0)
@@ -212,48 +210,44 @@ PROGRAM mini_app
   param_strbl = reg_true
   
   ! Getting a pointer to a string from F90 is a bit tricky so use
-  ! the following function to produce the quantity that is actually
-  ! passed to register_params_f
-  CALL steering_char_to_ptr_f(dum_str, ptr);
-
-  CALL register_params_f(num_params, param_label, param_strbl, ptr, &
-                         param_type, status)
+  ! string-specific function for their registration...
+  CALL register_string_param_f(param_label, param_strbl, dum_str, status)
 
   dum_dbl = 123.123d0
   param_label = "test_double"//CHAR(0)
   param_type  = REG_DBL
   param_strbl = reg_true
 
-  CALL register_params_f(num_params, param_label, param_strbl, dum_dbl, &
-                         param_type, status)
+  CALL register_param_f(param_label, param_strbl, dum_dbl, &
+                         param_type, "0.0d0", "500.0d0", status)
 
   param_label = "veclen"//CHAR(0)
   param_type  = REG_INT
   param_strbl = reg_true
 
-  CALL register_params_f(num_params, param_label, param_strbl, veclen, &
-                         param_type, status)
+  CALL register_param_f(param_label, param_strbl, veclen, &
+                         param_type, "1", "3", status)
 
   param_label = "a_axis"//CHAR(0)
   param_type  = REG_DBL
   param_strbl = reg_true
 
-  CALL register_params_f(num_params, param_label, param_strbl, aaxis, &
-                         param_type, status)
+  CALL register_param_f(param_label, param_strbl, aaxis, &
+                         param_type, "0.0d0", "10.0d0", status)
 
   param_label = "b_axis"//CHAR(0)
   param_type  = REG_DBL
   param_strbl = reg_true
 
-  CALL register_params_f(num_params, param_label, param_strbl, baxis, &
-                         param_type, status)
+  CALL register_param_f(param_label, param_strbl, baxis, &
+                         param_type, "0.0d0", "10.0d0", status)
 
   param_label = "c_axis"//CHAR(0)
   param_type  = REG_DBL
   param_strbl = reg_true
 
-  CALL register_params_f(num_params, param_label, param_strbl, caxis, &
-                         param_type, status)
+  CALL register_param_f(param_label, param_strbl, caxis, &
+                         param_type, "0.0d0", "10.0d0", status)
 
   IF(status .ne. REG_SUCCESS)THEN
 
