@@ -42,6 +42,7 @@
 #include "ReG_Steer_Common.h"
 #include "ReG_Steer_Appside_internal.h"
 #include "ReG_Steer_Appside_Sockets.h"
+#include "ReG_Steer_Appside_File.h"
 #include <string.h>
 #include <signal.h>
 #include <sys/time.h>
@@ -381,9 +382,9 @@ void attempt_listener_connect(const int index) {
   if (socket_info->listener_status == REG_COMMS_STATUS_LISTENING) {
     if (socket_info->comms_status == REG_COMMS_STATUS_LISTENING) {
 #if REG_DEBUG
-      fprintf(stderr, "attempt_listener_connect: poll\n");
+      fprintf(stderr, "attempt_listener_connect: poll_socket\n");
 #endif
-      poll(index);
+      poll_socket(index);
     }
 
     if (socket_info->comms_status == REG_COMMS_STATUS_FAILURE ||
@@ -412,7 +413,7 @@ void retry_accept_connect(const int index) {
     close_connector_handle(index);
   }
 
-  poll(index);
+  poll_socket(index);
 }
 
 /*--------------------------------------------------------------------*/
@@ -423,9 +424,9 @@ void attempt_connector_connect(const int index) {
 
   if(socket_info->comms_status == REG_COMMS_STATUS_WAITING_TO_CONNECT) {
 #if REG_DEBUG    
-    fprintf(stderr, "attempt_connector_connect: poll\n");
+    fprintf(stderr, "attempt_connector_connect: poll_socket\n");
 #endif
-    poll(index);
+    poll_socket(index);
   }
 
   if(socket_info->comms_status == REG_COMMS_STATUS_FAILURE || 
@@ -463,7 +464,7 @@ void retry_connect(const int index) {
 
 /*--------------------------------------------------------------------*/
 
-void poll(const int index) {
+void poll_socket(const int index) {
 
   struct timeval timeout;
   fd_set sockets;	/* the set of sockets to check */
@@ -489,7 +490,7 @@ void poll(const int index) {
 
       /* poll using select() */
 #if REG_DEBUG
-      fprintf(stderr, "poll: polling for accept\n");
+      fprintf(stderr, "poll_socket: polling for accept\n");
 #endif
       if(select(fd_max + 1, &sockets, NULL, NULL, &timeout) == -1) {
 	perror("select");
