@@ -46,7 +46,7 @@ TARGET   = mini_steerer
 
 ${TARGET}: ${TARGET}.o
 	${CC} ${C_FLAGS} ${TARGET}.o -o $@ ${STEER_LIBS} ${GLOBUS_LDFLAGS} \
-	-lReG_Steer -lxml2 ${GLOBUS_PKG_LIBS}
+	-lReG_Steer ${STEER_LDFLAGS} ${GLOBUS_PKG_LIBS}
 
 install:
 	mv -f ${TARGET} ${LOCAL_BIN_DIR}/.

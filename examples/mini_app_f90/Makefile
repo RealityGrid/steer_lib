@@ -47,7 +47,7 @@ TARGET   = mini_app2
 
 ${TARGET}: ${TARGET}.o ${REG_STEER_HOME}/include/reg_steer_f90.inc
 	${F90} ${F90_FLAGS} ${TARGET}.o -o $@ ${STEER_LIBS} ${GLOBUS_LDFLAGS} \
-	-lReG_Steer ${STEER_LDFLAGS} -lxml2 ${GLOBUS_PKG_LIBS}
+	-lReG_Steer ${STEER_LDFLAGS} ${GLOBUS_PKG_LIBS}
 
 mini_app2.o: mini_app2.f90
 	${F90} ${F90_FLAGS} -C ${STEER_INCLUDES} ${GLOBUS_INCLUDES} -c $< -o $@
