@@ -2641,7 +2641,6 @@ int Steering_control(int     SeqNum,
   if(step_time_index != -1){
 
     new_time = clock();
-    /*time_per_step = (float)(new_time - previous_time)/(float)(CLOCKS_PER_SEC*Steerer_connection.steer_interval);*/
     time_per_step = (float)(new_time - previous_time)*inv_clocks_per_sec;
     previous_time = new_time;
 
