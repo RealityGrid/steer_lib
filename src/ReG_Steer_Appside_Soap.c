@@ -143,7 +143,7 @@ int Initialize_steering_connection_soap(int  NumSupportedCmds,
   
   /* Create msg to send to SGS */
   Make_supp_cmds_msg(NumSupportedCmds, SupportedCmds, 
-		     Steerer_connection.supp_cmds);
+		     Steerer_connection.supp_cmds, REG_MAX_MSG_SIZE);
 
   setSDE_response._setServiceDataReturn = NULL;
 
