@@ -586,14 +586,22 @@ int Write_xml_header(char **buf)
 
 /*--------------------------------------------------------------------*/
 
-int Write_xml_footer(char **buf)
+int Write_xml_footer(char **buf, int bytes_free)
 {
   int return_status = REG_SUCCESS;
-
+  int n;
   /* Write end of ReG steering message */
 
   if(*buf){
-    *buf += sprintf(*buf, "</ReG_steer_message>\n");
+    n = snprintf(*buf, bytes_free, "</ReG_steer_message>\n");
+
+    if(n >= (bytes_free-1) || (n < 1)){
+      printf("ARPDBG: bytes_free = %d, n = %d\n", bytes_free, n);
+      return_status = REG_FAILURE;
+    }
+    else{
+      *buf += n;
+    }
   }
   else{
     return_status = REG_FAILURE;

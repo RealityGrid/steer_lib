@@ -2392,14 +2392,21 @@ int Emit_param_defs(){
   bytes_left -= nbytes;
   pbuf += nbytes;
   
-  Write_xml_footer(&pbuf);
+  if(Write_xml_footer(&pbuf, bytes_left) == REG_SUCCESS){
 
-  /* Physically send the message */
-  Send_status_msg(buf);
-  
-  free(buf);
-  buf = NULL;
-  return REG_SUCCESS;
+    /* Physically send the message */
+    Send_status_msg(buf);
+
+    free(buf);
+    buf = NULL;
+    return REG_SUCCESS;
+  }
+  else{
+    fprintf(stderr, "Emit_param_defs: ran out of space for footer\n");
+    free(buf);
+    buf = NULL;
+    return REG_FAILURE;
+  }
 }
 
 /*----------------------------------------------------------------*/
@@ -2516,10 +2523,14 @@ int Emit_IOType_defs(){
   pbuf += nbytes;
   bytes_left -= nbytes;
 
-  Write_xml_footer(&pbuf);
+  if(Write_xml_footer(&pbuf, bytes_left) == REG_SUCCESS){
 
-  /* Physically send message */
-  return Send_status_msg(buf);
+    /* Physically send message */
+    return Send_status_msg(buf);
+  }
+
+  fprintf(stderr, "Emit_IOType_defs: ran out of space for footer\n");
+  return REG_FAILURE;
 }
 
 /*----------------------------------------------------------------*/
@@ -2630,10 +2641,13 @@ int Emit_ChkType_defs(){
   pbuf += nbytes;
   bytes_left -= nbytes;
 
-  Write_xml_footer(&pbuf);
+  if(Write_xml_footer(&pbuf, bytes_left) == REG_SUCCESS){
 
-  /* Physically send message */
-  return Send_status_msg(buf);
+    /* Physically send message */
+    return Send_status_msg(buf);
+  }
+  fprintf(stderr, "Emit_ChkType_defs: ran out of space for footer\n");
+  return REG_FAILURE;
 }
 
 /*----------------------------------------------------------------*/
@@ -2715,25 +2729,40 @@ int Emit_log()
 
 int Emit_log_entries(char *buf)
 {
-  char  msg_buf[REG_MAX_MSG_SIZE];
+  /*char  msg_buf[REG_MAX_MSG_SIZE];*/
+  char *msg_buf;
   char *pmsg_buf;
+  char *plast = NULL;
+  char *pbuf1 = NULL;
   char *pbuf2 = NULL;
   char *pbuf3 = NULL;
+  void *pdum;
+  int   msg_buf_size;
   int   tot_len = 0;
   int   len;
+  int   nbytes;
+  int   rewind;
+  int   return_status = REG_SUCCESS;
+
+  msg_buf_size = REG_MAX_MSG_SIZE;
+  if(!(msg_buf = (char *)malloc(msg_buf_size))){
+
+    fprintf(stderr, "Emit_log_entries: malloc failed\n");
+    return REG_FAILURE;
+  }
 
   /* Pull each log entry out of the buffer and pack them into
      messages to the steerer */
-  pbuf2 = strstr(buf, "<Log_entry>");
-
+  pbuf1 = strstr(buf, "<Log_entry>");
+  pbuf2 = pbuf1;
   if(pbuf2){
-    pbuf3 = strstr(pbuf2, "</Log_entry>");
+    if(pbuf3 = strstr(pbuf2, "</Log_entry>")){
+      /* Increment ptr so as to include all of the "</Log_entry>" */
+      pbuf3 += 12;
+    }
   }
 
   while(pbuf3){
-
-    /* Increment ptr so as to include all of the "</Log_entry>" */
-    pbuf3 += 12;
 
     if(tot_len == 0){
       /* Begin the first message */
@@ -2744,19 +2773,76 @@ int Emit_log_entries(char *buf)
     }
 
     len = (int)(pbuf3 - pbuf2);
+    printf("\nlen = %d\n", len);
+    printf("tot_len = %d\n", tot_len);
+    printf("msg_buf_size = %d\n", msg_buf_size);
 
     /* 35 = strlen("</Steer_log>\n</ReG_steer_message>\n"); */
-    if((tot_len + len) < (REG_MAX_MSG_SIZE - 35)){
+    if((tot_len + len) < (msg_buf_size - 35)){
 
+      printf("ADDING ENTRY TO MESSAGE\n");
       /* Buffer has enough free space so add this entry to it */
+      plast = pmsg_buf;
       strncpy(pmsg_buf, pbuf2, len);
       pmsg_buf += len;
       tot_len += len;
     }
+    else if(!plast){
+
+      printf("REALLOCING\n");
+      /* We've not managed to fit a single entry into the buffer
+	 - time for a realloc... */
+      msg_buf_size *= 2;
+      if( !(pdum = realloc(msg_buf, msg_buf_size)) ){
+
+	free(msg_buf);
+	msg_buf = NULL;
+	fprintf(stderr, "Emit_log_entries: realloc failed\n");
+	return REG_FAILURE;
+      }
+      /* Allow for fact that realloc can return a ptr to a diff't
+	 chunk of memory (with any content intact though) */
+      pmsg_buf += (char *)pdum - msg_buf;
+      msg_buf = (char *)pdum;
+      continue;
+    }
     else{
       /* Complete the xml message */
-      pmsg_buf += sprintf(pmsg_buf, "</Steer_log>\n");
-      Write_xml_footer(&pmsg_buf);
+      printf("COMPLETING A MESSAGE\n");
+      nbytes = snprintf(pmsg_buf, (msg_buf_size-tot_len), 
+			"</Steer_log>\n");
+
+      rewind = (nbytes >= (msg_buf_size-tot_len-1) || (nbytes < 1));
+
+      if(!rewind){
+	pmsg_buf += nbytes;
+	tot_len += nbytes;
+
+	if(Write_xml_footer(&pmsg_buf, (msg_buf_size-tot_len))
+	                                             != REG_SUCCESS){
+	  rewind = 1;
+	}
+      }
+
+      if(rewind){
+
+	printf("REWINDING\n");
+	/* Can't fit the footer in remaining space in buffer - go
+	   back to last complete entry */
+	tot_len = (int)(plast - msg_buf);
+	pmsg_buf = plast;
+	pmsg_buf += sprintf(pmsg_buf, "</Steer_log>\n");
+	tot_len = (int)(pmsg_buf - msg_buf);
+	pbuf3 = pbuf2;
+	pbuf2 = pbuf1;
+	len = (int)(pbuf3 - pbuf2);
+
+	if(Write_xml_footer(&pmsg_buf, (msg_buf_size-tot_len)) 
+	                                             != REG_SUCCESS){
+	  fprintf(stderr, "Emit_log_entries: error writing footer\n");
+	  return REG_FAILURE;
+	}
+      }
 
       if(Send_status_msg(msg_buf) != REG_SUCCESS){
 
@@ -2764,6 +2850,8 @@ int Emit_log_entries(char *buf)
       }
 
       /* Begin the next message */
+      printf("BEGINNING NEW MESSAGE\n");
+      plast = NULL;
       pmsg_buf = msg_buf;
       Write_xml_header(&pmsg_buf);
       pmsg_buf += sprintf(pmsg_buf, "<Steer_log>\n");
@@ -2774,21 +2862,33 @@ int Emit_log_entries(char *buf)
     }
 
     /* Look for next entry */
+    pbuf1 = pbuf2;
     pbuf2 = pbuf3;
-    pbuf3 = strstr(pbuf2, "</Log_entry>");
+    if(pbuf3 = strstr(pbuf2, "</Log_entry>")){
+      /* Increment ptr so as to include all of the "</Log_entry>" */
+      pbuf3 += 12;
+    }
   }
 
   /* Complete the xml message */
   if(tot_len > 0){
     pmsg_buf += sprintf(pmsg_buf, "</Steer_log>\n");
-    Write_xml_footer(&pmsg_buf);
+    tot_len = (int)(pmsg_buf - msg_buf);
 
-    if(Send_status_msg(msg_buf) != REG_SUCCESS){
+    if(Write_xml_footer(&pmsg_buf, (msg_buf_size-tot_len)) 
+                                                   == REG_SUCCESS){
 
-      return REG_FAILURE;
+      return_status = Send_status_msg(msg_buf);
+    }
+    else{
+      fprintf(stderr, "Emit_log_entries: error writing final footer\n");
+      return_status = REG_FAILURE;
     }
   }
-  return REG_SUCCESS;
+
+  free(msg_buf);
+  msg_buf = NULL;
+  return return_status;
 }
 
 /*----------------------------------------------------------------*/
@@ -3123,14 +3223,13 @@ int Emit_status(int   SeqNum,
 
   while(!paramdone || !cmddone){
 
-    bytes_left = REG_MAX_MSG_SIZE;
     pbuf = buf;
 
     Write_xml_header(&pbuf);
     nbytes = sprintf(pbuf, "<App_status>\n");
 
+    bytes_left = REG_MAX_MSG_SIZE - nbytes -  (pbuf - buf);
     pbuf += nbytes;
-    bytes_left -= nbytes;
 
     /* Parameter values section */
 
@@ -3154,7 +3253,7 @@ int Emit_status(int   SeqNum,
 			    "</Param>\n", 
 			    Params_table.param[tot_pcount].handle, 
 			    Params_table.param[tot_pcount].value);
-#if REG_DEBUG
+
 	  /* Check for truncation */
 	  if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
 
@@ -3162,8 +3261,6 @@ int Emit_status(int   SeqNum,
 		    "msg. size of %d bytes\n", REG_MAX_MSG_SIZE);
 	    return REG_FAILURE;
 	  }
-#endif /* REG_DEBUG */
- 
 	  pbuf += nbytes;
 	  bytes_left -= nbytes;
 
@@ -3195,7 +3292,7 @@ int Emit_status(int   SeqNum,
 			  "<Cmd_id>%d</Cmd_id>\n"
 			  "</Command>\n", 
 			  Commands[ccount]);
-#if REG_DEBUG
+
 	/* Check for truncation */
 	if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
 
@@ -3203,7 +3300,6 @@ int Emit_status(int   SeqNum,
 		  "msg. size of %d bytes\n", REG_MAX_MSG_SIZE);
 	  return REG_FAILURE;
 	}
-#endif /* REG_DEBUG */
 	pbuf += nbytes;
 	bytes_left -= nbytes;
 
@@ -3218,13 +3314,25 @@ int Emit_status(int   SeqNum,
 
     nbytes = snprintf(pbuf, bytes_left, "</App_status>\n");
 
+    /* Check for truncation */
+    if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
+
+      fprintf(stderr, "Emit_status: message exceeds max. "
+	      "msg. size of %d bytes\n", REG_MAX_MSG_SIZE);
+      return REG_FAILURE;
+    }
+
     pbuf += nbytes;
     bytes_left -= nbytes;
 
-    Write_xml_footer(&pbuf);
+    if(Write_xml_footer(&pbuf, bytes_left) == REG_SUCCESS){
 
-    /* Physically send the status message */
-    Send_status_msg(buf);
+      /* Physically send the status message */
+      Send_status_msg(buf);
+    }
+    else{
+      fprintf(stderr, "Emit_status: failed to write footer\n");
+    }
   }
 
   return REG_SUCCESS;
@@ -4050,8 +4158,11 @@ int Make_supp_cmds_msg(int   NumSupportedCmds,
   }
 
   pchar += sprintf(pchar, "</Supported_commands>\n");
-
-  Write_xml_footer(&pchar);
+  /* ARPDBG - we have no idea how much space msg points to
+     so unfortunately have to use some random integer here.
+     We're working on the assumption that the supported commands
+     message is only ever going to be small... */
+  Write_xml_footer(&pchar, 256);
 
   return REG_SUCCESS;
 }
