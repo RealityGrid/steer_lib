@@ -2233,7 +2233,6 @@ int Emit_param_defs(){
   }
 
   pbuf = buf;
-  plast_param = buf;
   bytes_left = buf_size;
 
   /* Assume header and following line fit comfortably within
@@ -2242,7 +2241,8 @@ int Emit_param_defs(){
 
   pbuf += sprintf(pbuf, "<Param_defs>\n");
   bytes_left -= (int)(pbuf - buf);
-  
+  plast_param = pbuf;
+
   /* Emit all currently registered parameters  */
   while (i < Params_table.max_entries) {
 
