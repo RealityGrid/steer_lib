@@ -109,8 +109,12 @@ int Initialize_steering_connection_soap(int  NumSupportedCmds,
 		     Steerer_connection.supp_cmds);
 
   setSDE_response._result = NULL;
+
+  /* Strip off any xml version declaration */
+  pchar = strstr(Steerer_connection.supp_cmds,"<ReG_steer_message");
+
   sprintf(query_buf, "<ogsi:setByServiceDataNames><%s>%s</%s></ogsi:setByServiceDataNames>", 
-	  SUPPORTED_CMDS_SDE, Steerer_connection.supp_cmds, SUPPORTED_CMDS_SDE);
+	  SUPPORTED_CMDS_SDE, pchar, SUPPORTED_CMDS_SDE);
 
   if (soap_call_tns__setServiceData(&soap, 
 				    Steerer_connection.SGS_address, "", 

@@ -60,8 +60,10 @@ int Sim_attach_soap(Sim_entry_type *sim, char *SimID)
   struct tns__AttachResponse attach_response;
   struct msg_struct *msg;
   struct cmd_struct *cmd;
-  int return_status;
-  int nbytes;
+  int   return_status;
+  int   nbytes;
+  char *pchar = NULL;
+  char *pchar1= NULL;
 
   /* SimID holds the address of the soap server of the SGS */
   attach_response._result = NULL;
@@ -89,9 +91,25 @@ int Sim_attach_soap(Sim_entry_type *sim, char *SimID)
   /* get commands back and parse them... */
   if(nbytes = strlen(attach_response._result)){
 
-    msg = New_msg_struct();
+    /* Strip-off outer tags (present because this is service data
+       from the GS) */
+    pchar = strstr(attach_response._result, "<ReG_steer_message ");
+    if (pchar) pchar1= strstr(attach_response._result, 
+				 "</ReG_steer_message>");
+    if (!pchar1) {
+      fprintf(stderr, "Sim_attach_soap: failed to strip root-element tags "
+	      "from data:\n>>%s<<\n", attach_response._result);
+      return REG_FAILURE;
+    }
 
-    return_status = Parse_xml_buf(attach_response._result, nbytes, msg);
+    if(!(msg = New_msg_struct())){
+
+      fprintf(stderr, "Sim_attach_soap: failed to get new msg struct\n");
+      return REG_FAILURE;
+    }
+
+    /* strlen("</ReG_steer_message>") == 20 */
+    return_status = Parse_xml_buf(pchar, 20 + (int)(pchar1 - pchar), msg);
 
     if(return_status == REG_SUCCESS && msg->supp_cmd){
 
@@ -250,7 +268,8 @@ struct msg_struct *Get_service_data(Sim_entry_type *sim, char *sde_name)
   struct tns__findServiceDataResponse  findServiceData_response;
   struct msg_struct                   *msg = NULL;
   char   query_buf[REG_MAX_STRING_LENGTH];
-
+  char  *pchar = NULL;
+  char  *pchar1= NULL;
 
   findServiceData_response._result = NULL;
   sprintf(query_buf, "<ogsi:queryByServiceDataNames names=\"%s\"/>", 
@@ -304,11 +323,21 @@ struct msg_struct *Get_service_data(Sim_entry_type *sim, char *sde_name)
       }
     }
     else{
+
+      /* Strip-off outer tags (present because this is service data
+	 from the GS) */
+      pchar = strstr(findServiceData_response._result, "<ReG_steer_message ");
+      if (pchar) pchar1= strstr(findServiceData_response._result, 
+				 "</ReG_steer_message>");
+      if (!pchar1) {
+	fprintf(stderr, "Get_service_data: failed to strip root-element tags "
+		"from data:\n>>%s<<\n", findServiceData_response._result);
+	return REG_FAILURE;
+      }
       msg = New_msg_struct();
 
-      if(Parse_xml_buf(findServiceData_response._result, 
-		       strlen(findServiceData_response._result), 
-		       msg) != REG_SUCCESS){
+      /* strlen("</ReG_steer_message>") == 20 */
+      if(Parse_xml_buf(pchar,20+(int)(pchar1 - pchar), msg) != REG_SUCCESS){
 
 	Delete_msg_struct(msg);
 	msg = NULL;
