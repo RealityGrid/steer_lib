@@ -43,16 +43,21 @@ LIB_C_FLAGS = ${C_FLAGS} -fPIC -I../include
 LD_FLAGS = -shared -soname=libReG_Steer.so -L${REG_XML_LIBDIR} -lm -lz -lxml2
 
 # Location of F90 compiler (if any) and flags to use
-F90 = 
+F90 = g95
 F90_MPI = 
 F90_FLAGS = 
 MPI_FLAGS = 
+
+# Set-up access to M4 scripts for production of F90 wrappers, this is
+# taken from the PVM project.
+M4FILE = conf/LINUX-g95.m4
 
 # Location of java compiler - used to produce proxy binary
 JAVAC          = /usr/bin/javac
 
 # Location of the M4 macro processor (used to generate F90 wrappers)
 M4 = m4
+M4_ARCH = LINUX-g95
 
 # Location of the ar command and flags needed to add an object to an archive
 AR = ar

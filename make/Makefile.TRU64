@@ -48,6 +48,10 @@ F90_MPI = f90
 F90_FLAGS = -O2 -arch host -tune host
 MPI_FLAGS = -lmpi
 
+# Set-up access to M4 scripts for production of F90 wrappers, this is
+# taken from the PVM project.
+M4FILE = conf/TRU64.m4
+
 # Location of java compiler - used to produce proxy binary
 JAVAC          = /usr/java2/bin/javac
 
