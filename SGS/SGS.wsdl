@@ -1,0 +1,378 @@
+<?xml version="1.0"?>
+<definitions name="SGS" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" targetNamespace="SGS" xmlns:tns="SGS" xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:xsdl="http://vermont.mvc.mcc.ac.uk/WSDL/SGS.xsd">
+	<types>
+		<xsd:schema targetNamespace="http://vermont.mvc.mcc.ac.uk/WSDL/SGS.xsd">
+			<xsd:element name="SetServiceDataRequest" type="xsd:string" />
+			<xsd:element name="SetServiceDataResponse" type="xsd:string" />
+			<xsd:element name="PutControlRequest" type="xsd:string" />
+			<xsd:element name="PutControlResponse" type="xsd:string" />
+			<xsd:element name="ResumeRequest" type="xsd:string" />
+			<xsd:element name="ResumeResponse" type="xsd:string" />
+			<xsd:element name="GetNotificationsRequest" type="xsd:string" />
+			<xsd:element name="GetNotificationsResponse" type="xsd:string" />
+			<xsd:element name="GetStatusRequest" type="xsd:string" />
+			<xsd:element name="GetStatusResponse" type="xsd:string" />
+			<xsd:element name="StopRequest" type="xsd:string" />
+			<xsd:element name="StopResponse" type="xsd:string" />
+			<xsd:element name="PutStatusRequest" type="xsd:string" />
+			<xsd:element name="PutStatusResponse" type="xsd:string" />
+			<xsd:element name="DetachRequest" type="xsd:string" />
+			<xsd:element name="DetachResponse" type="xsd:string" />
+			<xsd:element name="AppDetachRequest" type="xsd:string" />
+			<xsd:element name="AppDetachResponse" type="xsd:string" />
+			<xsd:element name="FindServiceDataRequest" type="xsd:string" />
+			<xsd:element name="FindServiceDataResponse" type="xsd:string" />
+			<xsd:element name="GetControlRequest" type="xsd:string" />
+			<xsd:element name="GetControlResponse" type="xsd:string" />
+			<xsd:element name="DestroyRequest" type="xsd:string" />
+			<xsd:element name="DestroyResponse" type="xsd:string" />
+			<xsd:element name="AttachRequest" type="xsd:string" />
+			<xsd:element name="AttachResponse" type="xsd:string" />
+			<xsd:element name="PauseRequest" type="xsd:string" />
+			<xsd:element name="PauseResponse" type="xsd:string" />
+			<xsd:element name="SetTerminationTimeRequest" type="xsd:string" />
+			<xsd:element name="SetTerminationTimeResponse" type="xsd:string" />
+			<xsd:element name="AppStartRequest" type="xsd:string" />
+			<xsd:element name="AppStartResponse" type="xsd:string" />
+			<xsd:element name="AppStopRequest" type="xsd:string" />
+			<xsd:element name="AppStopResponse" type="xsd:string" />
+		</xsd:schema>
+	</types>
+	<message name="AppStartRequest">
+
+	</message>
+	<message name="AppStartResponse">
+		<part name="result" type="xsd:string"/>
+	</message>
+	<message name="AppStopRequest">
+
+	</message>
+	<message name="AppStopResponse">
+		<part name="result" type="xsd:string"/>
+	</message>
+	<message name="AppDetachRequest">
+
+	</message>
+	<message name="AppDetachResponse">
+		<part name="result" type="xsd:string"/>
+	</message>
+	<message name="AttachRequest">
+
+	</message>
+	<message name="AttachResponse">
+		<part name="result" type="xsd:string"/>
+	</message>
+	<message name="DestroyRequest">
+
+	</message>
+	<message name="DestroyResponse">
+
+	</message>
+	<message name="DetachRequest">
+		<part name="DetachRequestSoapMsg" element="xsdl:DetachRequest"/>
+	</message>
+	<message name="DetachResponse">
+		<part name="result" type="xsd:string"/>
+	</message>
+	<message name="FindServiceDataRequest">
+		<part name="input" type="xsd:string"/>
+	</message>
+	<message name="FindServiceDataResponse">
+		<part name="result" type="xsd:string"/>
+	</message>
+	<message name="GetControlRequest">
+
+	</message>
+	<message name="GetControlResponse">
+		<part name="result" type="xsd:string"/>
+	</message>
+	<message name="GetNotificationsRequest">
+
+	</message>
+	<message name="GetNotificationsResponse">
+		<part name="result" type="xsd:string"/>
+	</message>
+	<message name="GetStatusRequest">
+
+	</message>
+	<message name="GetStatusResponse">
+		<part name="result" type="xsd:string"/>
+	</message>
+	<message name="PauseRequest">
+
+	</message>
+	<message name="PauseResponse">
+		<part name="result" type="xsd:string"/>
+	</message>
+	<message name="PutControlRequest">
+		<part name="input" type="xsd:string"/>
+	</message>
+	<message name="PutControlResponse">
+		<part name="result" type="xsd:string"/>
+	</message>
+	<message name="PutStatusRequest">
+		<part name="input" type="xsd:string"/>
+	</message>
+	<message name="PutStatusResponse">
+		<part name="result"  type="xsd:string"/>
+	</message>
+	<message name="ResumeRequest">
+
+	</message>
+	<message name="ResumeResponse">
+		<part name="result"  type="xsd:string"/>
+	</message>
+	<message name="SetServiceDataRequest">
+		<part name="input" type="xsd:string"/>
+		<part name="sde_value" type="xsd:string"/>
+	</message>
+	<message name="SetServiceDataResponse">
+		<part name="result" type="xsd:string"/>
+	</message>
+	<message name="SetTerminationTimeRequest">
+		<part name="input"  type="xsd:string"/>
+	</message>
+	<message name="SetTerminationTimeResponse">
+		<part name="result" type="xsd:string"/>
+	</message>
+	<message name="StopRequest">
+
+	</message>
+	<message name="StopResponse">
+		<part name="result" type="xsd:string"/>
+	</message>
+	<portType name="SGSSGSPortType">
+		<operation name="AppStart">
+			<input message="tns:AppStartRequest" />
+			<output message="tns:AppStartResponse" />
+		</operation>
+		<operation name="AppStop">
+			<input message="tns:AppStopRequest" />
+			<output message="tns:AppStopResponse" />
+		</operation>
+		<operation name="AppDetach">
+			<input message="tns:AppDetachRequest" />
+			<output message="tns:AppDetachResponse" />
+		</operation>
+		<operation name="Attach">
+			<input message="tns:AttachRequest" />
+			<output message="tns:AttachResponse" />
+		</operation>
+		<operation name="Destroy">
+			<input message="tns:DestroyRequest" />
+			<output message="tns:DestroyResponse" />
+		</operation>
+		<operation name="Detach">
+			<input message="tns:DetachRequest" />
+			<output message="tns:DetachResponse" />
+		</operation>
+		<operation name="FindServiceData">
+			<input message="tns:FindServiceDataRequest" />
+			<output message="tns:FindServiceDataResponse" />
+		</operation>
+		<operation name="GetControl">
+			<input message="tns:GetControlRequest" />
+			<output message="tns:GetControlResponse" />
+		</operation>
+		<operation name="GetNotifications">
+			<input message="tns:GetNotificationsRequest" />
+			<output message="tns:GetNotificationsResponse" />
+		</operation>
+		<operation name="GetStatus">
+			<input message="tns:GetStatusRequest" />
+			<output message="tns:GetStatusResponse" />
+		</operation>
+		<operation name="PutControl">
+			<input message="tns:PutControlRequest" />
+			<output message="tns:PutControlResponse" />
+		</operation>
+		<operation name="Pause">
+			<input message="tns:PauseRequest" />
+			<output message="tns:PauseResponse" />
+		</operation>
+		<operation name="PutStatus">
+			<input message="tns:PutStatusRequest" />
+			<output message="tns:PutStatusResponse" />
+		</operation>
+		<operation name="Resume">
+			<input message="tns:ResumeRequest" />
+			<output message="tns:ResumeResponse" />
+		</operation>
+		<operation name="SetServiceData">
+			<input message="tns:SetServiceDataRequest" />
+			<output message="tns:SetServiceDataResponse" />
+		</operation>
+		<operation name="SetTerminationTime">
+			<input message="tns:SetTerminationTimeRequest" />
+			<output message="tns:SetTerminationTimeResponse" />
+		</operation>
+		<operation name="Stop">
+			<input message="tns:StopRequest" />
+			<output message="tns:StopResponse" />
+		</operation>
+	</portType>
+	<binding name="SGSSGSBinding" type="tns:SGSSGSPortType">
+		<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+			<operation name="AppStart">
+				<soap:operation style="document" soapAction=""/>
+				<input>
+					<soap:body use="literal" namespace="SGS"/>
+				</input>
+				<output>
+					<soap:body use="literal" namespace="SGS"/>
+				</output>
+			</operation>
+			<operation name="AppStop">
+				<soap:operation style="document" soapAction=""/>
+				<input>
+					<soap:body use="literal" namespace="SGS"/>
+				</input>
+				<output>
+					<soap:body use="literal" namespace="SGS"/>
+				</output>
+			</operation>
+			<operation name="AppDetach">
+				<soap:operation style="document" soapAction=""/>
+				<input>
+					<soap:body use="literal" namespace="SGS"/>
+				</input>
+				<output>
+					<soap:body use="literal" namespace="SGS"/>
+				</output>
+			</operation>
+			<operation name="Attach">
+				<soap:operation style="document" soapAction=""/>
+				<input>
+					<soap:body use="literal" namespace="SGS"/>
+				</input>
+				<output>
+					<soap:body use="literal" namespace="SGS"/>
+				</output>
+			</operation>
+			<operation name="Destroy">
+				<soap:operation style="document" soapAction=""/>
+				<input>
+					<soap:body use="literal" namespace="SGS"/>
+				</input>
+				<output>
+					<soap:body use="literal" namespace="SGS"/>
+				</output>
+			</operation>
+			<operation name="Detach">
+				<soap:operation style="document" soapAction=""/>
+				<input>
+					<soap:body use="literal" namespace="SGS"/>
+				</input>
+				<output>
+					<soap:body use="literal" namespace="SGS"/>
+				</output>
+			</operation>
+			<operation name="FindServiceData">
+				<soap:operation style="document" soapAction=""/>
+				<input>
+					<soap:body use="literal" namespace="SGS"/>
+				</input>
+				<output>
+					<soap:body use="literal" namespace="SGS"/>
+				</output>
+			</operation>
+			<operation name="GetControl">
+				<soap:operation style="document" soapAction=""/>
+				<input>
+					<soap:body use="literal" namespace="SGS"/>
+				</input>
+				<output>
+					<soap:body use="literal" namespace="SGS"/>
+				</output>
+			</operation>
+			<operation name="GetNotifications">
+				<soap:operation style="document" soapAction=""/>
+				<input>
+					<soap:body use="literal" namespace="SGS"/>
+				</input>
+				<output>
+					<soap:body use="literal" namespace="SGS"/>
+				</output>
+			</operation>
+			<operation name="GetStatus">
+				<soap:operation style="document" soapAction=""/>
+				<input>
+					<soap:body use="literal" namespace="SGS"/>
+				</input>
+				<output>
+					<soap:body use="literal" namespace="SGS"/>
+				</output>
+			</operation>
+			<operation name="Pause">
+				<soap:operation style="document" soapAction=""/>
+				<input>
+					<soap:body use="literal" namespace="SGS"/>
+				</input>
+				<output>
+					<soap:body use="literal" namespace="SGS"/>
+				</output>
+			</operation>
+			<operation name="PutControl">
+				<soap:operation style="document" soapAction=""/>
+				<input>
+					<soap:body use="literal" namespace="SGS"/>
+				</input>
+				<output>
+					<soap:body use="literal" namespace="SGS"/>
+				</output>
+			</operation>
+			<operation name="PutStatus">
+				<soap:operation style="document" soapAction=""/>
+				<input>
+					<soap:body use="literal" namespace="SGS"/>
+				</input>
+				<output>
+					<soap:body use="literal" namespace="SGS"/>
+				</output>
+			</operation>
+			<operation name="Resume">
+				<soap:operation style="document" soapAction=""/>
+				<input>
+					<soap:body use="literal" namespace="SGS"/>
+				</input>
+				<output>
+					<soap:body use="literal" namespace="SGS"/>
+				</output>
+			</operation>
+			<operation name="SetServiceData">
+				<soap:operation style="document" soapAction=""/>
+				<input>
+					<soap:body use="literal" namespace="SGS"/>
+				</input>
+				<output>
+					<soap:body use="literal" namespace="SGS"/>
+				</output>
+			</operation>
+			<operation name="SetTerminationTime">
+				<soap:operation style="document" soapAction=""/>
+				<input>
+					<soap:body use="literal" namespace="SGS"/>
+				</input>
+				<output>
+					<soap:body use="literal" namespace="SGS"/>
+				</output>
+			</operation>
+			<operation name="Stop">
+				<soap:operation style="document" soapAction=""/>
+				<input>
+					<soap:body use="literal" namespace="SGS"/>
+				</input>
+				<output>
+					<soap:body use="literal" namespace="SGS"/>
+				</output>
+			</operation>
+	</binding>
+	<service name="SGS">
+		<documentation>
+			SGS SOAP Service.
+		</documentation>
+		<port name="SGSSGSPort" binding="tns:SGSSGSBinding">
+			<soap:address location="http://vermont.mvc.mcc.ac.uk:50005/"/>
+		</port>
+	</service>
+</definitions>
