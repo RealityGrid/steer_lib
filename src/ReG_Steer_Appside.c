@@ -115,7 +115,7 @@ struct ReG_array_list {
   struct ReG_array_list* next;
 };
 
-static struct ReG_array_list* ReG_list_head;
+static struct ReG_array_list* ReG_list_head = NULL;
 
 /*----------------------------------------------------------------*/
 
@@ -487,9 +487,6 @@ int Steering_initialize(char *AppName,
   signal(SIGPIPE, signal_handler_sockets);
 #endif
 #endif
-
-  /* Initialise the linked list of allocated string arrays */
-  ReG_list_head = NULL;
 
   /* Flag that library has been successfully initialised */
 
@@ -5606,7 +5603,6 @@ char **Alloc_string_array(int String_len,
   struct ReG_array_list* new;
 
   if(ReG_list_head){
-
     current = ReG_list_head;
     while(current->next){
 
