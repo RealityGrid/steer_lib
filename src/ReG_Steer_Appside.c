@@ -103,7 +103,11 @@ int Steering_initialize(int  NumSupportedCmds,
   char       *schema_path = "xml_schema/reg_steer_comm.xsd";
 
   /* Don't do anything if steering is not enabled */
-  if (!ReG_SteeringEnabled) return REG_SUCCESS;
+  if (!ReG_SteeringEnabled){
+    fprintf(stderr, "Steering_initialize: WARNING: steering library "
+	    "not enabled - no steering will be possible\n");
+    return REG_SUCCESS;
+  }
 
   /* Set the location of the file containing the schema describing all 
      steering communication */
