@@ -320,6 +320,9 @@ int main(){
 
 		printf("Got checkpoint command, parameters: %s\n", 
 		       recvd_cmd_params[icmd]);
+
+		/* Pretend we've taken a checkpoint here */
+		Record_Chkpt(chktype_handle[0], "A_TAG");
 		break;
 	      }
 	    }
