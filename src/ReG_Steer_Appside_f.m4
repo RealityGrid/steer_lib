@@ -434,7 +434,13 @@ INT_KIND_1_DECL(SteerCommands);
 INT_KIND_1_DECL(Status);
 {
   int   i;
+  char  buf[REG_MAX_NUM_STR_PARAMS*REG_MAX_STRING_LENGTH];
   char *str_array[REG_MAX_NUM_STR_PARAMS];
+
+  for(i=0; i<REG_MAX_NUM_STR_PARAMS; i++){
+
+    str_array[i] = &(buf[i*REG_MAX_STRING_LENGTH]);
+  }
 
   *Status = INT_KIND_1_CAST( Steering_pause((int *)NumSteerParams,
                            		    str_array,
