@@ -655,7 +655,7 @@ int main(){
       handle = Choose_parameter(sim_handle, REG_FALSE);
       if(handle == REG_PARAM_HANDLE_NOTSET)break;
 
-      if(Get_param_log(sim_handle,		//ReG library
+      if(Get_param_log(sim_handle,	    /* ReG library */
 		       handle,
 		       &(log_ptr),
 		       &i) == REG_SUCCESS){

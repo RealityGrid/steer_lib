@@ -1632,8 +1632,8 @@ int Consume_start_blocking(int   IOType,
 			   int  *IOTypeIndex,
 			   float TimeOut)
 {
-  unsigned long time_out_uS; // microseconds
-  unsigned long blocked_poll_interval = 10000; // microseconds
+  unsigned long time_out_uS; /* microseconds */
+  unsigned long blocked_poll_interval = 10000; /* microseconds */
   unsigned long wait_time;
   int           status;
 
@@ -2003,8 +2003,8 @@ int Emit_start_blocking(int    IOType,
 			int   *IOTypeIndex,
 			float  TimeOut)
 {
-  unsigned long time_out_uS; // microseconds
-  unsigned long blocked_poll_interval = 10000; // microseconds
+  unsigned long time_out_uS; /* microseconds */
+  unsigned long blocked_poll_interval = 10000; /* microseconds */
   unsigned long wait_time;
   int           status;
 
