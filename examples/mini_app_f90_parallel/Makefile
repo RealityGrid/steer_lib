@@ -43,11 +43,12 @@ TARGET   = mini_app_para
 .f90.o:
 	${F90} ${F90_FLAGS} ${STEER_INCLUDES} ${GLOBUS_INCLUDES} -c $< -o $@
 
-${TARGET}: ${TARGET}.o \
-mini_app_para.f90 \
-../../include/reg_steer_f90.inc
-	${F90} ${F90_FLAGS} ${TARGET}.o -o $@ ${STEER_LIBS} -lmpi -lReG_Steer -lm -lxml2 ${GLOBUS_PKG_LIBS}
+${TARGET}: ${TARGET}.o ../../include/reg_steer_f90.inc
+	${F90} ${F90_FLAGS} ${TARGET}.o -o $@ ${STEER_LIBS}  ${GLOBUS_LDFLAGS} -lmpi -lReG_Steer -lm -lz -lxml2 ${GLOBUS_PKG_LIBS}
 	mv ${TARGET} ${HOME}/bin/.
+
+mini_app_para.o: mini_app_para.f90
+	${F90} ${F90_FLAGS} ${STEER_INCLUDES} ${GLOBUS_INCLUDES} -c $< -o $@
 
 clean:
 	rm -f *.o *~ core ${TARGET}
