@@ -71,7 +71,7 @@ int Consume_data_read_globus(const int		index,
 int Emit_header_globus(const int index);
 
 int Emit_footer_globus(const int index,
-		       const char * const buffer);
+ 		       const char * const buffer);
 
 int Emit_data_globus(const int		index,
 		     const int		datatype,

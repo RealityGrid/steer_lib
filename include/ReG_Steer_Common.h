@@ -173,6 +173,9 @@ typedef struct {
 #endif
   /* Whether or not to encode non-ASCII data as XDR (set in Emit_start) */
   int				use_xdr;
+  /* How many bytes of xdr data to read (to avoid having to work-out/guess
+     how many it will be from the type) */
+  int                           num_xdr_bytes;
 
 } IOdef_entry;
 

@@ -181,14 +181,16 @@ extern void Globus_retry_connect(socket_io_type * const socket_info);
 extern void Globus_error_print(const globus_result_t result);
 
 
-/* Functions for both appside and steerside steering globus comms */
+/* Functions for both appside and steerside STEERING globus comms */
 extern int Consume_msg_header_globus(socket_io_type *sock_info,
 				     int *DataType,
-				     int *Count);
+				     int *Count,
+				     int *NumBytes);
 
 extern int Emit_msg_header_globus(socket_io_type *sock_info,
 				  int DataType,
-				  int Count);
+				  int Count,
+				  int NumBytes);
 
 /* Does what is says.  Uses uname and gethostbyname - not globus specific. */
 extern char *Get_fully_qualified_hostname();

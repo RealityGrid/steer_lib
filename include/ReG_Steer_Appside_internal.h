@@ -241,7 +241,7 @@ static int Emit_header(const int index);
 
 /* Emit footer for sample data */
 static int Emit_footer(const int index,
-		       const char * const buffer);
+ 		       const char * const buffer);
 
 
 static int Emit_data(const int		index,
@@ -255,12 +255,14 @@ static int Get_communication_status(const int		index);
 /* Read ReG-specific header for iotype */
 static int Consume_iotype_msg_header(int IOTypeIndex,
 				     int *DataType,
-				     int *Count);
+				     int *Count,
+				     int *NumBytes);
 
 /* Construct and send ReG-specific header for iotype*/
 static int Emit_iotype_msg_header(int IOTypeIndex,
 				  int DataType,
-				  int Count);
+				  int Count,
+				  int NumBytes);
 
 /* Sets the value of the next primary key to be used in generating
    log entries.  If a log file exists then it pulls the last value out
@@ -288,4 +290,10 @@ static int Save_log();
    to the steering client are retrieved */
 static int Log_to_xml(char **pchar, int *count, const int not_sent_only);
 
+/* Attempt to realloc the buffer associated with the IOtype with index
+   'index' to num_bytes.  If this fails, the buffer is 'freed' and
+   num_buffer_bytes is zeroed, otherwise num_buffer_bytes is set to
+   num_bytes. */
+static int Realloc_iotype_buffer(int index,
+				 int num_bytes);
 #endif
