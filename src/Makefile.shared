@@ -31,31 +31,31 @@
 #
 #------------------------------------------------------------------------
 
-OBJECTS	       = ReG_Steer_Appside_f.o \
-	ReG_Steer_Appside.o \
-	ReG_Steer_Steerside.o \
-	ReG_Steer_Common.o \
-	ReG_Steer_Proxy_utils.o \
-	ReG_Steer_XML.o \
-	ReG_Steer_Appside_Sockets.o \
-        ReG_Steer_Steerside_Soap.o \
-        ReG_Steer_Appside_Soap.o \
-        ReG_Steer_Appside_File.o \
-        ReG_Steer_Browser.o \
-	ReG_Steer_Logging.o \
-        Base64.o \
-        stdsoap2.o soapC.o soapClient.o
+OBJECTS=ReG_Steer_Appside_f.o \
+ ReG_Steer_Appside.o \
+ ReG_Steer_Steerside.o \
+ ReG_Steer_Common.o \
+ ReG_Steer_Proxy_utils.o \
+ ReG_Steer_XML.o \
+ ReG_Steer_Appside_Sockets.o \
+ ReG_Steer_Steerside_Soap.o \
+ ReG_Steer_Appside_Soap.o \
+ ReG_Steer_Appside_File.o \
+ ReG_Steer_Browser.o \
+ ReG_Steer_Logging.o \
+ ReG_Steering_Initialize.o \
+ Base64.o \
+ stdsoap2.o soapC.o soapClient.o
 
 DEL_OBJS=ReG_Steer_Appside_f.o \
-	ReG_Steer_Appside.o \
-	ReG_Steer_Steerside.o \
-	ReG_Steer_Common.o \
-	ReG_Steer_Proxy_utils.o \
-	ReG_Steer_XML.o \
-	ReG_Steer_Appside_Sockets.o \
-        ReG_Steer_Steerside_Soap.o \
-        ReG_Steer_Appside_Soap.o \
-        ReG_Steer_Appside_File.o \
-        ReG_Steer_Browser.o \
-	ReG_Steer_Logging.o
-
+ ReG_Steer_Appside.o \
+ ReG_Steer_Steerside.o \
+ ReG_Steer_Common.o \
+ ReG_Steer_Proxy_utils.o \
+ ReG_Steer_XML.o \
+ ReG_Steer_Appside_Sockets.o \
+ ReG_Steer_Steerside_Soap.o \
+ ReG_Steer_Appside_Soap.o \
+ ReG_Steer_Appside_File.o \
+ ReG_Steer_Browser.o \
+ ReG_Steer_Logging.o

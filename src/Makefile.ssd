@@ -44,15 +44,6 @@ all:    del ${OBJECTS}
 del:
 	rm -f ${DEL_OBJS}
 
-.c.o:
-	${CC} ${LIB_C_FLAGS} \
-        -DREG_SOCKET_SAMPLES=1 \
-        -DREG_SOAP_STEERING=1 \
-        -DREG_DEBUG=1 \
-        -DREG_DEBUG_FULL=0 \
-        -DREG_STEER_LIB_VERSION=\"${REG_STEER_LIB_VERSION}\" \
-        ${INCLUDE_PATH} -c $< -o $@
-
 ReG_Steer_Appside_f.c: ReG_Steer_Appside_f.m4 \
 	 ${M4FILE}
 	${M4} ${M4FILE} ReG_Steer_Appside_f.m4 > $@
@@ -63,3 +54,21 @@ ReG_Steer_Appside_f.o: ReG_Steer_Appside_f.c \
 	 ../include/ReG_Steer_types.h \
 	 ../include/ReG_Steer_Common.h \
 	 ../include/ReG_Steer_Appside_Sockets.h
+
+ReG_Steering_Initialize.o: ReG_Steering_Initialize.f90
+	${F90} ${LIB_C_FLAGS} \
+        -DREG_SOCKET_SAMPLES=0 \
+        -DREG_SOAP_STEERING=0 \
+        -DREG_DEBUG=0 \
+        -DREG_DEBUG_FULL=0 \
+        -DREG_STEER_LIB_VERSION=\"${REG_STEER_LIB_VERSION}\" \
+        ${INCLUDE_PATH} -c $< -o $@
+
+.c.o:
+	${CC} ${LIB_C_FLAGS} \
+        -DREG_SOCKET_SAMPLES=1 \
+        -DREG_SOAP_STEERING=1 \
+        -DREG_DEBUG=1 \
+        -DREG_DEBUG_FULL=0 \
+        -DREG_STEER_LIB_VERSION=\"${REG_STEER_LIB_VERSION}\" \
+        ${INCLUDE_PATH} -c $< -o $@

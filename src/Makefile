@@ -38,11 +38,32 @@ include Makefile.shared
 INCLUDE_PATH   = ${STEER_INCLUDES}
 LIB_PATH       = ${REG_STEER_HOME}/lib$(NBIT)
 
-all:
-	$(MAKE) ${LIB_PATH}/$(LIB_NAME)
+.SUFFIXES: .o .f90 .c
 
-lib:
-	$(MAKE) ${LIB_PATH}/$(LIB_NAME)
+REG_LIB_OBJECTS=ReG_Steer_Appside_f.o \
+ ReG_Steer_Appside.o \
+ ReG_Steer_Steerside.o \
+ ReG_Steer_Common.o \
+ ReG_Steer_Proxy_utils.o \
+ ReG_Steer_XML.o \
+ ReG_Steer_Appside_Sockets.o \
+ ReG_Steer_Steerside_Soap.o \
+ ReG_Steer_Appside_Soap.o \
+ ReG_Steer_Appside_File.o \
+ ReG_Steer_Browser.o \
+ ReG_Steer_Logging.o \
+ stdsoap2.o soapC.o soapClient.o \
+ Base64.o \
+ ReG_Steering_Initialize.o
+
+.f90.o:
+	${F90} ${F90_FLAGS} \
+        -DREG_SOCKET_SAMPLES=${REG_SOCKET_SAMPLES_FLAG} \
+        -DREG_SOAP_STEERING=${REG_SOAP_STEERING_FLAG} \
+        -DREG_DEBUG=${REG_DEBUG_FLAG} \
+        -DREG_DEBUG_FULL=${REG_DEBUG_FULL_FLAG} \
+        -DREG_STEER_LIB_VERSION=\"${REG_STEER_LIB_VERSION}\" \
+        ${INCLUDE_PATH} -c $< -o $@
 
 .c.o:
 	${CC} ${C_FLAGS} \
@@ -53,7 +74,15 @@ lib:
         -DREG_STEER_LIB_VERSION=\"${REG_STEER_LIB_VERSION}\" \
         ${INCLUDE_PATH} -c $< -o $@
 
-${LIB_PATH}/libReG_Steer.so:
+all:
+	echo $(MAKE) ${LIB_PATH}/$(LIB_NAME)
+	$(MAKE) ${LIB_PATH}/$(LIB_NAME)
+
+lib:
+	$(MAKE) ${LIB_PATH}/$(LIB_NAME)
+
+${LIB_PATH}/libReG_Steer.so: ${REG_LIB_OBJECTS}
+	echo EXECUTING THIS RULE
 	$(MAKE) -f Makefile.ss all
 	$(MAKE) -f Makefile.ssd all
 	$(MAKE) -f Makefile.sf all
@@ -65,23 +94,7 @@ ${LIB_PATH}/libReG_Steer.so:
 	rm -f $(LIB_PATH)/libReG_Steer.so
 	ln -s libReG_SteerSoapSockets.so $(LIB_PATH)/libReG_Steer.so
 
-${LIB_PATH}/libReG_Steer.a: ReG_Steer_Appside_f.o \
-	ReG_Steer_Appside.o \
-	ReG_Steer_Steerside.o \
-	ReG_Steer_Common.o \
-	ReG_Steer_Proxy_utils.o \
-	ReG_Steer_XML.o \
-	ReG_Steer_Appside_Sockets.o \
-	ReG_Steer_Steerside_Soap.o \
-	ReG_Steer_Appside_Soap.o \
-	ReG_Steer_Appside_File.o \
-	ReG_Steer_Browser.o \
-	ReG_Steer_Logging.o \
-	stdsoap2.o soapC.o soapClient.o \
-        Base64.o \
-        ReG_Steering_Initialize.o
-
-${LIB_PATH}/libReG_Steer.a:
+${LIB_PATH}/libReG_Steer.a: ${REG_LIB_OBJECTS}
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Appside_f.o
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Appside.o
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Steerside.o
@@ -191,13 +204,6 @@ Base64.o: Base64.c \
 
 ReG_Steering_Initialize.o: ReG_Steering_Initialize.f90 \
         ../include/reg_steer_f90.inc
-	${F90} ${F90_FLAGS} \
-        -DREG_SOCKET_SAMPLES=${REG_SOCKET_SAMPLES_FLAG} \
-        -DREG_SOAP_STEERING=${REG_SOAP_STEERING_FLAG} \
-        -DREG_DEBUG=${REG_DEBUG_FLAG} \
-        -DREG_DEBUG_FULL=${REG_DEBUG_FULL_FLAG} \
-        -DREG_STEER_LIB_VERSION=\"${REG_STEER_LIB_VERSION}\" \
-        ${INCLUDE_PATH} -c ReG_Steering_Initialize.f90 -o ReG_Steering_Initialize.o
 
 #---------------------------------------------------------------
 

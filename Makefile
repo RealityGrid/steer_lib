@@ -37,12 +37,12 @@ include make/Makefile.${ARCH}
 LIB_PATH       = ${REG_STEER_HOME}/lib$(NBIT)
 
 all:
-	$(MAKE) $(LIB_PATH)/$(LIB_NAME)
+	$(MAKE) lib
 	$(MAKE) c_examples
 	$(MAKE) f90_examples
 
 no_f90:
-	$(MAKE) $(LIB_PATH)/$(LIB_NAME)
+	$(MAKE) lib
 	$(MAKE) c_examples
 
 c_examples:
@@ -55,93 +55,67 @@ f90_examples:
 	$(MAKE) app_f90
 	$(MAKE) app_f90_parallel
 
-$(LIB_PATH)/$(LIB_NAME): include/*.h \
- src/*.c \
- src/*.m4
+lib:
 	rm -f $(LIB_PATH)/$(LIB_NAME)
 	cd src; $(MAKE) lib
 
-libss: include/*.h \
- src/*.c \
- src/*.m4
+libss:
 	cd src; $(MAKE) -f Makefile.ss all
 	rm -f $(LIB_PATH)/libReG_Steer.so
 	ln -s libReG_SteerSoapSockets.so $(LIB_PATH)/libReG_Steer.so
 
-libssd: include/*.h \
- src/*.c \
- src/*.m4
+libssd:
 	cd src; $(MAKE) -f Makefile.ssd all
 	rm -f $(LIB_PATH)/libReG_Steer.so
 	ln -s libReG_SteerSoapSocketsDebug.so $(LIB_PATH)/libReG_Steer.so
 
-libsf: include/*.h \
- src/*.c \
- src/*.m4
+libsf:
 	cd src; $(MAKE) -f Makefile.sf all
 	rm -f $(LIB_PATH)/libReG_Steer.so
 	ln -s libReG_SteerSoapFile.so $(LIB_PATH)/libReG_Steer.so
 
-libsfd: include/*.h \
- src/*.c \
- src/*.m4
+libsfd:
 	cd src; $(MAKE) -f Makefile.sfd all
 	rm -f $(LIB_PATH)/libReG_Steer.so
 	ln -s libReG_SteerSoapFileDebug.so $(LIB_PATH)/libReG_Steer.so
 
-libfs: include/*.h \
- src/*.c \
- src/*.m4
+libfs:
 	cd src; $(MAKE) -f Makefile.fs all
 	rm -f $(LIB_PATH)/libReG_Steer.so
 	ln -s libReG_SteerFileSockets.so $(LIB_PATH)/libReG_Steer.so
 
-libfsd: include/*.h \
- src/*.c \
- src/*.m4
+libfsd:
 	cd src; $(MAKE) -f Makefile.fsd all
 	rm -f $(LIB_PATH)/libReG_Steer.so
 	ln -s libReG_SteerFileSocketsDebug.so $(LIB_PATH)/libReG_Steer.so
 
-libf: include/*.h \
- src/*.c \
- src/*.m4
+libf:
 	cd src; $(MAKE) -f Makefile.f all
 	rm -f $(LIB_PATH)/libReG_Steer.so
 	ln -s libReG_SteerFile.so $(LIB_PATH)/libReG_Steer.so
 
-libfd: include/*.h \
- src/*.c \
- src/*.m4
+libfd:
 	cd src; $(MAKE) -f Makefile.fd all
 	rm -f $(LIB_PATH)/libReG_Steer.so
 	ln -s libReG_SteerFileDebug.so $(LIB_PATH)/libReG_Steer.so
 
-simple: $(LIB_PATH)/$(LIB_NAME) \
- examples/simple/*.c
+simple: $(LIB_PATH)/$(LIB_NAME)
 	cd examples/simple; $(MAKE)
 
-app: $(LIB_PATH)/$(LIB_NAME) \
- examples/mini_app/*.c
+app: $(LIB_PATH)/$(LIB_NAME)
 	cd examples/mini_app; $(MAKE)
 
 
-app_f90: $(LIB_PATH)/$(LIB_NAME) \
- include/*.inc \
- examples/mini_app_f90/*.f90
+app_f90: $(LIB_PATH)/$(LIB_NAME)
 	cd examples/mini_app_f90; $(MAKE)
 
-app_f90_parallel:  $(LIB_PATH)/$(LIB_NAME) \
- include/*.inc \
- examples/mini_app_f90_parallel/*.f90
+app_f90_parallel:  $(LIB_PATH)/$(LIB_NAME)
 	cd examples/mini_app_f90_parallel; $(MAKE)
 
-steerer: $(LIB_PATH)/$(LIB_NAME) \
- examples/mini_steerer/*.c
+steerer: $(LIB_PATH)/$(LIB_NAME)
 	cd examples/mini_steerer; $(MAKE)
 
-sink: $(LIB_PATH)/$(LIB_NAME) \
- examples/mini_steerer/*.c
+sink: $(LIB_PATH)/$(LIB_NAME)
 	cd examples/sink; $(MAKE)
 
 install:
@@ -163,5 +137,5 @@ clean:
 
 tar:
 	$(MAKE) clean
-	cd ..; tar -cf reg_steer_backup.tar reg_steer_lib/*; \
-gzip reg_steer_backup.tar
+	cd ..; tar -cf reg_steer_backup.tar reg_steer_lib/*
+	gzip reg_steer_backup.tar
