@@ -60,8 +60,9 @@ int main(){
 
   Steering_enable(REG_TRUE);
 
-  numCommands = 1;
+  numCommands = 2;
   commands[0] = REG_STR_STOP;
+  commands[1] = REG_STR_PAUSE_INTERNAL;
   status = Steering_initialize("simple v.1.0", numCommands, commands);
 
   if(status != REG_SUCCESS){
