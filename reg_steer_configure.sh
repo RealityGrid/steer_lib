@@ -65,5 +65,8 @@ export GLOBUS_TCP_PORT_RANGE=2566,2666
 # Grid Service (or SGS).
 
 # Location of steering grid service that application will attach to
-export REG_SGS_ADDRESS=http://vermont.mvc.mcc.ac.uk:50005/
+# This is an example - it will need to be set to the GSH of an
+# application's SGS immediately before running the application.
+export REG_SGS_ADDRESS=http://vermont.mvc.mcc.ac.uk:50000/1234567
+
 
