@@ -37,6 +37,8 @@
 #
 # G and NBIT are passed to make on cmd line
 
+include ../../globus_definitions
+
 TARGET   = mini_app_para
 
 F90       = f90
@@ -48,12 +50,12 @@ STEER_LIBS = -L${REG_STEER_HOME}/lib$(NBIT)
 XML_LIBS   = -L${REG_XML_LIBDIR}$(NBIT)
 
 .f90.o:
-	${F90} ${F90_FLAGS} -I${REG_STEER_HOME}/include -c $< -o $@
+	${F90} ${F90_FLAGS} -I${REG_STEER_HOME}/include  ${GLOBUS_INCLUDES} -c $< -o $@
 
 ${TARGET}: ${TARGET}.o \
 mini_app_para.f90 \
 ${REG_STEER_HOME}/include/reg_steer_f90.inc
-	${F90} ${F90_FLAGS} ${TARGET}.o -o $@ ${XML_LIBS} ${STEER_LIBS} -lmpi -lReG_Steer -lxml2 -lz -lm
+	${F90} ${F90_FLAGS} ${TARGET}.o -o $@ ${XML_LIBS} ${STEER_LIBS} -lmpi -lReG_Steer -lxml2 -lz -lm ${GLOBUS_PKG_LIBS}
 	mv ${TARGET} ${HOME}/bin/.
 
 clean:

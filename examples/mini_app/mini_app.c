@@ -208,7 +208,7 @@ int main(){
     system("sleep 3");
     printf("\ni = %d\n", i);
 
-    Make_vtk_buffer(header, NX, NY, NZ, array);
+    Make_vtk_buffer(header, NX, NY, NZ, 0.3, 0.5, 0.4, array);
 
     /* ARPDBG for io testing only (should emit in response to a command
        or maybe every n steps)... */
