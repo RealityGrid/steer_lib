@@ -250,7 +250,7 @@ extern PREFIX int Emit_msg_header(socket_type_steering *sock_info,
    the caller's responsibility to free() the memory pointed to by buf. */
 extern PREFIX int Read_file(char *filename, char **buf, int *size);
 
-#ifdef USE_TIMING
+#ifdef USE_REG_TIMING
 /* Return the time since the epoch in seconds */
 extern PREFIX int Get_current_time_seconds(double *now);
 #endif

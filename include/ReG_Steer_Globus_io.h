@@ -177,7 +177,7 @@ extern void Globus_attempt_connector_connect(socket_io_type * const socket_info)
 /* Call globus functions to close failed socket and retry to connect */
 extern void Globus_retry_connect(socket_io_type * const socket_info);
 
-/* Call globus function to print out detail about error when DEBUG on*/
+/* Call globus function to print out detail about error when REG_DEBUG on*/
 extern void Globus_error_print(const globus_result_t result);
 
 

@@ -42,7 +42,7 @@
 #define __REG_TYPES_INCLUDED
 
 /* Whether or not to use timing routines - these are not very portable */
-#define USE_TIMING
+#define USE_REG_TIMING
 
 #include <stdio.h>
 #include <stdlib.h>
