@@ -217,6 +217,9 @@ typedef struct {
   /* Whether IOType is enabled or not (for globus_io - whether socket
      has been created) */
   int                           is_enabled;
+  /* Index of the input channel - used in mapping to the details
+     held by the SGS (when steering via SOAP) */
+  int                           input_index;
 
 } IOdef_entry;
 
