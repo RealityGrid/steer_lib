@@ -117,7 +117,11 @@ typedef struct {
      sent_to_steerer flags.  This used when a client detaches and
      another one attaches some time later. */
   int                 send_all;
-  
+  /* Ptr to buffer containing logged steering cmds */
+  char               *pSteer_cmds;
+  /* No. of bytes currently allocated to buffer */
+  int                 steer_cmds_bytes;
+
 } Chk_log_type;
 
 
