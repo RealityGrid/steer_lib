@@ -125,7 +125,7 @@ int Initialize_steering_connection_soap(int  NumSupportedCmds,
     return REG_FAILURE;
   }
 
-  if(!appStart_response._result || strstr(appStart_response._result, "SGS_ERROR")){
+  if(!appStart_response._result || strstr(appStart_response._result, REG_SGS_ERROR)){
 
     fprintf(stderr, "Initialize_steering_connection_soap: AppStart returned error\n");
     return REG_FAILURE;
@@ -427,7 +427,7 @@ int Get_data_source_address_soap(int   index,
 #endif
 
   if(getNthDataSource_response._result && 
-     !strstr(getNthDataSource_response._result, "SGS_ERROR")){
+     !strstr(getNthDataSource_response._result, REG_SGS_ERROR)){
 
     if(pchar = strtok(getNthDataSource_response._result, ":")){
 

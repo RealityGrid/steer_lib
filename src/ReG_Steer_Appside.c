@@ -912,14 +912,17 @@ int Record_checkpoint_set(int   ChkType,
   /* Construct checkpoint meta-data */
   pchar = cp_data;
   bytes_left = REG_MAX_MSG_SIZE;
-  nbytes = snprintf(pchar, bytes_left, "<Checkpoint_data>\n<Files>\n");
+  nbytes = snprintf(pchar, bytes_left, "<Checkpoint_data>\n"		    
+		    "<Chk_type>%d</Chk_type>\n"
+		    "<Chk_UID>%s</Chk_UID>\n"
+		    "<Files>\n", ChkType, ChkTag);
   pchar += nbytes;
   bytes_left -= nbytes;
 
   for(i=0; i<nfiles; i++){
     
     nbytes = snprintf(pchar, bytes_left, "  <file type=\"gsiftp-URL\">\n"
-		      "    gsiftp://%s%s\n    </file>",
+		      "    gsiftp://%s%s\n    </file>\n",
 		      ReG_Hostname, filenames[i]);
 
     /* Check for truncation */
@@ -940,8 +943,7 @@ int Record_checkpoint_set(int   ChkType,
      long as they're not internal to the library) */
   pchar = node_data;
   bytes_left = REG_MAX_MSG_SIZE;
-  nbytes = snprintf(pchar, bytes_left, "<Checkpoint_node_data>\n"
-		    "<Chk_handle>%d</Chk_handle>\n", ChkType);
+  nbytes = snprintf(pchar, bytes_left, "<Checkpoint_node_data>\n");
 
   pchar += nbytes;
   bytes_left -= nbytes;
