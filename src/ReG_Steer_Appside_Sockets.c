@@ -496,7 +496,7 @@ void poll(const int index) {
       if(FD_ISSET(listener, &sockets)) {
 	/* new connection */
 	struct sockaddr_in theirAddr;
-	int addrlen = sizeof(theirAddr);
+	unsigned int addrlen = sizeof(theirAddr);
 	int new_fd = accept(listener, (struct sockaddr*) &theirAddr, &addrlen);
 	if(new_fd == REG_SOCKETS_ERROR) {
 	  perror("accept");
@@ -707,10 +707,10 @@ int Write_sockets(const int index, const int size, void* buffer) {
   fprintf(stderr, "Writing...\n");
 #endif
   while(bytes_left > 0) {
-#ifndef __sgi
-    result = send(connector, pchar, bytes_left, MSG_NOSIGNAL);
-#else
+#ifndef __linux
     result = send(connector, pchar, bytes_left, 0);
+#else
+    result = send(connector, pchar, bytes_left, MSG_NOSIGNAL);
 #endif
     if(result == REG_SOCKETS_ERROR) {
       perror("send");
@@ -1054,7 +1054,12 @@ int Consume_start_data_check_sockets(const int index) {
 
   while(!(pstart = strstr(buffer, REG_DATA_HEADER))) {
 
+#ifdef _AIX
+    if((nbytes = recv(sock_info->connector_handle, buffer, REG_PACKET_SIZE, 0)) <= 0) {
+#else
     if((nbytes = recv(sock_info->connector_handle, buffer, REG_PACKET_SIZE, MSG_DONTWAIT)) <= 0) {
+#endif
+
       if(nbytes == 0) {
 	/* closed connection */
 	fprintf(stderr, "Consume_start_data_check_sockets: hung up!\n");
@@ -1213,7 +1218,7 @@ int Consume_data_read_sockets(const int index, const int datatype, const int num
 
 /*---------------------------------------------------*/
 
-#ifdef __sgi
+#ifndef __linux
 void signal_handler_sockets(int a_signal) {
 
 #if REG_DEBUG
