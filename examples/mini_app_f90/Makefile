@@ -31,8 +31,8 @@
 #  Authors........: Andrew Porter, Robert Haines
 #-----------------------------------------------------------------
 
-include ../../Makefile.include
-include ../../make/Makefile.${ARCH}
+include ${REG_STEER_HOME}/Makefile.include
+include ${REG_STEER_HOME}/make/Makefile.${ARCH}
 
 # G and NBIT are passed to make on cmd line
 

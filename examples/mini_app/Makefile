@@ -32,8 +32,8 @@
 #---------------------------------------------------------------------
 #
 
-include ../../Makefile.include
-include ../../make/Makefile.${ARCH}
+include ${REG_STEER_HOME}/Makefile.include
+include ${REG_STEER_HOME}/make/Makefile.${ARCH}
 
 TARGET   = mini_app
 

@@ -33,7 +33,7 @@
 #
 
 include ${REG_STEER_HOME}/Makefile.include
-include ../../make/Makefile.${ARCH}
+include ${REG_STEER_HOME}/make/Makefile.${ARCH}
 
 TARGET   = sink
 
