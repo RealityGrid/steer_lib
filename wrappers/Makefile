@@ -1,4 +1,5 @@
 include ../Makefile.include
+include Makefile.wrap
 
 all:
 	${MAKE} ${REG_WRAP}
