@@ -102,6 +102,18 @@ int Initialize_steering_connection_soap(int  NumSupportedCmds,
      http connections */
   soap_init2(&soap, SOAP_IO_KEEPALIVE, SOAP_IO_KEEPALIVE);
 
+  /* Since we are using KEEPALIVE, we can also ask gSOAP to bind the 
+     socket to a specific port on the local machine - only do this if 
+     GLOBUS_TCP_PORT_RANGE is set. */
+  if( pchar = getenv("GLOBUS_TCP_PORT_RANGE") ){
+
+    if(sscanf(pchar, "%d,%d", &(soap.client_port_min), 
+	      &(soap.client_port_max)) != 2){
+      soap.client_port_min = 0;
+      soap.client_port_max = 0;
+    }
+  }
+
   appStart_response._result = NULL;
   if (soap_call_tns__AppStart(&soap, Steerer_connection.SGS_address, "", 
 			      &appStart_response)){

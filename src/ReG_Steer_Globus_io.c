@@ -742,7 +742,8 @@ void Globus_error_print(const globus_result_t result)
 int Consume_msg_header_globus(socket_io_type *sock_info,
 			      int *DataType,
 			      int *Count,
-			      int *NumBytes)
+			      int *NumBytes,
+			      int *IsFortranArray)
 {
   globus_result_t  result;
   globus_size_t    nbytes;
@@ -788,6 +789,8 @@ int Consume_msg_header_globus(socket_io_type *sock_info,
     return REG_FAILURE;
   }
 
+  /*--- Type of objects in message ---*/
+
   result = globus_io_read(&(sock_info->conn_handle), 
 			  (globus_byte_t *)buffer, 
 			  REG_PACKET_SIZE, 
@@ -812,6 +815,8 @@ int Consume_msg_header_globus(socket_io_type *sock_info,
   }
 
   sscanf(buffer, "<Data_type>%d</Data_type>", DataType);
+
+  /*--- No. of objects in message ---*/
 
   result = globus_io_read(&(sock_info->conn_handle), 
 			  (globus_byte_t *)buffer, 
@@ -841,6 +846,8 @@ int Consume_msg_header_globus(socket_io_type *sock_info,
     return REG_FAILURE;
   }
 
+  /*--- No. of bytes in message ---*/
+
   result = globus_io_read(&(sock_info->conn_handle), 
 			  (globus_byte_t *)buffer, 
 			  REG_PACKET_SIZE, 
@@ -855,7 +862,7 @@ int Consume_msg_header_globus(socket_io_type *sock_info,
   }
 
 #if REG_DEBUG
-  fprintf(stderr, "Consume_msg_header_globus: read <%s> from socket\n", 
+  fprintf(stderr, "Consume_msg_header_globus: read >%s< from socket\n", 
 	  buffer);
 #endif
 
@@ -869,6 +876,45 @@ int Consume_msg_header_globus(socket_io_type *sock_info,
     fprintf(stderr, "Consume_msg_header_globus: failed to read Num_bytes\n");
     return REG_FAILURE;
   }
+
+  /*--- Array ordering in message ---*/
+
+  result = globus_io_read(&(sock_info->conn_handle), 
+			  (globus_byte_t *)buffer, 
+			  REG_PACKET_SIZE, 
+			  REG_PACKET_SIZE, 
+			  &nbytes);
+
+  if(result != GLOBUS_SUCCESS){
+
+    fprintf(stderr, "Consume_msg_header_globus: globus_io_read failed\n");
+    Globus_error_print(result);
+    return REG_FAILURE;
+  }
+
+#if REG_DEBUG
+  fprintf(stderr, "Consume_msg_header_globus: read >%s< from socket\n", 
+	  buffer);
+#endif
+
+  if(!strstr(buffer, "<Array_order>")){
+
+    return REG_FAILURE;
+  }
+
+  if(strstr(buffer, "FORTRAN")){
+
+    /* Array data is from Fortran */
+    fprintf(stderr, "Consume_msg_header_globus: F90 data\n");
+    *IsFortranArray = TRUE;
+  }
+  else{
+    /* Array data is not from Fortran */
+    fprintf(stderr, "Consume_msg_header_globus: C data\n");
+    *IsFortranArray = FALSE;
+  }
+
+  /*--- End of header ---*/
 
   result = globus_io_read(&(sock_info->conn_handle), 
 			  (globus_byte_t *)buffer, 
@@ -890,6 +936,8 @@ int Consume_msg_header_globus(socket_io_type *sock_info,
 
   if(strncmp(buffer, END_SLICE_HEADER, strlen(END_SLICE_HEADER))){
 
+    fprintf(stderr, "Consume_msg_header_globus: failed to find "
+	    "end of header\n");
     return REG_FAILURE;
   }
 
@@ -901,9 +949,10 @@ int Consume_msg_header_globus(socket_io_type *sock_info,
 int Emit_msg_header_globus(socket_io_type *sock_info,
 			   int DataType,
 			   int Count,
-			   int NumBytes)
+			   int NumBytes,
+			   int IsFortranArray)
 {
-  char  buffer[6*REG_PACKET_SIZE];
+  char  buffer[7*REG_PACKET_SIZE];
   char  tmp_buffer[REG_PACKET_SIZE];
   char *pchar;
   globus_result_t  result;
@@ -920,6 +969,14 @@ int Emit_msg_header_globus(socket_io_type *sock_info,
   pchar += sprintf(pchar, REG_PACKET_FORMAT, tmp_buffer);
   *(pchar-1) = '\0';
   sprintf(tmp_buffer, "<Num_bytes>%d</Num_bytes>", NumBytes);
+  pchar += sprintf(pchar, REG_PACKET_FORMAT, tmp_buffer);
+  *(pchar-1) = '\0';
+  if(IsFortranArray){
+    sprintf(tmp_buffer, "<Array_order>FORTRAN</Array_order>");
+  }
+  else{
+    sprintf(tmp_buffer, "<Array_order>C</Array_order>");
+  }
   pchar += sprintf(pchar, REG_PACKET_FORMAT, tmp_buffer);
   *(pchar-1) = '\0';
   pchar += sprintf(pchar, REG_PACKET_FORMAT, "</ReG_data_slice_header>");

@@ -1716,6 +1716,18 @@ tcp_connect(struct soap *soap, const char *endpoint, const char *host, int port)
 { struct sockaddr_in sockaddr;
   int len = SOAP_BUFLEN;
   int set = 1;
+  int i;
+  struct sockaddr_in local_sockaddr;
+#if defined(SOCKLEN_T)
+  SOCKLEN_T n = sizeof(struct sockaddr_in);
+#elif defined(__socklen_t_defined) || defined(_SOCKLEN_T) || defined(CYGWIN) || defined(_AIX51)
+  socklen_t n = sizeof(struct sockaddr_in);
+#elif defined(WIN32) || defined(__APPLE__) || defined(HP_UX) || defined(SUN_OS) || defined(OPENSERVER) || defined(TRU64)
+  int n = sizeof(struct sockaddr_in);
+#else
+  size_t n = sizeof(struct sockaddr_in);
+#endif
+
   if (tcp_init(soap))
   { soap_set_sender_error(soap, tcp_error(soap), "TCP initialization failed in tcp_connect()", SOAP_TCP_ERROR);
     return -1;
@@ -1784,6 +1796,46 @@ tcp_connect(struct soap *soap, const char *endpoint, const char *host, int port)
 #else
     fcntl(soap->socket, F_SETFL, fcntl(soap->socket, F_GETFL)|O_NONBLOCK);
 #endif
+
+  /* ARPDBG - use bind to pin-down the local port to be used.  Necessary
+     to get us through some firewalls */
+  if((soap->omode & SOAP_IO_KEEPALIVE) && (soap->client_port_min > 0)){
+    memset(&local_sockaddr, 0, sizeof(local_sockaddr));
+    local_sockaddr.sin_family = AF_INET;
+    local_sockaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+
+    /* Attempt to bind to any port in specified range */
+    i = soap->client_port_min;
+    local_sockaddr.sin_port = htons((short)i);
+
+    while( bind(soap->socket, (struct sockaddr*)&local_sockaddr,
+		sizeof(local_sockaddr)) < 0 ){
+      if(++i > soap->client_port_max){
+
+	soap_set_sender_error(soap, "Bind", 
+			      "TCP bind failed in tcp_connect()",
+			      SOAP_TCP_ERROR);
+	DBGLOG(TEST, SOAP_MESSAGE(fdebug, 
+				  "Bind failed in tcp_connect()\n"));
+	perror("Bind error");
+	soap_closesock(soap);
+	return -1;
+      }
+      local_sockaddr.sin_port = htons((short)i);
+    }
+
+    DBGLOG(TEST,
+	   SOAP_MESSAGE(fdebug, 
+			"ARPDBG: done bind for socket %d on port %d\n", 
+			soap->socket, i));
+#ifdef DEBUG
+    getsockname(soap->socket, (struct sockaddr*)&local_sockaddr, &n);
+    DBGLOG(TEST,
+	   SOAP_MESSAGE(fdebug, "ARPDBG: done getsockname... port = %d\n",
+			(int)ntohs(local_sockaddr.sin_port)));
+#endif
+  }
+
   for (;;)
   { if (connect(soap->socket, (struct sockaddr*)&sockaddr, sizeof(sockaddr)))
     { if (soap->connect_timeout && (soap_socket_errno == SOAP_EINPROGRESS || soap_socket_errno == SOAP_EWOULDBLOCK))
@@ -3272,6 +3324,8 @@ soap_copy(struct soap *soap)
     copy->action = NULL;
     *copy->host = '\0';
     copy->port = 0;
+    copy->client_port_min = 0;
+    copy->client_port_max = 0;
 #ifdef WITH_COOKIES
     copy->cookies = soap_copy_cookies(soap);
 #else
@@ -3372,6 +3426,8 @@ soap_init(struct soap *soap)
 #endif 
   *soap->host = '\0';
   soap->port = 0;
+  soap->client_port_min = 0;
+  soap->client_port_max = 0;
   *soap->endpoint = '\0';
   *soap->path = '\0';
   soap->action = NULL;

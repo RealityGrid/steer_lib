@@ -677,6 +677,11 @@ INT_KIND_1_DECL(Status);
   *Status = INT_KIND_1_CAST( Emit_start((int)*IOType, 
                                         (int)*SeqNum, 
                                         (int *)IOHandle) );
+
+  if(*Status == REG_SUCCESS){
+    Set_f90_array_ordering((int)*IOHandle, TRUE);
+  }
+
   return;
 }
 
@@ -802,6 +807,40 @@ INT_KIND_1_DECL(Status);
                                              (int)*nz,
                                              (int)*veclen,
                                              (int)*type) );
+  return;
+}
+
+/*----------------------------------------------------------------
+
+SUBROUTINE make_chunk_header_f(header, sx, sy, sz, nx, ny, nz, status)
+
+  CHARACTER (LEN=BUFSIZ), INTENT(out)               :: header
+  INTEGER (KIND=REG_SP_KIND), INTENT(in)            :: nx, ny, nz
+  INTEGER (KIND=REG_SP_KIND), INTENT(in)            :: sz, sy, sz
+  INTEGER (KIND=REG_SP_KIND), INTENT(out)           :: status
+
+----------------------------------------------------------------*/
+
+void FUNCTION(make_chunk_header_f) ARGS(`STRING_ARG(header),
+                                         sx, sy, sz,
+                                         nx, ny, nz,
+                                         Status')
+STRING_ARG_DECL(header);
+INT_KIND_1_DECL(sx);
+INT_KIND_1_DECL(sy);
+INT_KIND_1_DECL(sz);
+INT_KIND_1_DECL(nx);
+INT_KIND_1_DECL(ny);
+INT_KIND_1_DECL(nz);
+INT_KIND_1_DECL(Status);
+{
+  *Status = INT_KIND_1_CAST( Make_chunk_header(STRING_PTR(header),
+                                               (int)*sx, 
+                                               (int)*sy, 
+                                               (int)*sz,
+                                               (int)*nx, 
+                                               (int)*ny, 
+                                               (int)*nz) );
   return;
 }
 

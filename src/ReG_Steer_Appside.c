@@ -592,6 +592,26 @@ int Register_IOTypes(int    NumTypes,
 
 /*----------------------------------------------------------------*/
 
+int Set_f90_array_ordering(int IOTypeIndex, int flag){
+
+  /* Check that steering is enabled */
+  if(!ReG_SteeringEnabled) return REG_SUCCESS;
+
+  /* Can only call this function if steering lib initialised */
+  if (!ReG_SteeringInit) return REG_FAILURE;
+
+  if(IOTypeIndex < 0){
+    fprintf(stderr, "Set_f90_ordering: IOTypeIndex is < 0\n");
+    return REG_FAILURE;
+  }
+
+  IOTypes_table.io_def[IOTypeIndex].is_f90_array = flag;
+
+  return REG_SUCCESS;
+}
+
+/*----------------------------------------------------------------*/
+
 int Register_ChkTypes(int    NumTypes,
 		      char* *ChkLabel,
 		      int   *direction,
@@ -1121,11 +1141,13 @@ int Consume_data_slice_header(int  IOTypeIndex,
 {
   int status;
   int NumBytes;
+  int IsFortranArray;
 
   status = Consume_iotype_msg_header(IOTypeIndex,
 				     DataType,
 				     Count,
-				     &NumBytes);
+				     &NumBytes,
+				     &IsFortranArray);
 
   if(status != REG_SUCCESS) return REG_FAILURE;
 
@@ -1501,8 +1523,10 @@ int Emit_data_slice(int		      IOTypeIndex,
     /* Ensure we send termination character */
     pChar = (char *)pData;
     if(pChar[actual_count-1] != '\0'){
-      pChar[actual_count] = '\0';
-      actual_count++;
+      /* This could lead to string truncation - should copy string
+         and add termination at end ARPDBG */ 
+      pChar[actual_count-1] = '\0';
+      /* actual_count++; */
     }
     num_bytes_to_send = actual_count*sizeof(char);
     out_ptr = pData;
@@ -1519,7 +1543,9 @@ int Emit_data_slice(int		      IOTypeIndex,
   if( Emit_iotype_msg_header(IOTypeIndex,
 			     datatype,
 			     actual_count,
-			     num_bytes_to_send) != REG_SUCCESS){
+			     num_bytes_to_send,
+			     IOTypes_table.io_def[IOTypeIndex].is_f90_array)
+      != REG_SUCCESS){
 
     return REG_FAILURE;
   }
@@ -3701,6 +3727,22 @@ int Make_vtk_header(char  *header,
 
 /*--------------------------------------------------------------------*/
 
+int Make_chunk_header(char *header,
+                      int   sx, int sy, int sz,
+                      int   nx, int ny, int nz)
+{
+  char *pchar = header;
+
+  pchar += sprintf(pchar, "CHUNK_HDR\n"
+                          "ORIGIN %d %d %d\n"
+                          "EXTENT %d %d %d\n"
+                          "END_CHUNK_HDR\n", sx, sy, sz, nx, ny, nz);
+
+  return REG_SUCCESS;
+}
+
+/*--------------------------------------------------------------------*/
+
 int Steerer_connected()
 {
 
@@ -4297,14 +4339,16 @@ int Get_communication_status(const int	index)
 int Consume_iotype_msg_header(int  IOTypeIndex,
 			      int *DataType,
 			      int *Count,
-			      int *NumBytes)
+			      int *NumBytes,
+			      int *IsFortranArray)
 {
   
 #if REG_GLOBUS_SAMPLES
   return Consume_msg_header_globus(&(IOTypes_table.io_def[IOTypeIndex].socket_info),
 				   DataType,
 				   Count,
-				   NumBytes);
+				   NumBytes,
+				   IsFortranArray);
 #else
 
   return REG_FAILURE;
@@ -4317,14 +4361,16 @@ int Consume_iotype_msg_header(int  IOTypeIndex,
 int Emit_iotype_msg_header(int IOTypeIndex,
 			   int DataType,
 			   int Count,
-			   int NumBytes)
+			   int NumBytes,
+			   int IsFortranArray)
 {
 
 #if REG_GLOBUS_SAMPLES
   return Emit_msg_header_globus(&(IOTypes_table.io_def[IOTypeIndex].socket_info),
 				DataType,
 				Count,
-				NumBytes);
+				NumBytes,
+				IsFortranArray);
 #else
 
   return REG_FAILURE;

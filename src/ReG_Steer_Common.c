@@ -643,11 +643,13 @@ int Consume_msg_header(socket_type_steering *sock_info,
 {
 #if REG_GLOBUS_STEERING
   int NumBytes;
+  int IsFortranArray;
 
   return Consume_msg_header_globus(sock_info,
 				   DataType,
 				   Count,
-				   &NumBytes);
+				   &NumBytes,
+				   &IsFortranArray);
 #else
 
   return REG_FAILURE;
