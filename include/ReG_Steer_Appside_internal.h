@@ -115,17 +115,35 @@ static void Steering_signal_handler(int aSignal);
 /* Send a status message to the steerer */
 static int Send_status_msg(char *buf);
 
+static int Send_status_msg_file(char *buf);
+
+static int Send_status_msg_globus(char *buf);
+
 /* Read the next control message from the steerer, if any.  Results
    passed back in structure.  Returns NULL if no message. */
 static struct msg_struct *Get_control_msg();
+
+static struct msg_struct *Get_control_msg_file();
+
+static struct msg_struct *Get_control_msg_globus();
 
 /* Set-up stuff to receive connection from steering client */
 static int Initialize_steering_connection(int  NumSupportedCmds,
 					  int *SupportedCmds);
 
+static int Initialize_steering_connection_file(int  NumSupportedCmds,
+					       int *SupportedCmds);
+
+static int Initialize_steering_connection_globus(int  NumSupportedCmds,
+						 int *SupportedCmds);
+
 /* Check for a connection from a steering client - return REG_SUCCESS
    if a client is attempting to connect */
 static int Steerer_connected();
+
+static int Steerer_connected_file();
+
+static int Steerer_connected_globus();
 
 /* Take down any connection to a steering client */
 int Finalize_steering_connection();

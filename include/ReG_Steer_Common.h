@@ -163,8 +163,16 @@ extern REG_MsgType Get_message_type(const char *name);
 
 /* Write ReG-specific XML header & footer information into supplied message
    buffer */
-
 extern int  Write_xml_header(char **pchar);
 
 extern int  Write_xml_footer(char **pchar);
 
+/* Read ReG-specific header from globus_io socket */
+extern int Consume_msg_header(socket_io_type *sock_info,
+			      int *DataType,
+			      int *Count);
+
+/* Construct and send ReG-specific header down globus_io socket */
+extern int Emit_msg_header(socket_io_type *sock_info,
+			   int DataType,
+			   int Count);

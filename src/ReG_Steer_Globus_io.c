@@ -82,9 +82,11 @@ void Globus_socket_info_init(socket_io_type * const socket_info)
 {
   globus_mutex_init(&socket_info->mutex, GLOBUS_NULL);
   globus_cond_init(&socket_info->cond, GLOBUS_NULL);
-  socket_info->port = 0;
+  socket_info->listener_port = 0;
   socket_info->listener_status = REG_COMMS_STATUS_NULL;
   socket_info->comms_status = REG_COMMS_STATUS_NULL;   
+  socket_info->connector_port = 0;
+  sprintf(socket_info->connector_hostname, " ");
 }
 
 /*--------------------------------------------------------------------*/
@@ -135,7 +137,8 @@ int Globus_create_listener(socket_io_type * const socket_info)
    *  only port numbers within that range will be used 
    */
 
-  result = globus_io_tcp_create_listener(&(socket_info->port), -1, &attr, 
+  result = globus_io_tcp_create_listener(&(socket_info->listener_port), -1, 
+					 &attr, 
 					 &(socket_info->listener_handle));
   /* SMR XXX backlog -1?*/
   if (result != GLOBUS_SUCCESS) {
@@ -163,7 +166,7 @@ int Globus_create_listener(socket_io_type * const socket_info)
   socket_info->listener_status=REG_COMMS_STATUS_LISTENING;
 
 #if DEBUG
-  fprintf(stderr, "DBG: Listener on port %d\n", socket_info->port);
+  fprintf(stderr, "DBG: Listener on port %d\n", socket_info->listener_port);
 #endif
 
 
@@ -338,8 +341,8 @@ int Globus_create_connector(socket_io_type * const socket_info)
    * - will connect and call callback function when port listens
    */
 
-  result = globus_io_tcp_register_connect(connector_hostname,
-					  connector_port,
+  result = globus_io_tcp_register_connect(socket_info->connector_hostname,
+					  socket_info->connector_port,
 					  &attr,
 					  Globus_connector_callback,
 					  (void *) socket_info,
@@ -365,8 +368,9 @@ int Globus_create_connector(socket_io_type * const socket_info)
 
 #if DEBUG
     fprintf(stderr, "Globus_create_connector: registered connector on "
-	    "connector_port = %d, connector_hostname = %s\n", connector_port, 
-	    connector_hostname);
+	    "connector_port = %d, connector_hostname = %s\n", 
+	    socket_info->connector_port, 
+	    socket_info->connector_hostname);
 #endif
   }
 

@@ -46,6 +46,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+/* Uncomment following line to use globus_io (as opposed to local
+   files) for steering messages - NOT YET WORKING */
+/*#define GLOBUS_IO_STEERING*/
+
 /* Flag for debugging - set to one to retain all xml messages */
 #define NO_FILE_DELETE 0
 
@@ -145,9 +149,14 @@
    headers and footers to be sent. */
 
 #define REG_PACKET_SIZE 128
+#define REG_PACKET_FORMAT "%-128s"
 
 #define REG_DATA_HEADER "<ReG_data>"
 #define REG_DATA_FOOTER "</ReG_data>"
+
+#define BEGIN_SLICE_HEADER "<ReG_data_slice_header>"
+#define END_SLICE_HEADER   "</ReG_data_slice_header>"
+
 
 /* Coding scheme for data types */
 
@@ -214,5 +223,7 @@ typedef int REG_IOHandleType;
 #define REG_COMMS_STATUS_WAITING_TO_CONNECT	3
 #define REG_COMMS_STATUS_CONNECTED		4
 #define REG_COMMS_STATUS_FAILURE		5
+
+#define REG_PORT_NOTSET  -1
 
 #endif /* __REG_TYPES_INCLUDED defined */

@@ -49,7 +49,8 @@
 typedef struct
 {
   /* port for socket connection */
-  unsigned short int		port;
+  unsigned short int		listener_port;
+
   /* socket connection handles */
   globus_io_handle_t		listener_handle;
   globus_io_handle_t		conn_handle;
@@ -60,12 +61,17 @@ typedef struct
   globus_mutex_t		mutex;
   globus_cond_t			cond;
 
+  char			        connector_hostname[REG_MAX_STRING_LENGTH];
+  unsigned short int	        connector_port;
+
 } socket_io_type;
 
 
-/* SMR XXX - globals for sockets - temp solution*/
+/* SMR XXX - globals for sockets - temp solution
 char			connector_hostname[REG_MAX_STRING_LENGTH];
 unsigned short int	connector_port;
+*/
+
 /* whether globus_io module has been activated */
 static int		globus_module_activated = FALSE;
 
@@ -95,14 +101,14 @@ extern int Globus_create_listener(socket_io_type * const socket_info);
    when kicked via a call to Globus_callback_poll, thus there could be
    time delay between connection being made and connection being
    accepted */
-extern void Globus_listener_callback (void		*callback_arg,
-					     globus_io_handle_t	*handle,
-					     globus_result_t	result);
+extern void Globus_listener_callback (void		 *callback_arg,
+				      globus_io_handle_t *handle,
+				      globus_result_t	  result);
 
 /* The callback function called when connector accepts a connection */
-extern void Globus_accept_callback (void			*callback_arg,
-					   globus_io_handle_t	*handle,
-					   globus_result_t	resultparam);
+extern void Globus_accept_callback (void	       *callback_arg,
+				    globus_io_handle_t *handle,
+				    globus_result_t	resultparam);
 
 
 /* Register callback function Globus_connector_callback to attempt to
@@ -112,9 +118,9 @@ extern int Globus_create_connector(socket_io_type * const socket_info);
 
 
 /* The connector callback function */
-extern void Globus_connector_callback (void			*callback_arg,
-					      globus_io_handle_t	*handle,
-					      globus_result_t		result);
+extern void Globus_connector_callback (void               *callback_arg,
+				       globus_io_handle_t *handle,
+				       globus_result_t	   result);
 
 /* Close and clean up a listener connection */
 extern void Globus_cleanup_listener_connection(socket_io_type * const socket_info);

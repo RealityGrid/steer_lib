@@ -69,7 +69,22 @@ static int ReG_SteeringInit    = FALSE;
 
 static struct {
 
-  char  file_root[REG_MAX_STRING_LENGTH];
+  /* Where to write files for file-based steering */
+  char           file_root[REG_MAX_STRING_LENGTH];
+
+  /* For steering via globus_io - port to listen on */
+  int            port_num;
+
+  /* structure used to hold all globus_io socket information */
+  socket_io_type socket_info;
+
+  /* String to hold 'supported commands' message 'cos we can't 
+     actually send it until a steerer has connected in the case
+     where we're using globus_io */
+  char           supp_cmds[REG_MAX_MSG_SIZE];
+
+  /* Buffer to hold received messages */
+  char           msg_buffer[REG_MAX_MSG_SIZE];
 
 } Steerer_connection;
 
@@ -432,7 +447,10 @@ int Register_IOTypes(int    NumTypes,
       else{
 
 #if DEBUG
-	fprintf(stderr, "Register_IOTypes: Created listener on port %d, index %d, label %s\n", IOTypes_table.io_def[current].socket_info.port, current, IOLabel[i] );
+	fprintf(stderr, "Register_IOTypes: Created listener on port %d, "
+		"index %d, label %s\n", 
+		IOTypes_table.io_def[current].socket_info.connector_port, 
+		current, IOLabel[i] );
 #endif
 	/* attempt to kick the callback function (in case accept callback) */
 	Globus_callback_poll(&(IOTypes_table.io_def[current].socket_info));
@@ -448,15 +466,15 @@ int Register_IOTypes(int    NumTypes,
       if (pchar) {
 	len = strlen(pchar);
 	if (len < REG_MAX_STRING_LENGTH) {
-	  sprintf(connector_hostname, pchar);
-	  connector_hostname[len]='\0';
+	  sprintf(IOTypes_table.io_def[current].socket_info.connector_hostname,
+		  pchar);
 	  hostname_ok = 1;
 	}
       }
       /* SMR XXX add error handling */
       pchar = getenv("REG_CONNECTOR_PORT");
       if (pchar) {
-	connector_port = atoi(pchar);
+	IOTypes_table.io_def[current].socket_info.connector_port = atoi(pchar);
 	port_ok = 1;
       }
 
@@ -474,7 +492,9 @@ int Register_IOTypes(int    NumTypes,
 #if DEBUG
 	  fprintf(stderr, "Register_IOTypes: registered connector on "
 		  "port %d, hostname = %s, index %d, label %s\n", 
-		  connector_port, connector_hostname, current, IOLabel[i] );
+		  IOTypes_table.io_def[current].socket_info.connector_port,
+		  IOTypes_table.io_def[current].socket_info.connector_hostname,
+		  current, IOLabel[i] );
 #endif
 
 	}
@@ -487,12 +507,6 @@ int Register_IOTypes(int    NumTypes,
     /* Create, store and return a handle for this IOType */
     IOTypes_table.io_def[current].handle = IOTypes_table.next_handle++;
     IOType[i] = IOTypes_table.io_def[current].handle;
-
-    /* ARPDBG */
-#if DEBUG
-    fprintf(stderr, "Register_IOTypes: handle = %d\n", IOType[i]);
-    fprintf(stderr, "Register_IOTypes: index  = %d\n", current);
-#endif
 
     current++;
 
@@ -550,7 +564,8 @@ int Consume_start(int  IOType,
   }
 
   /* if not connected attempt to connect now */
-  if (IOTypes_table.io_def[*IOTypeIndex].socket_info.comms_status != REG_COMMS_STATUS_CONNECTED)
+  if (IOTypes_table.io_def[*IOTypeIndex].socket_info.comms_status 
+      != REG_COMMS_STATUS_CONNECTED)
     Globus_attempt_connector_connect(&(IOTypes_table.io_def[*IOTypeIndex].socket_info));
 
 
@@ -617,20 +632,17 @@ int Consume_start(int  IOType,
 
 	  return REG_SUCCESS;
 	}
-      }
-      
-
+      }   
     }
     else {
     
 #if DEBUG
-    fprintf(stderr, "Consume_start: reconnect attempt success - but "
-	    "globus_io_try_read failed\n");
+      fprintf(stderr, "Consume_start: reconnect attempt success - but "
+	      "globus_io_try_read failed\n");
 #endif
     }
 
     return REG_FAILURE;
-    
   }
   else {
 #if DEBUG
@@ -673,82 +685,13 @@ int Consume_data_slice_header(int  IOTypeIndex,
 			      int *DataType,
 			      int *Count)
 {
-  globus_result_t  result;
-  globus_size_t    nbytes;
-  char             buffer[REG_PACKET_SIZE];
+  int status;
 
-  char *begin_slice_header = "<ReG_data_slice_header>";
-  char *end_slice_header   = "</ReG_data_slice_header>";
+  status = Consume_msg_header(&(IOTypes_table.io_def[IOTypeIndex].socket_info),
+			      DataType,
+			      Count);
 
-  /* Check that steering is enabled */
-  if(!ReG_SteeringEnabled) return REG_SUCCESS;
-
-  /* Can only call this function if steering lib initialised */
-  if (!ReG_SteeringInit) return REG_FAILURE;
-
-  /* check socket connection has been made */
-  if (IOTypes_table.io_def[IOTypeIndex].socket_info.comms_status != 
-      REG_COMMS_STATUS_CONNECTED) return REG_FAILURE;
-
-  /* Read header */
-
-#if DEBUG
-  /* ARPDBG */
-  fprintf(stderr, "Consume_data_slice_header: calling globus_io_read...\n");
-#endif
-
-  /* Blocks until REG_PACKET_SIZE bytes received */
-  result = globus_io_read(&(IOTypes_table.io_def[IOTypeIndex].socket_info.conn_handle), 
-			  (globus_byte_t *)buffer, 
-			  REG_PACKET_SIZE, 
-			  REG_PACKET_SIZE, 
-			  &nbytes);
-
-  if(result != GLOBUS_SUCCESS){
-
-    fprintf(stderr, "Consume_data_slice_header: globus_io_read failed\n");
-    return REG_FAILURE;
-  }
-
-#if DEBUG
-  fprintf(stderr, "Consume_data_slice_header: read <%s> from socket\n",
-	  buffer);
-#endif
-
-  /* Check for end of data */
-  if(!strncmp(buffer, REG_DATA_FOOTER, strlen(REG_DATA_FOOTER))){
-
-    return REG_EOD;
-  }
-  else if(strncmp(buffer, begin_slice_header, strlen(begin_slice_header))){
-
-    fprintf(stderr, "Consume_data_slice_header: incorrect header on slice\n");
-    return REG_FAILURE;
-  }
-
-  result = globus_io_read(&(IOTypes_table.io_def[IOTypeIndex].socket_info.conn_handle), 
-			  (globus_byte_t *)buffer, 
-			  REG_PACKET_SIZE, 
-			  REG_PACKET_SIZE, 
-			  &nbytes);
-
-  if(result != GLOBUS_SUCCESS){
-
-    fprintf(stderr, "Consume_data_slice_header: globus_io_read failed\n");
-    return REG_FAILURE;
-  }
-
-#if DEBUG
-  fprintf(stderr, "Consume_data_slice_header: read <%s> from socket\n", 
-	  buffer);
-#endif
-
-  if(!strstr(buffer, "<Data_type>")){
-
-    return REG_FAILURE;
-  }
-
-  sscanf(buffer, "<Data_type>%d</Data_type>", DataType);
+  if(status != REG_SUCCESS) return REG_FAILURE;
 
   /* Use of XDR is internal to library so make sure user doesn't
      get confused.  use_xdr flag set here for use in subsequent call
@@ -772,55 +715,6 @@ int Consume_data_slice_header(int  IOTypeIndex,
 
   default:
     break;
-  }
-
-  result = globus_io_read(&(IOTypes_table.io_def[IOTypeIndex].socket_info.conn_handle), 
-			  (globus_byte_t *)buffer, 
-			  REG_PACKET_SIZE, 
-			  REG_PACKET_SIZE, 
-			  &nbytes);
-
-  if(result != GLOBUS_SUCCESS){
-
-    return REG_FAILURE;
-  }
-
-#if DEBUG
-  fprintf(stderr, "Consume_data_slice_header: read <%s> from socket\n", 
-	  buffer);
-#endif
-
-  if(!strstr(buffer, "<Num_objects>")){
-
-    return REG_FAILURE;
-  }
-
-  if( sscanf(buffer, "<Num_objects>%d</Num_objects>", Count) != 1){
-
-    fprintf(stderr, "Consume_data_slice_header: failed to read Num_objects\n");
-    return REG_FAILURE;
-  }
-
-  result = globus_io_read(&(IOTypes_table.io_def[IOTypeIndex].socket_info.conn_handle), 
-			  (globus_byte_t *)buffer, 
-			  REG_PACKET_SIZE, 
-			  REG_PACKET_SIZE, 
-			  &nbytes);
-
-  if(result != GLOBUS_SUCCESS){
-
-    fprintf(stderr, "Consume_data_slice_header: globus_io_read failed\n");
-    return REG_FAILURE;
-  }
-
-#if DEBUG
-  fprintf(stderr, "Consume_data_slice_header: read <%s> from socket\n", 
-	  buffer);
-#endif
-
-  if(strncmp(buffer, end_slice_header, strlen(end_slice_header))){
-
-    return REG_FAILURE;
   }
 
   return REG_SUCCESS;
@@ -1104,20 +998,20 @@ int Consume_data_slice_old(REG_IOHandleType  IOHandle,
     *DataType = REG_CHAR;
 
     pdata = (char *)(IO_channel[index].buffer);
-    pdata += sprintf(pdata, "%-128s", "# AVS field file\n");
-    pdata += sprintf(pdata, "%-128s", "ndim=3\n");
-    pdata += sprintf(pdata, "%-128s", "dim1= 16\n");
-    pdata += sprintf(pdata, "%-128s", "dim2= 16\n");
-    pdata += sprintf(pdata, "%-128s", "dim3= 16\n");
-    pdata += sprintf(pdata, "%-128s", "nspace=3\n");
-    pdata += sprintf(pdata, "%-128s", "field=uniform\n");
-    pdata += sprintf(pdata, "%-128s", "veclen=2\n");
-    pdata += sprintf(pdata, "%-128s", "data=xdr_float\n");
-    pdata += sprintf(pdata, "%-128s", "variable 1 filetype=binary "
+    pdata += sprintf(pdata, REG_PACKET_FORMAT, "# AVS field file\n");
+    pdata += sprintf(pdata, REG_PACKET_FORMAT, "ndim=3\n");
+    pdata += sprintf(pdata, REG_PACKET_FORMAT, "dim1= 16\n");
+    pdata += sprintf(pdata, REG_PACKET_FORMAT, "dim2= 16\n");
+    pdata += sprintf(pdata, REG_PACKET_FORMAT, "dim3= 16\n");
+    pdata += sprintf(pdata, REG_PACKET_FORMAT, "nspace=3\n");
+    pdata += sprintf(pdata, REG_PACKET_FORMAT, "field=uniform\n");
+    pdata += sprintf(pdata, REG_PACKET_FORMAT, "veclen=2\n");
+    pdata += sprintf(pdata, REG_PACKET_FORMAT, "data=xdr_float\n");
+    pdata += sprintf(pdata, REG_PACKET_FORMAT, "variable 1 filetype=binary "
     		   "skip=0000000 stride=2\n");
-    pdata += sprintf(pdata, "%-128s", "variable 2 filetype=binary "
+    pdata += sprintf(pdata, REG_PACKET_FORMAT, "variable 2 filetype=binary "
     		   "skip=0000008 stride=2\n");
-    pdata += sprintf(pdata, "%-128s", "END_OF_HEADER\n");
+    pdata += sprintf(pdata, REG_PACKET_FORMAT, "END_OF_HEADER\n");
 
     *Count = strlen((char *)(IO_channel[index].buffer));
 
@@ -1203,7 +1097,6 @@ int Emit_start(int  IOType,
 	       int *IOTypeIndex)
 {
   char            buffer[REG_PACKET_SIZE];
-  char            fmt[16];
   globus_size_t   nbytes;
   globus_result_t result;
 
@@ -1236,11 +1129,12 @@ int Emit_start(int  IOType,
   }
 
   /* check if socket connection has been made */
-  if (IOTypes_table.io_def[*IOTypeIndex].socket_info.comms_status != REG_COMMS_STATUS_CONNECTED) 
+  if (IOTypes_table.io_def[*IOTypeIndex].socket_info.comms_status 
+      != REG_COMMS_STATUS_CONNECTED) 
     Globus_attempt_listener_connect(&(IOTypes_table.io_def[*IOTypeIndex].socket_info));
 
-
-  if (IOTypes_table.io_def[*IOTypeIndex].socket_info.comms_status == REG_COMMS_STATUS_CONNECTED) {
+  if (IOTypes_table.io_def[*IOTypeIndex].socket_info.comms_status 
+      == REG_COMMS_STATUS_CONNECTED) {
 
 #if DEBUG
     fprintf(stderr, "Emit_start: socket status is connected, index = %d\n",
@@ -1249,8 +1143,7 @@ int Emit_start(int  IOType,
 
     /* Send header */
     
-    sprintf(fmt, "%s%ds", "%-", REG_PACKET_SIZE);
-    sprintf(buffer, fmt, REG_DATA_HEADER);
+    sprintf(buffer, REG_PACKET_FORMAT, REG_DATA_HEADER);
 
 #if DEBUG
     fprintf(stderr, "Emit_start: Sending >>%s<<\n", buffer);
@@ -1327,8 +1220,9 @@ int Emit_stop(int *IOTypeIndex)
   sprintf(fmt, "%s%ds", "%-", REG_PACKET_SIZE);
   sprintf(buffer, fmt, REG_DATA_FOOTER);
 
-  /* ARPDBG */
+#if DEBUG
   fprintf(stderr, "Emit_stop: Sending >>%s<<\n", buffer);
+#endif
 
   result = globus_io_write(&(IOTypes_table.io_def[*IOTypeIndex].socket_info.conn_handle), 
 			   (globus_byte_t *)buffer, 
@@ -1368,10 +1262,6 @@ int Emit_data_slice(int		      IOTypeIndex,
   globus_result_t  result;
   globus_size_t    nbytes;
   globus_size_t    num_bytes_to_send;
-  char             buffer[5*REG_PACKET_SIZE];
-  char             tmp_buffer[REG_PACKET_SIZE];
-  char            *pchar;
-  char             fmt[16];
 
   XDR              xdrs;
   int             *iptr;
@@ -1480,32 +1370,10 @@ int Emit_data_slice(int		      IOTypeIndex,
  
   /* Send ReG-specific header */
 
-  sprintf(fmt, "%s%ds", "%-", REG_PACKET_SIZE);
+  if( Emit_msg_header(&(IOTypes_table.io_def[IOTypeIndex].socket_info),
+		      datatype,
+		      Count) != REG_SUCCESS){
 
-  pchar = (char *)(&buffer);
-  pchar += sprintf(pchar, fmt, "<ReG_data_slice_header>");
-  sprintf(tmp_buffer, "<Data_type>%d</Data_type>", datatype);
-  pchar += sprintf(pchar, fmt, tmp_buffer);
-  sprintf(tmp_buffer, "<Num_objects>%d</Num_objects>", Count);
-  pchar += sprintf(pchar, fmt, tmp_buffer);
-  pchar += sprintf(pchar, fmt, "</ReG_data_slice_header>");
-
-#if DEBUG
-  fprintf(stderr, "Emit_data_slice: sending >>%s<<\n", buffer);
-#endif
-
-  result = globus_io_write(&(IOTypes_table.io_def[IOTypeIndex].socket_info.conn_handle), 
-			   (globus_byte_t *)buffer, 
-			   strlen(buffer), 
-			   &nbytes);
-
-  if (result != GLOBUS_SUCCESS ) {
-
-#if DEBUG
-    fprintf(stderr, "Emit_data_slice: failed to write slice header\n");
-#endif
-
-    /* ARPDBG - some stuff here */
     return REG_FAILURE;
   }
 
@@ -2062,10 +1930,10 @@ int Emit_param_defs(){
   pbuf = buf;
   Write_xml_header(&pbuf);
 
-  pbuf += sprintf(pbuf,"<Param_defs>\n");
+  pbuf += sprintf(pbuf, "<Param_defs>\n");
   
   for(i=0; i<Params_table.max_entries; i++){
-  
+
     /* Check handle because if a parameter is deleted then this is
   	 flagged by unsetting its handle */
   
@@ -2074,33 +1942,36 @@ int Emit_param_defs(){
       /* Update the 'value' part of this parameter's table entry */
       if(Get_ptr_value(&(Params_table.param[i])) == REG_SUCCESS){
     	 
-	pbuf += sprintf(pbuf,"<Param>\n");
-	pbuf += sprintf(pbuf,"<Label>%s</Label>\n", 
+	pbuf += sprintf(pbuf, "<Param>\n");
+
+	pbuf += sprintf(pbuf, "<Label>%s</Label>\n", 
 			Params_table.param[i].label);
-	pbuf += sprintf(pbuf,"<Steerable>%d</Steerable>\n", 
+
+	pbuf += sprintf(pbuf, "<Steerable>%d</Steerable>\n", 
 			Params_table.param[i].steerable);
-	pbuf += sprintf(pbuf,"<Type>%d</Type>\n", 
-			Params_table.param[i].type);
-	pbuf += sprintf(pbuf,"<Handle>%d</Handle>\n",
+
+	pbuf += sprintf(pbuf, "<Type>%d</Type>\n", Params_table.param[i].type);
+
+	pbuf += sprintf(pbuf, "<Handle>%d</Handle>\n",
 			Params_table.param[i].handle);
-	pbuf += sprintf(pbuf,"<Value>%s</Value>\n", 
-			Params_table.param[i].value);
+
+	pbuf += sprintf(pbuf,"<Value>%s</Value>\n", Params_table.param[i].value);
 
 	if(Params_table.param[i].is_internal == TRUE){
 
-	  pbuf += sprintf(pbuf,"<Is_internal>TRUE</Is_internal>\n");
+	  pbuf += sprintf(pbuf, "<Is_internal>TRUE</Is_internal>\n");
 	}
 	else{
 
-	  pbuf += sprintf(pbuf,"<Is_internal>FALSE</Is_internal>\n");
+	  pbuf += sprintf(pbuf, "<Is_internal>FALSE</Is_internal>\n");
 	}
 
-	pbuf += sprintf(pbuf,"</Param>\n");
+	pbuf += sprintf(pbuf, "</Param>\n");
       }
     }
   }
   
-  pbuf += sprintf(pbuf,"</Param_defs>\n");
+  pbuf += sprintf(pbuf, "</Param_defs>\n");
   Write_xml_footer(&pbuf);
 
   /* Physically send the message */
@@ -2668,44 +2539,44 @@ int Make_vtk_buffer(char  *header,
   /* Make ASCII header to describe data to vtk */
 
   pchar = header;
-  pchar += sprintf(pchar, "%-128s", "# AVS field file\n");
-  pchar += sprintf(pchar, "%-128s", "ndim=3\n");
+  pchar += sprintf(pchar, REG_PACKET_FORMAT, "# AVS field file\n");
+  pchar += sprintf(pchar, REG_PACKET_FORMAT, "ndim=3\n");
   sprintf(text, "dim1= %d\n", nx);
-  pchar += sprintf(pchar, "%-128s", text);
+  pchar += sprintf(pchar, REG_PACKET_FORMAT, text);
   sprintf(text, "dim2= %d\n", ny);
-  pchar += sprintf(pchar, "%-128s", text);
+  pchar += sprintf(pchar, REG_PACKET_FORMAT, text);
   sprintf(text, "dim3= %d\n", nz);
-  pchar += sprintf(pchar, "%-128s", text);
-  pchar += sprintf(pchar, "%-128s", "nspace=3\n");
-  pchar += sprintf(pchar, "%-128s", "field=uniform\n");
+  pchar += sprintf(pchar, REG_PACKET_FORMAT, text);
+  pchar += sprintf(pchar, REG_PACKET_FORMAT, "nspace=3\n");
+  pchar += sprintf(pchar, REG_PACKET_FORMAT, "field=uniform\n");
   sprintf(text, "veclen= %d\n", veclen);
-  pchar += sprintf(pchar, "%-128s", text);
-  pchar += sprintf(pchar, "%-128s", "data=float\n");
+  pchar += sprintf(pchar, REG_PACKET_FORMAT, text);
+  pchar += sprintf(pchar, REG_PACKET_FORMAT, "data=float\n");
 
   /* Use 'filetype=stream' because this is _not_ standard AVS because
      the way we interpret 'skip' at the other end of a socket is
      not standard either - we use it as the number of objects (floats,
      ints etc.) to skip rather than the no. of bytes or lines. */
   if(veclen == 1){
-    pchar += sprintf(pchar, "%-128s", "variable 1 filetype=stream "
+    pchar += sprintf(pchar, REG_PACKET_FORMAT, "variable 1 filetype=stream "
 		     "skip=0000000 stride=1\n");
   }
   else if(veclen == 2){
-    pchar += sprintf(pchar, "%-128s", "variable 1 filetype=stream "
+    pchar += sprintf(pchar, REG_PACKET_FORMAT, "variable 1 filetype=stream "
 		     "skip=0000000 stride=2\n");
-    pchar += sprintf(pchar, "%-128s", "variable 2 filetype=stream "
+    pchar += sprintf(pchar, REG_PACKET_FORMAT, "variable 2 filetype=stream "
 		     "skip=0000001 stride=2\n");
 
   }
   else if(veclen == 3){
-    pchar += sprintf(pchar, "%-128s", "variable 1 filetype=stream "
+    pchar += sprintf(pchar, REG_PACKET_FORMAT, "variable 1 filetype=stream "
 		     "skip=0000000 stride=3\n");
-    pchar += sprintf(pchar, "%-128s", "variable 2 filetype=stream "
+    pchar += sprintf(pchar, REG_PACKET_FORMAT, "variable 2 filetype=stream "
 		     "skip=0000001 stride=3\n");
-    pchar += sprintf(pchar, "%-128s", "variable 3 filetype=stream "
+    pchar += sprintf(pchar, REG_PACKET_FORMAT, "variable 3 filetype=stream "
 		     "skip=0000002 stride=3\n");
   }
-  pchar += sprintf(pchar, "%-128s", "END_OF_HEADER\n");
+  pchar += sprintf(pchar, REG_PACKET_FORMAT, "END_OF_HEADER\n");
 
   /* Make an array of data */
   fptr = array;
@@ -2793,6 +2664,87 @@ int Make_vtk_buffer(char  *header,
 
 int Steerer_connected()
 {
+
+#ifdef GLOBUS_IO_STEERING
+
+  return Steerer_connected_globus();
+#else
+
+  return Steerer_connected_file();
+#endif
+}
+
+/*--------------------------------------------------------------------*/
+
+int Steerer_connected_globus()
+{
+  globus_size_t   nbytes;
+  globus_result_t result;
+
+  if(Steerer_connection.socket_info.comms_status != 
+     REG_COMMS_STATUS_CONNECTED) {
+    Globus_attempt_listener_connect(&(Steerer_connection.socket_info));
+  }
+
+  if (Steerer_connection.socket_info.comms_status == 
+      REG_COMMS_STATUS_CONNECTED) {
+
+    /* In contrast to file-based approach, this is where we have to tell
+       steerer about supported commands */
+    result = globus_io_write(&(Steerer_connection.socket_info.conn_handle), 
+			     (globus_byte_t *)Steerer_connection.supp_cmds, 
+			     strlen(Steerer_connection.supp_cmds), 
+			     &nbytes);
+
+    if(result == GLOBUS_SUCCESS){
+
+      return REG_SUCCESS;
+    }
+    else{
+
+      /* Try again in case steerer has dropped connection */
+#if DEBUG
+      fprintf(stderr, "Steerer_connected_globus: globus_io_write failed "
+	      "- immediate retry connect\n");
+#endif
+
+      Globus_retry_accept_connect(&(Steerer_connection.socket_info));
+
+      if (Steerer_connection.socket_info.comms_status 
+	  == REG_COMMS_STATUS_CONNECTED) {  
+
+#if DEBUG
+	fprintf(stderr, "Steerer_connected_globus: Sending >>%s<<\n", 
+		Steerer_connection.supp_cmds);
+#endif    
+	result = globus_io_write(&(Steerer_connection.socket_info.conn_handle), 
+				 (globus_byte_t *)Steerer_connection.supp_cmds,
+				 strlen(Steerer_connection.supp_cmds), 
+				 &nbytes);
+	
+	if(result != GLOBUS_SUCCESS){
+
+#if DEBUG
+	  fprintf(stderr, "Steerer_connected_globus: globus_io_write "
+		  "failed\n");
+#endif
+	  return REG_FAILURE;
+	}	
+      }
+    }
+
+    return REG_SUCCESS;
+  }
+  else{
+
+    return REG_FAILURE;
+  }
+}
+
+/*--------------------------------------------------------------------*/
+
+int Steerer_connected_file()
+{
   char   filename[REG_MAX_STRING_LENGTH];
   FILE  *fp;
 
@@ -2811,6 +2763,107 @@ int Steerer_connected()
 /*-------------------------------------------------------------------*/
 
 int Send_status_msg(char *buf)
+{
+#ifdef GLOBUS_IO_STEERING
+
+  return Send_status_msg_globus(buf);
+#else
+
+  return Send_status_msg_file(buf);
+#endif
+}
+
+/*-------------------------------------------------------------------*/
+
+int Send_status_msg_globus(char *buf)
+{
+  char            hdr_buf[REG_MAX_MSG_SIZE];
+  globus_size_t   nbytes;
+  globus_result_t result;
+
+  if(Steerer_connection.socket_info.comms_status != 
+     REG_COMMS_STATUS_CONNECTED) {
+    Globus_attempt_listener_connect(&(Steerer_connection.socket_info));
+  }
+
+  if (Steerer_connection.socket_info.comms_status != 
+      REG_COMMS_STATUS_CONNECTED) return REG_FAILURE;
+
+  /* Send message header */
+  sprintf(hdr_buf, REG_PACKET_FORMAT, REG_DATA_HEADER);
+
+  result = globus_io_write(&(Steerer_connection.socket_info.conn_handle), 
+			   (globus_byte_t *)hdr_buf, 
+			   strlen(hdr_buf), 
+			   &nbytes);
+
+  if(result != GLOBUS_SUCCESS){
+
+    /* Try again in case steerer has dropped connection */
+
+    Globus_retry_accept_connect(&(Steerer_connection.socket_info));
+
+    if (Steerer_connection.socket_info.comms_status 
+	  != REG_COMMS_STATUS_CONNECTED) {
+      return REG_FAILURE;
+    }
+
+    result = globus_io_write(&(Steerer_connection.socket_info.conn_handle), 
+			     (globus_byte_t *)hdr_buf, 
+			     strlen(hdr_buf), 
+			     &nbytes);
+
+    if(result != GLOBUS_SUCCESS){
+
+#if DEBUG
+      fprintf(stderr, "Send_status_msg_globus: globus_io_write "
+	      "failed\n");
+#endif
+      return REG_FAILURE;
+    }	
+  }
+
+  if( Emit_msg_header(&(Steerer_connection.socket_info),
+		      REG_CHAR,
+		      strlen(buf)) != REG_SUCCESS){
+
+#if DEBUG
+    fprintf(stderr, "Send_status_msg_globus: failed to send header\n");
+#endif
+    return REG_FAILURE;
+  }
+
+  /* Send message proper */
+
+  result = globus_io_write(&(Steerer_connection.socket_info.conn_handle), 
+			   (globus_byte_t *)buf, 
+			   strlen(buf), 
+			   &nbytes);
+
+  /* and finally, the footer of the message */
+
+  /* Send message header */
+  sprintf(hdr_buf, REG_PACKET_FORMAT, REG_DATA_FOOTER);
+
+  result = globus_io_write(&(Steerer_connection.socket_info.conn_handle), 
+			   (globus_byte_t *)hdr_buf, 
+			   strlen(hdr_buf), 
+			   &nbytes);
+
+  if(result != GLOBUS_SUCCESS){
+
+#if DEBUG
+    fprintf(stderr, "Send_status_msg_globus: failed to send footer\n");
+#endif
+    return REG_FAILURE;
+  }
+
+  return REG_SUCCESS;
+}
+
+/*-------------------------------------------------------------------*/
+
+int Send_status_msg_file(char *buf)
 {
   FILE *fp;
   char  filename[REG_MAX_STRING_LENGTH];
@@ -2834,6 +2887,179 @@ int Send_status_msg(char *buf)
 /*-------------------------------------------------------------------*/
 
 struct msg_struct *Get_control_msg()
+{
+
+#ifdef GLOBUS_IO_STEERING
+
+  return Get_control_msg_globus();
+
+#else
+
+  return Get_control_msg_file();
+
+#endif
+
+}
+
+/*-------------------------------------------------------------------*/
+
+struct msg_struct *Get_control_msg_globus()
+{
+  struct msg_struct *msg = NULL;
+  globus_size_t   nbytes;
+  globus_result_t result;
+  int type;
+  int count;
+
+  if(Steerer_connection.socket_info.comms_status != REG_COMMS_STATUS_CONNECTED) {
+    Globus_attempt_listener_connect(&(Steerer_connection.socket_info));
+  }
+
+  if (Steerer_connection.socket_info.comms_status != REG_COMMS_STATUS_CONNECTED){
+    return NULL;
+  }
+
+  /* Check for data on socket - non-blocking */
+
+  result = globus_io_try_read(&(Steerer_connection.socket_info.conn_handle),
+			      (globus_byte_t *)Steerer_connection.msg_buffer,
+			      REG_PACKET_SIZE,
+			      &nbytes);
+
+  if (result != GLOBUS_SUCCESS){
+#if DEBUG
+    fprintf(stderr, "Get_control_msg_globus: globus_io_try_read failed - "
+	    "try immediate reconnect\n");
+#endif
+
+    Globus_retry_connect(&(Steerer_connection.socket_info));
+     
+    /* check if socket reconnection has been made and check for 
+       data if it has */
+    if (Steerer_connection.socket_info.comms_status != REG_COMMS_STATUS_CONNECTED) {
+
+#if DEBUG
+      fprintf(stderr, "Get_control_msg_globus: reconnect failed\n");
+#endif
+      return NULL;
+    }
+
+    result = globus_io_try_read(&(Steerer_connection.socket_info.conn_handle),
+				(globus_byte_t *)Steerer_connection.msg_buffer,
+				REG_PACKET_SIZE,
+				&nbytes);
+
+    if (result != GLOBUS_SUCCESS){
+
+#if DEBUG
+      fprintf(stderr, "Get_control_msg_globus: reconnect OK but "
+	      "globus_io_try_read failed\n");
+#endif
+      return NULL;
+    }
+  }
+
+#if DEBUG
+  fprintf(stderr, "Get_control_msg_globus: read <%s> from socket\n", 
+	  Steerer_connection.msg_buffer);
+#endif
+
+  /* ARPDBG - globus_io_try_read always returns 0 bytes if connection
+     configugured to use GSSAPI or SSL data wrapping. */
+  if(nbytes == 0) return NULL;
+
+  if(strncmp(Steerer_connection.msg_buffer, REG_DATA_HEADER, 
+	     strlen(REG_DATA_HEADER))){
+
+#if DEBUG
+    fprintf(stderr, "Get_control_msg_globus: unrecognised msg >>%s<<\n", 
+	    Steerer_connection.msg_buffer);
+#endif    
+    return NULL;
+  }
+
+  if( Consume_msg_header(&(Steerer_connection.socket_info),
+			 &type,
+			 &count) != REG_SUCCESS){
+
+    return NULL;
+  }
+
+  if(type != REG_CHAR){
+
+#if DEBUG
+    fprintf(stderr, "Get_control_msg_globus: error, wrong data type "
+	    "returned by Consume_msg_header\n");
+#endif
+    return NULL;
+  }
+
+  if(count > REG_MAX_MSG_SIZE){
+
+#if DEBUG
+    fprintf(stderr, "Get_control_msg_globus: error, control msg (%d "
+	    "chars) exceeds max. length of %d chars\n", count, 
+	    REG_MAX_MSG_SIZE);
+#endif
+    return NULL;
+  }
+
+  /* Blocks until count bytes received */
+  result = globus_io_read(&(Steerer_connection.socket_info.conn_handle), 
+			  (globus_byte_t *)Steerer_connection.msg_buffer, 
+			  count, 
+			  count, 
+			  &nbytes);
+
+  if(result != GLOBUS_SUCCESS){
+
+#if DEBUG
+    fprintf(stderr, "Get_control_msg_globus: globus_io_read failed\n");
+#endif
+    return NULL;
+  }
+
+#if DEBUG
+    fprintf(stderr, "Get_msg_globus: globus_io_read got:\n>>%s<<\n",
+	    Steerer_connection.msg_buffer);
+#endif
+
+  if(count != nbytes){
+
+#if DEBUG
+    fprintf(stderr, "Get_msg_globus: globus_io_read failed to read"
+	    " requested no. of bytes\n");
+#endif
+    return NULL;    
+  }
+
+  if( Consume_msg_header(&(Steerer_connection.socket_info),
+			 &type,
+			 &count) != REG_EOD){
+
+#if DEBUG
+    fprintf(stderr, "Get_control_msg_globus: failed to get message footer\n");
+#endif
+    return NULL;
+  }
+
+  msg = New_msg_struct();
+
+  if(Parse_xml_buf(Steerer_connection.msg_buffer, 
+		   strlen(Steerer_connection.msg_buffer), msg) != REG_SUCCESS){
+
+    fprintf(stderr, "Get_control_msg_globus: failed to parse buffer "
+	    ">>%s<<\n", Steerer_connection.msg_buffer);
+    Delete_msg_struct(msg);
+    msg = NULL;
+  }
+
+  return msg;
+}
+
+/*-------------------------------------------------------------------*/
+
+struct msg_struct *Get_control_msg_file()
 {
   struct msg_struct   *msg = NULL;
   FILE                *fp;
@@ -2869,6 +3095,80 @@ struct msg_struct *Get_control_msg()
 int Initialize_steering_connection(int  NumSupportedCmds,
 				   int *SupportedCmds)
 {
+
+#ifdef GLOBUS_IO_STEERING
+
+  return Initialize_steering_connection_globus(NumSupportedCmds,
+					       SupportedCmds);
+#else
+
+  return Initialize_steering_connection_file(NumSupportedCmds,
+					     SupportedCmds);
+#endif
+
+}
+
+/*-------------------------------------------------------------------*/
+
+int Initialize_steering_connection_globus(int  NumSupportedCmds,
+					  int *SupportedCmds)
+{
+  char *pchar;
+  int   return_status = REG_SUCCESS;
+  int   tmp_port;
+
+  pchar = getenv("REG_STEER_APP_PORT");
+
+  if(!pchar){
+
+    fprintf(stderr, "Initialize_steering_connection_globus: failed to "
+	    "get port to listen on\n");
+    return REG_FAILURE;
+  }
+
+  if(sscanf(pchar, "%d", &tmp_port) != 1){
+
+    Steerer_connection.socket_info.listener_port = REG_PORT_NOTSET;
+    return REG_FAILURE;
+  }
+
+  Steerer_connection.socket_info.listener_port = (unsigned short int)tmp_port;
+
+  /* Set-up socket_info for callback */
+  Globus_socket_info_init(&(Steerer_connection.socket_info));
+
+  if(Globus_create_listener(&(Steerer_connection.socket_info)) != REG_SUCCESS){
+
+#if DEBUG
+    fprintf(stderr, "Initialize_steering_connection_globus: failed to "
+	    "create listener for IOType\n");
+#endif
+    return_status = REG_FAILURE;
+  }
+  else{
+
+#if DEBUG
+    fprintf(stderr, "Initialize_steering_connection_globus: Created "
+	    "listener on port %d\n", 
+	    Steerer_connection.socket_info.connector_port);
+#endif
+    /* attempt to kick the callback function (in case accept callback) */
+    Globus_callback_poll(&(Steerer_connection.socket_info));
+
+    /* Create & store the msg that we will need to send to steerer when
+       it first connects */
+    Make_supp_cmds_msg(NumSupportedCmds, SupportedCmds, 
+		       Steerer_connection.supp_cmds);
+  }
+  
+  return return_status;
+}
+
+/*-------------------------------------------------------------------*/
+
+int Initialize_steering_connection_file(int  NumSupportedCmds,
+					int *SupportedCmds)
+{
   FILE *fp;
   char *pchar;
   char  buf[REG_MAX_MSG_SIZE];
@@ -2895,7 +3195,7 @@ int Initialize_steering_connection(int  NumSupportedCmds,
 
     if(Directory_valid(Steerer_connection.file_root) != REG_SUCCESS){
 
-      fprintf(stderr, "Initialize_steering_connection: invalid dir for "
+      fprintf(stderr, "Initialize_steering_connection_file: invalid dir for "
 	      "steering messages: %s\n", Steerer_connection.file_root);
       return REG_FAILURE;
     }
@@ -2905,7 +3205,7 @@ int Initialize_steering_connection(int  NumSupportedCmds,
     }
   }
   else{
-    fprintf(stderr, "Initialize_steering_connection: failed to get "
+    fprintf(stderr, "Initialize_steering_connection_file: failed to get "
 	    "scratch directory\n");
     return REG_FAILURE;
   }
@@ -2922,12 +3222,12 @@ int Initialize_steering_connection(int  NumSupportedCmds,
     fclose(fp);
     if(remove(filename)){
 
-      fprintf(stderr, "Initialize_steering_connection: failed to "
+      fprintf(stderr, "Initialize_steering_connection_file: failed to "
 	      "remove %s\n",filename);
     }
 #if DEBUG
     else{
-      fprintf(stderr, "Initialize_steering_connection: removed "
+      fprintf(stderr, "Initialize_steering_connection_file: removed "
 	      "%s\n", filename);
     }
 #endif
@@ -2947,31 +3247,17 @@ int Initialize_steering_connection(int  NumSupportedCmds,
 
   if(fp == NULL){
 
-    fprintf(stderr, "Initialize_steering_connection: failed to open %s\n",
+    fprintf(stderr, "Initialize_steering_connection_file: failed to open %s\n",
 	    filename);
     return REG_FAILURE;
   }
 
 #if DEBUG
-  fprintf(stderr, "Initialize_steering_connection: writing file: %s\n", 
+  fprintf(stderr, "Initialize_steering_connection_file: writing file: %s\n", 
 	  filename);
 #endif
 
-  pchar = buf;
-
-  Write_xml_header(&pchar);
-
-  pchar += sprintf(pchar, "<Supported_commands>\n");
-
-  for(i=0; i<NumSupportedCmds; i++){
-    pchar += sprintf(pchar, "<Command>\n");
-    pchar += sprintf(pchar, "<Cmd_id>%d</Cmd_id>\n", SupportedCmds[i]);
-    pchar += sprintf(pchar, "</Command>\n");
-  }
-
-  pchar += sprintf(pchar, "</Supported_commands>\n");
-
-  Write_xml_footer(&pchar);
+  Make_supp_cmds_msg(NumSupportedCmds, SupportedCmds, buf);
 
   fprintf(fp, "%s", buf);
   fclose(fp);
@@ -2982,6 +3268,29 @@ int Initialize_steering_connection(int  NumSupportedCmds,
 /*-------------------------------------------------------------------*/
 
 int Finalize_steering_connection()
+{
+
+#ifdef GLOBUS_IO_STEERING
+
+  return Finalize_steering_connection_globus();
+#else
+
+  return Finalize_steering_connection_file();
+#endif
+
+}
+
+/*-------------------------------------------------------------------*/
+
+int Finalize_steering_connection_globus()
+{
+  Globus_cleanup_listener_connection(&(Steerer_connection.socket_info));
+  return REG_SUCCESS;
+}
+
+/*-------------------------------------------------------------------*/
+
+int Finalize_steering_connection_file()
 {
   int  max, max1;
   char sys_command[REG_MAX_STRING_LENGTH];
@@ -3023,6 +3332,33 @@ int Finalize_steering_connection()
   sprintf(sys_command, "%s%s", Steerer_connection.file_root, 
 	  STR_TO_APP_FILENAME);
   Remove_files(sys_command);
+
+  return REG_SUCCESS;
+}
+/*---------------------------------------------------*/
+
+int Make_supp_cmds_msg(int   NumSupportedCmds,
+		       int  *SupportedCmds, 
+                       char *msg)
+{
+  char *pchar;
+  int   i;
+
+  pchar = msg;
+
+  Write_xml_header(&pchar);
+
+  pchar += sprintf(pchar, "<Supported_commands>\n");
+
+  for(i=0; i<NumSupportedCmds; i++){
+    pchar += sprintf(pchar, "<Command>\n");
+    pchar += sprintf(pchar, "<Cmd_id>%d</Cmd_id>\n", SupportedCmds[i]);
+    pchar += sprintf(pchar, "</Command>\n");
+  }
+
+  pchar += sprintf(pchar, "</Supported_commands>\n");
+
+  Write_xml_footer(&pchar);
 
   return REG_SUCCESS;
 }
