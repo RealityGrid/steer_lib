@@ -99,6 +99,12 @@ INT_KIND_1_DECL(Status);
     j++;
   }
 
+  /* Set flag to indicate library is being called from a F90 code */
+  *Status = INT_KIND_1_CAST( Called_from_f90(TRUE) );
+  if(*Status != REG_SUCCESS){
+    return;
+  }
+
   *Status = INT_KIND_1_CAST( Steering_initialize((int)(*NumSupportedCmds), 
 	 	                                 (int *)(SupportedCmds)) );
   return;

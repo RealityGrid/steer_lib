@@ -50,7 +50,7 @@
 
 ---------------------------------------------------------------------------*/
 
-#if REG_GLOBUS_STEERING || REG_GLOBUS_SAMPLES
+#if REG_GLOBUS_SAMPLES
 
 #include "ReG_Steer_Globus_io.h"
 #include "ReG_Steer_Common.h"
@@ -1039,4 +1039,4 @@ int Write_globus(const globus_io_handle_t *handle,
     return REG_SUCCESS;
   }
 }
-#endif /* REG_GLOBUS_STEERING || REG_GLOBUS_SAMPLES */
+#endif /* REG_GLOBUS_SAMPLES */

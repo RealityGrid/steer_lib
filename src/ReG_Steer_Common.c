@@ -644,64 +644,6 @@ int Directory_valid(char *directory)
 
 /*----------------------------------------------------------------*/
 
-int Consume_msg_header(socket_type_steering *sock_info,
-		       int *DataType,
-		       int *Count)
-{
-#if REG_GLOBUS_STEERING
-  int NumBytes;
-  int IsFortranArray;
-
-  return Consume_msg_header_globus(sock_info,
-				   DataType,
-				   Count,
-				   &NumBytes,
-				   &IsFortranArray);
-#else
-
-  return REG_FAILURE;
-#endif
-}
-
-/*----------------------------------------------------------------*/
-
-int Emit_msg_header(socket_type_steering *sock_info,
-		    int DataType,
-		    int Count)
-{
-#if REG_GLOBUS_STEERING
-  int NumBytes;
-
-  switch(DataType){
-  case REG_INT:
-    NumBytes = Count*sizeof(int);
-    break;
-  case REG_FLOAT:
-    NumBytes = Count*sizeof(float);
-    break;
-  case REG_DBL:
-    NumBytes = Count*sizeof(double);
-    break;
-  case REG_CHAR:
-    NumBytes = Count*sizeof(char);
-    break;
-  default:
-    fprintf(stderr, "Emit_msg_header: ERROR: unrecognised data type\n");
-    return REG_FAILURE;
-  }
-  return Emit_msg_header_globus(sock_info,
-				DataType,
-				Count,
-				NumBytes);
-#else
-
-  return REG_FAILURE;
-#endif
-
-}
-
-/*----------------------------------------------------------------*/
-
 int Read_file(char *filename, char **buf, int *size)
 { 
   FILE *fp;

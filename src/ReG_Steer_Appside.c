@@ -93,11 +93,13 @@ static int ReG_ParamsChanged   = FALSE;
 /* Whether the set of registered IO types has changed */
 static int ReG_IOTypesChanged  = FALSE;
 /* Whether the set of registered Chk types has changed */
-static int ReG_ChkTypesChanged  = FALSE;
+static int ReG_ChkTypesChanged = FALSE;
 /* Whether app. is currently being steered */
 static int ReG_SteeringActive  = FALSE;
 /* Whether steering library has been initialised */
 static int ReG_SteeringInit    = FALSE;
+/* Whether steering lib is being called from F90 */
+static int ReG_CalledFromF90   = FALSE;
 /* Absolute path of directory we are executing in */
 char ReG_CurrentDir[REG_MAX_STRING_LENGTH];
 /* Hostname of machine we are executing on */
@@ -661,7 +663,6 @@ int Register_IOTypes(int    NumTypes,
     IOTypes_table.io_def[current].array.sx = 0;
     IOTypes_table.io_def[current].array.sy = 0;
     IOTypes_table.io_def[current].array.sz = 0;
-    IOTypes_table.io_def[current].array.is_f90 = FALSE;
     IOTypes_table.io_def[current].convert_array_order = FALSE;
 
     /* set up transport for sample data - eg sockets */
@@ -810,6 +811,24 @@ int Set_f90_array_ordering(int IOTypeIndex, int flag){
   }
 
   IOTypes_table.io_def[IOTypeIndex].array.is_f90 = flag;
+
+  return REG_SUCCESS;
+}
+
+/*----------------------------------------------------------------*/
+
+int Called_from_f90(int flag){
+
+  if(flag == TRUE){
+    ReG_CalledFromF90 = TRUE;
+  }
+  else if(flag == FALSE){
+    ReG_CalledFromF90 = FALSE;
+  }
+  else{
+    fprintf(stderr, "Called_from_f90: flag is neither TRUE or FALSE\n");
+    return REG_FAILURE;
+  }
 
   return REG_SUCCESS;
 }
@@ -1566,7 +1585,6 @@ int Consume_start(int  IOType,
   }
 
   /* Initialise array-ordering flags */
-  IOTypes_table.io_def[*IOTypeIndex].array.is_f90 = FALSE;
   IOTypes_table.io_def[*IOTypeIndex].convert_array_order = FALSE;
 
   return Consume_start_data_check(*IOTypeIndex);
@@ -1663,7 +1681,7 @@ int Consume_data_slice_header(int  IOTypeIndex,
   }
 
   /* Check whether or not we'll need to convert the array ordering *
-  if(IOTypes_table.io_def[IOTypeIndex].array.is_f90 != IsFortranArray){
+  if(ReG_CalledFromF90 != IsFortranArray){
 
     * Assume we don't ever want to re-order char data *
     if(*DataType != REG_CHAR){
@@ -1825,7 +1843,6 @@ int Emit_start(int  IOType,
   IOTypes_table.io_def[*IOTypeIndex].use_xdr = TRUE;
 
   /* Initialise array-ordering flags */
-  IOTypes_table.io_def[*IOTypeIndex].array.is_f90 = FALSE;
   IOTypes_table.io_def[*IOTypeIndex].convert_array_order = FALSE;
 
   if (Emit_header(*IOTypeIndex) == REG_SUCCESS){
@@ -2026,9 +2043,7 @@ int Emit_data_slice(int		      IOTypeIndex,
 			     datatype,
 			     actual_count,
 			     num_bytes_to_send,
-			     IOTypes_table.io_def[IOTypeIndex].array.is_f90)
-      != REG_SUCCESS){
-
+			     ReG_CalledFromF90)!= REG_SUCCESS){
     return REG_FAILURE;
   }
 
@@ -2037,7 +2052,6 @@ int Emit_data_slice(int		      IOTypeIndex,
 		   datatype,
 		   num_bytes_to_send,
 		   out_ptr);
-
 }
 
 /*----------------------------------------------------------------*/
@@ -3661,11 +3675,7 @@ int Generate_status_filename(char* filename)
 int Detach_from_steerer()
 {
 
-#if REG_GLOBUS_STEERING
-
-
-
-#elif REG_SOAP_STEERING
+#if REG_SOAP_STEERING
 
   Detach_from_steerer_soap();
 
@@ -3910,7 +3920,15 @@ int Update_ptr_value(param_entry *param)
     break;
 
   case REG_CHAR:
-    strcpy((char *)(param->ptr), param->value);
+    if(ReG_CalledFromF90 == TRUE){
+      /* Avoid terminating with '\0' if calling code 
+	 is F90 */
+      strncpy((char *)(param->ptr), param->value, 
+	      strlen(param->value));
+    }
+    else{
+      strcpy((char *)(param->ptr), param->value);
+    }
     break;
 
   default:
@@ -4272,7 +4290,7 @@ int Make_chunk_header(char *header,
 		   "END_CHUNK_HDR\n", 
 		   totx, toty, totz, 
 		   sx, sy, sz, nx, ny, nz,
-		   IOTypes_table.io_def[IOindex].array.is_f90);
+		   ReG_CalledFromF90);
 
   return REG_SUCCESS;
 }
@@ -4282,11 +4300,7 @@ int Make_chunk_header(char *header,
 int Steerer_connected()
 {
 
-#if REG_GLOBUS_STEERING
-
-  return Steerer_connected_globus();
-
-#elif REG_SOAP_STEERING
+#if REG_SOAP_STEERING
 
   return Steerer_connected_soap();
 
@@ -4333,11 +4347,7 @@ int Send_status_msg(char *buf)
   fprintf(stderr, "Send_status_msg: sending:\n>>%s<<\n", buf);
 #endif
 
-#if REG_GLOBUS_STEERING
-
-  return Send_status_msg_globus(buf);
-
-#elif REG_SOAP_STEERING
+#if REG_SOAP_STEERING
 
   return Send_status_msg_soap(buf);
 
@@ -4375,11 +4385,7 @@ int Send_status_msg_file(char *buf)
 struct msg_struct *Get_control_msg()
 {
 
-#if REG_GLOBUS_STEERING
-
-  return Get_control_msg_globus();
-
-#elif REG_SOAP_STEERING
+#if REG_SOAP_STEERING
 
   return Get_control_msg_soap();
 
@@ -4459,12 +4465,7 @@ int Initialize_steering_connection(int  NumSupportedCmds,
 	  "interval = %d\n", (int)Steerer_connection.polling_interval);
 #endif
 
-#if REG_GLOBUS_STEERING
-
-  return Initialize_steering_connection_globus(NumSupportedCmds,
-					       SupportedCmds);
-
-#elif REG_SOAP_STEERING
+#if REG_SOAP_STEERING
 
   return Initialize_steering_connection_soap(NumSupportedCmds,
 					     SupportedCmds);
@@ -4623,22 +4624,7 @@ int Set_steering_directory()
 int Finalize_steering_connection()
 {
 
-#if REG_GLOBUS_STEERING
-  int  commands[1];
-
-  if(ReG_SteeringActive){
-
-    commands[0] = REG_STR_DETACH;
-    Emit_status(0,
-		0,
-		NULL,
-		1,
-		commands);
-  }
-
-  return Finalize_steering_connection_globus();
-
-#elif REG_SOAP_STEERING
+#if REG_SOAP_STEERING
 
   return Finalize_steering_connection_soap();
 
@@ -4815,6 +4801,18 @@ int Emit_header(const int index)
 
   return Emit_header_globus(index);
 #else
+  char            buffer[REG_PACKET_SIZE];
+  int             status;
+
+  sprintf(buffer, REG_PACKET_FORMAT, REG_DATA_HEADER);
+  buffer[REG_PACKET_SIZE-1] = '\0';
+#if REG_DEBUG
+  fprintf(stderr, "Emit_header: Sending >>%s<<\n", buffer);
+#endif
+  /*    status = Write_globus(&(IOTypes_table.io_def[index].socket_info.conn_handle),
+			  REG_PACKET_SIZE,
+			  (void *)buffer);
+  */
 
   return REG_FAILURE;
 #endif
@@ -5004,8 +5002,6 @@ int Reorder_array(int          ndims,
     pi = (int *)pOutData;
     pi_old = (int *)pInData;
 
-    /* In this context, array->is_f90 flags whether we want to
-       convert _to_ an F90-style array */
     if(to_f90 != TRUE){
 
       /* Convert F90 array to C array */
@@ -5050,8 +5046,6 @@ int Reorder_array(int          ndims,
     pf = (float *)pOutData;
     pf_old = (float *)pInData;
 
-    /* In this context, array->is_f90 flags whether we want to
-       convert _to_ an F90-style array */
     if(to_f90 != TRUE){
 
       /* Convert F90 array to C array */
@@ -5097,8 +5091,6 @@ int Reorder_array(int          ndims,
     pd = (double *)pOutData;
     pd_old = (double *)pInData;
 
-    /* In this context, array->is_f90 flags whether we want to
-       convert _to_ an F90-style array */
     if(to_f90 != TRUE){
 	
       /* Convert F90 array to C array */

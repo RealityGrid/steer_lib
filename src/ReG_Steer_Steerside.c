@@ -42,7 +42,6 @@
 #include "ReG_Steer_Steerside.h"
 #include "ReG_Steer_Steerside_internal.h"
 #include "ReG_Steer_Proxy_utils.h"
-#include "ReG_Steer_Steerside_Globus.h"
 #include "ReG_Steer_Steerside_Soap.h"
 
 #ifndef REG_DEBUG
@@ -451,15 +450,6 @@ int Sim_attach(char *SimID,
   }
   else{
 
-#if REG_GLOBUS_STEERING
-    /* Use Globus */
-#if REG_DEBUG
-    fprintf(stderr, "Sim_attach: calling Sim_attach_globus...\n");
-#endif
-    return_status = Sim_attach_globus(&(Sim_table.sim[current_sim]), SimID);
-
-#endif /* REG_GLOBUS_STEERING */
-
     return_status = REG_FAILURE;
 
     if(SOAP_available){
@@ -598,12 +588,6 @@ int Get_next_message(int         *SimHandle,
       }
       else{
 
-#if REG_GLOBUS_STEERING
-
-	Sim_table.sim[isim].msg = 
-	                Get_status_msg_globus(&(Sim_table.sim[isim]));
-#else
-
         if(Sim_table.sim[isim].SGS_info.active){
   	  Sim_table.sim[isim].msg = Get_status_msg_soap(&(Sim_table.sim[isim]));
 	}
@@ -612,7 +596,6 @@ int Get_next_message(int         *SimHandle,
 	  /* No proxy and no SGS available so using 'local' file system */
 	  Sim_table.sim[isim].msg = Get_status_msg_file(&(Sim_table.sim[isim]));
 	}
-#endif
       }
 
       /* If we got a message & parsed it successfully then we're done */
@@ -1583,12 +1566,6 @@ int Send_control_msg(int SimIndex, char* buf)
   }
   else{
 
-#if REG_GLOBUS_STEERING
-
-    return Send_control_msg_globus(sim, buf);
-
-#else
-
     if(sim->SGS_info.active){
 
       return Send_control_msg_soap(sim, buf);
@@ -1597,7 +1574,6 @@ int Send_control_msg(int SimIndex, char* buf)
 
       return Send_control_msg_file(SimIndex, buf);
     }
-#endif
   }
 }
 
@@ -3152,24 +3128,15 @@ int Finalize_connection(Sim_entry_type *sim)
   }
   else{
 
-#if REG_GLOBUS_STEERING
-
-    return Finalize_connection_globus(sim);
-
-#else
     if(sim->SGS_info.active){
 
       /* Detaching from the SGS should be enough to take everything
 	 down */
       return Send_detach_msg_soap(sim);
     }
-    else{
 
-      return Finalize_connection_file(sim);
-    }
-#endif
+    return Finalize_connection_file(sim);
   }
- 
 }
 
 /*-------------------------------------------------------------------*/
