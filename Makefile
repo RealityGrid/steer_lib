@@ -39,23 +39,24 @@ include Makefile.include
 include make/Makefile.${ARCH}
 
 all:
-	make steerer
+	make lib
 	make c_examples
 	make f90_examples
 
 no_f90:
-	make steerer
+	make lib
 	make c_examples
 
 c_examples:
 	make app
 	make steerer
+	make sink
 
 f90_examples:
 	make app_f90
 	make app_f90_parallel
 
-lib$(NBIT)/libReG_Steer.a: include/*.h \
+lib: include/*.h \
  src/*.c \
  src/*.m4
 	cd src; make lib
@@ -79,11 +80,16 @@ steerer: lib$(NBIT)/libReG_Steer.a \
  examples/mini_steerer/*.c
 	cd examples/mini_steerer; make
 
+sink: lib$(NBIT)/libReG_Steer.a \
+ examples/mini_steerer/*.c
+	cd examples/sink; make
+
 install:
 	cd examples/mini_app; make install
 	cd examples/mini_steerer; make install
 	cd examples/mini_app_f90; make install
 	cd examples/mini_app_f90_parallel; make install
+	cd examples/sink; make install
 
 clean:
 	cd src; make clean 
@@ -91,6 +97,7 @@ clean:
 	cd examples/mini_steerer; make clean
 	cd examples/mini_app_f90; make clean
 	cd examples/mini_app_f90_parallel; make clean
+	cd examples/sink; make clean
 
 tar:
 	make clean
