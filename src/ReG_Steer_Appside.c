@@ -466,6 +466,10 @@ int Steering_initialize(char *AppName,
   signal(SIGILL, Steering_signal_handler);
   signal(SIGABRT, Steering_signal_handler);
   signal(SIGFPE, Steering_signal_handler);
+  /* For CPU-limit exceeded */
+  signal(SIGXCPU, Steering_signal_handler);
+  /* LSF sends us a SIGUSR2 signal when we reach our wall-clock limit */
+  signal(SIGUSR2, Steering_signal_handler);
 #if REG_SOCKET_SAMPLES
 #ifndef __linux
   /* Catch the broken pipe signal for sending down a disconnected
@@ -588,19 +592,6 @@ int Register_IOTypes(int    NumTypes,
                      int   *IOType)
 {
   int          i;
-  int          current;
-  int          new_size;
-  IOdef_entry *dum_ptr;
-  char        *iofreq_labels[1];
-  char        *freq_label = "IO_Frequency";
-  int          iofreq_strbl;
-  int          iofreq_type;
-  int          iparam;
-  void        *ptr_array[1];
-  char        *min_array[1];
-  char        *max_array[1];
-  char        *min_val = "0";
-  char        *max_val = " ";
   int          return_status = REG_SUCCESS;
 
   /* Check that steering is enabled */
@@ -617,117 +608,148 @@ int Register_IOTypes(int    NumTypes,
 
   if (!ReG_SteeringInit) return REG_FAILURE;
 
+  for(i=0; i<NumTypes; i++){
+
+    if(Register_IOType(IOLabel[i],
+		       direction[i],
+		       IOFrequency[i],
+		       &(IOType[i])) != REG_SUCCESS){
+      return_status = REG_FAILURE;
+    }
+  }
+
+  return return_status;
+}
+
+/*----------------------------------------------------------------*/
+
+int Register_IOType(char* IOLabel,
+		    int   direction,
+		    int   IOFrequency,
+                    int   *IOType)
+{
+  int          current;
+  int          iparam;
+  int          new_size;
+  IOdef_entry *dum_ptr;
+  char        *freq_label = "IO_Frequency";
+  char        *min_val = "0";
+  char        *max_val = " ";
+
+  /* Check that steering is enabled */
+
+  if(!ReG_SteeringEnabled){
+
+    *IOType = REG_IODEF_HANDLE_NOTSET;
+    return REG_SUCCESS;
+  }
+
+  /* Can only call this function if steering lib initialised */
+
+  if (!ReG_SteeringInit) return REG_FAILURE;
+
   /* IO types cannot be deleted so is safe to use num_registered to 
      get next free entry */
   current = IOTypes_table.num_registered;
 
-  for(i=0; i<NumTypes; i++){
+  if(String_contains_xml_chars(IOLabel) == REG_TRUE){
 
-    if(String_contains_xml_chars(IOLabel[i]) == REG_TRUE){
+    fprintf(stderr, "Register_IOType: ERROR: IO label contains "
+	    "reserved xml characters (<,>,&): %s\n", IOLabel);
+    return REG_FAILURE;
+  }
 
-      fprintf(stderr, "Register_IOTypes: ERROR: IO label contains "
-	      "reserved xml characters (<,>,&): %s\n"
-              "     - skipping this IOType.\n", IOLabel[i]);
-      continue;
-    }
+  strncpy(IOTypes_table.io_def[current].label, IOLabel,
+	  REG_MAX_STRING_LENGTH);
 
-    strncpy(IOTypes_table.io_def[current].label, IOLabel[i],
-	    REG_MAX_STRING_LENGTH);
-
-    /* Will need to check that IOLabel is something that the 
-       component framework knows about */
+  /* Will need to check that IOLabel is something that the 
+     component framework knows about */
   
-    /* Whether input or output (sample data) */
+  /* Whether input or output (sample data) */
 
-    IOTypes_table.io_def[current].direction = direction[i];
+  IOTypes_table.io_def[current].direction = direction;
 
-    /* Set variables required for registration of associated io
-       frequency as a steerable parameter */
+  /* Set variables required for registration of associated io
+     frequency as a steerable parameter */
 
-    iofreq_labels[0] = freq_label;
-    iofreq_strbl = REG_TRUE;
-    iofreq_type  = REG_INT;
-    IOTypes_table.io_def[current].frequency = IOFrequency[i];
-    ptr_array[0] = (void *)&(IOTypes_table.io_def[current].frequency);
-    min_array[0] = min_val;
-    max_array[0] = max_val;
+  IOTypes_table.io_def[current].frequency = IOFrequency;
 
-    Register_params(1,
-		    iofreq_labels,
-		    &iofreq_strbl,
-		    ptr_array,
-		    &iofreq_type,
-		    min_array,
-		    max_array);
+  Register_param(freq_label,
+		 REG_TRUE,
+		 (void *)&(IOTypes_table.io_def[current].frequency),
+		 REG_INT,
+		 min_val,
+		 max_val);
 
-    /* Store the handle given to this parameter - this line must
-       immediately succeed the call to Register_params */
+  /* Store the handle given to this parameter - this line must
+     immediately succeed the call to Register_params */
 
-    IOTypes_table.io_def[current].freq_param_handle = 
+  IOTypes_table.io_def[current].freq_param_handle = 
 	                               Params_table.next_handle - 1;
 
-    /* Annotate the parameter table entry just created to flag that
-       it is a parameter that is internal to the steering library */
-    iparam = Param_index_from_handle(&Params_table, 
+  /* Annotate the parameter table entry just created to flag that
+     it is a parameter that is internal to the steering library */
+  iparam = Param_index_from_handle(&Params_table, 
 			      IOTypes_table.io_def[current].freq_param_handle);
 
-    if(iparam != -1){
-      Params_table.param[iparam].is_internal = REG_TRUE;
+  if(iparam != -1){
+    Params_table.param[iparam].is_internal = REG_TRUE;
+  }
+  else{
+
+#if REG_DEBUG
+    fprintf(stderr, "Register_IOTypes: failed to get handle for param\n");
+#endif
+    return REG_FAILURE;
+  }
+
+  IOTypes_table.io_def[current].buffer = NULL;
+  IOTypes_table.io_def[current].buffer_bytes = 0;
+  IOTypes_table.io_def[current].buffer_max_bytes = 0;
+  IOTypes_table.io_def[current].use_xdr = REG_FALSE;
+  IOTypes_table.io_def[current].num_xdr_bytes = 0;
+  IOTypes_table.io_def[current].array.nx = 0;
+  IOTypes_table.io_def[current].array.ny = 0;
+  IOTypes_table.io_def[current].array.nz = 0;
+  IOTypes_table.io_def[current].array.sx = 0;
+  IOTypes_table.io_def[current].array.sy = 0;
+  IOTypes_table.io_def[current].array.sz = 0;
+  IOTypes_table.io_def[current].convert_array_order = REG_FALSE;
+  IOTypes_table.io_def[current].is_enabled = IOTypes_table.enable_on_registration;
+  /* Use acknowledgements by default */
+  IOTypes_table.io_def[current].use_ack = REG_TRUE;
+  /* No ack needed for first data set to be emitted */
+  IOTypes_table.io_def[current].ack_needed = REG_FALSE;
+
+  /* set up transport for sample data - eg sockets */
+  if(Initialize_IOType_transport(direction, current) != REG_SUCCESS){
+    return REG_FAILURE;
+  }
+
+  /* Create, store and return a handle for this IOType */
+  IOTypes_table.io_def[current].handle = Next_IO_Chk_handle++;
+  *IOType = IOTypes_table.io_def[current].handle;
+
+  current++;
+
+  if(current == IOTypes_table.max_entries){
+
+    new_size = IOTypes_table.max_entries + REG_INITIAL_NUM_IOTYPES;
+
+    dum_ptr = (IOdef_entry*)realloc((void *)(IOTypes_table.io_def),
+		                      new_size*sizeof(IOdef_entry));
+
+    if(dum_ptr == NULL){
+
+      fprintf(stderr, "Register_IOTypes: failed to allocate memory\n");
+      return REG_FAILURE;
     }
     else{
 
-#if REG_DEBUG
-      fprintf(stderr, "Register_IOTypes: failed to get handle for param\n");
-#endif
-      return_status = REG_FAILURE;
+      IOTypes_table.io_def = dum_ptr;
     }
-      
-    IOTypes_table.io_def[current].buffer = NULL;
-    IOTypes_table.io_def[current].buffer_bytes = 0;
-    IOTypes_table.io_def[current].buffer_max_bytes = 0;
-    IOTypes_table.io_def[current].use_xdr = REG_FALSE;
-    IOTypes_table.io_def[current].num_xdr_bytes = 0;
-    IOTypes_table.io_def[current].array.nx = 0;
-    IOTypes_table.io_def[current].array.ny = 0;
-    IOTypes_table.io_def[current].array.nz = 0;
-    IOTypes_table.io_def[current].array.sx = 0;
-    IOTypes_table.io_def[current].array.sy = 0;
-    IOTypes_table.io_def[current].array.sz = 0;
-    IOTypes_table.io_def[current].convert_array_order = REG_FALSE;
-    IOTypes_table.io_def[current].is_enabled = IOTypes_table.enable_on_registration;
-    /* Use acknowledgements by default */
-    IOTypes_table.io_def[current].use_ack = REG_TRUE;
-    /* No ack needed for first data set to be emitted */
-    IOTypes_table.io_def[current].ack_needed = REG_FALSE;
 
-    /* set up transport for sample data - eg sockets */
-    return_status = Initialize_IOType_transport(direction[i], current);
-
-    /* Create, store and return a handle for this IOType */
-    IOTypes_table.io_def[current].handle = Next_IO_Chk_handle++;
-    IOType[i] = IOTypes_table.io_def[current].handle;
-
-    current++;
-
-    if(current == IOTypes_table.max_entries){
-
-      new_size = IOTypes_table.max_entries + REG_INITIAL_NUM_IOTYPES;
-
-      dum_ptr = (IOdef_entry*)realloc((void *)(IOTypes_table.io_def),
-		                      new_size*sizeof(IOdef_entry));
-
-      if(dum_ptr == NULL){
-
-        fprintf(stderr, "Register_IOTypes: failed to allocate memory\n");
-	return REG_FAILURE;
-      }
-      else{
-
-	IOTypes_table.io_def = dum_ptr;
-      }
-
-      IOTypes_table.max_entries += REG_INITIAL_NUM_IOTYPES;
-    }
+    IOTypes_table.max_entries += REG_INITIAL_NUM_IOTYPES;
   }
 
   IOTypes_table.num_registered = current;
@@ -735,7 +757,7 @@ int Register_IOTypes(int    NumTypes,
   /* Flag that the registered IO Types have changed */
   ReG_IOTypesChanged = REG_TRUE;
 
-  return return_status;
+  return REG_SUCCESS;
 }
 
 /*----------------------------------------------------------------*/
@@ -961,19 +983,6 @@ int Register_ChkTypes(int    NumTypes,
 		      int   *ChkType)
 {
   int 	       i;
-  int 	       current;
-  int 	       iparam;
-  int          new_size;
-  char        *chkfreq_labels[1];
-  char        *freq_label = "Chk_Frequency";
-  int          chkfreq_strbl;
-  int          chkfreq_type;
-  void        *ptr_array[1];
-  char        *min_array[1];
-  char        *max_array[1];
-  char        *min_val = "0";
-  char        *max_val = " ";
-  IOdef_entry *dum_ptr;
   int          return_status = REG_SUCCESS;
 
   /* Check that steering is enabled */
@@ -990,118 +999,144 @@ int Register_ChkTypes(int    NumTypes,
 
   if (!ReG_SteeringInit) return REG_FAILURE;
 
+  for(i=0; i<NumTypes; i++){
+    
+    if(Register_ChkType(ChkLabel[i],
+			direction[i],
+			ChkFrequency[i],
+			&(ChkType[i])) != REG_SUCCESS){
+
+      return_status = REG_FAILURE;
+    }    
+  } /* End of loop over Chk types to register */
+
+  return return_status;
+}
+
+/*----------------------------------------------------------------*/
+
+int Register_ChkType(char* ChkLabel,
+		     int   direction,
+		     int   ChkFrequency,
+		     int   *ChkType)
+{
+  int current;
+  int iparam;
+  int new_size;
+  IOdef_entry* dum_ptr;
+
+  /* Check that steering is enabled */
+
+  if(!ReG_SteeringEnabled){
+
+    *ChkType = REG_IODEF_HANDLE_NOTSET;
+    return REG_SUCCESS;
+  }
+
+  /* Can only call this function if steering lib initialised */
+
+  if (!ReG_SteeringInit) return REG_FAILURE;
+
   /* Chk types cannot be deleted so is safe to use num_registered to 
      get next free entry */
   current = ChkTypes_table.num_registered;
 
-  for(i=0; i<NumTypes; i++){
+  if(String_contains_xml_chars(ChkLabel) == REG_TRUE){
 
-    if(String_contains_xml_chars(ChkLabel[i]) == REG_TRUE){
+    fprintf(stderr, "Register_ChkType: ERROR: Chk label contains "
+	    "reserved xml characters (<,>,&): %s\n", ChkLabel);
+    return REG_FAILURE;
+  }
 
-      fprintf(stderr, "Register_ChkTypes: ERROR: Chk label contains "
-	      "reserved xml characters (<,>,&): %s\n"
-	      "     - skipping this ChkType.\n", ChkLabel[i]);
-      continue;
-    }
+  strcpy(ChkTypes_table.io_def[current].label, ChkLabel);
 
-    strcpy(ChkTypes_table.io_def[current].label, ChkLabel[i]);
+  /* filename not used currently */
+  sprintf(ChkTypes_table.io_def[current].filename, "NOT_SET");
 
-    /* filename not used currently */
-    sprintf(ChkTypes_table.io_def[current].filename, "NOT_SET");
+  /* Whether input or output */
+  ChkTypes_table.io_def[current].direction = direction;
 
-    /* Whether input or output */
-    ChkTypes_table.io_def[current].direction = direction[i];
+  /* Set variables required for registration of associated io
+     frequency as a steerable parameter (but only if checkpoint is
+     to be emitted) */
+  if(direction != REG_IO_IN){
 
     /* Set variables required for registration of associated io
-       frequency as a steerable parameter (but only if checkpoint is
-       to be emitted) */
-    if(direction[i] != REG_IO_IN){
+       frequency as a steerable parameter */
 
-      /* Set variables required for registration of associated io
-         frequency as a steerable parameter */
+    ChkTypes_table.io_def[current].frequency = ChkFrequency;
 
-      chkfreq_labels[0] = freq_label;
-      chkfreq_strbl = REG_TRUE;
-      chkfreq_type  = REG_INT;
-      ChkTypes_table.io_def[current].frequency = ChkFrequency[i];
-      ptr_array[0]  = (void *)&(ChkTypes_table.io_def[current].frequency);
-      min_array[0]  = min_val;
-      max_array[0]  = max_val;
+    Register_param("Chk_Frequency",
+		   REG_TRUE,
+		   (void *)&(ChkTypes_table.io_def[current].frequency),
+		   REG_INT,
+		   "0", " ");
 
-      Register_params(1,
-		      chkfreq_labels,
-		      &chkfreq_strbl,
-		      ptr_array,
-		      &chkfreq_type,
-		      min_array, 
-		      max_array);
+    /* Store the handle given to this parameter - this line MUST
+       immediately succeed the call to Register_params */
 
-      /* Store the handle given to this parameter - this line MUST
-         immediately succeed the call to Register_params */
+    ChkTypes_table.io_def[current].freq_param_handle = 
+	                               Params_table.next_handle - 1;
 
-      ChkTypes_table.io_def[current].freq_param_handle = 
-	                                 Params_table.next_handle - 1;
-
-      /* Annotate the parameter table entry just created to flag that
-         it is a parameter that is internal to the steering library */
-      iparam = Param_index_from_handle(&Params_table, 
-			    ChkTypes_table.io_def[current].freq_param_handle);
-      if(iparam != -1){
-        Params_table.param[iparam].is_internal = REG_TRUE;
-      }
-      else{
-#if REG_DEBUG
-        fprintf(stderr, "Register_ChkTypes: failed to get handle for param\n");
-#endif
-        return_status = REG_FAILURE;
-      }
+    /* Annotate the parameter table entry just created to flag that
+       it is a parameter that is internal to the steering library */
+    iparam = Param_index_from_handle(&Params_table, 
+			  ChkTypes_table.io_def[current].freq_param_handle);
+    if(iparam != -1){
+      Params_table.param[iparam].is_internal = REG_TRUE;
     }
     else{
-      /* Auto consume is senseless for checkpoints so set frequency-related
-	 elements to 'null' values */
-      ChkTypes_table.io_def[current].freq_param_handle = REG_PARAM_HANDLE_NOTSET;
-      ChkTypes_table.io_def[current].frequency = 0;
+#if REG_DEBUG
+      fprintf(stderr, "Register_ChkType: failed to get handle for param\n");
+#endif
+      *ChkType = REG_IODEF_HANDLE_NOTSET;
+      return REG_FAILURE;
+    }
+  }
+  else{
+    /* Auto consume is senseless for checkpoints so set frequency-related
+       elements to 'null' values */
+    ChkTypes_table.io_def[current].freq_param_handle = REG_PARAM_HANDLE_NOTSET;
+    ChkTypes_table.io_def[current].frequency = 0;
+  }
+
+  /* Set-up buffer used to store checkpoint filenames */
+  ChkTypes_table.io_def[current].buffer = NULL;
+  ChkTypes_table.io_def[current].buffer_bytes = 0;
+  ChkTypes_table.io_def[current].buffer_max_bytes = 0;
+
+  /* Create, store and return a handle for this ChkType */
+  ChkTypes_table.io_def[current].handle = Next_IO_Chk_handle++;
+  *ChkType = ChkTypes_table.io_def[current].handle;
+
+  /* Check whether we need to allocate more storage */
+  current++;
+  if(current == ChkTypes_table.max_entries){
+
+    new_size = ChkTypes_table.max_entries + REG_INITIAL_NUM_IOTYPES;
+
+    dum_ptr = (IOdef_entry*)realloc((void *)(ChkTypes_table.io_def),
+		                    new_size*sizeof(IOdef_entry));
+
+    if(dum_ptr == NULL){
+
+      fprintf(stderr, "Register_ChkType: failed to allocate memory\n");
+      return REG_FAILURE;
+    }
+    else{
+
+      ChkTypes_table.io_def = dum_ptr;
     }
 
-    /* Set-up buffer used to store checkpoint filenames */
-    ChkTypes_table.io_def[current].buffer = NULL;
-    ChkTypes_table.io_def[current].buffer_bytes = 0;
-    ChkTypes_table.io_def[current].buffer_max_bytes = 0;
-
-    /* Create, store and return a handle for this ChkType */
-    ChkTypes_table.io_def[current].handle = Next_IO_Chk_handle++;
-    ChkType[i] = ChkTypes_table.io_def[current].handle;
-
-    /* Check whether we need to allocate more storage */
-    current++;
-    if(current == ChkTypes_table.max_entries){
-
-      new_size = ChkTypes_table.max_entries + REG_INITIAL_NUM_IOTYPES;
-
-      dum_ptr = (IOdef_entry*)realloc((void *)(ChkTypes_table.io_def),
-		                      new_size*sizeof(IOdef_entry));
-
-      if(dum_ptr == NULL){
-
-        fprintf(stderr, "Register_ChkTypes: failed to allocate memory\n");
-	return REG_FAILURE;
-      }
-      else{
-
-	ChkTypes_table.io_def = dum_ptr;
-      }
-
-      ChkTypes_table.max_entries += REG_INITIAL_NUM_IOTYPES;
-    }
-
-  } /* End of loop over Chk types to register */
+    ChkTypes_table.max_entries += REG_INITIAL_NUM_IOTYPES;
+  }
 
   ChkTypes_table.num_registered = current;
 
   /* Flag that the registered Chk Types have changed */
   ReG_ChkTypesChanged = REG_TRUE;
 
-  return return_status;
+  return REG_SUCCESS;
 }
 
 /*----------------------------------------------------------------*/
@@ -4401,41 +4436,61 @@ void Steering_signal_handler(int aSignal)
   signal(SIGILL, SIG_IGN);
   signal(SIGABRT, SIG_IGN);
   signal(SIGFPE, SIG_IGN);
+  signal(SIGXCPU, SIG_IGN);
+  signal(SIGUSR2, SIG_IGN);
 
   switch(aSignal){
 
     case SIGINT:
-      fprintf(stderr, "Interrupt signal received (signal %d)\n", aSignal);
+      fprintf(stderr, "Steering_signal_handler: Interrupt signal received (signal %d)\n", 
+              aSignal);
       break;
       
     case SIGTERM:
-      fprintf(stderr, "Kill signal received (signal %d)\n", aSignal);
+      fprintf(stderr, "Steering_signal_handler: Kill signal received (signal %d)\n", 
+              aSignal);
       break;
       
     case SIGSEGV:
-      fprintf(stderr, "Illegal Access caught (signal %d)\n", aSignal);
+      fprintf(stderr, "Steering_signal_handler: Illegal Access caught (signal %d)\n", 
+              aSignal);
       break;
 
     case  SIGILL:
-      fprintf(stderr, "Illegal Exception caught (signal %d)\n", aSignal);
+      fprintf(stderr, "Steering_signal_handler: Illegal Exception caught (signal %d)\n", 
+              aSignal);
       break;
 
       /* note: abort called if exception not caught (and hence calls 
 	 terminate) */
     case SIGABRT:
-      fprintf(stderr, "Abort signal caught (signal %d)\n", aSignal);
+      fprintf(stderr, "Steering_signal_handler: Abort signal caught (signal %d)\n", 
+              aSignal);
       break;
 
     case SIGFPE:
-      fprintf(stderr, "Arithmetic Exception caught (signal %d)\n", aSignal);
+      fprintf(stderr, "Steering_signal_handler: Arithmetic Exception caught (signal %d)\n", 
+              aSignal);
+      break;
+
+    case SIGXCPU:
+      fprintf(stderr, "Steering_signal_handler: CPU usuage exceeded (signal %d)\n", 
+              aSignal);
+      break;
+
+    case SIGUSR2:
+      /* This is for the benefit of LSF - it sends us this when we hit
+         our wall-clock limit */
+      fprintf(stderr, "Steering_signal_handler: USR2 signal caught (signal %d)\n", 
+              aSignal);
       break;
 
     default:
-      fprintf(stderr, "Signal caught (signal %d)\n", aSignal);
-
+      fprintf(stderr, "Steering_signal_handler: Signal caught (signal %d)\n", 
+              aSignal);
   }
 
-  fprintf(stderr, "Steering library quitting...\n");
+  fprintf(stderr, "Steering_signal_handler: steering library quitting...\n");
 
   if (Steering_finalize() != REG_SUCCESS){
     fprintf(stderr, "Steering_signal_handler: Steerer_finalize failed\n");

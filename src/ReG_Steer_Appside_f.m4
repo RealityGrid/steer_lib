@@ -343,8 +343,64 @@ INT_KIND_1_DECL(Status);
 
 /*----------------------------------------------------------------
 
-SUBROUTINE register_chktype_f(NumTypes, ChkLabel, ChkDirn,
-                              ChkFrequency, ChkType, Status)
+SUBROUTINE register_iotype_f(IOLabel, IODirn, IOFrequency, 
+                             IOType, Status)
+
+  CHARACTER (LEN=*), INTENT(in)          :: IOLabel
+  INTEGER (KIND=REG_SP_KIND), INTENT(in) :: IODirn
+  INTEGER (KIND=REG_SP_KIND), INTENT(in) :: IOFrequency
+  INTEGER (KIND=REG_SP_KIND), INTENT(out):: IOType
+  INTEGER (KIND=REG_SP_KIND), INTENT(out):: Status
+----------------------------------------------------------------*/
+
+void FUNCTION(register_iotype_f) ARGS(`STRING_ARG(IOLabel),
+				       IODirn,
+				       IOFrequency,
+				       IOType,
+				       Status')
+STRING_ARG_DECL(IOLabel);
+INT_KIND_1_DECL(IODirn);
+INT_KIND_1_DECL(IOFrequency);
+INT_KIND_1_DECL(IOType);
+INT_KIND_1_DECL(Status);
+{
+  int   len;
+  char *buf;
+
+  len = STRING_LEN(IOLabel);
+  if(len >= REG_MAX_STRING_LENGTH){
+    fprintf(stderr, 
+            "register_iotype_f: WARNING: truncating label\n");
+    /* Allow space for terminating '/0' */
+    len = REG_MAX_STRING_LENGTH - 1;
+  }
+
+  buf = (char *)malloc(REG_MAX_STRING_LENGTH);
+  if(!buf){
+
+    fprintf(stderr, "Register_IOType_f: malloc failed\n");
+    *Status = INT_KIND_1_CAST( REG_FAILURE );
+    return;
+  }
+
+  /* Convert to null-terminated C-style string */
+  memcpy(buf, STRING_PTR(IOLabel), len);
+  buf[len] = '\0';
+
+  *Status = INT_KIND_1_CAST( Register_IOType(buf,
+                                             (int)*IODirn,
+                                             (int)*IOFrequency,
+			                     (int *)IOType) );
+  free(buf);
+  buf = NULL;
+
+  return;
+}
+
+/*----------------------------------------------------------------
+
+SUBROUTINE register_chktypes_f(NumTypes, ChkLabel, ChkDirn,
+                               ChkFrequency, ChkType, Status)
 
   INTEGER (KIND=REG_SP_KIND), INTENT(in)                       :: NumTypes
   CHARACTER (LEN=*), DIMENSION(NumTypes), INTENT(in)           :: ChkLabel 
@@ -410,6 +466,62 @@ INT_KIND_1_DECL(Status);
 
   free(str_array);
   str_array = NULL;
+  free(buf);
+  buf = NULL;
+  return;
+}
+
+/*----------------------------------------------------------------
+
+SUBROUTINE register_chktype_f(ChkLabel, ChkDirn,
+                              ChkFrequency, ChkType, Status)
+
+  CHARACTER (LEN=*), DIMENSION(NumTypes), INTENT(in)           :: ChkLabel 
+  INTEGER (KIND=REG_SP_KIND), DIMENSION(NumTypes), INTENT(in)  :: ChkDirn
+  INTEGER (KIND=REG_SP_KIND), DIMENSION(NumTypes), INTENT(in)  :: ChkFrequency
+  INTEGER (KIND=REG_SP_KIND), DIMENSION(NumTypes), INTENT(out) :: ChkType
+  INTEGER (KIND=REG_SP_KIND), INTENT(out)                      :: Status
+
+----------------------------------------------------------------*/
+
+void FUNCTION(register_chktype_f) ARGS(`STRING_ARG(ChkLabel), 
+                                        ChkDirn,
+                                        ChkFrequency,
+                                        ChkType,
+                                        Status')
+STRING_ARG_DECL(ChkLabel);
+INT_KIND_1_DECL(ChkDirn);
+INT_KIND_1_DECL(ChkFrequency);
+INT_KIND_1_DECL(ChkType);
+INT_KIND_1_DECL(Status);
+{
+  int   len;
+  char *buf;
+
+  len = STRING_LEN(ChkLabel);
+  if(len >= REG_MAX_STRING_LENGTH){
+    fprintf(stderr, 
+            "register_chktypes_f: WARNING: truncating label\n");
+    /* Allow space for terminating '/0' */
+    len = REG_MAX_STRING_LENGTH - 1;
+  }
+
+  buf = (char*)malloc(len + 1);
+  if(!buf){
+
+    fprintf(stderr, "Register_ChkType_f: malloc failed\n");
+    *Status = INT_KIND_1_CAST( REG_FAILURE );
+    return;
+  }
+
+  /* Convert string to a null-terminated C-style string */
+  memcpy(buf, STRING_PTR(ChkLabel), len);
+  buf[len] = '\0';
+ 
+  *Status = INT_KIND_1_CAST( Register_ChkType(buf,
+                                              (int)*ChkDirn,
+                                              (int)*ChkFrequency,
+                                              (int *)ChkType) );
   free(buf);
   buf = NULL;
   return;
