@@ -53,13 +53,7 @@
 #if REG_GLOBUS_STEERING || REG_GLOBUS_SAMPLES
 
 #include "ReG_Steer_Globus_io.h"
-
-/* These are for uname and gethostbyname */
-#include <sys/utsname.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netdb.h>
+#include "ReG_Steer_Common.h"
 
 int Globus_io_activate()
 {
@@ -905,12 +899,10 @@ int Consume_msg_header_globus(socket_io_type *sock_info,
   if(strstr(buffer, "FORTRAN")){
 
     /* Array data is from Fortran */
-    fprintf(stderr, "Consume_msg_header_globus: F90 data\n");
     *IsFortranArray = TRUE;
   }
   else{
     /* Array data is not from Fortran */
-    fprintf(stderr, "Consume_msg_header_globus: C data\n");
     *IsFortranArray = FALSE;
   }
 
@@ -996,31 +988,5 @@ int Emit_msg_header_globus(socket_io_type *sock_info,
 
   return REG_SUCCESS;
 }
-
-
-/*------------------------------------------------------------------*/
-
-char *Get_fully_qualified_hostname()
-{
-  struct utsname  name;
-  struct hostent *host;
-
-  if(uname(&name) < 0){
-
-    fprintf(stderr, "Get_fully_qualified_hostname: uname failed\n");
-    return NULL;
-  }
-
-  host = gethostbyname(name.nodename);
-
-  if(!host){
-
-    fprintf(stderr, "Get_fully_qualified_hostname: gethostbyname failed\n");
-    return NULL;
-  }
-
-  return host->h_name;
-}
-
 
 #endif /* REG_GLOBUS_STEERING || REG_GLOBUS_SAMPLES */
