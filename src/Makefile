@@ -65,6 +65,7 @@ ${LIB_PATH}/libReG_Steer.a: ReG_Steer_Appside_f.o \
         ReG_Steer_Steerside_Soap.o \
         ReG_Steer_Appside_Soap.o \
         ReG_Steer_Appside_File.o \
+        ReG_Steer_Browser.o \
 	stdsoap2.o soapC.o soapClient.o
 
 
@@ -79,6 +80,7 @@ ${LIB_PATH}/libReG_Steer.a:
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Appside_Soap.o
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Appside_File.o
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Steerside_Soap.o
+	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Browser.o
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a stdsoap2.o
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a soapC.o
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a soapClient.o
@@ -97,6 +99,7 @@ ReG_Steer_Appside.o: ReG_Steer_Appside.c \
 ReG_Steer_Steerside.o: ReG_Steer_Steerside.c \
          ReG_Steer_Proxy_utils.c \
 	 ReG_Steer_XML.c \
+         ReG_Steer_Browser.c \
 	 ../include/ReG_Steer_XML.h \
 	 ../include/ReG_Steer_Proxy_utils.h \
 	 ../include/ReG_Steer_Steerside.h \
@@ -153,6 +156,14 @@ ReG_Steer_Steerside_Soap.o: ReG_Steer_Steerside_Soap.c \
         ../include/soapSGS.nsmap \
         ../include/soapH.h \
 	stdsoap2.c soapC.c soapClient.c 
+
+ReG_Steer_Browser.o: ReG_Steer_Browser.c \
+        ../include/ReG_Steer_Browser.h \
+	../include/ReG_Steer_types.h \
+        ../include/soapServiceGroupRegistration.nsmap \
+        ../include/soapH.h \
+        ../include/soapStub.h \
+	stdsoap2.c soapC.c soapClient.c
 
 #---------------------------------------------------------------
 
