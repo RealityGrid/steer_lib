@@ -90,20 +90,29 @@ INT_KIND_1_DECL(Status);
 
 /*----------------------------------------------------------------
 
-SUBROUTINE register_iotypes_f(NumTypes, IOLabel, IOType, Status)
+SUBROUTINE register_iotypes_f(NumTypes, IOLabel, IODirn, IOSupport_auto, IOFrequency, IOType, Status)
 
   INTEGER (KIND=REG_SP_KIND), INTENT(in)                      :: NumTypes
   CHARACTER (LEN=*), DIMENSION(NumTypes), INTENT(in)          :: IOLabel
-  INTEGER (KIND=REG_SP_KIND), DIMENSION(NumTypes), INTENT(in) :: IOType
+  INTEGER (KIND=REG_SP_KIND), DIMENSION(NumTypes), INTENT(in) :: IODirn
+  INTEGER (KIND=REG_SP_KIND), DIMENSION(NumTypes), INTENT(in) :: IOSupport_auto
+  INTEGER (KIND=REG_SP_KIND), DIMENSION(NumTypes), INTENT(in) :: IOFrequency
+  INTEGER (KIND=REG_SP_KIND), DIMENSION(NumTypes), INTENT(out):: IOType
   INTEGER (KIND=REG_SP_KIND), INTENT(out)                     :: Status
 ----------------------------------------------------------------*/
 
 void FUNCTION(register_iotypes_f) ARGS(`NumTypes, 
 				        STRING_ARG(IOLabel),
+					IODirn,
+					IOSupport_auto,
+					IOFrequency,
 				        IOType,
 				        Status')
 INT_KIND_1_DECL(NumTypes);
 STRING_ARG_DECL(IOLabel);
+INT_KIND_1_DECL(IODirn);
+INT_KIND_1_DECL(IOSupport_auto);
+INT_KIND_1_DECL(IOFrequency);
 INT_KIND_1_DECL(IOType);
 INT_KIND_1_DECL(Status);
 {
@@ -127,6 +136,9 @@ INT_KIND_1_DECL(Status);
 
   *Status = INT_KIND_1_CAST( Register_IOTypes((int)*NumTypes,
 			                      str_array,
+                                              (int *)IODirn,
+                                              (int *)IOSupport_auto,
+                                              (int **)IOFrequency,
 			                      (int *)IOType) );
 
   free(str_array);

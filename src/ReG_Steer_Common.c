@@ -87,7 +87,7 @@ FILE *Open_next_file(char* base_name)
       }
       else{
 
-	printf("Open_next_file: failed to stat %s\n", tmp_filename);
+	fprintf(stderr, "Open_next_file: failed to stat %s\n", tmp_filename);
       }
     }
 
@@ -95,7 +95,7 @@ FILE *Open_next_file(char* base_name)
   }
 
   /* Now search in the opposite direction (in case consumption lags
-     creation and we've wrapped around the REG_MAX_NUM_FILES counter */
+     creation and we've wrapped around the REG_MAX_NUM_FILES counter) */
 
   i = REG_MAX_NUM_FILES - 1;
   time2 = -1;
@@ -120,7 +120,7 @@ FILE *Open_next_file(char* base_name)
       }
       else{
 
-	printf("Open_next_file: failed to stat %s\n", tmp_filename);
+	fprintf(stderr, "Open_next_file: failed to stat %s\n", tmp_filename);
       }
     }
 
@@ -136,7 +136,7 @@ FILE *Open_next_file(char* base_name)
     if(fp = fopen(filename1, "r")){
 
 #if DEBUG
-      printf("Open_next_file: opening %s\n", filename1);
+      fprintf(stderr, "Open_next_file: opening %s\n", filename1);
 #endif
       /* Return the name of the file actually opened */
       strcpy(base_name, filename1);
@@ -177,7 +177,7 @@ int Delete_file(char *filename)
   sprintf(long_filename, "%s.lock", filename);
 
 #if DEBUG
-  printf("Delete_file: removing %s\n", long_filename);
+  fprintf(stderr, "Delete_file: removing %s\n", long_filename);
 #endif
 
   if(remove(long_filename)){
@@ -193,7 +193,7 @@ int Delete_file(char *filename)
   /* Remove the data file */
 
 #if DEBUG
-  printf("Delete_file: removing %s\n", filename);
+  fprintf(stderr, "Delete_file: removing %s\n", filename);
 #endif
 
   if(remove(filename)){
@@ -215,7 +215,7 @@ int Remove_files(char* base_name)
   strcpy(filename, base_name);
 
 #if DEBUG
-  printf("Remove_files: looking for files beginning: %s\n", filename);
+  fprintf(stderr, "Remove_files: looking for files beginning: %s\n", filename);
 #endif
 
   while(fp = Open_next_file(filename)){
@@ -225,7 +225,7 @@ int Remove_files(char* base_name)
     /* Remove lock file */
     sprintf(lock_name, "%s.lock", filename);
 #if DEBUG
-    printf("Remove_files: deleting %s\n", lock_name);
+    fprintf(stderr, "Remove_files: deleting %s\n", lock_name);
 #endif
     remove(lock_name);
 
@@ -236,7 +236,7 @@ int Remove_files(char* base_name)
 
     /* Remove associated data file */
 #if DEBUG
-    printf("Remove_files: deleting %s\n", filename);
+    fprintf(stderr, "Remove_files: deleting %s\n", filename);
 #endif
     remove(filename);
 
@@ -254,7 +254,7 @@ void startElement(void *userData, const char *name, const char **atts)
   user_data_type *user_data = userData;
 
 #if DEBUG
-  printf("startElement: name = %s\n", name);
+  fprintf(stderr, "startElement: name = %s\n", name);
 #endif /* DEBUG */
 
   /* This is the start of a field within a message */
@@ -268,7 +268,7 @@ void startElement(void *userData, const char *name, const char **atts)
     if(user_data->msg_type == MSG_NOTSET){
 
 #if DEBUG
-      printf("startElement: unrecognised message type: %s\n", name);
+      fprintf(stderr, "startElement: unrecognised message type: %s\n", name);
 #endif /* DEBUG */
     }
     break;
@@ -285,7 +285,7 @@ void startElement(void *userData, const char *name, const char **atts)
   
   case SUPP_CMDS:
 #if DEBUG
-    printf("Start of supp cmds element\n");
+    fprintf(stderr, "Start of supp cmds element\n");
 #endif /* DEBUG */
     Set_supp_cmd_field_type((void *)(user_data->gen_xml_struct), name);
     break;
@@ -296,14 +296,14 @@ void startElement(void *userData, const char *name, const char **atts)
 
   case CONTROL:
 #if DEBUG
-    printf("Start of steering-control element\n");
+    fprintf(stderr, "Start of steering-control element\n");
 #endif /* DEBUG */
     Set_ctrl_field_type((void *)(user_data->gen_xml_struct), name);
     break;
 
   default:
 #if DEBUG
-    printf("startElement: unrecognised message type\n");
+    fprintf(stderr, "startElement: unrecognised message type\n");
 #endif /* DEBUG */
     break;
   }
@@ -338,7 +338,7 @@ REG_MsgType Get_message_type(const char *name)
   else{
 
 #if DEBUG  
-    printf("Get_message_type: unrecognised message type: %s\n", name);
+    fprintf(stderr, "Get_message_type: unrecognised message type: %s\n", name);
 #endif /* DEBUG */
 
     return MSG_NOTSET;
@@ -369,7 +369,14 @@ void Set_param_field_type(void *ptr, const char* name)
   else if(strcmp(name, "Value") == 0){
     param_struct->field_type = VALUE;
   }
-
+  else if(strcmp(name, "Is_internal") == 0){
+    param_struct->field_type = IS_INTERNAL;
+  }
+  else{
+#if DEBUG
+    fprintf(stderr, "Set_param_field_type: unrecognised field type\n");
+#endif
+  }
 }
 
 /*-----------------------------------------------------------------*/
@@ -386,13 +393,17 @@ void Set_iodef_field_type(void *ptr, const char* name)
   else if(strcmp(name, "Handle") == 0){
     iodef_struct->field_type = IODEF_HANDLE;
   }
-  /* 'direction' field not currently used
   else if(strcmp(name, "Direction") == 0){
     iodef_struct->field_type = IODEF_DIRN;
   }
-  */
+  else if(strcmp(name, "Support_auto_io") == 0){
+    iodef_struct->field_type = IODEF_AUTO_SUPP;
+  }
+  else if(strcmp(name, "Freq_handle") == 0){
+    iodef_struct->field_type = IODEF_FREQ_HANDLE;
+  }
   else{
-    printf("Set_iodef_field_type: unrecognised field type\n");
+    fprintf(stderr, "Set_iodef_field_type: unrecognised field type\n");
   }
 
 }
@@ -406,7 +417,7 @@ void Set_supp_cmd_field_type(void *ptr, const char* name)
   supp_cmds_struct = (supp_cmds_xml_struct *)(ptr);
 
 #if DEBUG
-  printf("Set_supp_cmd_field_type: name = %s\n", name);
+  fprintf(stderr, "Set_supp_cmd_field_type: name = %s\n", name);
 #endif /* DEBUG */
 
   if(strcmp(name, "Cmd_id") == 0){
@@ -417,7 +428,7 @@ void Set_supp_cmd_field_type(void *ptr, const char* name)
   }
   else{
 #if DEBUG
-    printf("Set_supp_cmd_field_type: unrecognised field type\n");
+    fprintf(stderr, "Set_supp_cmd_field_type: unrecognised field type\n");
 #endif
   }
 
@@ -509,14 +520,14 @@ void endElement(void *userData, const char *name)
   user_data_type *data = userData;
 
 #if DEBUG
-  printf("endElement: name = %s\n", name);
+  fprintf(stderr, "endElement: name = %s\n", name);
 #endif
 
   switch(data->msg_type){
 
   case MSG_NOTSET:
 #if DEBUG
-    printf("endElement: Warning - no element flagged as started\n");
+    fprintf(stderr, "endElement: Warning - no element flagged as started\n");
 #endif
     break;
 
@@ -769,53 +780,53 @@ void dataHandler(void *userData, const XML_Char *s, int len)
 
   case MSG_NOTSET:
 #if DEBUG
-    printf("dataHandler: Warning - no element flagged as started\n");
+    fprintf(stderr, "dataHandler: Warning - no element flagged as started\n");
 #endif
     break;
 
   case SUPP_CMDS:
 #if DEBUG
-    printf("dataHandler: calling Store_supp_cmds_field_value\n");
-    printf("dataHandler: buf = %s\n", buf);
+    fprintf(stderr, "dataHandler: calling Store_supp_cmds_field_value\n");
+    fprintf(stderr, "dataHandler: buf = %s\n", buf);
 #endif
     Store_supp_cmds_field_value(data->gen_xml_struct, buf);
     break;
 
   case IO_DEFS:
 #if DEBUG
-    printf("dataHandler: calling Store_iodef_field_value\n");
-    printf("dataHandler: buf = %s\n", buf);
+    fprintf(stderr, "dataHandler: calling Store_iodef_field_value\n");
+    fprintf(stderr, "dataHandler: buf = %s\n", buf);
 #endif
     Store_iodef_field_value(data->gen_xml_struct, buf);
     break;
 
   case PARAM_DEFS:
 #if DEBUG
-    printf("dataHandler: calling Store_param_field_value\n");
-    printf("dataHandler: buf = %s\n", buf);
+    fprintf(stderr, "dataHandler: calling Store_param_field_value\n");
+    fprintf(stderr, "dataHandler: buf = %s\n", buf);
 #endif
     Store_param_field_value(data->gen_xml_struct, buf);
     break;
 
   case STATUS:
 #if DEBUG
-    printf("dataHandler: calling Store_status_field_value\n");
-    printf("dataHandler: buf = %s\n", buf);
+    fprintf(stderr, "dataHandler: calling Store_status_field_value\n");
+    fprintf(stderr, "dataHandler: buf = %s\n", buf);
 #endif
     Store_status_field_value(data->gen_xml_struct, buf);
     break;
 
   case CONTROL:
 #if DEBUG
-    printf("dataHandler: calling Store_control_field_value\n");
-    printf("dataHandler: buf = %s\n", buf);
+    fprintf(stderr, "dataHandler: calling Store_control_field_value\n");
+    fprintf(stderr, "dataHandler: buf = %s\n", buf);
 #endif
     Store_control_field_value(data->gen_xml_struct, buf);
     break;
 
   default:
 #if DEBUG
-    printf("dataHandler: unrecognised message type\n");
+    fprintf(stderr, "dataHandler: unrecognised message type\n");
 #endif
     break;
   }
@@ -847,7 +858,7 @@ void Store_control_field_value(void *ptr, char *buf)
 
   default:
 #if DEBUG
-    printf("Store_control_field_value: unrecognised field_type\n");
+    fprintf(stderr, "Store_control_field_value: unrecognised field_type\n");
 #endif
     break;
   }
@@ -879,7 +890,8 @@ void Store_status_field_value(void *ptr, char *buf)
 
   default:
 #if DEBUG
-    printf("Store_status_field_value: unrecognised status field_type\n");
+    fprintf(stderr, 
+	    "Store_status_field_value: unrecognised status field_type\n");
 #endif
     break;
   }
@@ -899,7 +911,7 @@ void Store_param_field_value(void *ptr, char *buf)
   index = param_struct->table->num_registered;
 
 #if DEBUG
-  printf("Store_param_field_value: index = %d\n", index);
+  fprintf(stderr, "Store_param_field_value: index = %d\n", index);
 #endif
 
   switch(param_struct->field_type){
@@ -946,9 +958,20 @@ void Store_param_field_value(void *ptr, char *buf)
     }
     break;
 
+  case IS_INTERNAL:
+
+    if(strcmp(buf, "TRUE") == 0){
+
+      param_struct->table->param[index].is_internal = TRUE;
+    }
+    else{
+      param_struct->table->param[index].is_internal = FALSE;
+    }
+    break;
+
   default:
 #if DEBUG
-    printf("Store_param_field_value: no element ID set\n");
+    fprintf(stderr, "Store_param_field_value: no element ID set\n");
 #endif
     break;
   }  
@@ -966,9 +989,10 @@ void Store_supp_cmds_field_value(void *ptr, char *buf)
   index = cmd_struct->table->num_registered;
 
 #if DEBUG
-  printf("Store_supp_cmds_field_value: index = %d\n", index);
-  printf("                               buf = %s\n", buf);
-  printf("                             table = %p\n", cmd_struct->table);
+  fprintf(stderr, "Store_supp_cmds_field_value: index = %d\n", index);
+  fprintf(stderr, "                               buf = %s\n", buf);
+  fprintf(stderr, "                             table = %p\n", 
+	  cmd_struct->table);
 #endif
 
   switch(cmd_struct->field_type){
@@ -979,7 +1003,7 @@ void Store_supp_cmds_field_value(void *ptr, char *buf)
   case CMD_ID:
     sscanf(buf , "%d", &(cmd_struct->table->cmd[index].cmd_id) );    
 #if DEBUG
-    printf("Store_supp_cmds_field_value: stored id = %d\n",
+    fprintf(stderr, "Store_supp_cmds_field_value: stored id = %d\n",
 	   cmd_struct->table->cmd[index].cmd_id);
 #endif
     break;
@@ -992,9 +1016,9 @@ void Store_supp_cmds_field_value(void *ptr, char *buf)
 
   default:
 #if DEBUG
-    printf("Store_supp_cmds_field_value: unrecognised field type\n");
-    printf("                             field type = %d\n", 
-	   cmd_struct->field_type);
+    fprintf(stderr, "Store_supp_cmds_field_value: unrecognised field type\n");
+    fprintf(stderr, "                             field type = %d\n", 
+	    cmd_struct->field_type);
 #endif
     break;
   }
@@ -1005,6 +1029,7 @@ void Store_supp_cmds_field_value(void *ptr, char *buf)
 void Store_iodef_field_value(void *ptr, char *buf)
 {
   int               index;
+  char              input[REG_MAX_STRING_LENGTH];
   iodef_xml_struct *iodef_struct;
 
   iodef_struct = (iodef_xml_struct *)(ptr);
@@ -1014,7 +1039,7 @@ void Store_iodef_field_value(void *ptr, char *buf)
   switch(iodef_struct->field_type){
 
   case IODEF_NOTSET:
-    printf("Store_IOdef_field_value: field type not set\n");
+    fprintf(stderr, "Store_IOdef_field_value: field type not set\n");
     break;
 
   case IODEF_LABEL:
@@ -1025,15 +1050,57 @@ void Store_iodef_field_value(void *ptr, char *buf)
     sscanf(buf, "%d", &(iodef_struct->table->io_def[index].handle) );
     break;
 
-  /* 'direction' field not currently used
   case IODEF_DIRN:
-    sscanf(buf, "%d", &(iodef_struct->table->io_def[index].direction) );
+    sscanf(buf, "%s", input);
+
+    if(strcmp(input, "IN") == 0){
+      iodef_struct->table->io_def[index].direction = REG_IO_IN;
+    }
+    else if(strcmp(input, "OUT") == 0){
+      iodef_struct->table->io_def[index].direction = REG_IO_OUT;
+    }
+    else if(strcmp(input, "CHECKPOINT") == 0){
+      iodef_struct->table->io_def[index].direction = REG_IO_CHKPT;
+    }
+    else{
+
+#if DEBUG
+      fprintf(stderr, "Store_IOdef_field_value: unrecognised direction type\n");
+#endif
+      /* Set it to something to be on the safe side... */
+      iodef_struct->table->io_def[index].direction = REG_IO_IN;
+    }
     break;
-  */
+
+  case IODEF_AUTO_SUPP:
+    sscanf(buf, "%s", input);
+
+    if(strcmp(input, "TRUE") == 0){
+
+      iodef_struct->table->io_def[index].auto_io_support = TRUE;
+    }
+    else if(strcmp(input, "FALSE") == 0){
+
+      iodef_struct->table->io_def[index].auto_io_support = FALSE;
+    }
+    else{
+
+#if DEBUG
+      fprintf(stderr, 
+	      "Store_IOdef_field_value: unrecognised auto_supp value\n");
+#endif
+      /* Set to false to be on the safe side */
+      iodef_struct->table->io_def[index].auto_io_support = FALSE;
+    }
+    break;
+
+  case IODEF_FREQ_HANDLE:
+    sscanf(buf, "%d", &(iodef_struct->table->io_def[index].freq_param_handle) );
+    break;
 
   default:
 #if DEBUG
-    printf("Store_IOdef_field_value: unrecognised field type\n");
+    fprintf(stderr, "Store_IOdef_field_value: unrecognised field type\n");
 #endif
     break;
   }
@@ -1079,6 +1146,28 @@ int Next_free_param_index(Param_table_type *table)
 
 /*--------------------------------------------------------------------*/
 
+int Param_index_from_handle(Param_table_type *table, int ParamHandle)
+{
+  int i;
+  int index = REG_PARAM_HANDLE_NOTSET;
+
+  /* Finds entry in a table of parameters that has handle == ParamHandle
+     Returns REG_PARAM_HANDLE_NOTSET if no match found */
+
+  for(i=0; i<table->max_entries; i++){
+
+    if(table->param[i].handle == ParamHandle){
+
+      index = i;
+      break;
+    }
+  }
+
+  return index;
+}
+
+/*--------------------------------------------------------------------*/
+
 int Increment_param_registered(Param_table_type *table)
 {
   int   new_size;
@@ -1105,7 +1194,7 @@ int Increment_param_registered(Param_table_type *table)
       }
     }
     else{
-      printf("endElement: failed to allocate more param memory\n");
+      fprintf(stderr, "endElement: failed to allocate more param memory\n");
       table->num_registered--;
       return_status = REG_FAILURE;
     }
@@ -1136,7 +1225,7 @@ int Increment_cmd_registered(Supp_cmd_table_type *table)
       table->max_entries = new_size;
     }
     else{
-      printf("endElement: failed to allocate more cmd memory\n");
+      fprintf(stderr, "endElement: failed to allocate more cmd memory\n");
       table->num_registered--;
       return_status = REG_FAILURE;
     }
@@ -1173,7 +1262,7 @@ int Increment_iodef_registered(IOdef_table_type *table)
       }
     }
     else{
-      printf("endElement: failed to allocate more IOdef memory\n");
+      fprintf(stderr, "endElement: failed to allocate more IOdef memory\n");
       table->num_registered--;
       return_status = REG_FAILURE;
     }

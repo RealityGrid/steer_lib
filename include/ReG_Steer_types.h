@@ -36,6 +36,8 @@
 
 #define __REG_TYPES_INCLUDED
 
+#define DEBUG 1
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -118,6 +120,13 @@
    than all of the commands #define'd above */
 
 #define REG_MIN_IOTYPE_HANDLE 1000
+
+/* The three different types that an IOtype can have - used only
+   by the steerer in the construction of a more intuitive gui */
+
+#define REG_IO_IN    0
+#define REG_IO_OUT   1
+#define REG_IO_CHKPT 2
 
 /* Coding scheme for data types */
 

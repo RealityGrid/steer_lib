@@ -40,12 +40,15 @@ int main(){
   const int nloops = 30;
 
   /* For steering */
+  int    num_iotypes;
+  int    iotype_handle[REG_INITIAL_NUM_IOTYPES];
+  char  *iotype_labels[REG_INITIAL_NUM_IOTYPES];
+  int	 iotype_dirn[REG_INITIAL_NUM_IOTYPES];
+  int	 iotype_auto[REG_INITIAL_NUM_IOTYPES];
+  int	*iotype_frequency[REG_INITIAL_NUM_IOTYPES];
 
-  int    input_iotype;
-  char*  iotype_labels[REG_INITIAL_NUM_IOTYPES];
-	 
-  char*  param_labels[REG_INITIAL_NUM_PARAMS];
-  void*  param_ptrs[REG_INITIAL_NUM_PARAMS];
+  char  *param_labels[REG_INITIAL_NUM_PARAMS];
+  void  *param_ptrs[REG_INITIAL_NUM_PARAMS];
   int    param_types[REG_INITIAL_NUM_PARAMS];
   int    param_strbl[REG_INITIAL_NUM_PARAMS];
 	 
@@ -61,11 +64,12 @@ int main(){
   /* Some example variables */
 
   int   opacity_step_start = 120;
-  int   opacity_step_stop = 130;
-  float temp = 55.6;
-  char* my_string = "running";
+  int   opacity_step_stop  = 130;
+  int   output_freq        = 5;
+  float temp               = 55.6;
+  char* my_string          = "running";
 
-  int   finished;
+  int   finished           = FALSE;
   int   icmd;
   int   i, j;
 
@@ -101,10 +105,27 @@ int main(){
   /* Register the input IO channel */
 
   iotype_labels[0] = "VTK_STRUCTURED_POINTS_INPUT";
+  iotype_dirn[0] = REG_IO_IN;
+  iotype_auto[0] = FALSE;
+  iotype_frequency[0] = NULL;
 
-  status = Register_IOTypes(1,
-  			    iotype_labels,
-  			    &input_iotype);
+  iotype_labels[1] = "SOME_OUTPUT_DATA";
+  iotype_dirn[1] = REG_IO_OUT;
+  iotype_auto[1] = TRUE;
+  iotype_frequency[1] = &output_freq;
+
+  num_iotypes = 2;
+
+  printf("Calling Register_IOTypes...\n");
+
+  status = Register_IOTypes(num_iotypes,
+  			    iotype_labels, 
+			    iotype_dirn, 
+			    iotype_auto,
+			    iotype_frequency,
+  			    iotype_handle);
+
+  printf("...done\n");
 
   if(status != REG_SUCCESS){
 
@@ -162,9 +183,10 @@ int main(){
     if(status == REG_SUCCESS){
 
       printf("opacity_step_start = %d\n", opacity_step_start);
-      printf("opacity_step_sop   = %d\n", opacity_step_stop);
+      printf("opacity_step_stop  = %d\n", opacity_step_stop);
       printf("temp               = %f\n", temp);
       printf("my_string          = %s\n", my_string);
+      printf("output_freq        = %d\n", output_freq);
 
       if(num_recvd_cmds > 0){
   
@@ -182,6 +204,7 @@ int main(){
 
 	      printf("Steering_pause returned error\n");
 	    }
+
 	    /* Reset loop to parse commands received following the
 	       resume/stop command that broke us out of pause */
 	    icmd = -1;
@@ -196,11 +219,16 @@ int main(){
 
 	    /* Deal with user-defined IO types etc. */
 
-	    if(recvd_cmds[icmd] == input_iotype){
+	    for(j=0; j<num_iotypes; j++){
 
-	      printf("Consume-input-file command received\n");
+	      if(recvd_cmds[icmd] == iotype_handle[j]){
+
+	        printf("Some IO command received\n");
+	        break;
+	      }
 	    }
-	    else{
+
+	    if(j==num_iotypes){
 
 	      printf("Received unrecognised steering command\n");
 	    }

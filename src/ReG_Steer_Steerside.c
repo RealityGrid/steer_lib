@@ -1169,28 +1169,6 @@ int Sim_index_from_handle(int SimHandle)
 
 /*----------------------------------------------------------*/
 
-int Param_index_from_handle(Param_table_type *table, int ParamHandle)
-{
-  int i;
-  int index = REG_PARAM_HANDLE_NOTSET;
-
-  /* Finds entry in a table of parameters that has handle == ParamHandle
-     Returns REG_PARAM_HANDLE_NOTSET if no match found */
-
-  for(i=0; i<table->max_entries; i++){
-
-    if(table->param[i].handle == ParamHandle){
-
-      index = i;
-      break;
-    }
-  }
-
-  return index;
-}
-
-/*----------------------------------------------------------*/
-
 int IOdef_index_from_handle(IOdef_table_type *table, int IOdefHandle)
 {
   int i;
@@ -1326,8 +1304,12 @@ int Get_param_number(int  sim_handle,
     count = 0;
     for(i=0; i<Sim_table.sim[isim].Params_table.max_entries; i++){
   
+      /* Check that entry is valid & is not for a library-generated param */
+
       if(Sim_table.sim[isim].Params_table.param[i].handle != 
-	 REG_PARAM_HANDLE_NOTSET){
+	 REG_PARAM_HANDLE_NOTSET &&
+	 !(Sim_table.sim[isim].Params_table.param[i].is_internal)){
+
 	if(Sim_table.sim[isim].Params_table.param[i].steerable == steerable){
 
 	  count++;
@@ -1378,8 +1360,11 @@ int Get_param_values(int    sim_handle,
 
     for(i=0; i<Sim_table.sim[isim].Params_table.max_entries; i++){
 
+      /* Check that entry is valid & is not for a library-generated param */
+
       if(Sim_table.sim[isim].Params_table.param[i].handle != 
-	 REG_PARAM_HANDLE_NOTSET){
+	 REG_PARAM_HANDLE_NOTSET &&
+	 !(Sim_table.sim[isim].Params_table.param[i].is_internal)){
 
 	if(Sim_table.sim[isim].Params_table.param[i].steerable == steerable){
 
@@ -1418,12 +1403,12 @@ int Set_param_values(int    sim_handle,
   /* Set the 'values' (held as strings) of the listed params */
 
   isim = Sim_index_from_handle(sim_handle);
-  if(isim != -1){
+  if(isim != REG_SIM_HANDLE_NOTSET){
 
     for(i=0; i<num_params; i++){
 
       if( (index = Param_index_from_handle(&(Sim_table.sim[isim].Params_table), 
-				 handles[i])) == -1){
+				 handles[i])) == REG_PARAM_HANDLE_NOTSET ){
 	return_status = REG_FAILURE;
 	break;
       }
@@ -1565,11 +1550,16 @@ int Get_iotype_number(int sim_handle,
 int Get_iotypes(int    sim_handle,
 		int    num_iotypes,
 		int   *handles,
-		char* *labels)
+		char* *labels,
+		int   *types,
+		int   *auto_io_supported,
+		int   *io_freqs)
 {
   int isim;
   int i;
   int count;
+  int iparam;
+  int nitem;
   int return_status = REG_SUCCESS;
 
   /* Get the first num_iotype IO defs out of the table.  Assumes
@@ -1589,6 +1579,40 @@ int Get_iotypes(int    sim_handle,
 
 	handles[count] = Sim_table.sim[isim].IOdef_table.io_def[i].handle;
 	strcpy(labels[count], Sim_table.sim[isim].IOdef_table.io_def[i].label);
+
+	types[count] = Sim_table.sim[isim].IOdef_table.io_def[i].direction;
+
+	auto_io_supported[count] = 
+	             Sim_table.sim[isim].IOdef_table.io_def[i].auto_io_support;
+
+	/* If this IO type supports automatic emission/consumption then get
+	   the current frequency at which this occurs */
+	if(auto_io_supported[count]){
+
+	  iparam = Param_index_from_handle(&(Sim_table.sim[isim].Params_table),
+		                           Sim_table.sim[isim].IOdef_table.io_def[i].freq_param_handle);
+
+	  if(iparam != REG_PARAM_HANDLE_NOTSET){
+
+	    nitem = sscanf(Sim_table.sim[isim].Params_table.param[iparam].value, 
+			   "%d", &(io_freqs[count]) );
+	    if(nitem != 1){
+
+#if DEBUG
+	      fprintf(stderr, "Get_iotypes: failed to retrieve freq value\n");
+#endif
+	      io_freqs[count] = 0;
+	      return_status = REG_FAILURE;
+	    }
+	  }
+	  else{
+#if DEBUG
+	    fprintf(stderr, "Get_iotypes: failed to match param handle\n");
+#endif
+	    io_freqs[count] = 0;
+	    return_status = REG_FAILURE;
+	  }
+	}
 	count++;
 
 	if(count == num_iotypes)break;
@@ -1596,6 +1620,67 @@ int Get_iotypes(int    sim_handle,
     }
   }
   else{
+    return_status = REG_FAILURE;
+  }
+
+  return return_status;
+}
+
+/*----------------------------------------------------------------------*/
+
+int Set_iotype_freq(int sim_handle,
+		    int num_iotypes,
+		    int *iotype_handles,
+		    int *freqs)
+{
+  int  isim;
+  int  i;
+  int  itype;
+  char **val_array;
+  char param_val[REG_MAX_STRING_LENGTH];
+  int  return_status = REG_SUCCESS;
+
+  /* A utility function that allows the steerer to update the emit/consume
+     frequency associated with a given IOtype - the frequency itself is
+     stored as a steerable parameter and therefore must be looked-up */
+
+  if((isim = Sim_index_from_handle(sim_handle)) != REG_SIM_HANDLE_NOTSET){
+
+    for(itype=0; itype<num_iotypes; itype++){
+
+      /* Find IOdef with matching handle */
+      for(i=0; i<Sim_table.sim[isim].IOdef_table.max_entries; i++){
+
+	if(Sim_table.sim[isim].IOdef_table.io_def[i].handle ==
+	   iotype_handles[itype]) break;
+      }
+
+      if(i==Sim_table.sim[isim].IOdef_table.max_entries){
+
+#if DEBUG
+	fprintf(stderr, "Set_iotype_freq: failed to match iotype handle\n");
+#endif
+	return_status = REG_FAILURE;
+	continue;
+      }
+
+      /* Identify which entry in the parameter table corresponds to the
+	 emit/consume frequency for this iodef */
+      sprintf(param_val, "%d", freqs[itype]);
+
+      *val_array = param_val;
+      return_status =  Set_param_values(sim_handle,
+					1,
+					&(Sim_table.sim[isim].IOdef_table.io_def[i].freq_param_handle),
+					val_array);
+      
+    }
+  }
+  else{
+
+#if DEBUG
+    printf("Set_iotype_freq: failed to match sim_handle\n");
+#endif
     return_status = REG_FAILURE;
   }
 

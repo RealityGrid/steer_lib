@@ -73,11 +73,6 @@ static int Generate_control_filename(int SimHandle, char* filename);
    matching handle found. */
 static int Sim_index_from_handle(int SimHandle);
 
-/* A look-up function - return the index of the parameter with handle
-   ParamHandle in the table pointed to by *table. Returns 
-   REG_PARAM_HANDLE_NOTSET if no matching handle found. */
-static int Param_index_from_handle(Param_table_type *table, int ParamHandle);
-
 /* A look-up function - return the index of the IOdef with handle 
    IOdefHandle in the table pointed to by *table.  Returns
    REG_IODEF_HANDLE_NOTSET if no matching handle found. */

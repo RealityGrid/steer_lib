@@ -135,11 +135,25 @@ extern PREFIX int Get_iotype_number(int sim_handle,
 
 /* Gets the first <num_iotypes> IO types associated with the simulation
    with hand <sim_handle>. Returns the handle and label associated with
-   each IO type. */
+   each IO type. Also returns whether IO type is IN,OUT or CHKPT, whether
+   it supports automatic emission/consumption and, if so, with what
+   frequency (in no. of steps between emission/consumption) it is 
+   currently doing so. */
 extern PREFIX int Get_iotypes(int    sim_handle,
 			      int    num_iotypes,
 			      int   *handles,
-			      char* *labels);
+			      char* *labels,
+			      int   *types,
+			      int   *auto_io_supported,
+			      int   *io_freqs);
+
+/* A utility function that allows the steerer to update the emit/consume
+   frequency associated with a given IOtype - the frequency itself is
+   stored as a steerable parameter and therefore must be looked-up. */
+extern PREFIX int Set_iotype_freq(int sim_handle,
+				  int num_iotypes,
+				  int *iotype_handles,
+				  int *freqs);
 
 /* Gets the number of supported commands registered by the simulation
    with handle <sim_handle>. */

@@ -47,7 +47,7 @@
 /* UNICORE_DEMO must be defined in order to produce a steering lib
    compatible with the UNICORE steering demonstration framework.
    Only consequence is that the status files emitted by the application
-   are all called 'steer_status' and not indexed - i.e. output will 
+   are all called 'steer_status' and not indexed - i.e. some output will 
    be lost if the status files are not consumed sufficiently rapidly */
 /* #define UNICORE_DEMO */
 
@@ -347,16 +347,31 @@ int Steering_finalize()
 
 int Register_IOTypes(int    NumTypes,
                      char* *IOLabel,
+		     int   *type,
+		     int   *support_auto_io,
+		     int  **IOFrequency,
                      int   *IOType)
 {
   int          i;
   int          current;
   int          new_size;
   IOdef_entry *dum_ptr;
+  char*        iofreq_label;
+  int          iofreq_strbl;
+  int          iofreq_type;
+  int          iparam;
+  int          return_status = REG_SUCCESS;
 
   /* Can only call this function if steering lib initialised */
 
   if (!ReG_SteeringInit) return REG_FAILURE;
+
+  /* Set variables required for registration of associated io
+     frequency as a steerable parameter */
+
+  iofreq_label = "IO_Frequency";
+  iofreq_strbl = TRUE;
+  iofreq_type  = REG_INT;
 
   /* IO types cannot be deleted so is safe to use num_registered to 
      get next free entry */
@@ -381,15 +396,50 @@ int Register_IOTypes(int    NumTypes,
       strcpy(IOTypes_table.io_def[current].filename, IOLabel[i]);
     }
 
-    /* 'direction' field not currently used
-    if( strstr(IOLabel[i], "INPUT") ){
+    /* Whether input or output (sample data) or a checkpoint */
 
-      IOTypes_table.io_def[current].direction = IN;
+    IOTypes_table.io_def[current].direction = type[i];
+
+    /* Whether automatic emission/consumption is supported */
+
+    IOTypes_table.io_def[current].auto_io_support = support_auto_io[i];
+
+    /* We only expect a frequency variable to register if the application
+       claims to support automatic emission/consumption */
+    if(support_auto_io[i] == TRUE){
+
+      Register_params(1,
+		      &iofreq_label,
+		      &iofreq_strbl,
+		      (void **)(&(IOFrequency[i])),
+		      &iofreq_type);
+
+      /* Store the handle given to this parameter - this line must
+	 immediately succeed the call to Register_params */
+
+      IOTypes_table.io_def[current].freq_param_handle = 
+	                                 Params_table.next_handle - 1;
+
+      /* Annotate the parameter table entry just created to flag that
+	 it is a parameter that is internal to the steering library */
+      iparam = Param_index_from_handle(&Params_table, 
+				       IOTypes_table.io_def[current].freq_param_handle);
+      if(iparam != REG_PARAM_HANDLE_NOTSET){
+	Params_table.param[iparam].is_internal = TRUE;
+      }
+      else{
+#if DEBUG
+	fprintf(stderr, "Register_IOTypes: failed to get handle for param\n");
+#endif
+	return_status = REG_FAILURE;
+      }
+      
     }
     else{
-      IOTypes_table.io_def[current].direction = OUT;
-    } 
-    */
+
+      IOTypes_table.io_def[current].freq_param_handle = 
+	                                 REG_PARAM_HANDLE_NOTSET;
+    }
 
     /* Create, store and return a handle for this IOType */
     IOTypes_table.io_def[current].handle = IOTypes_table.next_handle++;
@@ -423,7 +473,7 @@ int Register_IOTypes(int    NumTypes,
   /* Flag that the registered IO Types have changed */
   ReG_IOTypesChanged = TRUE;
 
-  return REG_SUCCESS;
+  return return_status;
 }
 
 /*----------------------------------------------------------------*/
@@ -487,6 +537,10 @@ int Register_params(int    NumParams,
 
     /* Store type */
     Params_table.param[current].type = ParamTypes[i];
+
+    /* This set to TRUE external to this routine if this param.
+       has been created by the steering library itself */
+    Params_table.param[current].is_internal = FALSE;
 
     /* Create handle for this parameter */
     Params_table.param[current].handle = Params_table.next_handle++;
@@ -826,6 +880,16 @@ int Emit_param_defs(){
 	fprintf(fp,"<Type>%d</Type>\n", Params_table.param[i].type);
 	fprintf(fp,"<Handle>%d</Handle>\n",Params_table.param[i].handle);
 	fprintf(fp,"<Value>%s</Value>\n", Params_table.param[i].value);
+
+	if(Params_table.param[i].is_internal == TRUE){
+
+	  fprintf(fp,"<Is_internal>TRUE</Is_internal>\n");
+	}
+	else{
+
+	  fprintf(fp,"<Is_internal>FALSE</Is_internal>\n");
+	}
+
 	fprintf(fp,"</Param>\n");
       }
     }
@@ -863,7 +927,7 @@ int Emit_IOType_defs(){
   fp = fopen(filename, "w");
   
   if(fp == NULL){
-    printf("Emit_IOType_defs: Failed to open file\n");
+    fprintf(stderr, "Emit_IOType_defs: Failed to open file\n");
     return REG_FAILURE;
   }
   
@@ -877,6 +941,43 @@ int Emit_IOType_defs(){
       fprintf(fp,"<IOType>\n");
       fprintf(fp,"<Label>%s</Label>\n", IOTypes_table.io_def[i].label);
       fprintf(fp,"<Handle>%d</Handle>\n", IOTypes_table.io_def[i].handle);
+
+      switch(IOTypes_table.io_def[i].direction){
+
+      case REG_IO_IN:
+        fprintf(fp,"<Direction>IN</Direction>\n");
+	break;
+
+      case REG_IO_OUT:
+        fprintf(fp,"<Direction>OUT</Direction>\n");
+	break;
+
+      case REG_IO_CHKPT:
+        fprintf(fp,"<Direction>CHECKPOINT</Direction>\n");
+	break;
+
+      default:
+#if DEBUG
+	fprintf(stderr, 
+		"Emit_IOType_defs: Unrecognised IOType direction\n");
+#endif
+	fclose(fp);
+	remove(filename);
+	return REG_FAILURE;
+      }
+
+      if(IOTypes_table.io_def[i].auto_io_support){
+
+	fprintf(fp,"<Support_auto_io>TRUE</Support_auto_io>\n");
+
+	fprintf(fp,"<Freq_handle>%d</Freq_handle>\n",
+		IOTypes_table.io_def[i].freq_param_handle);
+      }
+      else{
+
+	fprintf(fp,"<Support_auto_io>FALSE</Support_auto_io>\n");
+      }
+
       fprintf(fp,"</IOType>\n");
     }
   }
@@ -899,8 +1000,7 @@ int Consume_control(int    *NumCommands,
 		    char  **SteerParamLabels){
 
   FILE                *fp;
-  int                  i;
-  int                  j;
+  int                  i, j;
   int                  count;
   int                  return_status;
   char                 filename[REG_MAX_STRING_LENGTH];
@@ -1024,13 +1124,14 @@ int Consume_control(int    *NumCommands,
 	  break;
   	}
       }
+
       if(j == Params_table.max_entries){
   
   	printf("Consume_control: failed to match param handles\n");
   	return_status = REG_FAILURE;
       }
       else{
-  
+
   	/* Store char representation of new parameter value */
 	if( strlen(recvd_params.param[count].value) ){
 
@@ -1039,10 +1140,14 @@ int Consume_control(int    *NumCommands,
 	  /* Update value associated with pointer */
 	  Update_ptr_value(&(Params_table.param[j]));
 
-	  /* Return list of handles to inform caller of what's changed */
-	  SteerParamHandles[i] = recvd_params.param[count].handle;
-	  SteerParamLabels[i]  = Params_table.param[j].label;
-	  i++;
+	  /* Return list of handles to inform caller of what's changed 
+	     unless parameter is internal to the library */
+	  if( !(Params_table.param[j].is_internal) ){
+
+	    SteerParamHandles[i] = recvd_params.param[count].handle;
+	    SteerParamLabels[i]  = Params_table.param[j].label;
+	    i++;
+	  }
 	}
 	else{
 	  printf("Consume_control: empty parameter value field\n");
@@ -1051,6 +1156,10 @@ int Consume_control(int    *NumCommands,
 
       count++;
     }
+
+    /* Update the number of parameters received to allow for fact that
+       some may be internal and are not passed up to the calling routine */
+    *NumSteerParams = i;
   }
   else{
 
@@ -1228,7 +1337,8 @@ int Emit_status(int   SeqNum,
     if(!cmddone){
 
 #if DEBUG
-      printf("NumCommands = %d, ccount = %d\n", NumCommands, ccount);
+      fprintf(stderr, "Emit_status: NumCommands = %d, ccount = %d\n", 
+	      NumCommands, ccount);
 #endif
 
       for(i=0; i<REG_MAX_NUM_STR_CMDS; i++){

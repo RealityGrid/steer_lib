@@ -34,7 +34,9 @@
 
 #include "ReG_Steer_Steerside.h"
 
+#ifndef DEBUG
 #define DEBUG 0
+#endif
 
 static int Edit_parameter(int sim_handle);
 
@@ -51,6 +53,7 @@ int main(){
   int   num_cmds;
   int   commands[REG_MAX_NUM_STR_CMDS];
   char  user_char[2];
+  char  user_str[REG_MAX_STRING_LENGTH];
 
   int    num_params;
   int    param_handles[REG_INITIAL_NUM_PARAMS];
@@ -58,9 +61,14 @@ int main(){
   char  *param_vals[REG_INITIAL_NUM_PARAMS];
   char  *param_labels[REG_INITIAL_NUM_PARAMS];
   int    num_types;
+
   int    io_handles[REG_INITIAL_NUM_IOTYPES];
   char  *io_labels[REG_INITIAL_NUM_IOTYPES];
-  
+  int    io_types[REG_INITIAL_NUM_IOTYPES];
+  int    io_auto[REG_INITIAL_NUM_IOTYPES];
+  int    io_freqs[REG_INITIAL_NUM_IOTYPES];
+  int    new_freq;
+
   /* Initialise arrays for querying param values */
 
   for(i=0; i<REG_INITIAL_NUM_PARAMS; i++){
@@ -163,7 +171,10 @@ int main(){
 	Get_iotypes(sim_handle,
 		    num_types,
 		    io_handles,
-		    io_labels);
+		    io_labels,
+		    io_types,
+		    io_auto,
+		    io_freqs);
 
 	/* Another cludge - should ask user which IOtype they want to
 	   play with */
@@ -208,6 +219,56 @@ int main(){
       }
       break;
 
+    case 'f':
+      /* Edit IO consume/emit frequency */
+      Get_iotype_number(sim_handle,
+			&num_types);
+
+      if(num_types > 0){
+
+	/* Should really realloc if insufficient memory but this is a simple
+	   test code so don't bother here */
+	if(num_types > REG_INITIAL_NUM_IOTYPES){
+	  num_types = REG_INITIAL_NUM_IOTYPES;
+	}
+
+	Get_iotypes(sim_handle,
+		    num_types,
+		    io_handles,
+		    io_labels,
+		    io_types,
+		    io_auto,
+		    io_freqs);
+
+	for(i=0; i<num_types; i++){
+
+	  /* Just edit the first one we find... */
+	  if(io_auto[i] == TRUE){
+	    
+	    printf("Freq. of iotype %s = %d\n", io_labels[i], io_freqs[i]);
+	    printf("Enter new value: ");
+
+	    while(TRUE){
+	      scanf("%s", user_str);
+	      if(user_str[0] != '\n' && user_str[0] != ' ')break;
+	    }
+
+	    sscanf(user_str, "%d", &new_freq);
+
+	    printf("\nSetting frequency to %d\n", new_freq);
+
+	    Set_iotype_freq(sim_handle, 1, &(io_handles[i]), &new_freq);
+
+	    Emit_control(sim_handle,
+			 0,
+			 NULL);
+
+	    break;
+	  }
+	}
+      }
+      break;
+
     case 's':
       printf("Sending stop signal...\n");
       commands[0] = REG_STR_STOP;
@@ -219,6 +280,7 @@ int main(){
       break;		   
 
     case 'p':
+      /* Pause the application */
       printf("Pausing application...\n");
       commands[0] = REG_STR_PAUSE;
       Emit_control(sim_handle,
@@ -227,10 +289,12 @@ int main(){
       break;
 
     case 'q':
+      /* Quit command */
       done = TRUE;
       break;
 
     case 'r':
+      /* Resume a paused application */
       printf("Resuming application...\n");
       commands[0] = REG_STR_RESUME;
       Emit_control(sim_handle,

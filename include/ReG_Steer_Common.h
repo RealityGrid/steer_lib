@@ -15,6 +15,7 @@ typedef struct {
   void *ptr;
   char  value[REG_MAX_STRING_LENGTH];
   int   modified;
+  int   is_internal;
 
 } param_entry;
 
@@ -51,9 +52,13 @@ typedef struct {
   char  label[REG_MAX_STRING_LENGTH];
   char  filename[REG_MAX_STRING_LENGTH];
   int   handle;
-  /* Whether sample data is consumed or emitted
-  enum {IN = 0,
-  OUT} direction; */
+  /* Whether input, output or a checkpoint */
+  int   direction;
+  /* Whether this channel supports automatic emission/consumption
+     every frequency steps */
+  int   auto_io_support;
+  /* Handle of the (steerable) frequency in the parameter table */
+  int   freq_param_handle;
 
 } IOdef_entry;
 
@@ -87,10 +92,12 @@ typedef struct {
 	STRABLE,
 	TYPE,
 	HANDLE,
-	VALUE
+	VALUE,
+	IS_INTERNAL
   }                 field_type;
 
   Param_table_type *table;
+  int               read_status;
 
 } param_xml_struct;
 
@@ -104,6 +111,7 @@ typedef struct {
   }                    field_type;
 
   Supp_cmd_table_type *table;
+  int               read_status;
 
 } supp_cmds_xml_struct;
 
@@ -114,10 +122,13 @@ typedef struct {
   enum {IODEF_NOTSET = 0,
 	IODEF_LABEL,
 	IODEF_HANDLE,
-	IODEF_DIRN
+	IODEF_DIRN,
+	IODEF_AUTO_SUPP,
+	IODEF_FREQ_HANDLE
   } field_type;
 
   IOdef_table_type *table;
+  int               read_status;
 
 } iodef_xml_struct;
 
@@ -133,6 +144,7 @@ typedef struct {
   param_xml_struct     *param_struct;
   supp_cmds_xml_struct *cmd_struct;
   /*  Supp_cmd_table_type *table;*/
+  int                   read_status;
 
 } control_xml_struct;
 
@@ -149,6 +161,7 @@ typedef struct {
   param_xml_struct     *param_struct;
   supp_cmds_xml_struct *cmd_struct;
   /*  Supp_cmd_table_type *table;*/
+  int                   read_status;
 
 } status_xml_struct;
 
@@ -163,6 +176,11 @@ extern int Delete_file(char *filename);
 extern int Directory_valid(char *directory);
 
 extern int Next_free_param_index(Param_table_type *table);
+
+/* A look-up function - return the index of the parameter with handle
+   ParamHandle in the table pointed to by *table. Returns 
+   REG_PARAM_HANDLE_NOTSET if no matching handle found. */
+extern int Param_index_from_handle(Param_table_type *table, int ParamHandle);
 
 extern int Increment_param_registered(Param_table_type *table);
 

@@ -64,6 +64,12 @@
 		    minOccurs="1" maxOccurs="1" />
 		<xs:element name="Handle" type="xs:integer"
 		    minOccurs="1" maxOccurs="1" />
+		<xs:element name="Direction" type="xs:token"
+		    minOccurs="1" maxOccurs="1" />
+		<xs:element name="Support_auto_io" type="xs:token"
+		    minOccurs="1" maxOccurs="1" />
+		<xs:element name="Freq_handle" type="xs:integer"
+		    minOccurs="0" maxOccurs="1" />
 	</xs:sequence>
 </xs:complexType>
 
@@ -78,6 +84,8 @@
 		<xs:element name="Handle" type="xs:integer" 
 	            minOccurs="1" maxOccurs="1" />
 		<xs:element name="Value" type="xs:token" 
+	            minOccurs="0" maxOccurs="1" />	
+		<xs:element name="Is_internal" type="xs:token" 
 	            minOccurs="0" maxOccurs="1" />	
 	</xs:sequence>
 </xs:complexType>
