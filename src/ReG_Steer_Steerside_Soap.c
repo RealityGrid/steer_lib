@@ -82,8 +82,13 @@ int Sim_attach_soap(Sim_entry_type *sim, char *SimID)
   sprintf(sim->SGS_info.address, SimID);
 
 #if REG_DEBUG
-  fprintf(stderr, "Sim_attach_soap: Attach returned:\n>>%s<<\n",
-	  attach_response._result);
+  if(attach_response._result){
+    fprintf(stderr, "Sim_attach_soap: Attach returned:\n>>%s<<\n",
+	    attach_response._result);
+  }
+  else{
+    fprintf(stderr, "Sim_attach_soap: Attach returned null\n");
+  }
 #endif
 
   if(!attach_response._result || strstr(attach_response._result, 
@@ -248,8 +253,13 @@ struct msg_struct *Get_status_msg_soap(Sim_entry_type *sim)
   }
 
 #if REG_DEBUG
-  fprintf(stderr, "Get_status_msg_soap: response: %s\n", 
-	  getStatus_response._result);
+  if(getStatus_response._result){
+    fprintf(stderr, "Get_status_msg_soap: response: %s\n", 
+	    getStatus_response._result);
+  }
+  else{
+    fprintf(stderr, "Get_status_msg_soap: null response\n");
+  }
 #endif
 
   if(getStatus_response._result &&
