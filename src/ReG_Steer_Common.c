@@ -562,7 +562,13 @@ void endElement(void *userData, const char *name)
       }
       else{
 	/* Increment counter & allocate more memory if required */
-	Increment_cmd_registered(supp_cmds_struct->table);
+	if(supp_cmds_struct->read_status != REG_FAILURE){
+	  Increment_cmd_registered(supp_cmds_struct->table);
+	}
+	else{
+	  /* Unset the 'failed' flag as we've reached end of element */
+	  supp_cmds_struct->read_status = REG_SUCCESS;
+	}
       }
     }
     break;
@@ -584,7 +590,13 @@ void endElement(void *userData, const char *name)
         data->msg_type = MSG_NOTSET;
       }
       else{
-	Increment_iodef_registered(iodef_struct->table);
+	if(iodef_struct->read_status != REG_FAILURE){
+  	  Increment_iodef_registered(iodef_struct->table);
+	}
+	else{
+	  /* Unset the 'failed' flag as we've reached end of element */
+	  iodef_struct->read_status = REG_SUCCESS;
+	}
       }
     }
     break;
@@ -606,7 +618,13 @@ void endElement(void *userData, const char *name)
 	data->msg_type = MSG_NOTSET;
       }
       else{
-	Increment_param_registered(param_struct->table);
+	if(param_struct->read_status != REG_FAILURE){
+	  Increment_param_registered(param_struct->table);
+	}
+	else{
+	  /* Unset the 'failed' flag as we've reached end of element */
+	  param_struct->read_status = REG_SUCCESS;
+	}
       }
     }
     break;
@@ -626,7 +644,13 @@ void endElement(void *userData, const char *name)
 	else{
 
 	  /* Have reached end of param element */
-	  Increment_param_registered(status_struct->param_struct->table);
+	  if(status_struct->param_struct->read_status != REG_FAILURE){
+	    Increment_param_registered(status_struct->param_struct->table);
+	  }
+	  else{
+	    /* Unset the 'failed' flag as we've reached end of element */
+	    status_struct->param_struct->read_status = REG_SUCCESS;
+	  }
 	  status_struct->field_type = STAT_NOTSET;
 	}
       }
@@ -640,7 +664,13 @@ void endElement(void *userData, const char *name)
 	else{
 
 	  /* Have reached end of command element */
-	  Increment_cmd_registered(status_struct->cmd_struct->table);
+	  if(status_struct->cmd_struct->read_status != REG_FAILURE){
+	    Increment_cmd_registered(status_struct->cmd_struct->table);
+	  }
+	  else{
+	    /* Unset the 'failed' flag as we've reached end of element */
+	    status_struct->cmd_struct->read_status = REG_SUCCESS;
+	  }
 	  status_struct->field_type = STAT_NOTSET;
 	}
       }
@@ -672,7 +702,13 @@ void endElement(void *userData, const char *name)
 	else{
 
 	  /* Have reached end of an actual param element */
-	  Increment_param_registered(ctrl_struct->param_struct->table);
+	  if(ctrl_struct->param_struct->read_status != REG_FAILURE){
+	    Increment_param_registered(ctrl_struct->param_struct->table);
+	  }
+	  else{
+	    /* Unset the 'failed' flag as we've reached end of element */
+	    ctrl_struct->param_struct->read_status = REG_SUCCESS;
+	  }
 	  ctrl_struct->field_type = CTRL_NOTSET;
 	}
       }
@@ -686,7 +722,13 @@ void endElement(void *userData, const char *name)
 	else{
 
 	  /* Have reached end of command element */
-	  Increment_cmd_registered(ctrl_struct->cmd_struct->table);
+	  if(ctrl_struct->cmd_struct->read_status != REG_FAILURE){
+	    Increment_cmd_registered(ctrl_struct->cmd_struct->table);
+	  }
+	  else{
+	    /* Unset the 'failed' flag as we've reached end of element */
+	    ctrl_struct->cmd_struct->read_status = REG_SUCCESS;
+	  }
 	  ctrl_struct->field_type = CTRL_NOTSET;
 	}
       }
@@ -866,24 +908,42 @@ void Store_param_field_value(void *ptr, char *buf)
     break;
 
   case PARAM_LABEL:
-    strcpy(param_struct->table->param[index].label, buf);
+    if(strlen(buf)){
+
+      strcpy(param_struct->table->param[index].label, buf);
+    }
+    else{
+      param_struct->read_status = REG_FAILURE;
+    }
     break;
 
   case STRABLE:
     nitem = sscanf(buf , "%d", &(param_struct->table->param[index].steerable));
+
+    if(nitem != 1) param_struct->read_status = REG_FAILURE;
     break;
 
   case TYPE:
     nitem = sscanf(buf , "%d", &(param_struct->table->param[index].type) );
+
+    if(nitem != 1) param_struct->read_status = REG_FAILURE;
     break;
 
   case HANDLE:
     nitem = sscanf(buf , "%d", &(param_struct->table->param[index].handle) );
+
+    if(nitem != 1) param_struct->read_status = REG_FAILURE;
     break;
 
   case VALUE:
 
-    strcpy(param_struct->table->param[index].value, buf);
+    if(strlen(buf)){
+
+      strcpy(param_struct->table->param[index].value, buf);
+    }
+    else{
+      param_struct->read_status = REG_FAILURE;
+    }
     break;
 
   default:

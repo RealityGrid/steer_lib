@@ -901,6 +901,7 @@ int Consume_control(int    *NumCommands,
   FILE                *fp;
   int                  i;
   int                  j;
+  int                  count;
   int                  return_status;
   char                 filename[REG_MAX_STRING_LENGTH];
 
@@ -1012,12 +1013,13 @@ int Consume_control(int    *NumCommands,
     printf("Consume_control: received %d params\n", *NumSteerParams);
 #endif
 
-    for(i=0; i<(*NumSteerParams); i++){
+    count = 0;
+    i = 0;
+    while(count < (*NumSteerParams)){
     
-      /* If using internal table... */
       for(j=0; j<Params_table.max_entries; j++){
   
-  	if(Params_table.param[j].handle == recvd_params.param[i].handle){
+  	if(Params_table.param[j].handle == recvd_params.param[count].handle){
 	  
 	  break;
   	}
@@ -1030,15 +1032,24 @@ int Consume_control(int    *NumCommands,
       else{
   
   	/* Store char representation of new parameter value */
-  	strcpy(Params_table.param[j].value, recvd_params.param[i].value);
+	if( strlen(recvd_params.param[count].value) ){
+
+	  strcpy(Params_table.param[j].value, recvd_params.param[count].value);
   
-  	/* Update value associated with pointer */
-  	Update_ptr_value(&(Params_table.param[j]));
+	  /* Update value associated with pointer */
+	  Update_ptr_value(&(Params_table.param[j]));
+
+	  /* Return list of handles to inform caller of what's changed */
+	  SteerParamHandles[i] = recvd_params.param[count].handle;
+	  SteerParamLabels[i]  = Params_table.param[j].label;
+	  i++;
+	}
+	else{
+	  printf("Consume_control: empty parameter value field\n");
+	}
       }
 
-      /* Return list of handles to inform caller of what's changed */
-      SteerParamHandles[i] = recvd_params.param[i].handle;
-      SteerParamLabels[i]  = Params_table.param[j].label;
+      count++;
     }
   }
   else{
