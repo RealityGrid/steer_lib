@@ -1694,7 +1694,7 @@ soap_gethost(struct soap *soap, const char *addr, struct in_addr *inaddr)
 #if defined(__GLIBC__)
   if (gethostbyname_r(addr, &hostent, soap->buf, SOAP_BUFLEN, &host, &soap->errnum) < 0)
     host = NULL;
-#elif defined(HAVE_GETHOSTBYNAME_R)
+#elif defined(HAVE_GETHOSTBYNAME_R) && !defined(TRU64)
   host = gethostbyname_r(addr, &hostent, soap->buf, SOAP_BUFLEN, &soap->errnum);
 #else
   if (!(host = gethostbyname(addr)))
@@ -1790,7 +1790,7 @@ tcp_connect(struct soap *soap, const char *endpoint, const char *host, int port)
       { struct timeval timeout;
 #if defined(SOCKLEN_T)
         SOCKLEN_T n = sizeof(struct sockaddr_in);
-#elif defined(__socklen_t_defined) || defined(_SOCKLEN_T) || defined(CYGWIN)
+#elif defined(__socklen_t_defined) || defined(_SOCKLEN_T) || defined(CYGWIN) || defined(_AIX51)
         socklen_t n = sizeof(struct sockaddr_in);
 #elif defined(WIN32) || defined(__APPLE__) || defined(HP_UX) || defined(SUN_OS) || defined(OPENSERVER) || defined(TRU64)
         int n = sizeof(struct sockaddr_in);
@@ -1918,7 +1918,7 @@ tcp_accept(struct soap *soap, int s, struct sockaddr *a, int *n)
 {
 #if defined(SOCKLEN_T)
   return accept(s, a, (SOCKLEN_T*)n);
-#elif defined(__socklen_t_defined) || defined(_SOCKLEN_T) || defined(CYGWIN)
+#elif defined(__socklen_t_defined) || defined(_SOCKLEN_T) || defined(CYGWIN) || defined(_AIX51)
   return accept(s, a, (socklen_t*)n);
 #elif defined(WIN32) || defined(__APPLE__) || defined(HP_UX) || defined(SUN_OS) || defined(OPENSERVER) || defined(TRU64)
   return accept(s, a, n);
