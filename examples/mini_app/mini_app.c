@@ -373,7 +373,7 @@ int main(){
 
 		    /* Construct header for this chunk to allow the recipient 
 		       of this data to reconstruct the data set */
-                    status = Make_chunk_header(header, NX, NY, NZ, 
+                    status = Make_chunk_header(header, iohandle, NX, NY, NZ, 
 					       0, 0, 0, NX, NY, NZ);
 
 		    printf("Second slice...\n");
