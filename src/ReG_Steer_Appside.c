@@ -113,8 +113,20 @@ int Steering_initialize(int  NumSupportedCmds,
   pchar = getenv("REG_STEER_HOME");
 
   if(pchar){
-    sprintf(ReG_Steer_Schema_Locn, "%s/xml_schema/reg_steer_comm.xsd",
-	                           pchar);
+
+    /* Check that path ends in '/' - if not then add one */
+
+    i = strlen(pchar);
+    if( pchar[i-1] != '/' ){
+
+      sprintf(ReG_Steer_Schema_Locn, "%s/xml_schema/reg_steer_comm.xsd",
+                                     pchar);
+    }
+    else{
+
+      sprintf(ReG_Steer_Schema_Locn, "%sxml_schema/reg_steer_comm.xsd",
+                                     pchar);
+    }
   }
   else{
 
@@ -127,7 +139,18 @@ int Steering_initialize(int  NumSupportedCmds,
   pchar = getenv("REG_STEER_DIRECTORY");
 
   if(pchar){
-    strcpy(Steerer_connection.file_root, pchar);
+
+    /* Check that path ends in '/' - if not then add one */
+
+    i = strlen(pchar);
+    if( pchar[i-1] != '/' ){
+
+      sprintf(Steerer_connection.file_root, "%s/", pchar);
+    }
+    else{
+
+      strcpy(Steerer_connection.file_root, pchar);
+    }
 
     if(Directory_valid(Steerer_connection.file_root) != REG_SUCCESS){
 

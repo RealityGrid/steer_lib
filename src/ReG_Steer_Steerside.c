@@ -61,7 +61,7 @@ static struct {
 
 static struct {
 
-  char buf[MAX_MSG_SIZE];
+  char buf[REG_MAX_MSG_SIZE];
   int  pipe_to_proxy;
   int  pipe_from_proxy;
   int  available;
@@ -86,8 +86,19 @@ int Steerer_initialize()
   pchar = getenv("REG_STEER_HOME");
 
   if(pchar){
-    sprintf(ReG_Steer_Schema_Locn, "%s/xml_schema/reg_steer_comm.xsd",
-	                           pchar);
+    /* Check that path ends in '/' - if not then add one */
+
+    i = strlen(pchar);
+    if( pchar[i-1] != '/' ){
+
+      sprintf(ReG_Steer_Schema_Locn, "%s/xml_schema/reg_steer_comm.xsd",
+                                     pchar);
+    }
+    else{
+
+      sprintf(ReG_Steer_Schema_Locn, "%sxml_schema/reg_steer_comm.xsd",
+                                     pchar);
+    }
   }
   else{
 
@@ -236,21 +247,11 @@ int Sim_attach(char *SimID,
 	       int  *SimHandle)
 {
   int                  current_sim;
-  int                  i;
-  int                  j;
+  int                  i, j;
   int                  new_size;
   void                *dum_ptr;
-  FILE                *fp1;
-  FILE                *fp2;
-  char                *pchar;
   char                 file_root[REG_MAX_STRING_LENGTH];
-  char                 filename[REG_MAX_STRING_LENGTH];
   char                 sys_cmd[REG_MAX_STRING_LENGTH];
-  char                 buf[BUFSIZ];
-  XML_Parser           parser = XML_ParserCreate(NULL);
-  int                  done;
-  user_data_type       User_data;
-  supp_cmds_xml_struct cmds_xml_struct;
   int                  return_status = REG_SUCCESS;
 
   /* Get next free entry in simulation table (allocates more memory if
@@ -263,6 +264,9 @@ int Sim_attach(char *SimID,
   }
 
   /* Initialise table entry for this simulation... */
+
+  Sim_table.sim[current_sim].pipe_to_proxy   = REG_PIPE_UNSET;
+  Sim_table.sim[current_sim].pipe_from_proxy = REG_PIPE_UNSET;
 
   /* ...registered parameters */
 
@@ -335,129 +339,29 @@ int Sim_attach(char *SimID,
 
   if( (strcmp(SimID, "DEFAULT") != 0) && Proxy.available){
 
-    return_status = Create_proxy(&(Sim_table.sim[current_sim].pipe_to_proxy),
-			       &(Sim_table.sim[current_sim].pipe_from_proxy));
-
-    if(return_status != REG_SUCCESS){
-
-      fprintf(stderr, "Sim_attach: failed to launch proxy\n");
-
-      free(Sim_table.sim[current_sim].Params_table.param);
-      free(Sim_table.sim[current_sim].Cmds_table.cmd);
-      free(Sim_table.sim[current_sim].IOdef_table.io_def);
-
-      return REG_FAILURE;
-    }
-
-    Send_proxy_message(Sim_table.sim[current_sim].pipe_to_proxy,
-		       "ATTACH");
-
-    Send_proxy_message(Sim_table.sim[current_sim].pipe_to_proxy,
-		       SimID);
-    /* ARPDBG - work in progress */
+    /* Use a proxy to interact with the 'grid' */
+    return_status = Sim_attach_proxy(&(Sim_table.sim[current_sim]), SimID);
   }
   else{
 
-    /* Long-term - will need access to info on where sim. is
-       running in order to setup info about how to access it */
+    /* Have no proxy so have no 'grid' - use local file system */
+    return_status = Sim_attach_local(&(Sim_table.sim[current_sim]), SimID);
 
-    pchar = getenv("REG_STEER_DIRECTORY");
-
-    if(pchar){
-      strcpy(file_root, pchar);
-
-      if(Directory_valid(file_root) != REG_SUCCESS){
-
-	fprintf(stderr, "Steerer_initialize: invalid dir for "
-		"steering messages: %s\n",
-		file_root);
-
-	free(Sim_table.sim[current_sim].Params_table.param);
-	free(Sim_table.sim[current_sim].Cmds_table.cmd);
-	free(Sim_table.sim[current_sim].IOdef_table.io_def);
-
-	return REG_FAILURE;
-      }
-      else{
-
-        fprintf(stderr, "Using following dir for steering messages: %s\n", 
-		file_root);
-      }
-    }
-    else{
-      fprintf(stderr, "Sim_attach: failed to get scratch directory\n");
-    
-      free(Sim_table.sim[current_sim].Params_table.param);
-      free(Sim_table.sim[current_sim].Cmds_table.cmd);
-      free(Sim_table.sim[current_sim].IOdef_table.io_def);
-      return REG_FAILURE;
+    /* Read the commands that the application supports */
+    if(return_status == REG_SUCCESS){
+      return_status = Consume_supp_cmds_local(&(Sim_table.sim[current_sim]));
     }
   }
-  /* Delete any old communication files written by an app 
-     in this location */
 
-  sprintf(filename, "%s%s", file_root, 
-	  APP_TO_STR_FILENAME);
-  Remove_files(filename);
 
-  /* Initialise XML parser */
+  if(return_status == REG_SUCCESS){
 
-  XML_SetUserData(parser, &User_data);
-  XML_SetElementHandler(parser, startElement, endElement);
-  XML_SetCharacterDataHandler(parser, dataHandler);
-
-  /* Set ptr to the table to fill */
-
-  cmds_xml_struct.field_type = CMD_NOTSET;
-  cmds_xml_struct.table      = &(Sim_table.sim[current_sim].Cmds_table);
-  User_data.gen_xml_struct = (void *) (&(cmds_xml_struct));
-
-  /* Check for presence of lock file indicating sim is steerable */
-
-  sprintf(filename, "%s%s", file_root, APP_STEERABLE_FILENAME);
-  fp1 = fopen(filename, "r");
-
-  /* Check for absence of lock file indicating that sim is
-     already being steered */
-
-  sprintf(filename, "%s%s", file_root, STR_CONNECTED_FILENAME);
-  fp2 = fopen(filename, "r");
-
-  if(fp1 != NULL && fp2 == NULL){
-
-    /* Read supported commands */
-
-    do {
-
-      size_t len = fread(buf, 1, sizeof(buf), fp1);
-      done = len < sizeof(buf);
-
-      if (!XML_Parse(parser, buf, len, done)) {
-
-	fprintf(stderr, "%s at line %d\n",
-		XML_ErrorString(XML_GetErrorCode(parser)),
-		XML_GetCurrentLineNumber(parser));
-	return_status = REG_FAILURE;
-	break;
-      }
-    } while (!done);
-
-    fclose(fp1);
-
-    if(return_status == REG_FAILURE){
-
-      free(Sim_table.sim[current_sim].Params_table.param);
-      free(Sim_table.sim[current_sim].Cmds_table.cmd);
-      free(Sim_table.sim[current_sim].IOdef_table.io_def);
-      return return_status;
-    }
+    /* Generate handle that is returned */
 
     Sim_table.sim[current_sim].handle = current_sim;
     *SimHandle = current_sim;
     strcpy(Sim_table.sim[current_sim].file_root, file_root);
     Sim_table.num_registered++;
-
-    XML_ParserFree(parser);
 
     /* If simulation supports the pause command then it must also
        support the resume command so add this to the list */
@@ -503,16 +407,6 @@ int Sim_attach(char *SimID,
 
     sprintf(sys_cmd, "touch %s%s", file_root, STR_CONNECTED_FILENAME);
     system(sys_cmd);
-  }
-  else{
-
-    if( fp2 != NULL){
-      fclose(fp2);
-    }
-
-    XML_ParserFree(parser);
-
-    return REG_FAILURE;
   }
 
   return REG_SUCCESS;
@@ -664,7 +558,8 @@ int Consume_param_defs(int SimHandle)
 
   for(i=0; i<REG_INITIAL_NUM_PARAMS; i++){
 
-    param_table.param[i].handle = REG_PARAM_HANDLE_NOTSET;
+    param_table.param[i].handle   = REG_PARAM_HANDLE_NOTSET;
+    param_table.param[i].modified = FALSE;
   }
 
   /* Initialise XML parser */
@@ -1931,4 +1826,202 @@ int Get_supp_cmds(int  sim_handle,
   }
 
   return return_status;
+}
+
+/*-------------------------------------------------------------------*/
+
+int Sim_attach_local(Sim_entry_type *sim, char *SimID)
+{
+  int   i;
+  char *pchar;
+  char  file_root[REG_MAX_STRING_LENGTH];
+  char  filename[REG_MAX_STRING_LENGTH];
+
+  pchar = getenv("REG_STEER_DIRECTORY");
+
+  if(pchar){
+
+    /* Check that path ends in '/' - if not then add one */
+
+    i = strlen(pchar);
+    if( pchar[i-1] != '/' ){
+
+      sprintf(file_root, "%s/", pchar);
+    }
+    else{
+
+      strcpy(file_root, pchar);
+    }
+
+    if(Directory_valid(file_root) != REG_SUCCESS){
+
+      fprintf(stderr, "Steerer_initialize: invalid dir for "
+	      "steering messages: %s\n",
+	      file_root);
+
+      free(sim->Params_table.param);
+      free(sim->Cmds_table.cmd);
+      free(sim->IOdef_table.io_def);
+
+      return REG_FAILURE;
+    }
+    else{
+
+      fprintf(stderr, "Using following dir for steering messages: %s\n", 
+	      file_root);
+    }
+  }
+  else{
+    fprintf(stderr, "Sim_attach: failed to get scratch directory\n");
+    
+    free(sim->Params_table.param);
+    free(sim->Cmds_table.cmd);
+    free(sim->IOdef_table.io_def);
+    return REG_FAILURE;
+  }
+
+  /* Delete any old communication files written by an app 
+     in this location */
+
+  sprintf(filename, "%s%s", file_root, 
+	  APP_TO_STR_FILENAME);
+
+  Remove_files(filename);
+
+  return REG_SUCCESS;
+}
+
+/*-------------------------------------------------------------------*/
+
+int Sim_attach_proxy(Sim_entry_type *sim, char *SimID)
+{
+  char  buf[REG_MAX_MSG_SIZE];
+  int   nbytes;
+  int   return_status;
+
+  /* Create a proxy for the simulation and use this to attach to it */
+
+  return_status = Create_proxy(&(sim->pipe_to_proxy),
+			       &(sim->pipe_from_proxy));
+
+  if(return_status != REG_SUCCESS){
+
+    fprintf(stderr, "Sim_attach_proxy: failed to launch proxy\n");
+    
+    free(sim->Params_table.param);
+    free(sim->Cmds_table.cmd);
+    free(sim->IOdef_table.io_def);
+
+    return REG_FAILURE;
+  }
+
+  /* Send 'attach' instruction */
+  Send_proxy_message(sim->pipe_to_proxy, "ATTACH");
+
+  /* Send GSH of grid-service to attach to */
+  Send_proxy_message(sim->pipe_to_proxy, SimID);
+
+  /* Check success */
+  Get_proxy_message(sim->pipe_from_proxy, buf, &nbytes);
+
+  if(strncmp(buf, "STATUS_OK", nbytes) != 0){
+
+    fprintf(stderr, "Sim_attach_proxy: proxy failed to attach to application\n");
+
+    free(sim->Params_table.param);
+    free(sim->Cmds_table.cmd);
+    free(sim->IOdef_table.io_def);
+
+    /* Signal proxy to stop */
+    Send_proxy_message(sim->pipe_to_proxy, "QUIT");
+
+    return REG_FAILURE;      
+  }
+
+  /* If OK, then get list of supported commands back from proxy */
+  Get_proxy_message(sim->pipe_from_proxy, buf, &nbytes);
+
+
+  return REG_SUCCESS;
+}
+
+/*-------------------------------------------------------------------*/
+
+int Consume_supp_cmds_local(Sim_entry_type *sim)
+{
+  FILE                *fp1;
+  FILE                *fp2;
+  char                 buf[REG_MAX_MSG_SIZE];
+  char                 file_root[REG_MAX_STRING_LENGTH];
+  char                 filename[REG_MAX_STRING_LENGTH];
+  XML_Parser           parser = XML_ParserCreate(NULL);
+  int                  done;
+  user_data_type       User_data;
+  supp_cmds_xml_struct cmds_xml_struct;
+  int                  return_status = REG_SUCCESS;
+
+ /* Initialise XML parser */
+
+  XML_SetUserData(parser, &User_data);
+  XML_SetElementHandler(parser, startElement, endElement);
+  XML_SetCharacterDataHandler(parser, dataHandler);
+
+  /* Set ptr to the table to fill */
+
+  cmds_xml_struct.field_type = CMD_NOTSET;
+  cmds_xml_struct.table      = &(sim->Cmds_table);
+  User_data.gen_xml_struct = (void *) (&(cmds_xml_struct));
+
+  /* Check for presence of lock file indicating sim is steerable */
+
+  sprintf(filename, "%s%s", file_root, APP_STEERABLE_FILENAME);
+  fp1 = fopen(filename, "r");
+
+  /* Check for absence of lock file indicating that sim is
+     already being steered */
+
+  sprintf(filename, "%s%s", file_root, STR_CONNECTED_FILENAME);
+  fp2 = fopen(filename, "r");
+
+  if(fp1 != NULL && fp2 == NULL){
+
+    /* Read supported commands */
+
+    do {
+
+      size_t len = fread(buf, 1, sizeof(buf), fp1);
+      done = len < sizeof(buf);
+
+      if (!XML_Parse(parser, buf, len, done)) {
+
+	fprintf(stderr, "%s at line %d\n",
+		XML_ErrorString(XML_GetErrorCode(parser)),
+		XML_GetCurrentLineNumber(parser));
+	return_status = REG_FAILURE;
+	break;
+      }
+    } while (!done);
+
+    fclose(fp1);
+
+    if(return_status == REG_FAILURE){
+
+      free(sim->Params_table.param);
+      free(sim->Cmds_table.cmd);
+      free(sim->IOdef_table.io_def);
+      return return_status;
+    }
+
+    XML_ParserFree(parser);
+  }
+  else{
+
+    if(fp2) fclose(fp2);
+
+    XML_ParserFree(parser);
+
+    return REG_FAILURE;
+  }
+
+  return REG_SUCCESS;
 }

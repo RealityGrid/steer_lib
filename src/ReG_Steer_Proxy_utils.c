@@ -53,7 +53,7 @@ int Create_proxy(int *to_proxy, int *from_proxy)
   int   pipe_from_proxy[2];
 
   int   nbytes;
-  char  msg[MAX_MSG_SIZE];
+  char  msg[REG_MAX_MSG_SIZE];
 
   char *registry_gsh;
   char  registry_arg[REG_MAX_STRING_LENGTH];
@@ -172,20 +172,17 @@ int Destroy_proxy(int pipe_to_proxy)
 
 int Send_proxy_message(int pipe_to_proxy, const char *buf)
 {
-  int  nbytes;
-  int  buf_len;
-  /*  char len[HEADER_BYTES]; */
+  int   nbytes;
+  int   buf_len;
   char *len;
 
   /* Send how many bytes... */
   buf_len = strlen(buf);
   len = (char *) &buf_len;
 
-  /*  sprintf(len, "%d", buf_len); */
- 
-  nbytes = write(pipe_to_proxy, len, HEADER_BYTES);
+  nbytes = write(pipe_to_proxy, len, REG_HEADER_BYTES);
 
-  if(nbytes != HEADER_BYTES){
+  if(nbytes != REG_HEADER_BYTES){
 
     fprintf(stderr, "Send_proxy_message: error writing to pipe\n");
     return REG_FAILURE;
@@ -221,7 +218,7 @@ int Get_proxy_message(int pipe_from_proxy, char *buf, int *nbytes)
   }
 
   /* Block until message received */
-  while( (*nbytes = read(pipe_from_proxy, buf, HEADER_BYTES)) == 0){
+  while( (*nbytes = read(pipe_from_proxy, buf, REG_HEADER_BYTES)) == 0){
 
     sleep(1);
     fprintf(stderr, ".");
@@ -236,23 +233,19 @@ int Get_proxy_message(int pipe_from_proxy, char *buf, int *nbytes)
   int_ptr = (int *)buf;
   *nbytes = *int_ptr;
 
-  fprintf(stderr, "Get_proxy_message: Read nbytes = %d\n", *nbytes);
-
-  if(*nbytes > MAX_MSG_SIZE){
+  if(*nbytes > REG_MAX_MSG_SIZE){
 
     fprintf(stderr, "Get_proxy_message: WARNING: truncating message\n");
  
-    read(pipe_from_proxy, buf, MAX_MSG_SIZE);
+    read(pipe_from_proxy, buf, REG_MAX_MSG_SIZE);
 
     /* Throw-away rest of message */
-    for(i=0; i<(*nbytes - MAX_MSG_SIZE); i++){
+    for(i=0; i<(*nbytes - REG_MAX_MSG_SIZE); i++){
 
       read(pipe_from_proxy, &rubbish, 1);
     }
   }
   else{
-
-    fprintf(stderr, "Get_proxy_message: reading %d bytes...\n", *nbytes);
 
     if( (num_recvd = read(pipe_from_proxy, buf, *nbytes)) != *nbytes ){
 
