@@ -1718,6 +1718,7 @@ tcp_connect(struct soap *soap, const char *endpoint, const char *host, int port)
   int set = 1;
   int i;
   struct sockaddr_in local_sockaddr;
+/*
 #if defined(SOCKLEN_T)
   SOCKLEN_T n = sizeof(struct sockaddr_in);
 #elif defined(__socklen_t_defined) || defined(_SOCKLEN_T) || defined(CYGWIN) || defined(_AIX51)
@@ -1727,7 +1728,7 @@ tcp_connect(struct soap *soap, const char *endpoint, const char *host, int port)
 #else
   size_t n = sizeof(struct sockaddr_in);
 #endif
-
+*/
   if (tcp_init(soap))
   { soap_set_sender_error(soap, tcp_error(soap), "TCP initialization failed in tcp_connect()", SOAP_TCP_ERROR);
     return -1;

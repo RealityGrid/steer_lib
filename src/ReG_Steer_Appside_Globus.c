@@ -740,18 +740,20 @@ int Consume_data_read_globus(const int		index,
   globus_result_t  result;
   globus_size_t    nbytes;
 
+#if REG_DEBUG
+
 #ifdef USE_REG_TIMING
   double time0, time1;
 #endif
 
-#if REG_DEBUG
   fprintf(stderr, "Consume_data_read_globus: calling globus_io_read "
           "for %d bytes\n", (int)num_bytes_to_read);
-#endif
 
 #ifdef USE_REG_TIMING
   Get_current_time_seconds(&time0);
 #endif
+
+#endif /* REG_DEBUG */
 
   if(IOTypes_table.io_def[index].use_xdr ||
      IOTypes_table.io_def[index].convert_array_order == TRUE){
