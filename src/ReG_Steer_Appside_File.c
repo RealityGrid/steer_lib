@@ -481,7 +481,7 @@ int Get_file_list(char *fileroot,
 		  int  *num,
 		  char ***names)
 {
-  char *redirection = " &> ReG_files.tmp";
+  char *redirection = " > ReG_files.tmp";
   char *pchar;
   char  bufline[REG_MAX_STRING_LENGTH];
   int   len;
@@ -512,7 +512,7 @@ int Get_file_list(char *fileroot,
   if( (fp = fopen("ReG_files.tmp", "r")) ){
 
     while(fgets(bufline, REG_MAX_STRING_LENGTH, fp)){
-      if(strstr(bufline, "ls:") != bufline)(*num)++;
+      (*num)++;
     }
 
     if(*num == 0){
