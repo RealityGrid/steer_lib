@@ -61,7 +61,7 @@ Sim_table_type Sim_table;
 Proxy_table_type Proxy;
 
 /* Whether we have the option of steering via SOAP and SGS */
-int SGS_available = TRUE;
+int SOAP_available = TRUE;
 
 /*----- Routines to be used by the steering component ------*/
 
@@ -148,7 +148,7 @@ int Steerer_initialize()
 
   if(Steerer_initialize_soap() != REG_SUCCESS){
 
-    SGS_available = FALSE;
+    SOAP_available = FALSE;
   }
 
 
@@ -209,7 +209,7 @@ int Get_sim_list(int   *nSims,
 
   if(Proxy.available != TRUE){
 
-    if(SGS_available){
+    if(SOAP_available){
 
       /* ARPDBG - ultimately we will contact a registry here
 	 and ask it for the location of any SGSs it knows of */
@@ -225,8 +225,7 @@ int Get_sim_list(int   *nSims,
 	fprintf(stderr, "Get_sim_list: REG_SGS_ADDRESS environment variable "
 	      "is not set\n");
 	*nSims = 0;
-        SGS_available = FALSE;
-	return REG_FAILURE;
+	sprintf(simName[0], " ");
       }
 
       return REG_SUCCESS;
@@ -463,9 +462,9 @@ int Sim_attach(char *SimID,
 
     return_status = REG_FAILURE;
 
-    if(SGS_available == TRUE){
-
-      /* Use SOAP (and Steering Grid Service) */
+    if(SOAP_available){
+      /* Try to use SOAP (and Steering Grid Service) - if this fails
+	 then SimID isn't a valid GSH so we revert to file-based steering */
 #if REG_DEBUG
       fprintf(stderr, "Sim_attach: calling Sim_attach_soap, "
 	      "current_sim = %d\n", current_sim);
@@ -1422,6 +1421,28 @@ int Emit_resume_cmd(int SimHandle)
 			1,
 			SysCommands,
 			NULL);
+  }
+}
+
+/*----------------------------------------------------------*/
+
+int Emit_restart_cmd(int SimHandle, char *chkGSH)
+{
+  int index;
+
+  /* Check that handle is valid */
+  if(SimHandle == REG_SIM_HANDLE_NOTSET) return REG_SUCCESS;
+
+  if( (index = Sim_index_from_handle(SimHandle)) == -1){
+
+    return REG_FAILURE;
+  }
+
+  if(Sim_table.sim[index].SGS_info.active){
+    return Send_restart_msg_soap(&(Sim_table.sim[index]), chkGSH);
+  }
+  else{
+    return REG_FAILURE;
   }
 }
 

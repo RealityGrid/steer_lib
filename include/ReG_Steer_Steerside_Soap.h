@@ -66,6 +66,8 @@ struct msg_struct *Get_status_msg_soap(Sim_entry_type *sim);
 
 struct msg_struct *Get_service_data(Sim_entry_type *sim, char *sde_name);
 
+int Send_restart_msg_soap(Sim_entry_type *sim, char *chkGSH);
+
 /* Clean-up soap-specific structures */
 int Steerer_finalize_soap();
 

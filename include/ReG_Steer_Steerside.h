@@ -146,6 +146,8 @@ extern PREFIX int Emit_detach_cmd(int SimHandle);
 extern PREFIX int Emit_stop_cmd(int SimHandle);
 extern PREFIX int Emit_pause_cmd(int SimHandle);
 extern PREFIX int Emit_resume_cmd(int SimHandle);
+/* This one is SGS-specific as it uses the Checkpoint Tree */
+extern PREFIX int Emit_restart_cmd(int SimHandle, char *chkGSH);
 
 /* Initialise the internal tables etc. used by the steering library
    on the steering application sied.  Must be called before all other

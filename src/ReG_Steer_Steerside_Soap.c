@@ -459,6 +459,30 @@ int Send_stop_msg_soap(Sim_entry_type *sim)
 
 /*-------------------------------------------------------------------------*/
 
+int Send_restart_msg_soap(Sim_entry_type *sim, char *chkGSH)
+{
+  struct tns__RestartResponse  restart_response;
+
+  restart_response._result = NULL;
+  if(soap_call_tns__Restart(&soap, sim->SGS_info.address, 
+			   "", chkGSH, &restart_response )){
+
+    fprintf(stderr, "Send_restart_msg_soap: Restart failed:\n");
+    soap_print_fault(&soap, stderr);
+
+    return REG_FAILURE;
+  }
+
+  if(restart_response._result && 
+     !strstr(restart_response._result, REG_SGS_ERROR)){
+     return REG_SUCCESS;
+  }
+
+  return REG_FAILURE;
+}
+
+/*-------------------------------------------------------------------------*/
+
 int Steerer_finalize_soap()
 {
   /* Release memory */
