@@ -60,6 +60,49 @@ public class ReG_SteerAppside implements ReG_SteerConstants {
     return iotype_handle.value();
   }
 
+  public void enableIOTypesOnRegistration(boolean b) throws ReG_SteerException {
+    if(b)
+      status = ReG_Steer.Enable_IOTypes_on_registration(REG_TRUE);
+    else
+      status = ReG_Steer.Enable_IOTypes_on_registration(REG_FALSE);
+
+    if(status != REG_SUCCESS) {
+      throw new ReG_SteerException("IOTypesOnRegistration failed", status);
+    }
+  }
+
+  public void enableIOType(int iot) throws ReG_SteerException {
+    status = ReG_Steer.Enable_IOType(iot);
+
+    if(status != REG_SUCCESS) {
+      throw new ReG_SteerException("Could not enable IO Type", status);
+    }
+  }
+
+  public void disableIOType(int iot) throws ReG_SteerException {
+    status = ReG_Steer.Disable_IOType(iot);
+
+    if(status != REG_SUCCESS) {
+      throw new ReG_SteerException("Could not disable IO Type", status);
+    }
+  }
+
+  public void enableIOTypeAcks(int iot) throws ReG_SteerException {
+    status = ReG_Steer.Enable_IOType_acks(iot);
+
+    if(status != REG_SUCCESS) {
+      throw new ReG_SteerException("Could not enable IO Type Acknowledgements", status);
+    }
+  }
+
+  public void disableIOTypeAcks(int iot) throws ReG_SteerException {
+    status = ReG_Steer.Disable_IOType_acks(iot);
+
+    if(status != REG_SUCCESS) {
+      throw new ReG_SteerException("Could not disable IO Type Acknowledgements", status);
+    }
+  }
+
   public void registerParam(ReG_SteerParameter param) throws ReG_SteerException {
     int steered = REG_FALSE;
     if(param.isSteerable())
@@ -110,6 +153,18 @@ public class ReG_SteerAppside implements ReG_SteerConstants {
     return iohandle.value();
   }
 
+  public int consumeStartBlocking(int ioth, float timeout) throws ReG_SteerException {
+    Intp iohandle = new Intp();
+
+    status = ReG_Steer.Consume_start_blocking(ioth, iohandle.cast(), timeout);
+
+    if(status != REG_SUCCESS) {
+      throw new ReG_SteerException("No data to consume.", status);      
+    }
+
+    return iohandle.value();
+  }
+
   public Object consumeDataSlice(int ioh) {
     Intp dataType = new Intp();
     Intp dataCount = new Intp();
@@ -145,6 +200,15 @@ public class ReG_SteerAppside implements ReG_SteerConstants {
     if(status != REG_SUCCESS) {
       throw new ReG_SteerException("Failed to finalize steering.", status);
     }
+  }
+
+  public static int sizeof(int type) throws ReG_SteerException {
+    int size = ReG_Steer.Sizeof(type);
+    if(size == 0) {
+      throw new ReG_SteerException("Invalid type supplied to sizeof.");
+    }
+
+    return size;
   }
 
 }
