@@ -403,7 +403,8 @@ int Increment_param_registered(Param_table_type *table)
       }
     }
     else{
-      fprintf(stderr, "expat_endElement: failed to allocate more param memory\n");
+      fprintf(stderr, "Increment_param_registered: failed to "
+	      "allocate more param memory\n");
       table->num_registered--;
       return_status = REG_FAILURE;
     }
@@ -434,7 +435,8 @@ int Increment_cmd_registered(Supp_cmd_table_type *table)
       table->max_entries = new_size;
     }
     else{
-      fprintf(stderr, "expat_endElement: failed to allocate more cmd memory\n");
+      fprintf(stderr, "Increment_cmd_registered: failed to allocate "
+	      "more cmd memory\n");
       table->num_registered--;
       return_status = REG_FAILURE;
     }
@@ -652,3 +654,60 @@ int Emit_msg_header(socket_type_steering *sock_info,
 }
 
 /*----------------------------------------------------------------*/
+
+int Read_file(char *filename, char **buf, int *size)
+{ 
+  FILE *fp;
+  const int maxlen = 80;
+  char  bufline[80];
+  void *ptr;
+  int   len;
+  int   bufsize = BUFSIZ;
+
+  if( !(fp = fopen(filename, "r")) ){
+
+    fprintf(stderr, "Read_file: failed to open file: %s\n", filename);
+    return REG_FAILURE;
+  }
+
+  if(!(*buf = (char *)malloc(bufsize*sizeof(char)))){
+    fprintf(stderr, "Read_file: malloc failed\n");
+    return REG_FAILURE;
+  }
+
+  *size = 0;
+
+  while(fgets(bufline, maxlen, fp)){
+
+    /* '- 1' to allow for '\n' */
+    len = strlen(bufline) - 1;
+    memcpy(&((*buf)[*size]), bufline, len);
+    *size += len;
+
+    if( (bufsize - *size) < maxlen){
+      fprintf(stderr, "Read_file: doing realloc, bufsize = %d, size = %d\n",
+	      bufsize, *size);
+
+      bufsize += BUFSIZ;
+      ptr = realloc(*buf, (size_t)bufsize);
+      if(!ptr){
+
+	fprintf(stderr, "Read_file: realloc failed, size = %d\n", bufsize);
+	free(*buf);
+	fclose(fp);
+	return REG_FAILURE;
+      }
+      *buf = (char *)ptr;
+    }
+  }
+
+  (*buf)[*size] = 0;
+  fclose(fp);
+
+#if DEBUG
+  fprintf(stderr, "Read file, length = %d\n", *size);
+  /* fprintf(stderr, "Read file, content:\n>>%s<<\n", *buf); */
+#endif
+
+  return REG_SUCCESS;
+}
