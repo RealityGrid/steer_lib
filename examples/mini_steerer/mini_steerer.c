@@ -61,6 +61,7 @@ int main(){
   int    commands[REG_MAX_NUM_STR_CMDS];
   char   user_char[2];
   char   user_str[REG_MAX_STRING_LENGTH];
+  char   chk_GSH[REG_MAX_STRING_LENGTH];
 
   int    num_params;
   char  *param_vals[REG_INITIAL_NUM_PARAMS];
@@ -366,6 +367,7 @@ int main(){
       fprintf(stderr, "  p - send Pause signal to application\n");
       fprintf(stderr, "  q - Quit steerer - detaches from application\n");
       fprintf(stderr, "  r - send Resume signal to application\n");
+      fprintf(stderr, "  R - send Restart signal to application\n");
       fprintf(stderr, "  s - send Stop signal to application\n");
       fprintf(stderr, "  v - view logged checkpoints\n");
       fprintf(stderr, "\n");
@@ -415,6 +417,15 @@ int main(){
       /* Resume a paused application */
       fprintf(stderr, "Resuming application...\n");
       Emit_resume_cmd(sim_handle);
+      break;
+
+    case 'R':
+      printf("Enter GSH of checkpoint to restart from: ");
+      while(TRUE){
+	scanf("%s", chk_GSH);
+	if(chk_GSH[0] != '\n' && chk_GSH[0] != ' ')break;
+      }
+      Emit_restart_cmd(sim_handle, chk_GSH);
       break;
 
     case 's':

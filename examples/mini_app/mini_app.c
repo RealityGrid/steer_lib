@@ -87,6 +87,7 @@ int main(){
   float str_float          = 0.9;
   char  my_string[REG_MAX_STRING_LENGTH];
 
+  int   itag;
   int   finished           = FALSE;
   int   icmd;
   int   i, j;
@@ -101,7 +102,7 @@ int main(){
   float *array;
   char   header[BUFSIZ];
 
-  /*FILE *fp;*/
+  FILE  *fp;
 
   /*---------- End of declarations ------------*/
 
@@ -170,7 +171,7 @@ int main(){
 
   iotype_labels[1] = "MY_OTHER_CHECKPOINT";
   iotype_dirn[1] = REG_IO_INOUT;
-  iotype_frequency[1] = 15;
+  iotype_frequency[1] = 0;
 
   iotype_labels[2] = "YET_ANOTHER_CHECKPOINT";
   iotype_dirn[2] = REG_IO_INOUT;
@@ -403,8 +404,18 @@ int main(){
 
 		if(strstr(recvd_cmd_params[icmd], "OUT")){
 		  /* Pretend we've taken a checkpoint here */
-		  sprintf(chk_tag, "checkpoint_%d.dat", i);
-		  Record_Chkpt(chktype_handle[j], chk_tag);
+		  /*sprintf(chk_tag, "checkpoint_%d.dat", i);*/
+		  /*Record_Chkpt(chktype_handle[j], chk_tag);*/
+		  itag = rand();
+		  sprintf(chk_tag, "fake_chkpoint_%d.dat", itag);
+		  fp = fopen(chk_tag, "w");
+		  if(fp){
+		    fprintf(fp, "Chkpoint data goes here\n");
+		    fclose(fp);
+		    sprintf(chk_tag,"%d", itag);
+		    Record_checkpoint_set(chktype_handle[j],
+					  chk_tag,  ".");
+		  }
 		}
 		break;
 	      }
