@@ -1090,7 +1090,7 @@ int Write_globus_non_blocking(const globus_io_handle_t *handle,
   globus_size_t   nbytes, bytes_left;
   globus_result_t result;
   char           *pchar;
-  int             count = 0;
+
   if(n < 0){
     fprintf(stderr, "Write_globus_non_blocking: requested to write < 0 bytes!\n");
     return REG_FAILURE;
@@ -1104,25 +1104,19 @@ int Write_globus_non_blocking(const globus_io_handle_t *handle,
   bytes_left = nbytes;
   pchar = (char *)buffer;
 
-  while(bytes_left > 0 && count < 10){
+  /* just try to write once */
+  result = globus_io_try_write((globus_io_handle_t *)handle, 
+			       (globus_byte_t *)pchar, 
+			       bytes_left,
+			       &nbytes);
 
-    result = globus_io_try_write((globus_io_handle_t *)handle, 
-				 (globus_byte_t *)pchar, 
-				 bytes_left,
-				 &nbytes);
-
-    if(result != GLOBUS_SUCCESS){
-      fprintf(stderr, "Write_globus_non_blocking: call to globus_io_try_write failed\n");
-      Globus_error_print(result);
-      return REG_FAILURE;
-    }
-    else{
-      bytes_left -= nbytes;
-      pchar += nbytes;
-    }
-    count++;
+  if(result != GLOBUS_SUCCESS){
+    fprintf(stderr, "Write_globus_non_blocking: call to globus_io_try_write failed\n");
+    Globus_error_print(result);
+    return REG_FAILURE;
   }
 
+  /* if it's not all sent, then give up! */
   if(bytes_left > 0){
 #if REG_DEBUG
     fprintf(stderr, "Write_globus_non_blocking: timed-out trying to "
@@ -1609,7 +1603,7 @@ int Emit_header_globus(const int index)
 				       REG_PACKET_SIZE,
 				       (void *)buffer);
 
-    if(status == GLOBUS_SUCCESS){
+    if(status == REG_SUCCESS){
 
 #if REG_DEBUG
       fprintf(stderr, "Emit_header_globus: Sent %d bytes\n", REG_PACKET_SIZE);
