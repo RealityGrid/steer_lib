@@ -170,7 +170,7 @@ int main(){
 
   iotype_labels[1] = "MY_OTHER_CHECKPOINT";
   iotype_dirn[1] = REG_IO_INOUT;
-  iotype_frequency[1] = 0;
+  iotype_frequency[1] = 15;
 
   iotype_labels[2] = "YET_ANOTHER_CHECKPOINT";
   iotype_dirn[2] = REG_IO_INOUT;
@@ -179,10 +179,10 @@ int main(){
   num_chktypes = 3;
 
   status = Register_ChkTypes(num_chktypes,
-  			    iotype_labels, 
-			    iotype_dirn, 
-			    iotype_frequency,
-  			    chktype_handle);
+			     iotype_labels, 
+			     iotype_dirn, 
+			     iotype_frequency,
+			     chktype_handle);
 
   if(status != REG_SUCCESS){
 
