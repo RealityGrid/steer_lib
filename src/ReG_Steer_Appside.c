@@ -637,6 +637,8 @@ int Record_Chkpt(int   ChkType,
 
   if (!ReG_SteeringInit) return REG_FAILURE;
 
+  if (ChkType == REG_IODEF_HANDLE_NOTSET) return REG_SUCCESS;
+
   /* Check that we have enough storage space - if not then store
      current entries on disk (rather than continually grab more
      memory) */
