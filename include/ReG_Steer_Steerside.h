@@ -58,8 +58,8 @@ typedef struct {
   /* No. of parameters for which we have details at this chkpt */
   int    num_param;
   /* Associated parameter labels and values at this chkpt */
-  char   param_labels[REG_MAX_STRING_LENGTH][REG_MAX_NUM_STR_PARAMS];
-  char   param_values[REG_MAX_STRING_LENGTH][REG_MAX_NUM_STR_PARAMS];
+  char   param_labels[REG_MAX_NUM_STR_PARAMS][REG_MAX_STRING_LENGTH];
+  char   param_values[REG_MAX_NUM_STR_PARAMS][REG_MAX_STRING_LENGTH];
 
 } Output_log_struct;
 
