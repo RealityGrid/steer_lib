@@ -101,6 +101,10 @@ static int ReG_ChkTypesChanged  = FALSE;
 static int ReG_SteeringActive  = FALSE;
 /* Whether steering library has been initialised */
 static int ReG_SteeringInit    = FALSE;
+/* Absolute path of directory we are executing in */
+static char ReG_CurrentDir[REG_MAX_STRING_LENGTH];
+/* Hostname of machine we are executing on */
+static char ReG_Hostname[REG_MAX_STRING_LENGTH];
 
 /* Global variable used to store next valid handle value for both
    IOTypes and ChkTypes - these MUST have unique handles because
@@ -298,5 +302,18 @@ static int Log_to_xml(char **pchar, int *count, const int not_sent_only);
    num_bytes. */
 static int Realloc_iotype_buffer(int index,
 				 int num_bytes);
+
+static int Log_control_msg(char *msg_txt);
+
+
+/* Searches the directory given by *Path relative to the current working
+   directory for a set of files with the string *ChkTag in common.
+   If any are found, names is malloc'd to point to an array of char*
+   and each entry in this array is malloc'd and set to the relevant
+   filename. These ptrs must be free'd. */
+static int Get_checkpoint_files(char *ChkTag,
+				char *Path,
+				int  *num,
+				char ***names);
 
 #endif

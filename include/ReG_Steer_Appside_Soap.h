@@ -58,4 +58,7 @@ int Get_data_source_address_soap(int                 index,
 				 char               *hostname,
 				 unsigned short int *port);
 
+int Record_checkpoint_set_soap(char *chk_data,
+			       char *node_data);
+
 #endif

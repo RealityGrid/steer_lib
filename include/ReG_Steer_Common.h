@@ -71,6 +71,24 @@ typedef struct {
 
 typedef struct {
 
+  int   id;
+  char  params[REG_MAX_STRING_LENGTH];
+
+} Cmd_log_entry_type;
+
+typedef struct {
+
+  /* For parameter value changes */
+  int   num_params;
+  Param_log_entry_type param[REG_MAX_NUM_STR_PARAMS];
+  /* For other cmds */
+  int   num_cmds;
+  Cmd_log_entry_type cmd[REG_MAX_NUM_STR_CMDS];
+
+} Steer_log_type;
+
+typedef struct {
+
   int                  key;
   int                  chk_handle;
   char                 chk_tag[REG_MAX_STRING_LENGTH];
@@ -280,5 +298,8 @@ extern PREFIX int Reorder_decode_array(IOdef_entry *io,
 				       int          type,
 				       int          count,
 				       void        *pData);
+
+/* Does what is says.  Uses uname and gethostbyname. */
+extern PREFIX char *Get_fully_qualified_hostname();
 
 #endif
