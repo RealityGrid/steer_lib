@@ -52,7 +52,7 @@ static int Edit_parameter(int sim_handle);
 int main(){
 
   int    sim_handle;
-  REG_MsgType msg_type;
+  int    msg_type;
   int    status;
   int    done;
   int    i, j, k;

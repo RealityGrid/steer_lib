@@ -102,8 +102,8 @@ extern PREFIX int Sim_detach(int *SimHandle);
 /* Looks for the next message from any attached simulations. If
    it finds one then it returns the handle of the originating
    simulation and the type of message. */
-extern PREFIX int Get_next_message(int         *SimHandle,
-				   REG_MsgType *msg_type);
+extern PREFIX int Get_next_message(int   *SimHandle,
+				   int   *msg_type);
 
 /* Consume and store the parameter definitions that the 
    simulation referred to by SimHandle has emitted. */

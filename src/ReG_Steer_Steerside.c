@@ -562,8 +562,8 @@ int Sim_detach(int *SimHandle)
 
 /*----------------------------------------------------------*/
 
-int Get_next_message(int         *SimHandle,
-		     REG_MsgType *msg_type)
+int Get_next_message(int   *SimHandle,
+		     int   *msg_type)
 {
   int        isim;
   int        count_active;

@@ -279,7 +279,7 @@ int Remove_files(char* base_name)
 
 /*----------------------------------------------------------*/
 
-REG_MsgType Get_message_type(const char *name)
+int Get_message_type(const char *name)
 {
 
   if(strcmp(name, "Param_defs") == 0){

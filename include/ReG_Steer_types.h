@@ -209,7 +209,6 @@
 /* Some type definitions - handles are simply integers for
    the moment */
 
-typedef int REG_MsgType;
 typedef int REG_IOHandleType;
 
 /* Definitions used in communicating with the java proxy */

@@ -277,14 +277,14 @@ extern PREFIX int Increment_log_entry(Chk_log_type *log);
 
 extern PREFIX int Remove_files(char* base_name);
 
-extern PREFIX REG_MsgType Get_message_type(const char *name);
+extern PREFIX int Get_message_type(const char *name);
 
 /* Write ReG-specific XML header & footer information into supplied message
    buffer */
-extern PREFIX int  Write_xml_header(char **pchar);
+extern PREFIX int Write_xml_header(char **pchar);
 
-extern PREFIX int  Write_xml_footer(char **pchar,
-				    int bytes_free);
+extern PREFIX int Write_xml_footer(char **pchar,
+				   int bytes_free);
 
 /* Read the specified ASCII file and return the contents in the buffer
    pointed to by *buf, the size of which is returned in *size.  It is
