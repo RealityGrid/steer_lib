@@ -50,6 +50,8 @@ extern Steerer_connection_table_type Steerer_connection;
 
 extern Param_table_type Params_table;
 
+extern Chk_log_type Chk_log;
+
 /* Soap-specific declarations */
 struct soap soap;
 
@@ -447,10 +449,48 @@ int Get_data_source_address_soap(int   index,
 
 int Log_control_msg(char *msg_txt)
 {
+  char      *pbuf, *pstart, *pstop;
+  static int seq_num_index   = -1;
+  int        len;
 
-  fprintf(stderr, "Log_control_msg: got >>%s<<\n", msg_txt);
+  /*fprintf(stderr, "Log_control_msg: got >>%s<<\n", msg_txt);*/
 
-  printf("num = %d\n", Params_table.num_registered);
+  /* If this is the first time we've been called then calculate
+     the index of the Sequence No. in the table of parameters */
+  if(seq_num_index == -1){
+    seq_num_index = Param_index_from_handle(&(Params_table), 
+					    REG_SEQ_NUM_HANDLE);
+    if(seq_num_index == -1){
+      fprintf(stderr, "Log_control_msg: failed to find "
+	      "index of sequence no.\n");
+      return REG_FAILURE;
+    }
+  }
+
+  pbuf = Chk_log.pSteer_cmds;
+
+  if(  !(pstart = strstr(msg_txt, "<Steer_control>")) ){
+
+    fprintf(stderr, "Log_control_msg: failed to find <Steer_control>\n");
+    pbuf[0] = '\0';
+    return REG_FAILURE;
+  }
+
+  /* 15 = strlen("<Steer_control>") */
+  pstart += 15;
+  pstop   = strstr(msg_txt, "</Steer_control>");
+  len     = (int)(pstop - pstart);
+
+  pbuf += sprintf(pbuf, "<Log_entry>\n"
+		  "<SeqNum>%s</SeqNum>\n"
+		  "<SteerLogEntry>\n",
+		  Params_table.param[seq_num_index].value);
+
+  strncpy(pbuf, pstart, len);
+  pbuf += len;
+
+  sprintf(pbuf, "</SteerLogEntry>\n"
+	        "</Log_entry>");
 
   return REG_SUCCESS;
 }
@@ -478,7 +518,7 @@ int Record_checkpoint_set_soap(char *chk_data,
 #endif
 
   if(AppRecordChkpoint_response._result && 
-     strstr(AppRecordChkpoint_response._result, "SGS_SUCCESS")){
+     strstr(AppRecordChkpoint_response._result, REG_SGS_SUCCESS)){
 
     return REG_SUCCESS;
   }

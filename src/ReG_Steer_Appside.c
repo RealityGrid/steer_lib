@@ -335,7 +335,11 @@ int Steering_initialize(int  NumSupportedCmds,
 
   Chk_log.entry = (Chk_log_entry_type *)malloc(Chk_log.max_entries
 					  *sizeof(Chk_log_entry_type));
-  if(Chk_log.entry == NULL){
+
+  Chk_log.pSteer_cmds = (char *)malloc(REG_MAX_MSG_SIZE*sizeof(char));
+  Chk_log.steer_cmds_bytes = REG_MAX_MSG_SIZE;
+
+  if(!(Chk_log.entry) || !(Chk_log.pSteer_cmds) ){
 
     fprintf(stderr, "Steering_initialize: failed to allocate memory "
 	    "for checkpoint logging\n");
@@ -348,6 +352,8 @@ int Steering_initialize(int  NumSupportedCmds,
     Steering_enable(FALSE);
     return REG_FAILURE;
   }
+
+  Chk_log.pSteer_cmds[0] = '\0';
 
   for(i=0; i<Chk_log.max_entries; i++){
 
@@ -443,6 +449,10 @@ int Steering_finalize()
   }
   Chk_log.num_entries = 0;
   Chk_log.max_entries = REG_INITIAL_CHK_LOG_SIZE;
+  /* Buffer for logged commands */
+  free(Chk_log.pSteer_cmds);
+  Chk_log.pSteer_cmds = NULL;
+  Chk_log.steer_cmds_bytes = 0;
 
   /* Clean-up parameters table */
 
@@ -2089,15 +2099,14 @@ int Steering_control(int     SeqNum,
 #endif
     }
 
-    /* Emit logging info. ARPDBG
-    if( Emit_steering_log(SeqNum) != REG_SUCCESS ){
+    /* Emit logging info. */
+    if( Emit_log() != REG_SUCCESS ){
 
-      fprintf(stderr, "Steering_control: Emit_steering_log failed\n");
+      fprintf(stderr, "Steering_control: Emit_log failed\n");
     }
-    */
 #if REG_DEBUG
     else{
-      fprintf(stderr, "Steering_control: done Emit_steering_log\n");
+      fprintf(stderr, "Steering_control: done Emit_log\n");
     }
 #endif
 
@@ -3002,6 +3011,10 @@ int Emit_log()
     Chk_log.send_all = FALSE;
   }
   else{
+
+#if REG_DEBUG
+    fprintf(stderr, "Emit_log: sending unsent log entries...\n");
+#endif
     /* Third argument specifies that we only want those entries that haven't
        already been sent to the steerer */
     if(Log_to_xml(&pbuf, &size, TRUE) != REG_SUCCESS){
@@ -3010,11 +3023,27 @@ int Emit_log()
     }
   }
 
+#if REG_DEBUG
+  fprintf(stderr, "Emit_log: calling Emit_log_entries...\n");
+#endif
+
   /* Pull the entries out of the buffer returned by Log_to_xml and
      send them to the steerer */
   if(size > 0)return_status = Emit_log_entries(pbuf);
   free(pbuf);
   pbuf = NULL;
+
+#if REG_DEBUG
+  fprintf(stderr, "Emit_log: sending logged steering commands...\n");
+#endif
+
+  /* Send log of steering commands */
+  if(strlen(Chk_log.pSteer_cmds) > 0){
+
+    fprintf(stderr, "Emit_log: logged commands >>%s<<\n", Chk_log.pSteer_cmds);
+    Emit_log_entries(Chk_log.pSteer_cmds);
+    Chk_log.pSteer_cmds[0]='\0';
+  }
 
   if(return_status == REG_SUCCESS){
 
