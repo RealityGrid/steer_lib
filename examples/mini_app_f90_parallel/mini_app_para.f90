@@ -53,7 +53,7 @@ PROGRAM para_mini_app
   CHARACTER(LEN=REG_MAX_STRING_LENGTH), DIMENSION(REG_INITIAL_NUM_IOTYPES) :: io_labels
   INTEGER (KIND=REG_SP_KIND), DIMENSION(REG_INITIAL_NUM_IOTYPES) :: iotype_handles
   INTEGER (KIND=REG_SP_KIND), DIMENSION(REG_INITIAL_NUM_IOTYPES) :: io_dirn
-  INTEGER (KIND=REG_SP_KIND), DIMENSION(REG_INITIAL_NUM_IOTYPES) :: io_supp_auto
+
   INTEGER (KIND=REG_SP_KIND) :: input_freq
   INTEGER (KIND=REG_SP_KIND) :: output_freq = 5
 
@@ -133,9 +133,8 @@ PROGRAM para_mini_app
     io_labels(1)(28:28) = CHAR(0)
 
     io_dirn(1) = REG_IO_IN
-    io_supp_auto(1) = reg_false
     
-    CALL register_iotypes_f(num_types, io_labels, io_dirn, io_supp_auto, &
+    CALL register_iotypes_f(num_types, io_labels, io_dirn, &
                             input_freq, iotype_handles(1), status)
   
     IF(status .ne. REG_SUCCESS)THEN
@@ -153,9 +152,8 @@ PROGRAM para_mini_app
     io_labels(1)(12:12) = CHAR(0)
   
     io_dirn(1) = REG_IO_OUT
-    io_supp_auto(1) = reg_true
     
-    CALL register_iotypes_f(num_types, io_labels, io_dirn, io_supp_auto, &
+    CALL register_iotypes_f(num_types, io_labels, io_dirn, &
                             output_freq, iotype_handles(2), status)
   
     IF(status .ne. REG_SUCCESS)THEN
@@ -173,9 +171,8 @@ PROGRAM para_mini_app
     io_labels(1)(12:12) = CHAR(0)
 
     io_dirn(1) = REG_IO_CHKPT
-    io_supp_auto(1) = reg_false
   
-    CALL register_iotypes_f(num_types, io_labels, io_dirn, io_supp_auto, &
+    CALL register_iotypes_f(num_types, io_labels, io_dirn, &
                             output_freq, iotype_handles(2), status)
 
     IF(status .ne. REG_SUCCESS)THEN

@@ -50,8 +50,7 @@ int main(){
   int    iotype_handle[REG_INITIAL_NUM_IOTYPES];
   char  *iotype_labels[REG_INITIAL_NUM_IOTYPES];
   int	 iotype_dirn[REG_INITIAL_NUM_IOTYPES];
-  int	 iotype_auto[REG_INITIAL_NUM_IOTYPES];
-  int	*iotype_frequency[REG_INITIAL_NUM_IOTYPES];
+  int	 iotype_frequency[REG_INITIAL_NUM_IOTYPES];
   REG_IOHandleType iohandle;
   int    data_type;
   int    data_count;
@@ -131,25 +130,21 @@ int main(){
 
   iotype_labels[0] = "VTK_STRUCTURED_POINTS_INPUT";
   iotype_dirn[0] = REG_IO_IN;
-  iotype_auto[0] = FALSE;
-  iotype_frequency[0] = NULL;
+  iotype_frequency[0] = 0;
 
   iotype_labels[1] = "VTK_OUTPUT_GLOBUS_IO";
   iotype_dirn[1] = REG_IO_OUT;
-  iotype_auto[1] = TRUE;
-  iotype_frequency[1] = &output_freq;
+  iotype_frequency[1] = output_freq;
 
   iotype_labels[2] = "MY_CHECKPOINT";
   iotype_dirn[2] = REG_IO_CHKPT;
-  iotype_auto[2] = FALSE;
-  iotype_frequency[2] = NULL;
+  iotype_frequency[2] = 0;
 
   num_iotypes = 3;
 
   status = Register_IOTypes(num_iotypes,
   			    iotype_labels, 
 			    iotype_dirn, 
-			    iotype_auto,
 			    iotype_frequency,
   			    iotype_handle);
 
