@@ -49,21 +49,31 @@ int Steerer_connected_file();
    internally-generated index */
 int Generate_status_filename(char* filename);
 
-
+/* Send the contents of *buf to the steering client by writing to 
+   an appropriate file. */
 int Send_status_msg_file(char *buf);
 
+/* Check for, and read, the next available message from an attached
+   steering client. */
 struct msg_struct *Get_control_msg_file();
 
+/* Set-up and advertise application as steerable - write a lock
+   file in the REG_STEER_DIRECTORY directory. */
 int Initialize_steering_connection_file(int  NumSupportedCmds,
 					int *SupportedCmds);
 
 /* Take down any connection to a steering client */
 int Finalize_steering_connection_file();
 
-int Get_data_source_address_file(int   dummy,
-				 char *hostname,
-				 int  *port);
+/* Get the data source for the dummy'th input channel. Since we
+   only use REG_CONNECTOR_PORT/HOSTNAME for this we only have
+   info. for a single input channel - hence 'dummy' */
+int Get_data_source_address_file(int                 dummy,
+				 char               *hostname,
+				 unsigned short int *port);
 
+/* Checks to see if there is any data available to read for IOtype
+   with index 'index' */
 int Consume_start_data_check_file(int index);
 
 /* Searches for files matching the pattern specified in fileroot (i.e.

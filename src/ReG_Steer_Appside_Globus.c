@@ -377,7 +377,6 @@ Globus_accept_callback (void			*callback_arg,
 			globus_io_handle_t	*handle,
 			globus_result_t		resultparam)
 {
-  globus_result_t        result;
   socket_io_type	*lsocket_info;
 
   lsocket_info = ((socket_io_type *) callback_arg);
@@ -454,7 +453,6 @@ Globus_connector_callback (void			*callback_arg,
 			   globus_io_handle_t	*handle,
 			   globus_result_t	resultparam)
 { 
-  globus_result_t        result;
   socket_io_type	*lsocket_info;
 
   lsocket_info = ((socket_io_type *) callback_arg);
@@ -1365,7 +1363,6 @@ int Consume_start_data_check_globus(const int index)
   char           *pstart;
   globus_size_t   nbytes, nbytes1;
   globus_result_t result;
-  globus_object_t *error;
   int             attempt_reconnect;
   int             status;
 

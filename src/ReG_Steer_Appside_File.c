@@ -340,9 +340,9 @@ int Initialize_steering_connection_file(int  NumSupportedCmds,
 
 /*-----------------------------------------------------------------------*/
 
-int Get_data_source_address_file(int dummy,
-				 char *hostname,
-				 int  *port)
+int Get_data_source_address_file(int                 dummy,
+				 char               *hostname,
+				 unsigned short int *port)
 {
   char *pchar;
   int   len;
@@ -373,7 +373,7 @@ int Get_data_source_address_file(int dummy,
 
   pchar = getenv("REG_CONNECTOR_PORT");
   if (pchar) {
-    *port = atoi(pchar);
+    *port =  (unsigned short int)atoi(pchar);
   }
   else{
     fprintf(stderr, 
@@ -625,7 +625,6 @@ int Consume_msg_header_file(int  index,
 			    int *IsFortranArray)
 {
   char   buffer[REG_PACKET_SIZE];
-  size_t nbytes;
 
   if(!IOTypes_table.io_def[index].fp){
 
