@@ -710,7 +710,5 @@ int Read_file(char *filename, char **buf, int *size)
   /* fprintf(stderr, "Read file, content:\n>>%s<<\n", *buf); */
 #endif
 
-  fprintf(stderr, "ARPDBG: possibly realloc'd address = %p\n", *buf);
-
   return REG_SUCCESS;
 }

@@ -316,7 +316,7 @@ int Steering_finalize()
 
   /* Tell the steerer that we are done - if steering via soap
      then leave this to Finalize_steering_connection 
-ARPDBG - should be down in Finalize_steering_connection somewhere??*/
+ARPDBG - should be down in Finalize_steering_connection somewhere??
 #if !REG_SOAP_STEERING
   if(ReG_SteeringActive){
 
@@ -328,6 +328,9 @@ ARPDBG - should be down in Finalize_steering_connection somewhere??*/
 		commands);
   }
 #endif
+  */
+  /* Signal that component no-longer steerable */
+  Finalize_steering_connection();
 
   /* Save remaining log entries to file */
   Save_log();
@@ -378,7 +381,7 @@ ARPDBG - should be down in Finalize_steering_connection somewhere??*/
   Params_table.max_entries = REG_INITIAL_NUM_IOTYPES;
 
   /* Signal that component no-longer steerable */
-  Finalize_steering_connection();
+  /* ARPDBG - moved up Finalize_steering_connection();*/
 
   /* Reset state of library */
 
@@ -3467,13 +3470,36 @@ int Finalize_steering_connection()
 {
 
 #if REG_GLOBUS_STEERING
+  int  commands[1];
+
+  if(ReG_SteeringActive){
+
+    commands[0] = REG_STR_DETACH;
+    Emit_status(0,
+		0,
+		NULL,
+		1,
+		commands);
+  }
 
   return Finalize_steering_connection_globus();
 
 #elif REG_SOAP_STEERING
 
   return Finalize_steering_connection_soap();
+
 #else
+  int  commands[1];
+
+  if(ReG_SteeringActive){
+
+    commands[0] = REG_STR_DETACH;
+    Emit_status(0,
+		0,
+		NULL,
+		1,
+		commands);
+  }
 
   return Finalize_steering_connection_file();
 #endif
