@@ -81,14 +81,13 @@ int main(){
 
   int   opacity_step_start = 120;
   int   opacity_step_stop  = 130;
-  int   output_freq        = 5;
-  int   sleep_time         = 1;
+  int   sleep_time         = 4;
   float temp               = 55.6;
   float str_float          = 0.9;
   char  my_string[REG_MAX_STRING_LENGTH];
-  int   nx = 64;
-  int   ny = 64;
-  int   nz = 64;
+  int   nx = 16;
+  int   ny = 16;
+  int   nz = 16;
 
   int   itag;
   int   finished           = FALSE;
@@ -146,11 +145,11 @@ int main(){
 
   iotype_labels[0] = "VTK_STRUCTURED_POINTS_INPUT";
   iotype_dirn[0] = REG_IO_IN;
-  iotype_frequency[0] = 0;
+  iotype_frequency[0] = 0; /* Don't do any auto consumption */
 
   iotype_labels[1] = "VTK_OUTPUT_GLOBUS_IO";
   iotype_dirn[1] = REG_IO_OUT;
-  iotype_frequency[1] = 1;/*output_freq;*/
+  iotype_frequency[1] = 1; /* Attempt to do output every timestep */
 
   num_iotypes = 2;
 
@@ -169,16 +168,16 @@ int main(){
 
   /* Register checkpoint emission */
   iotype_labels[0] = "MY_CHECKPOINT";
-  iotype_dirn[0] = REG_IO_OUT;
-  iotype_frequency[0] = 0;
+  iotype_dirn[0] = REG_IO_OUT; /* For output only */
+  iotype_frequency[0] = 0; /* No auto checkpointing */
 
   iotype_labels[1] = "MY_OTHER_CHECKPOINT";
-  iotype_dirn[1] = REG_IO_INOUT;
-  iotype_frequency[1] = 0;
+  iotype_dirn[1] = REG_IO_INOUT; /* Can be used for restart */
+  iotype_frequency[1] = 0; /* No auto checkpointing */
 
   iotype_labels[2] = "YET_ANOTHER_CHECKPOINT";
   iotype_dirn[2] = REG_IO_INOUT;
-  iotype_frequency[2] = 0;
+  iotype_frequency[2] = 0; /* No auto checkpointing */
 
   num_chktypes = 3;
 
@@ -299,9 +298,10 @@ int main(){
 
   for(i=0; i<nloops; i++){
 
-    sleep(sleep_time);
+    sleep(sleep_time); /* Pretend to do some work */
     printf("\ni = %d\n", i);
 
+    /* Talk to the steering client (if one is connected) */
     status = Steering_control(i,
 			      &num_params_changed,
 			      changed_param_labels,
@@ -315,7 +315,6 @@ int main(){
       printf("opacity_step_stop  = %d\n", opacity_step_stop);
       printf("temp               = %f\n", temp);
       printf("my_string          = %s\n", my_string);
-      printf("output_freq        = %d\n", output_freq);
       printf("str_float          = %f\n", str_float);
 
       if(num_recvd_cmds > 0){
@@ -358,9 +357,12 @@ int main(){
 
 		if(j==1){
 
+		  /* We've been told to emit some data */
 		  if( Emit_start(iotype_handle[j], i, &iohandle)
 		      == REG_SUCCESS ){
 
+		    /* Make the vtk header to describe the data and then
+		       emit it */
 		    if(Make_vtk_header(header, "Some data", nx, ny, nz, 1, 
 				       REG_FLOAT) != REG_SUCCESS) {
 		      continue;
@@ -379,7 +381,9 @@ int main(){
 		      continue;
 		    }
 
-		    /* malloc memory for array */
+		    /* malloc memory for array; nx, ny and nz are steerable
+		       so we malloc everytime.  Could be done with a realloc
+		       but it's not necessary here. */
 
 		    if( !(array = (float *)malloc(nx*ny*nz*sizeof(float))) ){
 		    
@@ -389,7 +393,7 @@ int main(){
 		      return REG_FAILURE;
 		    }
 
-
+		    /* Make a dummy data set of 3D volumetric data */
 		    if(Make_vtk_buffer(nx, ny, nz, 1, aaxis, baxis, caxis, 
 				       array)
 		       != REG_SUCCESS){
@@ -397,6 +401,9 @@ int main(){
 		      continue;
 		    }
 
+		    /* Emit the data set in chunks to mimic situation
+		       when data collected process by process in a parallel
+		       program */
 		    if(nx % chunk_dim != 0){
 
 		      printf("nx not a multiple of %d\n", chunk_dim);
@@ -443,6 +450,7 @@ int main(){
 	        break;
 	      }
 	    }
+	    /* Check for a command to checkpoint or restart */
 	    for(j=0; j<num_chktypes; j++){
 
 	      if(recvd_cmds[icmd] == chktype_handle[j]){
@@ -452,8 +460,6 @@ int main(){
 
 		if(strstr(recvd_cmd_params[icmd], "OUT")){
 		  /* Pretend we've taken a checkpoint here */
-		  /*sprintf(chk_tag, "checkpoint_%d.dat", i);*/
-		  /*Record_Chkpt(chktype_handle[j], chk_tag);*/
 		  itag = rand();
 		  sprintf(chk_tag, "fake_chkpoint_%d.dat", itag);
 		  fp = fopen(chk_tag, "w");
@@ -470,7 +476,8 @@ int main(){
 	    }
  	    break;
  	  }
-  
+
+	  /* Break out if steerer told us to stop */  
  	  if(finished)break;
     	}
 	if(finished)break;
@@ -486,9 +493,10 @@ int main(){
 
   } /* End of main loop */
 
+  /* Clean up the steering library */
   status = Steering_finalize();
 
-  /* Clean up */
+  /* Clean up locals */
   free(changed_param_labels[0]);
 
   return 0;
