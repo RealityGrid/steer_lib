@@ -194,6 +194,7 @@
 
 /* Message tags */
 
+#define MSG_ERROR   -1
 #define MSG_NOTSET  0
 #define SUPP_CMDS   1
 #define IO_DEFS     2

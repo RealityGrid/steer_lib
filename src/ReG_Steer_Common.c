@@ -1108,6 +1108,11 @@ int Get_fully_qualified_hostname(char **hostname, char **ip_addr_ptr)
     return REG_FAILURE;
   }
 
+  /* ARPDBG - lets break it to test *
+  sprintf(host->h_name, "node12.beowulf.cluster");
+  sprintf(ip_addr, " ");
+  * end of ARPDBG */
+
 #if REG_DEBUG
   fprintf(stderr, "Get_fully_qualified_hostname: hostname = %s\n", 
 	  host->h_name);

@@ -224,14 +224,15 @@ int Get_sim_list(int   *nSims,
       count = 0;
       for(i=0; i<*nSims; i++){
 
-	/* should check type of service here
+	/* ARPDBG should check type of service here
 	   if(strstr(entries[i].serviceType, "Registry")){
 
 	   } */
 
 	if(strlen(entries[i].application) > 0){
 	  /*strcpy(simName[count], entries[i].application);*/
-	  sprintf(simName[count], "%s %s", entries[i].application, 
+	  sprintf(simName[count], "%s %s %s", entries[i].user, 
+		  entries[i].application, 
 		  entries[i].start_date_time);
 	  strcpy(simGSH[count], entries[i].gsh);
 	  count++;
@@ -515,9 +516,10 @@ int Sim_attach(char *SimID,
 
     for(i=0; i<sim_ptr->Cmds_table.num_registered; i++){
 
+#if REG_DEBUG
       fprintf(stderr, "Sim_attach: cmd[%d] = %d\n", i, 
 	      sim_ptr->Cmds_table.cmd[i].cmd_id);
-
+#endif
       if(sim_ptr->Cmds_table.cmd[i].cmd_id == REG_STR_PAUSE){
 	
 	j = sim_ptr->Cmds_table.num_registered;
@@ -642,7 +644,7 @@ int Get_next_message(int   *SimHandle,
 
       if(Sim_table.sim[isim].msg){
 
-	/* Pass back the message type */
+	/* Pass back the message type  */
 	*msg_type = Sim_table.sim[isim].msg->msg_type;
 
 	*SimHandle = Sim_table.sim[isim].handle;

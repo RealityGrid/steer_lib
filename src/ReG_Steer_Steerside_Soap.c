@@ -199,7 +199,10 @@ struct msg_struct *Get_status_msg_soap(Sim_entry_type *sim)
     fprintf(stderr, "Get_status_msg_soap: GetNotifications failed:\n");
     soap_print_fault(sim->SGS_info.soap, stderr);
 
-    return NULL;
+    /* Flag that we hit an error as opposed to just failed to get a msg */
+    msg = New_msg_struct();
+    msg->msg_type = MSG_ERROR;
+    return msg;
   }
   
 #if REG_DEBUG
@@ -252,7 +255,10 @@ struct msg_struct *Get_status_msg_soap(Sim_entry_type *sim)
     fprintf(stderr, "Get_status_msg_soap: GetStatus failed:\n");
     soap_print_fault(sim->SGS_info.soap, stderr);
 
-    return NULL;
+    /* Flag that we hit an error as opposed to just failed to get a msg */
+    msg = New_msg_struct();
+    msg->msg_type = MSG_ERROR;
+    return msg;
   }
 
 #if REG_DEBUG
@@ -300,7 +306,9 @@ struct msg_struct *Get_service_data(Sim_entry_type *sim, char *sde_name)
     fprintf(stderr, "Get_service_data: findServiceData failed:\n");
     soap_print_fault(sim->SGS_info.soap, stderr);
 
-    return NULL;
+    msg = New_msg_struct();
+    msg->msg_type = MSG_ERROR;
+    return msg;
   }
 
 #if REG_DEBUG
