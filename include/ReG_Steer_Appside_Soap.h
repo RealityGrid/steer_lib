@@ -52,4 +52,8 @@ struct msg_struct *Get_control_msg_soap();
 
 int Finalize_steering_connection_soap();
 
+int Get_data_source_address_soap(int   index, 
+				 char *hostname,
+				 int  *port);
+
 #endif
