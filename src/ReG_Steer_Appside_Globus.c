@@ -37,7 +37,7 @@
 
 ---------------------------------------------------------------------------*/
 
-/*----------------------------------------------------------------------------
+/*---------------------------------------------------------------------------
    Globus IO implementation note:
 
    The Globus IO has only been tested using NON-threaded flavors of
@@ -47,7 +47,6 @@
    functions have been coded to use these.  Some effor would be
    required to make the rest of the code threadsafe in order to use
    threaded Globus.
-
 ---------------------------------------------------------------------------*/
 
 #if REG_GLOBUS_SAMPLES
@@ -413,7 +412,7 @@ Globus_accept_callback (void			*callback_arg,
     }
     else{
       fprintf(stderr, "Globus_accept_callback: select registered ok\n");
-      lsocket_info->data_status = REG_COMMS_NOT_READY;
+      lsocket_info->data_status = REG_COMMS_READY_WRITE;
       Globus_callback_poll(lsocket_info);
     }
     */
@@ -599,7 +598,7 @@ Globus_connector_callback (void			*callback_arg,
     }
     else{
       fprintf(stderr, "Globus_connector_callback: select registered ok\n");
-      lsocket_info->data_status = REG_COMMS_NOT_READY;
+      lsocket_info->data_status = REG_COMMS_READY_READ;
       Globus_callback_poll(lsocket_info);
     }
     */
@@ -1163,18 +1162,19 @@ int Write_globus(const globus_io_handle_t *handle,
   bytes_left = nbytes;
   pchar = (char *)buffer;
 
-  while(bytes_left > 0 && count < 10){
-    /*
+  /*while(bytes_left > 0 && count < 10){*/
+  while(bytes_left > 0){
+
     result = globus_io_try_write((globus_io_handle_t *)handle, 
 				 (globus_byte_t *)pchar, 
 				 bytes_left,
 				 &nbytes);
-    */
+    /*
     result = globus_io_write((globus_io_handle_t *)handle, 
 			     (globus_byte_t *)pchar, 
 			     bytes_left,
 			     &nbytes);
-
+    */
     if(result != GLOBUS_SUCCESS){
       fprintf(stderr, "Write_globus: call to globus_io_try_write failed\n");
       Globus_error_print(result);
@@ -1643,8 +1643,6 @@ int Consume_data_read_globus(const int		index,
   double time0, time1;
 #endif
 
-  Emit_ack_globus(index);
-
   fprintf(stderr, "Consume_data_read_globus: calling globus_io_read "
           "for %d bytes\n", (int)num_bytes_to_read);
 
@@ -1733,8 +1731,8 @@ int Emit_header_globus(const int index)
 	REG_COMMS_READY_WRITE){
       fprintf(stderr, "Emit_header_globus: socket not ready for writing\n");
       return REG_FAILURE;
-      } */
-
+    }
+    */
     /* Send header */
     
     sprintf(buffer, REG_PACKET_FORMAT, REG_DATA_HEADER);
@@ -1819,12 +1817,6 @@ int Emit_data_globus(const int		index,
 		     const size_t	num_bytes_to_send,
 		     void		*pData)
 {
-  if(Consume_ack_globus(index) != REG_SUCCESS){
-
-    fprintf(stderr, "Emit_data_globus: no ack so no write\n");
-    return REG_FAILURE;
-  }
-
   if(Write_globus(&(IOTypes_table.io_def[index].socket_info.conn_handle), 
 		  num_bytes_to_send,
 		  (void *)pData) != REG_SUCCESS){
@@ -1859,10 +1851,6 @@ int Get_communication_status_globus(const int index)
 int Emit_ack_globus(const int index)
 {
   char *ack_msg = "<Ready_to_read/>                                                                                                               ";
-  return REG_SUCCESS;/*ARPDBG*/
-
-  fprintf(stderr, "ARPDBG: into Emit_ack_globus\n");
-
   if(index < 0 || index >= IOTypes_table.num_registered){
 
     return REG_FAILURE;
@@ -1887,9 +1875,6 @@ int Consume_ack_globus(const int index)
   globus_size_t   nbytes;
   globus_result_t result;
 
-  return REG_SUCCESS;/*ARPDBG*/
-
-  fprintf(stderr, "ARPDBG: into Consume_ack_globus\n");
   if(index < 0 || index >= IOTypes_table.num_registered){
 
     return REG_FAILURE;
