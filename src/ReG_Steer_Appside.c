@@ -1191,10 +1191,10 @@ int Consume_data_slice_header(int  IOTypeIndex,
     break;
   }
 
-  /* Check whether or not we'll need to convert the array ordering */
+  /* Check whether or not we'll need to convert the array ordering *
   if(IOTypes_table.io_def[IOTypeIndex].array.is_f90 != IsFortranArray){
 
-    /* Assume we don't ever want to re-order char data */
+    * Assume we don't ever want to re-order char data *
     if(*DataType != REG_CHAR){
       IOTypes_table.io_def[IOTypeIndex].convert_array_order = TRUE;
     }
@@ -1205,6 +1205,7 @@ int Consume_data_slice_header(int  IOTypeIndex,
   else{
     IOTypes_table.io_def[IOTypeIndex].convert_array_order = FALSE;
   }
+  */
 
   return REG_SUCCESS;
 }
@@ -1306,12 +1307,12 @@ int Consume_data_slice(int    IOTypeIndex,
   IOTypes_table.io_def[IOTypeIndex].num_xdr_bytes = 0;
 
   /* Check whether or not this is a chunk header - if it is then we
-     need to extract the array dimensions */
+     need to extract the array dimensions
   if(DataType == REG_CHAR){
 
     Parse_chunk_header(IOTypeIndex, (char*)pData);
   }
-
+  */
   return return_status;
 }
 
@@ -3721,6 +3722,7 @@ int Make_vtk_header(char  *header,
 /*--------------------------------------------------------------------*/
 
 int Make_chunk_header(char *header,
+		      int   IOindex,
 		      int   totx,int toty, int totz,
                       int   sx,  int sy,   int sz,
                       int   nx,  int ny,   int nz)
@@ -3728,12 +3730,14 @@ int Make_chunk_header(char *header,
   char *pchar = header;
 
   pchar += sprintf(pchar, "CHUNK_HDR\n"
-		          "ARRAY  %d %d %d\n"
-                          "ORIGIN %d %d %d\n"
-                          "EXTENT %d %d %d\n"
-                          "END_CHUNK_HDR\n", 
+		   "ARRAY  %d %d %d\n"
+		   "ORIGIN %d %d %d\n"
+		   "EXTENT %d %d %d\n"
+		   "FROM_FORTRAN %d\n"
+		   "END_CHUNK_HDR\n", 
 		   totx, toty, totz, 
-		   sx, sy, sz, nx, ny, nz);
+		   sx, sy, sz, nx, ny, nz,
+		   IOTypes_table.io_def[IOindex].array.is_f90);
 
   return REG_SUCCESS;
 }

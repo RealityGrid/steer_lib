@@ -817,9 +817,11 @@ INT_KIND_1_DECL(Status);
 
 /*----------------------------------------------------------------
 
-SUBROUTINE make_chunk_header_f(header, sx, sy, sz, nx, ny, nz, status)
+SUBROUTINE make_chunk_header_f(header, IOindex, sx, sy, sz, nx, ny, nz, 
+                               status)
 
   CHARACTER (LEN=BUFSIZ), INTENT(out)               :: header
+  INTEGER (KIND=REG_SP_KIND), INTENT(in)            :: IOindex
   INTEGER (KIND=REG_SP_KIND), INTENT(in)            :: nx, ny, nz
   INTEGER (KIND=REG_SP_KIND), INTENT(in)            :: sz, sy, sz
   INTEGER (KIND=REG_SP_KIND), INTENT(out)           :: status
@@ -827,11 +829,13 @@ SUBROUTINE make_chunk_header_f(header, sx, sy, sz, nx, ny, nz, status)
 ----------------------------------------------------------------*/
 
 void FUNCTION(make_chunk_header_f) ARGS(`STRING_ARG(header),
+                                         IOindex,
                                          totx, toty, totz,
                                          sx, sy, sz,
                                          nx, ny, nz,
                                          Status')
 STRING_ARG_DECL(header);
+INT_KIND_1_DECL(IOindex);
 INT_KIND_1_DECL(totx);
 INT_KIND_1_DECL(toty);
 INT_KIND_1_DECL(totz);
@@ -845,6 +849,7 @@ INT_KIND_1_DECL(Status);
 {
 
   *Status = INT_KIND_1_CAST( Make_chunk_header(STRING_PTR(header),
+                                               (int)*IOindex, 
                                                (int)*totx, 
                                                (int)*toty, 
                                                (int)*totz,
