@@ -499,8 +499,10 @@ void poll_socket(const int index) {
       if(FD_ISSET(listener, &sockets)) {
 	/* new connection */
 	struct sockaddr_in theirAddr;
-#ifdef __sgi
+#if defined(__sgi)
 	socklen_t addrlen = sizeof(theirAddr);
+#elif defined(TRU64)
+	int addrlen = sizeof(theirAddr);
 #else
 	unsigned int addrlen = sizeof(theirAddr);
 #endif
@@ -549,7 +551,7 @@ int recv_non_block(socket_io_type  *sock_info, char *pbuf, int nbytes){
 
   int nbytes_read = 0;
 
-#ifdef _AIX
+#if defined(_AIX) || defined(TRU64)
 
   /* So it looks like AIX blocks by default... So make the socket
    * non-blocking as we can't control this with flags to recv() in AIX... */

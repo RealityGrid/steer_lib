@@ -35,9 +35,20 @@
 #ifndef __REG_STEER_SOCKETS_IO_H__
 #define __REG_STEER_SOCKETS_IO_H__
 
+/* ARP - added to uniquely identify TRU64 systems.  Necessary on
+   Alpha workstations and LeMieux */
+#ifndef TRU64
+#if (defined (__digital__) && defined (__unix__))
+#define TRU64
+#endif
+#endif
+
 #if REG_SOCKET_SAMPLES
 
 #include <errno.h>
+#if defined(TRU64)
+#include <fcntl.h>
+#endif
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
