@@ -44,8 +44,9 @@ LD_FLAGS = -64 -shared -soname libReG_Steer.so -L${REG_XML_LIBDIR}${NBIT} -lxml2
 
 # Location of F90 compiler (if any) and flags to use
 F90 = f90
+F90_MPI = f90
 F90_FLAGS = -O2 -64
-MPI_FLAG = -lmpi
+MPI_FLAGS = -lmpi
 
 # Location of java compiler - used to produce proxy binary
 JAVAC          = /usr/java2/bin/javac
