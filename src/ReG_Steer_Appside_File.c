@@ -570,7 +570,7 @@ int Consume_data_read_file(const int	 index,
   }
 
   if(IOTypes_table.io_def[index].use_xdr ||
-     IOTypes_table.io_def[index].convert_array_order == TRUE){
+     IOTypes_table.io_def[index].convert_array_order == REG_TRUE){
 
     nbytes = fread((void *)IOTypes_table.io_def[index].buffer,
 		   1,
@@ -598,7 +598,7 @@ int Consume_data_read_file(const int	 index,
     fprintf(stderr, "Consume_data_read_file: failed to read expected "
 	    "quantity of data\n");
     /* Reset use_xdr flag set as only valid on a per-slice basis */
-    IOTypes_table.io_def[index].use_xdr = FALSE;
+    IOTypes_table.io_def[index].use_xdr = REG_FALSE;
 
     fclose(IOTypes_table.io_def[index].fp);
     IOTypes_table.io_def[index].fp = NULL;
@@ -792,11 +792,11 @@ int Consume_msg_header_file(int  index,
   if(strstr(buffer, "FORTRAN")){
 
     /* Array data is from Fortran */
-    *IsFortranArray = TRUE;
+    *IsFortranArray = REG_TRUE;
   }
   else{
     /* Array data is not from Fortran */
-    *IsFortranArray = FALSE;
+    *IsFortranArray = REG_FALSE;
   }
 
   /*--- End of header ---*/
@@ -882,7 +882,7 @@ int Consume_ack_file(const int index)
 {
   FILE*  fp;
 
-  if(IOTypes_table.io_def[index].ack_needed == FALSE)return REG_SUCCESS;
+  if(IOTypes_table.io_def[index].ack_needed == REG_FALSE)return REG_SUCCESS;
 
   /* In the short term, use the label (with spaces replaced by
      '_'s) as the filename.  This routine is called before filename

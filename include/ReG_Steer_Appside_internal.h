@@ -255,7 +255,7 @@ static int Save_log();
 /* Convert current log to xml and store in buffer pointed to by pchar.
    Length of buffer is returned in count. The memory pointed to by
    *pchar must be free()'d by the caller once finished.  If
-   not_sent_only == TRUE then only those entries not already returned
+   not_sent_only == REG_TRUE then only those entries not already returned
    to the steering client are retrieved */
 static int Log_to_xml(char **pchar, int *count, const int not_sent_only);
 

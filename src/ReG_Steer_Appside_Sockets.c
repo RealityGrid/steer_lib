@@ -596,7 +596,7 @@ int Initialize_IOType_transport_sockets(const int direction, const int index) {
     if(direction == REG_IO_OUT) {
 
       /* Don't create socket yet if this flag is set */
-      if(IOTypes_table.enable_on_registration == FALSE) return REG_SUCCESS;
+      if(IOTypes_table.enable_on_registration == REG_FALSE) return REG_SUCCESS;
 
       /* open socket and register callback function to listen for and
 	 accept connections */
@@ -618,7 +618,7 @@ int Initialize_IOType_transport_sockets(const int direction, const int index) {
       call_count++;
 	
       /* Don't create socket yet if this flag is set */
-      if(IOTypes_table.enable_on_registration == FALSE) {
+      if(IOTypes_table.enable_on_registration == REG_FALSE) {
 	return REG_SUCCESS;
       }
 
@@ -1040,11 +1040,11 @@ int Consume_msg_header_sockets(int index, int* datatype, int* count,
 
   if(strstr(buffer, "FORTRAN")){
     /* Array data is from Fortran */
-    *is_fortran_array = TRUE;
+    *is_fortran_array = REG_TRUE;
   }
   else{
     /* Array data is not from Fortran */
-    *is_fortran_array = FALSE;
+    *is_fortran_array = REG_FALSE;
   }
 
   /*--- End of header ---*/
@@ -1244,7 +1244,7 @@ int Consume_data_read_sockets(const int index, const int datatype, const int num
 
   sock_info = &(IOTypes_table.io_def[index].socket_info);
 
-  if(IOTypes_table.io_def[index].use_xdr || IOTypes_table.io_def[index].convert_array_order == TRUE) {
+  if(IOTypes_table.io_def[index].use_xdr || IOTypes_table.io_def[index].convert_array_order == REG_TRUE) {
     nbytes = recv(sock_info->connector_handle, IOTypes_table.io_def[index].buffer, num_bytes_to_read, MSG_WAITALL);
   }
   else {
@@ -1275,7 +1275,7 @@ int Consume_data_read_sockets(const int index, const int datatype, const int num
       }
       
       /* Reset use_xdr flag set as only valid on a per-slice basis */
-      IOTypes_table.io_def[index].use_xdr = FALSE;
+      IOTypes_table.io_def[index].use_xdr = REG_FALSE;
 
       return REG_FAILURE;
     }
@@ -1317,7 +1317,7 @@ int Consume_ack_sockets(int index){
 
   /* If no acknowledgement is currently required (e.g. this is the
      first time Emit_start has been called) then return success */
-  if(IOTypes_table.io_def[index].ack_needed == FALSE)return REG_SUCCESS;
+  if(IOTypes_table.io_def[index].ack_needed == REG_FALSE)return REG_SUCCESS;
 
   /* Buffer is twice as long as ack message to allow us to deal with
      getting a truncated message */
@@ -1360,12 +1360,12 @@ int Consume_ack_sockets(int index){
     }
     else {
       /* Some error occurred */
-      IOTypes_table.io_def[index].ack_needed = FALSE;
+      IOTypes_table.io_def[index].ack_needed = REG_FALSE;
     }
   }
   else {
     /* recv returned 0 bytes => closed connection */
-    IOTypes_table.io_def[index].ack_needed = FALSE;
+    IOTypes_table.io_def[index].ack_needed = REG_FALSE;
   }
 
 #if REG_DEBUG_FULL

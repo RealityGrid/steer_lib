@@ -169,10 +169,10 @@
 
 /* Type definitions */
 
-#define FALSE 0
-#define TRUE  1
-#define false 0
-#define true  1
+#define REG_FALSE 0
+#define REG_TRUE  1
+#define reg_false 0
+#define reg_true  1
 
 /* Reserved handle values */
 

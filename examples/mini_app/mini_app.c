@@ -86,7 +86,7 @@ int main(){
   int   nz = 16;
 
   int   itag;
-  int   finished           = FALSE;
+  int   finished           = REG_FALSE;
   int   icmd;
   int   i, j;
   
@@ -126,7 +126,7 @@ int main(){
 
   /* Initialise & enable the steering library */
 
-  Steering_enable(TRUE);
+  Steering_enable(REG_TRUE);
 
   numCommands = 2;
   commands[0] = REG_STR_STOP;
@@ -194,21 +194,21 @@ int main(){
   param_labels[0] = "OPACITY_STEP_START";
   param_ptrs[0]   = (void *)(&opacity_step_start);
   param_types[0]  = REG_INT;
-  param_strbl[0]  = TRUE;
+  param_strbl[0]  = REG_TRUE;
   param_min[0]    = "0";
   param_max[0]    = "256";
 
   param_labels[1] = "OPACITY_STEP_STOP";
   param_ptrs[1]   = (void *)(&opacity_step_stop);
   param_types[1]  = REG_INT;
-  param_strbl[1]  = TRUE;
+  param_strbl[1]  = REG_TRUE;
   param_min[1]    = "0";
   param_max[1]    = "256";
 
   param_labels[2] = "TEMP";
   param_ptrs[2]   = (void *)(&temp);
   param_types[2]  = REG_FLOAT;
-  param_strbl[2]  = FALSE;
+  param_strbl[2]  = REG_FALSE;
   param_min[2]    = "";
   param_max[2]    = "";
 
@@ -216,7 +216,7 @@ int main(){
   sprintf(my_string, "running");
   param_ptrs[3]   = (void *)(my_string);
   param_types[3]  = REG_CHAR;
-  param_strbl[3]  = TRUE;
+  param_strbl[3]  = REG_TRUE;
   /* For strings, max. 'value' is taken as max. length */
   param_min[3]    = "";
   if( !(param_max[3] = malloc(8*sizeof(char))) ){
@@ -230,56 +230,56 @@ int main(){
   param_labels[4] = "a_axis";
   param_ptrs[4]   = (void *)(&aaxis);
   param_types[4]  = REG_DBL;
-  param_strbl[4]  = TRUE;
+  param_strbl[4]  = REG_TRUE;
   param_min[4]    = "0.01";
   param_max[4]    = "10.0";
 
   param_labels[5] = "b_axis";
   param_ptrs[5]   = (void *)(&baxis);
   param_types[5]  = REG_DBL;
-  param_strbl[5]  = TRUE;
+  param_strbl[5]  = REG_TRUE;
   param_min[5]    = "0.01";
   param_max[5]    = "10.0";
 
   param_labels[6] = "c_axis";
   param_ptrs[6]   = (void *)(&caxis);
   param_types[6]  = REG_DBL;
-  param_strbl[6]  = TRUE;
+  param_strbl[6]  = REG_TRUE;
   param_min[6]    = "0.01";
   param_max[6]    = "10.0";
 
   param_labels[7] = "str_float";
   param_ptrs[7]   = (void *)(&str_float);
   param_types[7]  = REG_FLOAT;
-  param_strbl[7]  = TRUE;
+  param_strbl[7]  = REG_TRUE;
   param_min[7]    = "-10.0";
   param_max[7]    = "";
 
   param_labels[8] = "time_to_sleep";
   param_ptrs[8]   = (void *)(&sleep_time);
   param_types[8]  = REG_INT;
-  param_strbl[8]  = TRUE;
+  param_strbl[8]  = REG_TRUE;
   param_min[8]    = "0";
   param_max[8]    = "100";
 
   param_labels[9] = "nx";
   param_ptrs[9]   = (void *)(&nx);
   param_types[9]  = REG_INT;
-  param_strbl[9]  = TRUE;
+  param_strbl[9]  = REG_TRUE;
   param_min[9]    = "1";
   param_max[9]    = "";
 
   param_labels[10] = "ny";
   param_ptrs[10]   = (void *)(&ny);
   param_types[10]  = REG_INT;
-  param_strbl[10]  = TRUE;
+  param_strbl[10]  = REG_TRUE;
   param_min[10]    = "1";
   param_max[10]    = "";
 
   param_labels[11] = "nz";
   param_ptrs[11]   = (void *)(&nz);
   param_types[11]  = REG_INT;
-  param_strbl[11]  = TRUE;
+  param_strbl[11]  = REG_TRUE;
   param_min[11]    = "1";
   param_max[11]    = "";
 
@@ -346,7 +346,7 @@ int main(){
 
 
  	  case REG_STR_STOP:
-    	    finished = TRUE;
+    	    finished = REG_TRUE;
  	    break;
 
  	  default:

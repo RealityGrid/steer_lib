@@ -101,7 +101,7 @@ int main(){
 
   /* Initialise & enable the steering library */
 
-  Steering_enable(TRUE);
+  Steering_enable(REG_TRUE);
 
   numCommands = 1;
   commands[0] = REG_STR_STOP;
@@ -131,7 +131,7 @@ int main(){
     return REG_FAILURE;
   }
 
-  status = Register_param("Bytes_read", FALSE, 
+  status = Register_param("Bytes_read", REG_FALSE, 
 			  (void *)(&bytes_read), REG_INT, "", "");
 
   /* Enter main loop waiting for data to arrive */

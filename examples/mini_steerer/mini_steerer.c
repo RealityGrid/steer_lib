@@ -125,7 +125,7 @@ int main(){
   char_ptr = NULL;
 
   printf("Do (l)ocal or (r)emote attach: ");
-  while(TRUE){
+  while(REG_TRUE){
     scanf("%c", user_char);
     if(user_char[0] != '\n' && user_char[0] != ' ')break;
   }
@@ -159,7 +159,7 @@ int main(){
 	i = -1;
 	while(i<0 || i>(nsims-1)){
 	  printf("\nWhich one to attach to (0 - %d): ", nsims-1);
-	  while(TRUE){
+	  while(REG_TRUE){
 	    if(scanf("%d", &i) == 1)break;
 	  }
 	  printf("\n");
@@ -188,7 +188,7 @@ int main(){
 
   fprintf(stderr, "Attached to sim, sim_handle = %d\n", sim_handle);
 
-  done = FALSE;
+  done = REG_FALSE;
 
   /* Enter main loop - wait on user commands */
 
@@ -196,7 +196,7 @@ int main(){
 
     /* Display the monitored parameters */
 
-    if(Get_param_number(sim_handle, FALSE, &num_params) != REG_FAILURE){
+    if(Get_param_number(sim_handle, REG_FALSE, &num_params) != REG_FAILURE){
 
       fprintf(stderr, "Have %d monitored parameters:\n", num_params);
 
@@ -207,7 +207,7 @@ int main(){
       }
       
       if(Get_param_values(sim_handle, 
-			  FALSE,
+			  REG_FALSE,
 			  num_params,
 			  param_details) != REG_FAILURE){
 
@@ -223,7 +223,7 @@ int main(){
 
     /* Display the steerable parameters */
 
-    if(Get_param_number(sim_handle, TRUE, &num_params) != REG_FAILURE){
+    if(Get_param_number(sim_handle, REG_TRUE, &num_params) != REG_FAILURE){
 
       fprintf(stderr, "Have %d steerable parameters:\n", num_params);
 
@@ -234,7 +234,7 @@ int main(){
       }
       
       if(Get_param_values(sim_handle, 
-			  TRUE,
+			  REG_TRUE,
 			  num_params,
 			  param_details) != REG_FAILURE){
 
@@ -253,7 +253,7 @@ int main(){
 
     fprintf(stderr, "\nCommand: ");
 
-    while(TRUE){
+    while(REG_TRUE){
       scanf("%c", user_char);
       if(user_char[0] != '\n' && user_char[0] != ' ')break;
     }
@@ -362,7 +362,7 @@ int main(){
 	  	    "Freq. of iotype %s = %d\n", io_labels[i], io_freqs[i]);
 	  fprintf(stderr, "Enter new value: ");
 
-	  while(TRUE){
+	  while(REG_TRUE){
 	    scanf("%s", user_str);
 	    if(user_str[0] != '\n' && user_str[0] != ' ')break;
 	  }
@@ -438,7 +438,7 @@ int main(){
 
     case 'q':
       /* Quit command */
-      done = TRUE;
+      done = REG_TRUE;
       break;
 
     case 'r':
@@ -451,7 +451,7 @@ int main(){
       /* This only works if we're steering in a Grid Service 
 	 framework - otherwise a GSH is meaningless */
       printf("Enter GSH of checkpoint to restart from: ");
-      while(TRUE){
+      while(REG_TRUE){
 	scanf("%s", chk_GSH);
 	if(chk_GSH[0] != '\n' && chk_GSH[0] != ' ')break;
       }
@@ -526,7 +526,7 @@ int main(){
 				commands);
 	if(status == REG_FAILURE){
 	  fprintf(stderr, "Consume_status failed\n");
-	  done = TRUE;
+	  done = REG_TRUE;
 	}
 	else{
 #if DEBUG
@@ -545,7 +545,7 @@ int main(){
 	      fprintf(stderr, "App has signalled that it has finished\n");
 #endif
 	      Delete_sim_table_entry(&sim_handle);
-	      done = TRUE;
+	      done = REG_TRUE;
 	      break;
 
 	    default:
@@ -692,14 +692,14 @@ int Edit_parameter(int sim_handle)
 
   /* Find out what parameters there are to edit */
   
-  if(Get_param_number(sim_handle, TRUE, &num_params) != REG_FAILURE){
+  if(Get_param_number(sim_handle, REG_TRUE, &num_params) != REG_FAILURE){
 
     if(num_params > REG_INITIAL_NUM_PARAMS){
       num_params = REG_INITIAL_NUM_PARAMS;
     }
     
     if(Get_param_values(sim_handle, 
-    			TRUE,
+    			REG_TRUE,
     			num_params,
 			param_details) != REG_FAILURE){
     
@@ -713,7 +713,7 @@ int Edit_parameter(int sim_handle)
 
       fprintf(stderr, "Enter choice or 'c' to cancel: ");
 
-      while(TRUE){
+      while(REG_TRUE){
 	scanf("%s", user_str);
 	if(user_str[0] != '\n' && user_str[0] != ' ')break;
       }
@@ -729,7 +729,7 @@ int Edit_parameter(int sim_handle)
 
 	    fprintf(stderr, "New value: ");
 
-	    while(TRUE){
+	    while(REG_TRUE){
 	      scanf("%s", user_str);
 	      if(user_str[0] != '\n' && user_str[0] != ' ')break;
 	    }

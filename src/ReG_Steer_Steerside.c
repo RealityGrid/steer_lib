@@ -129,7 +129,7 @@ int Steerer_initialize()
      what services are available */
 
   /* Don't bother for now...*/ 
-  Proxy.available = FALSE;    
+  Proxy.available = REG_FALSE;    
 
   /*
   status = Create_proxy(&(Proxy.pipe_to_proxy), &(Proxy.pipe_from_proxy));
@@ -137,11 +137,11 @@ int Steerer_initialize()
   if(status != REG_SUCCESS){
 
     fprintf(stderr, "Steerer_initialize: Create_proxy failed\n");
-    Proxy.available = FALSE;    
+    Proxy.available = REG_FALSE;    
   }
   else{
 
-    Proxy.available = TRUE;
+    Proxy.available = REG_TRUE;
   }
   */
 
@@ -170,12 +170,12 @@ int Steerer_finalize()
  
   /* Finished with the proxy */
 
-  if(Proxy.available == TRUE){
+  if(Proxy.available == REG_TRUE){
 
     Destroy_proxy(Proxy.pipe_to_proxy);
     Proxy.pipe_to_proxy   = REG_PIPE_UNSET;
     Proxy.pipe_from_proxy = REG_PIPE_UNSET;
-    Proxy.available       = FALSE;
+    Proxy.available       = REG_FALSE;
   }
 
   return REG_SUCCESS;
@@ -202,7 +202,7 @@ int Get_sim_list(int   *nSims,
      REG_MAX_NUM_STEERED_SIM pointers to char arrays of length
      REG_MAX_STRING_LENGTH. */
 
-  if(Proxy.available != TRUE){
+  if(Proxy.available != REG_TRUE){
 
     /* Get address of top-level registry from env. variable if set */
     if(ptr = getenv("REG_REGISTRY_ADDRESS")){
@@ -357,7 +357,7 @@ int Sim_attach(char *SimID,
   for(i=0; i<Sim_table.sim[current_sim].Params_table.max_entries; i++){
 
     sim_ptr->Params_table.param[i].handle   = REG_PARAM_HANDLE_NOTSET;
-    sim_ptr->Params_table.param[i].modified = FALSE;
+    sim_ptr->Params_table.param[i].modified = REG_FALSE;
   }
 
   /* ...supported commands */
@@ -458,7 +458,7 @@ int Sim_attach(char *SimID,
   }
 
   /* Initialise Steering Grid Service-related data */
-  sim_ptr->SGS_info.active = FALSE;
+  sim_ptr->SGS_info.active = REG_FALSE;
   sim_ptr->SGS_info.sde_count = 0;
   sim_ptr->SGS_info.sde_index = 0;
 
@@ -486,10 +486,10 @@ int Sim_attach(char *SimID,
       return_status = Sim_attach_soap(&(Sim_table.sim[current_sim]), SimID);
 
       if(return_status == REG_SUCCESS){
-	Sim_table.sim[current_sim].SGS_info.active = TRUE;
+	Sim_table.sim[current_sim].SGS_info.active = REG_TRUE;
       }
       else{
-	Sim_table.sim[current_sim].SGS_info.active = FALSE;
+	Sim_table.sim[current_sim].SGS_info.active = REG_FALSE;
       }
     }
 
@@ -603,7 +603,7 @@ int Get_next_message(int   *SimHandle,
   *msg_type  = MSG_NOTSET;
 
   count_active = 0;
-  got_msg = FALSE;
+  got_msg = REG_FALSE;
   /* Search for next message from the sim. stored immediately
      following the one we got a message from last time */
   isim = ++last_sim;
@@ -652,7 +652,7 @@ int Get_next_message(int   *SimHandle,
 	/* Keep a record of the last sim we received a msg
 	   from and then breakout */
 	last_sim = isim;
-	got_msg = TRUE;
+	got_msg = REG_TRUE;
 
 	break;
       }
@@ -672,7 +672,7 @@ int Get_next_message(int   *SimHandle,
   }
 
   /* Didn't find a message so reset last_sim */
-  if(got_msg == FALSE)last_sim=-1;
+  if(got_msg == REG_FALSE)last_sim=-1;
 
   return return_status;
 }
@@ -813,35 +813,35 @@ int Consume_param_defs(int SimHandle)
       if(ptr->is_internal){
         if(!xmlStrcmp(ptr->is_internal, (const xmlChar *) "TRUE")){
 
-	  Sim_table.sim[index].Params_table.param[j].is_internal = TRUE;
+	  Sim_table.sim[index].Params_table.param[j].is_internal = REG_TRUE;
 	}
 	else{
-	  Sim_table.sim[index].Params_table.param[j].is_internal = FALSE;
+	  Sim_table.sim[index].Params_table.param[j].is_internal = REG_FALSE;
 	}
       }
 
       if(ptr->min_val){
 	strcpy(Sim_table.sim[index].Params_table.param[j].min_val, 
 	       (char *)ptr->min_val);
-	Sim_table.sim[index].Params_table.param[j].min_val_valid = TRUE;
+	Sim_table.sim[index].Params_table.param[j].min_val_valid = REG_TRUE;
       }
       else{
 	/* Absence of a bound in the xml message indicates no bound
 	   is set */
 	sprintf(Sim_table.sim[index].Params_table.param[j].min_val, "--");
-	Sim_table.sim[index].Params_table.param[j].min_val_valid = FALSE;
+	Sim_table.sim[index].Params_table.param[j].min_val_valid = REG_FALSE;
       }
 
       if(ptr->max_val){
 	strcpy(Sim_table.sim[index].Params_table.param[j].max_val, 
 	       (char *)ptr->max_val);
-	Sim_table.sim[index].Params_table.param[j].max_val_valid = TRUE;
+	Sim_table.sim[index].Params_table.param[j].max_val_valid = REG_TRUE;
       }
       else{
 	/* Absence of a bound in the xml message indicates no bound
 	   is set */
 	sprintf(Sim_table.sim[index].Params_table.param[j].max_val, "--");
-	Sim_table.sim[index].Params_table.param[j].max_val_valid = FALSE;
+	Sim_table.sim[index].Params_table.param[j].max_val_valid = REG_FALSE;
       }
 
       Sim_table.sim[index].Params_table.num_registered++;
@@ -864,7 +864,7 @@ int Consume_param_defs(int SimHandle)
 
       if(handle == Sim_table.sim[index].Params_table.param[i].handle){
 
-	found = TRUE;
+	found = REG_TRUE;
 	break;
       }
       ptr = ptr->next;
@@ -975,7 +975,7 @@ int Consume_IOType_defs(int SimHandle)
 
       if(handle == Sim_table.sim[index].IOdef_table.io_def[i].handle){
 
-	found = TRUE;
+	found = REG_TRUE;
 	break;
       }
       ptr = ptr->next;
@@ -1088,7 +1088,7 @@ int Consume_ChkType_defs(int SimHandle)
 
       if(handle == Sim_table.sim[index].Chkdef_table.io_def[i].handle){
 
-	found = TRUE;
+	found = REG_TRUE;
 	break;
       }
       ptr = ptr->next;
@@ -1574,7 +1574,7 @@ int Emit_control(int    SimHandle,
       pbuf += sprintf(pbuf, "</Param>\n");
 
       /* Unset 'modified' flag */
-      Sim_table.sim[simid].Params_table.param[i].modified = FALSE;
+      Sim_table.sim[simid].Params_table.param[i].modified = REG_FALSE;
 
       count++;
     }
@@ -1969,7 +1969,7 @@ int Get_param_values(int    sim_handle,
      num_param is the number to return and param_details should
      point to an array (of Param_details_struct's) of at least this length 
 
-     if steerable == TRUE (1) then return steerable params, if FALSE 
+     if steerable == REG_TRUE (1) then return steerable params, if REG_FALSE 
      (0) then return monitoring params */
 
   if(!param_details) {
@@ -2012,14 +2012,14 @@ int Get_param_values(int    sim_handle,
 
           param_details[count].type = Sim_table.sim[isim].Params_table.param[i].type;
 
-	  if(Sim_table.sim[isim].Params_table.param[i].min_val_valid == TRUE){
+	  if(Sim_table.sim[isim].Params_table.param[i].min_val_valid == REG_TRUE){
 	    strcpy(param_details[count].min_val, 
 		   Sim_table.sim[isim].Params_table.param[i].min_val);
 	  }
 	  else{
 	    sprintf(param_details[count].min_val, "--");
 	  }
-	  if(Sim_table.sim[isim].Params_table.param[i].max_val_valid == TRUE){
+	  if(Sim_table.sim[isim].Params_table.param[i].max_val_valid == REG_TRUE){
 	    strcpy(param_details[count].max_val, 
 		   Sim_table.sim[isim].Params_table.param[i].max_val);
 	  }
@@ -2074,24 +2074,24 @@ int Set_param_values(int    sim_handle,
 
       if(Sim_table.sim[isim].Params_table.param[index].steerable){
 
-	outside_range = FALSE;
+	outside_range = REG_FALSE;
 
 	/* Enforce limits specified when parameter was registered */
 	switch(Sim_table.sim[isim].Params_table.param[index].type){
 
 	case REG_INT:
 	  sscanf(vals[i], "%d", &ivalue);
-	  if(Sim_table.sim[isim].Params_table.param[index].min_val_valid == TRUE){
+	  if(Sim_table.sim[isim].Params_table.param[index].min_val_valid == REG_TRUE){
 	    sscanf(Sim_table.sim[isim].Params_table.param[index].min_val, "%d",
 		   &imin);
-	    if (ivalue < imin) outside_range = TRUE;
+	    if (ivalue < imin) outside_range = REG_TRUE;
 	  }
-	  if(Sim_table.sim[isim].Params_table.param[index].max_val_valid == TRUE){
+	  if(Sim_table.sim[isim].Params_table.param[index].max_val_valid == REG_TRUE){
 	    sscanf(Sim_table.sim[isim].Params_table.param[index].max_val, "%d",
 		   &imax);
-	    if (ivalue > imax) outside_range = TRUE;
+	    if (ivalue > imax) outside_range = REG_TRUE;
 	  }
-	  if(outside_range == TRUE){
+	  if(outside_range == REG_TRUE){
 	    fprintf(stderr, "Set_param_values: new value (%d) of %s is outside\n"
 		    "permitted range (%s,%s) - skipping...\n", 
 		    ivalue, 
@@ -2103,18 +2103,18 @@ int Set_param_values(int    sim_handle,
 
 	case REG_FLOAT:
 	  sscanf(vals[i], "%f", &fvalue);
-	  if(Sim_table.sim[isim].Params_table.param[index].min_val_valid == TRUE){
+	  if(Sim_table.sim[isim].Params_table.param[index].min_val_valid == REG_TRUE){
 	    sscanf(Sim_table.sim[isim].Params_table.param[index].min_val, "%f",
 		   &fmin);
-	    if (fvalue < fmin) outside_range = TRUE;
+	    if (fvalue < fmin) outside_range = REG_TRUE;
 	  }
-	  if(Sim_table.sim[isim].Params_table.param[index].max_val_valid == TRUE){
+	  if(Sim_table.sim[isim].Params_table.param[index].max_val_valid == REG_TRUE){
 	    sscanf(Sim_table.sim[isim].Params_table.param[index].max_val, "%f",
 		   &fmax);
-	    if (fvalue > fmax) outside_range = TRUE;
+	    if (fvalue > fmax) outside_range = REG_TRUE;
 	  }
 
-	  if(outside_range == TRUE){
+	  if(outside_range == REG_TRUE){
 	    fprintf(stderr, "Set_param_values: new value (%f) of %s is outside\n"
 		    "permitted range (%s,%s) - skipping...\n", 
 		    fvalue, 
@@ -2127,18 +2127,18 @@ int Set_param_values(int    sim_handle,
 
 	case REG_DBL:
 	  sscanf(vals[i], "%lf", &dvalue);
-	  if(Sim_table.sim[isim].Params_table.param[index].min_val_valid == TRUE){
+	  if(Sim_table.sim[isim].Params_table.param[index].min_val_valid == REG_TRUE){
 	    sscanf(Sim_table.sim[isim].Params_table.param[index].min_val, 
 		   "%lf", &dmin);
-	    if(dvalue < dmin) outside_range = TRUE;
+	    if(dvalue < dmin) outside_range = REG_TRUE;
 	  }
-	  if(Sim_table.sim[isim].Params_table.param[index].max_val_valid == TRUE){
+	  if(Sim_table.sim[isim].Params_table.param[index].max_val_valid == REG_TRUE){
 	    sscanf(Sim_table.sim[isim].Params_table.param[index].max_val, 
 		   "%lf", &dmax);
-	    if(dvalue > dmax) outside_range = TRUE;
+	    if(dvalue > dmax) outside_range = REG_TRUE;
 	  }
 
-	  if(outside_range == TRUE){
+	  if(outside_range == REG_TRUE){
 	    fprintf(stderr, "Set_param_values: new value (%f) of %s is outside\n"
 		    "permitted range (%s,%s) - skipping...\n", 
 		    (float)dvalue, 
@@ -2152,7 +2152,7 @@ int Set_param_values(int    sim_handle,
 	case REG_CHAR:
 	  /* Max. value taken as maximum possible length of steered 
 	     character strings */
-	  if(Sim_table.sim[isim].Params_table.param[index].max_val_valid == TRUE){
+	  if(Sim_table.sim[isim].Params_table.param[index].max_val_valid == REG_TRUE){
 	    sscanf(Sim_table.sim[isim].Params_table.param[index].max_val, "%d",
 		   &imax);
 	    if (strlen(vals[i]) > imax) {
@@ -2174,7 +2174,7 @@ int Set_param_values(int    sim_handle,
 
 	sprintf(Sim_table.sim[isim].Params_table.param[index].value,
 		"%s", vals[i]);
-	Sim_table.sim[isim].Params_table.param[index].modified = TRUE;
+	Sim_table.sim[isim].Params_table.param[index].modified = REG_TRUE;
       }
       else{
 	fprintf(stderr, "Set_param_values: can only edit steerable parameters\n");

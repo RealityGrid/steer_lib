@@ -354,8 +354,8 @@ int Next_free_param_index(Param_table_type *table)
       /* Initialise new entries */
       for(i=index; i<table->max_entries; i++){
 	table->param[i].handle = REG_PARAM_HANDLE_NOTSET;
- 	table->param[i].min_val_valid = FALSE;
-	table->param[i].max_val_valid = FALSE;
+ 	table->param[i].min_val_valid = REG_FALSE;
+	table->param[i].max_val_valid = REG_FALSE;
      }
     }
   }
@@ -412,8 +412,8 @@ int Increment_param_registered(Param_table_type *table)
       for(i=table->num_registered; i<table->max_entries; i++){
 
 	table->param[i].handle = REG_PARAM_HANDLE_NOTSET;
-	table->param[i].min_val_valid = FALSE;
-	table->param[i].max_val_valid = FALSE;
+	table->param[i].min_val_valid = REG_FALSE;
+	table->param[i].max_val_valid = REG_FALSE;
       }
     }
     else{
@@ -730,7 +730,7 @@ int Reorder_decode_array(IOdef_entry *io,
 
   array = &(io->array);
   /*
-  if( (io->convert_array_order == TRUE) && (array->nx == 0) ){
+  if( (io->convert_array_order == REG_TRUE) && (array->nx == 0) ){
 
     fprintf(stderr, "Reorder_decode_array: array has zero dimension\n");
     return REG_FAILURE;
@@ -749,7 +749,7 @@ int Reorder_decode_array(IOdef_entry *io,
 		  XDR_DECODE);
   }
 
-  if(io->use_xdr && io->convert_array_order != TRUE){
+  if(io->use_xdr && io->convert_array_order != REG_TRUE){
 
     /* Straight xdr decode with no re-ordering */
     switch(type){
@@ -787,7 +787,7 @@ int Reorder_decode_array(IOdef_entry *io,
       break;
     }
   }
-  else if(io->convert_array_order == TRUE){
+  else if(io->convert_array_order == REG_TRUE){
 
     switch(type){
 
@@ -797,7 +797,7 @@ int Reorder_decode_array(IOdef_entry *io,
 
       /* In this context, array->is_f90 flags whether we want to
 	 convert _to_ an F90-style array */
-      if(array->is_f90 != TRUE){
+      if(array->is_f90 != REG_TRUE){
 
 	/* Convert F90 array to C array */
 
@@ -885,7 +885,7 @@ int Reorder_decode_array(IOdef_entry *io,
 
       /* In this context, array->is_f90 flags whether we want to
 	 convert _to_ an F90-style array */
-      if(array->is_f90 != TRUE){
+      if(array->is_f90 != REG_TRUE){
 
 	/* Convert F90 array to C array */
 	
@@ -971,7 +971,7 @@ int Reorder_decode_array(IOdef_entry *io,
 
       /* In this context, array->is_f90 flags whether we want to
 	 convert _to_ an F90-style array */
-      if(array->is_f90 != TRUE){
+      if(array->is_f90 != REG_TRUE){
 	
 	/* Convert F90 array to C array */
 	

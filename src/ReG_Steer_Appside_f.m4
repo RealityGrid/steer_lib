@@ -103,7 +103,7 @@ INT_KIND_1_DECL(Status);
   }
 
   /* Set flag to indicate library is being called from a F90 code */
-  *Status = INT_KIND_1_CAST( Called_from_f90(TRUE) );
+  *Status = INT_KIND_1_CAST( Called_from_f90(REG_TRUE) );
   if(*Status != REG_SUCCESS){
     return;
   }
@@ -903,7 +903,7 @@ INT_KIND_1_DECL(Status);
 	                                   (int *)IOHandle) );
 
   if(*Status == REG_SUCCESS){
-    Set_f90_array_ordering((int)*IOHandle, TRUE);
+    Set_f90_array_ordering((int)*IOHandle, REG_TRUE);
   }
 
   return;
@@ -1008,7 +1008,7 @@ INT_KIND_1_DECL(Status);
                                         (int *)IOHandle) );
 
   if(*Status == REG_SUCCESS){
-    Set_f90_array_ordering((int)*IOHandle, TRUE);
+    Set_f90_array_ordering((int)*IOHandle, REG_TRUE);
   }
 
   return;

@@ -259,7 +259,7 @@ extern PREFIX int Make_chunk_header(char *header,
 extern PREFIX int Set_f90_array_ordering(int IOTypeIndex,
 				         int flag);
 
-/* Flag that library (flag = TRUE) is being called from F90 code. */
+/* Flag that library (flag = REG_TRUE) is being called from F90 code. */
 extern PREFIX int Called_from_f90(int flag);
 
 /* Reorder array pointed to by pInData into array pointed to by

@@ -83,19 +83,19 @@ Steer_log_type Steer_log;
 Param_table_type Params_table;
 
 /* Whether steering is enabled (set by user) */
-static int ReG_SteeringEnabled = FALSE;
+static int ReG_SteeringEnabled = REG_FALSE;
 /* Whether the set of registered params has changed */
-static int ReG_ParamsChanged   = FALSE;
+static int ReG_ParamsChanged   = REG_FALSE;
 /* Whether the set of registered IO types has changed */
-static int ReG_IOTypesChanged  = FALSE;
+static int ReG_IOTypesChanged  = REG_FALSE;
 /* Whether the set of registered Chk types has changed */
-static int ReG_ChkTypesChanged = FALSE;
+static int ReG_ChkTypesChanged = REG_FALSE;
 /* Whether app. is currently being steered */
-static int ReG_SteeringActive  = FALSE;
+static int ReG_SteeringActive  = REG_FALSE;
 /* Whether steering library has been initialised */
-static int ReG_SteeringInit    = FALSE;
+static int ReG_SteeringInit    = REG_FALSE;
 /* Whether steering lib is being called from F90 */
-static int ReG_CalledFromF90   = FALSE;
+static int ReG_CalledFromF90   = REG_FALSE;
 /* Absolute path of directory we are executing in */
 char ReG_CurrentDir[REG_MAX_STRING_LENGTH];
 /* Hostname of machine we are executing on */
@@ -161,7 +161,7 @@ int Steering_initialize(char *AppName,
 
       fprintf(stderr, "Steering_initialize: schema path exceeds "
 	      "REG_MAX_STRING_LENGTH (%d chars)\n", REG_MAX_STRING_LENGTH);
-      Steering_enable(FALSE);
+      Steering_enable(REG_FALSE);
       return REG_FAILURE;
     }
 #endif
@@ -179,7 +179,7 @@ int Steering_initialize(char *AppName,
 
     fprintf(stderr, "Steering_initialize: Error - REG_STEER_HOME "
 	    "environment variable not set\n");
-    Steering_enable(FALSE);
+    Steering_enable(REG_FALSE);
     return REG_FAILURE;
   }
 
@@ -199,7 +199,7 @@ int Steering_initialize(char *AppName,
     fprintf(stderr, "Steering_initialize: Error - tag specifying "
 	    "application name and version exceeds %d chars\n",
             REG_MAX_STRING_LENGTH);
-    Steering_enable(FALSE);
+    Steering_enable(REG_FALSE);
     return REG_FAILURE;
   }
   strcpy(ReG_AppName, AppName);
@@ -233,7 +233,7 @@ int Steering_initialize(char *AppName,
 
   IOTypes_table.num_registered = 0;
   IOTypes_table.max_entries    = REG_INITIAL_NUM_IOTYPES;
-  IOTypes_table.enable_on_registration = TRUE;
+  IOTypes_table.enable_on_registration = REG_TRUE;
   IOTypes_table.io_def         = (IOdef_entry *)
                                  malloc(IOTypes_table.max_entries
 					*sizeof(IOdef_entry));
@@ -242,7 +242,7 @@ int Steering_initialize(char *AppName,
     
     fprintf(stderr, "Steering_initialize: failed to allocate memory "
 	    "for IOType table\n");
-    Steering_enable(FALSE);
+    Steering_enable(REG_FALSE);
     return REG_FAILURE;
   }
 
@@ -275,7 +275,7 @@ int Steering_initialize(char *AppName,
 	    "for ChkType table\n");
     free(IOTypes_table.io_def);
     IOTypes_table.io_def = NULL;
-    Steering_enable(FALSE);
+    Steering_enable(REG_FALSE);
     return REG_FAILURE;
   }
 
@@ -301,7 +301,7 @@ int Steering_initialize(char *AppName,
     IOTypes_table.io_def = NULL;
     free(ChkTypes_table.io_def);
     ChkTypes_table.io_def = NULL;
-    Steering_enable(FALSE);
+    Steering_enable(REG_FALSE);
     return REG_FAILURE;
   }
 
@@ -310,24 +310,24 @@ int Steering_initialize(char *AppName,
   for(i=0; i<Params_table.max_entries; i++){
 
     Params_table.param[i].handle = REG_PARAM_HANDLE_NOTSET;
-    Params_table.param[i].min_val_valid = FALSE;
-    Params_table.param[i].max_val_valid = FALSE;
+    Params_table.param[i].min_val_valid = REG_FALSE;
+    Params_table.param[i].max_val_valid = REG_FALSE;
   }
 
   /* 'Sequence number' is treated as a parameter */
   Params_table.param[0].ptr       = NULL;
   Params_table.param[0].type      = REG_INT;
   Params_table.param[0].handle    = REG_SEQ_NUM_HANDLE;
-  Params_table.param[0].steerable = FALSE;
-  Params_table.param[0].modified  = FALSE;
-  Params_table.param[0].is_internal=FALSE;
+  Params_table.param[0].steerable = REG_FALSE;
+  Params_table.param[0].modified  = REG_FALSE;
+  Params_table.param[0].is_internal=REG_FALSE;
   sprintf(Params_table.param[0].label, "SEQUENCE_NUM");
   sprintf(Params_table.param[0].value, "-1");
   sprintf(Params_table.param[0].min_val, "-1");
-  Params_table.param[0].min_val_valid = TRUE;
+  Params_table.param[0].min_val_valid = REG_TRUE;
   /* Max. value for sequence number is unlimited */
   sprintf(Params_table.param[0].max_val, " ");
-  Params_table.param[0].max_val_valid = FALSE;
+  Params_table.param[0].max_val_valid = REG_FALSE;
   Increment_param_registered(&Params_table);
 
   /* Parameter for monitoring CPU time per step */
@@ -335,15 +335,15 @@ int Steering_initialize(char *AppName,
   Params_table.param[i].ptr       = NULL;
   Params_table.param[i].type      = REG_FLOAT;
   Params_table.param[i].handle    = REG_STEP_TIME_HANDLE;
-  Params_table.param[i].steerable = FALSE;
-  Params_table.param[i].modified  = FALSE;
-  Params_table.param[i].is_internal=FALSE;
+  Params_table.param[i].steerable = REG_FALSE;
+  Params_table.param[i].modified  = REG_FALSE;
+  Params_table.param[i].is_internal=REG_FALSE;
   sprintf(Params_table.param[i].label, "CPU_TIME_PER_STEP");
   sprintf(Params_table.param[i].value, "0.0");
   sprintf(Params_table.param[i].min_val, "");
-  Params_table.param[i].min_val_valid = FALSE;
+  Params_table.param[i].min_val_valid = REG_FALSE;
   sprintf(Params_table.param[i].max_val, "");
-  Params_table.param[i].max_val_valid = FALSE;
+  Params_table.param[i].max_val_valid = REG_FALSE;
   Increment_param_registered(&Params_table);
 
   /* Parameter for recording time stamp - currently ONLY used
@@ -352,15 +352,15 @@ int Steering_initialize(char *AppName,
   Params_table.param[i].ptr       = NULL;
   Params_table.param[i].type      = REG_CHAR;
   Params_table.param[i].handle    = REG_TIMESTAMP_HANDLE;
-  Params_table.param[i].steerable = FALSE;
-  Params_table.param[i].modified  = FALSE;
-  Params_table.param[i].is_internal=TRUE;
+  Params_table.param[i].steerable = REG_FALSE;
+  Params_table.param[i].modified  = REG_FALSE;
+  Params_table.param[i].is_internal=REG_TRUE;
   sprintf(Params_table.param[i].label, "TIMESTAMP");
   sprintf(Params_table.param[i].value, "");
   sprintf(Params_table.param[i].min_val, "");
-  Params_table.param[i].min_val_valid = FALSE;
+  Params_table.param[i].min_val_valid = REG_FALSE;
   sprintf(Params_table.param[i].max_val, "");
-  Params_table.param[i].max_val_valid = FALSE;
+  Params_table.param[i].max_val_valid = REG_FALSE;
   Increment_param_registered(&Params_table);
 
   /* Set-up a steerable parameter to control how often the steering lib.
@@ -372,15 +372,15 @@ int Steering_initialize(char *AppName,
   Params_table.param[i].ptr       = (void *)(&(Steerer_connection.steer_interval));
   Params_table.param[i].type      = REG_INT;
   Params_table.param[i].handle    = REG_STEER_INTERVAL_HANDLE;
-  Params_table.param[i].steerable = TRUE;
-  Params_table.param[i].modified  = FALSE;
-  Params_table.param[i].is_internal=FALSE;
+  Params_table.param[i].steerable = REG_TRUE;
+  Params_table.param[i].modified  = REG_FALSE;
+  Params_table.param[i].is_internal=REG_FALSE;
   sprintf(Params_table.param[i].label, "STEERING_INTERVAL");
   sprintf(Params_table.param[i].value, "1");
   sprintf(Params_table.param[i].min_val, "1");
-  Params_table.param[i].min_val_valid = TRUE;
+  Params_table.param[i].min_val_valid = REG_TRUE;
   sprintf(Params_table.param[i].max_val, "");
-  Params_table.param[i].max_val_valid = FALSE;
+  Params_table.param[i].max_val_valid = REG_FALSE;
   Increment_param_registered(&Params_table);
 
   /* Set-up/prepare for connection to steering client */
@@ -394,7 +394,7 @@ int Steering_initialize(char *AppName,
     free(Params_table.param);
     Params_table.param = NULL;
 
-    Steering_enable(FALSE);
+    Steering_enable(REG_FALSE);
     return REG_FAILURE;
   }
 
@@ -405,7 +405,7 @@ int Steering_initialize(char *AppName,
   Chk_log.num_entries = 0;
   Chk_log.max_entries = REG_INITIAL_CHK_LOG_SIZE;
   Chk_log.num_unsent  = 0;
-  Chk_log.send_all    = TRUE;
+  Chk_log.send_all    = REG_TRUE;
 
   Set_log_primary_key();
 
@@ -430,7 +430,7 @@ int Steering_initialize(char *AppName,
     ChkTypes_table.io_def = NULL;
     free(Params_table.param);
     Params_table.param = NULL;
-    Steering_enable(FALSE);
+    Steering_enable(REG_FALSE);
     return REG_FAILURE;
   }
 
@@ -440,7 +440,7 @@ int Steering_initialize(char *AppName,
 
   for(i=0; i<Chk_log.max_entries; i++){
 
-    Chk_log.entry[i].sent_to_steerer = TRUE;
+    Chk_log.entry[i].sent_to_steerer = REG_TRUE;
     Chk_log.entry[i].num_param       = 0;
 
     for(j=0; j<REG_MAX_NUM_STR_PARAMS; j++){
@@ -473,7 +473,7 @@ int Steering_initialize(char *AppName,
 
   /* Flag that library has been successfully initialised */
 
-  ReG_SteeringInit = TRUE;
+  ReG_SteeringInit = REG_TRUE;
 
   return REG_SUCCESS;
 }
@@ -565,13 +565,13 @@ int Steering_finalize()
 
   /* Reset state of library */
 
-  ReG_ParamsChanged  = FALSE;
-  ReG_IOTypesChanged = FALSE;
-  ReG_ChkTypesChanged = FALSE;
-  ReG_SteeringActive = FALSE;
+  ReG_ParamsChanged  = REG_FALSE;
+  ReG_IOTypesChanged = REG_FALSE;
+  ReG_ChkTypesChanged = REG_FALSE;
+  ReG_SteeringActive = REG_FALSE;
 
   /* Flag that library no-longer initialised */
-  ReG_SteeringInit    = FALSE;
+  ReG_SteeringInit    = REG_FALSE;
 
   return REG_SUCCESS;
 }
@@ -620,7 +620,7 @@ int Register_IOTypes(int    NumTypes,
 
   for(i=0; i<NumTypes; i++){
 
-    if(String_contains_xml_chars(IOLabel[i]) == TRUE){
+    if(String_contains_xml_chars(IOLabel[i]) == REG_TRUE){
 
       fprintf(stderr, "Register_IOTypes: ERROR: IO label contains "
 	      "reserved xml characters (<,>,&): %s\n"
@@ -642,7 +642,7 @@ int Register_IOTypes(int    NumTypes,
        frequency as a steerable parameter */
 
     iofreq_labels[0] = freq_label;
-    iofreq_strbl = TRUE;
+    iofreq_strbl = REG_TRUE;
     iofreq_type  = REG_INT;
     IOTypes_table.io_def[current].frequency = IOFrequency[i];
     ptr_array[0] = (void *)&(IOTypes_table.io_def[current].frequency);
@@ -669,7 +669,7 @@ int Register_IOTypes(int    NumTypes,
 			      IOTypes_table.io_def[current].freq_param_handle);
 
     if(iparam != -1){
-      Params_table.param[iparam].is_internal = TRUE;
+      Params_table.param[iparam].is_internal = REG_TRUE;
     }
     else{
 
@@ -682,7 +682,7 @@ int Register_IOTypes(int    NumTypes,
     IOTypes_table.io_def[current].buffer = NULL;
     IOTypes_table.io_def[current].buffer_bytes = 0;
     IOTypes_table.io_def[current].buffer_max_bytes = 0;
-    IOTypes_table.io_def[current].use_xdr = FALSE;
+    IOTypes_table.io_def[current].use_xdr = REG_FALSE;
     IOTypes_table.io_def[current].num_xdr_bytes = 0;
     IOTypes_table.io_def[current].array.nx = 0;
     IOTypes_table.io_def[current].array.ny = 0;
@@ -690,12 +690,12 @@ int Register_IOTypes(int    NumTypes,
     IOTypes_table.io_def[current].array.sx = 0;
     IOTypes_table.io_def[current].array.sy = 0;
     IOTypes_table.io_def[current].array.sz = 0;
-    IOTypes_table.io_def[current].convert_array_order = FALSE;
+    IOTypes_table.io_def[current].convert_array_order = REG_FALSE;
     IOTypes_table.io_def[current].is_enabled = IOTypes_table.enable_on_registration;
     /* Use acknowledgements by default */
-    IOTypes_table.io_def[current].use_ack = TRUE;
+    IOTypes_table.io_def[current].use_ack = REG_TRUE;
     /* No ack needed for first data set to be emitted */
-    IOTypes_table.io_def[current].ack_needed = FALSE;
+    IOTypes_table.io_def[current].ack_needed = REG_FALSE;
 
     /* set up transport for sample data - eg sockets */
     return_status = Initialize_IOType_transport(direction[i], current);
@@ -730,7 +730,7 @@ int Register_IOTypes(int    NumTypes,
   IOTypes_table.num_registered = current;
 
   /* Flag that the registered IO Types have changed */
-  ReG_IOTypesChanged = TRUE;
+  ReG_IOTypesChanged = REG_TRUE;
 
   return return_status;
 }
@@ -756,12 +756,12 @@ int Disable_IOType(int IOType){
     return REG_FAILURE;
   }
 
-  if(IOTypes_table.io_def[index].is_enabled == TRUE){
+  if(IOTypes_table.io_def[index].is_enabled == REG_TRUE){
 
 #if REG_SOCKET_SAMPLES
     status = Disable_IOType_sockets(index);
 #endif
-    IOTypes_table.io_def[index].is_enabled = FALSE;
+    IOTypes_table.io_def[index].is_enabled = REG_FALSE;
 
     /* If this is an output IOType then destroying the socket
        changes the listening port and so we have to reset its IOType
@@ -784,11 +784,11 @@ int Enable_IOTypes_on_registration(int toggle){
      in the case of sockets) when they are registered.  Can turn
      this off using this function prior to call to Register_IOTypes.*/
 
-  if(toggle == TRUE){
-    IOTypes_table.enable_on_registration = TRUE;
+  if(toggle == REG_TRUE){
+    IOTypes_table.enable_on_registration = REG_TRUE;
   }
-  else if(toggle == FALSE){
-    IOTypes_table.enable_on_registration = FALSE;
+  else if(toggle == REG_FALSE){
+    IOTypes_table.enable_on_registration = REG_FALSE;
   }
   else{
     return REG_FAILURE;
@@ -821,12 +821,12 @@ int Enable_IOType(int IOType){
     return REG_FAILURE;
   }
 
-  if(IOTypes_table.io_def[index].is_enabled == FALSE){
+  if(IOTypes_table.io_def[index].is_enabled == REG_FALSE){
 
 #if REG_SOCKET_SAMPLES
     status = Enable_IOType_sockets(index);
 #endif
-    IOTypes_table.io_def[index].is_enabled = TRUE;
+    IOTypes_table.io_def[index].is_enabled = REG_TRUE;
 
     /* If this is an output IOType then creating the socket
        changes the listening port and so we have to reset its IOType
@@ -837,7 +837,7 @@ int Enable_IOType(int IOType){
       Emit_IOType_defs();
     }
 
-    IOTypes_table.io_def[index].ack_needed = FALSE;
+    IOTypes_table.io_def[index].ack_needed = REG_FALSE;
   }
 #if REG_DEBUG
   else{
@@ -875,7 +875,7 @@ int Enable_IOType_acks(int IOType){
   }
 
   /* Use acknowledgements */
-  IOTypes_table.io_def[index].use_ack = TRUE;
+  IOTypes_table.io_def[index].use_ack = REG_TRUE;
 
   return REG_SUCCESS;
 }
@@ -906,7 +906,7 @@ int Disable_IOType_acks(int IOType){
   }
 
   /* Don't use acknowledgements */
-  IOTypes_table.io_def[index].use_ack = FALSE;
+  IOTypes_table.io_def[index].use_ack = REG_FALSE;
 
   return REG_SUCCESS;
 }
@@ -935,14 +935,14 @@ int Set_f90_array_ordering(int IOTypeIndex, int flag){
 
 int Called_from_f90(int flag){
 
-  if(flag == TRUE){
-    ReG_CalledFromF90 = TRUE;
+  if(flag == REG_TRUE){
+    ReG_CalledFromF90 = REG_TRUE;
   }
-  else if(flag == FALSE){
-    ReG_CalledFromF90 = FALSE;
+  else if(flag == REG_FALSE){
+    ReG_CalledFromF90 = REG_FALSE;
   }
   else{
-    fprintf(stderr, "Called_from_f90: flag is neither TRUE or FALSE\n");
+    fprintf(stderr, "Called_from_f90: flag is neither REG_TRUE or REG_FALSE\n");
     return REG_FAILURE;
   }
 
@@ -993,7 +993,7 @@ int Register_ChkTypes(int    NumTypes,
 
   for(i=0; i<NumTypes; i++){
 
-    if(String_contains_xml_chars(ChkLabel[i]) == TRUE){
+    if(String_contains_xml_chars(ChkLabel[i]) == REG_TRUE){
 
       fprintf(stderr, "Register_ChkTypes: ERROR: Chk label contains "
 	      "reserved xml characters (<,>,&): %s\n"
@@ -1018,7 +1018,7 @@ int Register_ChkTypes(int    NumTypes,
          frequency as a steerable parameter */
 
       chkfreq_labels[0] = freq_label;
-      chkfreq_strbl = TRUE;
+      chkfreq_strbl = REG_TRUE;
       chkfreq_type  = REG_INT;
       ChkTypes_table.io_def[current].frequency = ChkFrequency[i];
       ptr_array[0]  = (void *)&(ChkTypes_table.io_def[current].frequency);
@@ -1044,7 +1044,7 @@ int Register_ChkTypes(int    NumTypes,
       iparam = Param_index_from_handle(&Params_table, 
 			    ChkTypes_table.io_def[current].freq_param_handle);
       if(iparam != -1){
-        Params_table.param[iparam].is_internal = TRUE;
+        Params_table.param[iparam].is_internal = REG_TRUE;
       }
       else{
 #if REG_DEBUG
@@ -1096,7 +1096,7 @@ int Register_ChkTypes(int    NumTypes,
   ChkTypes_table.num_registered = current;
 
   /* Flag that the registered Chk Types have changed */
-  ReG_ChkTypesChanged = TRUE;
+  ReG_ChkTypesChanged = REG_TRUE;
 
   return return_status;
 }
@@ -1134,7 +1134,7 @@ int Record_Chkpt(int   ChkType,
   Chk_log.entry[Chk_log.num_entries].key = Chk_log.primary_key_value++;
   strcpy(Chk_log.entry[Chk_log.num_entries].chk_tag, ChkTag);
   Chk_log.entry[Chk_log.num_entries].chk_handle      = ChkType;
-  Chk_log.entry[Chk_log.num_entries].sent_to_steerer = FALSE;
+  Chk_log.entry[Chk_log.num_entries].sent_to_steerer = REG_FALSE;
 
   /* Store the values of all registered parameters at this point (so
      long as they're not internal to the library) */
@@ -1142,7 +1142,7 @@ int Record_Chkpt(int   ChkType,
   for(index = 0; index<Params_table.max_entries; index++){
 
     if(Params_table.param[index].handle == REG_PARAM_HANDLE_NOTSET ||
-       Params_table.param[index].is_internal == TRUE){
+       Params_table.param[index].is_internal == REG_TRUE){
 
       /* Time stamp is a special case - is internal but we do want
 	 it for checkpoint records */
@@ -1371,7 +1371,7 @@ int Record_checkpoint_set(int   ChkType,
   for(i = 0; i<Params_table.max_entries; i++){
 
     if(Params_table.param[i].handle == REG_PARAM_HANDLE_NOTSET ||
-       Params_table.param[i].is_internal == TRUE){
+       Params_table.param[i].is_internal == REG_TRUE){
 
       /* Time stamp is a special case - is internal but we do want
 	 it for checkpoint records */
@@ -1545,7 +1545,7 @@ int Save_log()
 
   /* Third argument says we want all entries - not just those that
      haven't already been sent to the steerer */
-  if(Log_to_xml(&buf, &len, FALSE) == REG_SUCCESS){
+  if(Log_to_xml(&buf, &len, REG_FALSE) == REG_SUCCESS){
 
     fprintf(Chk_log.file_ptr, "%s", buf);
   }
@@ -1586,7 +1586,7 @@ int Log_to_xml(char **pchar, int *count, const int not_sent_only)
   for(i=0; i<Chk_log.num_entries; i++){
 
     /* Check to see whether steerer already has this entry */
-    if (not_sent_only && (Chk_log.entry[i].sent_to_steerer == TRUE)) continue;
+    if (not_sent_only && (Chk_log.entry[i].sent_to_steerer == REG_TRUE)) continue;
 
     bytes_left = size;
     pentry = entry;
@@ -1672,7 +1672,7 @@ int Log_to_xml(char **pchar, int *count, const int not_sent_only)
     *count += len;
 
     /* Flag this entry as having been sent to steerer */
-    Chk_log.entry[i].sent_to_steerer = TRUE;
+    Chk_log.entry[i].sent_to_steerer = REG_TRUE;
   }
 
   *pbuf = 0;
@@ -1760,7 +1760,7 @@ int Consume_start(int  IOType,
   }
 
   /* Check that this IOType is enabled */
-  if(IOTypes_table.io_def[*IOTypeIndex].is_enabled == FALSE){
+  if(IOTypes_table.io_def[*IOTypeIndex].is_enabled == REG_FALSE){
     return REG_FAILURE;
   }
 
@@ -1771,16 +1771,16 @@ int Consume_start(int  IOType,
     return REG_FAILURE;
   }
 
-  if(IOTypes_table.io_def[*IOTypeIndex].ack_needed == TRUE){
+  if(IOTypes_table.io_def[*IOTypeIndex].ack_needed == REG_TRUE){
 
     /* Signal that we have read this data and are ready for the next
        set */
     Emit_ack(*IOTypeIndex);
-    IOTypes_table.io_def[*IOTypeIndex].ack_needed = FALSE;
+    IOTypes_table.io_def[*IOTypeIndex].ack_needed = REG_FALSE;
   }
 
   /* Initialise array-ordering flags */
-  IOTypes_table.io_def[*IOTypeIndex].convert_array_order = FALSE;
+  IOTypes_table.io_def[*IOTypeIndex].convert_array_order = REG_FALSE;
 
   return Consume_start_data_check(*IOTypeIndex);
 }
@@ -1804,13 +1804,13 @@ int Consume_stop(int *IOTypeIndex)
   }
 
   /* Check that this IOType is enabled */
-  if(IOTypes_table.io_def[*IOTypeIndex].is_enabled == FALSE){
+  if(IOTypes_table.io_def[*IOTypeIndex].is_enabled == REG_FALSE){
     return REG_FAILURE;
   }
 
   /* Set flag that we should signal data source that we are ready for new data
      when we next call Consume_start */
-  IOTypes_table.io_def[*IOTypeIndex].ack_needed = TRUE;
+  IOTypes_table.io_def[*IOTypeIndex].ack_needed = REG_TRUE;
 
 
 #if !REG_SOCKET_SAMPLES
@@ -1850,7 +1850,7 @@ int Consume_data_slice_header(int  IOTypeIndex,
   if(!ReG_SteeringEnabled) return REG_SUCCESS;
 
   /* Check that this IOType is enabled */
-  if(IOTypes_table.io_def[IOTypeIndex].is_enabled == FALSE){
+  if(IOTypes_table.io_def[IOTypeIndex].is_enabled == REG_FALSE){
     return REG_FAILURE;
   }
 
@@ -1868,25 +1868,25 @@ int Consume_data_slice_header(int  IOTypeIndex,
   switch(*DataType){
 
   case REG_XDR_INT:
-    IOTypes_table.io_def[IOTypeIndex].use_xdr = TRUE;
+    IOTypes_table.io_def[IOTypeIndex].use_xdr = REG_TRUE;
     IOTypes_table.io_def[IOTypeIndex].num_xdr_bytes = NumBytes;
     *DataType = REG_INT;
     break;
 
   case REG_XDR_FLOAT:
-    IOTypes_table.io_def[IOTypeIndex].use_xdr = TRUE;
+    IOTypes_table.io_def[IOTypeIndex].use_xdr = REG_TRUE;
     IOTypes_table.io_def[IOTypeIndex].num_xdr_bytes = NumBytes;
     *DataType = REG_FLOAT;
     break;
 
   case REG_XDR_DOUBLE:
-    IOTypes_table.io_def[IOTypeIndex].use_xdr = TRUE;
+    IOTypes_table.io_def[IOTypeIndex].use_xdr = REG_TRUE;
     IOTypes_table.io_def[IOTypeIndex].num_xdr_bytes = NumBytes;
     *DataType = REG_DBL;
     break;
 
   default:
-    IOTypes_table.io_def[IOTypeIndex].use_xdr = FALSE;
+    IOTypes_table.io_def[IOTypeIndex].use_xdr = REG_FALSE;
     break;
   }
 
@@ -1895,14 +1895,14 @@ int Consume_data_slice_header(int  IOTypeIndex,
 
     * Assume we don't ever want to re-order char data *
     if(*DataType != REG_CHAR){
-      IOTypes_table.io_def[IOTypeIndex].convert_array_order = TRUE;
+      IOTypes_table.io_def[IOTypeIndex].convert_array_order = REG_TRUE;
     }
     else{
-      IOTypes_table.io_def[IOTypeIndex].convert_array_order = FALSE;
+      IOTypes_table.io_def[IOTypeIndex].convert_array_order = REG_FALSE;
     }
   }
   else{
-    IOTypes_table.io_def[IOTypeIndex].convert_array_order = FALSE;
+    IOTypes_table.io_def[IOTypeIndex].convert_array_order = REG_FALSE;
   }
   */
 
@@ -1923,7 +1923,7 @@ int Consume_data_slice(int    IOTypeIndex,
   if(!ReG_SteeringEnabled) return REG_SUCCESS;
 
   /* Check that this IOType is enabled */
-  if(IOTypes_table.io_def[IOTypeIndex].is_enabled == FALSE){
+  if(IOTypes_table.io_def[IOTypeIndex].is_enabled == REG_FALSE){
     return REG_FAILURE;
   }
 
@@ -1969,7 +1969,7 @@ int Consume_data_slice(int    IOTypeIndex,
 	    "in slice header\n");
 
     /* Reset use_xdr flag set as only valid on a per-slice basis */
-    IOTypes_table.io_def[IOTypeIndex].use_xdr = FALSE;
+    IOTypes_table.io_def[IOTypeIndex].use_xdr = REG_FALSE;
     IOTypes_table.io_def[IOTypeIndex].num_xdr_bytes = 0;
 
     return REG_FAILURE;
@@ -1979,7 +1979,7 @@ int Consume_data_slice(int    IOTypeIndex,
   /* Check that input buffer is large enough (only an issue if have XDR-
      encoded data or need to reorder it) */
   if(IOTypes_table.io_def[IOTypeIndex].use_xdr ||
-     IOTypes_table.io_def[IOTypeIndex].convert_array_order == TRUE){
+     IOTypes_table.io_def[IOTypeIndex].convert_array_order == REG_TRUE){
 
     if(IOTypes_table.io_def[IOTypeIndex].buffer_max_bytes < num_bytes_to_read){
 
@@ -1987,7 +1987,7 @@ int Consume_data_slice(int    IOTypeIndex,
 	 != REG_SUCCESS){
 
 	/* Reset use_xdr flag set as only valid on a per-slice basis */
-	IOTypes_table.io_def[IOTypeIndex].use_xdr = FALSE;
+	IOTypes_table.io_def[IOTypeIndex].use_xdr = REG_FALSE;
 	IOTypes_table.io_def[IOTypeIndex].num_xdr_bytes = 0;
 	return REG_FAILURE;
       }
@@ -2011,7 +2011,7 @@ int Consume_data_slice(int    IOTypeIndex,
 		       DataType, Count,  pData);
 
   /* Reset use_xdr flag set as only valid on a per-slice basis */
-  IOTypes_table.io_def[IOTypeIndex].use_xdr = FALSE;
+  IOTypes_table.io_def[IOTypeIndex].use_xdr = REG_FALSE;
   IOTypes_table.io_def[IOTypeIndex].num_xdr_bytes = 0;
 
   return return_status;
@@ -2043,7 +2043,7 @@ int Emit_start(int  IOType,
   }
 
   /* Check that this IOType is enabled */
-  if(IOTypes_table.io_def[*IOTypeIndex].is_enabled == FALSE){
+  if(IOTypes_table.io_def[*IOTypeIndex].is_enabled == REG_FALSE){
     return REG_FAILURE;
   }
 
@@ -2055,10 +2055,10 @@ int Emit_start(int  IOType,
   }
 
   /* Set whether or not to encode as XDR */
-  IOTypes_table.io_def[*IOTypeIndex].use_xdr = TRUE;
+  IOTypes_table.io_def[*IOTypeIndex].use_xdr = REG_TRUE;
 
   /* Initialise array-ordering flags */
-  IOTypes_table.io_def[*IOTypeIndex].convert_array_order = FALSE;
+  IOTypes_table.io_def[*IOTypeIndex].convert_array_order = REG_FALSE;
 
   if(Consume_ack(*IOTypeIndex) != REG_SUCCESS){
 
@@ -2115,7 +2115,7 @@ int Emit_start(int  IOType,
 
   if( Emit_header(*IOTypeIndex) != REG_SUCCESS){
 
-    IOTypes_table.io_def[*IOTypeIndex].ack_needed = FALSE;
+    IOTypes_table.io_def[*IOTypeIndex].ack_needed = REG_FALSE;
     return REG_FAILURE;
   }
   return REG_SUCCESS;
@@ -2134,7 +2134,7 @@ int Emit_stop(int *IOTypeIndex)
   if (!ReG_SteeringInit) return REG_FAILURE;
 
   /* Check that this IOType is enabled */
-  if(IOTypes_table.io_def[*IOTypeIndex].is_enabled == FALSE){
+  if(IOTypes_table.io_def[*IOTypeIndex].is_enabled == REG_FALSE){
     return REG_FAILURE;
   }
 
@@ -2158,16 +2158,16 @@ int Emit_stop(int *IOTypeIndex)
   /* Flag that we'll want an acknowledgement of this data set
      before we try to read another one */
   if(return_status == REG_SUCCESS){
-    IOTypes_table.io_def[*IOTypeIndex].ack_needed = TRUE;
+    IOTypes_table.io_def[*IOTypeIndex].ack_needed = REG_TRUE;
 #if REG_DEBUG_FULL
-    printf("INFO: Emit_stop: set ack_needed = TRUE for index %d\n", 
+    printf("INFO: Emit_stop: set ack_needed = REG_TRUE for index %d\n", 
 	   *IOTypeIndex);
 #endif
   }
   else{
-    IOTypes_table.io_def[*IOTypeIndex].ack_needed = FALSE;
+    IOTypes_table.io_def[*IOTypeIndex].ack_needed = REG_FALSE;
 #if REG_DEBUG_FULL
-    printf("INFO: Emit_stop: set ack_needed = FALSE for index %d\n", 
+    printf("INFO: Emit_stop: set ack_needed = REG_FALSE for index %d\n", 
 	   *IOTypeIndex);
 #endif
   }
@@ -2202,7 +2202,7 @@ int Emit_data_slice(int		      IOTypeIndex,
     return REG_FAILURE;
 
   /* Check that this IOType is enabled */
-  if(IOTypes_table.io_def[IOTypeIndex].is_enabled == FALSE){
+  if(IOTypes_table.io_def[IOTypeIndex].is_enabled == REG_FALSE){
     return REG_FAILURE;
   }
 
@@ -2221,7 +2221,7 @@ int Emit_data_slice(int		      IOTypeIndex,
 
 	if(Realloc_iotype_buffer(IOTypeIndex, num_bytes_to_send) 
 	   != REG_SUCCESS){
-	  IOTypes_table.io_def[IOTypeIndex].ack_needed = FALSE;
+	  IOTypes_table.io_def[IOTypeIndex].ack_needed = REG_FALSE;
 	  return REG_FAILURE;
 	}
       }
@@ -2254,7 +2254,7 @@ int Emit_data_slice(int		      IOTypeIndex,
 
 	if(Realloc_iotype_buffer(IOTypeIndex, num_bytes_to_send) 
 	   != REG_SUCCESS){
-	  IOTypes_table.io_def[IOTypeIndex].ack_needed = FALSE;
+	  IOTypes_table.io_def[IOTypeIndex].ack_needed = REG_FALSE;
 	  return REG_FAILURE;
 	}
       }
@@ -2288,7 +2288,7 @@ int Emit_data_slice(int		      IOTypeIndex,
 	/* This function will malloc if buffer not already set */
 	if(Realloc_iotype_buffer(IOTypeIndex, num_bytes_to_send) 
 	   != REG_SUCCESS){
-	  IOTypes_table.io_def[IOTypeIndex].ack_needed = FALSE;
+	  IOTypes_table.io_def[IOTypeIndex].ack_needed = REG_FALSE;
 	  return REG_FAILURE;
 	}
       }
@@ -2329,7 +2329,7 @@ int Emit_data_slice(int		      IOTypeIndex,
 
   default:
     fprintf(stderr, "Emit_data_slice: Unrecognised data type\n");
-    IOTypes_table.io_def[IOTypeIndex].ack_needed = FALSE;
+    IOTypes_table.io_def[IOTypeIndex].ack_needed = REG_FALSE;
     return REG_FAILURE;
     break;
   }
@@ -2349,7 +2349,7 @@ int Emit_data_slice(int		      IOTypeIndex,
 		  out_ptr) == REG_SUCCESS) return REG_SUCCESS;
   }
 
-  IOTypes_table.io_def[IOTypeIndex].ack_needed = FALSE;
+  IOTypes_table.io_def[IOTypeIndex].ack_needed = REG_FALSE;
   return REG_FAILURE;
 }
 
@@ -2385,7 +2385,7 @@ int Register_param(char* ParamLabel,
     return REG_FAILURE;
   }
 
-  if(String_contains_xml_chars(ParamLabel) == TRUE){
+  if(String_contains_xml_chars(ParamLabel) == REG_TRUE){
 
     fprintf(stderr, "Register_param: ERROR: Param label "
             "contains reserved xml characters (<,>,&): %s\n"
@@ -2407,50 +2407,50 @@ int Register_param(char* ParamLabel,
   /* Store type */
   Params_table.param[current].type = ParamType;
 
-  /* This set to TRUE external to this routine if this param.
+  /* This set to REG_TRUE external to this routine if this param.
      has been created by the steering library itself */
-  Params_table.param[current].is_internal = FALSE;
+  Params_table.param[current].is_internal = REG_FALSE;
 
   /* Range of validity for this parameter - assume invalid
      first and check second */
-  Params_table.param[current].min_val_valid = FALSE;
-  Params_table.param[current].max_val_valid = FALSE;
+  Params_table.param[current].min_val_valid = REG_FALSE;
+  Params_table.param[current].max_val_valid = REG_FALSE;
   switch(ParamType){
 
   case REG_INT:
     if(sscanf(ParamMinimum, "%d", &dum_int) == 1){
-      Params_table.param[current].min_val_valid = TRUE;
+      Params_table.param[current].min_val_valid = REG_TRUE;
     }
     if(sscanf(ParamMaximum, "%d", &dum_int) == 1){
-      Params_table.param[current].max_val_valid = TRUE;
+      Params_table.param[current].max_val_valid = REG_TRUE;
     }
     break;
 
   case REG_FLOAT:
     if(sscanf(ParamMinimum, "%f", &dum_flt) == 1){
-      Params_table.param[current].min_val_valid = TRUE;
+      Params_table.param[current].min_val_valid = REG_TRUE;
     }
     if(sscanf(ParamMaximum, "%f", &dum_flt) == 1){
-      Params_table.param[current].max_val_valid = TRUE;
+      Params_table.param[current].max_val_valid = REG_TRUE;
     }
     break;
 
   case REG_DBL:
     if(sscanf(ParamMinimum, "%lf", &dum_dbl) == 1){
-      Params_table.param[current].min_val_valid = TRUE;
+      Params_table.param[current].min_val_valid = REG_TRUE;
     }
     if(sscanf(ParamMaximum, "%lf", &dum_dbl) == 1){
-      Params_table.param[current].max_val_valid = TRUE;
+      Params_table.param[current].max_val_valid = REG_TRUE;
     }
     break;
 
   case REG_CHAR:
     /* Limits are taken as lengths for a string */
     if(sscanf(ParamMinimum, "%d", &dum_int) == 1){
-      Params_table.param[current].min_val_valid = TRUE;
+      Params_table.param[current].min_val_valid = REG_TRUE;
     }
     if(sscanf(ParamMaximum, "%d", &dum_int) == 1){
-      Params_table.param[current].max_val_valid = TRUE;
+      Params_table.param[current].max_val_valid = REG_TRUE;
     }
     break;
 
@@ -2459,7 +2459,7 @@ int Register_param(char* ParamLabel,
             "type - skipping parameter >%s<\n", ParamLabel);
     return REG_FAILURE;
   }
-  if(Params_table.param[current].min_val_valid == TRUE){
+  if(Params_table.param[current].min_val_valid == REG_TRUE){
     strncpy(Params_table.param[current].min_val, ParamMinimum,
             REG_MAX_STRING_LENGTH);
   }
@@ -2467,7 +2467,7 @@ int Register_param(char* ParamLabel,
     sprintf(Params_table.param[current].min_val, " ");
   }
 
-  if(Params_table.param[current].max_val_valid == TRUE){
+  if(Params_table.param[current].max_val_valid == REG_TRUE){
     strncpy(Params_table.param[current].max_val, ParamMaximum,
             REG_MAX_STRING_LENGTH);
   }
@@ -2481,7 +2481,7 @@ int Register_param(char* ParamLabel,
   Params_table.num_registered++;
 
   /* Flag that the registered parameters have changed */
-  ReG_ParamsChanged = TRUE;
+  ReG_ParamsChanged = REG_TRUE;
 
   return REG_SUCCESS;
 }
@@ -2522,7 +2522,7 @@ int Register_params(int    NumParams,
       return REG_FAILURE;
     }
 
-    if(String_contains_xml_chars(ParamLabels[i]) == TRUE){
+    if(String_contains_xml_chars(ParamLabels[i]) == REG_TRUE){
 
       fprintf(stderr, "Register_params: ERROR: Param label "
 	      "contains reserved xml characters (<,>,&): %s\n"
@@ -2544,50 +2544,50 @@ int Register_params(int    NumParams,
     /* Store type */
     Params_table.param[current].type = ParamTypes[i];
 
-    /* This set to TRUE external to this routine if this param.
+    /* This set to REG_TRUE external to this routine if this param.
        has been created by the steering library itself */
-    Params_table.param[current].is_internal = FALSE;
+    Params_table.param[current].is_internal = REG_FALSE;
 
     /* Range of validity for this parameter - assume invalid 
        first and check second */
-    Params_table.param[current].min_val_valid = FALSE;
-    Params_table.param[current].max_val_valid = FALSE;
+    Params_table.param[current].min_val_valid = REG_FALSE;
+    Params_table.param[current].max_val_valid = REG_FALSE;
     switch(ParamTypes[i]){
 
     case REG_INT:
       if(sscanf(ParamMinima[i], "%d", &dum_int) == 1){
-	Params_table.param[current].min_val_valid = TRUE;
+	Params_table.param[current].min_val_valid = REG_TRUE;
       }
       if(sscanf(ParamMaxima[i], "%d", &dum_int) == 1){
-	Params_table.param[current].max_val_valid = TRUE;
+	Params_table.param[current].max_val_valid = REG_TRUE;
       }
       break;
 
     case REG_FLOAT:
       if(sscanf(ParamMinima[i], "%f", &dum_flt) == 1){
-	Params_table.param[current].min_val_valid = TRUE;
+	Params_table.param[current].min_val_valid = REG_TRUE;
       }
       if(sscanf(ParamMaxima[i], "%f", &dum_flt) == 1){
-	Params_table.param[current].max_val_valid = TRUE;
+	Params_table.param[current].max_val_valid = REG_TRUE;
       }
       break;
 
     case REG_DBL:
       if(sscanf(ParamMinima[i], "%lf", &dum_dbl) == 1){
-	Params_table.param[current].min_val_valid = TRUE;
+	Params_table.param[current].min_val_valid = REG_TRUE;
       }
       if(sscanf(ParamMaxima[i], "%lf", &dum_dbl) == 1){
-	Params_table.param[current].max_val_valid = TRUE;
+	Params_table.param[current].max_val_valid = REG_TRUE;
       }
       break;
 
     case REG_CHAR:
       /* Limits are taken as lengths for a string */
       if(sscanf(ParamMinima[i], "%d", &dum_int) == 1){
-	Params_table.param[current].min_val_valid = TRUE;
+	Params_table.param[current].min_val_valid = REG_TRUE;
       }
       if(sscanf(ParamMaxima[i], "%d", &dum_int) == 1){
-	Params_table.param[current].max_val_valid = TRUE;
+	Params_table.param[current].max_val_valid = REG_TRUE;
       }
       break;
 
@@ -2596,7 +2596,7 @@ int Register_params(int    NumParams,
 	      "type - skipping parameter >%s<\n", ParamLabels[i]);
       continue;
     }
-    if(Params_table.param[current].min_val_valid == TRUE){
+    if(Params_table.param[current].min_val_valid == REG_TRUE){
       strncpy(Params_table.param[current].min_val, ParamMinima[i],
 	      REG_MAX_STRING_LENGTH);
     }
@@ -2604,7 +2604,7 @@ int Register_params(int    NumParams,
       sprintf(Params_table.param[current].min_val, " ");
     }
 
-    if(Params_table.param[current].max_val_valid == TRUE){
+    if(Params_table.param[current].max_val_valid == REG_TRUE){
       strncpy(Params_table.param[current].max_val, ParamMaxima[i],
 	      REG_MAX_STRING_LENGTH);
     }
@@ -2619,7 +2619,7 @@ int Register_params(int    NumParams,
   }
 
   /* Flag that the registered parameters have changed */
-  ReG_ParamsChanged = TRUE;
+  ReG_ParamsChanged = REG_TRUE;
 
   return REG_SUCCESS;
 }
@@ -2652,7 +2652,7 @@ int Steering_control(int     SeqNum,
   float          time_per_step;
   clock_t        new_time;
   static clock_t previous_time   = 0;
-  static int     first_time      = TRUE;
+  static int     first_time      = REG_TRUE;
 
   /* For throttling the polling rate */
   static time_t this_wc_time = (time_t)0, last_wc_time = (time_t)0;
@@ -2701,8 +2701,8 @@ int Steering_control(int     SeqNum,
       last_wc_time = this_wc_time;
       if(Steerer_connected() == REG_SUCCESS){
 
-	ReG_SteeringActive = TRUE;
-	first_time = TRUE;
+	ReG_SteeringActive = REG_TRUE;
+	first_time = REG_TRUE;
 #if REG_DEBUG
 	fprintf(stderr, "Steering_control: steerer has connected\n");
 #endif
@@ -2733,7 +2733,7 @@ int Steering_control(int     SeqNum,
 #if REG_DEBUG
       fprintf(stderr, "Steering_control: done Emit_param_defs\n");
 #endif
-      ReG_ParamsChanged  = FALSE;
+      ReG_ParamsChanged  = REG_FALSE;
     }
 
     /* If the registered IO types have changed since the last time
@@ -2745,7 +2745,7 @@ int Steering_control(int     SeqNum,
 #if REG_DEBUG
       fprintf(stderr, "Steering_control: done Emit_IOType_defs\n");
 #endif
-      ReG_IOTypesChanged = FALSE;
+      ReG_IOTypesChanged = REG_FALSE;
     }
 
     /* If the registered Chk types have changed since the last time
@@ -2757,7 +2757,7 @@ int Steering_control(int     SeqNum,
 #if REG_DEBUG
       fprintf(stderr, "Steering_control: done Emit_ChkType_defs\n");
 #endif
-      ReG_ChkTypesChanged = FALSE;
+      ReG_ChkTypesChanged = REG_FALSE;
     }
 
     /* If we are steering via SOAP (and associated Steering Grid
@@ -2773,14 +2773,14 @@ int Steering_control(int     SeqNum,
     /* Update any library-controlled monitored variables */
     if(seq_num_index != -1){
       sprintf(Params_table.param[seq_num_index].value, "%d", SeqNum);
-      Params_table.param[seq_num_index].modified = TRUE;
+      Params_table.param[seq_num_index].modified = REG_TRUE;
     }
     else{
       seq_num_index = Param_index_from_handle(&(Params_table), 
 					      REG_SEQ_NUM_HANDLE);
       if(seq_num_index != -1){
 	sprintf(Params_table.param[seq_num_index].value, "%d", SeqNum);
-	Params_table.param[seq_num_index].modified = TRUE;
+	Params_table.param[seq_num_index].modified = REG_TRUE;
       }
     }
 
@@ -2796,12 +2796,12 @@ int Steering_control(int     SeqNum,
       if(!first_time){
 	sprintf(Params_table.param[step_time_index].value, "%.3f", 
 		time_per_step);
-        Params_table.param[step_time_index].modified = TRUE;
+        Params_table.param[step_time_index].modified = REG_TRUE;
       }
       else{
 	step_time_index = Param_index_from_handle(&(Params_table), 
 						  REG_STEP_TIME_HANDLE);
-	first_time = FALSE;
+	first_time = REG_FALSE;
       }    
     }
 
@@ -2846,7 +2846,7 @@ int Steering_control(int     SeqNum,
     /* Parse list of commands for any that we can handle ourselves */
 
     i     = 0;
-    detached = FALSE;
+    detached = REG_FALSE;
 
     while(i<num_commands){
 
@@ -2873,7 +2873,7 @@ int Steering_control(int     SeqNum,
 		    commands);
 #endif
 
-        detached = TRUE;
+        detached = REG_TRUE;
 	break;
 
       default:
@@ -2903,7 +2903,7 @@ int Steering_control(int     SeqNum,
 		      commands);
 #endif
 
-	  detached = TRUE;
+	  detached = REG_TRUE;
 	}
 
 	break;
@@ -3040,7 +3040,7 @@ int Steering_pause(int   *NumSteerParams,
 		   int   *SteerCommands,
 		   char **SteerCmdParams)
 {
-  int    paused        = TRUE;
+  int    paused        = REG_TRUE;
   int    return_status = REG_SUCCESS;
   int    i, j, index;
   int    seqnum;
@@ -3072,7 +3072,7 @@ int Steering_pause(int   *NumSteerParams,
 			param_labels) != REG_SUCCESS ){
 
       return_status = REG_FAILURE;
-      paused = FALSE;
+      paused = REG_FALSE;
 #if REG_DEBUG
       fprintf(stderr, "Steering_pause: call to Consume_control failed\n");
 #endif
@@ -3111,7 +3111,7 @@ int Steering_pause(int   *NumSteerParams,
 
 	if(commands[i] == REG_STR_RESUME){
 
-	  paused = FALSE;
+	  paused = REG_FALSE;
 
 	  /* Return all commands that follow the resume command */
 
@@ -3125,7 +3125,7 @@ int Steering_pause(int   *NumSteerParams,
 	}
 	else if(commands[i] == REG_STR_DETACH){
 
-	  paused = FALSE;
+	  paused = REG_FALSE;
 	  return_status = Detach_from_steerer();
 
 	  /* Confirm that we have received the detach command */
@@ -3150,7 +3150,7 @@ int Steering_pause(int   *NumSteerParams,
 	}
 	else if(commands[i] == REG_STR_STOP){
 
-	  paused = FALSE;
+	  paused = REG_FALSE;
 	  return_status = Detach_from_steerer();
 
 	  /* Confirm that we have received the stop command */
@@ -3277,7 +3277,7 @@ int Emit_param_defs(){
 	bytes_left -= nbytes;
 	pbuf += nbytes;
 
-	if(Params_table.param[i].is_internal == TRUE){
+	if(Params_table.param[i].is_internal == REG_TRUE){
 	  
 	  nbytes = snprintf(pbuf, bytes_left, 
 			    "<Is_internal>TRUE</Is_internal>\n");
@@ -3296,8 +3296,8 @@ int Emit_param_defs(){
 	bytes_left -= nbytes;
 	pbuf += nbytes;
 
-	if(Params_table.param[i].min_val_valid==TRUE &&
-	   Params_table.param[i].max_val_valid==TRUE){
+	if(Params_table.param[i].min_val_valid==REG_TRUE &&
+	   Params_table.param[i].max_val_valid==REG_TRUE){
 	  
 	  nbytes = snprintf(pbuf, bytes_left, "<Min_value>%s</Min_value>"
 			    "<Max_value>%s</Max_value>\n"
@@ -3305,13 +3305,13 @@ int Emit_param_defs(){
 			    Params_table.param[i].min_val, 
 			    Params_table.param[i].max_val);
 	}
-	else if(Params_table.param[i].min_val_valid==TRUE){
+	else if(Params_table.param[i].min_val_valid==REG_TRUE){
 	  nbytes = snprintf(pbuf, bytes_left, 
 			    "<Min_value>%s</Min_value>\n" 
 			    "</Param>\n", 
 			    Params_table.param[i].min_val);
 	}
-	else if(Params_table.param[i].max_val_valid==TRUE){
+	else if(Params_table.param[i].max_val_valid==REG_TRUE){
 	  nbytes = snprintf(pbuf, bytes_left, 
 			    "<Max_value>%s</Max_value>\n" 
 			    "</Param>\n", 
@@ -3637,7 +3637,7 @@ int Emit_log()
   int   size;
   int   return_status = REG_SUCCESS;
 
-  if(Chk_log.send_all == TRUE){
+  if(Chk_log.send_all == REG_TRUE){
 
 #if REG_DEBUG_FULL
     fprintf(stderr, "Emit_log: sending all saved log entries...\n");
@@ -3672,11 +3672,11 @@ int Emit_log()
 
     /* Now send the entries that we have stored in memory - 
        need to send all current log entries to the steerer */
-    if(Log_to_xml(&pbuf, &size, FALSE) != REG_SUCCESS){
+    if(Log_to_xml(&pbuf, &size, REG_FALSE) != REG_SUCCESS){
 
       return REG_FAILURE;
     }
-    Chk_log.send_all = FALSE;
+    Chk_log.send_all = REG_FALSE;
   }
   else{
 
@@ -3685,7 +3685,7 @@ int Emit_log()
 #endif
     /* Third argument specifies that we only want those entries that haven't
        already been sent to the steerer */
-    if(Log_to_xml(&pbuf, &size, TRUE) != REG_SUCCESS){
+    if(Log_to_xml(&pbuf, &size, REG_TRUE) != REG_SUCCESS){
 
       return REG_FAILURE;
     }
@@ -4105,12 +4105,12 @@ int Detach_from_steerer()
 
   /* Flag that all entries in log need to be sent to steerer (in case
      another one attaches later on) */
-  Chk_log.send_all   = TRUE;
+  Chk_log.send_all   = REG_TRUE;
 
-  ReG_SteeringActive = FALSE;
-  ReG_IOTypesChanged = TRUE;
-  ReG_ChkTypesChanged= TRUE;
-  ReG_ParamsChanged  = TRUE;
+  ReG_SteeringActive = REG_FALSE;
+  ReG_IOTypesChanged = REG_TRUE;
+  ReG_ChkTypesChanged= REG_TRUE;
+  ReG_ParamsChanged  = REG_TRUE;
 
   return REG_SUCCESS;
 }
@@ -4128,8 +4128,8 @@ int Emit_status(int   SeqNum,
   int   tot_pcount = 0;
   int   ccount = 0;
   int   num_param;
-  int   cmddone   = FALSE;
-  int   paramdone = FALSE;
+  int   cmddone   = REG_FALSE;
+  int   paramdone = REG_FALSE;
   char  buf[REG_MAX_MSG_SIZE];
   char *pbuf;
   int   nbytes, bytes_left;
@@ -4155,14 +4155,14 @@ int Emit_status(int   SeqNum,
 
     if(Commands[0] == REG_STR_DETACH){
 
-      paramdone = TRUE;
+      paramdone = REG_TRUE;
     }
   }
   else{
-    cmddone = TRUE;
+    cmddone = REG_TRUE;
   }
 
-  if(num_param == 0) paramdone = TRUE;
+  if(num_param == 0) paramdone = REG_TRUE;
 
   /* Loop until all params and commands have been emitted */
 
@@ -4216,7 +4216,7 @@ int Emit_status(int   SeqNum,
 	tot_pcount++;
 
     	if(pcount >= num_param){
- 	  paramdone = TRUE;
+ 	  paramdone = REG_TRUE;
  	  break;
     	}
       }
@@ -4251,7 +4251,7 @@ int Emit_status(int   SeqNum,
     	ccount++;
   
     	if(ccount >= NumCommands){
- 	  cmddone = TRUE;
+ 	  cmddone = REG_TRUE;
  	  break;
     	}
       }
@@ -4305,7 +4305,7 @@ int Update_ptr_value(param_entry *param)
     break;
 
   case REG_CHAR:
-    if(ReG_CalledFromF90 == TRUE){
+    if(ReG_CalledFromF90 == REG_TRUE){
       /* Avoid terminating with '\0' if calling code 
 	 is F90 */
       strncpy((char *)(param->ptr), param->value, 
@@ -4360,7 +4360,7 @@ int Get_ptr_value(param_entry *param)
     break;
   
   case REG_CHAR:
-    if(ReG_CalledFromF90 == TRUE && param->max_val_valid){
+    if(ReG_CalledFromF90 == REG_TRUE && param->max_val_valid){
       /* We've got a ptr to a F90 string here and they aren't 
 	 terminated with a '\0'.  We know how long it is though
 	 because we save that information when it was registered. */
@@ -4985,7 +4985,7 @@ int Consume_data_read(const int		index,
 int Emit_ack(const int index)
 {
 
-  if(IOTypes_table.io_def[index].is_enabled == FALSE){
+  if(IOTypes_table.io_def[index].is_enabled == REG_FALSE){
 
     return REG_FAILURE;
   }
@@ -5005,7 +5005,7 @@ int Emit_ack(const int index)
 int Consume_ack(const int index)
 {
 
-  if(IOTypes_table.io_def[index].is_enabled == FALSE){
+  if(IOTypes_table.io_def[index].is_enabled == REG_FALSE){
 
     return REG_FAILURE;
   }
@@ -5014,7 +5014,7 @@ int Consume_ack(const int index)
      acknowledgements on or off.  A better way would be to signal
      the consumer that acknowledgements are not required. */
 
-  if(IOTypes_table.io_def[index].use_ack == TRUE){
+  if(IOTypes_table.io_def[index].use_ack == REG_TRUE){
     /* We are using acknowledgements so it matters whether
        or not we've got one */
 #if REG_SOCKET_SAMPLES
@@ -5309,7 +5309,7 @@ int Reorder_array(int          ndims,
     pi = (int *)pOutData;
     pi_old = (int *)pInData;
 
-    if(to_f90 != TRUE){
+    if(to_f90 != REG_TRUE){
 
       /* Convert F90 array to C array */
       nslab = tot_extent[2]*tot_extent[1];
@@ -5353,7 +5353,7 @@ int Reorder_array(int          ndims,
     pf = (float *)pOutData;
     pf_old = (float *)pInData;
 
-    if(to_f90 != TRUE){
+    if(to_f90 != REG_TRUE){
 
       /* Convert F90 array to C array */
 	
@@ -5398,7 +5398,7 @@ int Reorder_array(int          ndims,
     pd = (double *)pOutData;
     pd_old = (double *)pInData;
 
-    if(to_f90 != TRUE){
+    if(to_f90 != REG_TRUE){
 	
       /* Convert F90 array to C array */
 	

@@ -1292,16 +1292,16 @@ int String_contains_xml_chars(char *string)
 {
   if(strchr(string, '<')){
 
-    return TRUE;
+    return REG_TRUE;
   }
   if(strchr(string, '>')){
-    return TRUE;
+    return REG_TRUE;
   }
   if(strchr(string, '&')){
-    return TRUE;
+    return REG_TRUE;
   }
 
-  return FALSE;
+  return REG_FALSE;
 }
 
 /*-----------------------------------------------------------------*/
