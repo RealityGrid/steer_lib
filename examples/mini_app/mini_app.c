@@ -161,6 +161,7 @@ int main(){
   if(status != REG_SUCCESS){
 
     printf("Failed to register IO types\n");
+    Steering_finalize();
     return REG_FAILURE;
   }
 
@@ -365,7 +366,7 @@ int main(){
 		  if( !(array = (float *)malloc(nx*ny*nz*sizeof(float))) ){
 		    
 		    fprintf(stderr, "Malloc of %d bytes failed...\n",
-			    nx*ny*nz*sizeof(float));
+			    (int)(nx*ny*nz*sizeof(float)));
 		    status = Steering_finalize();
 		    return REG_FAILURE;
 		  }
