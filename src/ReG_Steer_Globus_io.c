@@ -54,6 +54,13 @@
 
 #include "ReG_Steer_Globus_io.h"
 
+/* These are for uname and gethostbyname */
+#include <sys/utsname.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h>
+
 int Globus_io_activate()
 {
   /* Activate the globus module if it hasn't been activated yet */
@@ -230,7 +237,7 @@ int Globus_create_listener(socket_io_type * const socket_info)
 
     fprintf(stderr, "Globus_create_listener: WARNING: failed to get "
 	    "hostname\n");
-    sprintf(socket_info->listener_hostname, " ");
+    sprintf(socket_info->listener_hostname, "NOT_SET");
   }
 
   
@@ -901,6 +908,30 @@ int Emit_msg_header_globus(socket_io_type *sock_info,
   return REG_SUCCESS;
 }
 
+
+/*------------------------------------------------------------------*/
+
+char *Get_fully_qualified_hostname()
+{
+  struct utsname  name;
+  struct hostent *host;
+
+  if(uname(&name) < 0){
+
+    fprintf(stderr, "Get_fully_qualified_hostname: uname failed\n");
+    return NULL;
+  }
+
+  host = gethostbyname(name.nodename);
+
+  if(!host){
+
+    fprintf(stderr, "Get_fully_qualified_hostname: gethostbyname failed\n");
+    return NULL;
+  }
+
+  return host->h_name;
+}
 
 
 #endif /* REG_GLOBUS_STEERING || REG_GLOBUS_SAMPLES */

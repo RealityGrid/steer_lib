@@ -712,27 +712,3 @@ int Read_file(char *filename, char **buf, int *size)
 
   return REG_SUCCESS;
 }
-
-/*------------------------------------------------------------------*/
-
-char *Get_fully_qualified_hostname()
-{
-  struct utsname  name;
-  struct hostent *host;
-
-  if(uname(&name) < 0){
-
-    fprintf(stderr, "Get_fully_qualified_hostname: uname failed\n");
-    return NULL;
-  }
-
-  host = gethostbyname(name.nodename);
-
-  if(!host){
-
-    fprintf(stderr, "Get_fully_qualified_hostname: gethostbyname failed\n");
-    return NULL;
-  }
-
-  return host->h_name;
-}

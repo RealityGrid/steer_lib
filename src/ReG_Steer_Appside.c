@@ -150,6 +150,10 @@ int Steering_initialize(int  NumSupportedCmds,
   for(i=0; i<IOTypes_table.max_entries; i++){
 
     IOTypes_table.io_def[i].handle = REG_IODEF_HANDLE_NOTSET;
+#if REG_GLOBUS_SAMPLES
+    sprintf(IOTypes_table.io_def[i].socket_info.listener_hostname,
+	    "%s", "NOT_SET");
+#endif
   }
 
   /* Initialise table of open IO channels */
@@ -2196,9 +2200,21 @@ int Emit_IOType_defs(){
 	return REG_FAILURE;
       }
 
-      pbuf += sprintf(pbuf,"<Freq_handle>%d</Freq_handle>\n"
-                           "</IOType>\n",
-	      IOTypes_table.io_def[i].freq_param_handle);
+      pbuf += sprintf(pbuf,"<Freq_handle>%d</Freq_handle>\n",
+		      IOTypes_table.io_def[i].freq_param_handle);
+
+#if REG_GLOBUS_SAMPLES
+	if(IOTypes_table.io_def[i].direction == REG_IO_OUT){
+
+	  if(!strstr(IOTypes_table.io_def[i].socket_info.listener_hostname,
+		     "NOT_SET")){
+	    pbuf += sprintf(pbuf,"<Address>%s:%d</Address>\n",
+		     IOTypes_table.io_def[i].socket_info.listener_hostname,
+		     (int)(IOTypes_table.io_def[i].socket_info.listener_port));
+	  }
+	}
+#endif
+      pbuf += sprintf(pbuf, "</IOType>\n");
     }
   }
   
@@ -2253,6 +2269,7 @@ int Emit_ChkType_defs(){
 
       default:
 #if DEBUG
+
 	fprintf(stderr, 
 		"Emit_ChkType_defs: Unrecognised ChkType direction\n");
 #endif

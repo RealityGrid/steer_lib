@@ -47,12 +47,6 @@
    in Open_next_file */
 #include <sys/types.h>
 #include <sys/stat.h>
-/* These are for uname and gethostbyname */
-#include <sys/utsname.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netdb.h>
 
 #ifdef __cplusplus
   #define PREFIX "C"
@@ -248,8 +242,5 @@ extern PREFIX int Emit_msg_header(socket_type_steering *sock_info,
    pointed to by *buf, the size of which is returned in *size.  It is
    the caller's responsibility to free() the memory pointed to by buf. */
 extern PREFIX int Read_file(char *filename, char **buf, int *size);
-
-/* Does what is says.  Uses uname and gethostbyname. */
-extern PREFIX char *Get_fully_qualified_hostname();
 
 #endif
