@@ -467,6 +467,28 @@ int Increment_iodef_registered(IOdef_table_type *table)
 
   return return_status;
 }
+/*----------------------------------------------------------*/
+
+int IOdef_index_from_handle(IOdef_table_type *table, int IOdefHandle)
+{
+  int i;
+  int index = REG_IODEF_HANDLE_NOTSET;
+
+  /* Finds entry in a table of IOdefs that has handle == IOdefHandle
+     Returns REG_IODEF_HANDLE_NOTSET if no match found */
+
+  for(i=0; i<table->max_entries; i++){
+
+    if(table->io_def[i].handle == IOdefHandle){
+
+      index = i;
+      break;
+    }
+  }
+
+  return index;
+}
+
 
 /*--------------------------------------------------------------------*/
 

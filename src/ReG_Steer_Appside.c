@@ -42,6 +42,9 @@
 #include <signal.h>
 #include <unistd.h>
 #include <time.h>
+#include <rpc/rpc.h>
+/* For testing of Consume_data_slice */
+#include <math.h>
 
 /* Allow value of 'DEBUG' to propagate down from Reg_steer_types.h if
    it has been set there */
@@ -194,6 +197,13 @@ int Steering_initialize(int  NumSupportedCmds,
   for(i=0; i<IOTypes_table.max_entries; i++){
 
     IOTypes_table.io_def[i].handle = REG_IODEF_HANDLE_NOTSET;
+  }
+
+  /* Initialize table of open IO channels */
+
+  for(i=0; i<REG_INITIAL_NUM_IOTYPES; i++){
+
+    IO_channel[i].buffer = NULL;
   }
 
   /* Set up table for registered parameters */
@@ -564,31 +574,217 @@ int Register_IOTypes(int    NumTypes,
 int Consume_start(int               IOType,
 		  REG_IOHandleType *IOHandle)
 {
+  int  i;
+  int  index;
+  char text[REG_MAX_STRING_LENGTH];
+  char *pchar1;
+  char *pchar2;
 
   /* Check that steering is enabled */
-
   if(!ReG_SteeringEnabled) return REG_SUCCESS;
 
   /* Can only call this function if steering lib initialised */
-
   if (!ReG_SteeringInit) return REG_FAILURE;
 
-  return REG_SUCCESS;
+  /* Find corresponding entry in table of IOtypes */
+  index = IOdef_index_from_handle(&IOTypes_table, IOType);
+  if(index == REG_IODEF_HANDLE_NOTSET){
+    fprintf(stderr, "Consume_start: failed to find matching IOType\n");
+    return REG_FAILURE;
+  }
+
+  /* Find a free input channel and initialise it */
+  for(i=0; i<REG_INITIAL_NUM_IOTYPES; i++){
+
+    if(IO_channel[i].buffer == NULL){
+
+      IO_channel[i].buffer = (void *)malloc(REG_IO_BUFSIZE);
+
+      if(IO_channel[i].buffer == NULL){
+        return REG_FAILURE;
+      }
+      *IOHandle = (REG_IOHandleType)i;
+#if DEBUG
+      fprintf(stderr, "Consume_start: IOHandle = %d\n", (int)*IOHandle);
+#endif
+
+      /* If label consists of two fields separated by a space then we
+	 assume that we have an IP address and port number... */
+      strcpy(text, IOTypes_table.io_def[index].label);
+      pchar1 = strtok(text, " ");
+      pchar2 = strtok(NULL, " ");
+
+      if(pchar2 != NULL){
+
+	fprintf(stderr, "Consume_start: IP address: %s, Port: %s\n", 
+		pchar1, pchar2); 
+      }
+      else{
+	fprintf(stderr, "Consume_start: label = %s\n", pchar1);
+      }
+
+      return REG_SUCCESS;
+    }
+  }
+
+  return REG_FAILURE;
 }
 
 /*----------------------------------------------------------------*/
 
 int Consume_stop(REG_IOHandleType *IOHandle)
 {
-  /* Check that steering is enabled */
+  int index;
 
+  /* Check that steering is enabled */
   if(!ReG_SteeringEnabled) return REG_SUCCESS;
 
   /* Can only call this function if steering lib initialised */
-
   if (!ReG_SteeringInit) return REG_FAILURE;
 
+  index = (int)(*IOHandle);
+
+  /* Free memory associated with channel */
+  if( IO_channel[index].buffer ){
+    free(IO_channel[index].buffer);
+    IO_channel[index].buffer = NULL;
+  }
+
+  /* Reset handle associated with channel */
+  *IOHandle = (REG_IOHandleType) REG_IODEF_HANDLE_NOTSET;
+
   return REG_SUCCESS;
+}
+
+/*----------------------------------------------------------------*/
+
+int Consume_data_slice(REG_IOHandleType  IOHandle,
+		       int              *DataType,
+		       int              *Count,
+		       void            **pData)
+{
+  int return_status = REG_SUCCESS;
+  int index;
+
+  /* ARPDBG - for testing */
+  static int test_count_call = 0;
+  int   i, j, k, ivar;
+  int   nx = 16;
+  int   ny = 16;
+  int   nz = 16;
+  char *pdata;
+  float value;
+  double sum;
+  XDR   xdrs;
+  /* ...end of test variables */
+
+  index = (int)(IOHandle);
+
+  if( IO_channel[index].buffer == NULL ){
+
+    fprintf(stderr, "Consume_data_slice: io channel not open\n");
+    fprintf(stderr, "                    IOHandle = %d\n", index);
+    return REG_FAILURE;
+  }
+
+  /* ARPDGB For testing purposes ONLY */
+  fprintf(stderr, "Consume_data_slice: test_count_call = %d\n", 
+	  test_count_call);
+
+  if(test_count_call == 0){
+
+    *DataType = REG_CHAR;
+
+    pdata = (char *)(IO_channel[index].buffer);
+    pdata += sprintf(pdata, "%-128s", "# AVS field file\n");
+    pdata += sprintf(pdata, "%-128s", "ndim=3\n");
+    pdata += sprintf(pdata, "%-128s", "dim1= 16\n");
+    pdata += sprintf(pdata, "%-128s", "dim2= 16\n");
+    pdata += sprintf(pdata, "%-128s", "dim3= 16\n");
+    pdata += sprintf(pdata, "%-128s", "nspace=3\n");
+    pdata += sprintf(pdata, "%-128s", "field=uniform\n");
+    pdata += sprintf(pdata, "%-128s", "veclen=2\n");
+    pdata += sprintf(pdata, "%-128s", "data=xdr_float\n");
+    pdata += sprintf(pdata, "%-128s", "variable 1 filetype=binary "
+    		   "skip=0000000 stride=2\n");
+    pdata += sprintf(pdata, "%-128s", "variable 2 filetype=binary "
+    		   "skip=0000008 stride=2\n");
+    pdata += sprintf(pdata, "%-128s", "END_OF_HEADER\n");
+
+    *Count = strlen((char *)(IO_channel[index].buffer));
+
+    *pData = IO_channel[index].buffer;
+  }
+  else if(test_count_call == 1){
+
+    fprintf(stderr, "Consume_data_slice: Creating xdr data buffer...\n");
+
+    xdrmem_create(&xdrs, IO_channel[index].buffer, REG_IO_BUFSIZE, 
+		  XDR_ENCODE);
+
+    sum = 0.0;
+    for(i=0; i<nx/2; i++){
+      for(j=0; j<ny; j++){
+	for(k=0; k<nz; k++){
+	  for(ivar=0; ivar<2; ivar++){
+
+	    value = (float)sqrt((double)(i*i*(ivar+1)*0.1 + j*j*0.1 +k*k*0.1));
+
+	    sum += value;
+	    if( xdr_float(&xdrs, &(value)) != 1){
+	      fprintf(stderr, "Failed to write xdr datum no. %d\n", i);
+	      break;
+	    }
+	  }
+	}
+      }
+    }
+
+    xdr_destroy(&xdrs);
+
+    *DataType = REG_FLOAT;
+    *Count = nx*ny*nz;
+    *pData = IO_channel[index].buffer;
+  }
+  else if(test_count_call == 2){
+
+    xdrmem_create(&xdrs, IO_channel[index].buffer, REG_IO_BUFSIZE, 
+		  XDR_ENCODE);
+
+    for(i=nx/2; i<nx; i++){
+      for(j=0; j<ny; j++){
+	for(k=0; k<nz; k++){
+	  for(ivar=0; ivar<2; ivar++){
+
+	    value = sqrt((float)(i*i*(ivar+1)*0.1 + j*j*0.1 +k*k*0.1));
+
+	    if( xdr_float(&xdrs, &(value)) != 1){
+	      fprintf(stderr, "Failed to write xdr datum no. %d\n", i);
+	      break;
+	    }
+	  }
+	}
+      }
+    }
+
+    xdr_destroy(&xdrs);
+
+    *DataType = REG_FLOAT;
+    *Count = nx*ny*nz;
+    /**pData = &(((double *)IO_channel[index].buffer)[nx*ny*nz]);
+    *pData = &(((char *)IO_channel[index].buffer)[nx*ny*nz*8]);*/
+    *pData = IO_channel[index].buffer;
+  }
+  else{
+
+    return_status = REG_EOD;
+  }
+
+
+  /* ARPDBG */
+  test_count_call++;
+
+  return return_status;
 }
 
 /*----------------------------------------------------------------*/
@@ -599,8 +795,8 @@ int Register_params(int    NumParams,
 		    void **ParamPtrs,
 		    int   *ParamTypes)
 {
-  int           i;
-  int           current;
+  int i;
+  int current;
   
   /* Check that steering is enabled */
 
