@@ -35,14 +35,20 @@
 #---------------------------------------------------------------------
 
 # Set root directory for library installation
-setenv REG_STEER_HOME $HOME/reg_steer_lib
+setenv REG_STEER_HOME $HOME/projects/reg_steer_lib
 
 # Set directory location to use for steering communication
-setenv REG_STEER_DIRECTORY /usr/tmp/zzcguap/
+setenv REG_STEER_DIRECTORY /scratch/zzcguap/steering
+
+# Minimum time interval (integer no. of seconds) between checks on 
+# whether a steering client has connected.  If set to zero then a 
+# check is performed on every call to Steering_control.  If unset
+# then a default value (set in ReG_Steer_types.h) is used.
+setenv REG_APP_POLL_INTERVAL 5
 
 # Set location of XML parser library and header files
-setenv REG_XML_LIBDIR /usr/lib
-setenv REG_XML_INCDIR /usr/include/libxml2
+setenv REG_XML_LIBDIR /usr/freeware/lib
+setenv REG_XML_INCDIR /usr/freeware/include/libxml2
 
 #---------------------------------------------------------------
 # This section only necessary if using globus_io- rather
