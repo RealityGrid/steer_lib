@@ -55,6 +55,10 @@ PROGRAM mini_app
   INTEGER (KIND=REG_SP_KIND), DIMENSION(REG_INITIAL_NUM_IOTYPES) :: io_supp_auto
   INTEGER (KIND=REG_SP_KIND) :: input_freq
   INTEGER (KIND=REG_SP_KIND) :: output_freq = 5
+  INTEGER (KIND=REG_SP_KIND) :: iohandle
+  INTEGER (KIND=REG_SP_KIND), DIMENSION(:), ALLOCATABLE :: i_array
+  REAL    (KIND=REG_SP_KIND), DIMENSION(:), ALLOCATABLE :: f_array
+  REAL    (KIND=REG_DP_KIND), DIMENSION(:), ALLOCATABLE :: d_array
 
   ! For parameters
   INTEGER (KIND=REG_SP_KIND) :: num_params
@@ -241,6 +245,68 @@ PROGRAM mini_app
   WRITE(*,*) 'Entering main simulation loop...'
 
   DO WHILE(i<20 .AND. (finished .ne. 1))
+
+    CALL consume_start(iotype_handles(1), iohandle, status)
+
+    IF( status == REG_SUCCESS )THEN
+	
+      CALL consume_data_slice_header_f(iohandle, data_type, data_count, status)
+
+
+      DO WHILE(status == REG_SUCCESS)
+
+        SELECT CASE(data_type)
+
+        CASE (REG_INT)
+
+          ALLOCATE(i_array(data_count))
+
+          CALL consume_data_slice_f(iohandle, data_type, data_count, &
+                                    i_array, status)
+          DEALLOCATE(i_array)
+
+        CASE (REG_FLOAT)
+
+          ALLOCATE(f_array(data_count))
+
+          CALL consume_data_slice_f(iohandle, data_type, data_count, &
+                                    f_array, status)
+          DEALLOCATE(f_array)
+
+        CASE (REG_DBL)
+
+          ALLOCATE(d_array(data_count))
+
+          CALL consume_data_slice_f(iohandle, data_type, data_count, &
+                                    d_array, status)
+          DEALLOCATE(d_array)
+
+        END SELECT
+
+        CALL consume_data_slice_header_f(iohandle, data_type, &
+                                         data_count, status)
+
+      END DO
+    END IF
+!!$    CALL make_vtk_buffer_f(header, NX, NY, NZ, array, status)
+!!$
+!!$    ! ARPDBG for io testing only (should emit in response to a command
+!!$    ! or maybe every n steps)...
+!!$    CALL emit_start_f(iotype_handle[1], i, FALSE, iohandle, status)
+!!$
+!!$    IF( status .eq. REG_SUCCESS )THEN
+!!$	
+!!$      data_count = strlen(header)
+!!$      data_type  = REG_CHAR
+!!$      emit_data_slice(iohandle, data_type, data_count, (void *)header)
+!!$
+!!$      data_count = NX*NY*NZ
+!!$      data_type  = REG_FLOAT
+!!$      emit_data_slice(iohandle, data_type, data_count, array)
+!!$
+!!$      emit_stop(iohandle)
+!!$    END IF
+!!$    !...ARPDBG end
 
     CALL steering_control_f(i, num_params_changed, changed_param_labels, &
                             num_recvd_cmds, recvd_cmds, recvd_cmd_params, &

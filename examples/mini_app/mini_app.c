@@ -210,6 +210,22 @@ int main(){
 
     Make_vtk_buffer(header, NX, NY, NZ, array);
 
+    /* ARPDBG for io testing only (should emit in response to a command
+       or maybe every n steps)... */
+    if( Emit_start(iotype_handle[1], i, FALSE, &iohandle) == REG_SUCCESS ){
+	
+      data_count = strlen(header);
+      data_type  = REG_CHAR;
+      Emit_data_slice(iohandle, data_type, data_count, (void *)header);
+
+      data_count = NX*NY*NZ;
+      data_type  = REG_FLOAT;
+      Emit_data_slice(iohandle, data_type, data_count, array);
+
+      Emit_stop(&iohandle);
+    }
+    /*...ARPDBG end */
+
     status = Steering_control(i,
 			      &num_params_changed,
 			      changed_param_labels,
@@ -265,7 +281,7 @@ int main(){
 
 		if(j==1){
 
-		  if( Emit_start(iotype_handle[j], i, &iohandle)
+		  if( Emit_start(iotype_handle[j], i, FALSE, &iohandle)
 		      == REG_SUCCESS ){
 
 		    data_count = NX*NY*NZ;
