@@ -40,7 +40,7 @@ include ../globus_definitions
 # taken from the PVM project.
 ARCH           = LINUX
 BIN_DIR        = ${HOME}/bin
-JAVAC          = javac
+#JAVAC          = javac
 M4             = m4
 
 M4FILE         = ${REG_STEER_HOME}/src/conf/${ARCH}.m4
@@ -65,10 +65,7 @@ ${LIB_PATH}/libReG_Steer.a: ReG_Steer_Appside_f.o \
 	ReG_Steer_Steerside.o \
 	ReG_Steer_Common.o \
 	ReG_Steer_Proxy_utils.o \
-	${BIN_DIR}/ReG_Steer_Proxy.class \
 	ReG_Steer_XML.o
-
-${BIN_DIR}/ReG_Steer_Proxy.class: *.java
 
 ${LIB_PATH}/libReG_Steer.a:
 	ar rv ${LIB_PATH}/libReG_Steer.a ReG_Steer_Appside_f.o
@@ -78,9 +75,9 @@ ${LIB_PATH}/libReG_Steer.a:
 	ar rv ${LIB_PATH}/libReG_Steer.a ReG_Steer_Proxy_utils.o
 	ar rv ${LIB_PATH}/libReG_Steer.a ReG_Steer_XML.o
 
-${BIN_DIR}/ReG_Steer_Proxy.class:
-	   ${JAVAC} ReG_Steer_Proxy.java
-	   mv -f ReG_Steer_Proxy.class ${BIN_DIR}/.
+#${BIN_DIR}/ReG_Steer_Proxy.class:
+#	   ${JAVAC} ReG_Steer_Proxy.java
+#	   mv -f ReG_Steer_Proxy.class ${BIN_DIR}/.
 
 #---------------------------------------------------------------
 
@@ -129,7 +126,6 @@ clean:
 	rm -f *.o ReG_Steer.ln *~ 
 	rm -f ReG_Steer_Appside_f.c
 	rm -f ${REG_INCLUDE_PATH}/*~
-	rm -f ${BIN_DIR}/ReG_Steer_Proxy.class
 	ar dv ${LIB_PATH}/libReG_Steer.a ReG_Steer_Steerside.o \
 		ReG_Steer_Appside.o ReG_Steer_Appside_f.o \
                 ReG_Steer_Common.o ReG_Steer_Proxy_utils.o

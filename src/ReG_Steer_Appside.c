@@ -964,9 +964,10 @@ int Consume_data_slice_old(REG_IOHandleType  IOHandle,
 
 /*----------------------------------------------------------------*/
 
-int Emit_start(int               IOType,
-	       int               SeqNum,
-	       int		 *IOTypeIndex)
+int Emit_start(int  IOType,
+	       int  SeqNum,
+	       int  UseXDR,
+	       int *IOTypeIndex)
 {
   /* Check that steering is enabled */
   if(!ReG_SteeringEnabled) return REG_SUCCESS;
@@ -980,6 +981,9 @@ int Emit_start(int               IOType,
     fprintf(stderr, "Emit_start: failed to find matching IOType\n");
     return REG_FAILURE;
   }
+
+  /* Set whether or not to encode as XDR */
+  IOTypes_table.io_def[*IOTypeIndex].use_xdr = UseXDR;
 
   /* check if socket connection has been made */
   if (IOTypes_table.io_def[*IOTypeIndex].comms_status == REG_COMMS_STATUS_CONNECTED) {
@@ -1050,6 +1054,14 @@ int Emit_data_slice(int		      IOTypeIndex,
   if (IOTypes_table.io_def[IOTypeIndex].comms_status != REG_COMMS_STATUS_CONNECTED) 
     return REG_FAILURE;
 
+  if(IOTypes_table.io_def[IOTypeIndex].use_xdr){
+
+    /* ARPDBG - need code to convert data to XDR */
+  }
+ 
+  /* Send ReG-specific header */
+
+  /* Send data */
 
   /* Send HBT, expect ACK back */
   sprintf(hbt_buffer, "HBT");
