@@ -690,7 +690,7 @@ int Read_file(char *filename, char **buf, int *size)
   while(fgets(bufline, maxlen, fp)){
 
     /* '- 1' to allow for '\n' */
-    len = strlen(bufline) - 1;
+    len = (int)strlen(bufline) - 1;
     memcpy(&((*buf)[*size]), bufline, len);
     *size += len;
 

@@ -46,6 +46,14 @@
 #define REG_DEBUG 1
 #endif
 
+/* Some global variables for this interface layer - used in 
+   steering_control_f but initialised in steering_initialize_f */
+
+static char string_buf[(REG_MAX_NUM_STR_PARAMS+REG_MAX_NUM_STR_CMDS)
+                       *REG_MAX_STRING_LENGTH];
+static char *str_array[REG_MAX_NUM_STR_PARAMS];
+static char *str_array_params[REG_MAX_NUM_STR_CMDS];
+
 /*----------------------------------------------------------------
 
 SUBROUTINE steering_enable_f(EnableSteer)
@@ -75,6 +83,22 @@ INT_KIND_1_DECL(NumSupportedCmds);
 INT_KIND_1_DECL(SupportedCmds);
 INT_KIND_1_DECL(Status);
 {
+  int i;
+  int j = 0;
+
+  /* Perform some initialisation of ptrs to memory used by 
+     steering_control_f */
+  for(i=0; i<REG_MAX_NUM_STR_PARAMS; i++){
+
+    str_array[i] = &(string_buf[j*REG_MAX_STRING_LENGTH]);
+    j++;
+  }
+  for(i=0; i<REG_MAX_NUM_STR_CMDS; i++){
+
+    str_array_params[i] = &(string_buf[j*REG_MAX_STRING_LENGTH]);
+    j++;
+  }
+
   *Status = INT_KIND_1_CAST( Steering_initialize((int)(*NumSupportedCmds), 
 	 	                                 (int *)(SupportedCmds)) );
   return;
@@ -814,23 +838,7 @@ INT_KIND_1_DECL(SteerCommands);
 STRING_ARG_DECL(SteerCommandParams);
 INT_KIND_1_DECL(Status);
 {
-  int   i, j, len, pos;
-  char  buf[(REG_MAX_NUM_STR_PARAMS+REG_MAX_NUM_STR_CMDS)
-            *REG_MAX_STRING_LENGTH];
-  char *str_array[REG_MAX_NUM_STR_PARAMS];
-  char *str_array_params[REG_MAX_NUM_STR_CMDS];
-
-  j = 0;
-  for(i=0; i<REG_MAX_NUM_STR_PARAMS; i++){
-
-    str_array[i] = &(buf[j*REG_MAX_STRING_LENGTH]);
-    j++;
-  }
-  for(i=0; i<REG_MAX_NUM_STR_CMDS; i++){
-
-    str_array_params[i] = &(buf[j*REG_MAX_STRING_LENGTH]);
-    j++;
-  }
+  int   i, len, pos;
 
 #if REG_DEBUG
   fprintf(stderr, "steering_control_f: Calling Steering_control...\n");
@@ -860,7 +868,7 @@ INT_KIND_1_DECL(Status);
 
       /* Blank the remainder of the string being returned to the F90 
          routine */
-      len = strlen(str_array[i]);
+      len = (int)strlen(str_array[i]);
       pos = i*STRING_LEN(SteerParamLabels) + len;
       
       if( (len = (STRING_LEN(SteerParamLabels) - len)) > 0){
@@ -876,7 +884,7 @@ INT_KIND_1_DECL(Status);
 
       /* Blank the remainder of the string being returned to the F90 
          routine */
-      len = strlen(str_array_params[i]);
+      len = (int)strlen(str_array_params[i]);
       pos = i*STRING_LEN(SteerCommandParams) + len;
       
       if( (len = (STRING_LEN(SteerCommandParams) - len)) > 0){
@@ -954,7 +962,7 @@ INT_KIND_1_DECL(Status);
 
       /* Blank the remainder of the string being returned to the F90 
          routine */
-      len = strlen(str_array[i]);
+      len = (int)strlen(str_array[i]);
       pos = i*STRING_LEN(SteerParamLabels) + len;
       
       if( (len = (STRING_LEN(SteerParamLabels) - len)) > 0){
@@ -970,7 +978,7 @@ INT_KIND_1_DECL(Status);
 
       /* Blank the remainder of the string being returned to the F90 
          routine */
-      len = strlen(str_array_params[i]);
+      len = (int)strlen(str_array_params[i]);
       pos = i*STRING_LEN(SteerCommandParams) + len;
       
       if( (len = (STRING_LEN(SteerCommandParams) - len)) > 0){
