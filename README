@@ -1,15 +1,18 @@
 This software is an implementation of the steering API for the
 RealityGrid project, produced by the Supercomputing, Visualization &
 e-Science Group, Manchester Computing, University of Manchester.  It
-uses libxml, the XML parser created by the Gnome Project.
+uses libxml2, the XML parser created by the Gnome Project.
+
+----------------------------------------------------------------------------
 
 How to install:
 
 The XML parser.
 
-The steering library uses libxml, the XML C library for Gnome.  This is
-available from http://xmlsoft.org/downloads.html and should be installed 
-on your machine before attempting to install the steering library itself.
+The steering library uses libxml2, the XML C library for Gnome.  This
+is available from http://xmlsoft.org/downloads.html and should be
+installed (including the header files) on your machine before
+attempting to install the steering library itself.
 
 (Note, you'll need to set the CFLAGS environment variable to "-mabi=64" to
 get a 64-bit library on an SGI.  Configure should also be run with the 
@@ -25,7 +28,12 @@ location and don't want to have to set LD_LIBRARY64_PATH/LD_LIBRARYN32_PATH
 then you can also specify that you only want a static library by giving the
 --enable-shared=no flag.)
 
+----------------------------------------------------------------------------
+
 UNICORE (grid-services related) stuff.
+
+Note that this section is only relevant if you will be steering
+withing the UNICORE middleware framework.
 
 In order to interface with the UNICORE framework, the steering library
 launches a Java proxy that communicates with the UNICORE framework (if
@@ -37,6 +45,8 @@ You should make the additions to your CLASSPATH environment variable
 specified in the GLUE documentation.  The additions required for the
 ReG-grid-service are dealt with in the reg_steer_configure.csh file -
 you should edit these as appropriate.  More about this file below.
+
+----------------------------------------------------------------------------
 
 The steering library.
 
@@ -61,6 +71,7 @@ REG_XML_LIBDIR: The root location of the xml library file (libxml2.a) to link
                 I would set REG_XML_LIBDIR to "/home/me/xml_lib".
 
 REG_XML_INCDIR: The path of the libxml 'include' directory.
+                (e.g. /usr/freeware/include/libxml2.)
 
 Executing 'source reg_steer_configure.csh' (or equivalent, depending on which
 shell you use) will then set these variables.  Since this needs to be done
@@ -68,7 +79,7 @@ everytime you log in, it may be wise to add this command to your .cshrc or
 equivalent.
 
 Edit the first two lines of the Makefile to be found in this directory in order
-to select 64- or 32-bit compilation. (Ensure that you have a compatible libxml
+to select 64- or 32-bit compilation. (Ensure that you have a compatible libxml2
 library file.)
 
 Edit 'src/Makefile' to set architecture type (necessary for generating
@@ -85,6 +96,8 @@ steerable and how one might write a steerer with which to control it.
 functionality is truly primitive and often hard-wired. 'mini_app2' is
 similar to 'mini_app' but implemented in F90 instead of C. 'mini_app_para'
 is a parallel (F90 and MPI) example.
+
+----------------------------------------------------------------------------
 
 UNICORE ('Sheffield') demonstrator:
 
