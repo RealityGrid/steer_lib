@@ -1,8 +1,6 @@
 /*----------------------------------------------------------------------------
     This file contains routines and data structures for socket
-    communication using Globus IO both for steering communication and
-    for IOType communication.  Each functions are #if-ed so it is only
-    included in compilation if needed for samples (REG_GLOBUS_SAMPLES=1).  
+    communication using Globus IO.
 
     (C)Copyright 2002 The University of Manchester, United Kingdom,
     all rights reserved.
@@ -35,14 +33,29 @@
     Tel:    +44 161 275 6095
     Fax:    +44 161 275 6800    
 
-    Initial version by:  S Ramsden, 26.2.2003       0.1               
+    Initial version by:  S Ramsden, 18.2.2003       0.1               
 
 ---------------------------------------------------------------------------*/
-#include "ReG_Steer_types.h"
+
+/*----------------------------------------------------------------------------
+   Globus IO implementation note:
+
+   The Globus IO has only been tested using NON-threaded flavors of
+   Globus.  The socket_io_type structure has globus_mutex_t and
+   globus_cond_t members which are required should the code need to be
+   used with a threaded flavor of Globus.  However, only the callback
+   functions have been coded to use these.  Some effor would be
+   required to make the rest of the code threadsafe in order to use
+   threaded Globus.
+
+---------------------------------------------------------------------------*/
+
+#if REG_GLOBUS_SAMPLES
+
 #include "ReG_Steer_Common.h"
 #include "ReG_Steer_Appside_internal.h"
-#include "ReG_Steer_Globus_io.h"
 #include "ReG_Steer_Appside_Globus.h"
+#include <string.h>
 
 #ifndef REG_DEBUG
 #define REG_DEBUG 0
@@ -56,7 +69,1190 @@ extern Steerer_connection_table_type Steerer_connection;
 
 /*--------------------------------------------------------------------*/
 
-#if REG_GLOBUS_SAMPLES
+int Globus_io_activate()
+{
+  /* Activate the globus module if it hasn't been activated yet */
+  if (!globus_module_activated) {
+
+    if (globus_module_activate(GLOBUS_IO_MODULE) != GLOBUS_SUCCESS) {
+      fprintf(stderr, "Globus_io_activate: ERROR: failed to activate "
+	      "Globus IO module\n");
+      return REG_FAILURE;
+    }
+    else
+    {
+#if REG_DEBUG
+      fprintf(stderr, "Globus_io_activate: activated Globus IO module "
+	      "OK\n");
+#endif
+      globus_module_activated = TRUE;
+    }
+  }
+
+  return REG_SUCCESS;
+}
+
+/*--------------------------------------------------------------------*/
+
+void Globus_io_deactivate()
+{
+  /* Deactivate the globus module if it was ever activated */
+  if (globus_module_activated) {
+    if (globus_module_deactivate(GLOBUS_IO_MODULE) != GLOBUS_SUCCESS)
+      fprintf(stderr, "Globus_io_deactivate: Globus IO module "
+	      "deactivation error\n");
+    else {
+#if REG_DEBUG
+      fprintf(stderr, "Globus_io_deactivate: Globus IO module "
+	      "deactivation OK\n");
+#endif
+    }
+  }
+}
+
+/*--------------------------------------------------------------------*/
+
+int Globus_socket_info_init(socket_io_type * const socket_info)
+{
+  globus_result_t	result;
+  char                 *pchar;
+  char                 *ip_addr;
+
+  if (Globus_io_activate() != REG_SUCCESS)
+    return REG_FAILURE;
+
+  globus_mutex_init(&socket_info->mutex, GLOBUS_NULL);
+  globus_cond_init(&socket_info->cond, GLOBUS_NULL);
+
+  result = globus_io_tcpattr_init(&socket_info->attr);
+  if (result != GLOBUS_SUCCESS) {
+    fprintf(stderr, "Globus_socket_info_init: Error initialising "
+	    "attribute.\n");
+    Globus_error_print(result);
+    return REG_FAILURE;
+  }
+
+  result = globus_io_attr_set_socket_reuseaddr(&socket_info->attr, GLOBUS_TRUE);
+  if (result != GLOBUS_SUCCESS) {
+    fprintf(stderr, "Globus_socket_info_init: Error setting resueaddr "
+	    "attribute.\n");
+    Globus_error_print(result);
+    return REG_FAILURE;
+  }
+
+  /* Set local TCP interface - Get_fully_qualified_hostname uses
+     REG_TCP_INTERFACE if it is set */
+  if(Get_fully_qualified_hostname(&pchar, &ip_addr) == REG_SUCCESS){
+
+    /* If we only got localhost then don't bother */
+    if(!strstr(ip_addr, "127.0.0.1")){
+
+      result = globus_io_attr_set_tcp_interface(&socket_info->attr, 
+						ip_addr);
+      if(result != GLOBUS_SUCCESS){
+	fprintf(stderr, "Globus_socket_info_init: Error setting "
+		"tcp interface.\n");
+	Globus_error_print(result);
+	return REG_FAILURE;
+      }
+    }
+#if REG_DEBUG
+    else{
+      fprintf(stderr, 
+	  "Globus_socket_info_init: "
+	  "Get_fully_qualified_hostname returned IP of localhost\n"
+	  "                         so not setting globus_io "
+	  "tcp interface - will use INADDR_ANY\n");
+    }
+#endif
+  }
+
+  /* SMR XXX - add more attr security stuff here */
+
+  socket_info->listener_port = 0;
+  socket_info->listener_status = REG_COMMS_STATUS_NULL;
+  socket_info->comms_status = REG_COMMS_STATUS_NULL;   
+  socket_info->connector_port = 0;
+  sprintf(socket_info->connector_hostname, " ");
+
+  return REG_SUCCESS;
+
+}
+
+/*--------------------------------------------------------------------*/
+
+void Globus_socket_info_cleanup(socket_io_type * const socket_info)
+{
+  globus_result_t	result;
+
+  globus_mutex_destroy(&socket_info->mutex);
+  globus_cond_destroy(&socket_info->cond);
+
+  result = globus_io_tcpattr_destroy(&socket_info->attr);
+  if (result != GLOBUS_SUCCESS) {
+    fprintf(stderr, "Globus_socket_info_cleanup: Error destroying "
+	    "attribute.\n");
+    Globus_error_print(result);
+  }
+#if REG_DEBUG
+  fprintf(stderr, "Globus_socket_info_cleanup: done\n");
+#endif
+}
+
+/*--------------------------------------------------------------------*/
+
+void Globus_callback_poll(socket_io_type * const socket_info)
+{
+  globus_abstime_t	timeout;
+
+  timeout.tv_sec  = 1;
+  timeout.tv_nsec = 0;
+
+  if( globus_mutex_lock(&(socket_info->mutex)) ){
+
+    fprintf(stderr, "Globus_callback_poll: failed to acquire mutex\n");
+    return;
+  }
+
+  /* attempt to kick the callback function */
+#if REG_DEBUG
+  fprintf(stderr, "Globus_callback_poll: polling callbacks\n");
+#endif
+  globus_cond_timedwait(&(socket_info->cond), 
+			&(socket_info->mutex), 
+			&timeout);
+
+  globus_mutex_unlock(&(socket_info->mutex)); 
+  
+}
+
+/*--------------------------------------------------------------------*/
+
+int Globus_create_listener(socket_io_type * const socket_info)
+{
+  globus_result_t	result;
+  char                 *pchar;
+  char                 *ip_addr;
+
+  /* create listener socket on free port 
+   *  - if environment variable GLOBUS_TCP_PORT_RANGE has been set,
+   *  only port numbers within that range will be used 
+   */
+
+  result = globus_io_tcp_create_listener(&(socket_info->listener_port), 
+					 -1, 
+					 &socket_info->attr, 
+					 &(socket_info->listener_handle));
+  if (result != GLOBUS_SUCCESS) {
+    fprintf(stderr, "Globus_create_listener: Error creating listening socket\n");
+    Globus_error_print(result);
+    return REG_FAILURE;
+  }
+
+  /* NOTE: this is the listener_status */
+  socket_info->listener_status=REG_COMMS_STATUS_LISTENING;
+
+  fprintf(stderr, "Globus_create_listener: listener on port %d\n", 
+	  socket_info->listener_port);
+
+  /* Get the hostname of the machine we're running on (so we can publish
+     the endpoint of this connection). If REG_IO_ADDRESS is set then
+     that's what we use.  If not, call Get_fully_qualified_hostname which 
+     itself uses  REG_TCP_INTERFACE if set. */
+  if(pchar = getenv("REG_IO_ADDRESS")){
+
+    strcpy(socket_info->listener_hostname, pchar);
+  }
+  else if(Get_fully_qualified_hostname(&pchar, &ip_addr) == REG_SUCCESS){
+
+    strcpy(socket_info->listener_hostname, pchar);
+  }
+  else{
+
+    fprintf(stderr, "Globus_create_listener: WARNING: failed to get "
+	    "hostname\n");
+    sprintf(socket_info->listener_hostname, "NOT_SET");
+  }
+  
+  /* Now register listener so can accept connections when they happen */
+  result = globus_io_tcp_register_listen(&(socket_info->listener_handle),
+					 Globus_listener_callback,
+					 (void *) socket_info);
+  if (result != GLOBUS_SUCCESS) {
+    fprintf(stderr, "Globus_create_listener: Error registering listen\n");
+    Globus_error_print(result);
+
+    /* If this fails, must be something wrong with listener_handle, so
+       register a close for it (this will change listener_status
+       value) and thus create listener will be reattempted in the next
+       Emit_start. Don't ever think this will happen...
+    */
+
+    Globus_close_listener_handle(socket_info);
+    return REG_FAILURE;
+  }
+
+  socket_info->comms_status=REG_COMMS_STATUS_LISTENING;
+  Globus_callback_poll(socket_info);
+
+  return REG_SUCCESS;
+
+}
+/*--------------------------------------------------------------------*/
+
+void
+Globus_listener_callback (void			*callback_arg,
+			  globus_io_handle_t	*handle,
+			  globus_result_t	resultparam)
+{ 
+  globus_result_t  result;
+  socket_io_type  *lsocket_info;
+
+  lsocket_info = ((socket_io_type *) callback_arg);
+
+  globus_mutex_lock(&lsocket_info->mutex);
+
+  if (resultparam != GLOBUS_SUCCESS) {
+
+#if REG_DEBUG
+    fprintf(stderr, "Entered Globus_listener_callback: resultparam is "
+	    "FALSE, no connection\n");
+#endif
+    lsocket_info->comms_status=REG_COMMS_STATUS_FAILURE;
+    Globus_error_print(resultparam);
+  }
+  else {            
+    /*  register callback to accept connection  */
+    result = globus_io_tcp_register_accept(handle, 
+					   GLOBUS_NULL, 
+					   &(lsocket_info->conn_handle),
+					   Globus_accept_callback,
+					   (void *) lsocket_info);
+      
+    if (result != GLOBUS_SUCCESS) {
+      lsocket_info->comms_status=REG_COMMS_STATUS_FAILURE;
+      fprintf(stderr, "Globus_listener_callback: Error registering accept\n");
+      Globus_error_print(result);
+    }
+    else {
+      lsocket_info->comms_status=REG_COMMS_STATUS_WAITING_FOR_ACCEPT;
+#if REG_DEBUG
+      fprintf(stderr, "DBG: Globus_listener_callback - registered accept \n");
+#endif
+    }
+  }
+
+  /* Have to register listener again in order to get future connections */
+  if(lsocket_info->listener_status != REG_COMMS_STATUS_CLOSING){
+
+    result = globus_io_tcp_register_listen(&(lsocket_info->listener_handle),
+                                         Globus_listener_callback,
+                                         (void *) lsocket_info);
+
+    if (result == GLOBUS_SUCCESS) {
+
+#if REG_DEBUG
+      fprintf(stderr, "Globus_listener_callback - registered listener \n");
+#endif
+      lsocket_info->listener_status=REG_COMMS_STATUS_LISTENING;
+    }
+    else{
+      fprintf(stderr, "Globus_listener_callback - ERROR failed to register"
+              " listener \n");
+      Globus_error_print(result);
+      lsocket_info->listener_status=REG_COMMS_STATUS_FAILURE;
+    }
+  }
+  
+  globus_cond_signal(&lsocket_info->cond);
+  globus_mutex_unlock(&lsocket_info->mutex);
+}
+
+/*--------------------------------------------------------------------*/
+
+void
+Globus_accept_callback (void			*callback_arg,
+			globus_io_handle_t	*handle,
+			globus_result_t		resultparam)
+{
+  globus_result_t        result;
+  socket_io_type	*lsocket_info;
+
+  lsocket_info = ((socket_io_type *) callback_arg);
+
+  globus_mutex_lock(&lsocket_info->mutex);
+
+  if (resultparam != GLOBUS_SUCCESS) {
+#if REG_DEBUG
+    fprintf(stderr, "DBG: Entered Globus_accept_callback resultparam "
+	    "FALSE, no connection\n");
+#endif
+    Globus_error_print(resultparam);
+    lsocket_info->comms_status=REG_COMMS_STATUS_FAILURE;
+  }
+  else {
+#if REG_DEBUG
+    fprintf(stderr, "DBG: Globus_accept_callback has connected\n");
+#endif
+    lsocket_info->comms_status=REG_COMMS_STATUS_CONNECTED;
+
+    /* Register callbacks for event-handling on socket
+    result = globus_io_register_select(&(lsocket_info->conn_handle),
+				       GLOBUS_NULL,
+				       GLOBUS_NULL,
+				       Globus_write_callback,
+				       (void *) lsocket_info,
+				       Globus_except_callback,
+				       (void *) lsocket_info);
+
+    if(result != GLOBUS_SUCCESS) {
+
+      fprintf(stderr, "Globus_accept_callback: error registering select\n");
+      Globus_error_print(result);
+      lsocket_info->comms_status=REG_COMMS_STATUS_FAILURE;
+    }
+    else{
+      fprintf(stderr, "Globus_accept_callback: select registered ok\n");
+      lsocket_info->data_status = REG_COMMS_NOT_READY;
+      Globus_callback_poll(lsocket_info);
+    }
+    */
+  }
+
+  globus_cond_signal(&lsocket_info->cond);
+  globus_mutex_unlock(&lsocket_info->mutex);  
+}
+
+/*--------------------------------------------------------------------*/
+
+void Globus_read_callback (void			*callback_arg,
+			   globus_io_handle_t	*handle,
+			   globus_result_t     	 resultparam)
+{
+  socket_io_type *lsocket_info;
+
+  lsocket_info = ((socket_io_type *) callback_arg);
+
+  globus_mutex_lock(&lsocket_info->mutex);
+
+  if (resultparam != GLOBUS_SUCCESS) {
+
+#if REG_DEBUG
+    fprintf(stderr, "Entered Globus_read_callback: resultparam is "
+	    "FALSE, no data available??\n");
+#endif
+    lsocket_info->data_status = REG_COMMS_NOT_READY;
+    Globus_error_print(resultparam);
+  }
+  else {            
+#if REG_DEBUG
+    fprintf(stderr, "Entered Globus_read_callback: data available??\n");
+#endif 
+    lsocket_info->data_status = REG_COMMS_READY_READ;
+  }
+
+  globus_cond_signal(&lsocket_info->cond);
+  globus_mutex_unlock(&lsocket_info->mutex);
+}
+
+/*--------------------------------------------------------------------*/
+
+void Globus_write_callback (void		*callback_arg,
+			    globus_io_handle_t	*handle,
+			    globus_result_t      resultparam)
+{
+  socket_io_type *lsocket_info;
+
+  lsocket_info = ((socket_io_type *) callback_arg);
+
+  globus_mutex_lock(&lsocket_info->mutex);
+
+  if (resultparam != GLOBUS_SUCCESS) {
+#if REG_DEBUG
+    fprintf(stderr, "Entered Globus_write_callback: resultparam is false\n");
+#endif 
+    Globus_error_print(resultparam);
+    lsocket_info->data_status = REG_COMMS_NOT_READY;
+  }
+  else{
+#if REG_DEBUG
+    fprintf(stderr, "Entered Globus_write_callback: socket ready to write\n");
+#endif 
+    lsocket_info->data_status = REG_COMMS_READY_WRITE;
+  }
+
+  globus_cond_signal(&lsocket_info->cond);
+  globus_mutex_unlock(&lsocket_info->mutex);
+}
+
+/*--------------------------------------------------------------------*/
+
+void Globus_except_callback (void		*callback_arg,
+			     globus_io_handle_t	*handle,
+			     globus_result_t     resultparam)
+{
+  socket_io_type *lsocket_info;
+
+  lsocket_info = ((socket_io_type *) callback_arg);
+
+  globus_mutex_lock(&lsocket_info->mutex);
+
+  if (resultparam != GLOBUS_SUCCESS) {
+#if REG_DEBUG
+    fprintf(stderr, "Entered Globus_except_callback: resultparam is false\n");
+#endif 
+    Globus_error_print(resultparam);
+   }
+  else{
+#if REG_DEBUG
+    fprintf(stderr, "Entered Globus_except_callback: exception\n");
+#endif 
+  }
+
+  globus_cond_signal(&lsocket_info->cond);
+  globus_mutex_unlock(&lsocket_info->mutex);
+}
+
+/*--------------------------------------------------------------------*/
+
+int Globus_create_connector(socket_io_type * const socket_info)
+{
+  globus_result_t	result;
+
+  /* Register connector using port and hostname parameter
+   * - will connect and call callback function when port listens
+   */
+
+  result = globus_io_tcp_register_connect(socket_info->connector_hostname,
+					  socket_info->connector_port,
+					  &socket_info->attr,
+					  Globus_connector_callback,
+					  (void *) socket_info,
+					  &socket_info->conn_handle);
+
+  if (result != GLOBUS_SUCCESS) {
+    fprintf(stderr, "Globus_create_connector: Error registering connect\n");
+    fprintf(stderr, "                         hostname = %s\n", 
+	    socket_info->connector_hostname);
+    fprintf(stderr, "                         port = %d\n", 
+	    (int)socket_info->connector_port);
+    Globus_error_print(result);
+    socket_info->comms_status=REG_COMMS_STATUS_FAILURE;
+    return REG_FAILURE;
+  }
+  else {
+    socket_info->comms_status=REG_COMMS_STATUS_WAITING_TO_CONNECT;
+
+    fprintf(stderr, "Globus_create_connector: registered connector on "
+	    "connector_port = %d, connector_hostname = %s\n", 
+	    socket_info->connector_port, 
+	    socket_info->connector_hostname);
+  }
+
+  /* attempt to kick the callback function */
+  Globus_callback_poll(socket_info);
+
+  return REG_SUCCESS;
+
+}
+
+/*--------------------------------------------------------------------*/
+void
+Globus_connector_callback (void			*callback_arg,
+			   globus_io_handle_t	*handle,
+			   globus_result_t	resultparam)
+{ 
+  globus_result_t        result;
+  socket_io_type	*lsocket_info;
+
+  lsocket_info = ((socket_io_type *) callback_arg);
+
+  globus_mutex_lock(&lsocket_info->mutex);
+
+  if (resultparam != GLOBUS_SUCCESS) {
+    lsocket_info->comms_status=REG_COMMS_STATUS_FAILURE;
+#if REG_DEBUG
+    fprintf(stderr, "DBG: Entered Globus_connector_callback "
+	    "resultparam FALSE, no connection\n");
+#endif
+    Globus_error_print(resultparam);
+  }
+  else {
+    lsocket_info->comms_status=REG_COMMS_STATUS_CONNECTED;
+#if REG_DEBUG
+    fprintf(stderr, "DBG: Globus_connector_callback has connected\n");
+#endif
+
+    /* Register callbacks for event-handling on socket
+    result = globus_io_register_select(&(lsocket_info->conn_handle),
+				       Globus_read_callback,
+				       (void *) lsocket_info,
+				       GLOBUS_NULL,
+				       GLOBUS_NULL,
+				       Globus_except_callback,
+				       (void *) lsocket_info);
+    if(result != GLOBUS_SUCCESS) {
+
+      fprintf(stderr, "Globus_connector_callback: error registering select\n");
+      Globus_error_print(result);
+      lsocket_info->comms_status=REG_COMMS_STATUS_FAILURE;
+    }
+    else{
+      fprintf(stderr, "Globus_connector_callback: select registered ok\n");
+      lsocket_info->data_status = REG_COMMS_NOT_READY;
+      Globus_callback_poll(lsocket_info);
+    }
+    */
+  }
+
+  globus_cond_signal(&lsocket_info->cond);
+  globus_mutex_unlock(&lsocket_info->mutex);
+}
+
+/*--------------------------------------------------------------------*/
+
+void Globus_cleanup_listener_connection(socket_io_type * const socket_info)
+{
+  if (socket_info->listener_status == REG_COMMS_STATUS_LISTENING){
+    Globus_close_listener_handle(socket_info);
+  }
+
+  if (socket_info->comms_status == REG_COMMS_STATUS_CONNECTED || 
+      socket_info->comms_status == REG_COMMS_STATUS_WAITING_FOR_ACCEPT){
+    Globus_close_conn_handle(socket_info);
+  }
+}
+
+/*--------------------------------------------------------------------*/
+
+void Globus_cleanup_connector_connection(socket_io_type * const socket_info)
+{
+  if (socket_info->comms_status == REG_COMMS_STATUS_CONNECTED ||
+      socket_info->comms_status == REG_COMMS_STATUS_WAITING_TO_CONNECT ){
+    Globus_close_conn_handle(socket_info);
+  }
+}
+
+/*--------------------------------------------------------------------*/
+
+void Globus_close_conn_handle(socket_io_type * const	socket_info)
+{
+  globus_result_t	result;
+
+  /* Note that globus cancel is done as part of globus close */
+
+  result = globus_io_register_close(&socket_info->conn_handle, 
+				    Globus_close_callback, 
+				    (void *) socket_info);
+
+  if (result != GLOBUS_SUCCESS) {
+    fprintf(stderr, "Globus_close_conn_handle: Error register close "
+	    "connection\n");
+    Globus_error_print(result);
+    socket_info->comms_status = REG_COMMS_STATUS_FAILURE;
+  }
+  else {
+    socket_info->comms_status = REG_COMMS_STATUS_CLOSING;
+#if REG_DEBUG
+    fprintf(stderr, "DBG: Globus_close_conn_handle:  Register close OK\n");
+#endif
+  }
+
+  Globus_callback_poll(socket_info);
+}
+
+/*--------------------------------------------------------------------*/
+
+void Globus_close_listener_handle(socket_io_type * const socket_info)
+{
+  globus_result_t	result;
+
+  result = globus_io_register_close(&socket_info->listener_handle, 
+				    Globus_close_listener_callback, 
+				    (void *) socket_info);
+
+  if (result != GLOBUS_SUCCESS) {
+    fprintf(stderr, "Globus_close_listener_handle: Error register close "
+	    "connection\n");
+    Globus_error_print(result);
+    socket_info->listener_status = REG_COMMS_STATUS_FAILURE;
+  }
+  else {
+#if REG_DEBUG
+    fprintf(stderr, "DBG: Globus_close_listener_handle:  Register close OK\n");
+#endif
+    socket_info->listener_status = REG_COMMS_STATUS_CLOSING;
+  }
+
+  Globus_callback_poll(socket_info);
+}
+
+/*--------------------------------------------------------------------*/
+
+void
+Globus_close_callback (void			*callback_arg,
+		       globus_io_handle_t	*handle,
+		       globus_result_t		resultparam)
+{ 
+  socket_io_type *lsocket_info;
+  lsocket_info = ((socket_io_type *) callback_arg);
+
+  globus_mutex_lock(&lsocket_info->mutex);
+
+  lsocket_info->comms_status = REG_COMMS_STATUS_NULL;
+
+  globus_cond_signal(&lsocket_info->cond);
+  globus_mutex_unlock(&lsocket_info->mutex);
+
+#if REG_DEBUG
+  fprintf(stderr, "Globus_close_callback: done\n");
+#endif
+}
+
+
+/*--------------------------------------------------------------------*/
+
+void
+Globus_close_listener_callback (void			*callback_arg,
+				globus_io_handle_t	*handle,
+				globus_result_t		resultparam)
+{
+  socket_io_type *lsocket_info;
+  lsocket_info = ((socket_io_type *) callback_arg);
+
+  globus_mutex_lock(&lsocket_info->mutex);
+#if REG_DEBUG
+  fprintf(stderr, "Globus_close_listener_callback: done\n");
+#endif
+  lsocket_info->listener_status = REG_COMMS_STATUS_NULL;
+  
+  globus_cond_signal(&lsocket_info->cond);
+  globus_mutex_unlock(&lsocket_info->mutex);
+}
+
+/*--------------------------------------------------------------------*/
+
+void Globus_attempt_listener_connect(socket_io_type * const socket_info)
+{
+
+  if (socket_info->listener_status != REG_COMMS_STATUS_LISTENING) {
+    /* Problem with listener_handle - can only be from failure within
+       previous Globus_create_listener call - doubt this will ever
+       happen. 
+    */
+#if REG_DEBUG
+    fprintf(stderr, "Globus_attempt_listener_connect:dealing with "
+	      "listener_status not LISTENING \n");
+#endif
+    if (socket_info->listener_status == REG_COMMS_STATUS_CLOSING){
+
+      Globus_callback_poll(socket_info);
+    }
+
+    if (socket_info->listener_status == REG_COMMS_STATUS_FAILURE ||
+	socket_info->listener_status == REG_COMMS_STATUS_NULL ) {
+      Globus_create_listener(socket_info);
+    }
+  }
+
+  /* only check comms_status if listener_status is now listening */
+  if (socket_info->listener_status == REG_COMMS_STATUS_LISTENING) {
+
+    if (socket_info->comms_status == REG_COMMS_STATUS_LISTENING ||
+	socket_info->comms_status == REG_COMMS_STATUS_WAITING_FOR_ACCEPT ||
+	socket_info->comms_status == REG_COMMS_STATUS_CLOSING) {
+      /* we're waiting for listen/accept/close callback so attempt to 
+         kick the callback function */
+#if REG_DEBUG
+      fprintf(stderr, "Globus_attempt_listener_connect:kick callback_poll\n");
+#endif
+      Globus_callback_poll(socket_info);
+    }
+    
+    if (socket_info->comms_status == REG_COMMS_STATUS_FAILURE ||
+	socket_info->comms_status == REG_COMMS_STATUS_NULL ) {
+      /* connection has broken - we're still listening so see if 
+         anything to connect */
+#if REG_DEBUG
+      fprintf(stderr, "Globus_attempt_listener_connect:retry accept "
+	      "connect\n");
+#endif
+      Globus_retry_accept_connect(socket_info);
+    }
+
+    /* Because two callbacks have to be made to accept a new connection,
+       try kicking callback a second time here if waiting to accept
+       connection */
+    if (socket_info->comms_status == REG_COMMS_STATUS_WAITING_FOR_ACCEPT){
+
+#if REG_DEBUG
+      fprintf(stderr, "Globus_attempt_listener_connect: 2nd kick "
+	      "callback_poll\n");
+#endif
+      Globus_callback_poll(socket_info);
+
+      /* One more try because, by this stage, we've normally almost
+	 got an active connection */
+      if(socket_info->comms_status != REG_COMMS_STATUS_CONNECTED){
+
+#if REG_DEBUG
+	fprintf(stderr, "Globus_attempt_listener_connect: 3rd kick "
+	      "callback_poll\n");
+#endif
+	Globus_callback_poll(socket_info);
+      }
+    }
+  }
+}
+
+/*--------------------------------------------------------------------*/
+
+void Globus_retry_accept_connect(socket_io_type * const socket_info)
+{
+  /* if this called a globus_io read  has failed */
+
+  /* if we're here and  status is connected  we've lost a connection, 
+     so first close socket */
+  if (socket_info->comms_status==REG_COMMS_STATUS_CONNECTED) {
+    Globus_close_conn_handle(socket_info);
+  }
+
+  /* do not attempt reconnect if not yet closed */
+  if (socket_info->comms_status != REG_COMMS_STATUS_CLOSING) {
+
+    Globus_callback_poll(socket_info);
+  }
+}
+
+/*--------------------------------------------------------------------*/
+
+void Globus_attempt_connector_connect(socket_io_type * const socket_info)
+{
+  if (socket_info->comms_status == REG_COMMS_STATUS_WAITING_TO_CONNECT ||
+      socket_info->comms_status == REG_COMMS_STATUS_CLOSING) {
+    /* we're waiting for connect/close callback so attempt to kick the 
+       callback function */
+#if REG_DEBUG    
+    fprintf(stderr, "Globus_attempt_connector_connect:kick callback_poll\n");
+#endif
+    Globus_callback_poll(socket_info);
+  }
+  
+  if (socket_info->comms_status == REG_COMMS_STATUS_FAILURE || 
+      socket_info->comms_status == REG_COMMS_STATUS_NULL ) {
+    /* connection has broken - try to re-connect */
+#if REG_DEBUG
+    fprintf(stderr, "Globus_attempt_connector_connect:retry accept connect\n");
+#endif
+    Globus_retry_connect(socket_info);
+  }
+}
+
+/*--------------------------------------------------------------------*/
+
+void Globus_retry_connect(socket_io_type * const socket_info){
+
+  /* close the failed connector and retry to connect */
+  if (socket_info->comms_status == REG_COMMS_STATUS_CONNECTED) {
+    Globus_close_conn_handle(socket_info);
+  }
+  
+  /* do not attempt reconnect if not yet closed */
+  if (socket_info->comms_status != REG_COMMS_STATUS_CLOSING) {
+
+    if (Globus_create_connector(socket_info) != REG_SUCCESS) {
+#if REG_DEBUG
+      fprintf(stderr, "Globus_retry_connect: failed to register "
+	      "connector for IOType\n");
+#endif
+      /* Set to FAILURE so Globus_create_connector is attempted again 
+         next time round */
+      socket_info->comms_status=REG_COMMS_STATUS_FAILURE;
+    }
+  }
+}
+
+/*--------------------------------------------------------------------*/
+
+void Globus_error_print(const globus_result_t result)
+{
+#if REG_DEBUG
+  globus_object_t		*error;
+  char				*error_string;
+
+  if  (result != GLOBUS_SUCCESS) {
+    error =  globus_error_get(result); 
+
+    /* Get error string */
+    error_string = NULL;
+    error_string = globus_object_printable_to_string(error);
+
+    if (error_string){
+      fprintf(stderr, "Globus_error_print: %s \n", error_string);
+    }
+  }
+#endif
+}
+
+/*--------------------------------------------------------------------*/
+
+int Consume_msg_header_globus(socket_io_type *sock_info,
+			      int *DataType,
+			      int *Count,
+			      int *NumBytes,
+			      int *IsFortranArray)
+{
+  globus_result_t  result;
+  globus_size_t    nbytes;
+  char             buffer[REG_PACKET_SIZE];
+
+  /* check socket connection has been made */
+  if (sock_info->comms_status != 
+      REG_COMMS_STATUS_CONNECTED) return REG_FAILURE;
+
+  /* Read header */
+
+#if REG_DEBUG
+  fprintf(stderr, "Consume_msg_header_globus: calling globus_io_read...\n");
+#endif
+
+  /* Blocks until REG_PACKET_SIZE bytes received */
+  result = globus_io_read(&(sock_info->conn_handle), 
+			  (globus_byte_t *)buffer, 
+			  REG_PACKET_SIZE, 
+			  REG_PACKET_SIZE, 
+			  &nbytes);
+
+  if(result != GLOBUS_SUCCESS){
+
+    fprintf(stderr, "Consume_msg_header_globus: globus_io_read failed\n");
+    Globus_error_print(result);
+    return REG_FAILURE;
+  }
+
+#if REG_DEBUG
+  fprintf(stderr, "Consume_msg_header_globus: read <%s> from socket\n",
+	  buffer);
+#endif
+
+  /* Check for end of data */
+  if(!strncmp(buffer, REG_DATA_FOOTER, strlen(REG_DATA_FOOTER))){
+
+    return REG_EOD;
+  }
+  else if(strncmp(buffer, BEGIN_SLICE_HEADER, strlen(BEGIN_SLICE_HEADER))){
+
+    fprintf(stderr, "Consume_msg_header_globus: incorrect header on slice\n");
+    return REG_FAILURE;
+  }
+
+  /*--- Type of objects in message ---*/
+
+  result = globus_io_read(&(sock_info->conn_handle), 
+			  (globus_byte_t *)buffer, 
+			  REG_PACKET_SIZE, 
+			  REG_PACKET_SIZE, 
+			  &nbytes);
+
+  if(result != GLOBUS_SUCCESS){
+
+    fprintf(stderr, "Consume_msg_header_globus: globus_io_read failed\n");
+    Globus_error_print(result);
+    return REG_FAILURE;
+  }
+
+#if REG_DEBUG
+  fprintf(stderr, "Consume_msg_header_globus: read <%s> from socket\n", 
+	  buffer);
+#endif
+
+  if(!strstr(buffer, "<Data_type>")){
+
+    return REG_FAILURE;
+  }
+
+  sscanf(buffer, "<Data_type>%d</Data_type>", DataType);
+
+  /*--- No. of objects in message ---*/
+
+  result = globus_io_read(&(sock_info->conn_handle), 
+			  (globus_byte_t *)buffer, 
+			  REG_PACKET_SIZE, 
+			  REG_PACKET_SIZE, 
+			  &nbytes);
+
+  if(result != GLOBUS_SUCCESS){
+    
+    Globus_error_print(result);
+    return REG_FAILURE;
+  }
+
+#if REG_DEBUG
+  fprintf(stderr, "Consume_msg_header_globus: read <%s> from socket\n", 
+	  buffer);
+#endif
+
+  if(!strstr(buffer, "<Num_objects>")){
+
+    return REG_FAILURE;
+  }
+
+  if( sscanf(buffer, "<Num_objects>%d</Num_objects>", Count) != 1){
+
+    fprintf(stderr, "Consume_msg_header_globus: failed to read Num_objects\n");
+    return REG_FAILURE;
+  }
+
+  /*--- No. of bytes in message ---*/
+
+  result = globus_io_read(&(sock_info->conn_handle), 
+			  (globus_byte_t *)buffer, 
+			  REG_PACKET_SIZE, 
+			  REG_PACKET_SIZE, 
+			  &nbytes);
+
+  if(result != GLOBUS_SUCCESS){
+
+    fprintf(stderr, "Consume_msg_header_globus: globus_io_read failed\n");
+    Globus_error_print(result);
+    return REG_FAILURE;
+  }
+
+#if REG_DEBUG
+  fprintf(stderr, "Consume_msg_header_globus: read >%s< from socket\n", 
+	  buffer);
+#endif
+
+  if(!strstr(buffer, "<Num_bytes>")){
+
+    return REG_FAILURE;
+  }
+
+  if( sscanf(buffer, "<Num_bytes>%d</Num_bytes>", NumBytes) != 1){
+
+    fprintf(stderr, "Consume_msg_header_globus: failed to read Num_bytes\n");
+    return REG_FAILURE;
+  }
+
+  /*--- Array ordering in message ---*/
+
+  result = globus_io_read(&(sock_info->conn_handle), 
+			  (globus_byte_t *)buffer, 
+			  REG_PACKET_SIZE, 
+			  REG_PACKET_SIZE, 
+			  &nbytes);
+
+  if(result != GLOBUS_SUCCESS){
+
+    fprintf(stderr, "Consume_msg_header_globus: globus_io_read failed\n");
+    Globus_error_print(result);
+    return REG_FAILURE;
+  }
+
+#if REG_DEBUG
+  fprintf(stderr, "Consume_msg_header_globus: read >%s< from socket\n", 
+	  buffer);
+#endif
+
+  if(!strstr(buffer, "<Array_order>")){
+
+    return REG_FAILURE;
+  }
+
+  if(strstr(buffer, "FORTRAN")){
+
+    /* Array data is from Fortran */
+    *IsFortranArray = TRUE;
+  }
+  else{
+    /* Array data is not from Fortran */
+    *IsFortranArray = FALSE;
+  }
+
+  /*--- End of header ---*/
+
+  result = globus_io_read(&(sock_info->conn_handle), 
+			  (globus_byte_t *)buffer, 
+			  REG_PACKET_SIZE, 
+			  REG_PACKET_SIZE, 
+			  &nbytes);
+
+  if(result != GLOBUS_SUCCESS){
+
+    fprintf(stderr, "Consume_msg_header_globus: globus_io_read failed\n");
+    Globus_error_print(result);
+    return REG_FAILURE;
+  }
+
+#if REG_DEBUG
+  fprintf(stderr, "Consume_msg_header_globus: read <%s> from socket\n", 
+	  buffer);
+#endif
+
+  if(strncmp(buffer, END_SLICE_HEADER, strlen(END_SLICE_HEADER))){
+
+    fprintf(stderr, "Consume_msg_header_globus: failed to find "
+	    "end of header\n");
+    return REG_FAILURE;
+  }
+
+  return REG_SUCCESS;
+}
+
+/*----------------------------------------------------------------*/
+
+int Emit_msg_header_globus(socket_io_type *sock_info,
+			   int DataType,
+			   int Count,
+			   int NumBytes,
+			   int IsFortranArray)
+{
+  char  buffer[7*REG_PACKET_SIZE];
+  char  tmp_buffer[REG_PACKET_SIZE];
+  char *pchar;
+
+  pchar = buffer;
+  pchar += sprintf(pchar, REG_PACKET_FORMAT, "<ReG_data_slice_header>");
+  /* Put terminating char within the 128-byte packet */
+  *(pchar-1) = '\0';
+  sprintf(tmp_buffer, "<Data_type>%d</Data_type>", DataType);
+  pchar += sprintf(pchar, REG_PACKET_FORMAT, tmp_buffer);
+  *(pchar-1) = '\0';
+  sprintf(tmp_buffer, "<Num_objects>%d</Num_objects>", Count);
+  pchar += sprintf(pchar, REG_PACKET_FORMAT, tmp_buffer);
+  *(pchar-1) = '\0';
+  sprintf(tmp_buffer, "<Num_bytes>%d</Num_bytes>", NumBytes);
+  pchar += sprintf(pchar, REG_PACKET_FORMAT, tmp_buffer);
+  *(pchar-1) = '\0';
+  if(IsFortranArray){
+    sprintf(tmp_buffer, "<Array_order>FORTRAN</Array_order>");
+  }
+  else{
+    sprintf(tmp_buffer, "<Array_order>C</Array_order>");
+  }
+  pchar += sprintf(pchar, REG_PACKET_FORMAT, tmp_buffer);
+  *(pchar-1) = '\0';
+  pchar += sprintf(pchar, REG_PACKET_FORMAT, "</ReG_data_slice_header>");
+  *(pchar-1) = '\0';
+
+  return Write_globus(&(sock_info->conn_handle), 
+		      (int)(pchar-buffer), 
+		      (void *)buffer);
+}
+
+/*----------------------------------------------------------------*/
+
+int Write_globus(const globus_io_handle_t *handle,
+		 const int n,
+		 void *buffer)
+{
+  globus_size_t   nbytes, bytes_left;
+  globus_result_t result;
+  char           *pchar;
+  int             count = 0;
+  if(n < 0){
+    fprintf(stderr, "Write_globus: requested to write < 0 bytes!\n");
+    return REG_FAILURE;
+  }
+  else if(n == 0){
+    fprintf(stderr, "Write_globus: ARPDBG: asked to send 0 bytes?!?\n");
+    return REG_SUCCESS;
+  }
+
+  nbytes = (globus_size_t)n;
+  bytes_left = nbytes;
+  pchar = (char *)buffer;
+
+  while(bytes_left > 0 && count < 10){
+    /*
+    result = globus_io_try_write((globus_io_handle_t *)handle, 
+				 (globus_byte_t *)pchar, 
+				 bytes_left,
+				 &nbytes);
+    */
+    result = globus_io_write((globus_io_handle_t *)handle, 
+			     (globus_byte_t *)pchar, 
+			     bytes_left,
+			     &nbytes);
+
+    if(result != GLOBUS_SUCCESS){
+      fprintf(stderr, "Write_globus: call to globus_io_try_write failed\n");
+      Globus_error_print(result);
+      return REG_FAILURE;
+    }
+    else{
+      bytes_left -= nbytes;
+      pchar += nbytes;
+    }
+    count++;
+  }
+
+  if(bytes_left > 0){
+#if REG_DEBUG
+    fprintf(stderr, "Write_globus: timed-out trying to write data\n");
+#endif
+    return REG_TIMED_OUT;
+  }
+  else{
+    return REG_SUCCESS;
+  }
+}
+
+/*----------------------------------------------------------------*/
+
+int Write_globus_non_blocking(const globus_io_handle_t *handle,
+			      const int n,
+			      void *buffer)
+{
+  globus_size_t   nbytes, bytes_left;
+  globus_result_t result;
+  char           *pchar;
+  int             count = 0;
+  if(n < 0){
+    fprintf(stderr, "Write_globus_non_blocking: requested to write < 0 bytes!\n");
+    return REG_FAILURE;
+  }
+  else if(n == 0){
+    fprintf(stderr, "Write_globus_non_blocking: ARPDBG: asked to send 0 bytes?!?\n");
+    return REG_SUCCESS;
+  }
+
+  nbytes = (globus_size_t)n;
+  bytes_left = nbytes;
+  pchar = (char *)buffer;
+
+  while(bytes_left > 0 && count < 10){
+
+    result = globus_io_try_write((globus_io_handle_t *)handle, 
+				 (globus_byte_t *)pchar, 
+				 bytes_left,
+				 &nbytes);
+
+    if(result != GLOBUS_SUCCESS){
+      fprintf(stderr, "Write_globus_non_blocking: call to globus_io_try_write failed\n");
+      Globus_error_print(result);
+      return REG_FAILURE;
+    }
+    else{
+      bytes_left -= nbytes;
+      pchar += nbytes;
+    }
+    count++;
+  }
+
+  if(bytes_left > 0){
+#if REG_DEBUG
+    fprintf(stderr, "Write_globus_non_blocking: timed-out trying to write data\n");
+#endif
+    return REG_TIMED_OUT;
+  }
+  else{
+    return REG_SUCCESS;
+  }
+}
+
+/*--------------------------------------------------------------------*/
+
 int Initialize_IOType_transport_globus(const int direction,
 				       const int index)
 {
@@ -195,11 +1391,9 @@ int Initialize_IOType_transport_globus(const int direction,
 
   return return_status;
 }
-#endif
 
 /*---------------------------------------------------*/
 
-#if REG_GLOBUS_SAMPLES
 void Finalize_IOType_transport_globus()
 {
   int index;
@@ -219,11 +1413,9 @@ void Finalize_IOType_transport_globus()
   /* deactivate globus module */
   Globus_io_deactivate();
 }
-#endif
 
 /*---------------------------------------------------*/
 
-#if REG_GLOBUS_SAMPLES
 int Disable_IOType_globus(int index)
 {
   /* check index is valid */
@@ -254,11 +1446,9 @@ int Disable_IOType_globus(int index)
 
   return REG_SUCCESS;
 }
-#endif
 
 /*---------------------------------------------------*/
 
-#if REG_GLOBUS_SAMPLES
 int Enable_IOType_globus(int index)
 {
   /* check index is valid */
@@ -291,11 +1481,9 @@ int Enable_IOType_globus(int index)
 
   return REG_SUCCESS;
 }
-#endif
 
 /*---------------------------------------------------*/
 
-#if REG_GLOBUS_SAMPLES
 int Consume_start_data_check_globus(const int index)
 {  
   char            buffer[REG_PACKET_SIZE];
@@ -320,6 +1508,19 @@ int Consume_start_data_check_globus(const int index)
     return REG_FAILURE;
   }
 
+  /* Check that socket is ready to be read from
+  if (IOTypes_table.io_def[index].socket_info.data_status !=
+      REG_COMMS_READY_READ){
+    Globus_callback_poll(&(IOTypes_table.io_def[index].socket_info));
+  }
+
+  if (IOTypes_table.io_def[index].socket_info.data_status !=
+      REG_COMMS_READY_READ){
+    fprintf(stderr, "Consume_start_data_check_globus: socket not "
+	    "ready for reading\n");
+    return REG_FAILURE;
+    }
+  */
 #if REG_DEBUG
   fprintf(stderr, "Consume_start_data_check_globus: socket status is connected, index = %d\n",
 	  index );
@@ -403,6 +1604,8 @@ int Consume_start_data_check_globus(const int index)
 				  (globus_byte_t *)buffer,
 				  nbytes1,
 				  &nbytes);
+      IOTypes_table.io_def[index].socket_info.data_status = REG_COMMS_NOT_READY;
+
       if(result != GLOBUS_SUCCESS || nbytes != nbytes1){
 	fprintf(stderr, "Consume_start_data_check_globus: failed to read"
 		" remaining %d bytes of header\n", (int)nbytes1);
@@ -418,15 +1621,14 @@ int Consume_start_data_check_globus(const int index)
 	      "buffer failed\n");
       return REG_FAILURE;
     }
+
     return REG_SUCCESS;
   }
   return REG_FAILURE;
 }
-#endif
 
 /*--------------------------------------------------------------*/
 
-#if REG_GLOBUS_SAMPLES
 int Consume_data_read_globus(const int		index,  
 			     const int		datatype,
 			     const size_t	num_bytes_to_read, 
@@ -440,6 +1642,8 @@ int Consume_data_read_globus(const int		index,
 #ifdef USE_REG_TIMING
   double time0, time1;
 #endif
+
+  Emit_ack_globus(index);
 
   fprintf(stderr, "Consume_data_read_globus: calling globus_io_read "
           "for %d bytes\n", (int)num_bytes_to_read);
@@ -465,6 +1669,7 @@ int Consume_data_read_globus(const int		index,
 			    (globus_size_t) num_bytes_to_read, 
 			    &nbytes);
   }
+  IOTypes_table.io_def[index].socket_info.data_status = REG_COMMS_NOT_READY;
 
 #if REG_DEBUG
   fprintf(stderr, "Consume_data_read_globus: globus_io_read read %d bytes\n",
@@ -496,11 +1701,9 @@ int Consume_data_read_globus(const int		index,
   return REG_SUCCESS;
 
 }
-#endif
 
 /*---------------------------------------------------*/
 
-#if REG_GLOBUS_SAMPLES
 int Emit_header_globus(const int index)
 {
   char            buffer[REG_PACKET_SIZE];
@@ -508,8 +1711,10 @@ int Emit_header_globus(const int index)
 
   /* check if socket connection has been made */
   if (IOTypes_table.io_def[index].socket_info.comms_status 
-      != REG_COMMS_STATUS_CONNECTED) 
+      != REG_COMMS_STATUS_CONNECTED){
     Globus_attempt_listener_connect(&(IOTypes_table.io_def[index].socket_info));
+  }
+
   if (IOTypes_table.io_def[index].socket_info.comms_status 
       == REG_COMMS_STATUS_CONNECTED) {
 
@@ -518,6 +1723,18 @@ int Emit_header_globus(const int index)
 	    "index = %d\n", index );
 #endif
 
+    /* Check that socket is ready to be written to
+    if (IOTypes_table.io_def[index].socket_info.data_status !=
+	REG_COMMS_READY_WRITE){
+      Globus_callback_poll(&(IOTypes_table.io_def[index].socket_info));
+    }
+
+    if (IOTypes_table.io_def[index].socket_info.data_status !=
+	REG_COMMS_READY_WRITE){
+      fprintf(stderr, "Emit_header_globus: socket not ready for writing\n");
+      return REG_FAILURE;
+      } */
+
     /* Send header */
     
     sprintf(buffer, REG_PACKET_FORMAT, REG_DATA_HEADER);
@@ -525,9 +1742,9 @@ int Emit_header_globus(const int index)
 #if REG_DEBUG
     fprintf(stderr, "Emit_header_globus: Sending >>%s<<\n", buffer);
 #endif
-    status = Write_globus(&(IOTypes_table.io_def[index].socket_info.conn_handle),
-			  REG_PACKET_SIZE,
-			  (void *)buffer);
+    status = Write_globus_non_blocking(&(IOTypes_table.io_def[index].socket_info.conn_handle),
+				       REG_PACKET_SIZE,
+				       (void *)buffer);
 
     if(status == GLOBUS_SUCCESS){
 
@@ -574,11 +1791,9 @@ int Emit_header_globus(const int index)
 
   return REG_FAILURE;
 }
-#endif
 
 /*---------------------------------------------------*/
 
-#if REG_GLOBUS_SAMPLES
 int Emit_footer_globus(const int index,
  		       const char * const buffer)
 {
@@ -596,16 +1811,20 @@ int Emit_footer_globus(const int index,
 
   return REG_SUCCESS;
 }
-#endif
 
 /*---------------------------------------------------*/
 
-#if REG_GLOBUS_SAMPLES
 int Emit_data_globus(const int		index,
 		     const int		datatype,
 		     const size_t	num_bytes_to_send,
 		     void		*pData)
 {
+  if(Consume_ack_globus(index) != REG_SUCCESS){
+
+    fprintf(stderr, "Emit_data_globus: no ack so no write\n");
+    return REG_FAILURE;
+  }
+
   if(Write_globus(&(IOTypes_table.io_def[index].socket_info.conn_handle), 
 		  num_bytes_to_send,
 		  (void *)pData) != REG_SUCCESS){
@@ -621,11 +1840,9 @@ int Emit_data_globus(const int		index,
   
   return REG_SUCCESS;
 }
-#endif
 
 /*---------------------------------------------------*/
 
-#if REG_GLOBUS_SAMPLES
 int Get_communication_status_globus(const int index)
 {
 
@@ -636,7 +1853,74 @@ int Get_communication_status_globus(const int index)
   return REG_SUCCESS;
 
 }
-#endif
 
 /*---------------------------------------------------*/
 
+int Emit_ack_globus(const int index)
+{
+  char *ack_msg = "<Ready_to_read/>                                                                                                               ";
+  return REG_SUCCESS;/*ARPDBG*/
+
+  fprintf(stderr, "ARPDBG: into Emit_ack_globus\n");
+
+  if(index < 0 || index >= IOTypes_table.num_registered){
+
+    return REG_FAILURE;
+  }
+
+  if (IOTypes_table.io_def[index].socket_info.comms_status != 
+      REG_COMMS_STATUS_CONNECTED)
+    return REG_FAILURE;
+
+  return Write_globus(&(IOTypes_table.io_def[index].socket_info.conn_handle),
+		      strlen(ack_msg),
+		      (void *)ack_msg);
+
+}
+
+/*---------------------------------------------------*/
+
+int Consume_ack_globus(const int index)
+{
+  char *ack_msg = "<Ready_to_read/>                                                                                                               ";
+  char  buf[128];
+  globus_size_t   nbytes;
+  globus_result_t result;
+
+  return REG_SUCCESS;/*ARPDBG*/
+
+  fprintf(stderr, "ARPDBG: into Consume_ack_globus\n");
+  if(index < 0 || index >= IOTypes_table.num_registered){
+
+    return REG_FAILURE;
+  }
+
+  if (IOTypes_table.io_def[index].socket_info.comms_status != 
+      REG_COMMS_STATUS_CONNECTED)
+    return REG_FAILURE;
+
+
+  result = globus_io_try_read(&(IOTypes_table.io_def[index].socket_info.conn_handle),
+			      (globus_byte_t *)buf,
+			      strlen(ack_msg),
+			      &nbytes);
+
+  if(result != GLOBUS_SUCCESS){
+    fprintf(stderr, "Consume_ack_globus: failed to get ack\n");
+    Globus_error_print(result);
+    return REG_FAILURE;
+  }
+  else if( nbytes != strlen(ack_msg)){
+    fprintf(stderr, "Consume_ack_globus: error nbytes = %d\n", 
+	    (int)nbytes);
+    return REG_FAILURE;
+  }
+
+  if(!strstr(buf, ack_msg)){
+    fprintf(stderr, "Consume_ack_globus: data not ack msg\n\n");
+    return REG_FAILURE;
+  }
+  return REG_SUCCESS;
+}
+
+#endif /* REG_GLOBUS_SAMPLES */

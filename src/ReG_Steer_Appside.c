@@ -40,7 +40,6 @@
 #include "ReG_Steer_Appside.h"
 #include "ReG_Steer_Appside_internal.h"
 #include "ReG_Steer_Appside_Globus.h"
-#include "ReG_Steer_Globus_io.h"
 #include "ReG_Steer_Appside_Soap.h"
 
 #include <signal.h>
@@ -596,18 +595,6 @@ int Register_IOTypes(int    NumTypes,
     /* Will need to check that IOLabel is something that the 
        component framework knows about */
   
-    /* Currently have no way of looking up what filename to use so 
-       hardwire... */
-
-    if(IOLabel[i] == "VTK_STRUCTURED_POINTS_INPUT"){
-
-      sprintf(IOTypes_table.io_def[current].filename, "data.vtk");
-    }
-    else{
-      /* In the short term, use the label as the filename */
-      strcpy(IOTypes_table.io_def[current].filename, IOLabel[i]);
-    }
-
     /* Whether input or output (sample data) */
 
     IOTypes_table.io_def[current].direction = direction[i];
@@ -727,8 +714,8 @@ int Disable_IOType(int IOType){
 
 #if REG_GLOBUS_SAMPLES
     Disable_IOType_globus(index);
-    IOTypes_table.io_def[index].is_enabled = FALSE;
 #endif
+    IOTypes_table.io_def[index].is_enabled = FALSE;
   }
 
   return REG_SUCCESS;
@@ -879,8 +866,9 @@ int Register_ChkTypes(int    NumTypes,
 
     strcpy(ChkTypes_table.io_def[current].label, ChkLabel[i]);
 
-    /* filename not used currently */
+    /* filename not used currently ARPDBG
     sprintf(ChkTypes_table.io_def[current].filename, "NOT_SET");
+    */
 
     /* Whether input or output */
     ChkTypes_table.io_def[current].direction = direction[i];
@@ -1068,12 +1056,14 @@ int Record_checkpoint_set(int   ChkType,
 {
 #if REG_SOAP_STEERING
   int    nfiles;
-  int    i, status;
+  int    i, j, status, len;
+  int    count = 0;
   int    nbytes, bytes_left;
   char **filenames;
   char  *cp_data;
   char   node_data[REG_MAX_MSG_SIZE];
   char  *pchar;
+  char  *pTag;
   time_t time_now;
 #endif
 
@@ -1089,8 +1079,53 @@ int Record_checkpoint_set(int   ChkType,
 #else /* Steering via SGS so log checkpoints with SGS */
 
   /* Get list of checkpoint files */
+
+  /* Calc. length of string - 'ls -1' and slashes add 9 chars so
+     add a few more for safety.  Ask for 2*strlen(ChkTag) so that
+     we can use the end of this buffer to hold the trimmed version
+     of the tag. */
+  len = strlen(Path) + 2*strlen(ChkTag) + strlen(ReG_CurrentDir) + 20;
+
+  if( !(pchar = (char *)malloc(len)) ){
+
+    fprintf(stderr, "Record_checkpoint_set: malloc of %d bytes failed\n",
+	    len);
+    return REG_FAILURE;
+  }
+
+  /* Set our pointer to the 'spare' bit at the end of the buffer
+     we've just malloc'd */
+  pTag = &(pchar[len - strlen(ChkTag) - 1]);
+
+  /* Trim off leading space... */
+  len = strlen(ChkTag);
+  j = -1;
+  for(i=0; i<len; i++){
+
+    if(ChkTag[i] != ' '){
+      j = i;
+      break;
+    }
+  }
+
+  if(j == -1){
+    fprintf(stderr, "Record_checkpoint_set: ChkTag is blank\n");
+    return REG_FAILURE;
+  }
+
+  /* Copy tag until first blank space - i.e.tag must not contain any
+     spaces. */
+  for(i=j; i<len; i++){
+    if(ChkTag[i] == ' ')break;
+    pTag[count++] = ChkTag[i];
+  }
+  pTag[count] = '\0';
+
+  sprintf(pchar, "%s/%s/*%s*", ReG_CurrentDir, Path, pTag);
+
   filenames = NULL;
-  status = Get_checkpoint_files(ChkTag, Path, &nfiles, &filenames);
+  status = Get_file_list(pchar, &nfiles, &filenames);
+  free(pchar);
 
   if( (status != REG_SUCCESS) || !nfiles){
 
@@ -1210,71 +1245,37 @@ int Record_checkpoint_set(int   ChkType,
 
 /*----------------------------------------------------------------*/
 
-int Get_checkpoint_files(char *ChkTag,
-			 char *Path,
-			 int  *num,
-                         char ***names)
+int Get_file_list(char *fileroot,
+		  int  *num,
+		  char ***names)
 {
-  char *redirection = "* > ReG_Chk_files.txt";
+  char *redirection = " > ReG_files.tmp";
   char *pchar;
-  char *pTag;
   char  bufline[REG_MAX_STRING_LENGTH];
   int   len;
   int   i, j;
-  int   count = 0;
   FILE *fp;
 
   /* Calc. length of string - 'ls -1' and slashes add 9 chars so
      add a few more for safety.  Ask for 2*strlen(ChkTag) so that
      we can use the end of this buffer to hold the trimmed version
      of the tag. */
-  len = strlen(Path) + 2*strlen(ChkTag) + strlen(ReG_CurrentDir) + 
-        strlen(redirection) + 20;
+  len = strlen(fileroot) + strlen(redirection) + 20;
 
   if( !(pchar = (char *)malloc(len)) ){
 
-    fprintf(stderr, "Get_checkpoint_files: malloc of %d bytes failed\n",
+    fprintf(stderr, "Get_file_list: malloc of %d bytes failed\n",
 	    len);
     return REG_FAILURE;
   }
 
-  /* Set our pointer to the 'spare' bit at the end of the buffer
-     we've just malloc'd */
-  pTag = &(pchar[len - strlen(ChkTag) - 1]);
-
-  /* Trim off leading space... */
-  len = strlen(ChkTag);
-  j = -1;
-  for(i=0; i<len; i++){
-
-    if(ChkTag[i] != ' '){
-      j = i;
-      break;
-    }
-  }
-
-  if(j == -1){
-    fprintf(stderr, "Get_checkpoint_files: ChkTag is blank\n");
-    *num = 0;
-    return REG_FAILURE;
-  }
-
-  /* Copy tag until first blank space - i.e.tag must not contain any
-     spaces. */
-  for(i=j; i<len; i++){
-    if(ChkTag[i] == ' ')break;
-    pTag[count++] = ChkTag[i];
-  }
-  pTag[count] = '\0';
-
-  sprintf(pchar, "ls -1 %s/%s/*%s%s", 
-	  ReG_CurrentDir, Path, pTag, redirection);
+  sprintf(pchar, "ls -1 %s %s", fileroot, redirection);
   system(pchar);
 
   free(pchar);
   pchar = NULL;
 
-  if( (fp = fopen("ReG_Chk_files.txt", "r")) ){
+  if( (fp = fopen("ReG_files.tmp", "r")) ){
 
     *num = 0;
 
@@ -1310,7 +1311,7 @@ int Get_checkpoint_files(char *ChkTag,
     }
 
     fclose(fp);
-    remove("ReG_Chk_files.txt");
+    remove("ReG_files.tmp");
   }
 
   return REG_SUCCESS;
@@ -1813,6 +1814,10 @@ int Emit_start(int  IOType,
 	       int  SeqNum,
 	       int *IOTypeIndex)
 {
+#if !REG_GLOBUS_SAMPLES
+  char *pchar;
+#endif
+
   /* Check that steering is enabled */
   if(!ReG_SteeringEnabled) return REG_SUCCESS;
 
@@ -1845,12 +1850,35 @@ int Emit_start(int  IOType,
   /* Initialise array-ordering flags */
   IOTypes_table.io_def[*IOTypeIndex].convert_array_order = FALSE;
 
-  if (Emit_header(*IOTypeIndex) == REG_SUCCESS){
+#if !REG_GLOBUS_SAMPLES
 
-    return REG_SUCCESS;
+  /* Currently have no way of looking up what filename to use so 
+     hardwire... */
+
+  /* In the short term, use the label as the filename */
+  strcpy(IOTypes_table.io_def[*IOTypeIndex].filename, 
+	 IOTypes_table.io_def[*IOTypeIndex].label);
+  /* Replace any spaces with '_' */
+  pchar = strchr(IOTypes_table.io_def[*IOTypeIndex].filename, ' ');
+  while( pchar && ((pchar - IOTypes_table.io_def[*IOTypeIndex].label + 1) < REG_MAX_STRING_LENGTH) ){
+    *pchar = '_';
+    pchar = strchr(++pchar,' ');
   }
 
-  return REG_FAILURE;
+  pchar = IOTypes_table.io_def[*IOTypeIndex].filename;
+  pchar += strlen(IOTypes_table.io_def[*IOTypeIndex].filename);
+
+  sprintf(pchar, "_%d", SeqNum);
+  if( !(IOTypes_table.io_def[*IOTypeIndex].fp = 
+	fopen(IOTypes_table.io_def[*IOTypeIndex].filename, "w")) ){
+
+    fprintf(stderr, "Emit_start: failed to open file %s\n", 
+	    IOTypes_table.io_def[*IOTypeIndex].filename);
+    return REG_FAILURE;
+  }
+#endif
+
+  return Emit_header(*IOTypeIndex);
 }
 
 /*----------------------------------------------------------------*/
@@ -1878,6 +1906,16 @@ int Emit_stop(int *IOTypeIndex)
   buffer[REG_PACKET_SIZE-1] = '\0';
 
   return_status = Emit_footer(*IOTypeIndex, buffer);
+
+#if !REG_GLOBUS_SAMPLES
+  if(IOTypes_table.io_def[*IOTypeIndex].fp){
+    fclose(IOTypes_table.io_def[*IOTypeIndex].fp);
+    IOTypes_table.io_def[*IOTypeIndex].fp = NULL;
+  }
+  /* Create lock file for this data file to prevent race 
+     conditions */
+  Create_lock_file(IOTypes_table.io_def[*IOTypeIndex].filename);
+#endif
 
   *IOTypeIndex = REG_IODEF_HANDLE_NOTSET;
 
@@ -4732,16 +4770,15 @@ int Make_supp_cmds_msg(int   NumSupportedCmds,
 int Initialize_IOType_transport(const int direction,
 				const int index)
 {
-
 #if REG_GLOBUS_SAMPLES
 
   return Initialize_IOType_transport_globus(direction, index);
 
 #else
+  IOTypes_table.io_def[index].is_enabled = TRUE;
 
   return REG_SUCCESS;
 #endif
-
 }
 
 /*---------------------------------------------------*/
@@ -4766,10 +4803,45 @@ int Consume_start_data_check(const int index)
 
   return Consume_start_data_check_globus(index);
 #else
+  int    nfiles;
+  char  *pchar;
+  char** filenames;
+  char   fileroot[REG_MAX_STRING_LENGTH];
+
+  /* In the short term, use the label (with spaces replaced by
+     '_'s as the filename */
+  strcpy(fileroot, IOTypes_table.io_def[index].label);
+
+  /* Replace any spaces with '_' */
+  pchar = strchr(fileroot, ' ');
+  while( pchar && ((pchar - IOTypes_table.io_def[index].label + 1) 
+		   < REG_MAX_STRING_LENGTH) ){
+    *pchar = '_';
+    pchar = strchr(++pchar,' ');
+  }
+
+  strcat(fileroot, "_*.lock");
+
+  filenames = NULL;
+  if(Get_file_list(fileroot, &nfiles, &filenames) != REG_SUCCESS){
+    return REG_FAILURE;
+  }
+
+  strcpy(IOTypes_table.io_def[index].filename, filenames[0]);
+
+  /* Remove the '.lock' from the filename */
+  pchar = strstr(IOTypes_table.io_def[index].filename, ".lock");
+
+  if(!pchar)return REG_FAILURE;
+
+  *pchar = '\0';
+  IOTypes_table.io_def[index].fp = 
+    fopen(IOTypes_table.io_def[index].filename, "r");
+
+  if(IOTypes_table.io_def[index].fp) return REG_SUCCESS;
 
   return REG_FAILURE;
 #endif
-
 }
 
 /*---------------------------------------------------*/
@@ -4802,17 +4874,19 @@ int Emit_header(const int index)
   return Emit_header_globus(index);
 #else
   char            buffer[REG_PACKET_SIZE];
-  int             status;
 
   sprintf(buffer, REG_PACKET_FORMAT, REG_DATA_HEADER);
   buffer[REG_PACKET_SIZE-1] = '\0';
 #if REG_DEBUG
   fprintf(stderr, "Emit_header: Sending >>%s<<\n", buffer);
 #endif
-  /*    status = Write_globus(&(IOTypes_table.io_def[index].socket_info.conn_handle),
-			  REG_PACKET_SIZE,
-			  (void *)buffer);
-  */
+
+  if(IOTypes_table.io_def[index].fp){
+    /*fprintf(IOTypes_table.io_def[index].fp, "%s\n", buffer);*/
+    fwrite((void *)buffer, sizeof(char), REG_PACKET_SIZE, 
+	   IOTypes_table.io_def[index].fp);
+    return REG_SUCCESS;
+  }
 
   return REG_FAILURE;
 #endif
@@ -4829,9 +4903,15 @@ int Emit_footer(const int index,
   return Emit_footer_globus(index, buffer);
 #else
 
+  if(IOTypes_table.io_def[index].fp){
+    /*fprintf(IOTypes_table.io_def[index].fp, "%s\n", buffer);*/
+    fwrite((void *)buffer, sizeof(char), strlen(buffer), 
+	   IOTypes_table.io_def[index].fp);
+    return REG_SUCCESS;
+  }
+
   return REG_FAILURE;
 #endif
-
 }
 
 /*---------------------------------------------------*/
@@ -4848,7 +4928,14 @@ int Emit_data(const int		index,
 			  num_bytes_to_send,
 			  pData);
 #else
+  int n_written;
 
+  if(IOTypes_table.io_def[index].fp){
+    n_written = fwrite( pData, (int)num_bytes_to_send, 1, 
+			IOTypes_table.io_def[index].fp);
+
+    if(n_written == 1)return REG_SUCCESS;
+  }
   return REG_FAILURE;
 #endif
 
@@ -4864,7 +4951,13 @@ int Get_communication_status(const int	index)
   return Get_communication_status_globus(index);
 #else
 
-  return REG_FAILURE;
+  if(IOTypes_table.io_def[index].fp){
+
+    return REG_SUCCESS;
+  }
+  else{
+    return REG_FAILURE;
+  }
 #endif
 
 }
@@ -4899,16 +4992,51 @@ int Emit_iotype_msg_header(int IOTypeIndex,
 			   int NumBytes,
 			   int IsFortranArray)
 {
+  char  buffer[7*REG_PACKET_SIZE];
+  char  tmp_buffer[REG_PACKET_SIZE];
+  char *pchar;
+
+  pchar = buffer;
+  pchar += sprintf(pchar, REG_PACKET_FORMAT, "<ReG_data_slice_header>");
+  /* Put terminating char within the 128-byte packet */
+  *(pchar-1) = '\0';
+  sprintf(tmp_buffer, "<Data_type>%d</Data_type>", DataType);
+  pchar += sprintf(pchar, REG_PACKET_FORMAT, tmp_buffer);
+  *(pchar-1) = '\0';
+  sprintf(tmp_buffer, "<Num_objects>%d</Num_objects>", Count);
+  pchar += sprintf(pchar, REG_PACKET_FORMAT, tmp_buffer);
+  *(pchar-1) = '\0';
+  sprintf(tmp_buffer, "<Num_bytes>%d</Num_bytes>", NumBytes);
+  pchar += sprintf(pchar, REG_PACKET_FORMAT, tmp_buffer);
+  *(pchar-1) = '\0';
+  if(IsFortranArray){
+    sprintf(tmp_buffer, "<Array_order>FORTRAN</Array_order>");
+  }
+  else{
+    sprintf(tmp_buffer, "<Array_order>C</Array_order>");
+  }
+  pchar += sprintf(pchar, REG_PACKET_FORMAT, tmp_buffer);
+  *(pchar-1) = '\0';
+  pchar += sprintf(pchar, REG_PACKET_FORMAT, "</ReG_data_slice_header>");
+  *(pchar-1) = '\0';
 
 #if REG_GLOBUS_SAMPLES
+  return Write_globus(&(IOTypes_table.io_def[IOTypeIndex].socket_info.conn_handle),
+		      (int)(pchar-buffer), 
+		      (void *)buffer);
+
+  /*
   return Emit_msg_header_globus(&(IOTypes_table.io_def[IOTypeIndex].socket_info),
 				DataType,
 				Count,
 				NumBytes,
 				IsFortranArray);
+  */
 #else
 
-  return REG_FAILURE;
+  fwrite((void *)buffer, sizeof(char), (int)(pchar-buffer), 
+	 IOTypes_table.io_def[IOTypeIndex].fp);
+  return REG_SUCCESS;
 #endif
 
 }
