@@ -68,22 +68,22 @@ STEER_INCLUDES = -I${REG_STEER_HOME}/include \
 # the contents of REG_XML_LIBDIR (e.g. linux boxes that only have 
 # /usr/local/lib rather than /usr/local/lib32, say).
 STEER_LIBS = -L${REG_STEER_HOME}/lib$(NBIT) \
-             -L${REG_XML_LIBDIR}$(NBIT)
+             -L${REG_XML_LIBDIR}
 
 # The globus_definitions file can be generated using the following globus command
 #  globus-makefile-header globus_io globus_common -flavor=gcc32dbg > globus_defintions
 # subsititue flavor appropriately for your globus installation but use only non-threaded flavour
 
-#GLOBUS_INCLUDES=
-#GLOBUS_PKG_LIBS=
-#GLOBUS_LDFLAGS=
+GLOBUS_INCLUDES=
+GLOBUS_PKG_LIBS=
+GLOBUS_LDFLAGS=
 
 # Either define GLOBUS_INCLUDES, GLOBUS_PKG_LIBS and GLOBUS_LDFLAGS, OR
 # uncomment this line if using Globus for sample AND/OR steering
-include ${REG_STEER_HOME}/globus_definitions
+#include ${REG_STEER_HOME}/globus_definitions
 
 # Set flag to 1 to use globus for iotype samples communication, 0 to not 
-REG_GLOBUS_SAMPLES_FLAG = 1
+REG_GLOBUS_SAMPLES_FLAG = 0
 
 # Set flag to 1 to use globus for steering communication, 0 to not 
 REG_GLOBUS_STEERING_FLAG = 0
@@ -91,8 +91,8 @@ REG_GLOBUS_STEERING_FLAG = 0
 
 # Set flag to 1 to use SOAP for steering communication, 0 to not 
 REG_SOAP_STEERING_FLAG = 1
-SOAP_CLASS_PATH = /home/zzcgumk/src/gsoap-2.1.10/soapcpp2/wsdlcpp
-SOAPCPP2 = /usr/local/bin/soapcpp2
-SOAP_INCLUDES = 
-SOAP_PKG_LIBS = -lgsoap
-SOAP_LDFLAGS = 
+#SOAP_CLASS_PATH = ${CLASSPATH}:${HOME}/gsoap-linux-2.2.3/wsdlcpp
+#SOAPCPP2 = ${HOME}/gsoap-linux-2.2.3/soapcpp2
+#SOAP_INCLUDES = -I${HOME}/gsoap-linux-2.2.3
+#SOAP_PKG_LIBS = -lgsoap
+#SOAP_LDFLAGS = -L${HOME}/gsoap-linux-2.2.3

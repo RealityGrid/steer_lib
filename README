@@ -1,7 +1,9 @@
 This software is an implementation of the steering API for the
 RealityGrid project, produced by the Supercomputing, Visualization &
 e-Science Group, Manchester Computing, University of Manchester.  It
-uses libxml2, the XML parser created by the Gnome Project.
+uses libxml2, the XML parser created by the Gnome Project and gSOAP, an
+implementation of the Simple Object Access Protocol from Florida State
+University.
 
 ----------------------------------------------------------------------------
 
@@ -27,6 +29,24 @@ If you don't have the access rights to install the library in a system-default
 location and don't want to have to set LD_LIBRARY64_PATH/LD_LIBRARYN32_PATH
 then you can also specify that you only want a static library by giving the
 --enable-shared=no flag.)
+
+gSOAP
+
+The library distribution includes gSOAP, version 2.2.3.  If for any reason
+you wish to change the version of gSOAP used then the relevant files are:
+
+src/stdsoap2.c
+include/stdsoap2.h
+
+The following files are generated from the wsdl describing the Steering
+Grid Service (SGS/SGS.wsdl).  See SGS/utils/generate_c_from_wsdl.csh for
+how to do this.
+
+src/soapC.c
+src/soapClient.c
+include/soapH.h
+include/soapStub.h
+include/soapSGS.nsmap
 
 ----------------------------------------------------------------------------
 
@@ -73,17 +93,20 @@ REG_XML_LIBDIR: The root location of the xml library file (libxml2.a) to link
 REG_XML_INCDIR: The path of the libxml 'include' directory.
                 (e.g. /usr/freeware/include/libxml2.)
 
-Executing 'source reg_steer_configure.csh' (or equivalent, depending on which
-shell you use) will then set these variables.  Since this needs to be done
-everytime you log in, it may be wise to add this command to your .cshrc or
-equivalent.
+Executing 'source reg_steer_configure.csh' (or equivalent, depending
+on which shell you use) will then set these variables.  Since this
+needs to be done everytime you log in, it may be wise to add this
+command to your .cshrc or equivalent.
 
-Edit the first two lines of the Makefile to be found in this directory in order
-to select 64- or 32-bit compilation. (Ensure that you have a compatible libxml2
-library file.)
+All platform-dependent build configuration is done in the file
+Makefile.include to be found in this directory.
 
-Edit 'src/Makefile' to set architecture type (necessary for generating
-F90 bindings).
+You should select 64- or 32-bit compilation (if appropriate for you
+platform). (Ensure that you have a compatible libxml2 library file.)
+
+Set architecture type (necessary for generating F90 bindings).
+
+Specify compilers and compiler flags...
 
 Type 'make' in the current directory...bear in mind that the makefiles etc.
 are not currently platform independent and may require tweaking.
