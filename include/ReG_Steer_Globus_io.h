@@ -111,8 +111,7 @@ extern void Globus_accept_callback (void			*callback_arg,
 extern int Globus_create_connector(socket_io_type * const socket_info);
 
 
-/* The connector callback function - this callback is kicked within Globus_create_connector
-   as is called immediately after registration to attempt a connect */
+/* The connector callback function */
 extern void Globus_connector_callback (void			*callback_arg,
 					      globus_io_handle_t	*handle,
 					      globus_result_t		result);
@@ -147,6 +146,9 @@ void Globus_attempt_listener_connect(socket_io_type * const socket_info);
 
 /* Call globus functions to close failed socket and accept any pending connection attempts */
 extern void Globus_retry_accept_connect(socket_io_type * const socket_info);
+
+/* Call globus functions to attempt to connect */
+extern void Globus_attempt_connector_connect(socket_io_type * const socket_info);
 
 /* Call globus functions to close failed socket and retry to connect */
 extern void Globus_retry_connect(socket_io_type * const socket_info);
