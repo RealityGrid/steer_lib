@@ -1,7 +1,9 @@
 This document describes the environment variables that the
 RealityGrid steering software requires to be set at 
 run-time. (SGS = Steering Grid Service; only used when
-steering via SOAP.)
+steering via SOAP.)  Angle brackets indicate that a given
+variable does not have to be set but may be used to 
+configure the behaviour of the library.
 
 Initial version: A R Porter, 13th October 2003.
 
@@ -16,7 +18,7 @@ REG_STEER_DIRECTORY
 Directory location to use for steering communication
 
 -------------------------------
-REG_APP_POLL_INTERVAL
+<REG_APP_POLL_INTERVAL>
 
 Minimum time interval (integer no. of seconds) between checks on 
 whether a steering client has connected.  If set to zero then a 
@@ -24,19 +26,21 @@ check is performed on every call to Steering_control.  If unset
 then a default value (set in ReG_Steer_types.h) is used.
 
 -------------------------------
-REG_CONNECTOR_HOSTNAME 
+<REG_CONNECTOR_HOSTNAME>
 
 Hostname of machine to connect to (using globus_io)
-Note that this is published in the SGS if steering via SOAP.
+Note that this is published in the SGS if steering via SOAP &
+thus this variable need not be set.
 
 -------------------------------
-REG_CONNECTOR_PORT 
+<REG_CONNECTOR_PORT> 
 
 Port on machine REG_CONNECTOR_HOSTNAME to connect to (using globus_io)
-Note that this is published in the SGS if steering via SOAP.
+Note that this is published in the SGS if steering via SOAP & thus
+this variable need not be set.
 
 -------------------------------
-GLOBUS_TCP_PORT_RANGE   2566,2586
+<GLOBUS_TCP_PORT_RANGE   2566,2586>
 
 Used by both globus_io and gSOAP - specifies a range of ports that may
 be opened on the client machine.  Port chosen at random if not set.
@@ -46,10 +50,29 @@ REG_SGS_ADDRESS
 
 Location of steering grid service that provides public interface for
 steering simulation and discovering address of remote data sources.
+Required only if the steering library has been built to use SOAP
+(see Makefile.include) for remote steering.
 
 -------------------------------
-REG_TCP_INTERFACE
+<REG_TCP_INTERFACE>
 
 For use when machine hosting simulation/visualisation has more than
 one TCP interface.  Set to IP address of desired interface to use for
 globus_io.  Uses default if not set (i.e. probably INADDR_ANY).
+
+-------------------------------
+<REG_MACHINE_NAME>
+
+The address of a publicly-accessible node on the machine we're
+executing on.  On many machines we may be running on a node that
+cannot be seen by the outside world and therefore globus connections
+for file transfer etc. will need the address of a publicly-accessible
+node.  This assumes that the port-forwarder (used for both steering
+and globus_io connections) runs on the same node as that to be used
+for gsiftp access.
+  If this isn't set then REG_TCP_INTERFACE is used.  If that isn't
+set then uname and gethostbyname are used to get the fully-qualified
+domain name of the node we're executing on.  
+  This variable only affects what address the SGS (and checkpoint 
+data) publishes to the outside world - it does not alter which local 
+interface is used by socket connections.
