@@ -122,11 +122,20 @@ INT_KIND_1_DECL(IOType);
 INT_KIND_1_DECL(Status);
 {
   int    i;
+  int    len;
   char **str_array;
+  char  *buf;
+
+  len = STRING_LEN(IOLabel);
+  if(len >= REG_MAX_STRING_LENGTH){
+    /* Allow space for terminating '/0' */
+    len = REG_MAX_STRING_LENGTH - 1;
+  }
 
   str_array = (char**)malloc((*NumTypes)*sizeof(char*));
+  buf       = (char*)malloc((*NumTypes)*(len+1));
 
-  if(str_array == NULL){
+  if(!str_array || !buf){
 
     fprintf(stderr, "Register_IOTypes_f: malloc failed\n");
     *Status = INT_KIND_1_CAST( REG_FAILURE );
@@ -137,7 +146,11 @@ INT_KIND_1_DECL(Status);
 
   for(i=0; i<(int)(*NumTypes); i++){
 
-    str_array[i] = &(STRING_PTR(IOLabel)[i*STRING_LEN(IOLabel)]);
+    str_array[i] = &(buf[i*(len + 1)]);
+    memcpy(str_array[i], 
+           &(STRING_PTR(IOLabel)[i*STRING_LEN(IOLabel)]),
+           len);
+    str_array[i][len] = '\0';
   }
 
   *Status = INT_KIND_1_CAST( Register_IOTypes((int)*NumTypes,
@@ -147,6 +160,9 @@ INT_KIND_1_DECL(Status);
 			                      (int *)IOType) );
 
   free(str_array);
+  str_array = NULL;
+  free(buf);
+  buf = NULL;
   return;
 }
 
@@ -178,11 +194,20 @@ INT_KIND_1_DECL(ChkType);
 INT_KIND_1_DECL(Status);
 {
   int    i;
+  int    len;
   char **str_array;
+  char  *buf;
+
+  len = STRING_LEN(ChkLabel);
+  if(len >= REG_MAX_STRING_LENGTH){
+    /* Allow space for terminating '/0' */
+    len = REG_MAX_STRING_LENGTH - 1;
+  }
 
   str_array = (char**)malloc((*NumTypes)*sizeof(char*));
+  buf       = (char*)malloc((*NumTypes)*(len+1));
 
-  if(str_array == NULL){
+  if(!str_array || !buf){
 
     fprintf(stderr, "Register_ChkTypes_f: malloc failed\n");
     *Status = INT_KIND_1_CAST( REG_FAILURE );
@@ -193,7 +218,11 @@ INT_KIND_1_DECL(Status);
 
   for(i=0; i<(int)(*NumTypes); i++){
 
-    str_array[i] = &(STRING_PTR(ChkLabel)[i*STRING_LEN(ChkLabel)]);
+    str_array[i] = &(buf[i*(len + 1)]);
+    memcpy(str_array[i], 
+           &(STRING_PTR(ChkLabel)[i*STRING_LEN(ChkLabel)]),
+           len);
+    str_array[i][len] = '\0';
   }
 
   *Status = INT_KIND_1_CAST( Register_ChkTypes((int) *NumTypes,
@@ -203,7 +232,9 @@ INT_KIND_1_DECL(Status);
                                                (int *)ChkType) );
 
   free(str_array);
-
+  str_array = NULL;
+  free(buf);
+  buf = NULL;
   return;
 }
 
@@ -266,14 +297,88 @@ STRING_ARG_DECL(ParamMin);
 STRING_ARG_DECL(ParamMax);
 INT_KIND_1_DECL(Status);
 {
+  char *pbuf[3];
+  char *pchar;
+  int   i;
+  int   found = 0;
+
+  if(STRING_LEN(ParamLabel) > REG_MAX_STRING_LENGTH){
+
+    fprintf(stderr, "register_param_f: ERROR - length of label "
+            "exceeds REG_MAX_STRING_LENGTH (%d) chars\n", 
+            REG_MAX_STRING_LENGTH);
+
+    *Status = INT_KIND_1_CAST(REG_FAILURE);
+    return;
+  }
+
+  if(STRING_LEN(ParamLabel) == REG_MAX_STRING_LENGTH){
+
+    pchar = STRING_PTR(ParamLabel);
+    for(i = (REG_MAX_STRING_LENGTH-1); i == 0; i--){
+      if(pchar[i] == '\0'){
+        found = 1;
+	break;
+      }
+    }
+    if(!found){
+
+      fprintf(stderr, "register_param_f: ERROR - length of label "
+              "is REG_MAX_STRING_LENGTH (%d) chars long\nbut contains "
+              "no termination character - shorten label (or its len "
+              "declaration)\n", 
+              REG_MAX_STRING_LENGTH);
+
+      *Status = INT_KIND_1_CAST(REG_FAILURE);
+      return;
+    }
+  }
+
+#if DEBUG
+  if( (STRING_LEN(ParamMin) > REG_MAX_STRING_LENGTH) ||
+      (STRING_LEN(ParamMin) > REG_MAX_STRING_LENGTH) ){
+    fprintf(stderr, "register_param_f: ERROR - string specifying "
+            "max. and/or min. param. value exceeds "
+            "REG_MAX_STRING_LENGTH (%d) chars in length\n", 
+            REG_MAX_STRING_LENGTH);
+
+    *Status = INT_KIND_1_CAST(REG_FAILURE);
+    return;
+  }
+#endif
+
+  if(!(pbuf[0] = (char*)malloc(3*REG_MAX_STRING_LENGTH)) ){
+
+    fprintf(stderr, "register_param_f: ERROR - malloc failed\n");
+    *Status = INT_KIND_1_CAST(REG_FAILURE);
+    return;
+  }
+  pbuf[1] = pbuf[0] + REG_MAX_STRING_LENGTH;
+  pbuf[2] = pbuf[1] + REG_MAX_STRING_LENGTH;
+
+  /* Terminate strings just in case */
+  memcpy(pbuf[0], STRING_PTR(ParamLabel), STRING_LEN(ParamLabel));
+  if(!found){
+    pbuf[0][STRING_LEN(ParamLabel)] = '\0';
+  }
+
+  memcpy(pbuf[1], STRING_PTR(ParamMin), STRING_LEN(ParamMin));
+  pbuf[1][STRING_LEN(ParamMin)] = '\0';
+  memcpy(pbuf[2], STRING_PTR(ParamMax), STRING_LEN(ParamMax));
+  pbuf[2][STRING_LEN(ParamMax)] = '\0';
+
   *Status = INT_KIND_1_CAST( Register_params(1,
- 	                      		     &STRING_PTR(ParamLabel),
+ 	                      		     pbuf,
 			      		     (int *)ParamSteerable,
 			      		     &ParamPtr,
 			      		     (int *)ParamType,
-                                             &STRING_PTR(ParamMin),
-                                             &STRING_PTR(ParamMax)) );
+                                             &(pbuf[1]),
+                                             &(pbuf[2])) );
 
+  free(pbuf[0]);
+  pbuf[0] = NULL;
+  pbuf[1] = NULL;
+  pbuf[2] = NULL;
   return;
 }
 
@@ -300,20 +405,72 @@ INT_KIND_1_DECL(Status);
 {
   char *min  = "0";
   char *max  = "1";
+  char *pbuf[1];
+  char *pchar;
   int   type = REG_CHAR;
+  int   i;
+  int   found = 0;
 
 #if DEBUG
   fprintf(stderr, "register_string_param_f: Entered routine, "
 	  "string = %s\n", STRING_PTR(StringParam));
 #endif
 
+  if(STRING_LEN(ParamLabel) > REG_MAX_STRING_LENGTH){
+
+    fprintf(stderr, "register_string_param_f: ERROR - length of label "
+            "exceeds REG_MAX_STRING_LENGTH (%d) chars\n", 
+            REG_MAX_STRING_LENGTH);
+
+    *Status = INT_KIND_1_CAST(REG_FAILURE);
+    return;
+  }
+
+  if(STRING_LEN(ParamLabel) == REG_MAX_STRING_LENGTH){
+
+    pchar = STRING_PTR(ParamLabel);
+    for(i = (REG_MAX_STRING_LENGTH-1); i == 0; i--){
+      if(pchar[i] == '\0'){
+        found = 1;
+	break;
+      }
+    }
+    if(!found){
+
+      fprintf(stderr, "register_string_param_f: ERROR - length of label "
+              "is REG_MAX_STRING_LENGTH (%d) chars long\nbut contains "
+              "no termination character - shorten label (or its len "
+              "declaration)\n", 
+              REG_MAX_STRING_LENGTH);
+
+      *Status = INT_KIND_1_CAST(REG_FAILURE);
+      return;
+    }
+  }
+
+  if(!(pbuf[0] = (char*)malloc(REG_MAX_STRING_LENGTH)) ){
+
+    fprintf(stderr, "register_string_param_f: ERROR - malloc failed\n");
+    *Status = INT_KIND_1_CAST(REG_FAILURE);
+    return;
+  }
+  
+  /* Terminate string just in case */
+  memcpy(pbuf[0], STRING_PTR(ParamLabel), STRING_LEN(ParamLabel));
+  if(!found){
+    pbuf[0][STRING_LEN(ParamLabel) + 1] = '\0';
+  }
+
   *Status = INT_KIND_1_CAST( Register_params(1,
- 	                      		     &STRING_PTR(ParamLabel),
+ 	                      		     pbuf,
 			      		     (int *)ParamSteerable,
 			      		     (void **)&STRING_PTR(StringParam),
 			      		     &type,
                                              &min,
                                              &max) );
+
+  free(pbuf[0]);
+  pbuf[0] = NULL;
 }
 
 /*----------------------------------------------------------------

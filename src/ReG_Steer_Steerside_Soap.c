@@ -61,7 +61,6 @@ int Sim_attach_soap(Sim_entry_type *sim, char *SimID)
   struct msg_struct *msg;
   struct cmd_struct *cmd;
   int   return_status;
-  int   nbytes;
   char *pchar = NULL;
   char *pchar1= NULL;
 
@@ -89,7 +88,7 @@ int Sim_attach_soap(Sim_entry_type *sim, char *SimID)
 					REG_SGS_ERROR)) return REG_FAILURE;
 
   /* get commands back and parse them... */
-  if(nbytes = strlen(attach_response._result)){
+  if(strlen(attach_response._result)){
 
     /* Strip-off outer tags (present because this is service data
        from the GS) */
@@ -332,7 +331,7 @@ struct msg_struct *Get_service_data(Sim_entry_type *sim, char *sde_name)
       if (!pchar1) {
 	fprintf(stderr, "Get_service_data: failed to strip root-element tags "
 		"from data:\n>>%s<<\n", findServiceData_response._result);
-	return REG_FAILURE;
+	return NULL;
       }
       msg = New_msg_struct();
 

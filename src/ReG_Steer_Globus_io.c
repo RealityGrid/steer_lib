@@ -228,7 +228,7 @@ int Globus_create_listener(socket_io_type * const socket_info)
 #endif
 
   /* Get the hostname of the machine we're running on (so we can publish
-     the endpoint of this connection */
+     the endpoint of this connection) */
   if(pchar = Get_fully_qualified_hostname()){
 
     sprintf(socket_info->listener_hostname, "%s", pchar);
@@ -357,7 +357,10 @@ Globus_accept_callback (void			*callback_arg,
   globus_mutex_lock(&lsocket_info->mutex);
 
   if (resultparam != GLOBUS_SUCCESS) {
-    fprintf(stderr, "DBG: Entered Globus_accept_callback resultparam FALSE, no connection\n");
+#if DEBUG
+    fprintf(stderr, "DBG: Entered Globus_accept_callback resultparam "
+	    "FALSE, no connection\n");
+#endif
     Globus_error_print(resultparam);
     lsocket_info->comms_status=REG_COMMS_STATUS_FAILURE;
   }
@@ -429,8 +432,10 @@ Globus_connector_callback (void			*callback_arg,
 
   if (resultparam != GLOBUS_SUCCESS) {
     lsocket_info->comms_status=REG_COMMS_STATUS_FAILURE;
+#if DEBUG
     fprintf(stderr, "DBG: Entered Globus_connector_callback "
 	    "resultparam FALSE, no connection\n");
+#endif
     Globus_error_print(resultparam);
   }
   else {

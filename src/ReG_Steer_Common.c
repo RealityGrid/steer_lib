@@ -345,6 +345,11 @@ int Next_free_param_index(Param_table_type *table)
       index = table->max_entries;
       table->param = (param_entry *)dum_ptr;
       table->max_entries = new_size;
+
+      /* Initialise new entries */
+      for(i=index; i<table->max_entries; i++){
+	table->param[i].handle = REG_PARAM_HANDLE_NOTSET;
+      }
     }
   }
 
@@ -685,8 +690,6 @@ int Read_file(char *filename, char **buf, int *size)
     *size += len;
 
     if( (bufsize - *size) < maxlen){
-      fprintf(stderr, "Read_file: doing realloc, bufsize = %d, size = %d\n",
-	      bufsize, *size);
 
       bufsize += BUFSIZ;
       ptr = realloc(*buf, (size_t)bufsize);

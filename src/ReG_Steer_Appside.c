@@ -438,7 +438,8 @@ int Register_IOTypes(int    NumTypes,
 
   for(i=0; i<NumTypes; i++){
 
-    strcpy(IOTypes_table.io_def[current].label, IOLabel[i]);
+    strncpy(IOTypes_table.io_def[current].label, IOLabel[i],
+	    REG_MAX_STRING_LENGTH);
 
     /* Will need to check that IOLabel is something that the 
        component framework knows about */
@@ -822,15 +823,13 @@ int Log_to_xml(char **pchar, int *count, const int not_sent_only)
   int   nbytes = 0;
   int   bytes_left;
 
-  *count = 0;
-  bytes_left = size;
-
   if( !(*pchar = (char *)malloc(size*sizeof(char))) ){
 
     fprintf(stderr, "Log_to_xml: malloc failed\n");
     return REG_FAILURE;
   }
 
+  *count = 0;
   pbuf = *pchar;
 
   for(i=0; i<Chk_log.num_entries; i++){
@@ -838,6 +837,7 @@ int Log_to_xml(char **pchar, int *count, const int not_sent_only)
     /* Check to see whether steerer already has this entry */
     if (not_sent_only && (Chk_log.entry[i].sent_to_steerer == TRUE)) continue;
 
+    bytes_left = size;
     pentry = entry;
     nbytes = snprintf(pentry, bytes_left, "<Log_entry>\n"
 		      "<Key>%d</Key>\n"
@@ -902,8 +902,6 @@ int Log_to_xml(char **pchar, int *count, const int not_sent_only)
     len = strlen(entry);
 
     if( (size - *count) < len){
-      fprintf(stderr, "Log_to_xml: doing realloc, count = %d, size = %d\n",
-	      *count, size);
 
       size += ((len/BUFSIZ) + 1)*BUFSIZ;
       if( !(ptr = realloc(*pchar, size*sizeof(char))) ){
@@ -1499,7 +1497,9 @@ int Register_params(int    NumParams,
     }
 
     /* Store label */
-    strcpy(Params_table.param[current].label, ParamLabels[i]);
+    strncpy(Params_table.param[current].label, 
+	    ParamLabels[i],
+	    REG_MAX_STRING_LENGTH);
 
     /* Store 'steerable' */
     Params_table.param[current].steerable = ParamSteerable[i];
@@ -1515,8 +1515,10 @@ int Register_params(int    NumParams,
     Params_table.param[current].is_internal = FALSE;
 
     /* Range of validity for this parameter */
-    strcpy(Params_table.param[current].min_val, ParamMinima[i]);
-    strcpy(Params_table.param[current].max_val, ParamMaxima[i]);
+    strncpy(Params_table.param[current].min_val, ParamMinima[i],
+	    REG_MAX_STRING_LENGTH);
+    strncpy(Params_table.param[current].max_val, ParamMaxima[i],
+	    REG_MAX_STRING_LENGTH);
 
     /* Create handle for this parameter */
     Params_table.param[current].handle = Params_table.next_handle++;
@@ -3540,7 +3542,9 @@ int Initialize_steering_connection_file(int  NumSupportedCmds,
   char  buf[REG_MAX_MSG_SIZE];
   char  filename[REG_MAX_STRING_LENGTH];
   int   i;
+#if DEBUG
   int   len, max_len;
+#endif
 
   /* Set location of all comms files */
 

@@ -262,7 +262,9 @@ int parseStatus(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 	status->cmd = status->cmd->next;
       }
 
+#if DEBUG
       fprintf(stderr, "Calling parseCmd...\n");
+#endif
       parseCmd(doc, ns, cur, status->cmd);
     }
 
