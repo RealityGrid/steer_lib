@@ -175,20 +175,11 @@ extern void Globus_retry_connect(socket_io_type * const socket_info);
 /* Call globus function to print out detail about error when REG_DEBUG on*/
 extern void Globus_error_print(const globus_result_t result);
 
-
-/* Functions for both appside and steerside globus comms (both data
-   and steering) */
-extern int Consume_msg_header_globus(socket_io_type *sock_info,
+extern int Consume_msg_header_globus(int  index,
 				     int *DataType,
 				     int *Count,
 				     int *NumBytes,
 				     int *IsFortranArray);
-
-extern int Emit_msg_header_globus(socket_io_type *sock_info,
-				  int DataType,
-				  int Count,
-				  int NumBytes,
-				  int IsFortranArray);
 
 extern int Write_globus(const globus_io_handle_t *handle,
 			const int n,

@@ -183,10 +183,10 @@ typedef struct {
 
 typedef struct {
   char				label[REG_MAX_STRING_LENGTH];
-#if !REG_GLOBUS_SAMPLES
+  /*#if !REG_GLOBUS_SAMPLES*/
   char				filename[REG_MAX_STRING_LENGTH];
   FILE                         *fp;
-#endif
+  /*#endif*/
   int				handle;
   /* Whether input, output */
   int				direction;

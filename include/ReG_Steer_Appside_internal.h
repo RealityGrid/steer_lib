@@ -142,10 +142,6 @@ static int Auto_generate_steer_cmds(int    SeqNum,
 				    int   *SteerCommands, 
 				    char **SteerCmdParams);
 
-/* Generate a filename (for a status message) from supplied root and 
-   internally-generated index */
-static int Generate_status_filename(char* filename);
-
 /* Take down connection with steerer and clean-up table entries */
 static int Detach_from_steerer();
 
@@ -165,8 +161,6 @@ static void Steering_signal_handler(int aSignal);
 /* Send a status message to the steerer */
 static int Send_status_msg(char *buf);
 
-static int Send_status_msg_file(char *buf);
-
 /* Create the xml message to tell steerer what standard commands
    the application supports (supplied in array SupportedCmds). */
 int Make_supp_cmds_msg(int   NumSupportedCmds,
@@ -177,22 +171,13 @@ int Make_supp_cmds_msg(int   NumSupportedCmds,
    passed back in structure.  Returns NULL if no message. */
 static struct msg_struct *Get_control_msg();
 
-static struct msg_struct *Get_control_msg_file();
-
-
 /* Set-up stuff to receive connection from steering client */
 static int Initialize_steering_connection(int  NumSupportedCmds,
 					  int *SupportedCmds);
 
-static int Initialize_steering_connection_file(int  NumSupportedCmds,
-					       int *SupportedCmds);
-
 /* Check for a connection from a steering client - return REG_SUCCESS
    if a client is attempting to connect */
 static int Steerer_connected();
-
-static int Steerer_connected_file();
-
 
 /* Take down any connection to a steering client */
 static int Finalize_steering_connection();
@@ -282,15 +267,5 @@ static int Realloc_iotype_buffer(int index,
 				 int num_bytes);
 
 static int Log_control_msg(char *msg_txt);
-
-
-/* Searches for files matching the pattern specified in fileroot (i.e.
-   does 'ls <fileroot>').
-   If any are found, names is malloc'd to point to an array of char*
-   and each entry in this array is malloc'd and set to the relevant
-   filename. These ptrs MUST be free'd. */
-static int Get_file_list(char *fileroot,
-			 int  *num,
-			 char ***names);
 
 #endif
