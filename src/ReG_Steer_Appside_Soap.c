@@ -487,7 +487,8 @@ int Get_data_source_address_soap(int   index,
   sprintf(index_string, "%d", index);
   getNthDataSource_response._GetNthDataSourceReturn = NULL;
   if(soap_call_sgs__GetNthDataSource(&soap, Steerer_connection.SGS_address, 
-				     "", index_string,  
+				     /*	     "", index_string,  */
+				     "", (xsd__int)index,
 				     &getNthDataSource_response)){
     fprintf(stderr, "Get_data_source_address_soap: soap call failed:\n");
     soap_print_fault(&soap, stderr);
