@@ -173,6 +173,7 @@ int Steering_initialize(int  NumSupportedCmds,
   for(i=0; i<Chk_log.max_entries; i++){
 
     Chk_log.entry[i].sent_to_steerer = TRUE;
+    Chk_log.entry[i].num_param       = 0;
 
     for(j=0; j<REG_MAX_NUM_STR_PARAMS; j++){
       Chk_log.entry[i].param[j].handle = REG_PARAM_HANDLE_NOTSET;
@@ -422,7 +423,7 @@ int Register_IOTypes(int    NumTypes,
     iparam = Param_index_from_handle(&Params_table, 
 			      IOTypes_table.io_def[current].freq_param_handle);
 
-    if(iparam != REG_PARAM_HANDLE_NOTSET){
+    if(iparam != -1){
       Params_table.param[iparam].is_internal = TRUE;
     }
     else{
@@ -440,7 +441,6 @@ int Register_IOTypes(int    NumTypes,
     return_status = Initialize_IOType_transport(direction[i], current);
 
     /* Create, store and return a handle for this IOType */
-    /*IOTypes_table.io_def[current].handle = IOTypes_table.next_handle++;*/
     IOTypes_table.io_def[current].handle = Next_IO_Chk_handle++;
     IOType[i] = IOTypes_table.io_def[current].handle;
 
@@ -557,7 +557,7 @@ int Register_ChkTypes(int    NumTypes,
          it is a parameter that is internal to the steering library */
       iparam = Param_index_from_handle(&Params_table, 
 			    ChkTypes_table.io_def[current].freq_param_handle);
-      if(iparam != REG_PARAM_HANDLE_NOTSET){
+      if(iparam != -1){
         Params_table.param[iparam].is_internal = TRUE;
       }
       else{
@@ -575,7 +575,6 @@ int Register_ChkTypes(int    NumTypes,
     }
 
     /* Create, store and return a handle for this ChkType */
-    /*ChkTypes_table.io_def[current].handle = IOTypes_table.next_handle++;*/
     ChkTypes_table.io_def[current].handle = Next_IO_Chk_handle++;
     ChkType[i] = ChkTypes_table.io_def[current].handle;
 
@@ -616,7 +615,9 @@ int Register_ChkTypes(int    NumTypes,
 int Record_Chkpt(int   ChkType,
 		 char *ChkTag)
 {
+  int   j;
   int   index;
+  int   count;
   int   new_size;
   void *ptr;
 
@@ -644,6 +645,11 @@ int Record_Chkpt(int   ChkType,
     for(index=Chk_log.num_entries; index<Chk_log.max_entries; index++){
 
       Chk_log.entry[index].sent_to_steerer = TRUE;
+      Chk_log.entry[index].num_param       = 0;
+
+      for(j=0; j<REG_MAX_NUM_STR_PARAMS; j++){
+	Chk_log.entry[index].param[j].handle = REG_PARAM_HANDLE_NOTSET;
+      }
     }
   }
 
@@ -652,36 +658,31 @@ int Record_Chkpt(int   ChkType,
   Chk_log.entry[Chk_log.num_entries].chk_handle      = ChkType;
   Chk_log.entry[Chk_log.num_entries].sent_to_steerer = FALSE;
 
-  index = Param_index_from_handle(&(Params_table), REG_SEQ_NUM_HANDLE);
-  if(index != -1){
-    Chk_log.entry[Chk_log.num_entries].param[0].handle = REG_SEQ_NUM_HANDLE;
-    strcpy(Chk_log.entry[Chk_log.num_entries].param[0].value,
+  /* Store the values of all registered parameters at this point (so
+     long as they're not internal to the library */
+  count = 0;
+  for(index = 0; index<Params_table.max_entries; index++){
+
+    if(Params_table.param[index].handle == REG_PARAM_HANDLE_NOTSET ||
+       Params_table.param[index].is_internal == TRUE){
+      continue;
+    }
+
+    /* This is one we want - store its handle and current value */
+    Chk_log.entry[Chk_log.num_entries].param[count].handle = 
+                                           Params_table.param[index].handle;
+    strcpy(Chk_log.entry[Chk_log.num_entries].param[count].value,
            Params_table.param[index].value);
+    
+    /* Storage for params associated with log entry is static */
+    if(++count >= REG_MAX_NUM_STR_PARAMS)break;  
   }
+
+  /* Store the no. of params this entry has */
+  Chk_log.entry[Chk_log.num_entries].num_param = count;
 
   /* Keep a count of entries that we have yet to send to steerer */
   Chk_log.num_unsent++;
-
-  /* Keep this function lightweight - need extra function to 'uncompress'
-     log entries and fill in details of the ChkTypes they refer to - code
-     below is how to get at label of ChkType */
-  /* Can use IOdef utility functions because table of ChkTypes is of
-     same type as table of IOdefs
-  index = IOdef_index_from_handle(&ChkTypes_table, ChkType);
-
-  if(index == REG_IODEF_HANDLE_NOTSET){
-
-#if DEBUG
-    fprintf(stderr, "Record_Chkpt: unknown ChkType\n");
-#endif
-    return REG_FAILURE;
-  }
-
-  * Record label of associated checkpoint type - this (plus others)
-     should be done client side?? *
-  strcpy(Chk_log.entry[Chk_log.num_entries].chk_label,
-	 ChkTypes_table.io_def[index].label);
-  */
 
   Chk_log.num_entries++;
 
@@ -708,8 +709,6 @@ int Consume_start(int  IOType,
   }
 
   return Consume_start_data_check(*IOTypeIndex);
-
-    /*  return REG_FAILURE; */
 }
 
 /*----------------------------------------------------------------*/
@@ -1872,31 +1871,28 @@ int Emit_param_defs(){
       /* Update the 'value' part of this parameter's table entry */
       if(Get_ptr_value(&(Params_table.param[i])) == REG_SUCCESS){
     	 
-	pbuf += sprintf(pbuf, "<Param>\n");
-
-	pbuf += sprintf(pbuf, "<Label>%s</Label>\n", 
-			Params_table.param[i].label);
-
-	pbuf += sprintf(pbuf, "<Steerable>%d</Steerable>\n", 
-			Params_table.param[i].steerable);
-
-	pbuf += sprintf(pbuf, "<Type>%d</Type>\n", Params_table.param[i].type);
-
-	pbuf += sprintf(pbuf, "<Handle>%d</Handle>\n",
-			Params_table.param[i].handle);
-
-	pbuf += sprintf(pbuf,"<Value>%s</Value>\n", Params_table.param[i].value);
+	pbuf += sprintf(pbuf, "<Param>\n"
+                              "<Label>%s</Label>\n"
+			      "<Steerable>%d</Steerable>\n"
+			      "<Type>%d</Type>\n"
+			      "<Handle>%d</Handle>\n"
+			      "<Value>%s</Value>\n", 
+			Params_table.param[i].label, 
+			Params_table.param[i].steerable,
+			Params_table.param[i].type,
+			Params_table.param[i].handle, 
+			Params_table.param[i].value);
 
 	if(Params_table.param[i].is_internal == TRUE){
 
-	  pbuf += sprintf(pbuf, "<Is_internal>TRUE</Is_internal>\n");
+	  pbuf += sprintf(pbuf, "<Is_internal>TRUE</Is_internal>\n"
+			        "</Param>\n");
 	}
 	else{
 
-	  pbuf += sprintf(pbuf, "<Is_internal>FALSE</Is_internal>\n");
+	  pbuf += sprintf(pbuf, "<Is_internal>FALSE</Is_internal>\n"
+			        "</Param>\n");
 	}
-
-	pbuf += sprintf(pbuf, "</Param>\n");
       }
     }
   }
@@ -1930,10 +1926,10 @@ int Emit_IOType_defs(){
   
     if(IOTypes_table.io_def[i].handle != REG_IODEF_HANDLE_NOTSET){
   
-      pbuf += sprintf(pbuf,"<IOType>\n");
-      pbuf += sprintf(pbuf,"<Label>%s</Label>\n", 
-		      IOTypes_table.io_def[i].label);
-      pbuf += sprintf(pbuf,"<Handle>%d</Handle>\n", 
+      pbuf += sprintf(pbuf,"<IOType>\n"
+		           "<Label>%s</Label>\n"
+		           "<Handle>%d</Handle>\n", 
+		      IOTypes_table.io_def[i].label, 
 		      IOTypes_table.io_def[i].handle);
 
       switch(IOTypes_table.io_def[i].direction){
@@ -1954,10 +1950,9 @@ int Emit_IOType_defs(){
 	return REG_FAILURE;
       }
 
-      pbuf += sprintf(pbuf,"<Freq_handle>%d</Freq_handle>\n",
+      pbuf += sprintf(pbuf,"<Freq_handle>%d</Freq_handle>\n"
+                           "</IOType>\n",
 	      IOTypes_table.io_def[i].freq_param_handle);
-
-      pbuf += sprintf(pbuf,"</IOType>\n");
     }
   }
   
@@ -1990,10 +1985,10 @@ int Emit_ChkType_defs(){
   
     if(ChkTypes_table.io_def[i].handle != REG_IODEF_HANDLE_NOTSET){
   
-      pbuf += sprintf(pbuf,"<ChkType>\n");
-      pbuf += sprintf(pbuf,"<Label>%s</Label>\n", 
-		      ChkTypes_table.io_def[i].label);
-      pbuf += sprintf(pbuf,"<Handle>%d</Handle>\n", 
+      pbuf += sprintf(pbuf,"<ChkType>\n"
+		           "<Label>%s</Label>\n"
+		           "<Handle>%d</Handle>\n", 
+		      ChkTypes_table.io_def[i].label, 
 		      ChkTypes_table.io_def[i].handle);
 
       switch(ChkTypes_table.io_def[i].direction){
@@ -2018,10 +2013,9 @@ int Emit_ChkType_defs(){
 	return REG_FAILURE;
       }
 
-      pbuf += sprintf(pbuf,"<Freq_handle>%d</Freq_handle>\n",
+      pbuf += sprintf(pbuf,"<Freq_handle>%d</Freq_handle>\n"
+		           "</ChkType>\n",
 	      ChkTypes_table.io_def[i].freq_param_handle);
-
-      pbuf += sprintf(pbuf,"</ChkType>\n");
     }
   }
   
@@ -2053,23 +2047,25 @@ int Emit_log()
     /* Check to see whether steerer already has this entry */
     if (Chk_log.entry[i].sent_to_steerer == TRUE) continue;
 
-    pbuf += sprintf(pbuf, "<Log_entry>\n");
+    pbuf += sprintf(pbuf, "<Log_entry>\n"
+		          "<Key>%d</Key>\n"
+		          "<Chk_handle>%d</Chk_handle>\n"
+		          "<Chk_tag>%s</Chk_tag>\n", 
+		    Chk_log.entry[i].key, 
+		    Chk_log.entry[i].chk_handle, 
+		    Chk_log.entry[i].chk_tag);
 
-    pbuf += sprintf(pbuf, "<Key>%d</Key>\n", Chk_log.entry[i].key);
-    pbuf += sprintf(pbuf, "<Chk_handle>%d</Chk_handle>\n", Chk_log.entry[i].chk_handle);
-    pbuf += sprintf(pbuf, "<Chk_tag>%s</Chk_tag>\n", Chk_log.entry[i].chk_tag);
+    /* Associated parameters are stored contiguously so need only
+       loop over the no. of params that this entry has */
+    for(j=0; j<Chk_log.entry[i].num_param; j++){
 
-    pbuf += sprintf(pbuf, "<Param>\n");
-    for(j=0; j<REG_MAX_NUM_STR_PARAMS; j++){
-
-      /* Associated parameters are stored contiguously so once we find an empty
-	 slot we know we've dealt with them all */
-      if (Chk_log.entry[i].param[j].handle == REG_PARAM_HANDLE_NOTSET) break;
-
-      pbuf += sprintf(pbuf, "<Handle>%d</Handle>\n", Chk_log.entry[i].param[j].handle);
-      pbuf += sprintf(pbuf, "<Value>%s</Value>\n", Chk_log.entry[i].param[j].value);
+      pbuf += sprintf(pbuf, "<Param>\n"
+		            "<Handle>%d</Handle>\n" 
+		            "<Value>%s</Value>\n"
+		            "</Param>\n", 
+		      Chk_log.entry[i].param[j].handle,
+		      Chk_log.entry[i].param[j].value);
     }
-    pbuf += sprintf(pbuf, "</Param>\n");
     pbuf += sprintf(pbuf, "</Log_entry>\n");
 
     /* Flag this entry as having been sent to steerer */
@@ -2224,7 +2220,8 @@ int Consume_control(int    *NumCommands,
       *NumSteerParams = count;
 
 #if DEBUG
-	fprintf(stderr, "Consume_control: received %d params\n", *NumSteerParams);
+	fprintf(stderr, "Consume_control: received %d params\n", 
+		*NumSteerParams);
 #endif
     }
     else{
@@ -2381,12 +2378,12 @@ int Emit_status(int   SeqNum,
 	     controlled (& hence has valid ptr to get value from) */
  	  Get_ptr_value(&(Params_table.param[tot_pcount]));
 
- 	  pbuf += sprintf(pbuf, "<Param>\n");
- 	  pbuf += sprintf(pbuf, "<Handle>%d</Handle>\n", 
- 		  Params_table.param[tot_pcount].handle);
- 	  pbuf += sprintf(pbuf, "<Value>%s</Value>\n", 
+ 	  pbuf += sprintf(pbuf, "<Param>\n"
+			        "<Handle>%d</Handle>\n"
+			        "<Value>%s</Value>\n"
+			        "</Param>\n", 
+ 		  Params_table.param[tot_pcount].handle, 
 		  Params_table.param[tot_pcount].value);
- 	  pbuf += sprintf(pbuf, "</Param>\n");
   
  	  pcount++;
     	}
@@ -2412,9 +2409,10 @@ int Emit_status(int   SeqNum,
 
       for(i=0; i<REG_MAX_NUM_STR_CMDS; i++){
   
-    	pbuf += sprintf(pbuf, "<Command>\n");
-	pbuf += sprintf(pbuf, "<Cmd_id>%d</Cmd_id>\n", Commands[ccount]);
-	pbuf += sprintf(pbuf, "</Command>\n");
+    	pbuf += sprintf(pbuf, "<Command>\n"
+			      "<Cmd_id>%d</Cmd_id>\n"
+			      "</Command>\n", 
+			Commands[ccount]);
     	ccount++;
   
     	if(ccount >= NumCommands){

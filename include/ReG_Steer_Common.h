@@ -75,6 +75,7 @@ typedef struct {
   int                  key;
   int                  chk_handle;
   char                 chk_tag[REG_MAX_STRING_LENGTH];
+  int                  num_param;
   Param_log_entry_type param[REG_MAX_NUM_STR_PARAMS];
   int                  sent_to_steerer;
 
