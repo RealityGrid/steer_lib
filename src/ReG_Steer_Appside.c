@@ -39,7 +39,6 @@
 
 #include "ReG_Steer_Appside.h"
 #include "ReG_Steer_Appside_internal.h"
-#include "ReG_Steer_Appside_Globus.h"
 #include "ReG_Steer_Appside_Sockets.h"
 #include "ReG_Steer_Appside_Soap.h"
 #include "ReG_Steer_Appside_File.h"
@@ -257,7 +256,7 @@ int Steering_initialize(char *AppName,
   for(i=0; i<IOTypes_table.max_entries; i++){
 
     IOTypes_table.io_def[i].handle = REG_IODEF_HANDLE_NOTSET;
-#if REG_GLOBUS_SAMPLES || REG_SOCKET_SAMPLES
+#if REG_SOCKET_SAMPLES
     sprintf(IOTypes_table.io_def[i].socket_info.listener_hostname,
 	    "%s", "NOT_SET");
 #endif
@@ -750,9 +749,7 @@ int Disable_IOType(int IOType){
 
   if(IOTypes_table.io_def[index].is_enabled == TRUE){
 
-#if REG_GLOBUS_SAMPLES
-    status = Disable_IOType_globus(index);
-#elif REG_SOCKET_SAMPLES
+#if REG_SOCKET_SAMPLES
     status = Disable_IOType_sockets(index);
 #endif
     IOTypes_table.io_def[index].is_enabled = FALSE;
@@ -775,7 +772,7 @@ int Disable_IOType(int IOType){
 int Enable_IOTypes_on_registration(int toggle){
 
   /* Default operation is for IOTypes to be enabled (socket created
-     in the case of globus_io) when they are registered.  Can turn
+     in the case of sockets) when they are registered.  Can turn
      this off using this function prior to call to Register_IOTypes.*/
 
   if(toggle == TRUE){
@@ -817,9 +814,7 @@ int Enable_IOType(int IOType){
 
   if(IOTypes_table.io_def[index].is_enabled == FALSE){
 
-#if REG_GLOBUS_SAMPLES
-    status = Enable_IOType_globus(index);
-#elif REG_SOCKET_SAMPLES
+#if REG_SOCKET_SAMPLES
     status = Enable_IOType_sockets(index);
 #endif
     IOTypes_table.io_def[index].is_enabled = TRUE;
@@ -1610,7 +1605,7 @@ int Consume_stop(int *IOTypeIndex)
     return REG_FAILURE;
   }
 
-#if !REG_GLOBUS_SAMPLES && !REG_SOCKET_SAMPLES
+#if !REG_SOCKET_SAMPLES
   /* Close any file associated with this channel */
   if(IOTypes_table.io_def[*IOTypeIndex].fp){
     fclose(IOTypes_table.io_def[*IOTypeIndex].fp);
@@ -1819,7 +1814,7 @@ int Emit_start(int  IOType,
 	       int  SeqNum,
 	       int *IOTypeIndex)
 {
-#if !REG_GLOBUS_SAMPLES && !REG_SOCKET_SAMPLES
+#if !REG_SOCKET_SAMPLES
   char *pchar;
   int   len;
 #endif
@@ -1856,7 +1851,7 @@ int Emit_start(int  IOType,
   /* Initialise array-ordering flags */
   IOTypes_table.io_def[*IOTypeIndex].convert_array_order = FALSE;
 
-#if !REG_GLOBUS_SAMPLES && !REG_SOCKET_SAMPLES
+#if !REG_SOCKET_SAMPLES
 
   /* Currently have no way of looking up what filename to use so 
      hardwire... */
@@ -1931,7 +1926,7 @@ int Emit_stop(int *IOTypeIndex)
 
   return_status = Emit_footer(*IOTypeIndex, Global_scratch_buffer);
 
-#if !REG_GLOBUS_SAMPLES && !REG_SOCKET_SAMPLES
+#if !REG_SOCKET_SAMPLES
   if(IOTypes_table.io_def[*IOTypeIndex].fp){
     fclose(IOTypes_table.io_def[*IOTypeIndex].fp);
     IOTypes_table.io_def[*IOTypeIndex].fp = NULL;
@@ -3098,7 +3093,7 @@ int Emit_IOType_defs(){
       bytes_left -= nbytes;
 
 
-#if REG_GLOBUS_SAMPLES || REG_SOCKET_SAMPLES
+#if REG_SOCKET_SAMPLES
       if(IOTypes_table.io_def[i].direction == REG_IO_OUT){
 
 	if(!strstr(IOTypes_table.io_def[i].socket_info.listener_hostname,
@@ -3120,7 +3115,7 @@ int Emit_IOType_defs(){
 	  bytes_left -= nbytes;
 	}
       }
-#endif /* REG_GLOBUS_SAMPLES */
+#endif /* REG_SOCKET_SAMPLES */
       nbytes = snprintf(pbuf, bytes_left, "</IOType>\n");
       pbuf += nbytes;
       bytes_left -= nbytes;
@@ -4543,11 +4538,7 @@ int Make_supp_cmds_msg(int   NumSupportedCmds,
 int Initialize_IOType_transport(const int direction,
 				const int index)
 {
-#if REG_GLOBUS_SAMPLES
-
-  return Initialize_IOType_transport_globus(direction, index);
-
-#elif REG_SOCKET_SAMPLES
+#if REG_SOCKET_SAMPLES
 
   return Initialize_IOType_transport_sockets(direction, index);
 
@@ -4562,11 +4553,7 @@ int Initialize_IOType_transport(const int direction,
 void Finalize_IOType_transport()
 {
 
-#if REG_GLOBUS_SAMPLES
-
-  Finalize_IOType_transport_globus();
-
-#elif REG_SOCKET_SAMPLES
+#if REG_SOCKET_SAMPLES
 
   Finalize_IOType_transport_sockets();
 
@@ -4579,11 +4566,7 @@ void Finalize_IOType_transport()
 int Consume_start_data_check(const int index)
 {
 
-#if REG_GLOBUS_SAMPLES
-
-  return Consume_start_data_check_globus(index);
-
-#elif REG_SOCKET_SAMPLES
+#if REG_SOCKET_SAMPLES
 
   return Consume_start_data_check_sockets(index);
 
@@ -4606,14 +4589,7 @@ int Consume_data_read(const int		index,
     return REG_FAILURE;
   }
 
-#if REG_GLOBUS_SAMPLES
-
-  return Consume_data_read_globus(index,
-				  datatype,
-				  num_bytes_to_read,
-				  pData);
-
-#elif REG_SOCKET_SAMPLES
+#if REG_SOCKET_SAMPLES
 
   return Consume_data_read_sockets(index,
 				   datatype,
@@ -4633,11 +4609,7 @@ int Consume_data_read(const int		index,
 
 int Emit_header(const int index)
 {
-#if REG_GLOBUS_SAMPLES
-
-  return Emit_header_globus(index);
-
-#elif REG_SOCKET_SAMPLES
+#if REG_SOCKET_SAMPLES
 
   return Emit_header_sockets(index);
 		   
@@ -4665,11 +4637,7 @@ int Emit_footer(const int index,
   /* strlen + 1 because it doesn't count '\0' */
   nbytes_to_send = strlen(buffer)+1;
 
-#if REG_GLOBUS_SAMPLES
-
-  return Emit_data_globus(index, nbytes_to_send, (void*)buffer);
-
-#elif REG_SOCKET_SAMPLES
+#if REG_SOCKET_SAMPLES
 
   return Emit_data_sockets(index, nbytes_to_send, (void*)buffer);
 
@@ -4686,13 +4654,7 @@ int Emit_data(const int		index,
 	      const size_t	num_bytes_to_send,
 	      void		*pData )
 {
-#if REG_GLOBUS_SAMPLES
-
-  return Emit_data_globus(index, 
-			  num_bytes_to_send,
-			  pData);
-
-#elif REG_SOCKET_SAMPLES
+#if REG_SOCKET_SAMPLES
 
   return Emit_data_sockets(index, 
 			   num_bytes_to_send,
@@ -4712,11 +4674,7 @@ int Emit_data(const int		index,
 int Get_communication_status(const int	index)
 {
 
-#if REG_GLOBUS_SAMPLES
-
-  return Get_communication_status_globus(index);
-
-#elif REG_SOCKET_SAMPLES
+#if REG_SOCKET_SAMPLES
 
   return Get_communication_status_sockets(index);
 
@@ -4747,13 +4705,7 @@ int Consume_iotype_msg_header(int  IOTypeIndex,
     return REG_FAILURE;
   }
 
-#if REG_GLOBUS_SAMPLES
-  return Consume_msg_header_globus(IOTypeIndex,
-				   DataType,
-				   Count,
-				   NumBytes,
-				   IsFortranArray);
-#elif REG_SOCKET_SAMPLES
+#if REG_SOCKET_SAMPLES
   return Consume_msg_header_sockets(IOTypeIndex,
 				    DataType,
 				    Count,
@@ -4804,12 +4756,7 @@ int Emit_iotype_msg_header(int IOTypeIndex,
   pchar += sprintf(pchar, REG_PACKET_FORMAT, "</ReG_data_slice_header>");
   *(pchar-1) = '\0';
 
-#if REG_GLOBUS_SAMPLES
-  return Write_globus(&(IOTypes_table.io_def[IOTypeIndex].socket_info.conn_handle),
-		      (int)(pchar-buffer), 
-		      (void *)buffer);
-
-#elif REG_SOCKET_SAMPLES
+#if REG_SOCKET_SAMPLES
   return Write_sockets(IOTypeIndex, (int) (pchar-buffer), (void*) buffer);
 
 #else

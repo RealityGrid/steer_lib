@@ -56,7 +56,7 @@ Sim_table_type Sim_table;
 
 /* Structure holding details of the main (java) proxy
    that is always associated with the steerer (if not steering
-   via files, Globus or SOAP) */
+   via files or SOAP over http) */
 Proxy_table_type Proxy;
 
 /* Whether we have the option of steering via SOAP and SGS */
