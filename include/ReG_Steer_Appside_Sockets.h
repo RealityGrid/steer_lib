@@ -45,7 +45,9 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 #include <netdb.h>
+#include <unistd.h>
 
 #include "ReG_Steer_types.h"
 
@@ -141,7 +143,7 @@ static void attempt_connector_connect(const int index);
 
 static void retry_connect(const int index);
 
-static void poll(const int index);
+static void poll_socket(const int index);
 
 static int dns_lookup(char* hostname);
 
