@@ -1463,7 +1463,6 @@ int Consume_status(int   SimHandle,
 
 	/* Put blank in actual 'value' field */
 	sprintf(Sim_table.sim[index].Params_table.param[j].value, " ");
-	fprintf(stderr, "ARPDBG put blank value in value field \n");
       }
       else{
 	strcpy(Sim_table.sim[index].Params_table.param[j].value,
@@ -1628,7 +1627,6 @@ int Emit_retrieve_param_log_cmd(int SimHandle, int ParamHandle)
   if(Sim_table.sim[index].SGS_info.active){
 
     /* Get all of the log entries cached on the SGS */
-    fprintf(stderr, "ARPDBG, calling Get_param_log_soap...\n");
     return Get_param_log_soap(&(Sim_table.sim[index]), ParamHandle);
   }
   else{
