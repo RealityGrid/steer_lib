@@ -64,4 +64,4 @@ REG_DEBUG_FLAG = 0
 # Don't edit anything below this line
 
 # Pass version information to compile
-REG_STEER_LIB_VERSION = 1.1
+REG_STEER_LIB_VERSION = 1.2a
