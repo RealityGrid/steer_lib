@@ -92,6 +92,7 @@ extern int Consume_stop(int     *IOHandleINOUT);
 
 extern int Steering_finalize();
 
+#if 0
 extern int Steering_pause(int   *NumSteerParams,
 			  char **SteerParamLabels,
 			  int   *NumCommands,
@@ -103,7 +104,6 @@ extern char **Alloc_string_array(int String_len,
 
 extern int Free_string_arrays();
 
-#if 0
 extern int Make_vtk_buffer(int    nx,
 			   int    ny,
 			   int    nz,
@@ -126,7 +126,6 @@ extern int Make_chunk_header(char *header,
 			     int   totx, int toty, int totz,
 			     int   sx,   int sy,   int sz,
 			     int   nx,   int ny,   int nz);
-#endif
 
 extern int Set_f90_array_ordering(int IOTypeIndex,
 				  int flag);
@@ -141,6 +140,7 @@ extern int Reorder_array(int          ndims,
 			 void        *pInData,
 			 void        *pOutData,
 			 int          to_f90);
+#endif
 
 /* It's useful to have a sizeof type thing... */
 %inline %{
