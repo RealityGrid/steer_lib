@@ -405,11 +405,7 @@ int main(){
     case 'p':
       /* Pause the application */
       fprintf(stderr, "Pausing application...\n");
-      commands[0] = REG_STR_PAUSE;
-      Emit_control(sim_handle,
-		   1,
-		   commands,
-		   NULL);
+      Emit_pause_cmd(sim_handle);
       break;
 
     case 'q':
@@ -420,20 +416,12 @@ int main(){
     case 'r':
       /* Resume a paused application */
       fprintf(stderr, "Resuming application...\n");
-      commands[0] = REG_STR_RESUME;
-      Emit_control(sim_handle,
-		   1,
-		   commands,
-		   NULL);
+      Emit_resume_cmd(sim_handle);
       break;
 
     case 's':
       fprintf(stderr, "Sending stop signal...\n");
-      commands[0] = REG_STR_STOP;
-      Emit_control(sim_handle,
-		   1,
-		   commands,
-		   NULL);
+      Emit_stop_cmd(sim_handle);
 
       Delete_sim_table_entry(&sim_handle);
       break;		   

@@ -45,7 +45,9 @@ TARGET   = mini_app2
 	${F90} ${F90_FLAGS} -C ${STEER_INCLUDES} ${GLOBUS_INCLUDES} -c $< -o $@
 
 ${TARGET}: ${TARGET}.o ${REG_STEER_HOME}/include/reg_steer_f90.inc
-	${F90} ${F90_FLAGS} ${TARGET}.o -o $@ ${STEER_LIBS} ${GLOBUS_LDFLAGS} -lReG_Steer -lz -lxml2 ${GLOBUS_PKG_LIBS}
+	${F90} ${F90_FLAGS} ${TARGET}.o -o $@ ${STEER_LIBS} ${GLOBUS_LDFLAGS} \
+	${SOAP_LDFLAGS} -lReG_Steer -lz -lxml2 ${GLOBUS_PKG_LIBS} \
+	${SOAP_PKG_LIBS}
 	mv ${TARGET} ${LOCAL_BIN_DIR}/.
 
 mini_app2.o: mini_app2.f90

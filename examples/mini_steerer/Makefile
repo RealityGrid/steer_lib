@@ -44,8 +44,8 @@ TARGET   = mini_steerer
 	${CC} ${C_FLAGS} ${STEER_INCLUDES} ${GLOBUS_INCLUDES} -c $< -o $@
 
 ${TARGET}: ${TARGET}.o
-	${CC} ${C_FLAGS} ${TARGET}.o -o $@ \
-${STEER_LIBS} ${GLOBUS_LDFLAGS} -lReG_Steer -lxml2 ${GLOBUS_PKG_LIBS}
+	${CC} ${C_FLAGS} ${TARGET}.o -o $@ ${STEER_LIBS} ${GLOBUS_LDFLAGS} \
+	${SOAP_LDFLAGS} -lReG_Steer -lxml2 ${GLOBUS_PKG_LIBS} ${SOAP_PKG_LIBS}
 	mv ${TARGET} ${HOME}/bin/.
 
 clean:
