@@ -271,7 +271,9 @@ int connect_connector(const int index) {
 #endif /* !REG_SOAP_STEERING */
   }
 
-  if(return_status == REG_SUCCESS) {
+  if(return_status == REG_SUCCESS && 
+     IOTypes_table.io_def[index].socket_info.connector_port != 0) {
+
     /* ...look up and then build remote address struct... */
     if(dns_lookup(IOTypes_table.io_def[index].socket_info.connector_hostname) == REG_FAILURE) {
       fprintf(stderr, "connect_connector: Could not resolve hostname <%s>\n", 
@@ -287,6 +289,7 @@ int connect_connector(const int index) {
     /* ...finally connect to the remote address! */
     if(connect(connector, (struct sockaddr*) &theirAddr, sizeof(struct sockaddr)) == REG_SOCKETS_ERROR) {
       perror("connect");
+      IOTypes_table.io_def[index].socket_info.connector_port = 0;
       return REG_FAILURE;
     }
     IOTypes_table.io_def[index].socket_info.comms_status=REG_COMMS_STATUS_CONNECTED;
@@ -386,14 +389,6 @@ void attempt_listener_connect(const int index) {
       fprintf(stderr, "attempt_listener_connect: retry accept connect\n");
 #endif
       retry_accept_connect(index);
-    }
-
-    /* what the hell, kick again */
-    if(socket_info->comms_status != REG_COMMS_STATUS_CONNECTED) {
-#if REG_DEBUG
-      fprintf(stderr, "attempt_listener_connect: poll\n");
-#endif
-      poll(index);
     }
   }
 }
@@ -1059,10 +1054,6 @@ int Consume_start_data_check_sockets(const int index) {
 
   while(!(pstart = strstr(buffer, REG_DATA_HEADER))) {
 
-#if REG_DEBUG
-    fprintf(stderr, "!");
-#endif
-
     if((nbytes = recv(sock_info->connector_handle, buffer, REG_PACKET_SIZE, MSG_DONTWAIT)) <= 0) {
       if(nbytes == 0) {
 	/* closed connection */
@@ -1106,6 +1097,9 @@ int Consume_start_data_check_sockets(const int index) {
       attempt_reconnect = 0;
       memset(buffer, '\0', 1);
     }
+#if REG_DEBUG
+    fprintf(stderr, "!");
+#endif
   } /* !while */
 
 #if REG_DEBUG

@@ -1414,9 +1414,6 @@ int Consume_start_data_check_globus(const int index)
 
   while(!(pstart = strstr(buffer, REG_DATA_HEADER))){
 
-#if REG_DEBUG
-    fprintf(stderr, ".");
-#endif
     result = globus_io_try_read(&(IOTypes_table.io_def[index].socket_info.conn_handle),
 				(globus_byte_t *)buffer,
 				REG_PACKET_SIZE,
@@ -1456,7 +1453,11 @@ int Consume_start_data_check_globus(const int index)
       /* Call was OK but there's no data to read... */
       return REG_FAILURE;
     }
+#if REG_DEBUG
+    fprintf(stderr, ".");
+#endif
   }
+
 #if REG_DEBUG
   fprintf(stderr, "\n");
 #endif
