@@ -46,12 +46,13 @@ TARGET   = mini_app2
 
 ${TARGET}: ${TARGET}.o ${REG_STEER_HOME}/include/reg_steer_f90.inc
 	${F90} ${F90_FLAGS} ${TARGET}.o -o $@ ${STEER_LIBS} ${GLOBUS_LDFLAGS} \
-	-lReG_Steer -lz -lxml2 ${GLOBUS_PKG_LIBS}
-	mv ${TARGET} ${LOCAL_BIN_DIR}/.
+	-lReG_Steer ${STEER_LDFLAGS} -lxml2 ${GLOBUS_PKG_LIBS}
 
 mini_app2.o: mini_app2.f90
 	${F90} ${F90_FLAGS} -C ${STEER_INCLUDES} ${GLOBUS_INCLUDES} -c $< -o $@
 
+install:
+	mv ${TARGET} ${LOCAL_BIN_DIR}/.
 clean:
 	rm -f *.o *~ core ${TARGET}
 
