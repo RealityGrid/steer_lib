@@ -42,10 +42,14 @@
 
 /*-------------- Steerer-side function prototypes -------------*/
 
+extern PREFIX int Get_sim_list(int   *nSims,
+			       char **simName,
+			       char **simGSH);
+
 /* Attempt to attach to the specified simulation - returns a 
    handle for this simulation if successful. */
-extern PREFIX int Sim_attach(REG_SimIDType SimID,
-			     int *SimHandle);
+extern PREFIX int Sim_attach(char *SimID,
+			     int  *SimHandle);
 
 /* Detach from the specfied simulation.  Signals the simulation
    that steerer has detached and then cleans-up associated

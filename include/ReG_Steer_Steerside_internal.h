@@ -50,6 +50,10 @@ typedef struct {
 
   char   file_root[REG_MAX_STRING_LENGTH];
   int    handle;
+  /* File descriptors used to talk to (java) proxy for
+     this simulation */
+  int    pipe_to_proxy;
+  int    pipe_from_proxy;
 
   /* Table of registered commands for this sim */
   Supp_cmd_table_type Cmds_table;
