@@ -2828,9 +2828,7 @@ int Steering_control(int     SeqNum,
 
 	/* Emit the requested parameter log */
 	if(sscanf(SteerCmdParams[i], "%d", &status) != 1)break;
-	printf("ARPDBG: calling emit_log for param %d\n", status);
 	if( Emit_log(&Param_log, status) != REG_SUCCESS ){
-
 	  fprintf(stderr, "Steering_control: Emit param log failed\n");
 	}
 #if REG_DEBUG_FULL
