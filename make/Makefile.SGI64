@@ -37,12 +37,15 @@ NBIT = 64
 # Location of C compiler and flags to use
 CC = cc
 C_FLAGS = -O2 -64
+LIB_C_FLAGS = ${C_FLAGS} -KPIC -I../include
+
+# Linker flags to use
+LD_FLAGS = -64 -shared -soname libReG_Steer.so -L${REG_XML_LIBDIR}${NBIT} -lxml2
 
 # Location of F90 compiler (if any) and flags to use
 F90 = f90
-F90_MPI = f90
 F90_FLAGS = -O2 -64
-MPI_FLAGS = -lmpi
+MPI_FLAG = -lmpi
 
 # Location of java compiler - used to produce proxy binary
 JAVAC          = /usr/java2/bin/javac
