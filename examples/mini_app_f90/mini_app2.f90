@@ -120,7 +120,8 @@ PROGRAM mini_app
   commands(1) = REG_STR_STOP
   commands(2) = REG_STR_PAUSE
 
-  CALL steering_initialize_f(num_cmds, commands, status)
+  CALL steering_initialize_f("mini_app2 v1.0", num_cmds, &
+                             commands, status)
 
   IF(status .ne. REG_SUCCESS)THEN
 

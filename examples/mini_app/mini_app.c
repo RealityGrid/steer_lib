@@ -45,7 +45,7 @@
 int main(){
 
   /* No. of 'simulation' loops to do */
-  const int nloops = 500;
+  const int nloops = 500000;
 
   /* For steering */
   int    num_iotypes;
@@ -81,7 +81,7 @@ int main(){
 
   int   opacity_step_start = 120;
   int   opacity_step_stop  = 130;
-  int   sleep_time         = 4;
+  float sleep_time         = 1.0;
   float temp               = 55.6;
   float str_float          = 0.9;
   char  my_string[REG_MAX_STRING_LENGTH];
@@ -135,7 +135,7 @@ int main(){
   numCommands = 2;
   commands[0] = REG_STR_STOP;
   commands[1] = REG_STR_PAUSE;
-  status = Steering_initialize(numCommands, commands);
+  status = Steering_initialize("mini_app v.1.0", numCommands, commands);
 
   if(status != REG_SUCCESS){
     return REG_FAILURE;
@@ -261,7 +261,7 @@ int main(){
 
   param_labels[8] = "time_to_sleep";
   param_ptrs[8]   = (void *)(&sleep_time);
-  param_types[8]  = REG_INT;
+  param_types[8]  = REG_FLOAT;
   param_strbl[8]  = TRUE;
   param_min[8]    = "0";
   param_max[8]    = "100";
@@ -304,7 +304,8 @@ int main(){
 
   for(i=0; i<nloops; i++){
 
-    sleep(sleep_time); /* Pretend to do some work */
+    /*sleep(sleep_time); Pretend to do some work */
+    usleep((unsigned long)(sleep_time*1000000));
     printf("\ni = %d\n", i);
 
     /* Talk to the steering client (if one is connected) */
@@ -500,7 +501,7 @@ int main(){
     }
 
     /* Play with variables that are being monitored */
-    temp += 0.5f;
+    temp += 0.5347672f;
 
   } /* End of main loop */
 

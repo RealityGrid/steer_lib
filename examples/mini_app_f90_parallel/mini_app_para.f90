@@ -124,7 +124,8 @@ PROGRAM para_mini_app
   commands(2) = REG_STR_PAUSE
 
   IF(my_id .eq. 0)THEN
-    CALL steering_initialize_f(num_cmds, commands, status)
+    CALL steering_initialize_f("mini_app_para v.1.0", num_cmds, &
+                               commands, status)
 
     IF(status .ne. REG_SUCCESS)THEN
 
