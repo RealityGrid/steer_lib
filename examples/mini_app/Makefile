@@ -35,11 +35,14 @@
 #    Initial version by:   A Porter
 #---------------------------------------------------------------------
 #
+
+include ../../globus_definitions
+
 # G and NBIT are passed to make on cmd line
 
 TARGET   = mini_app
 CC       = cc
-CC_FLAGS = -ansi $(G) -I${REG_STEER_HOME}/include
+CC_FLAGS = -ansi $(G) -I${REG_STEER_HOME}/include ${GLOBUS_INCLUDES}
 
 # STEER_LIBS is the directory where libReG_Steer.a can be found
 STEER_LIBS = -L${REG_STEER_HOME}/lib$(NBIT)
@@ -50,7 +53,7 @@ XML_LIBS   = -L${REG_XML_LIBDIR}$(NBIT)
 
 ${TARGET}: ${TARGET}.o
 	${CC} ${CC_FLAGS} ${TARGET}.o -o $@ \
-${XML_LIBS} ${STEER_LIBS} -lReG_Steer -lxml2 -lz -lm
+${XML_LIBS} ${STEER_LIBS} ${GLOBUS_LDFLAGS} -lReG_Steer -lxml2 -lz -lm ${GLOBUS_PKG_LIBS}
 	mv ${TARGET} ${HOME}/bin/.
 
 clean:

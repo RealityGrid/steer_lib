@@ -34,6 +34,7 @@
 #    Initial version by:  A Porter, 23.7.2002
 #
 #------------------------------------------------------------------------
+include ../globus_definitions
 
 # Set-up access to M4 scripts for production of F90 wrappers, this is
 # taken from the PVM project.
@@ -50,7 +51,7 @@ XML_INCLUDE_PATH = ${REG_XML_INCDIR}
 
 REG_INCLUDE_PATH = ${REG_STEER_HOME}/include
 INCLUDE_PATH   = -I${REG_INCLUDE_PATH}  \
-                 -I${XML_INCLUDE_PATH}
+                 -I${XML_INCLUDE_PATH} ${GLOBUS_INCLUDES}
 
 LIB_PATH       = ${REG_STEER_HOME}/lib$(NBIT)
 CC             = cc
@@ -78,8 +79,8 @@ ${LIB_PATH}/libReG_Steer.a:
 	ar rv ${LIB_PATH}/libReG_Steer.a ReG_Steer_XML.o
 
 ${BIN_DIR}/ReG_Steer_Proxy.class:
-	${JAVAC} ReG_Steer_Proxy.java
-	mv -f ReG_Steer_Proxy.class ${BIN_DIR}/.
+	   ${JAVAC} ReG_Steer_Proxy.java
+	   mv -f ReG_Steer_Proxy.class ${BIN_DIR}/.
 
 #---------------------------------------------------------------
 
