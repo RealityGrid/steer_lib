@@ -350,6 +350,122 @@ INT_KIND_1_DECL(Status);
 
 /*----------------------------------------------------------------
 
+SUBROUTINE record_checkpoint_set_f(ChkType, ChkTag, Status)
+
+  INTEGER  (KIND=REG_SP_KIND), INTENT(in)           :: ChkType
+  CHARACTER (LEN=REG_MAX_STRING_LENGTH), INTENT(in) :: ChkTag 
+  INTEGER (KIND=REG_SP_KIND), INTENT(out)           :: Status
+
+----------------------------------------------------------------*/
+
+
+void FUNCTION(record_checkpoint_set_f) ARGS(`ChkType,
+                                             STRING_ARG(ChkTag),
+                                             STRING_ARG(Path),
+                                             Status')
+INT_KIND_1_DECL(ChkType);
+STRING_ARG_DECL(ChkTag);
+STRING_ARG_DECL(Path);
+INT_KIND_1_DECL(Status);
+{
+  char *pchar;
+  char  buf[REG_MAX_STRING_LENGTH];
+  char  path_buf[REG_MAX_STRING_LENGTH];
+  int   len;
+  int   i;
+  int   found = 1;
+
+  len = STRING_LEN(ChkTag);
+
+  if(len > REG_MAX_STRING_LENGTH){
+
+    fprintf(stderr, "record_checkpoint_set_f: ERROR - length of tag "
+            "exceeds REG_MAX_STRING_LENGTH (%d) chars\n", 
+            REG_MAX_STRING_LENGTH);
+
+    *Status = INT_KIND_1_CAST(REG_FAILURE);
+    return;
+  }
+
+  memcpy(buf, STRING_PTR(ChkTag), len);
+
+  if(len == REG_MAX_STRING_LENGTH){
+
+    found = 0;
+    pchar = STRING_PTR(ChkTag);
+    for(i = (REG_MAX_STRING_LENGTH-1); i == 0; i--){
+      if(pchar[i] == '\0'){
+        found = 1;
+	break;
+      }
+    }
+    if(!found){
+
+      fprintf(stderr, "record_checkpoint_set_f: ERROR - length of label "
+                "is REG_MAX_STRING_LENGTH (%d) chars long\nbut contains "
+                "no termination character - shorten label (or its len "
+                "declaration)\n", 
+                REG_MAX_STRING_LENGTH);
+      *Status = INT_KIND_1_CAST(REG_FAILURE);
+      return;
+    }
+  }
+  else{
+
+    /* Terminate string */
+    buf[len] = '\0';
+  }
+
+  len = STRING_LEN(Path);
+
+  if(len > REG_MAX_STRING_LENGTH){
+
+    fprintf(stderr, "record_checkpoint_set_f: ERROR - length of path "
+            "exceeds REG_MAX_STRING_LENGTH (%d) chars\n", 
+            REG_MAX_STRING_LENGTH);
+
+    *Status = INT_KIND_1_CAST(REG_FAILURE);
+    return;
+  }
+
+  memcpy(path_buf, STRING_PTR(Path), len);
+
+  if(len == REG_MAX_STRING_LENGTH){
+
+    found = 0;
+    pchar = STRING_PTR(Path);
+    for(i = (REG_MAX_STRING_LENGTH-1); i == 0; i--){
+      if(pchar[i] == '\0'){
+        found = 1;
+	break;
+      }
+    }
+    if(!found){
+
+      fprintf(stderr, "record_checkpoint_set_f: ERROR - length of path "
+                "is REG_MAX_STRING_LENGTH (%d) chars long\nbut contains "
+                "no termination character - shorten label (or its len "
+                "declaration)\n", 
+                REG_MAX_STRING_LENGTH);
+      *Status = INT_KIND_1_CAST(REG_FAILURE);
+      return;
+    }
+  }
+  else{
+
+    /* Terminate string */
+    path_buf[len] = '\0';
+  }
+
+  *Status = INT_KIND_1_CAST(Record_checkpoint_set((int)*ChkType, 
+                                         	  buf,
+                                                  path_buf) );
+
+  return;
+}
+
+/*----------------------------------------------------------------
+
 SUBROUTINE register_param_f(ParamLabel, ParamSteerable, ParamPtr, &
                              ParamType, ParamMin, ParamMax, Status)
 

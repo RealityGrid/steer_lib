@@ -901,7 +901,6 @@ int Record_checkpoint_set(int   ChkType,
   char **filenames;
   char   cp_data[REG_MAX_MSG_SIZE];
   char   node_data[REG_MAX_MSG_SIZE];
-  char   time_date[128];
   char  *pchar;
   time_t time_now;
 
@@ -909,6 +908,12 @@ int Record_checkpoint_set(int   ChkType,
   if (!ReG_SteeringInit) return REG_FAILURE;
 
   if (ChkType == REG_IODEF_HANDLE_NOTSET) return REG_SUCCESS;
+
+#if !REG_SOAP_STEERING
+
+  return Record_Chkpt(ChkType, ChkTag);
+
+#else /* Steering via SGS so log checkpoints with SGS */
 
   /* Get list of checkpoint files */
   filenames = NULL;
@@ -1012,13 +1017,12 @@ int Record_checkpoint_set(int   ChkType,
 	  cp_data);
 
   /* Record checkpoint */
-#if REG_SOAP_STEERING
   Record_checkpoint_set_soap(cp_data, node_data);
-#else
-
-#endif
 
   return REG_SUCCESS;
+
+#endif /* REG_SOAP_STEERING */
+
 }
 
 /*----------------------------------------------------------------*/
@@ -1030,15 +1034,18 @@ int Get_checkpoint_files(char *ChkTag,
 {
   char *redirection = "* > ReG_Chk_files.txt";
   char *pchar;
+  char *pTag;
   char  bufline[REG_MAX_STRING_LENGTH];
   int   len;
-  int   i;
-  int   return_status = REG_SUCCESS;
+  int   i, j;
+  int   count = 0;
   FILE *fp;
 
   /* Calc. length of string - 'ls -1' and slashes add 9 chars so
-     add a few more for safety */
-  len = strlen(Path) + strlen(ChkTag) + strlen(ReG_CurrentDir) + 
+     add a few more for safety.  Ask for 2*strlen(ChkTag) so that
+     we can use the end of this buffer to hold the trimmed version
+     of the tag. */
+  len = strlen(Path) + 2*strlen(ChkTag) + strlen(ReG_CurrentDir) + 
         strlen(redirection) + 20;
 
   printf("Get_checkpoint_files: malloc'ing %d bytes...\n", len);
@@ -1048,8 +1055,37 @@ int Get_checkpoint_files(char *ChkTag,
     return REG_FAILURE;
   }
 
+  /* Set our pointer to the 'spare' bit at the end of the buffer
+     we've just malloc'd */
+  pTag = &(pchar[len - strlen(ChkTag) - 1]);
+
+  /* Trim off leading space... */
+  len = strlen(ChkTag);
+  j = -1;
+  for(i=0; i<len; i++){
+
+    if(ChkTag[i] != ' '){
+      j = i;
+      break;
+    }
+  }
+
+  if(j == -1){
+    fprintf(stderr, "Get_checkpoint_files: ChkTag is blank\n");
+    *num = 0;
+    return REG_FAILURE;
+  }
+
+  /* Copy tag until first blank space - i.e.tag must not contain any
+     spaces. */
+  for(i=j; i<len; i++){
+    if(ChkTag[i] == ' ')break;
+    pTag[count++] = ChkTag[i];
+  }
+  pTag[count] = '\0';
+
   sprintf(pchar, "ls -1 %s/%s/*%s%s", 
-	  ReG_CurrentDir, Path, ChkTag, redirection);
+	  ReG_CurrentDir, Path, pTag, redirection);
   system(pchar);
 
   free(pchar);
@@ -1076,8 +1112,14 @@ int Get_checkpoint_files(char *ChkTag,
       if(!((*names)[i] = (char *)malloc(len))){
 
 	fprintf(stderr, "Get_checkpoint_files: malloc failed\n");
-	return_status = REG_FAILURE;
-	break;
+	for(j=i; j>=0; j--){
+	  free((*names)[i]);
+	  (*names)[i] = NULL;
+	}
+	free(*names);
+	*names = NULL;
+
+	return REG_FAILURE;
       }
       memcpy((*names)[i], bufline, len);
       /* Terminate string - overwrite '\n' */
