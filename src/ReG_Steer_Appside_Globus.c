@@ -521,8 +521,6 @@ int Initialize_IOType_transport_globus(const int direction,
 		IOTypes_table.io_def[index].socket_info.listener_port, 
 		index, IOTypes_table.io_def[index].label );
 #endif
-	/* attempt to kick the callback function (in case accept callback) */
-	Globus_callback_poll(&(IOTypes_table.io_def[index].socket_info));
       }
     }
     else if (direction == REG_IO_IN){
@@ -742,18 +740,18 @@ int Consume_data_read_globus(const int		index,
   globus_result_t  result;
   globus_size_t    nbytes;
 
-#if DEBUG
-  float   read_time;
-  clock_t start_time, stop_time;
+#ifdef USE_TIMING
+  double time0, time1;
 #endif
 
 #if DEBUG
   fprintf(stderr, "Consume_data_read_globus: calling globus_io_read "
           "for %d bytes\n", (int)num_bytes_to_read);
-
-  start_time = clock();
 #endif
 
+#ifdef USE_TIMING
+  Get_current_time_seconds(&time0);
+#endif
 
   if(IOTypes_table.io_def[index].use_xdr){
     result = globus_io_read(&(IOTypes_table.io_def[index].socket_info.conn_handle), 
@@ -771,12 +769,13 @@ int Consume_data_read_globus(const int		index,
   }
 
 #if DEBUG
-  stop_time = clock();
-  read_time = (float)(stop_time - start_time)/(float)CLOCKS_PER_SEC;
-
   fprintf(stderr, "Consume_data_read_globus: globus_io_read read %d bytes\n",
 	  (int) nbytes);
-  fprintf(stderr, "                          in %.3f seconds\n", read_time);
+#ifdef USE_TIMING
+  Get_current_time_seconds(&time1);
+  fprintf(stderr, "                          in %.3f seconds\n", 
+	  (float)(time1-time0));
+#endif
 
   if(datatype == REG_CHAR){
     fprintf(stderr, "Consume_data_read_globus: got char data:\n>>%s<<\n", 

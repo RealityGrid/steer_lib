@@ -46,18 +46,15 @@ LIB_PATH       = ${REG_STEER_HOME}/lib$(NBIT)
 
 all:
 	make ${LIB_PATH}/libReG_Steer.a
-	make ${LOCAL_BIN_DIR}/ReG_Steer_Proxy.class
 
 lib:
 	make ${LIB_PATH}/libReG_Steer.a
-
-proxy:
-	make ${LOCAL_BIN_DIR}/ReG_Steer_Proxy.class
 
 .c.o:
 	${CC} ${C_FLAGS} -DREG_GLOBUS_SAMPLES=${REG_GLOBUS_SAMPLES_FLAG} \
 	-DREG_GLOBUS_STEERING=${REG_GLOBUS_STEERING_FLAG} \
         -DREG_SOAP_STEERING=${REG_SOAP_STEERING_FLAG} \
+        -DDEBUG=${REG_DEBUG_FLAG} \
         ${INCLUDE_PATH} -c $< -o $@
 
 ${LIB_PATH}/libReG_Steer.a: ReG_Steer_Appside_f.o \
@@ -90,11 +87,6 @@ ${LIB_PATH}/libReG_Steer.a:
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a soapC.o
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a soapClient.o
 
-
-${LOCAL_BIN_DIR}/ReG_Steer_Proxy.class:
-	   ${JAVAC} ReG_Steer_Proxy.java
-	   mv -f ReG_Steer_Proxy.class ${BIN_DIR}/.
-
 #---------------------------------------------------------------
 
 ReG_Steer_Appside.o: ReG_Steer_Appside.c \
@@ -107,7 +99,6 @@ ReG_Steer_Appside.o: ReG_Steer_Appside.c \
          ../include/ReG_Steer_Appside_Soap.h
 
 ReG_Steer_Steerside.o: ReG_Steer_Steerside.c \
-         ReG_Steer_Proxy.java \
          ReG_Steer_Proxy_utils.c \
 	 ReG_Steer_XML.c \
 	 ../include/ReG_Steer_XML.h \

@@ -172,20 +172,24 @@ void Globus_socket_info_cleanup(socket_io_type * const socket_info)
 void Globus_callback_poll(socket_io_type * const socket_info)
 {
   globus_abstime_t	timeout;
-  int result;
+  int                   result;
 
-  timeout.tv_sec = 1;
-
+  timeout.tv_sec  = 1;
+  timeout.tv_nsec = 0;
 #if DEBUG
   fprintf(stderr, "Globus_callback_poll: call globus_cond_timedwait\n");
 #endif
 
-  globus_mutex_lock(&(socket_info->mutex));
+  if( globus_mutex_lock(&(socket_info->mutex)) ){
+
+    fprintf(stderr, "Globus_callback_poll: failed to acquire mutex\n");
+    return;
+  }
 
   /* attempt to kick the callback function */
   result = globus_cond_timedwait(&(socket_info->cond), 
-			&(socket_info->mutex), 
-			&timeout);
+				 &(socket_info->mutex), 
+				 &timeout);
 
 #if DEBUG
   if(result != GLOBUS_SUCCESS){

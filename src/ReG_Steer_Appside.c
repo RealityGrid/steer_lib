@@ -201,7 +201,7 @@ int Steering_initialize(int  NumSupportedCmds,
 
   Params_table.num_registered = 0;
   Params_table.max_entries    = REG_INITIAL_NUM_PARAMS;
-  Params_table.next_handle    = 0;
+  Params_table.next_handle    = REG_MIN_PARAM_HANDLE;
   Params_table.param          = (param_entry *)malloc(Params_table.max_entries
 					      *sizeof(param_entry));
 
@@ -252,12 +252,28 @@ int Steering_initialize(int  NumSupportedCmds,
   Params_table.param[i].modified  = FALSE;
   Params_table.param[i].is_internal=FALSE;
   sprintf(Params_table.param[i].label, "CPU_TIME_PER_STEP");
-  sprintf(Params_table.param[i].value, "-1.0");
-  sprintf(Params_table.param[i].min_val, "-1.0");
-  Params_table.param[i].min_val_valid = TRUE;
-  /* Max. value for CPU time per step is one hour (in seconds) */
-  sprintf(Params_table.param[i].max_val, "3600.0");
-  Params_table.param[i].max_val_valid = TRUE;
+  sprintf(Params_table.param[i].value, "0.0");
+  sprintf(Params_table.param[i].min_val, "");
+  Params_table.param[i].min_val_valid = FALSE;
+  sprintf(Params_table.param[i].max_val, "");
+  Params_table.param[i].max_val_valid = FALSE;
+  Increment_param_registered(&Params_table);
+
+  /* Parameter for recording time stamp - currently ONLY used
+     for checkpoint logging */
+  i = Params_table.num_registered;
+  Params_table.param[i].ptr       = NULL;
+  Params_table.param[i].type      = REG_CHAR;
+  Params_table.param[i].handle    = REG_TIMESTAMP_HANDLE;
+  Params_table.param[i].steerable = FALSE;
+  Params_table.param[i].modified  = FALSE;
+  Params_table.param[i].is_internal=TRUE;
+  sprintf(Params_table.param[i].label, "TIMESTAMP");
+  sprintf(Params_table.param[i].value, "");
+  sprintf(Params_table.param[i].min_val, "");
+  Params_table.param[i].min_val_valid = FALSE;
+  sprintf(Params_table.param[i].max_val, "");
+  Params_table.param[i].max_val_valid = FALSE;
   Increment_param_registered(&Params_table);
 
   /* Set-up/prepare for connection to steering client */
@@ -705,8 +721,10 @@ int Register_ChkTypes(int    NumTypes,
 int Record_Chkpt(int   ChkType,
 		 char *ChkTag)
 {
-  int   index;
-  int   count;
+  int    index;
+  int    count;
+  time_t time_now;
+  char   *pchar;
 
   /* Can only call this function if steering lib initialised */
 
@@ -734,13 +752,30 @@ int Record_Chkpt(int   ChkType,
   Chk_log.entry[Chk_log.num_entries].sent_to_steerer = FALSE;
 
   /* Store the values of all registered parameters at this point (so
-     long as they're not internal to the library */
+     long as they're not internal to the library) */
   count = 0;
   for(index = 0; index<Params_table.max_entries; index++){
 
     if(Params_table.param[index].handle == REG_PARAM_HANDLE_NOTSET ||
        Params_table.param[index].is_internal == TRUE){
-      continue;
+
+      /* Time stamp is a special case - is internal but we do want
+	 it for checkpoint records */
+      if(Params_table.param[index].handle != REG_TIMESTAMP_HANDLE){
+	continue;
+      }
+      else{
+	/* Get timestamp */
+	if( (int)(time_now = time(NULL)) != -1){
+	  pchar = ctime(&time_now);
+	  strcpy(Params_table.param[index].value, pchar);
+	  /* Remove new-line character */
+          Params_table.param[index].value[strlen(pchar)-1] = '\0';
+	}
+	else{
+	  sprintf(Params_table.param[index].value, "");
+	}
+      }
     }
 
     /* This is one we want - store its handle and current value */
@@ -3205,8 +3240,7 @@ int Get_ptr_value(param_entry *param)
   return_status = REG_SUCCESS;
   
   /* If this is a special parameter then its pointer isn't used */
-  if(param->handle == REG_SEQ_NUM_HANDLE || 
-     param->handle == REG_STEP_TIME_HANDLE){
+  if(param->handle < REG_MIN_PARAM_HANDLE ){
 
     return REG_SUCCESS;
   }

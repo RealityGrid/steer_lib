@@ -39,6 +39,7 @@
 
 #include "ReG_Steer_types.h"
 #include "ReG_Steer_Common.h"
+#include <sys/time.h>
 
 #ifndef DEBUG
 #define DEBUG 0
@@ -719,3 +720,24 @@ int Read_file(char *filename, char **buf, int *size)
 
   return REG_SUCCESS;
 }
+
+/*----------------------------------------------------------------*/
+
+#ifdef USE_TIMING
+
+int Get_current_time_seconds(double *now)
+{
+  struct timeval tv;
+  struct timezone tz;
+
+  if(!now || gettimeofday(&tv, &tz)){
+    return REG_FAILURE;
+  }
+
+  *now = (double)(tv.tv_sec - tv.tv_sec);
+  *now += 1.0e-6*(double)(tv.tv_usec - tv.tv_usec);
+
+  return REG_SUCCESS;
+}
+
+#endif /* defined USE_TIMING */
