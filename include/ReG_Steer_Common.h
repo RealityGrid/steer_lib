@@ -306,6 +306,7 @@ extern PREFIX int Reorder_decode_array(IOdef_entry *io,
 				       void        *pData);
 
 /* Does what is says.  Uses uname and gethostbyname. */
-extern PREFIX char *Get_fully_qualified_hostname();
+extern PREFIX int Get_fully_qualified_hostname(char **hostname, 
+					       char **ip_addr_ptr);
 
 #endif

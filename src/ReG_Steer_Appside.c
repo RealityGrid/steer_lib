@@ -120,7 +120,7 @@ int Steering_initialize(int  NumSupportedCmds,
 			int *SupportedCmds)
 {
   int   i, j;
-  char *pchar;
+  char *pchar, *ip_addr;
 
   /* Actually defined in ReG_Steer_Common.c because both steerer
      and steered have a variable of this name */
@@ -184,7 +184,9 @@ int Steering_initialize(int  NumSupportedCmds,
   } 
 
   /* Get the hostname of this machine */
-  strcpy(ReG_Hostname, Get_fully_qualified_hostname());
+  if(Get_fully_qualified_hostname(&pchar, &ip_addr) == REG_SUCCESS){
+    strcpy(ReG_Hostname, pchar);
+  }
 
   /* Allocate memory and initialise tables of IO types and 
      parameters */

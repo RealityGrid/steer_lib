@@ -103,7 +103,7 @@ int Globus_socket_info_init(socket_io_type * const socket_info)
 {
   globus_result_t	result;
   char                 *pchar;
-  int                   dum;
+  char                 *ip_addr;
 
   if (Globus_io_activate() != REG_SUCCESS)
     return REG_FAILURE;
@@ -127,15 +127,16 @@ int Globus_socket_info_init(socket_io_type * const socket_info)
     return REG_FAILURE;
   }
 
-  /* If this environment variable is set then use it as the local
-     TCP interface (rather than INADDR_ANY I expect) */
-  if(pchar = getenv("REG_TCP_INTERFACE")){
+  /* Set local TCP interface - Get_fully_qualified_hostname uses
+     REG_TCP_INTERFACE if it is set */
+  if(Get_fully_qualified_hostname(&pchar, &ip_addr) == REG_SUCCESS){
 
-    if(sscanf(pchar, "%d.%d.%d.%d", &dum, &dum, &dum, &dum) == 4){
+    /* Can't set interface to localhost so if that's what we've
+       got then don't bother */
+    if(!strstr(ip_addr, "127.0.0.1")){
 
       result = globus_io_attr_set_tcp_interface(&socket_info->attr, 
-						pchar);
-
+						ip_addr);
       if(result != GLOBUS_SUCCESS){
 	fprintf(stderr, "Globus_socket_info_init: Error setting "
 		"tcp interface.\n");
@@ -143,20 +144,16 @@ int Globus_socket_info_init(socket_io_type * const socket_info)
 	return REG_FAILURE;
       }
     }
-    else{
-      fprintf(stderr, "Globus_socket_info_init: REG_TCP_INTERFACE"
-	      " is set but is of wrong format - should be "
-	      "<int>.<int>.<int>.<int>\n"
-	      "- using INADDR_ANY for local interface...\n");
-    }
-  }
 #if REG_DEBUG
-  else{
-    fprintf(stderr, "Globus_socket_info_init: REG_TCP_INTERFACE not"
-	    " set - using INADDR_ANY for local interface\n");
-  }
+    else{
+      fprintf(stderr, 
+	      "Globus_socket_info_init: "
+	  "Get_fully_qualified_hostname returned IP of localhost\n"
+	      "                         so not setting globus_io "
+	      "tcp interface - will use INADDR_ANY\n");
+    }
 #endif
-
+  }
 
   /* SMR XXX - add more attr security stuff here */
 
@@ -165,10 +162,6 @@ int Globus_socket_info_init(socket_io_type * const socket_info)
   socket_info->comms_status = REG_COMMS_STATUS_NULL;   
   socket_info->connector_port = 0;
   sprintf(socket_info->connector_hostname, " ");
-
-#if REG_DEBUG
-  fprintf(stderr, "Globus_socket_info_init: done\n");
-#endif
 
   return REG_SUCCESS;
 
@@ -223,7 +216,7 @@ void Globus_callback_poll(socket_io_type * const socket_info)
 int Globus_create_listener(socket_io_type * const socket_info)
 {
   globus_result_t	result;
-  char                 *pchar;
+  char                 *pchar, *ip_addr;
   int                   dum;
 
   /* create listener socket on free port 
@@ -248,35 +241,17 @@ int Globus_create_listener(socket_io_type * const socket_info)
 	  socket_info->listener_port);
 
   /* Get the hostname of the machine we're running on (so we can publish
-     the endpoint of this connection) */
+     the endpoint of this connection). Get_fully_qualified_hostname uses
+     REG_TCP_INTERFACE if set. */
+  if(Get_fully_qualified_hostname(&pchar, &ip_addr) == REG_SUCCESS){
 
-  /* First check to see if we're using an interface other than the default */
-  if(pchar = getenv("REG_TCP_INTERFACE")){
-
-    if(sscanf(pchar, "%d.%d.%d.%d", &dum, &dum, &dum, &dum) != 4){
-
-      fprintf(stderr, "Globus_create_listener: WARNING: REG_TCP_INTERFACE is"
-	      "set but is of wrong format (should be <int>.<int>.<int>.<int>)\n"
-	      "                        Proceeding with default interface...\n");
-      pchar = NULL;
-    }
-    else{
-      sprintf(socket_info->listener_hostname, "%s", pchar);
-    }
+    sprintf(socket_info->listener_hostname, "%s", pchar);
   }
+  else{
 
-  if(!pchar){
-    /* We're using the default interface - get our hostname */
-    if(pchar = Get_fully_qualified_hostname()){
-
-      sprintf(socket_info->listener_hostname, "%s", pchar);
-    }
-    else{
-
-      fprintf(stderr, "Globus_create_listener: WARNING: failed to get "
-	      "hostname\n");
-      sprintf(socket_info->listener_hostname, "NOT_SET");
-    }
+    fprintf(stderr, "Globus_create_listener: WARNING: failed to get "
+	    "hostname\n");
+    sprintf(socket_info->listener_hostname, "NOT_SET");
   }
   
   /* Now register listener so can accept connections when they happen */

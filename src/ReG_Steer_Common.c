@@ -1131,25 +1131,58 @@ int Reorder_decode_array(IOdef_entry *io,
 
 /*------------------------------------------------------------------*/
 
-char *Get_fully_qualified_hostname()
+int Get_fully_qualified_hostname(char **hostname, char **ip_addr_ptr)
 {
   struct utsname  name;
   struct hostent *host;
+  char           *pchar;
+  char            ip_addr[16];
 
-  if(uname(&name) < 0){
+  /* First check to see if we're using an interface other than the default */
+  if(pchar = getenv("REG_TCP_INTERFACE")){
 
-    fprintf(stderr, "Get_fully_qualified_hostname: uname failed\n");
-    return NULL;
+    host = gethostbyname(pchar);
   }
+  else{
 
-  host = gethostbyname(name.nodename);
+    if(uname(&name) < 0){
+
+      fprintf(stderr, "Get_fully_qualified_hostname: uname failed\n");
+      return NULL;
+    }
+
+    host = gethostbyname(name.nodename);
+  }
 
   if(!host){
 
     fprintf(stderr, "Get_fully_qualified_hostname: gethostbyname failed\n");
-    return NULL;
+    return REG_FAILURE;
   }
 
-  return host->h_name;
+  if(host->h_length == 4){
+    sprintf(ip_addr, "%d.%d.%d.%d", 
+	    (int)(host->h_addr_list[0][0]),
+	    (int)(host->h_addr_list[0][1]),
+	    (int)(host->h_addr_list[0][2]),
+	    (int)(host->h_addr_list[0][3]));
+  }
+  else{
+    fprintf(stderr, "Get_fully_qualified_hostname: address not four "
+	    "bytes long\n");
+    return REG_FAILURE;
+  }
+
+#if REG_DEBUG
+  fprintf(stderr, "Get_fully_qualified_hostname: hostname = %s\n", 
+	  host->h_name);
+  fprintf(stderr, "                              IP       = %s\n",
+	  ip_addr);
+#endif
+
+  *hostname = host->h_name;
+  *ip_addr_ptr = ip_addr;
+
+  return REG_SUCCESS;
 }
 
