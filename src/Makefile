@@ -34,7 +34,7 @@
 #    Initial version by:  A Porter, 23.7.2002
 #
 #------------------------------------------------------------------------
-include ../globus_definitions
+
 include ../Makefile.include
 
 # Set-up access to M4 scripts for production of F90 wrappers, this is
@@ -55,7 +55,8 @@ proxy:
 	make ${LOCAL_BIN_DIR}/ReG_Steer_Proxy.class
 
 .c.o:
-	${CC} ${C_FLAGS} ${INCLUDE_PATH} -c $< -o $@
+	${CC} ${C_FLAGS} -DREG_GLOBUS_SAMPLES=${REG_GLOBUS_SAMPLES_FLAG} \
+	-DREG_GLOBUS_STEERING=${REG_GLOBUS_STEERING_FLAG} ${INCLUDE_PATH} -c $< -o $@
 
 ${LIB_PATH}/libReG_Steer.a: ReG_Steer_Appside_f.o \
 	ReG_Steer_Appside.o \
@@ -63,7 +64,10 @@ ${LIB_PATH}/libReG_Steer.a: ReG_Steer_Appside_f.o \
 	ReG_Steer_Common.o \
 	ReG_Steer_Proxy_utils.o \
 	ReG_Steer_XML.o \
-	ReG_Steer_Globus_io.o
+	ReG_Steer_Globus_io.o \
+	ReG_Steer_Steerside_Globus.o \
+	ReG_Steer_Appside_Globus.o
+
 
 ${LIB_PATH}/libReG_Steer.a:
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Appside_f.o
@@ -73,6 +77,9 @@ ${LIB_PATH}/libReG_Steer.a:
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Proxy_utils.o
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_XML.o
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Globus_io.o
+	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Appside_Globus.o
+	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Steerside_Globus.o
+
 
 ${LOCAL_BIN_DIR}/ReG_Steer_Proxy.class:
 	   ${JAVAC} ReG_Steer_Proxy.java
@@ -85,7 +92,8 @@ ReG_Steer_Appside.o: ReG_Steer_Appside.c \
 	 ../include/ReG_Steer_types.h \
 	 ../include/ReG_Steer_Appside_internal.h \
 	 ../include/ReG_Steer_Common.h \
-	 ../include/ReG_Steer_Globus_io.h
+	 ../include/ReG_Steer_Globus_io.h \
+	 ../include/ReG_Steer_Appside_Globus.h
 
 ReG_Steer_Steerside.o: ReG_Steer_Steerside.c \
          ReG_Steer_Proxy.java \
@@ -96,7 +104,9 @@ ReG_Steer_Steerside.o: ReG_Steer_Steerside.c \
 	 ../include/ReG_Steer_Steerside.h \
 	 ../include/ReG_Steer_types.h \
 	 ../include/ReG_Steer_Steerside_internal.h \
-	 ../include/ReG_Steer_Common.h
+	 ../include/ReG_Steer_Common.h \
+	 ../include/ReG_Steer_Globus_io.h \
+	 ../include/ReG_Steer_Steerside_Globus.h
 
 ReG_Steer_Common.o: ReG_Steer_Common.c \
 	 ../include/ReG_Steer_types.h \
@@ -115,7 +125,8 @@ ReG_Steer_Appside_f.o: ReG_Steer_Appside_f.c \
          ../include/ReG_Steer_Appside.h \
 	 ../include/ReG_Steer_types.h \
 	 ../include/ReG_Steer_Common.h \
-	 ../include/ReG_Steer_Globus_io.h
+	 ../include/ReG_Steer_Globus_io.h \
+	 ../include/ReG_Steer_Appside_Globus.h
 
 ReG_Steer_XML.o: ReG_Steer_XML.c \
 	../include/ReG_Steer_XML.h \
@@ -124,6 +135,16 @@ ReG_Steer_XML.o: ReG_Steer_XML.c \
 ReG_Steer_Globus_io.o: ReG_Steer_Globus_io.c \
 	../include/ReG_Steer_Globus_io.h \
 	../include/ReG_Steer_types.h
+
+
+ReG_Steer_Appside_Globus.o: ReG_Steer_Appside_Globus.c \
+	../include/ReG_Steer_Appside_Globus.h \
+	../include/ReG_Steer_Appside_internal.h
+
+ReG_Steer_Steerside_Globus.o: ReG_Steer_Steerside_Globus.c \
+	../include/ReG_Steer_Steerside_Globus.h \
+	../include/ReG_Steer_Steerside_internal.h
+
 
 #---------------------------------------------------------------
 

@@ -41,8 +41,15 @@
 
 /* Following two includes are for use of stat system call 
    in Open_next_file */
+
 #include <sys/types.h>
 #include <sys/stat.h>
+
+#if REG_GLOBUS_STEERING
+typedef socket_io_type	socket_type_steering;
+#else
+typedef int		socket_type_steering;
+#endif
 
 /* Types and structures for reading parameter defs */
 
@@ -108,10 +115,10 @@ typedef struct {
   void			       *buffer;
   /* Size of this buffer */
   int				buffer_bytes;
-
+#if REG_GLOBUS_SAMPLES
   /* structure used to hold all globus_io socket information */
   socket_io_type		socket_info;
-
+#endif
   /* Whether or not to encode non-ASCII data as XDR (set in Emit_start) */
   int				use_xdr;
 
@@ -167,12 +174,13 @@ extern int  Write_xml_header(char **pchar);
 
 extern int  Write_xml_footer(char **pchar);
 
-/* Read ReG-specific header from globus_io socket */
-extern int Consume_msg_header(socket_io_type *sock_info,
+/* Read ReG-specific header */
+extern int Consume_msg_header(socket_type_steering *sock_info,
 			      int *DataType,
 			      int *Count);
 
-/* Construct and send ReG-specific header down globus_io socket */
-extern int Emit_msg_header(socket_io_type *sock_info,
+/* Construct and send ReG-specific header */
+extern int Emit_msg_header(socket_type_steering *sock_info,
 			   int DataType,
 			   int Count);
+

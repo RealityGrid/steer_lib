@@ -562,167 +562,38 @@ int Directory_valid(char *directory)
 
 /*----------------------------------------------------------------*/
 
-int Consume_msg_header(socket_io_type *sock_info,
+int Consume_msg_header(socket_type_steering *sock_info,
 		       int *DataType,
 		       int *Count)
 {
-  globus_result_t  result;
-  globus_size_t    nbytes;
-  char             buffer[REG_PACKET_SIZE];
+  
+#if REG_GLOBUS_STEERING
+  return Consume_msg_header_globus(sock_info,
+				   DataType,
+				   Count);
+#else
 
-  /* check socket connection has been made */
-  if (sock_info->comms_status != 
-      REG_COMMS_STATUS_CONNECTED) return REG_FAILURE;
-
-  /* Read header */
-
-#if DEBUG
-  /* ARPDBG */
-  fprintf(stderr, "Consume_msg_header: calling globus_io_read...\n");
+  return REG_FAILURE;
 #endif
 
-  /* Blocks until REG_PACKET_SIZE bytes received */
-  result = globus_io_read(&(sock_info->conn_handle), 
-			  (globus_byte_t *)buffer, 
-			  REG_PACKET_SIZE, 
-			  REG_PACKET_SIZE, 
-			  &nbytes);
-
-  if(result != GLOBUS_SUCCESS){
-
-    fprintf(stderr, "Consume_msg_header: globus_io_read failed\n");
-    return REG_FAILURE;
-  }
-
-#if DEBUG
-  fprintf(stderr, "Consume_msg_header: read <%s> from socket\n",
-	  buffer);
-#endif
-
-  /* Check for end of data */
-  if(!strncmp(buffer, REG_DATA_FOOTER, strlen(REG_DATA_FOOTER))){
-
-    return REG_EOD;
-  }
-  else if(strncmp(buffer, BEGIN_SLICE_HEADER, strlen(BEGIN_SLICE_HEADER))){
-
-    fprintf(stderr, "Consume_msg_header: incorrect header on slice\n");
-    return REG_FAILURE;
-  }
-
-  result = globus_io_read(&(sock_info->conn_handle), 
-			  (globus_byte_t *)buffer, 
-			  REG_PACKET_SIZE, 
-			  REG_PACKET_SIZE, 
-			  &nbytes);
-
-  if(result != GLOBUS_SUCCESS){
-
-    fprintf(stderr, "Consume_data_slice_header: globus_io_read failed\n");
-    return REG_FAILURE;
-  }
-
-#if DEBUG
-  fprintf(stderr, "Consume_msg_header: read <%s> from socket\n", 
-	  buffer);
-#endif
-
-  if(!strstr(buffer, "<Data_type>")){
-
-    return REG_FAILURE;
-  }
-
-  sscanf(buffer, "<Data_type>%d</Data_type>", DataType);
-
-  result = globus_io_read(&(sock_info->conn_handle), 
-			  (globus_byte_t *)buffer, 
-			  REG_PACKET_SIZE, 
-			  REG_PACKET_SIZE, 
-			  &nbytes);
-
-  if(result != GLOBUS_SUCCESS){
-
-    return REG_FAILURE;
-  }
-
-#if DEBUG
-  fprintf(stderr, "Consume_msg_header: read <%s> from socket\n", 
-	  buffer);
-#endif
-
-  if(!strstr(buffer, "<Num_objects>")){
-
-    return REG_FAILURE;
-  }
-
-  if( sscanf(buffer, "<Num_objects>%d</Num_objects>", Count) != 1){
-
-    fprintf(stderr, "Consume_msg_header: failed to read Num_objects\n");
-    return REG_FAILURE;
-  }
-
-  result = globus_io_read(&(sock_info->conn_handle), 
-			  (globus_byte_t *)buffer, 
-			  REG_PACKET_SIZE, 
-			  REG_PACKET_SIZE, 
-			  &nbytes);
-
-  if(result != GLOBUS_SUCCESS){
-
-    fprintf(stderr, "Consume_msg_header: globus_io_read failed\n");
-    return REG_FAILURE;
-  }
-
-#if DEBUG
-  fprintf(stderr, "Consume_msg_header: read <%s> from socket\n", 
-	  buffer);
-#endif
-
-  if(strncmp(buffer, END_SLICE_HEADER, strlen(END_SLICE_HEADER))){
-
-    return REG_FAILURE;
-  }
-
-  return REG_SUCCESS;
 }
 
 /*----------------------------------------------------------------*/
 
-int Emit_msg_header(socket_io_type *sock_info,
+int Emit_msg_header(socket_type_steering *sock_info,
 		    int DataType,
 		    int Count)
 {
-  char  buffer[5*REG_PACKET_SIZE];
-  char  tmp_buffer[REG_PACKET_SIZE];
-  char *pchar;
-  globus_result_t  result;
-  globus_size_t    nbytes;
 
-  pchar = buffer;
-  pchar += sprintf(pchar, REG_PACKET_FORMAT, "<ReG_data_slice_header>");
-  sprintf(tmp_buffer, "<Data_type>%d</Data_type>", DataType);
-  pchar += sprintf(pchar, REG_PACKET_FORMAT, tmp_buffer);
-  sprintf(tmp_buffer, "<Num_objects>%d</Num_objects>", Count);
-  pchar += sprintf(pchar, REG_PACKET_FORMAT, tmp_buffer);
-  pchar += sprintf(pchar, REG_PACKET_FORMAT, "</ReG_data_slice_header>");
+#if REG_GLOBUS_STEERING
+  return Emit_msg_header_globus(sock_info,
+				DataType,
+				Count);
+#else
 
-#if DEBUG
-  fprintf(stderr, "Emit_data_slice: sending >>%s<<\n", buffer);
+  return REG_FAILURE;
 #endif
 
-  result = globus_io_write(&(sock_info->conn_handle), 
-			   (globus_byte_t *)buffer, 
-			   strlen(buffer), 
-			   &nbytes);
-
-  if (result != GLOBUS_SUCCESS ) {
-
-#if DEBUG
-    fprintf(stderr, "Emit_data_slice: failed to write slice header\n");
-#endif
-    return REG_FAILURE;
-  }
-
-  return REG_SUCCESS;
 }
 
+/*----------------------------------------------------------------*/

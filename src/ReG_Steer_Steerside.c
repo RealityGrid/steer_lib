@@ -42,6 +42,7 @@
 #include "ReG_Steer_Steerside.h"
 #include "ReG_Steer_Steerside_internal.h"
 #include "ReG_Steer_Proxy_utils.h"
+#include "ReG_Steer_Steerside_Globus.h"
 
 #ifndef DEBUG
 #define DEBUG 0
@@ -49,28 +50,6 @@
 
 /*--------------------- Data structures -------------------*/
 
-/* Main table used to record all simulations currently
-   being steered */
-
-static struct {
-
-  int             num_registered;
-  int             max_entries;
-  Sim_entry_type *sim;
-
-} Sim_table;
-
-/* Structure holding details of the main (java) proxy
-   that is always associated with the steerer */
-
-static struct {
-
-  char buf[REG_MAX_MSG_SIZE];
-  int  pipe_to_proxy;
-  int  pipe_from_proxy;
-  int  available;
-
-} Proxy;
 
 /*----- Routines to be used by the steering component ------*/
 
@@ -371,7 +350,7 @@ int Sim_attach(char *SimID,
   }
   else{
 
-#ifdef GLOBUS_IO_STEERING
+#if REG_GLOBUS_STEERING
 
     /* Use Globus */
 #if DEBUG
@@ -387,7 +366,7 @@ int Sim_attach(char *SimID,
 #endif
     return_status = Sim_attach_local(&(Sim_table.sim[current_sim]), SimID);
 
-#endif /* GLOBUS_IO_STEERING */
+#endif /* REG_GLOBUS_STEERING */
 
   }
 
@@ -503,7 +482,7 @@ int Get_next_message(int         *SimHandle,
       }
       else{
 
-#ifdef GLOBUS_IO_STEERING
+#if REG_GLOBUS_STEERING
 
 	Sim_table.sim[isim].msg = 
 	                Get_status_msg_globus(&(Sim_table.sim[isim]));
@@ -610,135 +589,6 @@ struct msg_struct *Get_status_msg_file(Sim_entry_type *sim)
 }
 
 /*------------------------------------------------------------------------*/
-
-struct msg_struct *Get_status_msg_globus(Sim_entry_type *sim)
-{
-  struct msg_struct *msg = NULL;
-  globus_size_t      nbytes;
-  globus_result_t    result;
-  char               buffer[REG_MAX_MSG_SIZE];
-  int                type;
-  int                count;
-
-  /* if not connected attempt to connect now */
-  if (sim->socket_info.comms_status 
-      != REG_COMMS_STATUS_CONNECTED){
-    Globus_attempt_connector_connect(&(sim->socket_info));
-  }
-
-  /* check if socket connection has been made */
-  if (sim->socket_info.comms_status != REG_COMMS_STATUS_CONNECTED) {
-
-#if DEBUG
-    fprintf(stderr, "Get_status_msg_globus: no socket connection\n");
-#endif
-    return NULL;
-  }
-
-  /* Check for data on socket - non-blocking */
-  result = globus_io_try_read(&(sim->socket_info.conn_handle),
-			      (globus_byte_t *)buffer,
-			      REG_PACKET_SIZE,
-			      &nbytes);
-
-  if (result != GLOBUS_SUCCESS){
-
-#if DEBUG
-    fprintf(stderr, "Get_status_msg_globus: globus_io_try_read failed\n");
-#endif
-    return NULL;
-  }
-
-#if DEBUG
-  fprintf(stderr, "Consume_start: read <%s> from socket\n", buffer);
-#endif
-
-  /* ARPDBG - globus_io_try_read always returns 0 bytes if connection
-     configugured to use GSSAPI or SSL data wrapping. */
-  if(nbytes == 0){
-
-    return NULL;
-  }
-
-  if(strncmp(buffer, REG_DATA_HEADER, strlen(REG_DATA_HEADER))){
-
-#if DEBUG
-    fprintf(stderr, "Get_status_msg_globus: unrecognised header\n");
-#endif
-    return NULL;
-  }
-
-  if(Consume_msg_header(&(sim->socket_info),
-			&type,
-			&count) != REG_SUCCESS){
-
-#if DEBUG
-    fprintf(stderr, "Get_status_msg_globus: failed to read msg header\n");
-#endif
-    return NULL;
-  }
-
-  if(type != REG_CHAR){
-
-#if DEBUG
-    fprintf(stderr, "Get_status_msg_globus: message is of wrong "
-	    "data type\n");
-#endif
-    return NULL;
-  }
-
-#if DEBUG
-  if(count > REG_MAX_MSG_SIZE){
-
-    fprintf(stderr, "Get_status_msg_globus: message exceeds max. "
-	    "length of %d chars\n", REG_MAX_MSG_SIZE);
-    return NULL;
-  }
-#endif
-
-  /* Read actual message plus footer (hence '+REG_PACKET_SIZE' below) */
-  result = globus_io_read(&(sim->socket_info.conn_handle), 
-			  (globus_byte_t *)buffer, 
-			  count+REG_PACKET_SIZE, 
-			  count+REG_PACKET_SIZE, 
-			  &nbytes);
-
-  if(result != GLOBUS_SUCCESS){
-
-#if DEBUG
-    fprintf(stderr, "Get_status_msg_globus: error globus_io_read\n");
-#endif
-    return NULL;
-  }
-
-#if DEBUG
-  fprintf(stderr, "Get_status_msg_globus: read:\n>>%s<<\n", buffer);
-#endif
-
-  if(nbytes != (count+REG_PACKET_SIZE)){
-
-#if DEBUG
-    fprintf(stderr, "Get_status_msg_globus: read %d bytes but expected "
-	    "to get %d\n", nbytes, (count+REG_PACKET_SIZE));
-#endif
-    return NULL;
-  }
-
-  msg = New_msg_struct();
-
-  if(Parse_xml_buf(buffer, count, msg) != REG_SUCCESS){
-
-#if DEBUG
-    fprintf(stderr, "Get_status_msg_globus: failed to parse message\n");
-#endif
-    Delete_msg_struct(msg);
-    msg = NULL;
-  }
-
-  return msg;
-}
-
-/*--------------------------------------------------------------------*/
 
 int Consume_param_defs(int SimHandle)
 {
@@ -1200,7 +1050,7 @@ int Send_control_msg(int SimIndex, char* buf)
   }
   else{
 
-#ifdef GLOBUS_IO_STEERING
+#if REG_GLOBUS_STEERING
 
     return Send_control_msg_globus(SimIndex, buf);
 
@@ -1264,111 +1114,6 @@ int Send_control_msg_file(int SimIndex, char* buf)
   /* The application only attempts to read files for which it can find an
      associated lock file */
   return Create_lock_file(filename);
-}
-
-/*--------------------------------------------------------------------*/
-
-int Send_control_msg_globus(int SimIndex, char* buf)
-{
-  char            hdr_buf[REG_MAX_MSG_SIZE];
-  globus_size_t   nbytes;
-  globus_result_t result;
-
-  /* This routine won't be called unless we think we do have an active
-     connection to the simulation...
-  if(Sim_table.sim[SimIndex].socket_info.comms_status != 
-     REG_COMMS_STATUS_CONNECTED) {
-
-    if(Globus_create_connector(&(Sim_table.sim[SimIndex].socket_info))
-       != REG_SUCCESS){
-
-      fprintf(stderr, "Send_control_msg_globus: failed to register "
-	      "connector\n");
-      return REG_FAILURE;
-    }
-    else{
-      fprintf(stderr, "Send_control_msg_globus: registered connector on "
-	      "port %d, "
-	      "hostname = %s\n", 
-	      Sim_table.sim[SimIndex].socket_info.connector_port, 
-	      Sim_table.sim[SimIndex].socket_info.connector_hostname);
-    }
-  }
-
-  if (Sim_table.sim[SimIndex].socket_info.comms_status != 
-      REG_COMMS_STATUS_CONNECTED) return REG_FAILURE;
-  */
-
-  /* Send message header */
-  sprintf(hdr_buf, REG_PACKET_FORMAT, REG_DATA_HEADER);
-
-  result = globus_io_write(&(Sim_table.sim[SimIndex].socket_info.conn_handle), 
-			   (globus_byte_t *)hdr_buf, 
-			   strlen(hdr_buf), 
-			   &nbytes);
-
-  if(result != GLOBUS_SUCCESS){
-
-    /* Try again in case application has dropped connection */
-
-    Globus_attempt_connector_connect(&(Sim_table.sim[SimIndex].socket_info));
-
-    if (Sim_table.sim[SimIndex].socket_info.comms_status 
-	  != REG_COMMS_STATUS_CONNECTED) {
-      return REG_FAILURE;
-    }
-
-    result = globus_io_write(&(Sim_table.sim[SimIndex].socket_info.conn_handle), 
-			     (globus_byte_t *)hdr_buf, 
-			     strlen(hdr_buf), 
-			     &nbytes);
-
-    if(result != GLOBUS_SUCCESS){
-
-#if DEBUG
-      fprintf(stderr, "Send_status_msg_globus: globus_io_write "
-	      "failed\n");
-#endif
-      return REG_FAILURE;
-    }	
-  }
-
-  if( Emit_msg_header(&(Sim_table.sim[SimIndex].socket_info),
-		      REG_CHAR,
-		      strlen(buf)) != REG_SUCCESS){
-
-#if DEBUG
-    fprintf(stderr, "Send_status_msg_globus: failed to send header\n");
-#endif
-    return REG_FAILURE;
-  }
-
-  /* Send message proper */
-
-  result = globus_io_write(&(Sim_table.sim[SimIndex].socket_info.conn_handle), 
-			   (globus_byte_t *)buf, 
-			   strlen(buf), 
-			   &nbytes);
-
-  /* and finally, the footer of the message */
-
-  /* Send message header */
-  sprintf(hdr_buf, REG_PACKET_FORMAT, REG_DATA_FOOTER);
-
-  result = globus_io_write(&(Sim_table.sim[SimIndex].socket_info.conn_handle), 
-			   (globus_byte_t *)hdr_buf, 
-			   strlen(hdr_buf), 
-			   &nbytes);
-
-  if(result != GLOBUS_SUCCESS){
-
-#if DEBUG
-    fprintf(stderr, "Send_control_msg_globus: failed to send footer\n");
-#endif
-    return REG_FAILURE;
-  }
-
-  return REG_SUCCESS;
 }
 
 /*--------------------------------------------------------------------*/
@@ -2246,100 +1991,6 @@ int Sim_attach_proxy(Sim_entry_type *sim, char *SimID)
 
 /*-------------------------------------------------------------------*/
 
-int Sim_attach_globus(Sim_entry_type *sim, char *SimID)
-{
-  char *pchar;
-  int   port_ok;
-  int   hostname_ok;
-
-  pchar = getenv("REG_STEER_APP_HOSTNAME");
-  if (pchar) {
-
-    if (strlen(pchar) < REG_MAX_STRING_LENGTH) {
-      sprintf(sim->socket_info.connector_hostname, pchar);
-      hostname_ok = 1;
-    }
-    else{
-
-      fprintf(stderr, "Sim_attach_globus: REG_STEER_APP_HOSTNAME exceeds "
-	      "%d characters in length\n", REG_MAX_STRING_LENGTH);
-    }
-  }
-  
-  /* ARPDBG add error handling */
-  pchar = getenv("REG_STEER_APP_PORT");
-  if (pchar) {
-    sim->socket_info.connector_port = atoi(pchar);
-    port_ok = 1;
-  }
-
-  if (port_ok && hostname_ok) {
-    
-    if (Globus_create_connector(&(sim->socket_info)) != REG_SUCCESS) {
-#if DEBUG
-      fprintf(stderr, "Sim_attach_globus: failed to register connector\n");
-#endif
-      return REG_FAILURE;
-    }
-
-#if DEBUG
-    fprintf(stderr, "Sim_attach_globus: registered connector on "
-	    "port %d, hostname = %s\n", 
-	    sim->socket_info.connector_port, 
-	    sim->socket_info.connector_hostname);
-#endif
-
-  }
-  else{
-    fprintf(stderr, "Sim_attach_globus: cannot create connector as "
-	    "port and hostname not set\n");
-
-    return REG_FAILURE;
-  }
-
-  return Consume_supp_cmds_globus(sim);
-}
-
-/*-------------------------------------------------------------------*/
-
-int Consume_supp_cmds_globus(Sim_entry_type *sim)
-{
-  struct msg_struct *msg;
-  struct cmd_struct *cmd;
- 
-  if(sim->socket_info.comms_status != REG_COMMS_STATUS_CONNECTED){
-
-    fprintf(stderr, "Consume_supp_cmds_globus: socket no connected\n");
-    return REG_FAILURE;
-  }
-
-  msg = Get_status_msg_globus(sim);
-
-  if(!msg){
-
-    return REG_FAILURE;
-  }
-
-  /* Store the commands that the simulation supports */
-
-  cmd = msg->supp_cmd->first_cmd;
-
-  while(cmd){
-
-    sscanf((char *)(cmd->id), "%d", 
-	   &(sim->Cmds_table.cmd[sim->Cmds_table.num_registered].cmd_id));
-
-    /* ARPDBG - may need to add cmd parameters here too */
-
-    Increment_cmd_registered(&(sim->Cmds_table));
-
-    cmd = cmd->next;
-  }
-
-  return REG_SUCCESS;
-}
-
-/*-------------------------------------------------------------------*/
 
 int Consume_supp_cmds_local(Sim_entry_type *sim)
 {
@@ -2414,7 +2065,7 @@ int Finalize_connection(Sim_entry_type *sim)
   }
   else{
 
-#ifdef GLOBUS_IO_STEERING
+#if REG_GLOBUS_STEERING
 
     return Finalize_connection_globus(sim);
 
@@ -2457,10 +2108,3 @@ int Finalize_connection_file(Sim_entry_type *sim)
 
 /*-------------------------------------------------------------------*/
 
-int Finalize_connection_globus(Sim_entry_type *sim)
-{
-  /* close globus sockets */
-  Globus_cleanup_connector_connection(&(sim->socket_info));
-
-  return REG_SUCCESS;
-}

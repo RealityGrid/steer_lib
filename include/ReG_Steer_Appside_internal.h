@@ -37,6 +37,8 @@
     Initial version by:  A Porter, 23.7.2002
 
 ---------------------------------------------------------------------------*/
+#ifndef __REG_STEER_APPSIDE_INTERNAL_H__
+#define __REG_STEER_APPSIDE_INTERNAL_H__
 
 #include "ReG_Steer_Common.h"
 #include "ReG_Steer_XML.h"
@@ -55,6 +57,33 @@ typedef struct {
 }IO_channel_table_type;
 
 static IO_channel_table_type IO_channel[REG_INITIAL_NUM_IOTYPES];
+
+static struct {
+
+  /* Where to write files for file-based steering */
+  char			file_root[REG_MAX_STRING_LENGTH];
+
+  /* For steering via globus_io - port to listen on */
+  int			port_num;
+
+  /* structure used to hold all globus_io socket information */
+  socket_type_steering	socket_info;
+
+  /* String to hold 'supported commands' message 'cos we can't 
+     actually send it until a steerer has connected in the case
+     where we're using globus_io */
+  char			supp_cmds[REG_MAX_MSG_SIZE];
+
+  /* Buffer to hold received messages */
+  char			msg_buffer[REG_MAX_MSG_SIZE];
+
+} Steerer_connection;
+
+/* IOdef_table_type is declared in ReG_Steer_Common.h since it is 
+   used in both the steerer-side and app-side libraries */
+
+IOdef_table_type IOTypes_table;
+
 
 /*--------- Prototypes of internal library functions -------------*/
 
@@ -117,15 +146,12 @@ static int Send_status_msg(char *buf);
 
 static int Send_status_msg_file(char *buf);
 
-static int Send_status_msg_globus(char *buf);
-
 /* Read the next control message from the steerer, if any.  Results
    passed back in structure.  Returns NULL if no message. */
 static struct msg_struct *Get_control_msg();
 
 static struct msg_struct *Get_control_msg_file();
 
-static struct msg_struct *Get_control_msg_globus();
 
 /* Set-up stuff to receive connection from steering client */
 static int Initialize_steering_connection(int  NumSupportedCmds,
@@ -134,8 +160,6 @@ static int Initialize_steering_connection(int  NumSupportedCmds,
 static int Initialize_steering_connection_file(int  NumSupportedCmds,
 					       int *SupportedCmds);
 
-static int Initialize_steering_connection_globus(int  NumSupportedCmds,
-						 int *SupportedCmds);
 
 /* Check for a connection from a steering client - return REG_SUCCESS
    if a client is attempting to connect */
@@ -143,7 +167,58 @@ static int Steerer_connected();
 
 static int Steerer_connected_file();
 
-static int Steerer_connected_globus();
 
 /* Take down any connection to a steering client */
 int Finalize_steering_connection();
+
+
+/* Initialize the transport mechanism for IOtypes */
+int Initialize_IOType_transport(const int direction,
+				const int index);
+
+
+/* Finalize the transport mechanism for IOtypes */
+void Finalize_IOType_transport();
+
+
+/* Check if any sample data needs to be consumed */
+int Consume_start_data_check(const int index);
+
+
+/* Read the sample data */
+int Consume_data_read(const int		index,  
+		      const int		datatype,
+		      const size_t	num_bytes_to_send, 
+		      void		*pData);
+
+
+
+/* Emit header for sample data */
+int Emit_header(const int index);
+
+
+/* Emit footer for sample data */
+int Emit_footer(const int index,
+		const char * const buffer);
+
+
+
+int Emit_data(const int		index,
+	      const int		datatype,
+	      const size_t	num_bytes_to_send,
+	      void		*pData);
+
+/* Is the communication connection up */
+int Get_communication_status(const int		index);
+
+/* Read ReG-specific header for iotype */
+int Consume_iotype_msg_header(int IOTypeIndex,
+			      int *DataType,
+			      int *Count);
+
+/* Construct and send ReG-specific header for iotype*/
+int Emit_iotype_msg_header(int IOTypeIndex,
+			   int DataType,
+			   int Count);
+
+#endif

@@ -38,6 +38,9 @@
     Initial version by:  A Porter, 23.7.2002
 
 ---------------------------------------------------------------------------*/
+#ifndef __REG_STEER_STEERSIDE_INTERNAL_H__
+#define __REG_STEER_STEERSIDE_INTERNAL_H__
+
 
 #include "ReG_Steer_Common.h"
 #include "ReG_Steer_XML.h"
@@ -66,7 +69,7 @@ typedef struct {
   struct msg_struct  *msg;
 
   /* For steering via globus_io */
-  socket_io_type      socket_info;
+  socket_type_steering      socket_info;
 
   /* Table of registered commands for this sim */
   Supp_cmd_table_type Cmds_table;
@@ -78,6 +81,31 @@ typedef struct {
   IOdef_table_type    IOdef_table;
 
 } Sim_entry_type;
+
+
+/* Main table used to record all simulations currently
+   being steered */
+
+static struct {
+
+  int             num_registered;
+  int             max_entries;
+  Sim_entry_type *sim;
+
+} Sim_table;
+
+/* Structure holding details of the main (java) proxy
+   that is always associated with the steerer */
+
+static struct {
+
+  char buf[REG_MAX_MSG_SIZE];
+  int  pipe_to_proxy;
+  int  pipe_from_proxy;
+  int  available;
+
+} Proxy;
+
 
 /*--------- Prototypes of internal library functions -------------*/
 
@@ -107,31 +135,22 @@ static int Sim_attach_local(Sim_entry_type *sim, char *SimID);
    of sim. to attach to. */
 static int Sim_attach_proxy(Sim_entry_type *sim, char *SimID);
 
-/* Attach to specified simulation using globus_io */
-static int Sim_attach_globus(Sim_entry_type *sim, char *SimID);
-
-static int Consume_supp_cmds_globus(Sim_entry_type *sim);
-
 static int Consume_supp_cmds_local(Sim_entry_type *sim);
 
 static int Send_control_msg(int SimIndex, char* buf);
 
-static int Send_control_msg_file(int SimIndex, char* buf);
-
 static int Send_control_msg_proxy(int SimIndex, char* buf);
 
-static int Send_control_msg_globus(int SimIndex, char* buf);
+static int Send_control_msg_file(int SimIndex, char* buf);
 
 static struct msg_struct *Get_status_msg_proxy(Sim_entry_type *sim);
 
 static struct msg_struct *Get_status_msg_file(Sim_entry_type *sim);
 
-static struct msg_struct *Get_status_msg_globus(Sim_entry_type *sim);
-
 static int Finalize_connection(Sim_entry_type *sim);
-
-static int Finalize_connection_file(Sim_entry_type *sim);
 
 static int Finalize_connection_proxy(Sim_entry_type *sim);
 
-static int Finalize_connection_globus(Sim_entry_type *sim);
+static int Finalize_connection_file(Sim_entry_type *sim);
+
+#endif

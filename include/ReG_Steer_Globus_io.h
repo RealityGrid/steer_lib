@@ -53,6 +53,8 @@
 #ifndef __REG_STEER_GLOBUS_IO_H__
 #define __REG_STEER_GLOBUS_IO_H__
 
+#if REG_GLOBUS_STEERING || REG_GLOBUS_SAMPLES
+
 #include <globus_io.h>
 
 #include "ReG_Steer_types.h"
@@ -78,8 +80,12 @@ typedef struct
   globus_cond_t			cond;
 
   char			        connector_hostname[REG_MAX_STRING_LENGTH];
+
   unsigned short int	        connector_port;
 
+#if REG_GLOBUS_SAMPLES
+
+#endif
 } socket_io_type;
 
 /* whether globus_io module has been activated */
@@ -174,4 +180,17 @@ extern void Globus_retry_connect(socket_io_type * const socket_info);
 /* Call globus function to print out detail about error when DEBUG on*/
 extern void Globus_error_print(const globus_result_t result);
 
-#endif
+
+/* Functions for both appside and steerside steering globus comms */
+extern int Consume_msg_header_globus(socket_io_type *sock_info,
+				     int *DataType,
+				     int *Count);
+
+extern int Emit_msg_header_globus(socket_io_type *sock_info,
+				  int DataType,
+				  int Count);
+
+
+
+#endif /* REG_GLOBUS_STEERING || REG_GLOBUS_SAMPLES */
+#endif /* __REG_STEER_GLOBUS_IO_H__ */

@@ -46,10 +46,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-/* Uncomment following line to use globus_io (as opposed to local
-   files) for steering messages - NOT YET WORKING */
-/*#define GLOBUS_IO_STEERING*/
-
 /* Flag for debugging - set to one to retain all xml messages */
 #define NO_FILE_DELETE 0
 

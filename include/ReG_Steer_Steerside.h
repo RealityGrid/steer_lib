@@ -38,10 +38,8 @@
 ---------------------------------------------------------------------------*/
 
 #include "ReG_Steer_types.h"
-
-#ifdef GLOBUS_IO_STEERING
 #include "ReG_Steer_Globus_io.h"
-#endif
+
 
 #ifdef __cplusplus
   #define PREFIX "C"
