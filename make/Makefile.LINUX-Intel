@@ -37,6 +37,10 @@ NBIT = 32
 # Location of C compiler and flags to use
 CC = icc
 C_FLAGS = -O2
+LIB_C_FLAGS = ${C_FLAGS} -fpic -I../include
+
+# Linker flags to use
+LD_FLAGS = -shared -L${REG_XML_LIBDIR} -lm -lz -lxml2
 
 # Location of F90 compiler (if any) and flags to use
 F90 = ifc
