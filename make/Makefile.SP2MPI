@@ -35,6 +35,8 @@
 #
 #--------------------------------------------------------------------
 
+.SUFFIXES: .f90
+
 # Number of bits... 32 or 64...
 NBIT = 64
 
@@ -43,7 +45,7 @@ CC = xlc
 C_FLAGS = -O2 -q64 -bdynamic 
 
 # Location of F90 compiler (if any) and flags to use
-F90 = xlf90
+F90 = mpxlf90_r
 F90_FLAGS = -O2 -qsuffix=f=f90:cpp=f90 -q64
 
 # Location of java compiler - used to produce proxy binary
