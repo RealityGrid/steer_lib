@@ -18,7 +18,7 @@ sleep_time = 1
 
 Steering_enable(REG_TRUE)
 
-status = Steering_initialize("sink v1.0", [REG_STR_STOP])
+status = Steering_initialize("Python Sink v1.0", [REG_STR_STOP])
 
 if status != REG_SUCCESS:
     print "Steering library initialization failed"
@@ -67,7 +67,8 @@ while i < nloops:
                             status, outdata = Consume_data_slice(iohandle,
                                                                  data_type, 
                                                                  data_count)
-                            bytes_read.assign(bytes_read.value() + len(outdata))
+                            bytes_read.assign(bytes_read.value()
+                                              + (data_count * Sizeof(data_type)))
                             
                             status, data_type, data_count = Consume_data_slice_header(iohandle)
                     status, iohandle = Consume_stop(iohandle)
