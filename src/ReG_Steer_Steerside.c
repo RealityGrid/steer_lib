@@ -2944,6 +2944,8 @@ int Sim_attach_local(Sim_entry_type *sim, char *SimID)
   char  sys_cmd[REG_MAX_STRING_LENGTH];
   int   return_status;
 
+  return_status = REG_FAILURE;
+
   /* Unless SimID contains a string, get the directory to use for 
      steering messages from the REG_STEER_DIRECTORY env. variable.  */
   if(strlen(SimID) != 0){
