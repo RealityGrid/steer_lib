@@ -434,6 +434,7 @@ int Finalize_steering_connection_soap()
   if(appStop_response._result && 
      !strstr(appStop_response._result, REG_SGS_ERROR)){
 
+    soap_end(&soap);
     return REG_SUCCESS;
   }
 
