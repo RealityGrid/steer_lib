@@ -255,12 +255,12 @@ int main(){
 	for(i=0; i<num_types; i++){
 	  commands[i] = io_handles[i];
 
-	  if(io_types[i] == REG_IO_CHKPT){
+	  if(io_types[i] == REG_IO_OUT){
 
-	    sprintf(param_vals[i], "OUT 1");
+	    sprintf(param_vals[i], "OUT");
 	  }
 	  else{
-            sprintf(param_vals[i], " ");
+            sprintf(param_vals[i], "IN");
 	  }
 	}
 	Emit_control(sim_handle,
@@ -353,16 +353,50 @@ int main(){
       }
       break;
 
-    case 's':
-      fprintf(stderr, "Sending stop signal...\n");
-      commands[0] = REG_STR_STOP;
-      Emit_control(sim_handle,
-		   1,
-		   commands,
-		   NULL);
+    case 'h':
+      fprintf(stderr, "Possible commands are:\n");
+      fprintf(stderr, "  c - send Consume command\n");
+      fprintf(stderr, "  d - Display supported commands\n");
+      fprintf(stderr, "  e - Edit steerable parameter\n");
+      fprintf(stderr, "  f - edit emit/consume Frequency of IOtype\n");
+      fprintf(stderr, "  g - Get next message from application\n");
+      fprintf(stderr, "  h - display this help message\n");
+      fprintf(stderr, "  l - display List of checkpoint types\n");
+      fprintf(stderr, "  s - send Stop signal to application\n");
+      fprintf(stderr, "  p - send Pause signal to application\n");
+      fprintf(stderr, "  q - Quit steerer - detaches from application\n");
+      fprintf(stderr, "  r - send Resume signal to application\n");
+      fprintf(stderr, "\n");
+      break;
 
-      Delete_sim_table_entry(&sim_handle);
-      break;		   
+    case 'l':
+      Get_chktype_number(sim_handle,
+			 &num_types);
+
+      if(num_types > 0){
+
+	/* Should really realloc if insufficient memory but this is a simple
+	   test code so don't bother here */
+	if(num_types > REG_INITIAL_NUM_IOTYPES){
+	  num_types = REG_INITIAL_NUM_IOTYPES;
+	}
+
+	Get_chktypes(sim_handle,
+		     num_types,
+		     io_handles,
+		     io_labels,
+		     io_types,
+		     io_freqs);
+
+	for(i=0; i<num_types; i++){
+
+	  fprintf(stderr, "Chktype #%d:\n", i);
+	  fprintf(stderr, "  frequency = %d\n", io_freqs[i]);
+	  fprintf(stderr, "  label     = %s\n", io_labels[i]);
+	  fprintf(stderr, "  direction = %d\n", io_types[i]);
+	}
+      }
+      break;
 
     case 'p':
       /* Pause the application */
@@ -388,6 +422,17 @@ int main(){
 		   commands,
 		   NULL);
       break;
+
+    case 's':
+      fprintf(stderr, "Sending stop signal...\n");
+      commands[0] = REG_STR_STOP;
+      Emit_control(sim_handle,
+		   1,
+		   commands,
+		   NULL);
+
+      Delete_sim_table_entry(&sim_handle);
+      break;		   
 
     case 'g':
       Get_next_message(&sim_handle,

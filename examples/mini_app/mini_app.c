@@ -51,6 +51,7 @@ int main(){
   char  *iotype_labels[REG_INITIAL_NUM_IOTYPES];
   int	 iotype_dirn[REG_INITIAL_NUM_IOTYPES];
   int	 iotype_frequency[REG_INITIAL_NUM_IOTYPES];
+  int    num_chktypes;
   int    chktype_handle[REG_INITIAL_NUM_IOTYPES];
   REG_IOHandleType iohandle;
   int    data_type;
@@ -156,9 +157,13 @@ int main(){
   iotype_dirn[0] = REG_IO_OUT;
   iotype_frequency[0] = 0;
 
-  num_iotypes = 1;
+  iotype_labels[1] = "MY_OTHER_CHECKPOINT";
+  iotype_dirn[1] = REG_IO_INOUT;
+  iotype_frequency[1] = 2;
 
-  status = Register_ChkTypes(num_iotypes,
+  num_chktypes = 2;
+
+  status = Register_ChkTypes(num_chktypes,
   			    iotype_labels, 
 			    iotype_dirn, 
 			    iotype_frequency,
@@ -332,20 +337,18 @@ int main(){
 		}
 	        break;
 	      }
-	      else if(recvd_cmds[icmd] == chktype_handle[0]){
+	    }
+	    for(j=0; j<num_chktypes; j++){
+
+	      if(recvd_cmds[icmd] == chktype_handle[j]){
 
 		printf("Got checkpoint command, parameters: %s\n", 
 		       recvd_cmd_params[icmd]);
 
 		/* Pretend we've taken a checkpoint here */
-		Record_Chkpt(chktype_handle[0], "A_TAG");
+		Record_Chkpt(chktype_handle[j], "A_TAG");
 		break;
 	      }
-	    }
-
-	    if(j==num_iotypes){
-
-	      printf("Received unrecognised steering command\n");
 	    }
  	    break;
  	  }
