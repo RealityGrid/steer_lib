@@ -89,6 +89,8 @@ int main(){
   float *array;
   char   header[BUFSIZ];
 
+  FILE *fp;
+
   /*---------- End of declarations ------------*/
 
   changed_param_labels[0] = (char *)malloc((REG_MAX_NUM_STR_CMDS+
@@ -210,6 +212,18 @@ int main(){
 
     Make_vtk_buffer(header, NX, NY, NZ, array);
 
+/*     if(i==0){ */
+
+/*       fp = fopen("test_file.vtk", "w"); */
+
+/*       if(fp){ */
+
+/* 	fprintf(fp, "%s", header); */
+/* 	fwrite((char *)array, (size_t)8, (size_t)(NX*NY*NZ), fp); */
+/* 	fclose(fp); */
+/*       } */
+/*     } */
+
     status = Steering_control(i,
 			      &num_params_changed,
 			      changed_param_labels,
@@ -268,9 +282,23 @@ int main(){
 		  if( Emit_start(iotype_handle[j], i, &iohandle)
 		      == REG_SUCCESS ){
 
+
+		    data_count = strlen(header);
+		    data_type  = REG_CHAR;
+		    status = Emit_data_slice(iohandle, data_type, data_count, 
+					     (void *)header);
+
+		    if(status != REG_SUCCESS){
+
+		      printf("Call to Emit_data_slice failed\n");
+		      Emit_stop(&iohandle);
+		      continue;
+		    }
+
 		    data_count = NX*NY*NZ;
 		    data_type  = REG_FLOAT;
-		    Emit_data_slice(iohandle, data_type, data_count, array);
+		    status = Emit_data_slice(iohandle, data_type, data_count, 
+					     array);
 
 		    Emit_stop(&iohandle);
 		  }
