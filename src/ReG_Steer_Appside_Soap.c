@@ -296,13 +296,13 @@ int Finalize_steering_connection_soap()
     return REG_FAILURE;
   }
 
-  soap_end(&soap);
-
   if(appStop_response._result && 
      !strstr(appStop_response._result, REG_SGS_ERROR)){
 
     return REG_SUCCESS;
   }
+
+  soap_end(&soap);
 
   return REG_FAILURE;
 }

@@ -314,8 +314,10 @@ int Steering_finalize()
 
   if (!ReG_SteeringInit) return REG_FAILURE;
 
-  /* Tell the steerer that we are done */
-
+  /* Tell the steerer that we are done - if steering via soap
+     then leave this to Finalize_steering_connection 
+ARPDBG - should be down in Finalize_steering_connection somewhere??*/
+#if !REG_SOAP_STEERING
   if(ReG_SteeringActive){
 
     commands[0] = REG_STR_DETACH;
@@ -325,6 +327,7 @@ int Steering_finalize()
 		1,
 		commands);
   }
+#endif
 
   /* Save remaining log entries to file */
   Save_log();
@@ -894,7 +897,7 @@ int Set_log_primary_key()
   if(Read_file(filename, &pbuf, &size) != REG_SUCCESS){
 
     Chk_log.primary_key_value = 0;
-    if(!pbuf)free(pbuf);
+    if(pbuf)free(pbuf);
     return REG_SUCCESS;
   }
 
@@ -902,7 +905,7 @@ int Set_log_primary_key()
 
     /* Log file existed but was empty */
     Chk_log.primary_key_value = 0;
-    if(!pbuf)free(pbuf);
+    if(pbuf)free(pbuf);
     return REG_SUCCESS;
   }
 
@@ -1806,11 +1809,17 @@ int Steering_control(int     SeqNum,
 
 	if(commands[i] == REG_STR_STOP){
 
+	  /* ARPDBG - Detach_from_steerer should only be called
+	     in response to a detach cmd...
 	  if( Detach_from_steerer() != REG_SUCCESS){
 
 	    return_status = REG_FAILURE;
 	  }
+	  */
 
+	  /* If we are being steered using soap then don't emit
+	     a confirmation - Steering_finalize takes care of this */
+#if !REG_SOAP_STEERING
 	  /* Confirm that we have received the stop command */
 	  commands[0] = REG_STR_STOP;
           Emit_status(SeqNum,
@@ -1818,6 +1827,7 @@ int Steering_control(int     SeqNum,
 		      NULL,
 		      1,
 		      commands);
+#endif
 
 	  detached = TRUE;
 	}
