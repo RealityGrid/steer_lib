@@ -1,0 +1,68 @@
+#    Include file for Linux specific configuration.
+#
+#    (C)Copyright 2002 The University of Manchester, United Kingdom,
+#    all rights reserved.
+#
+#    This software is produced by the Supercomputing, Visualization &
+#    e-Science Group, Manchester Computing, the Victoria University of
+#    Manchester as part of the RealityGrid project.
+#
+#    This software has been tested with care but is not guaranteed for
+#    any particular purpose. Neither the copyright holder, nor the
+#    University of Manchester offer any warranties or representations,
+#    nor do they accept any liabilities with respect to this software.
+#
+#    This software must not be used for commercial gain without the
+#    written permission of the authors.
+#    
+#    This software must not be redistributed without the written
+#    permission of the authors.
+#
+#    Permission is granted to modify this software, provided any
+#    modifications are made freely available to the original authors.
+# 
+#    Supercomputing, Visualization & e-Science Group
+#    Manchester Computing
+#    University of Manchester
+#    Manchester M13 9PL
+#    
+#    WWW:    http://www.sve.man.ac.uk  
+#    email:  sve@man.ac.uk
+#    Tel:    +44 161 275 6095
+#    Fax:    +44 161 275 6800    
+#
+#    Initial version by:  R Haines.
+#
+#--------------------------------------------------------------------
+
+# Number of bits... 32 or 64...
+NBIT = 32
+
+# Location of C compiler and flags to use
+CC = gcc
+C_FLAGS = -O2
+
+# Location of F90 compiler (if any) and flags to use
+F90 = 
+F90_FLAGS = 
+
+# Location of java compiler - used to produce proxy binary
+JAVAC          = /usr/bin/javac
+
+# Location of the M4 macro processor (used to generate F90 wrappers)
+M4 = m4
+
+# Location of the ar command and flags needed to add an object to an archive
+AR = ar
+AR_FLAGS = rv
+
+# include directories
+STEER_INCLUDES = -I${REG_STEER_HOME}/include \
+                 -I${REG_XML_INCDIR}
+
+# library directories
+STEER_LIBS = -L${REG_STEER_HOME}/lib${NBIT} \
+             -L${REG_XML_LIBDIR}
+
+# Libraries to link example applications against
+STEER_LDFLAGS = -lm -lz
