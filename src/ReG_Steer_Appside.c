@@ -1025,6 +1025,13 @@ int Consume_start(int  IOType,
     return REG_FAILURE;
   }
 
+  /* Check that this IOType can be consumed */
+  if(IOTypes_table.io_def[*IOTypeIndex].direction == REG_IO_OUT){
+
+    fprintf(stderr, "Consume_start: ERROR - IOType has direction REG_IO_OUT\n");
+    return REG_FAILURE;
+  }
+
   return Consume_start_data_check(*IOTypeIndex);
 }
 
@@ -1279,6 +1286,13 @@ int Emit_start(int  IOType,
   if(*IOTypeIndex == REG_IODEF_HANDLE_NOTSET){
 
     fprintf(stderr, "Emit_start: failed to find matching IOType\n");
+    return REG_FAILURE;
+  }
+
+  /* Check that this IOType can be emitted */
+  if(IOTypes_table.io_def[*IOTypeIndex].direction == REG_IO_IN){
+
+    fprintf(stderr, "Emit_start: ERROR - IOType has direction REG_IO_IN\n");
     return REG_FAILURE;
   }
 
