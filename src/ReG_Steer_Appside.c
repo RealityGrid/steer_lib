@@ -367,13 +367,15 @@ int Register_IOTypes(int    NumTypes,
       strcpy(IOTypes_table.io_def[current].filename, IOLabel[i]);
     }
 
+    /* 'direction' field not currently used
     if( strstr(IOLabel[i], "INPUT") ){
 
       IOTypes_table.io_def[current].direction = IN;
     }
     else{
       IOTypes_table.io_def[current].direction = OUT;
-    }
+    } 
+    */
 
     /* Create, store and return a handle for this IOType */
     IOTypes_table.io_def[current].handle = IOTypes_table.next_handle++;

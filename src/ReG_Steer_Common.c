@@ -53,10 +53,40 @@ FILE *Open_next_file(char* base_name)
 {
   FILE *fp;
   char  filename[REG_MAX_STRING_LENGTH+9];
+  char  filename1[REG_MAX_STRING_LENGTH+9];
+  char  filename2[REG_MAX_STRING_LENGTH+9];
   int   i;
 
   i = 0;
-  
+  /*
+  while(i<REG_MAX_NUM_FILES){
+    
+     Look for presence of lock file 
+    sprintf(filename1,"%s_%d.lock", base_name, i);
+    fp = fopen(filename1, "r");
+
+    if (fp != NULL) {
+     
+       Found one - open associated data file 
+      fclose(fp);
+
+      sprintf(filename,"%s_%d", base_name, i);
+      
+      if(fp = fopen(filename, "r")){
+
+#if DEBUG
+	printf("Open_next_file: opening %s\n", filename);
+#endif
+	 Return the name of the file actually opened 
+	strcpy(base_name, filename);
+      }
+      break;
+    }
+
+    i++;
+  }
+  */
+
   while(i<REG_MAX_NUM_FILES){
     
     /* Look for presence of lock file */
@@ -327,9 +357,11 @@ void Set_iodef_field_type(void *ptr, const char* name)
   else if(strcmp(name, "Handle") == 0){
     iodef_struct->field_type = IODEF_HANDLE;
   }
+  /* 'direction' field not currently used
   else if(strcmp(name, "Direction") == 0){
     iodef_struct->field_type = IODEF_DIRN;
   }
+  */
   else{
     printf("Set_iodef_field_type: unrecognised field type\n");
   }
@@ -895,9 +927,11 @@ void Store_iodef_field_value(void *ptr, char *buf)
     sscanf(buf, "%d", &(iodef_struct->table->io_def[index].handle) );
     break;
 
+  /* 'direction' field not currently used
   case IODEF_DIRN:
     sscanf(buf, "%d", &(iodef_struct->table->io_def[index].direction) );
     break;
+  */
 
   default:
 #if DEBUG
