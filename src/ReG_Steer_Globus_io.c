@@ -54,6 +54,7 @@
 
 #include "ReG_Steer_Globus_io.h"
 #include "ReG_Steer_Common.h"
+#include <string.h>
 
 int Globus_io_activate()
 {
