@@ -35,10 +35,6 @@ include ../Makefile.include
 include ../make/Makefile.${ARCH}
 include Makefile.shared
 
-# Set-up access to M4 scripts for production of F90 wrappers, this is
-# taken from the PVM project.
-M4FILE = conf/${ARCH}.m4
-
 INCLUDE_PATH   = ${STEER_INCLUDES}
 LIB_PATH       = ${REG_STEER_HOME}/lib$(NBIT)
 

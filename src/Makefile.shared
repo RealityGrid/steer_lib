@@ -43,7 +43,8 @@ OBJECTS	       = ReG_Steer_Appside_f.o \
         ReG_Steer_Appside_File.o \
         ReG_Steer_Browser.o \
 	ReG_Steer_Logging.o \
-	stdsoap2.o soapC.o soapClient.o
+        Base64.o \
+        stdsoap2.o soapC.o soapClient.o
 
 DEL_OBJS=ReG_Steer_Appside_f.o \
 	ReG_Steer_Appside.o \
