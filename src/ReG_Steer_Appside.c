@@ -854,7 +854,6 @@ int Enable_IOType(int IOType){
 int Enable_IOType_acknowledgements(int IOType){
 
   int index;
-  int status = REG_FAILURE;
 
   /* Check that steering is enabled */
   if(!ReG_SteeringEnabled) return REG_SUCCESS;
@@ -886,7 +885,6 @@ int Enable_IOType_acknowledgements(int IOType){
 int Disable_IOType_acknowledgements(int IOType){
 
   int index;
-  int status = REG_FAILURE;
 
   /* Check that steering is enabled */
   if(!ReG_SteeringEnabled) return REG_SUCCESS;

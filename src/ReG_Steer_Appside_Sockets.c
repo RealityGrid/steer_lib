@@ -1298,6 +1298,7 @@ void signal_handler_sockets(int a_signal) {
 
 int Emit_ack_sockets(int index){
 
+  /* Send a 16-byte acknowledgement message */
   char *ack_msg = "<ACK/>          ";
   return Write_sockets(index, strlen(ack_msg), (void*)ack_msg);
 }
@@ -1311,17 +1312,17 @@ int Consume_ack_sockets(int index){
   char *pchar;
   int   nbytes;
 
+  /* If no acknowledgement is currently required (e.g. this is the
+     first time Emit_start has been called) then return success */
   if(IOTypes_table.io_def[index].ack_needed == FALSE)return REG_SUCCESS;
 
+  /* Buffer is twice as long as ack message to allow us to deal with
+     getting a truncated message */
   memset(buf, '\0', 32);
 
-  socket_io_type  *sock_info;
-  sock_info = &(IOTypes_table.io_def[index].socket_info);
-
   /* Search for an ACK tag */
-  if((nbytes = recv_non_block(&(IOTypes_table.io_def[index].socket_info),
-			      (void *)buf, 
-			      16)) == 16){
+  if((nbytes = recv_non_block(&(IOTypes_table.io_def[index].socket_info), 
+			      (void *)buf, 16)) == 16){
     pchar = strchr(buf, '<');
 
     if(pchar){
@@ -1338,9 +1339,8 @@ int Consume_ack_sockets(int index){
 	else{
 	  /* Looks like our ack msg drops off end of buffer so get another
 	     16 bytes */
-	  if(recv_non_block(&(IOTypes_table.io_def[index].socket_info),
-			    (void *)&(buf[16]), 
-			    16) == 16){
+	  if(recv_non_block(&(IOTypes_table.io_def[index].socket_info), 
+			    (void *)&(buf[16]), 16) == 16){
 
 	    if( strstr(buf, ack_msg) ) return REG_SUCCESS;
 	  }
