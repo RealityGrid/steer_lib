@@ -54,6 +54,8 @@
 #define DEBUG 1
 #endif
 
+/*#define DEBUG 1*/
+
 /*----------------------------------------------------------------*/
 
 void Steering_enable(const int EnableSteer)
@@ -154,41 +156,6 @@ int Steering_initialize(int  NumSupportedCmds,
     ChkTypes_table.io_def[i].handle = REG_IODEF_HANDLE_NOTSET;
   }
 
-  /* Initialise log of checkpoints */
-
-  Chk_log.num_entries = 0;
-  Chk_log.max_entries = REG_INITIAL_CHK_LOG_SIZE;
-  Chk_log.num_unsent  = 0;
-  Chk_log.send_all    = TRUE;
-
-  Set_log_primary_key();
-
-  if( Open_log_file() != REG_SUCCESS ){
-    fprintf(stderr, "Steering_initialize: failed to create log file, "
-	    "log will not be saved to file\n");
-  }
-
-  Chk_log.entry = (Chk_log_entry_type *)malloc(Chk_log.max_entries
-					  *sizeof(Chk_log_entry_type));
-  if(Chk_log.entry == NULL){
-
-    fprintf(stderr, "Steering_initialize: failed to allocate memory "
-	    "for checkpoint logging\n");
-    free(IOTypes_table.io_def);
-    free(ChkTypes_table.io_def);
-    return REG_FAILURE;
-  }
-
-  for(i=0; i<Chk_log.max_entries; i++){
-
-    Chk_log.entry[i].sent_to_steerer = TRUE;
-    Chk_log.entry[i].num_param       = 0;
-
-    for(j=0; j<REG_MAX_NUM_STR_PARAMS; j++){
-      Chk_log.entry[i].param[j].handle = REG_PARAM_HANDLE_NOTSET;
-    }
-  }
-
   /* Set up table for registered parameters */
 
   Params_table.num_registered = 0;
@@ -243,8 +210,47 @@ int Steering_initialize(int  NumSupportedCmds,
 				    SupportedCmds) != REG_SUCCESS){
 
     free(IOTypes_table.io_def);
+    free(ChkTypes_table.io_def);
     free(Params_table.param);
     return REG_FAILURE;
+  }
+
+  /* Initialise log of checkpoints */
+  /* Jens, 09.04.03: Moved these lines here because Open_log_file()
+   * needs Initialize_steering_connection to be called before. */
+
+  Chk_log.num_entries = 0;
+  Chk_log.max_entries = REG_INITIAL_CHK_LOG_SIZE;
+  Chk_log.num_unsent  = 0;
+  Chk_log.send_all    = TRUE;
+
+  Set_log_primary_key();
+
+  if( Open_log_file() != REG_SUCCESS ){
+    fprintf(stderr, "Steering_initialize: failed to create log file, "
+	    "log will not be saved to file\n");
+  }
+
+  Chk_log.entry = (Chk_log_entry_type *)malloc(Chk_log.max_entries
+					  *sizeof(Chk_log_entry_type));
+  if(Chk_log.entry == NULL){
+
+    fprintf(stderr, "Steering_initialize: failed to allocate memory "
+	    "for checkpoint logging\n");
+    free(IOTypes_table.io_def);
+    free(ChkTypes_table.io_def);
+    free(Params_table.param);
+    return REG_FAILURE;
+  }
+
+  for(i=0; i<Chk_log.max_entries; i++){
+
+    Chk_log.entry[i].sent_to_steerer = TRUE;
+    Chk_log.entry[i].num_param       = 0;
+
+    for(j=0; j<REG_MAX_NUM_STR_PARAMS; j++){
+      Chk_log.entry[i].param[j].handle = REG_PARAM_HANDLE_NOTSET;
+    }
   }
 
   /* Set up signal handler so can clean up if application 
@@ -698,11 +704,14 @@ int Record_Chkpt(int   ChkType,
 
 int Open_log_file()
 {
+  char filename[REG_MAX_STRING_LENGTH];
 
   if(Chk_log.file_ptr){
     fclose(Chk_log.file_ptr);
   }
-  Chk_log.file_ptr = fopen(REG_LOG_FILENAME, "a");
+  sprintf(filename, "%s%s", Steerer_connection.file_root, 
+          REG_LOG_FILENAME);
+  Chk_log.file_ptr = fopen(filename, "a");
 
   return REG_SUCCESS;
 }
@@ -833,12 +842,18 @@ int Set_log_primary_key()
   char *pbuf;
   char *ptr;
   char *old_ptr;
+  char  filename[REG_MAX_STRING_LENGTH];
 
   Close_log_file();
 
   /* Read the log file and get back contents in buffer pointed
      to by pbuf.  We must free() this once we're done. */
-  if(Read_file(REG_LOG_FILENAME, &pbuf, &size) != REG_SUCCESS){
+
+  /* Added by Jens, 09.04.03: */
+  sprintf(filename, "%s%s", Steerer_connection.file_root,
+		            REG_LOG_FILENAME);
+
+  if(Read_file(filename, &pbuf, &size) != REG_SUCCESS){
 
     Chk_log.primary_key_value = 0;
     return REG_SUCCESS;
@@ -857,7 +872,9 @@ int Set_log_primary_key()
     old_ptr = ptr;
   }
 
+#if DEBUG
   fprintf(stderr, "Set_log_primary_key: last chunk = >>%s<<\n", old_ptr);
+#endif
 
   if( 1 != sscanf(old_ptr, "<Key>%d</Key>", &(Chk_log.primary_key_value))){
 
@@ -1299,9 +1316,10 @@ int Emit_start(int  IOType,
 
   }
 
-  if (Emit_header(*IOTypeIndex) == REG_SUCCESS)
-    return REG_SUCCESS;
+  if (Emit_header(*IOTypeIndex) == REG_SUCCESS){
 
+    return REG_SUCCESS;
+  }
   else {
 
     /* free up memory as no guarantee Emit_stop will be called */
@@ -2311,7 +2329,7 @@ int Emit_log_entries(char *buf)
 
   while(pbuf3){
 
-    // Increment ptr so as to include all of the "</Log_entry>" */
+    /* Increment ptr so as to include all of the "</Log_entry>" */
     pbuf3 += 12;
 
     if(tot_len == 0){
@@ -2946,16 +2964,10 @@ int Make_vtk_buffer(int    nx,
     return REG_FAILURE;
   }
 
+#if DEBUG
   fprintf(stderr, "Make_vtk_buffer: checksum = %f\n", sum/((float) count));
+#endif
 
-  /*
-  fptr = array;
-  fprintf(stderr, "Array is: \n");
-  for(i=0; i<nx; i++){
-
-    fprintf(stderr, "%.3f %.3f %.3f\n", *(fptr++), *(fptr++), *(fptr++));
-  }
-  */
   return REG_SUCCESS;
 }
 

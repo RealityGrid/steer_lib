@@ -44,6 +44,8 @@
 #include "ReG_Steer_Globus_io.h"
 #include "ReG_Steer_Appside_Globus.h"
 
+#define DEBUG 0
+
 /* Need access to this table which is actually declared in 
    ReG_Steer_Appside_internal.h */
 extern IOdef_table_type IOTypes_table;
@@ -475,21 +477,24 @@ int Initialize_IOType_transport_globus(const int direction,
   int	       len;
 
     /* set up socket_info for callback */
-    if (Globus_socket_info_init(&(IOTypes_table.io_def[index].socket_info)) != REG_SUCCESS) {
+    if (Globus_socket_info_init(&(IOTypes_table.io_def[index].socket_info)) 
+	!= REG_SUCCESS) {
 #if DEBUG
-	fprintf(stderr, "Initialize_IOType_transport_globus: failed to initialise socket info for IOType\n");
+	fprintf(stderr, "Initialize_IOType_transport_globus: failed to "
+		"initialise socket info for IOType\n");
 #endif
 	return_status = REG_FAILURE;
     } 
     else {
       
-      if (direction == REG_IO_OUT)
-      {
+      if (direction == REG_IO_OUT){
+
 	/* open socket and register callback function to listen for and
 	   accept connections */
 	if (Globus_create_listener(&(IOTypes_table.io_def[index].socket_info)) != REG_SUCCESS) {
 #if DEBUG
-	  fprintf(stderr, "Initialize_IOType_transport_globus: failed to create listener "
+	  fprintf(stderr, "Initialize_IOType_transport_globus: failed to "
+		  "create listener "
 		  "for IOType\n");
 #endif
 	  return_status = REG_FAILURE;
@@ -497,7 +502,8 @@ int Initialize_IOType_transport_globus(const int direction,
 	else{
 	  
 #if DEBUG
-	  fprintf(stderr, "Initialize_IOType_transport_globus: Created listener on port %d, "
+	  fprintf(stderr, "Initialize_IOType_transport_globus: Created "
+		  "listener on port %d, "
 		  "index %d, label %s\n", 
 		  IOTypes_table.io_def[index].socket_info.listener_port, 
 		  index, IOTypes_table.io_def[index].label );
@@ -507,56 +513,56 @@ int Initialize_IOType_transport_globus(const int direction,
 	}
 	
       }
-      else if (direction == REG_IO_IN)
-	{
-	  /* register connector against port */
-	  /* get hostname and port from environment variables */
+      else if (direction == REG_IO_IN){
+
+	/* register connector against port */
+	/* get hostname and port from environment variables */
 	  
-	  pchar = getenv("REG_CONNECTOR_HOSTNAME");
-	  if (pchar) {
-	    len = strlen(pchar);
-	    if (len < REG_MAX_STRING_LENGTH) {
-	      sprintf(IOTypes_table.io_def[index].socket_info.connector_hostname,
-		      pchar);
-	      hostname_ok = 1;
-	    }
+	pchar = getenv("REG_CONNECTOR_HOSTNAME");
+	if (pchar) {
+	  len = strlen(pchar);
+	  if (len < REG_MAX_STRING_LENGTH) {
+	    sprintf(IOTypes_table.io_def[index].socket_info.connector_hostname,
+		    pchar);
+	    hostname_ok = 1;
 	  }
-	  /* SMR XXX add error handling */
-	  pchar = getenv("REG_CONNECTOR_PORT");
-	  if (pchar) {
-	    IOTypes_table.io_def[index].socket_info.connector_port = atoi(pchar);
-	    port_ok = 1;
-	  }
+	}
+	/* SMR XXX add error handling */
+	pchar = getenv("REG_CONNECTOR_PORT");
+	if (pchar) {
+	  IOTypes_table.io_def[index].socket_info.connector_port = atoi(pchar);
+	  port_ok = 1;
+	}
 	  
-	  if (port_ok && hostname_ok) {
+	if (port_ok && hostname_ok) {
 	    
-	    if (Globus_create_connector(&(IOTypes_table.io_def[index].socket_info)) != REG_SUCCESS) {
+	  if (Globus_create_connector(&(IOTypes_table.io_def[index].socket_info)) != REG_SUCCESS) {
 #if DEBUG
-	      fprintf(stderr, "Initialize_IOType_transport_globus: failed to register connector "
-		      "for IOType\n");
+	    fprintf(stderr, "Initialize_IOType_transport_globus: failed to "
+		    "register connector for IOType\n");
 #endif
-	      return_status = REG_FAILURE;
-	    }
-	    else{
+	    return_status = REG_FAILURE;
+	  }
+	  else{
 
 #if DEBUG
-	      fprintf(stderr, "Initialize_IOType_transport_globus: registered connector on "
-		      "port %d, hostname = %s, index %d, label %s\n", 
-		      IOTypes_table.io_def[index].socket_info.connector_port,
-		      IOTypes_table.io_def[index].socket_info.connector_hostname,
-		      index, IOTypes_table.io_def[index].label );
+	    fprintf(stderr, "Initialize_IOType_transport_globus: registered"
+		    " connector on port %d, hostname = %s, index %d, "
+		    "label %s\n", 
+		    IOTypes_table.io_def[index].socket_info.connector_port,
+		    IOTypes_table.io_def[index].socket_info.connector_hostname,
+		    index, IOTypes_table.io_def[index].label );
 #endif
-	      
-	    }
 	  }
-	  else
-	fprintf(stderr, "Initialize_IOType_transport_globus: cannot create connector as "
-		"port and hostname not set\n");
 	}
+	else{
+	  fprintf(stderr, "Initialize_IOType_transport_globus: cannot "
+		  "create connector as port and hostname not set\n");
+	}
+      }
     }
 
     return return_status;
-
 }
 #endif
 
@@ -689,7 +695,7 @@ int Consume_start_data_check_globus(const int index)
 }
 #endif
 
-/*---------------------------------------------------*/
+/*--------------------------------------------------------------*/
 
 #if REG_GLOBUS_SAMPLES
 int Consume_data_read_globus(const int		index,  
@@ -706,8 +712,8 @@ int Consume_data_read_globus(const int		index,
 #endif
 
 #if DEBUG
-  fprintf(stderr, "Consume_data_read_globus: calling globus_io_read for %d bytes\n",
-	  num_bytes_to_read);
+  fprintf(stderr, "Consume_data_read_globus: calling globus_io_read "
+          "for %d bytes\n", (int)num_bytes_to_read);
 
   start_time = clock();
 #endif
@@ -730,11 +736,11 @@ int Consume_data_read_globus(const int		index,
 
 #if DEBUG
   stop_time = clock();
-  read_time = (float)(start_time - stop_time)/(float)CLOCKS_PER_SEC;
+  read_time = (float)(stop_time - start_time)/(float)CLOCKS_PER_SEC;
 
   fprintf(stderr, "Consume_data_read_globus: globus_io_read read %d bytes\n",
-	  nbytes);
-  fprintf(stderr, "                    in %.3f seconds\n", read_time);
+	  (int) nbytes);
+  fprintf(stderr, "                          in %.3f seconds\n", read_time);
 
   if(datatype == REG_CHAR){
     fprintf(stderr, "Consume_data_read_globus: got char data:\n>>%s<<\n", 
@@ -771,13 +777,12 @@ int Emit_header_globus(const int index)
   if (IOTypes_table.io_def[index].socket_info.comms_status 
       != REG_COMMS_STATUS_CONNECTED) 
     Globus_attempt_listener_connect(&(IOTypes_table.io_def[index].socket_info));
-
   if (IOTypes_table.io_def[index].socket_info.comms_status 
       == REG_COMMS_STATUS_CONNECTED) {
 
 #if DEBUG
-    fprintf(stderr, "Emit_header_globus: socket status is connected, index = %d\n",
-	    index );
+    fprintf(stderr, "Emit_header_globus: socket status is connected, "
+	    "index = %d\n", index );
 #endif
 
     /* Send header */
@@ -800,15 +805,18 @@ int Emit_header_globus(const int index)
     else{
 
 #if DEBUG
-      fprintf(stderr, "Emit_header_globus: globus_io_write failed - immediate retry connect\n");
+      fprintf(stderr, "Emit_header_globus: globus_io_write failed - "
+	      "immediate retry connect\n");
 #endif
       Globus_error_print(result);
 
       Globus_retry_accept_connect(&(IOTypes_table.io_def[index].socket_info));
-      if (IOTypes_table.io_def[index].socket_info.comms_status == REG_COMMS_STATUS_CONNECTED) {  
+
+      if (IOTypes_table.io_def[index].socket_info.comms_status 
+	  == REG_COMMS_STATUS_CONNECTED) {  
 
 #if DEBUG
-    fprintf(stderr, "Emit_header_globus: Sending >>%s<<\n", buffer);
+	fprintf(stderr, "Emit_header_globus: Sending >>%s<<\n", buffer);
 #endif    
 	result = globus_io_write(&(IOTypes_table.io_def[index].socket_info.conn_handle), 
 				 (globus_byte_t *)buffer, 
@@ -827,7 +835,6 @@ int Emit_header_globus(const int index)
 
       }
 
-      /* ARPDBG add check on error code */
       return REG_FAILURE;
     }
   }
@@ -899,7 +906,7 @@ int Emit_data_globus(const int		index,
   }
 
 #if DEBUG
-  fprintf(stderr, "Emit_data_globus: sent %d bytes...\n", nbytes);
+  fprintf(stderr, "Emit_data_globus: sent %d bytes...\n", (int)nbytes);
 #endif
 
   if (result != GLOBUS_SUCCESS ) {
