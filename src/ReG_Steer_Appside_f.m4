@@ -1712,8 +1712,8 @@ SUBROUTINE set_type_size(Type, Ptr1, Ptr2, Status)
 
 void FUNCTION(set_type_size) ARGS(`Type, Ptr1, Ptr2, Status')
 INT_KIND_1_DECL(Type);
-void *Ptr1;
-void *Ptr2;
+char *Ptr1;
+char *Ptr2;
 INT_KIND_1_DECL(Status);
 {
   int size;
