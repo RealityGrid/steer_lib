@@ -87,7 +87,7 @@ int Initialize_steering_connection_soap(int  NumSupportedCmds,
 
     fprintf(stderr, "Initialize_steering_connection_soap: failed to set "
 	    "steering scratch directory - checkpoint info. will be "
-	    "written to ./");;
+	    "written to ./\n");
   }
 
   /* Get the address of the SGS for this application from an environment
