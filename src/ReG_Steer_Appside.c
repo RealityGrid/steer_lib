@@ -56,32 +56,32 @@
 
 /*---------------- Global data structures --------------------*/
 
-/* Whether steering is enabled (set by user) */
+/* Whether steering is enabled (set by user) *
 static int ReG_SteeringEnabled = FALSE;
-/* Whether the set of registered params has changed */
+* Whether the set of registered params has changed *
 static int ReG_ParamsChanged   = FALSE;
-/* Whether the set of registered IO types has changed */
+* Whether the set of registered IO types has changed *
 static int ReG_IOTypesChanged  = FALSE;
-/* Whether the set of registered Chk types has changed */
+* Whether the set of registered Chk types has changed *
 static int ReG_ChkTypesChanged  = FALSE;
-/* Whether app. is currently being steered */
+* Whether app. is currently being steered *
 static int ReG_SteeringActive  = FALSE;
-/* Whether steering library has been initialised */
-static int ReG_SteeringInit    = FALSE;
+* Whether steering library has been initialised *
+static int ReG_SteeringInit    = FALSE;*/
 
 
-/* Table for registered checkpoint types */
+/* Table for registered checkpoint types *
 
-IOdef_table_type ChkTypes_table;
+IOdef_table_type ChkTypes_table;*/
 
-/* Log of checkpoints taken */
+/* Log of checkpoints taken *
 
-Chk_log_type Chk_log;
+Chk_log_type Chk_log;*/
 
 /* Param_table_type is declared in ReG_Steer_Common.h since it is 
-   used in both the steerer-side and app-side libraries */
+   used in both the steerer-side and app-side libraries *
 
-Param_table_type Params_table;
+Param_table_type Params_table;*/
 
 
 /*----------------------------------------------------------------*/
@@ -141,7 +141,7 @@ int Steering_initialize(int  NumSupportedCmds,
 
   IOTypes_table.num_registered = 0;
   IOTypes_table.max_entries    = REG_INITIAL_NUM_IOTYPES;
-  IOTypes_table.next_handle    = REG_MIN_IOTYPE_HANDLE;
+  /*IOTypes_table.next_handle    = REG_MIN_IOTYPE_HANDLE;*/
   IOTypes_table.io_def         = (IOdef_entry *)
                                  malloc(IOTypes_table.max_entries
 					*sizeof(IOdef_entry));
@@ -168,7 +168,7 @@ int Steering_initialize(int  NumSupportedCmds,
 
   ChkTypes_table.num_registered = 0;
   ChkTypes_table.max_entries    = REG_INITIAL_NUM_IOTYPES;
-  ChkTypes_table.next_handle    = REG_MIN_IOTYPE_HANDLE;
+  /*ChkTypes_table.next_handle    = REG_MIN_IOTYPE_HANDLE;*/
   ChkTypes_table.io_def         = (IOdef_entry *)
                                    malloc(IOTypes_table.max_entries
 				  	  *sizeof(IOdef_entry));
@@ -311,6 +311,26 @@ int Steering_finalize()
   IOTypes_table.num_registered = 0;
   IOTypes_table.max_entries = REG_INITIAL_NUM_IOTYPES;
 
+  /* Clean-up ChkTypes table */
+
+  if(ChkTypes_table.io_def != NULL){
+    free(ChkTypes_table.io_def);
+    ChkTypes_table.io_def = NULL;
+  }
+
+  ChkTypes_table.num_registered = 0;
+  ChkTypes_table.max_entries = REG_INITIAL_NUM_IOTYPES;
+
+  /* Clean-up log of checkpoints */
+
+  if(Chk_log.entry != NULL){
+
+    free(Chk_log.entry);
+    Chk_log.entry = NULL;
+  }
+  Chk_log.num_entries = 0;
+  Chk_log.max_entries = REG_INITIAL_CHK_LOG_SIZE;
+
   /* Clean-up parameters table */
 
   if(Params_table.param != NULL){
@@ -442,7 +462,8 @@ int Register_IOTypes(int    NumTypes,
     return_status = Initialize_IOType_transport(direction[i], current);
 
     /* Create, store and return a handle for this IOType */
-    IOTypes_table.io_def[current].handle = IOTypes_table.next_handle++;
+    /*IOTypes_table.io_def[current].handle = IOTypes_table.next_handle++;*/
+    IOTypes_table.io_def[current].handle = Next_IO_Chk_handle++;
     IOType[i] = IOTypes_table.io_def[current].handle;
 
     current++;
@@ -521,12 +542,12 @@ int Register_ChkTypes(int    NumTypes,
     sprintf(ChkTypes_table.io_def[current].filename, "NOT_SET");
 
     /* Whether input or output */
-    ChkTypes_table.io_def[current].direction = ChkType[i];
+    ChkTypes_table.io_def[current].direction = direction[i];
 
     /* Set variables required for registration of associated io
        frequency as a steerable parameter (but only if checkpoint is
        to be emitted) */
-    if(ChkType[i] != REG_IO_IN){
+    if(direction[i] != REG_IO_IN){
 
       /* Set variables required for registration of associated io
          frequency as a steerable parameter */
@@ -543,11 +564,16 @@ int Register_ChkTypes(int    NumTypes,
 		      ptr_array,
 		      &chkfreq_type);
 
-      /* Store the handle given to this parameter - this line must
+      /* Store the handle given to this parameter - this line MUST
          immediately succeed the call to Register_params */
 
       ChkTypes_table.io_def[current].freq_param_handle = 
 	                                 Params_table.next_handle - 1;
+
+#if DEBUG
+      fprintf(stderr, "Register_ChkTypes: handle of freq. param = %d\n",
+	      ChkTypes_table.io_def[current].freq_param_handle);
+#endif
 
       /* Annotate the parameter table entry just created to flag that
          it is a parameter that is internal to the steering library */
@@ -563,9 +589,16 @@ int Register_ChkTypes(int    NumTypes,
         return_status = REG_FAILURE;
       }
     }
+    else{
+      /* Auto consume is senseless for checkpoints so set frequency-related
+	 elements to 'null' values */
+      ChkTypes_table.io_def[current].freq_param_handle = REG_PARAM_HANDLE_NOTSET;
+      ChkTypes_table.io_def[current].frequency = 0;
+    }
 
     /* Create, store and return a handle for this ChkType */
-    ChkTypes_table.io_def[current].handle = ChkTypes_table.next_handle++;
+    /*ChkTypes_table.io_def[current].handle = IOTypes_table.next_handle++;*/
+    ChkTypes_table.io_def[current].handle = Next_IO_Chk_handle++;
     ChkType[i] = ChkTypes_table.io_def[current].handle;
 
     /* Check whether we need to allocate more storage */
@@ -594,7 +627,7 @@ int Register_ChkTypes(int    NumTypes,
 
   ChkTypes_table.num_registered = current;
 
-  /* Flag that the registered IO Types have changed */
+  /* Flag that the registered Chk Types have changed */
   ReG_ChkTypesChanged = TRUE;
 
   return return_status;
@@ -1553,34 +1586,7 @@ int Steering_control(int     SeqNum,
       }
 
       /* Deal with automatic emission/consumption of data */
-
-      /* IOTypes cannot be deleted so the num_registered entries that
-	 we have will be contiguous within the table */
-      for(i=0; i<IOTypes_table.num_registered; i++){
-
-	/* A freq. of zero indicates no automatic emit/consume */
-	if(IOTypes_table.io_def[i].frequency == 0) continue;
-
-	if(fmod(SeqNum, IOTypes_table.io_def[i].frequency) < REG_TOL_ZERO){
-
-	  if( count >= REG_MAX_NUM_STR_CMDS ){
-	    fprintf(stderr, "Steering_control: WARNING: discarding "
-		    "steering cmds as max number (%d) exceeded\n", 
-		    REG_MAX_NUM_STR_CMDS);
-
-	    return_status = REG_FAILURE;
-	    break;
-	  }
- 
-	  /* Add command to list to send back to caller */
-	  /* ARPDBG - this isn't going to work for checkpoints as things
-	     stand 'cos we need to specify IN or OUT in the associated
-	     param entry */
-	  SteerCommands[count]  = IOTypes_table.io_def[i].handle;
-	  SteerCmdParams[count] = " ";
-	  count++;
-	}
-      }
+      Auto_generate_steer_cmds(SeqNum, &count, SteerCommands, SteerCmdParams);
 
     }
 
@@ -1588,6 +1594,85 @@ int Steering_control(int     SeqNum,
     *NumSteerCommands = count;
 
   } /* End if steering active */
+
+  return return_status;
+}
+
+/*----------------------------------------------------------------*/
+
+int Auto_generate_steer_cmds(int    SeqNum,
+			     int   *posn, 
+			     int   *SteerCommands, 
+			     char **SteerCmdParams)
+{
+  int i;
+  int return_status = REG_SUCCESS;
+
+  /* IOTypes cannot be deleted so the num_registered entries that
+     we have will be contiguous within the table */
+  for(i=0; i<IOTypes_table.num_registered; i++){
+
+    /* A freq. of zero indicates no automatic emit/consume */
+    if(IOTypes_table.io_def[i].frequency == 0) continue;
+
+    if(fmod(SeqNum, IOTypes_table.io_def[i].frequency) >= REG_TOL_ZERO)continue;
+
+    if( *posn >= REG_MAX_NUM_STR_CMDS ){
+      fprintf(stderr, "Auto_generate_steer_cmds: WARNING: discarding "
+	      "steering cmds as max number (%d) exceeded\n", 
+	      REG_MAX_NUM_STR_CMDS);
+
+      return_status = REG_FAILURE;
+      break;
+    }
+ 
+    /* Add command to list to send back to caller */
+    SteerCommands[*posn]  = IOTypes_table.io_def[i].handle;
+
+    switch(IOTypes_table.io_def[i].direction){
+
+    case REG_IO_IN:
+      SteerCmdParams[*posn] = "IN";
+      break;
+
+    case REG_IO_OUT:
+    case REG_IO_INOUT:
+      SteerCmdParams[*posn] = "OUT";
+      break;
+
+    default:
+      SteerCmdParams[*posn] = " ";
+      break;
+    }
+    (*posn)++;
+  }
+
+  /* Repeat for Chk types */
+  for(i=0; i<ChkTypes_table.num_registered; i++){
+
+    /* A freq. of zero indicates no automatic emit/consume */
+    if(ChkTypes_table.io_def[i].frequency == 0) continue;
+
+    if(fmod(SeqNum, ChkTypes_table.io_def[i].frequency) >= REG_TOL_ZERO)continue;
+
+    if( *posn >= REG_MAX_NUM_STR_CMDS ){
+      fprintf(stderr, "Auto_generate_steer_cmds: WARNING: discarding "
+	      "steering cmds as max number (%d) exceeded\n", 
+	      REG_MAX_NUM_STR_CMDS);
+
+      return_status = REG_FAILURE;
+      break;
+    }
+ 
+    /* Add command to list to send back to caller */
+    SteerCommands[*posn]  = ChkTypes_table.io_def[i].handle;
+
+    /* We only ever instruct the app. to emit checkpoints since to consume
+       a checkpoint implies a restart */
+    SteerCmdParams[*posn] = "OUT";
+
+    (*posn)++;
+  }
 
   return return_status;
 }
@@ -1875,10 +1960,64 @@ int Emit_IOType_defs(){
 
 int Emit_ChkType_defs(){
 
+  int   i;
+  char  buf[REG_MAX_MSG_SIZE];
+  char *pbuf;
+
   /* Check that we do actually have something to emit */
   if (ChkTypes_table.num_registered == 0) return REG_SUCCESS;
 
-  return REG_SUCCESS;
+  /* Emit all currently registered ChkTypes */
+  
+  pbuf = buf;
+  Write_xml_header(&pbuf);
+
+  pbuf += sprintf(pbuf, "<ChkType_defs>\n");
+  
+  for(i=0; i<ChkTypes_table.max_entries; i++){
+  
+    if(ChkTypes_table.io_def[i].handle != REG_IODEF_HANDLE_NOTSET){
+  
+      pbuf += sprintf(pbuf,"<ChkType>\n");
+      pbuf += sprintf(pbuf,"<Label>%s</Label>\n", 
+		      ChkTypes_table.io_def[i].label);
+      pbuf += sprintf(pbuf,"<Handle>%d</Handle>\n", 
+		      ChkTypes_table.io_def[i].handle);
+
+      switch(ChkTypes_table.io_def[i].direction){
+
+      case REG_IO_IN:
+        pbuf += sprintf(pbuf,"<Direction>IN</Direction>\n");
+	break;
+
+      case REG_IO_OUT:
+        pbuf += sprintf(pbuf,"<Direction>OUT</Direction>\n");
+	break;
+
+      case REG_IO_INOUT:
+	pbuf += sprintf(pbuf,"<Direction>INOUT</Direction>\n");
+	break;
+
+      default:
+#if DEBUG
+	fprintf(stderr, 
+		"Emit_ChkType_defs: Unrecognised ChkType direction\n");
+#endif
+	return REG_FAILURE;
+      }
+
+      pbuf += sprintf(pbuf,"<Freq_handle>%d</Freq_handle>\n",
+	      ChkTypes_table.io_def[i].freq_param_handle);
+
+      pbuf += sprintf(pbuf,"</ChkType>\n");
+    }
+  }
+  
+  pbuf += sprintf(pbuf,"</ChkType_defs>\n");
+  Write_xml_footer(&pbuf);
+
+  /* Physically send message */
+  return Send_status_msg(buf);
 }
 
 /*----------------------------------------------------------------*/
@@ -2083,6 +2222,7 @@ int Detach_from_steerer()
   
   ReG_SteeringActive = FALSE;
   ReG_IOTypesChanged = TRUE;
+  ReG_ChkTypesChanged= TRUE;
   ReG_ParamsChanged  = TRUE;
 
   return REG_SUCCESS;
@@ -2536,6 +2676,10 @@ int Steerer_connected_file()
 
 int Send_status_msg(char *buf)
 {
+#if DEBUG
+  fprintf(stderr, "Send_status_msg: sending:\n>>%s<<\n", buf);
+#endif
+
 #if REG_GLOBUS_STEERING
 
   return Send_status_msg_globus(buf);

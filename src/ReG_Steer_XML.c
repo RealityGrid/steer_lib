@@ -100,13 +100,13 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg)
             (const xmlChar *) "http://www.realitygrid.org/xml/steering");
   if (ns == NULL) {
       fprintf(stderr,
-              "document of the wrong type, ReG namespace not found\n");
+              "Parse_xml: document of the wrong type, ReG namespace not found\n");
       xmlFreeDoc(doc);
       return REG_FAILURE;
   }
 
   if (xmlStrcmp(cur->name, (const xmlChar *) "ReG_steer_message")) {
-      fprintf(stderr,"document of the wrong type, root node != "
+      fprintf(stderr,"Parse_xml: document of the wrong type, root node != "
 	      "ReG_steer_message");
       xmlFreeDoc(doc);
       return REG_FAILURE;
@@ -129,7 +129,7 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg)
     msg->msg_type = Get_message_type((const char *)(cur->name));
 
 #if DEBUG
-    fprintf(stderr, "Calling parseStatus...\n");
+    fprintf(stderr, "Parse_xml: Calling parseStatus...\n");
 #endif
     msg->status = New_status_struct();
     parseStatus(doc, ns, cur, msg->status);
@@ -140,7 +140,7 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg)
     msg->msg_type = Get_message_type((const char *)(cur->name));
 
 #if DEBUG
-    fprintf(stderr, "Calling parseControl...\n");
+    fprintf(stderr, "Parse_xml: Calling parseControl...\n");
 #endif
     msg->control = New_control_struct();
     parseControl(doc, ns, cur, msg->control);
@@ -151,7 +151,7 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg)
     msg->msg_type = Get_message_type((const char *)(cur->name));
 
 #if DEBUG
-    fprintf(stderr, "Calling parseSuppCmd...\n");
+    fprintf(stderr, "Parse_xml: Calling parseSuppCmd...\n");
 #endif
     msg->supp_cmd = New_supp_cmd_struct();
     parseSuppCmd(doc, ns, cur, msg->supp_cmd);
@@ -162,7 +162,7 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg)
     msg->msg_type = Get_message_type((const char *)(cur->name));
 
 #if DEBUG
-    fprintf(stderr, "Calling parseStatus...\n");
+    fprintf(stderr, "Parse_xml: Calling parseStatus...\n");
 #endif
     /* Use code for 'status' messages because one 
        encapsulates the other */
@@ -175,16 +175,27 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg)
     msg->msg_type = Get_message_type((const char *)(cur->name));
 
 #if DEBUG
-    fprintf(stderr, "Calling parseIOTypeDef...\n");
+    fprintf(stderr, "Parse_xml: Calling parseIOTypeDef...\n");
 #endif
     msg->io_def = New_io_def_struct();
     parseIOTypeDef(doc, ns, cur, msg->io_def);
+  }
+  else if( !xmlStrcmp(cur->name, (const xmlChar *) "ChkType_defs") ){
+
+    /* Record the message type */
+    msg->msg_type = Get_message_type((const char *)(cur->name));
+
+#if DEBUG
+    fprintf(stderr, "Parse_xml: Calling parseChkTypeDef...\n");
+#endif
+    msg->chk_def = New_io_def_struct();
+    parseChkTypeDef(doc, ns, cur, msg->chk_def);
   }
 
   /* Print out what we've got */
 
 #if DEBUG
-  fprintf(stderr, "Calling Print_msg...\n");
+  fprintf(stderr, "Parse_xml: Calling Print_msg...\n");
   Print_msg(msg);
 #endif
 
@@ -295,6 +306,7 @@ int parseControl(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 
   return REG_SUCCESS;
 }
+
 /*-----------------------------------------------------------------*/
 
 int parseIOTypeDef(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
@@ -323,9 +335,48 @@ int parseIOTypeDef(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
       }
 
 #if DEBUG
-      fprintf(stderr, "Calling parseIOType...\n");
+      fprintf(stderr, "parseIOTypeDef: Calling parseIOType...\n");
 #endif
       parseIOType(doc, ns, cur, io_def->io);
+    }
+
+    cur = cur->next;
+  }
+
+  return REG_SUCCESS;
+}
+
+/*-----------------------------------------------------------------*/
+
+int parseChkTypeDef(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
+		   struct io_def_struct *chk_def)
+{
+
+  if(!chk_def){
+
+    return REG_FAILURE;
+  }
+
+  cur = cur->xmlChildrenNode;
+
+  while (cur != NULL) {
+
+    if( !xmlStrcmp(cur->name, (const xmlChar *) "ChkType") ){
+
+      if(!chk_def->first_io){
+
+	chk_def->first_io = New_io_struct();
+	chk_def->io = chk_def->first_io;
+      }
+      else{
+	chk_def->io->next = New_io_struct();
+	chk_def->io = chk_def->io->next;
+      }
+
+#if DEBUG
+      fprintf(stderr, "parseChkTypeDef: Calling parseIOType...\n");
+#endif
+      parseIOType(doc, ns, cur, chk_def->io);
     }
 
     cur = cur->next;
@@ -504,6 +555,7 @@ struct msg_struct *New_msg_struct()
     msg->control  = NULL;
     msg->supp_cmd = NULL;
     msg->io_def   = NULL;
+    msg->chk_def  = NULL;
   }
 
   return msg;
@@ -671,6 +723,12 @@ void Delete_msg_struct(struct msg_struct *msg)
     msg->io_def = NULL;
   }
 
+  if(msg->chk_def){
+
+    Delete_io_def_struct(msg->chk_def);
+    msg->chk_def = NULL;
+  }
+
   free(msg);
 }
 
@@ -815,6 +873,7 @@ void Print_msg(struct msg_struct *msg)
 
     fprintf(stderr, "Calling Print_status_struct...\n");
     Print_status_struct(msg->status);
+    fprintf(stderr, "...done\n");
   }
 
   if(msg->control){
@@ -831,6 +890,13 @@ void Print_msg(struct msg_struct *msg)
 
     Print_io_def_struct(msg->io_def);
   }
+
+  if(msg->chk_def){
+
+    Print_io_def_struct(msg->chk_def);
+  }
+
+  fprintf(stderr, "Print_msg: done\n");
 }
 
 /*-----------------------------------------------------------------*/

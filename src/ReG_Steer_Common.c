@@ -83,6 +83,7 @@ FILE *Open_next_file(char* base_name)
      
       /* Found one - check its last-modified time */
       fclose(fp);
+      fp = NULL;
       if(stat(tmp_filename, &stbuf) != -1){
 
         /* timespec_t     st_mtim;      Time of last data modification
@@ -125,6 +126,7 @@ FILE *Open_next_file(char* base_name)
      
       /* Found one - check its last-modified time */
       fclose(fp);
+      fp = NULL;
       if(stat(tmp_filename, &stbuf) != -1){
 
         /* timespec_t     st_mtim;      Time of last data modification
@@ -280,6 +282,10 @@ REG_MsgType Get_message_type(const char *name)
   
     return IO_DEFS;
   }
+  else if(strcmp(name, "ChkType_defs") == 0){
+  
+    return CHK_DEFS;
+  }
   else if(strcmp(name, "Supported_commands") == 0){
     
     return SUPP_CMDS;
@@ -346,10 +352,12 @@ int Next_free_param_index(Param_table_type *table)
 int Param_index_from_handle(Param_table_type *table, int ParamHandle)
 {
   int i;
-  int index = REG_PARAM_HANDLE_NOTSET;
+  int index = -1;
+
+  if(ParamHandle == REG_PARAM_HANDLE_NOTSET) return -1;
 
   /* Finds entry in a table of parameters that has handle == ParamHandle
-     Returns REG_PARAM_HANDLE_NOTSET if no match found */
+     Returns -1 if no match found */
 
   for(i=0; i<table->max_entries; i++){
 

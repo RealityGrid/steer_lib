@@ -255,6 +255,7 @@ int Sim_attach(char *SimID,
   int                  new_size;
   void                *dum_ptr;
   int                  return_status = REG_SUCCESS;
+  Sim_entry_type      *sim_ptr;
 
   /* Get next free entry in simulation table (allocates more memory if
      required) */
@@ -265,18 +266,20 @@ int Sim_attach(char *SimID,
     return REG_FAILURE;
   }
 
+  sim_ptr = &(Sim_table.sim[current_sim]);
+
   /* Initialise table entry for this simulation... */
 
-  Sim_table.sim[current_sim].pipe_to_proxy   = REG_PIPE_UNSET;
-  Sim_table.sim[current_sim].pipe_from_proxy = REG_PIPE_UNSET;
-  Sim_table.sim[current_sim].msg             = NULL;
+  sim_ptr->pipe_to_proxy   = REG_PIPE_UNSET;
+  sim_ptr->pipe_from_proxy = REG_PIPE_UNSET;
+  sim_ptr->msg             = NULL;
 
   /* ...registered parameters */
 
-  Sim_table.sim[current_sim].Params_table.param = 
+  sim_ptr->Params_table.param = 
             (param_entry *)malloc(REG_INITIAL_NUM_PARAMS*sizeof(param_entry));
 
-  if(Sim_table.sim[current_sim].Params_table.param == NULL){
+  if(sim_ptr->Params_table.param == NULL){
 
     fprintf(stderr, "Sim_attach: failed to allocate memory\n");
     return REG_MEM_FAIL;
@@ -284,58 +287,76 @@ int Sim_attach(char *SimID,
 
   /* Initialise this table entry */
 
-  Sim_table.sim[current_sim].Params_table.num_registered = 0;
-  Sim_table.sim[current_sim].Params_table.max_entries    = 
-                                                    REG_INITIAL_NUM_PARAMS;
+  sim_ptr->Params_table.num_registered = 0;
+  sim_ptr->Params_table.max_entries    = REG_INITIAL_NUM_PARAMS;
 
   for(i=0; i<Sim_table.sim[current_sim].Params_table.max_entries; i++){
 
-    Sim_table.sim[current_sim].Params_table.param[i].handle = 
-                                             REG_PARAM_HANDLE_NOTSET;
-    Sim_table.sim[current_sim].Params_table.param[i].modified = FALSE;
+    sim_ptr->Params_table.param[i].handle   = REG_PARAM_HANDLE_NOTSET;
+    sim_ptr->Params_table.param[i].modified = FALSE;
   }
 
   /* ...supported commands */
 
-  Sim_table.sim[current_sim].Cmds_table.cmd = 
+  sim_ptr->Cmds_table.cmd = 
     (supp_cmd_entry *)malloc(REG_INITIAL_NUM_CMDS*sizeof(supp_cmd_entry));
 
-  if(Sim_table.sim[current_sim].Cmds_table.cmd == NULL){
+  if(sim_ptr->Cmds_table.cmd == NULL){
 
     fprintf(stderr, "Sim_attach: failed to allocate memory\n");
-    free(Sim_table.sim[current_sim].Params_table.param);
+    free(sim_ptr->Params_table.param);
     return REG_MEM_FAIL;
   }
 
-  Sim_table.sim[current_sim].Cmds_table.num_registered = 0;
-  Sim_table.sim[current_sim].Cmds_table.max_entries    = REG_INITIAL_NUM_CMDS;
+  sim_ptr->Cmds_table.num_registered = 0;
+  sim_ptr->Cmds_table.max_entries    = REG_INITIAL_NUM_CMDS;
 
   /* all simulations must support the 'detach' command */
 
-  Sim_table.sim[current_sim].Cmds_table.cmd[0].cmd_id = REG_STR_DETACH;
-  Increment_cmd_registered(&(Sim_table.sim[current_sim].Cmds_table));
+  sim_ptr->Cmds_table.cmd[0].cmd_id = REG_STR_DETACH;
+  Increment_cmd_registered(&(sim_ptr->Cmds_table));
 
- /* ...IO types */
+  /* ...IO types */
 
-  Sim_table.sim[current_sim].IOdef_table.io_def = 
+  sim_ptr->IOdef_table.io_def = 
     (IOdef_entry *)malloc(REG_INITIAL_NUM_IOTYPES*sizeof(IOdef_entry));
 
-  if(Sim_table.sim[current_sim].IOdef_table.io_def == NULL){
+  if(sim_ptr->IOdef_table.io_def == NULL){
 
     fprintf(stderr, "Sim_attach: failed to allocate memory\n");
-    free(Sim_table.sim[current_sim].Params_table.param);
-    free(Sim_table.sim[current_sim].Cmds_table.cmd);
+    free(sim_ptr->Params_table.param);
+    free(sim_ptr->Cmds_table.cmd);
     return REG_MEM_FAIL;
   }
 
-  Sim_table.sim[current_sim].IOdef_table.num_registered = 0;
-  Sim_table.sim[current_sim].IOdef_table.max_entries    = 
-                                                  REG_INITIAL_NUM_IOTYPES;
+  sim_ptr->IOdef_table.num_registered = 0;
+  sim_ptr->IOdef_table.max_entries    = REG_INITIAL_NUM_IOTYPES;
 
-  for(i=0; i<Sim_table.sim[current_sim].IOdef_table.max_entries; i++){
+  for(i=0; i<sim_ptr->IOdef_table.max_entries; i++){
 
-    Sim_table.sim[current_sim].IOdef_table.io_def[i].handle = 
-      REG_IODEF_HANDLE_NOTSET;
+    sim_ptr->IOdef_table.io_def[i].handle = REG_IODEF_HANDLE_NOTSET;
+  }
+
+  /* ...Chk types */
+
+  sim_ptr->Chkdef_table.io_def = 
+    (IOdef_entry *)malloc(REG_INITIAL_NUM_IOTYPES*sizeof(IOdef_entry));
+
+  if(sim_ptr->Chkdef_table.io_def == NULL){
+
+    fprintf(stderr, "sim_attach: failed to allocate memory for Chk types\n");
+    free(sim_ptr->Params_table.param);
+    free(sim_ptr->Cmds_table.cmd);
+    free(sim_ptr->IOdef_table.io_def);
+    return REG_MEM_FAIL;
+  }
+
+  sim_ptr->Chkdef_table.num_registered = 0;
+  sim_ptr->Chkdef_table.max_entries    = REG_INITIAL_NUM_IOTYPES;
+
+  for(i=0; i<sim_ptr->Chkdef_table.max_entries; i++){
+
+    sim_ptr->Chkdef_table.io_def[i].handle = REG_IODEF_HANDLE_NOTSET;
   }
 
   /* Now we actually connect to the application */
@@ -618,7 +639,7 @@ int Consume_param_defs(int SimHandle)
     sscanf((char *)(ptr->handle), "%d", &handle);
 
     if( Param_index_from_handle(&(Sim_table.sim[index].Params_table),
-				handle) == REG_PARAM_HANDLE_NOTSET){
+				handle) == -1){
 
       /* Our table doesn't have this parameter in it so add it */
 
@@ -832,6 +853,99 @@ int Consume_ChkType_defs(int SimHandle)
     fprintf(stderr, "Consume_ChkType_defs: failed to find sim table entry\n");
     return REG_FAILURE;
   }
+  /* Compare new Chkdefs with those currently stored in table */
+
+  ptr = Sim_table.sim[index].msg->chk_def->first_io;
+
+  while(ptr){
+
+    sscanf((char *)(ptr->handle), "%d", &handle);
+
+    if( IOdef_index_from_handle(&(Sim_table.sim[index].Chkdef_table), 
+				handle) == REG_IODEF_HANDLE_NOTSET){
+
+      /* Our table doesn't have this Chkdef so add it */
+      j = Next_free_iodef_index(&(Sim_table.sim[index].Chkdef_table));
+
+      if(j==-1){
+	fprintf(stderr, "Consume_Chkdefs: failed to add Chkdef to table\n");
+	return_status = REG_FAILURE;
+	break;
+      }
+
+      Sim_table.sim[index].Chkdef_table.io_def[j].handle = handle;
+
+      if(ptr->label){
+
+	strcpy(Sim_table.sim[index].Chkdef_table.io_def[j].label,
+	       (char *)(ptr->label));
+      }
+
+      if(ptr->direction){
+
+        if(!xmlStrcmp(ptr->direction, (const xmlChar *) "INOUT")){
+
+	  Sim_table.sim[index].Chkdef_table.io_def[j].direction = REG_IO_INOUT;
+	}
+	else if(!xmlStrcmp(ptr->direction, (const xmlChar *) "OUT")){
+
+	  Sim_table.sim[index].Chkdef_table.io_def[j].direction = REG_IO_OUT;
+	}
+	else if(!xmlStrcmp(ptr->direction, (const xmlChar *) "IN")){
+
+	  Sim_table.sim[index].Chkdef_table.io_def[j].direction = REG_IO_IN;
+	}
+	else{
+	  fprintf(stderr, "Consume_ChkType_defs: ERROR: unrecognised "
+		  "direction value: %s\n", (char *)(ptr->direction));
+	}
+      }
+
+      if(ptr->freq_handle){
+
+	sscanf((char *)(ptr->freq_handle), "%d",
+	       &(Sim_table.sim[index].Chkdef_table.io_def[j].freq_param_handle));
+      }
+
+      Sim_table.sim[index].Chkdef_table.num_registered++;
+    }
+
+    ptr = ptr->next;
+  }
+
+  /* Remove any Chk defs that have been deleted */
+
+  for(i=0; i<Sim_table.sim[index].Chkdef_table.max_entries; i++){
+
+    ptr = Sim_table.sim[index].msg->chk_def->first_io;
+
+    while(ptr){
+
+      sscanf((char *)(ptr->handle), "%d", &handle);
+
+      if(handle == Sim_table.sim[index].Chkdef_table.io_def[i].handle){
+
+	found = TRUE;
+	break;
+      }
+      ptr = ptr->next;
+    }
+
+    if(!found){
+
+      /* Only indication that Chkdef deleted is change of handle - hence loop
+	 over max_entries here */
+
+      Sim_table.sim[index].Chkdef_table.io_def[i].handle = 
+	                                 REG_IODEF_HANDLE_NOTSET;
+      Sim_table.sim[index].Chkdef_table.num_registered--;
+    }
+  }
+
+  /* Clean up */
+
+  Delete_msg_struct(Sim_table.sim[index].msg);
+  Sim_table.sim[index].msg = NULL;
 
   return return_status;
 }
@@ -905,7 +1019,7 @@ int Consume_status(int   SimHandle,
     /* Look-up entry for param to update */
 
     if( (j=Param_index_from_handle(&(Sim_table.sim[index].Params_table),
-				   handle)) == REG_PARAM_HANDLE_NOTSET){
+				   handle)) == -1){
 
       fprintf(stderr, "Consume_status: failed to match param handles\n");
       fprintf(stderr, "                handle = %d\n", handle);
@@ -925,7 +1039,7 @@ int Consume_status(int   SimHandle,
   /* Return sequence number */
 
   if( (j=Param_index_from_handle(&(Sim_table.sim[index].Params_table),
-			    REG_SEQ_NUM_HANDLE)) == REG_PARAM_HANDLE_NOTSET){
+			    REG_SEQ_NUM_HANDLE)) == -1){
     fprintf(stderr, "Consume_status: failed to find SeqNum entry\n");
   }
   else{
@@ -1170,6 +1284,11 @@ int Delete_sim_table_entry(int *SimHandle)
   if (entry->IOdef_table.io_def) free(entry->IOdef_table.io_def);
   entry->IOdef_table.io_def = NULL;
 
+  entry->Chkdef_table.num_registered = 0;
+  entry->Chkdef_table.max_entries = 0;
+  if (entry->Chkdef_table.io_def) free(entry->Chkdef_table.io_def);
+  entry->Chkdef_table.io_def = NULL;
+
   /* Flag that this entry no longer contains valid data */
 
   entry->handle = REG_SIM_HANDLE_NOTSET;
@@ -1284,8 +1403,46 @@ int Dump_sim_table()
   
  	  fprintf(fp, "IO Type index %d\n", iotype);
  	  fprintf(fp, "----------------\n");
- 	  fprintf(fp, "Label  = %s\n", ioptr->label);
- 	  fprintf(fp, "handle = %d\n\n", ioptr->handle);
+ 	  fprintf(fp, "Label     = %s\n", ioptr->label);
+ 	  fprintf(fp, "handle    = %d\n", ioptr->handle);
+ 	  fprintf(fp, "direction = %d\n", ioptr->direction);
+ 	  fprintf(fp, "freq_param_handle = %d\n", ioptr->freq_param_handle);
+
+          iparam = Param_index_from_handle(&(simptr->Params_table), 
+			                   ioptr->freq_param_handle);
+          if(iparam != -1){
+ 	    fprintf(fp, "frequency = %s\n", simptr->Params_table.param[iparam].value);
+	  }
+
+ 	  fprintf(fp, "\n");
+
+ 	  ioptr++;
+        }
+      }
+
+      fprintf(fp, "###### Chk Types  ######\n\n");
+
+      ioptr = simptr->Chkdef_table.io_def;
+      if(ioptr != NULL){
+
+      	for(iotype=0; iotype<simptr->Chkdef_table.max_entries; iotype++){
+  
+ 	  if(ioptr->handle == REG_IODEF_HANDLE_NOTSET) continue;
+  
+ 	  fprintf(fp, "Chk Type index %d\n", iotype);
+ 	  fprintf(fp, "----------------\n");
+ 	  fprintf(fp, "Label     = %s\n", ioptr->label);
+ 	  fprintf(fp, "handle    = %d\n", ioptr->handle);
+ 	  fprintf(fp, "direction = %d\n", ioptr->direction);
+ 	  fprintf(fp, "freq_param_handle = %d\n", ioptr->freq_param_handle);
+
+          iparam = Param_index_from_handle(&(simptr->Params_table), 
+			                   ioptr->freq_param_handle);
+          if(iparam != -1){
+ 	    fprintf(fp, "frequency = %s\n", simptr->Params_table.param[iparam].value);
+	  }
+
+ 	  fprintf(fp, "\n");
   
  	  ioptr++;
         }
@@ -1784,7 +1941,7 @@ int Get_chktypes(int    sim_handle,
 	types[count] = Sim_table.sim[isim].Chkdef_table.io_def[i].direction;
 
 	/* Get the current frequency at which this occurs */
-	if(types[count] == REG_IO_OUT){
+	if(types[count] != REG_IO_IN){
 
 	  iparam = Param_index_from_handle(&(Sim_table.sim[isim].Params_table),
 		                           Sim_table.sim[isim].Chkdef_table.io_def[i].freq_param_handle);
@@ -1928,7 +2085,7 @@ int Command_supported(int sim_id,
   }
   else{
 
-    /* Command is an IO type */
+    /* Command is an IO type or Chk type */
 
     for(i=0; i<Sim_table.sim[sim_id].IOdef_table.max_entries; i++){
 
@@ -1936,6 +2093,17 @@ int Command_supported(int sim_id,
 
 	return_status = REG_SUCCESS;
 	break;
+      }
+    }
+    if(return_status != REG_SUCCESS){
+
+      for(i=0; i<Sim_table.sim[sim_id].Chkdef_table.max_entries; i++){
+
+	if(cmd_id == Sim_table.sim[sim_id].Chkdef_table.io_def[i].handle){
+
+	  return_status = REG_SUCCESS;
+	  break;
+	}
       }
     }
   }

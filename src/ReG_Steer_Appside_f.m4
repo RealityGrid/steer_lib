@@ -151,6 +151,87 @@ INT_KIND_1_DECL(Status);
 
 /*----------------------------------------------------------------
 
+SUBROUTINE register_chktype_f(NumTypes, ChkLabel, ChkDirn,
+                              ChkFrequency, ChkType, Status)
+
+  INTEGER (KIND=REG_SP_KIND), INTENT(in)                       :: NumTypes
+  CHARACTER (LEN=*), DIMENSION(NumTypes), INTENT(in)           :: ChkLabel 
+  INTEGER (KIND=REG_SP_KIND), DIMENSION(NumTypes), INTENT(in)  :: ChkDirn
+  INTEGER (KIND=REG_SP_KIND), DIMENSION(NumTypes), INTENT(in)  :: ChkFrequency
+  INTEGER (KIND=REG_SP_KIND), DIMENSION(NumTypes), INTENT(out) :: ChkType
+  INTEGER (KIND=REG_SP_KIND), INTENT(out)                      :: Status
+
+----------------------------------------------------------------*/
+
+void FUNCTION(register_chktype_f) ARGS(`NumTypes, 
+                                        STRING_ARG(ChkLabel), 
+                                        ChkDirn,
+                                        ChkFrequency,
+                                        ChkType,
+                                        Status')
+INT_KIND_1_DECL(NumTypes);
+STRING_ARG_DECL(ChkLabel);
+INT_KIND_1_DECL(ChkDirn);
+INT_KIND_1_DECL(ChkFrequency);
+INT_KIND_1_DECL(ChkType);
+INT_KIND_1_DECL(Status);
+{
+  int    i;
+  char **str_array;
+
+  str_array = (char**)malloc((*NumTypes)*sizeof(char));
+
+  if(*str_array == NULL){
+
+    *Status = INT_KIND_1_CAST( REG_FAILURE );
+    return;
+  }
+
+  /* Convert from a single array of char to an array of char* */
+
+  for(i=0; i<(int)(*NumTypes); i++){
+
+    str_array[i] = &(STRING_PTR(ChkLabel)[i*STRING_LEN(ChkLabel)]);
+  }
+
+  *Status = INT_KIND_1_CAST( Register_IOTypes((int)*NumTypes,
+                                                     str_array,
+                                              (int *)ChkDirn,
+                                              (int *)ChkFrequency,
+                                              (int *)ChkType) );
+
+  free(str_array);
+
+  return;
+}
+
+/*----------------------------------------------------------------
+
+SUBROUTINE record_chkpt_f(ChkType, ChkTag, Status)
+
+  INTEGER  (KIND=REG_SP_KIND), INTENT(in)           :: ChkType
+  CHARACTER (LEN=REG_MAX_STRING_LENGTH), INTENT(in) :: ChkTag 
+  INTEGER (KIND=REG_SP_KIND), INTENT(out)           :: Status
+
+----------------------------------------------------------------*/
+
+
+void FUNCTION(record_chkpt_f) ARGS(`ChkType,
+                                    STRING_ARG(ChkTag),
+                                    Status')
+INT_KIND_1_DECL(ChkType);
+STRING_ARG_DECL(ChkTag);
+INT_KIND_1_DECL(Status);
+{
+
+  *Status = INT_KIND_1_CAST(Record_Chkpt((int)*ChkType, 
+                            STRING_PTR(ChkTag)));
+
+  return;
+}
+
+/*----------------------------------------------------------------
+
 SUBROUTINE register_params_f(NumParams, ParamLabels, ParamSteerable, &
                              ParamPtrs, ParamTypes, Status)
 
