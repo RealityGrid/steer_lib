@@ -44,21 +44,36 @@ setenv REG_STEER_DIRECTORY /usr/tmp/zzcguap/
 setenv REG_XML_LIBDIR /usr/lib
 setenv REG_XML_INCDIR /usr/include/libxml2
 
+#---------------------------------------------------------------
+# This section only necessary if using globus_io- rather
+# than file-based data transfer
+
+# For Globus_io connections - need to set port to that reported
+# by library when application launched
 setenv REG_CONNECTOR_HOSTNAME  vermont.mvc.mcc.ac.uk
-setenv REG_CONNECTOR_PORT      4567
+setenv REG_CONNECTOR_PORT      2566
+setenv GLOBUS_TCP_PORT_RANGE   2566,2566
+
+#---------------------------------------------------------------
+# This section needed when steering via SOAP and the Steering
+# Grid Service (or SGS).
 
 # Location of steering grid service that application will attach to
 setenv REG_SGS_ADDRESS http://vermont.mvc.mcc.ac.uk:50005/
 
+#---------------------------------------------------------------
+# This section only necessary if using the UNICORE 
+# framework
+
 # Handle of registry to bind to
-setenv REGISTRY_GSH http://localhost:8888/Unicore/Registry
+#setenv REGISTRY_GSH http://localhost:8888/Unicore/Registry
 
 # Location of ReG grid service
-setenv REG_GS ${HOME}/projects/ReG-grid-service
-
+#setenv REG_GS ${HOME}/projects/ReG-grid-service
 
 # Additions to java classpath for grid service and steering proxy
 #setenv CLASSPATH ${CLASSPATH}:${HOME}/bin
 #setenv CLASSPATH ${CLASSPATH}:${REG_GS}
 #setenv CLASSPATH ${CLASSPATH}:${REG_GS}/ajo.jar
+#---------------------------------------------------------------
 
