@@ -37,124 +37,124 @@ include make/Makefile.${ARCH}
 LIB_PATH       = ${REG_STEER_HOME}/lib$(NBIT)
 
 all:
-	make $(LIB_PATH)/$(LIB_NAME)
-	make c_examples
-	make f90_examples
+	$(MAKE) $(LIB_PATH)/$(LIB_NAME)
+	$(MAKE) c_examples
+	$(MAKE) f90_examples
 
 no_f90:
-	make $(LIB_PATH)/$(LIB_NAME)
-	make c_examples
+	$(MAKE) $(LIB_PATH)/$(LIB_NAME)
+	$(MAKE) c_examples
 
 c_examples:
-	make app
-	make steerer
-	make sink
+	$(MAKE) app
+	$(MAKE) steerer
+	$(MAKE) sink
 
 f90_examples:
-	make app_f90
-	make app_f90_parallel
+	$(MAKE) app_f90
+	$(MAKE) app_f90_parallel
 
 $(LIB_PATH)/$(LIB_NAME): include/*.h \
  src/*.c \
  src/*.m4
 	rm -f $(LIB_PATH)/$(LIB_NAME)
-	cd src; make lib
+	cd src; $(MAKE) lib
 
 libss: include/*.h \
  src/*.c \
  src/*.m4
-	cd src; make -f Makefile.ss all
+	cd src; $(MAKE) -f Makefile.ss all
 	rm -f $(LIB_PATH)/libReG_Steer.so
 	ln -s libReG_SteerSoapSockets.so $(LIB_PATH)/libReG_Steer.so
 
 libssd: include/*.h \
  src/*.c \
  src/*.m4
-	cd src; make -f Makefile.ssd all
+	cd src; $(MAKE) -f Makefile.ssd all
 	rm -f $(LIB_PATH)/libReG_Steer.so
 	ln -s libReG_SteerSoapSocketsDebug.so $(LIB_PATH)/libReG_Steer.so
 
 libsf: include/*.h \
  src/*.c \
  src/*.m4
-	cd src; make -f Makefile.sf all
+	cd src; $(MAKE) -f Makefile.sf all
 	rm -f $(LIB_PATH)/libReG_Steer.so
 	ln -s libReG_SteerSoapFile.so $(LIB_PATH)/libReG_Steer.so
 
 libsfd: include/*.h \
  src/*.c \
  src/*.m4
-	cd src; make -f Makefile.sfd all
+	cd src; $(MAKE) -f Makefile.sfd all
 	rm -f $(LIB_PATH)/libReG_Steer.so
 	ln -s libReG_SteerSoapFileDebug.so $(LIB_PATH)/libReG_Steer.so
 
 libfs: include/*.h \
  src/*.c \
  src/*.m4
-	cd src; make -f Makefile.fs all
+	cd src; $(MAKE) -f Makefile.fs all
 	rm -f $(LIB_PATH)/libReG_Steer.so
 	ln -s libReG_SteerFileSockets.so $(LIB_PATH)/libReG_Steer.so
 
 libfsd: include/*.h \
  src/*.c \
  src/*.m4
-	cd src; make -f Makefile.fsd all
+	cd src; $(MAKE) -f Makefile.fsd all
 	rm -f $(LIB_PATH)/libReG_Steer.so
 	ln -s libReG_SteerFileSocketsDebug.so $(LIB_PATH)/libReG_Steer.so
 
 libf: include/*.h \
  src/*.c \
  src/*.m4
-	cd src; make -f Makefile.f all
+	cd src; $(MAKE) -f Makefile.f all
 	rm -f $(LIB_PATH)/libReG_Steer.so
 	ln -s libReG_SteerFile.so $(LIB_PATH)/libReG_Steer.so
 
 libfd: include/*.h \
  src/*.c \
  src/*.m4
-	cd src; make -f Makefile.fd all
+	cd src; $(MAKE) -f Makefile.fd all
 	rm -f $(LIB_PATH)/libReG_Steer.so
 	ln -s libReG_SteerFileDebug.so $(LIB_PATH)/libReG_Steer.so
 
 app: $(LIB_PATH)/$(LIB_NAME) \
  examples/mini_app/*.c
-	cd examples/mini_app; make
+	cd examples/mini_app; $(MAKE)
 
 
 app_f90: $(LIB_PATH)/$(LIB_NAME) \
  include/*.inc \
  examples/mini_app_f90/*.f90
-	cd examples/mini_app_f90; make
+	cd examples/mini_app_f90; $(MAKE)
 
 app_f90_parallel:  $(LIB_PATH)/$(LIB_NAME) \
  include/*.inc \
  examples/mini_app_f90_parallel/*.f90
-	cd examples/mini_app_f90_parallel; make
+	cd examples/mini_app_f90_parallel; $(MAKE)
 
 steerer: $(LIB_PATH)/$(LIB_NAME) \
  examples/mini_steerer/*.c
-	cd examples/mini_steerer; make
+	cd examples/mini_steerer; $(MAKE)
 
 sink: $(LIB_PATH)/$(LIB_NAME) \
  examples/mini_steerer/*.c
-	cd examples/sink; make
+	cd examples/sink; $(MAKE)
 
 install:
-	cd examples/mini_app; make install
-	cd examples/mini_steerer; make install
-	cd examples/mini_app_f90; make install
-	cd examples/mini_app_f90_parallel; make install
-	cd examples/sink; make install
+	cd examples/mini_app; $(MAKE) install
+	cd examples/mini_steerer; $(MAKE) install
+	cd examples/mini_app_f90; $(MAKE) install
+	cd examples/mini_app_f90_parallel; $(MAKE) install
+	cd examples/sink; $(MAKE) install
 
 clean:
-	cd src; make clean 
-	cd examples/mini_app; make clean
-	cd examples/mini_steerer; make clean
-	cd examples/mini_app_f90; make clean
-	cd examples/mini_app_f90_parallel; make clean
-	cd examples/sink; make clean
+	cd src; $(MAKE) clean 
+	cd examples/mini_app; $(MAKE) clean
+	cd examples/mini_steerer; $(MAKE) clean
+	cd examples/mini_app_f90; $(MAKE) clean
+	cd examples/mini_app_f90_parallel; $(MAKE) clean
+	cd examples/sink; $(MAKE) clean
 
 tar:
-	make clean
+	$(MAKE) clean
 	cd ..; tar -cf reg_steer_backup.tar reg_steer_lib/*; \
 gzip reg_steer_backup.tar

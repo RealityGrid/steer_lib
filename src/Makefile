@@ -39,10 +39,10 @@ INCLUDE_PATH   = ${STEER_INCLUDES}
 LIB_PATH       = ${REG_STEER_HOME}/lib$(NBIT)
 
 all:
-	make ${LIB_PATH}/$(LIB_NAME)
+	$(MAKE) ${LIB_PATH}/$(LIB_NAME)
 
 lib:
-	make ${LIB_PATH}/$(LIB_NAME)
+	$(MAKE) ${LIB_PATH}/$(LIB_NAME)
 
 .c.o:
 	${CC} ${C_FLAGS} \
@@ -54,14 +54,14 @@ lib:
         ${INCLUDE_PATH} -c $< -o $@
 
 ${LIB_PATH}/libReG_Steer.so:
-	make -f Makefile.ss all
-	make -f Makefile.ssd all
-	make -f Makefile.sf all
-	make -f Makefile.sfd all
-	make -f Makefile.fs all
-	make -f Makefile.fsd all
-	make -f Makefile.ff all
-	make -f Makefile.ffd all
+	$(MAKE) -f Makefile.ss all
+	$(MAKE) -f Makefile.ssd all
+	$(MAKE) -f Makefile.sf all
+	$(MAKE) -f Makefile.sfd all
+	$(MAKE) -f Makefile.fs all
+	$(MAKE) -f Makefile.fsd all
+	$(MAKE) -f Makefile.ff all
+	$(MAKE) -f Makefile.ffd all
 	rm -f $(LIB_PATH)/libReG_Steer.so
 	ln -s libReG_SteerSoapSockets.so $(LIB_PATH)/libReG_Steer.so
 
