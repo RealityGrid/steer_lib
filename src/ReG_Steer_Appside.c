@@ -1857,11 +1857,6 @@ int Emit_IOType_defs(){
 	return REG_FAILURE;
       }
 
-      /* SMR XXXn -merge ? need auto_io? */
-      /* ARPDBG - will always have freq. associated with IO channel now
-	 so need to update schema and parser and get rid of this */
-      pbuf += sprintf(pbuf,"<Support_auto_io>TRUE</Support_auto_io>\n");
-
       pbuf += sprintf(pbuf,"<Freq_handle>%d</Freq_handle>\n",
 	      IOTypes_table.io_def[i].freq_param_handle);
 
