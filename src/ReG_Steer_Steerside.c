@@ -2943,47 +2943,61 @@ int Sim_attach_local(Sim_entry_type *sim, char *SimID)
   char  file_root[REG_MAX_STRING_LENGTH];
   char  filename[REG_MAX_STRING_LENGTH];
   char  sys_cmd[REG_MAX_STRING_LENGTH];
-  int   return_status = REG_SUCCESS;
+  int   return_status;
 
   /* Unless SimID contains a string, get the directory to use for 
      steering messages from the REG_STEER_DIRECTORY env. variable.  */
-  if(strlen(SimID) == 0){
-    pchar = getenv("REG_STEER_DIRECTORY");
-  } else {
+  if(strlen(SimID) != 0){
     pchar = SimID;
-  }
-
-  if(pchar){
 
     /* Check that path ends in '/' - if not then add one */
-
-    i = strlen(pchar);
-    if( pchar[i-1] != '/' ){
+    if( pchar[strlen(pchar)-1] != '/' ){
 
       sprintf(file_root, "%s/", pchar);
     }
     else{
-
       strcpy(file_root, pchar);
     }
 
-    if(Directory_valid(file_root) != REG_SUCCESS){
-
-      fprintf(stderr, "Steerer_initialize: invalid dir for "
+    if((return_status = Directory_valid(file_root)) != REG_SUCCESS){
+      fprintf(stderr, "Sim_attach_local: invalid dir for "
 	      "steering messages: %s\n",
-	      file_root);
-
-      return REG_FAILURE;
-    }
-    else{
-
-      fprintf(stderr, "Using following dir for steering messages: %s\n", 
 	      file_root);
     }
   }
-  else{
-    fprintf(stderr, "Sim_attach: failed to get scratch directory\n");
+
+  /* Supplied ID didn't work so try using REG_STEER_DIRECTORY env.
+     variable instead */
+  if(return_status != REG_SUCCESS){
     
+    if(!(pchar = getenv("REG_STEER_DIRECTORY"))){
+      fprintf(stderr, "Sim_attach_local: failed to get scratch directory\n");
+      return REG_FAILURE;
+    }
+    
+    /* Check that path ends in '/' - if not then add one */
+    if( pchar[strlen(pchar)-1] != '/' ){
+
+      sprintf(file_root, "%s/", pchar);
+    }
+    else{
+      strcpy(file_root, pchar);
+    }
+
+    if((return_status = Directory_valid(file_root)) != REG_SUCCESS){
+      fprintf(stderr, "Sim_attach_local: invalid dir for "
+	      "steering messages: %s\n",
+	      file_root);
+    }
+  }
+
+  if(return_status == REG_SUCCESS){
+    fprintf(stderr, "Sim_attach_local: using following dir for "
+	    "steering messages: %s\n", file_root);
+  }
+  else{
+
+    fprintf(stderr, "Sim_attach_local: failed to get scratch directory\n");    
     return REG_FAILURE;
   }
 
