@@ -38,6 +38,7 @@
     
 ---------------------------------------------------------------------------*/
 
+#include <globus_io.h>
 /* Following two includes are for use of stat system call 
    in Open_next_file */
 #include <sys/types.h>
@@ -101,6 +102,16 @@ typedef struct {
   /* Handle of the (steerable) frequency in the parameter table */
   int   freq_param_handle;
 
+  /* Pointer to buffer to hold data */
+  void			*buffer;
+  /* port for socket connection */
+  unsigned short int	port;
+  /* socket connection handles */
+  globus_io_handle_t	listener_handle;
+  globus_io_handle_t	conn_handle;
+  /* status indicator for socket comms*/
+  int			comms_status;
+  int			index;
 } IOdef_entry;
 
 typedef struct {

@@ -38,6 +38,8 @@
 ---------------------------------------------------------------------------*/
 
 #include "ReG_Steer_types.h"
+#include <globus_io.h>
+#include <globus_common.h> /*SMR XXX */
 
 #ifdef __cplusplus
   #define PREFIX "C"
@@ -99,23 +101,23 @@ extern PREFIX int Steering_control(int     SeqNum,
    progress at this point. */
 extern PREFIX int Emit_start(int               IOType,
 			     int               SeqNum,
-			     REG_IOHandleType *IOHandle);
+			     int	       *IOTypeIndex);
 
 /* Open the specified IOType (as returned by a call to Register_IOTypes)
    ready for input. */
 extern PREFIX int Consume_start(int               IOType,
-				REG_IOHandleType *IOHandle);
+				int		  *IOTypeIndex);
 
 /* Close the specified IOType and complete the emission process. */
-extern PREFIX int Emit_stop(REG_IOHandleType *IOHandle);
+extern PREFIX int Emit_stop(int	       *IOTypeIndex);
 
 /* Close the specified IOType and complete the consumption process. 
    Frees any memory used during the consumption. */
-extern PREFIX int Consume_stop(REG_IOHandleType *IOHandle);
+extern PREFIX int Consume_stop(int	       *IOTypeIndex);
 
 /* Must be called following a call to Emit_start.  Emits <Count> items
    of type <DataType> as pointed to by <pData>. */
-extern PREFIX int Emit_data_slice(REG_IOHandleType  IOHandle,
+extern PREFIX int Emit_data_slice(int	            IOTypeIndex,
 				  int               DataType,
 				  int               Count,
 				  void             *pData);
@@ -123,10 +125,16 @@ extern PREFIX int Emit_data_slice(REG_IOHandleType  IOHandle,
 /* Must be called following a call to Consume_start. Returns a ptr
    to <Count> items of type <DataType>. This pointer is temporary - the
    data should be copied from the memory to which it points. */
+extern PREFIX int Consume_data_slice(int	      IOTypeIndex,
+				     int              *DataType,
+				     int              *Count,
+				     void            **pData);
+
 extern PREFIX int Consume_data_slice(REG_IOHandleType  IOHandle,
 				     int              *DataType,
 				     int              *Count,
 				     void            **pData);
+
 
 /* Called once all steering activity is complete.  Disconnects from
    steerer (if any), removes the 'I am steerable' advertisement and 
@@ -155,3 +163,27 @@ extern PREFIX int Make_vtk_buffer(char  *header,
 				  int    ny,
 				  int    nz,
 				  float *array);
+
+
+extern PREFIX int Globus_create_listener(unsigned short int	*port,
+					 int			*index);
+
+extern PREFIX void Globus_listener_callback (void		*callback_arg,
+					     globus_io_handle_t	*handle,
+					     globus_result_t	result);
+
+extern PREFIX int Globus_create_connector(const int index);
+
+extern PREFIX int Globus_create_connector_callback(int			*index);
+
+extern PREFIX void Globus_connector_callback (void			*callback_arg,
+					      globus_io_handle_t	*handle,
+					      globus_result_t		result);
+
+
+extern PREFIX void Globus_close_listener_connections(const int index);
+
+
+extern PREFIX void Globus_close_connector_connection(const int index);
+
+extern PREFIX void Globus_close_connection(globus_io_handle_t	*conn_handle);
