@@ -234,15 +234,16 @@ INT_KIND_1_DECL(Status);
 
 /*----------------------------------------------------------------
 
-SUBROUTINE register_params_f(NumParams, ParamLabels, ParamSteerable, &
-                             ParamPtrs, ParamTypes, Status)
+SUBROUTINE register_params_f(ParamLabel, ParamSteerable, ParamPtr, &
+                             ParamType, ParamMin, ParamMax, Status)
 
-  INTEGER (KIND=REG_SP_KIND), INTENT(in)                     :: NumParams
   CHARACTER (LEN=REG_MAX_STRING_LENGTH) DIMENSION(NumParams), &
-                                              INTENT(in)     :: IOLabel
+                                              INTENT(in)     :: ParamLabel
   INTEGER (KIND=REG_SP_KIND), DIMENSION(NumTypes),INTENT(in) :: ParamSteerable
-  XXXXXXX (KIND=REG_DP_KIND), DIMENSION(NumTypes),INTENT(in) :: ParamPtrs
-  INTEGER (KIND=REG_SP_KIND), DIMENSION(NumTypes),INTENT(in) :: ParamTypes
+  XXXXXXX (KIND=REG_DP_KIND), DIMENSION(NumTypes),INTENT(in) :: ParamPtr
+  INTEGER (KIND=REG_SP_KIND), DIMENSION(NumTypes),INTENT(in) :: ParamType
+  XXXXXXX (KIND=REG_DP_KIND), DIMENSION(NumTypes),INTENT(in) :: ParamMin
+  XXXXXXX (KIND=REG_DP_KIND), DIMENSION(NumTypes),INTENT(in) :: ParamMax
   INTEGER (KIND=REG_SP_KIND), INTENT(out)                    :: Status
 
 where XXXXXXX can be INTEGER or REAL of a KIND to give storage no
@@ -252,90 +253,75 @@ register a CHARACTER string then the routine steering_char_to_ptr_f
 ParamPtr to this routine.
 ----------------------------------------------------------------*/
 
-void FUNCTION(register_params_f) ARGS(`NumParams,
-		                       STRING_ARG(ParamLabels),
+void FUNCTION(register_params_f) ARGS(`STRING_ARG(ParamLabel),
 		                       ParamSteerable,
-		                       ParamPtrs,
-		                       ParamTypes,
+		                       ParamPtr,
+		                       ParamType,
+                                       ParamMin,
+                                       ParamMax,
 	                               Status')
-INT_KIND_1_DECL(NumParams);
-STRING_ARG_DECL(ParamLabels);
+STRING_ARG_DECL(ParamLabel);
 INT_KIND_1_DECL(ParamSteerable);
-void   *ParamPtrs;
-INT_KIND_1_DECL(ParamTypes);
+void   *ParamPtr;
+INT_KIND_1_DECL(ParamType);
 INT_KIND_1_DECL(Status);
+void   *ParamMin;
+void   *ParamMax;
 {
   int    i;
-  char **str_array;
-  void **ptr_array;
+  void  *ptr_array;
 
   *Status = INT_KIND_1_CAST( REG_SUCCESS );
 
-  str_array = (char**)malloc((*NumParams)*sizeof(char*));
-  ptr_array = (void**)malloc((*NumParams)*sizeof(void*));
+  /* Convert pointer *
 
-  if(str_array == NULL || ptr_array == NULL){
+  switch(*ParamType){
 
-    *Status = INT_KIND_1_CAST( REG_FAILURE );
-    return;
-  }
+  case REG_INT:
 
-  /* Convert from a single array of char to an array of char* */
+    ptr_array = (void *)( &((int *)ParamPtr) );
+    break;
 
-  for(i=0; i<(*NumParams); i++){
+  case REG_FLOAT:
 
-    str_array[i] = &(STRING_PTR(ParamLabels)[i*STRING_LEN(ParamLabels)]);
-  }
+    ptr_array = (void *)( &((float *)ParamPtr)[i] );
+    break;
 
-  /* Convert pointers */
+  case REG_CHAR:
 
-  for(i=0; i<(*NumParams); i++){
-
-    switch(ParamTypes[i]){
-
-    case REG_INT:
-
-      ptr_array[i] = (void *)( &((int *)ParamPtrs)[i] );
-      break;
-
-    case REG_FLOAT:
-
-      ptr_array[i] = (void *)( &((float *)ParamPtrs)[i] );
-      break;
-
-    case REG_CHAR:
-
-      /* IMPORTANT - this assumes that ParamPtrs has been obtained from a
-         call to steering_char_to_ptr_f */
-      ptr_array[i] = ((void **)ParamPtrs)[i];
+    * IMPORTANT - this assumes that ParamPtr has been obtained from a
+       call to steering_char_to_ptr_f *
+    ptr_array = ((void **)ParamPtr)[i];
 
 #if DEBUG
-      fprintf(stderr, 
-	      "register_params_f: got string %s\n", (char *)(ptr_array[i]));
+    fprintf(stderr, 
+	    "register_params_f: got string %s\n", (char *)(ptr_array[i]));
 #endif
-      break;
+    break;
 
-    case REG_DBL:
+  case REG_DBL:
 
-      ptr_array[i] = (void *)( &((double *)ParamPtrs)[i] );
-      break;
+    ptr_array = (void *)( &((double *)ParamPtr)[i] );
+    break;
 
-    default:
-      fprintf(stderr, "register_params_f: unrecognised data type\n");
-      *Status = REG_FAILURE;
+  default:
+    fprintf(stderr, "register_params_f: unrecognised data type\n");
+   *Status = REG_FAILURE;
       break;
-    }
   }
+*/
 
   if(*Status != INT_KIND_1_CAST(REG_FAILURE)){
 
-    *Status = INT_KIND_1_CAST( Register_params((int)*NumParams,
- 	                      		       str_array,
+    *Status = INT_KIND_1_CAST( Register_params(1,
+ 	                      		       STRING_PTR(ParamLabel),
 			      		       (int *)ParamSteerable,
-			      		       ptr_array,
-			      		       (int *)ParamTypes) );
+			      		       &ParamPtr,
+			      		       (int *)ParamType,
+                                               (void *)ParamMin,
+                                               (void *)ParamMax) );
   }
-  if(str_array != NULL)free(str_array);
+
   if(ptr_array != NULL)free(ptr_array);
 
   return;

@@ -222,6 +222,9 @@ int Steering_initialize(int  NumSupportedCmds,
   Params_table.param[0].is_internal=FALSE;
   sprintf(Params_table.param[0].label, "REG_SEQ_NUM");
   sprintf(Params_table.param[0].value, "-1");
+  sprintf(Params_table.param[0].min_val, "-1");
+  /* Max. value for sequence number is 100 million */
+  sprintf(Params_table.param[0].max_val, "100000000");
   Increment_param_registered(&Params_table);
 
   /* Parameter for monitoring CPU time per step */
@@ -234,6 +237,9 @@ int Steering_initialize(int  NumSupportedCmds,
   Params_table.param[i].is_internal=FALSE;
   sprintf(Params_table.param[i].label, "CPU_TIME_PER_STEP");
   sprintf(Params_table.param[i].value, "-1.0");
+  sprintf(Params_table.param[i].min_val, "-1.0");
+  /* Max. value for CPU time per step is one hour (in seconds) */
+  sprintf(Params_table.param[i].max_val, "3600.0");
   Increment_param_registered(&Params_table);
 
   /* Set-up/prepare for connection to steering client */
@@ -396,6 +402,8 @@ int Register_IOTypes(int    NumTypes,
   char*        iofreq_label;
   int          iofreq_strbl;
   int          iofreq_type;
+  int          iofreq_min;
+  int          iofreq_max;
   int          iparam;
   void        *ptr_array[1];
   int          return_status = REG_SUCCESS;
@@ -450,12 +458,16 @@ int Register_IOTypes(int    NumTypes,
     iofreq_type  = REG_INT;
     IOTypes_table.io_def[current].frequency = IOFrequency[i];
     ptr_array[0] = (void *)&(IOTypes_table.io_def[current].frequency);
+    iofreq_min   = 0;
+    iofreq_max   = 1000;
 
     Register_params(1,
 		    &iofreq_label,
 		    &iofreq_strbl,
 		    ptr_array,
-		    &iofreq_type);
+		    &iofreq_type,
+		    &iofreq_min,
+		    &iofreq_max);
 
     /* Store the handle given to this parameter - this line must
        immediately succeed the call to Register_params */
@@ -535,6 +547,8 @@ int Register_ChkTypes(int    NumTypes,
   char*        chkfreq_label;
   int          chkfreq_strbl;
   int          chkfreq_type;
+  int          chkfreq_min;
+  int          chkfreq_max;
   void        *ptr_array[1];
   IOdef_entry *dum_ptr;
   int          return_status = REG_SUCCESS;
@@ -579,13 +593,17 @@ int Register_ChkTypes(int    NumTypes,
       chkfreq_strbl = TRUE;
       chkfreq_type  = REG_INT;
       ChkTypes_table.io_def[current].frequency = ChkFrequency[i];
-      ptr_array[0] = (void *)&(ChkTypes_table.io_def[current].frequency);
+      ptr_array[0]  = (void *)&(ChkTypes_table.io_def[current].frequency);
+      chkfreq_min   = 0;
+      chkfreq_max   = 1000;
 
       Register_params(1,
 		      &chkfreq_label,
 		      &chkfreq_strbl,
 		      ptr_array,
-		      &chkfreq_type);
+		      &chkfreq_type,
+		      &chkfreq_min, 
+		      &chkfreq_max);
 
       /* Store the handle given to this parameter - this line MUST
          immediately succeed the call to Register_params */
@@ -1536,7 +1554,9 @@ int Register_params(int    NumParams,
 		    char* *ParamLabels,
 		    int   *ParamSteerable,
 		    void **ParamPtrs,
-		    int   *ParamTypes)
+		    int   *ParamTypes,
+		    void  *ParamMinima,
+		    void  *ParamMaxima)
 {
   int i;
   int current;
@@ -2143,6 +2163,11 @@ int Emit_param_defs(){
 	  pbuf += sprintf(pbuf, "<Is_internal>FALSE</Is_internal>\n"
 			        "</Param>\n");
 	}
+
+	pbuf += sprintf(pbuf, "<Min_value>%s</Min_value>"
+			"<Max_value>%s</Max_value>\n", 
+			Params_table.param[i].min_val, 
+			Params_table.param[i].max_val);
       }
     }
   }
