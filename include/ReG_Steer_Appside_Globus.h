@@ -76,8 +76,6 @@ typedef struct
   /* status indicators for socket comms*/
   int				listener_status;  
   int				comms_status;
-  /* Used to flag whether socket is ready to be read/written */
-  int                           data_status;
 
   globus_mutex_t		mutex;
   globus_cond_t			cond;
@@ -127,23 +125,10 @@ extern void Globus_accept_callback (void	       *callback_arg,
 				    globus_io_handle_t *handle,
 				    globus_result_t	resultparam);
 
-extern void Globus_read_callback (void		*callback_arg,
-				  globus_io_handle_t	*handle,
-				  globus_result_t     resultparam);
-
-extern void Globus_write_callback (void		*callback_arg,
-				   globus_io_handle_t	*handle,
-				   globus_result_t     resultparam);
-
-extern void Globus_except_callback (void		*callback_arg,
-				    globus_io_handle_t	*handle,
-				    globus_result_t     resultparam);
-
 /* Register callback function Globus_connector_callback to attempt to
    connect using globals connector_hostname and connector_port - use
    of globals will be removed eventually */
 extern int Globus_create_connector(socket_io_type * const socket_info);
-
 
 /* The connector callback function */
 extern void Globus_connector_callback (void               *callback_arg,
