@@ -333,7 +333,7 @@ PROGRAM mini_app
 !!$
 !!$      END DO
 !!$
-!!$      CALL consume_stop_f(iohandle)
+!!$      CALL consume_stop_f(iohandle, status)
 !!$    END IF
 
     CALL steering_control_f(iloop, num_params_changed, changed_param_labels, &
