@@ -301,6 +301,8 @@ int main(){
   for(i=0; i<nloops; i++){
 
     sleep(sleep_time); /* Pretend to do some work */
+    /* usleep(sleep_time*1000000); */
+
     printf("\ni = %d\n", i);
 
     /* Talk to the steering client (if one is connected) */
@@ -473,8 +475,7 @@ int main(){
 		  /* Add this filename to the record of the checkpoint */
 		  Add_checkpoint_file(chktype_handle[j], chk_tag);
 
-		  fp = fopen(chk_tag, "w");
-		  if(fp){
+		  if(fp = fopen(chk_tag, "w")){
 		    fprintf(fp, "Chkpoint data goes here\n");
 		    fclose(fp);
 		    sprintf(chk_tag,"%d", itag);
