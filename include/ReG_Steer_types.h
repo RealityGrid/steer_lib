@@ -225,7 +225,7 @@ typedef int REG_IOHandleType;
 
 #define REG_INITIAL_CHK_LOG_SIZE 50
 #define REG_LOG_FILENAME         "ReG_checkpoint_log.xml"
-#define REG_PARAM_LOG_FILENAME   "ReG_params_log.xml"
+#define REG_PARAM_LOG_FILENAME   "ReG_params_log.dat"
 
 #define REG_LOG_STEERING 1
 
