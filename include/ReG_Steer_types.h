@@ -90,10 +90,10 @@
 #define REG_MEM_FAIL 3
 
 /* Limit on number of commands steerer can send at any one time */
-#define REG_MAX_NUM_STR_CMDS 50
+#define REG_MAX_NUM_STR_CMDS 20
 
 /* Limit on number of parameters steerer can modify at any one time */
-#define REG_MAX_NUM_STR_PARAMS 100
+#define REG_MAX_NUM_STR_PARAMS 20
 
 /* Initial sizes for internal tables of registered IO types 
    and parameters */
@@ -194,6 +194,7 @@
 #define STATUS      4
 #define CONTROL     5
 #define CHK_DEFS    6
+#define STEER_LOG   7
 
 /* Some type definitions - handles are simply integers for
    the moment */

@@ -130,6 +130,9 @@ static int Emit_IOType_defs();
    (if any). */
 static int Emit_ChkType_defs();
 
+/* Emit any log entries that steerer doesn't know about */
+static int Emit_log();
+
 /* Consume a control message (if any present) from the steerer. Returns
    any commands and associated parameters (the latter as a space-separated 
    list in a string) that the application must deal with.  CommandParams is an

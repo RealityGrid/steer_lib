@@ -47,6 +47,21 @@
   #define PREFIX 
 #endif
 
+/* Data structure used to return details of checkpoint log
+   entries to steerer */
+
+typedef struct {
+
+  /* Tag associated with this checkpoing */
+  char   chk_tag[REG_MAX_STRING_LENGTH];
+  /* No. of parameters for which we have details at this chkpt */
+  int    num_param;
+  /* Associated parameter labels and values at this chkpt */
+  char   param_labels[REG_MAX_STRING_LENGTH][REG_MAX_NUM_STR_PARAMS];
+  char   param_values[REG_MAX_STRING_LENGTH][REG_MAX_NUM_STR_PARAMS];
+
+} Output_log_struct;
+
 /*-------------- Steerer-side function prototypes -------------*/
 
 /* Returns list of steerable applications returned by UNICORE 
@@ -94,6 +109,11 @@ extern PREFIX int Consume_status(int   SimHandle,
 				 int  *SeqNum,
 				 int  *NumCmds,
 				 int  *Commands);
+
+/* Consume a logging message emitted by the simulatin associated
+   with SimHandle.  Contents of the message are stored in the log
+   for that simulation. */
+extern PREFIX int Consume_log(int   SimHandle);
 
 /* Emit a steering-control message to the simulation associated
    with SimHandle.  Emits the specified commands (if any) and
@@ -213,3 +233,22 @@ extern PREFIX int Get_supp_cmd_number(int  sim_handle,
 extern PREFIX int Get_supp_cmds(int  sim_handle,
 				int  num_cmds,
 				int *cmd_ids);
+
+/* Query functions for getting checkpoint information out of logging 
+   structure */
+extern PREFIX int Get_chk_log_number(int  sim_handle,
+				     int  chk_handle,
+				     int *num_entries);
+
+/* Returns the FIRST num_entries checkpoint entries from the logs */
+extern PREFIX int Get_chk_log_entries(int                sim_handle,
+				      int                chk_handle,
+			              int                num_entries,
+				      Output_log_struct *entries);
+
+/* Returns the LAST num_entries checkpoint entries in reverse
+   chronological order */
+extern PREFIX int Get_chk_log_entries_reverse(int                sim_handle,
+					      int                chk_handle,
+					      int                num_entries,
+					      Output_log_struct *entries);

@@ -101,6 +101,22 @@ struct io_def_struct{
   struct io_struct *io;
 };
 
+struct log_entry_struct{
+
+  xmlChar                 *key;
+  xmlChar                 *chk_handle;
+  xmlChar                 *chk_tag;
+  struct param_struct     *first_param;
+  struct param_struct     *param;
+  struct log_entry_struct *next;
+};
+
+struct log_struct{
+
+  struct log_entry_struct *first_entry;
+  struct log_entry_struct *entry;
+};
+
 static struct msg_struct{
 
   int   	           msg_type;  
@@ -109,6 +125,7 @@ static struct msg_struct{
   struct supp_cmd_struct  *supp_cmd;
   struct io_def_struct    *io_def;
   struct io_def_struct    *chk_def;
+  struct log_struct       *log;
 } msg;
 
 /*-----------------------------------------------------------------*/
@@ -131,6 +148,10 @@ int parseChkTypeDef(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 		    struct io_def_struct *chk_def);
 int parseIOTypeDef(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 		   struct io_def_struct *io_def);
+int parseSteerLog(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
+	          struct log_struct *log);
+int parseSteerLogEntry(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
+	               struct log_entry_struct *log_entry);
 
 struct msg_struct       *New_msg_struct();
 struct status_struct    *New_status_struct();
@@ -140,6 +161,8 @@ struct io_def_struct    *New_io_def_struct();
 struct io_struct        *New_io_struct();
 struct param_struct     *New_param_struct();
 struct cmd_struct       *New_cmd_struct();
+struct log_entry_struct *New_log_entry_struct();
+struct log_struct       *New_log_struct();
 
 void Delete_msg_struct(struct msg_struct *msg);
 void Delete_status_struct(struct status_struct *status);
@@ -149,6 +172,8 @@ void Delete_param_struct(struct param_struct *param);
 void Delete_cmd_struct(struct cmd_struct *cmd);
 void Delete_io_def_struct(struct io_def_struct *io_def);
 void Delete_io_struct(struct io_struct *io);
+void Delete_log_entry_struct(struct log_entry_struct *log);
+void Delete_log_struct(struct log_struct *log);
 
 void Print_msg(struct msg_struct *msg);
 void Print_status_struct(struct status_struct *status);
@@ -158,4 +183,6 @@ void Print_cmd_struct(struct cmd_struct *cmd);
 void Print_supp_cmd_struct(struct supp_cmd_struct *supp_cmd);
 void Print_io_def_struct(struct io_def_struct   *io_def);
 void Print_io_struct(struct io_struct   *io);
+void Print_steer_log_struct(struct log_struct *log);
+void Print_steer_log_entry_struct(struct log_entry_struct *entry);
 

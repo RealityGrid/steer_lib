@@ -37,6 +37,10 @@
     Initial version by: A Porter, 12/8/2002.
     
 ---------------------------------------------------------------------------*/
+
+#ifndef __REG_STEER_COMMON_H__
+#define __REG_STEER_COMMON_H__
+
 #include "ReG_Steer_Globus_io.h"
 
 /* Following two includes are for use of stat system call 
@@ -45,6 +49,11 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#ifdef __cplusplus
+  #define PREFIX "C"
+#else
+  #define PREFIX 
+#endif
 
 #if REG_GLOBUS_STEERING
 typedef socket_io_type	socket_type_steering;
@@ -56,18 +65,32 @@ typedef int		socket_type_steering;
 
 typedef struct {
 
-  int   key;
-  int   seq_num_value;
-  int   chk_handle;
-  char  chk_tag[REG_MAX_STRING_LENGTH];
-  
+  int  handle;
+  char value[REG_MAX_STRING_LENGTH];
+
+} Param_log_entry_type;
+
+typedef struct {
+
+  int                  key;
+  int                  chk_handle;
+  char                 chk_tag[REG_MAX_STRING_LENGTH];
+  Param_log_entry_type param[REG_MAX_NUM_STR_PARAMS];
+  int                  sent_to_steerer;
+
 } Chk_log_entry_type;
 
 typedef struct {
 
+  /* Current no. of entries in table */
   int                 num_entries;
+  /* Max. no. of entries table can currently hold (is dynamic) */
   int                 max_entries;
+  /* No. of entries we have that haven't been sent to the steerer */
+  int                 num_unsent;
+  /* Next primary-key value */
   int                 primary_key_value;
+  /* Array of entries */
   Chk_log_entry_type *entry;
   
 } Chk_log_type;
@@ -155,52 +178,57 @@ typedef struct {
 
 /*-------- Function prototypes --------*/
 
-extern FILE *Open_next_file(char* base_name);
+extern PREFIX FILE *Open_next_file(char* base_name);
 
-extern int Create_lock_file(char *filename);
+extern PREFIX int Create_lock_file(char *filename);
 
-extern int Delete_file(char *filename);
+extern PREFIX int Delete_file(char *filename);
 
-extern int Directory_valid(char *directory);
+extern PREFIX int Directory_valid(char *directory);
 
-extern int Next_free_param_index(Param_table_type *table);
+extern PREFIX int Next_free_param_index(Param_table_type *table);
 
 /* A look-up function - return the index of the parameter with handle
    ParamHandle in the table pointed to by *table. Returns 
    REG_PARAM_HANDLE_NOTSET if no matching handle found. */
-extern int Param_index_from_handle(Param_table_type *table, int ParamHandle);
+extern PREFIX int Param_index_from_handle(Param_table_type *table, 
+				   int ParamHandle);
 
 /* A look-up function - return the index of the IOdef with handle 
    IOdefHandle in the table pointed to by *table.  Returns
    REG_IODEF_HANDLE_NOTSET if no matching handle found. */
-extern int IOdef_index_from_handle(IOdef_table_type *table, int IOdefHandle);
+extern PREFIX int IOdef_index_from_handle(IOdef_table_type *table, 
+					  int IOdefHandle);
 
-extern int Increment_param_registered(Param_table_type *table);
+extern PREFIX int Increment_param_registered(Param_table_type *table);
 
-extern int Increment_cmd_registered(Supp_cmd_table_type *table);
+extern PREFIX int Increment_cmd_registered(Supp_cmd_table_type *table);
 
-extern int Increment_iodef_registered(IOdef_table_type *table);
+extern PREFIX int Increment_iodef_registered(IOdef_table_type *table);
+
+extern PREFIX int Increment_log_entry(Chk_log_type *log);
 
 /* Called when steering finished - cleans up any files that either the app
    or steerer hasn't got around to consuming */
 
-extern int Remove_files(char* base_name);
+extern PREFIX int Remove_files(char* base_name);
 
-extern REG_MsgType Get_message_type(const char *name);
+extern PREFIX REG_MsgType Get_message_type(const char *name);
 
 /* Write ReG-specific XML header & footer information into supplied message
    buffer */
-extern int  Write_xml_header(char **pchar);
+extern PREFIX int  Write_xml_header(char **pchar);
 
-extern int  Write_xml_footer(char **pchar);
+extern PREFIX int  Write_xml_footer(char **pchar);
 
 /* Read ReG-specific header */
-extern int Consume_msg_header(socket_type_steering *sock_info,
-			      int *DataType,
-			      int *Count);
+extern PREFIX int Consume_msg_header(socket_type_steering *sock_info,
+				     int *DataType,
+				     int *Count);
 
 /* Construct and send ReG-specific header */
-extern int Emit_msg_header(socket_type_steering *sock_info,
-			   int DataType,
-			   int Count);
+extern PREFIX int Emit_msg_header(socket_type_steering *sock_info,
+				  int DataType,
+				  int Count);
 
+#endif

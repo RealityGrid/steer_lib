@@ -69,7 +69,7 @@ typedef struct {
   struct msg_struct  *msg;
 
   /* For steering via globus_io */
-  socket_type_steering      socket_info;
+  socket_type_steering socket_info;
 
   /* Table of registered commands for this sim */
   Supp_cmd_table_type Cmds_table;
@@ -82,6 +82,9 @@ typedef struct {
 
   /* Table of registered ChkTypes for this sim */
   IOdef_table_type    Chkdef_table;
+
+  /* Table for logging checkpoint activity */
+  Chk_log_type        Chk_log;
 
 } Sim_entry_type;
 
@@ -155,5 +158,9 @@ static int Finalize_connection(Sim_entry_type *sim);
 static int Finalize_connection_proxy(Sim_entry_type *sim);
 
 static int Finalize_connection_file(Sim_entry_type *sim);
+
+static int Get_log_entry_details(Param_table_type   *param_table,
+				 Chk_log_entry_type *in,
+				 Output_log_struct  *out);
 
 #endif
