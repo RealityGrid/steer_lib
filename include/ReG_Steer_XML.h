@@ -128,7 +128,7 @@ struct log_struct{
   struct log_entry_struct *entry;
 };
 
-static struct msg_struct{
+struct msg_struct{
 
   int   	           msg_type;  
   struct status_struct    *status;
@@ -137,7 +137,7 @@ static struct msg_struct{
   struct io_def_struct    *io_def;
   struct io_def_struct    *chk_def;
   struct log_struct       *log;
-} msg;
+};
 
 /*-----------------------------------------------------------------*/
 

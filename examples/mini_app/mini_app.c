@@ -368,7 +368,7 @@ int main(){
 		  /* Add this filename to the record of the checkpoint */
 		  Add_checkpoint_file(chktype_handle[j], chk_tag);
 
-		  if(fp = fopen(chk_tag, "w")){
+		  if( (fp = fopen(chk_tag, "w")) ){
 		    fprintf(fp, "Chkpoint data goes here\n");
 		    fclose(fp);
 		    sprintf(chk_tag,"%d", itag);
