@@ -41,11 +41,11 @@
 ARCH = SGI
 # Edit the two following lines if 32-bit binaries are desired 
 # (NBIT = 32 and C_FLAGS=-n32).
-NBIT = 32
+NBIT = 64
 CC = cc
-C_FLAGS = ${CFLAGS} -n32 -g
+C_FLAGS = ${CFLAGS} -64 -O1
 F90 = f90
-F90_FLAGS = -n32 -g
+F90_FLAGS = -64 -O1
 # Location of java compiler - used to produce proxy binary
 JAVAC          = 
 # Location of the M4 macro processor (used to generate F90 wrappers)

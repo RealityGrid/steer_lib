@@ -61,19 +61,3 @@ setenv GLOBUS_TCP_PORT_RANGE   2566,2566
 # Location of steering grid service that application will attach to
 setenv REG_SGS_ADDRESS http://vermont.mvc.mcc.ac.uk:50005/
 
-#---------------------------------------------------------------
-# This section only necessary if using the UNICORE 
-# framework
-
-# Handle of registry to bind to
-#setenv REGISTRY_GSH http://localhost:8888/Unicore/Registry
-
-# Location of ReG grid service
-#setenv REG_GS ${HOME}/projects/ReG-grid-service
-
-# Additions to java classpath for grid service and steering proxy
-#setenv CLASSPATH ${CLASSPATH}:${HOME}/bin
-#setenv CLASSPATH ${CLASSPATH}:${REG_GS}
-#setenv CLASSPATH ${CLASSPATH}:${REG_GS}/ajo.jar
-#---------------------------------------------------------------
-
