@@ -1779,6 +1779,7 @@ int Emit_start(int  IOType,
 {
 #if !REG_GLOBUS_SAMPLES || !REG_SOCKET_SAMPLES
   char *pchar;
+  int   len;
 #endif
 
   /* Check that steering is enabled */
@@ -1818,12 +1819,32 @@ int Emit_start(int  IOType,
   /* Currently have no way of looking up what filename to use so 
      hardwire... */
 
+  len = strlen(IOTypes_table.io_def[*IOTypeIndex].directory) +
+    strlen(IOTypes_table.io_def[*IOTypeIndex].label);
+
+  if(len > REG_MAX_STRING_LENGTH){
+
+    fprintf(stderr, "Emit_start: combination of filename + "
+	    "directory path exceeds %d characters: increase "
+	    "REG_MAX_STRING_LENGTH\n", REG_MAX_STRING_LENGTH);
+    return REG_FAILURE;
+  }
+
   /* In the short term, use the label as the filename */
-  strcpy(IOTypes_table.io_def[*IOTypeIndex].filename, 
-	 IOTypes_table.io_def[*IOTypeIndex].label);
+  sprintf(IOTypes_table.io_def[*IOTypeIndex].filename, 
+	  "%s%s", IOTypes_table.io_def[*IOTypeIndex].directory,
+	  IOTypes_table.io_def[*IOTypeIndex].label);
+
+  /* Remove trailing white space */
+  while(IOTypes_table.io_def[*IOTypeIndex].filename[--len] == ' ');
+
+  /* Terminate string and correct length of string (since final
+     character we looked at wasn't actually blank) */
+  IOTypes_table.io_def[*IOTypeIndex].filename[++len] = '\0';
+
   /* Replace any spaces with '_' */
   pchar = strchr(IOTypes_table.io_def[*IOTypeIndex].filename, ' ');
-  while( pchar && ((pchar - IOTypes_table.io_def[*IOTypeIndex].label + 1) < REG_MAX_STRING_LENGTH) ){
+  while( pchar && ((pchar - IOTypes_table.io_def[*IOTypeIndex].filename + 1) < len) ){
     *pchar = '_';
     pchar = strchr(++pchar,' ');
   }
@@ -4482,7 +4503,7 @@ int Initialize_IOType_transport(const int direction,
 
 #else
 
-  return REG_SUCCESS;
+  return Initialize_IOType_transport_file(direction, index);
 #endif
 }
 

@@ -72,6 +72,12 @@ int Get_data_source_address_file(int                 dummy,
 				 char               *hostname,
 				 unsigned short int *port);
 
+/* Initialise IOType-related stuff for file-based IO.  Currently
+   just gets the directory in which to put data files (or read 
+   them from) from the REG_DATA_DIRECTORY env. variable */ 
+int Initialize_IOType_transport_file(int direction, 
+				     int index);
+
 /* Checks to see if there is any data available to read for IOtype
    with index 'index' */
 int Consume_start_data_check_file(int index);

@@ -395,13 +395,22 @@ int Consume_start_data_check_file(int index){
   char   fileroot[REG_MAX_STRING_LENGTH];
 
   /* In the short term, use the label (with spaces replaced by
-     '_'s as the filename */
-  strcpy(fileroot, IOTypes_table.io_def[index].label);
+     '_'s) as the filename */
+  sprintf(fileroot, "%s%s", IOTypes_table.io_def[index].directory,
+	  IOTypes_table.io_def[index].label);
+  /*  strcpy(fileroot, IOTypes_table.io_def[index].label);*/
+
+  /* Remove trailing white space */
+  i = strlen(fileroot);
+  while(fileroot[--i] == ' ');
+
+  /* Terminate string and correct length of string (since final
+     character we looked at wasn't actually blank) */
+  fileroot[++i] = '\0';
 
   /* Replace any spaces with '_' */
   pchar = strchr(fileroot, ' ');
-  while( pchar && ((pchar - fileroot + 1) 
-		   < REG_MAX_STRING_LENGTH) ){
+  while( pchar && ((pchar - fileroot + 1) < i) ){
     *pchar = '_';
     pchar = strchr(++pchar,' ');
   }
@@ -814,6 +823,53 @@ int Consume_msg_header_file(int  index,
     IOTypes_table.io_def[index].fp = NULL;
     remove(IOTypes_table.io_def[index].filename);
     return REG_FAILURE;
+  }
+
+  return REG_SUCCESS;
+}
+
+/*----------------------------------------------------------------*/
+
+int Initialize_IOType_transport_file(int direction, 
+				     int index)
+{
+  char *pchar;
+  int   len;
+
+  /* This is only simple - we use the same directory for every
+     IOType, irrespective of label or direction (input/output). */
+  if(pchar = getenv("REG_DATA_DIRECTORY")){
+
+    len = strlen(pchar);
+    if(len > REG_MAX_STRING_LENGTH){
+
+      fprintf(stderr, "Initialize_IOType_transport_file: content of "
+	      "REG_DATA_DIRECTORY env. variable exceeds %d\n"
+	      "characters - increase REG_MAX_STRING_LENGTH\n", 
+	      REG_MAX_STRING_LENGTH);
+      return REG_FAILURE;
+    }
+
+   /* Check that path ends in '/' - if not then add one */
+    if(pchar[len-1] != '/'){
+
+      sprintf(IOTypes_table.io_def[index].directory, "%s/", pchar);
+    }
+    else{
+      strcpy(IOTypes_table.io_def[index].directory, pchar);
+    }
+#if REG_DEBUG
+    fprintf(stderr, "Initialize_IOType_transport_file: will use following"
+	    " directory for data files: %s\n", 
+	    IOTypes_table.io_def[index].directory);
+#endif    
+  }
+  else{
+    IOTypes_table.io_def[index].directory[0] = '\0';
+#if REG_DEBUG
+    fprintf(stderr, "Initialize_IOType_transport_file: will use current"
+	    " working directory for data files\n");
+#endif    
   }
 
   return REG_SUCCESS;
