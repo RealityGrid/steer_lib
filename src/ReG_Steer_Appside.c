@@ -2037,23 +2037,23 @@ int Make_vtk_buffer(char  *header,
   /* Make ASCII header to describe data to vtk */
 
   pchar = header;
-  pchar += sprintf(pchar, "%-128s", "# AVS field file\n");
-  pchar += sprintf(pchar, "%-128s", "ndim=3\n");
-  sprintf(text, "dim1= %d\n", nx);
-  pchar += sprintf(pchar, "%-128s", text);
-  sprintf(text, "dim2= %d\n", ny);
-  pchar += sprintf(pchar, "%-128s", text);
-  sprintf(text, "dim3= %d\n", nz);
-  pchar += sprintf(pchar, "%-128s", text);
-  pchar += sprintf(pchar, "%-128s", "nspace=3\n");
-  pchar += sprintf(pchar, "%-128s", "field=uniform\n");
-  pchar += sprintf(pchar, "%-128s", "veclen=1\n");
-  pchar += sprintf(pchar, "%-128s", "data=xdr_float\n");
-  pchar += sprintf(pchar, "%-128s", "variable 1 filetype=binary "
-  		   "skip=0000000 stride=2\n");
-  pchar += sprintf(pchar, "%-128s", "variable 2 filetype=binary "
-  		   "skip=0000008 stride=2\n");
-  pchar += sprintf(pchar, "%-128s", "END_OF_HEADER\n");
+  pchar += sprintf(pchar, "%128-s\n", "# AVS field file");
+  pchar += sprintf(pchar, "%128-s\n", "ndim=3");
+  sprintf(text, "dim1= %d", nx);
+  pchar += sprintf(pchar, "%128-s\n", text);
+  sprintf(text, "dim2= %d", ny);
+  pchar += sprintf(pchar, "%128-s\n", text);
+  sprintf(text, "dim3= %d", nz);
+  pchar += sprintf(pchar, "%128-s\n", text);
+  pchar += sprintf(pchar, "%128-s\n", "nspace=3");
+  pchar += sprintf(pchar, "%128-s\n", "field=uniform");
+  pchar += sprintf(pchar, "%128-s\n", "veclen=1");
+  pchar += sprintf(pchar, "%128-s\n", "data=xdr_float");
+  pchar += sprintf(pchar, "%128-s\n", "variable 1 filetype=binary "
+  		   "skip=0000000 stride=2");
+  pchar += sprintf(pchar, "%128-s\n", "variable 2 filetype=binary "
+  		   "skip=0000008 stride=2");
+  pchar += sprintf(pchar, "%128-s\n", "END_OF_HEADER");
 
   /* Make an array of data */
   fptr = array;
