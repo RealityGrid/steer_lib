@@ -27,9 +27,8 @@ typedef struct {
 
 typedef struct {
 
-  int   cmd_id;
-  int   data_int;
-  float data_flt;
+  int               cmd_id;
+  Param_table_type *cmd_params;
 
 }supp_cmd_entry;
 
@@ -97,10 +96,10 @@ typedef struct {
 
   enum {CMD_NOTSET = 0,
 	CMD_ID,
-	CMD_DATA_INT,
-	CMD_DATA_FLT
+	CMD_PARAM
   }                    field_type;
 
+  param_xml_struct    *param_struct;
   Supp_cmd_table_type *table;
 
 } supp_cmds_xml_struct;
