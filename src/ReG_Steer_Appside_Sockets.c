@@ -46,6 +46,10 @@
 #include <signal.h>
 #include <sys/time.h>
 
+#ifdef _AIX
+#include <fcntl.h>
+#endif
+
 #ifndef REG_DEBUG
 #define REG_DEBUG 0
 #endif
@@ -1057,12 +1061,22 @@ int Consume_start_data_check_sockets(const int index) {
   while(!(pstart = strstr(buffer, REG_DATA_HEADER))) {
 
 #ifdef _AIX
-    /* So it looks like AIX doesn't block by default... But that might not 
-     * be the case in reality so this next line may need to be wrapped in
-     * calls to fcntl()... Linux and IRIX understand the MSG_DONTWAIT flag */
-    if((nbytes = recv(sock_info->connector_handle, buffer, REG_PACKET_SIZE, 0)) <= 0) {
+
+    /* So it looks like AIX blocks by default... So make the socket
+     * non-blocking as we can't control this with flags to recv() in AIX... */
+    fcntl(sock_info->connector_handle, F_SETFL, fcntl(sock_info->connector_handle, F_GETFL)|O_NONBLOCK);
+
+    nbytes = recv(sock_info->connector_handle, buffer, REG_PACKET_SIZE, 0);
+
+    /* ...And turn off non-blocking again... */
+    fcntl(sock_info->connector_handle, F_SETFL, fcntl(sock_info->connector_handle, F_GETFL)&~O_NONBLOCK);
+
+    if(nbytes <= 0) {
+
 #else
+
     if((nbytes = recv(sock_info->connector_handle, buffer, REG_PACKET_SIZE, MSG_DONTWAIT)) <= 0) {
+
 #endif
 
       if(nbytes == 0) {
@@ -1107,6 +1121,7 @@ int Consume_start_data_check_sockets(const int index) {
       attempt_reconnect = 0;
       memset(buffer, '\0', 1);
     }
+
 #if REG_DEBUG
     fprintf(stderr, "!");
 #endif
