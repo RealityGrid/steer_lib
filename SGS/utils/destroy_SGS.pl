@@ -13,9 +13,9 @@ if(($#ARGV + 1) != 1){
 
 $address = $ARGV[0];
 
-$ans=  SOAP::Lite
-       -> uri('SGS')
-       -> proxy($address)
-       -> Destroy()
-       -> result;
+SOAP::Lite
+    -> uri('SGS')
+    -> proxy($address)
+    -> Destroy()
+    -> result;
 
