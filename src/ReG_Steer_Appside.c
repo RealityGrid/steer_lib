@@ -431,77 +431,84 @@ int Register_IOTypes(int    NumTypes,
     IOTypes_table.io_def[current].use_xdr = FALSE;
 
     /* set up socket_info for callback */
-    Globus_socket_info_init(&(IOTypes_table.io_def[current].socket_info));
-
-    if (direction[i] == REG_IO_OUT)
-    {
-      /* open socket and register callback function to listen for and
-	 accept connections */
-      if (Globus_create_listener(&(IOTypes_table.io_def[current].socket_info)) != REG_SUCCESS) {
+    if (Globus_socket_info_init(&(IOTypes_table.io_def[current].socket_info)) != REG_SUCCESS) {
 #if DEBUG
-	fprintf(stderr, "Register_IOTypes: failed to create listener "
-		"for IOType\n");
+	fprintf(stderr, "Register_IOTypes: failed to initialise socket info for IOType\n");
 #endif
 	return_status = REG_FAILURE;
-      }
-      else{
-
-#if DEBUG
-	fprintf(stderr, "Register_IOTypes: Created listener on port %d, "
-		"index %d, label %s\n", 
-		IOTypes_table.io_def[current].socket_info.connector_port, 
-		current, IOLabel[i] );
-#endif
-	/* attempt to kick the callback function (in case accept callback) */
-	Globus_callback_poll(&(IOTypes_table.io_def[current].socket_info));
-      }
-	
-    }
-    else if (direction[i] == REG_IO_IN)
-    {
-      /* register connector against port */
-      /* get hostname and port from environment variables */
+    } 
+    else {
       
-      pchar = getenv("REG_CONNECTOR_HOSTNAME");
-      if (pchar) {
-	len = strlen(pchar);
-	if (len < REG_MAX_STRING_LENGTH) {
-	  sprintf(IOTypes_table.io_def[current].socket_info.connector_hostname,
-		  pchar);
-	  hostname_ok = 1;
-	}
-      }
-      /* SMR XXX add error handling */
-      pchar = getenv("REG_CONNECTOR_PORT");
-      if (pchar) {
-	IOTypes_table.io_def[current].socket_info.connector_port = atoi(pchar);
-	port_ok = 1;
-      }
-
-      if (port_ok && hostname_ok) {
-
-	if (Globus_create_connector(&(IOTypes_table.io_def[current].socket_info)) != REG_SUCCESS) {
+      if (direction[i] == REG_IO_OUT)
+      {
+	/* open socket and register callback function to listen for and
+	   accept connections */
+	if (Globus_create_listener(&(IOTypes_table.io_def[current].socket_info)) != REG_SUCCESS) {
 #if DEBUG
-	fprintf(stderr, "Register_IOTypes: failed to register connector "
-		"for IOType\n");
+	  fprintf(stderr, "Register_IOTypes: failed to create listener "
+		  "for IOType\n");
 #endif
 	  return_status = REG_FAILURE;
 	}
 	else{
-
+	  
 #if DEBUG
-	  fprintf(stderr, "Register_IOTypes: registered connector on "
-		  "port %d, hostname = %s, index %d, label %s\n", 
-		  IOTypes_table.io_def[current].socket_info.connector_port,
-		  IOTypes_table.io_def[current].socket_info.connector_hostname,
+	  fprintf(stderr, "Register_IOTypes: Created listener on port %d, "
+		  "index %d, label %s\n", 
+		  IOTypes_table.io_def[current].socket_info.listener_port, 
 		  current, IOLabel[i] );
 #endif
-
+	  /* attempt to kick the callback function (in case accept callback) */
+	  Globus_callback_poll(&(IOTypes_table.io_def[current].socket_info));
 	}
+	
       }
-      else
+      else if (direction[i] == REG_IO_IN)
+	{
+	  /* register connector against port */
+	  /* get hostname and port from environment variables */
+	  
+	  pchar = getenv("REG_CONNECTOR_HOSTNAME");
+	  if (pchar) {
+	    len = strlen(pchar);
+	    if (len < REG_MAX_STRING_LENGTH) {
+	      sprintf(IOTypes_table.io_def[current].socket_info.connector_hostname,
+		      pchar);
+	      hostname_ok = 1;
+	    }
+	  }
+	  /* SMR XXX add error handling */
+	  pchar = getenv("REG_CONNECTOR_PORT");
+	  if (pchar) {
+	    IOTypes_table.io_def[current].socket_info.connector_port = atoi(pchar);
+	    port_ok = 1;
+	  }
+	  
+	  if (port_ok && hostname_ok) {
+	    
+	    if (Globus_create_connector(&(IOTypes_table.io_def[current].socket_info)) != REG_SUCCESS) {
+#if DEBUG
+	      fprintf(stderr, "Register_IOTypes: failed to register connector "
+		      "for IOType\n");
+#endif
+	      return_status = REG_FAILURE;
+	    }
+	    else{
+
+#if DEBUG
+	      fprintf(stderr, "Register_IOTypes: registered connector on "
+		      "port %d, hostname = %s, index %d, label %s\n", 
+		      IOTypes_table.io_def[current].socket_info.connector_port,
+		      IOTypes_table.io_def[current].socket_info.connector_hostname,
+		      current, IOLabel[i] );
+#endif
+	      
+	    }
+	  }
+	  else
 	fprintf(stderr, "Register_IOTypes: cannot create connector as "
 		"port and hostname not set\n");
+	}
     }
 
     /* Create, store and return a handle for this IOType */
@@ -729,7 +736,6 @@ int Consume_data_slice(int    IOTypeIndex,
 {
   int              i;
   int              return_status = REG_SUCCESS;
-  globus_object_t *err; 
   globus_result_t  result;
   globus_size_t    nbytes;
   globus_size_t    num_bytes_to_read;
@@ -854,28 +860,7 @@ int Consume_data_slice(int    IOTypeIndex,
   if(result != GLOBUS_SUCCESS){
 
     fprintf(stderr, "Consume_data_slice: error globus_io_read\n");
-    err =  globus_error_get(result);
-
-    if (globus_object_type_match(GLOBUS_IO_ERROR_TYPE_NULL_PARAMETER,
-				 globus_object_get_type(err))) {
-     fprintf(stderr, " - globus error type: null parameter\n");
-    }
-    else if (globus_object_type_match(GLOBUS_IO_ERROR_TYPE_NOT_INITIALIZED,
-				      globus_object_get_type(err))) {
-     fprintf(stderr, " - globus error type: not initialised\n");
-    }
-    else if (globus_object_type_match(GLOBUS_IO_ERROR_TYPE_CLOSE_ALREADY_REGISTERED,
-				      globus_object_get_type(err))) {
-     fprintf(stderr, " - globus error type: close already registered\n");
-    }
-    else if (globus_object_type_match(GLOBUS_IO_ERROR_TYPE_READ_ALREADY_REGISTERED, 
-				      globus_object_get_type(err))) {
-     fprintf(stderr, " - globus error type: read already registered\n");
-    }
-    else if (globus_object_type_match(GLOBUS_ERROR_TYPE_TYPE_MISMATCH,
-				      globus_object_get_type(err))) {
-     fprintf(stderr, " - globus error type: type mismatch\n");
-    }
+    Globus_error_print(result);
 
     /* Reset use_xdr flag set as only valid on a per-slice basis */
     IOTypes_table.io_def[IOTypeIndex].use_xdr = FALSE;
@@ -1258,7 +1243,6 @@ int Emit_data_slice(int		      IOTypeIndex,
   int              return_status = REG_SUCCESS;
   int              datatype;
   int              i;
-  globus_object_t *err; 
   globus_result_t  result;
   globus_size_t    nbytes;
   globus_size_t    num_bytes_to_send;
@@ -1400,37 +1384,7 @@ int Emit_data_slice(int		      IOTypeIndex,
 
   if (result != GLOBUS_SUCCESS ) {
     fprintf(stderr, "Emit_data_slice: error globus_io_write\n");
-    err =  globus_error_get(result);
-
-    if (globus_object_type_match(GLOBUS_IO_ERROR_TYPE_NULL_PARAMETER,
-				 globus_object_get_type(err))) {
-     fprintf(stderr, " - globus error type: null parameter\n");
-    }
-    else if (globus_object_type_match(GLOBUS_IO_ERROR_TYPE_NOT_INITIALIZED,
-				      globus_object_get_type(err))) {
-     fprintf(stderr, " - globus error type: not initialised\n");
-    }
-    else if (globus_object_type_match(GLOBUS_IO_ERROR_TYPE_CLOSE_ALREADY_REGISTERED,
-				      globus_object_get_type(err))) {
-     fprintf(stderr, " - globus error type: close already registered\n");
-    }
-    else if (globus_object_type_match(GLOBUS_IO_ERROR_TYPE_WRITE_ALREADY_REGISTERED, 
-				      globus_object_get_type(err))) {
-     fprintf(stderr, " - globus error type: write already registered\n");
-    }
-    else if (globus_object_type_match(GLOBUS_ERROR_TYPE_TYPE_MISMATCH,
-				      globus_object_get_type(err))) {
-     fprintf(stderr, " - globus error type: type mismatch\n");
-    }
-    else if (globus_object_type_match(GLOBUS_IO_ERROR_TYPE_BAD_PROTECTION,
-				      globus_object_get_type(err))) {
-     fprintf(stderr, " - globus error type: bad protection\n");
-    }
-    else if (globus_object_type_match(GLOBUS_IO_ERROR_TYPE_SYSTEM_FAILURE,
-				      globus_object_get_type(err))) {
-     fprintf(stderr, " - globus error type: system failure\n");
-    }
-
+    Globus_error_print(result);
     return REG_FAILURE;
   }
 
@@ -3135,32 +3089,40 @@ int Initialize_steering_connection_globus(int  NumSupportedCmds,
   Steerer_connection.socket_info.listener_port = (unsigned short int)tmp_port;
 
   /* Set-up socket_info for callback */
-  Globus_socket_info_init(&(Steerer_connection.socket_info));
-
-  if(Globus_create_listener(&(Steerer_connection.socket_info)) != REG_SUCCESS){
-
+  if (Globus_socket_info_init(&(Steerer_connection.socket_info)) != REG_SUCCESS){
 #if DEBUG
     fprintf(stderr, "Initialize_steering_connection_globus: failed to "
-	    "create listener for IOType\n");
+	    "initialise socket info\n");
 #endif
     return_status = REG_FAILURE;
   }
-  else{
+  else {
+
+    if(Globus_create_listener(&(Steerer_connection.socket_info)) != REG_SUCCESS){
 
 #if DEBUG
-    fprintf(stderr, "Initialize_steering_connection_globus: Created "
-	    "listener on port %d\n", 
-	    Steerer_connection.socket_info.connector_port);
+      fprintf(stderr, "Initialize_steering_connection_globus: failed to "
+	      "create listener for IOType\n");
 #endif
-    /* attempt to kick the callback function (in case accept callback) */
-    Globus_callback_poll(&(Steerer_connection.socket_info));
+      return_status = REG_FAILURE;
+    }
+    else{
 
-    /* Create & store the msg that we will need to send to steerer when
-       it first connects */
-    Make_supp_cmds_msg(NumSupportedCmds, SupportedCmds, 
-		       Steerer_connection.supp_cmds);
+#if DEBUG
+      fprintf(stderr, "Initialize_steering_connection_globus: Created "
+	      "listener on port %d\n", 
+	      Steerer_connection.socket_info.connector_port);
+#endif
+      /* attempt to kick the callback function (in case accept callback) */
+      Globus_callback_poll(&(Steerer_connection.socket_info));
+      
+      /* Create & store the msg that we will need to send to steerer when
+	 it first connects */
+      Make_supp_cmds_msg(NumSupportedCmds, SupportedCmds, 
+			 Steerer_connection.supp_cmds);
+    }
   }
-  
+
   return return_status;
 }
 

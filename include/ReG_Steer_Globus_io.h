@@ -37,6 +37,18 @@
 
 ---------------------------------------------------------------------------*/
 
+/*----------------------------------------------------------------------------
+   Globus IO implementation note:
+
+   The Globus IO has only been tested using NON-threaded flavors of
+   Globus.  The socket_io_type structure has globus_mutex_t and
+   globus_cond_t members which are required should the code need to be
+   used with a threaded flavor of Globus.  However, only the callback
+   functions have been coded to use these.  Some effor would be
+   required to make the rest of the code threadsafe in order to use
+   threaded Globus.
+
+---------------------------------------------------------------------------*/
 
 #ifndef __REG_STEER_GLOBUS_IO_H__
 #define __REG_STEER_GLOBUS_IO_H__
@@ -51,9 +63,13 @@ typedef struct
   /* port for socket connection */
   unsigned short int		listener_port;
 
+  /* socket attributes */
+  globus_io_attr_t		attr;
+
   /* socket connection handles */
   globus_io_handle_t		listener_handle;
   globus_io_handle_t		conn_handle;
+
   /* status indicators for socket comms*/
   int				listener_status;  
   int				comms_status;
@@ -66,12 +82,6 @@ typedef struct
 
 } socket_io_type;
 
-
-/* SMR XXX - globals for sockets - temp solution
-char			connector_hostname[REG_MAX_STRING_LENGTH];
-unsigned short int	connector_port;
-*/
-
 /* whether globus_io module has been activated */
 static int		globus_module_activated = FALSE;
 
@@ -83,9 +93,11 @@ extern int Globus_io_activate(void);
 /* Deactivate the globus module if it was ever activated */
 extern void Globus_io_deactivate(void);
 
-/* Initialise socket_io_type structure - this is member of 
-   IOdef_entry structure in in IOTypes_table */
-extern void Globus_socket_info_init(socket_io_type * const socket_info);
+/* Initialise socket_io_type structure */
+extern int Globus_socket_info_init(socket_io_type * const socket_info);
+
+/* Cleanup members of socket_io_type structure */
+extern void Globus_socket_info_cleanup(socket_io_type * const socket_info);
 
 /* Kick the Globus callback mechanism */
 extern void Globus_callback_poll(socket_io_type * const socket_info);
@@ -129,7 +141,7 @@ extern void Globus_cleanup_listener_connection(socket_io_type * const socket_inf
 extern void Globus_cleanup_connector_connection(socket_io_type * const socket_info);
 
 /* Call globus funtion close connections for the conn_handle */
-extern void Globus_close_conn_handle(socket_io_type * const socket_info);
+extern void Globus_close_conn_handle(socket_io_type * const	socket_info);
 
 /* Call globus funtions to close listener handle */
 extern void Globus_close_listener_handle(socket_io_type * const socket_info);
@@ -159,5 +171,7 @@ extern void Globus_attempt_connector_connect(socket_io_type * const socket_info)
 /* Call globus functions to close failed socket and retry to connect */
 extern void Globus_retry_connect(socket_io_type * const socket_info);
 
+/* Call globus function to print out detail about error when DEBUG on*/
+extern void Globus_error_print(const globus_result_t result);
 
 #endif
