@@ -47,9 +47,9 @@ typedef struct {
   char  label[REG_MAX_STRING_LENGTH];
   char  filename[REG_MAX_STRING_LENGTH];
   int   handle;
-  /* Whether sample data is consumed or emitted */
+  /* Whether sample data is consumed or emitted
   enum {IN = 0,
-	OUT} direction;
+  OUT} direction; */
 
 } IOdef_entry;
 
