@@ -189,6 +189,13 @@ extern PREFIX int Emit_start(int  IOType,
 			     int  SeqNum,
 			     int *IOTypeIndex);
 
+/* Blocking version of Emit_start.  Blocks until IOType is ready to
+   send data OR the specified TimeOut (seconds) is exceeded. */
+extern PREFIX int Emit_start_blocking(int    IOType,
+				      int    SeqNum,
+				      int   *IOTypeIndex,
+				      float  TimeOut);
+
 /* Must be called following a call to Emit_start.  Emits <Count> items
    of type <DataType> as pointed to by <pData>. */
 extern PREFIX int Emit_data_slice(int	            IOTypeIndex,
@@ -203,6 +210,12 @@ extern PREFIX int Emit_stop(int	       *IOTypeIndex);
    ready for input. */
 extern PREFIX int Consume_start(int               IOType,
 				int		  *IOTypeIndex);
+
+/* Blocking version of above routine.  Blocks until data is available to
+   read OR TimeOut (seconds) is exceeded */
+extern PREFIX int Consume_start_blocking(int   IOType,
+					 int  *IOTypeIndex,
+					 float TimeOut);
 
 /* Must be called following a call to Consume_start.  Use to get the type
    and number of data objects in the next 'slice' - allows user to allocate

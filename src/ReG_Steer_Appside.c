@@ -1833,6 +1833,40 @@ int Consume_start(int  IOType,
 
 /*----------------------------------------------------------------*/
 
+int Consume_start_blocking(int   IOType,
+			   int  *IOTypeIndex,
+			   float TimeOut)
+{
+  unsigned long time_out_uS; // microseconds
+  unsigned long blocked_poll_interval = 10000; // microseconds
+  unsigned long wait_time;
+  int           status;
+
+  /* Check that steering is enabled */
+  if(!ReG_SteeringEnabled) return REG_SUCCESS;
+
+  /* Can only call this function if steering lib initialised */
+  if (!ReG_SteeringInit) return REG_FAILURE;
+
+  /* Convert time out from seconds to microseconds */
+  time_out_uS = (unsigned long)(TimeOut*1000000);
+
+  wait_time = 0;
+  while((status = Consume_start(IOType, IOTypeIndex)) != REG_SUCCESS) { 
+
+    usleep(blocked_poll_interval);
+    if((wait_time += blocked_poll_interval) > time_out_uS){
+#if REG_DEBUG
+      fprintf(stderr, "Consume_start_blocking: timed out\n");
+#endif
+      break;
+    }
+  } 
+
+  return status;
+}
+/*----------------------------------------------------------------*/
+
 int Consume_stop(int *IOTypeIndex)
 {
   int return_status = REG_SUCCESS;
@@ -2165,6 +2199,42 @@ int Emit_start(int  IOType,
     return REG_FAILURE;
   }
   return REG_SUCCESS;
+}
+
+/*----------------------------------------------------------------*/
+
+int Emit_start_blocking(int    IOType,
+			int    SeqNum,
+			int   *IOTypeIndex,
+			float  TimeOut)
+{
+  unsigned long time_out_uS; // microseconds
+  unsigned long blocked_poll_interval = 10000; // microseconds
+  unsigned long wait_time;
+  int           status;
+
+  /* Check that steering is enabled */
+  if(!ReG_SteeringEnabled) return REG_SUCCESS;
+
+  /* Can only call this function if steering lib initialised */
+  if (!ReG_SteeringInit) return REG_FAILURE;
+
+  /* Convert time out from seconds to microseconds */
+  time_out_uS = (unsigned long)(TimeOut*1000000);
+
+  wait_time = 0;
+  while((status = Emit_start(IOType, SeqNum, IOTypeIndex)) != REG_SUCCESS) { 
+
+    usleep(blocked_poll_interval);
+    if((wait_time += blocked_poll_interval) > time_out_uS){
+#if REG_DEBUG
+      fprintf(stderr, "Emit_start_blocking: timed out\n");
+#endif
+      break;
+    }
+  } 
+
+  return status;
 }
 
 /*----------------------------------------------------------------*/
