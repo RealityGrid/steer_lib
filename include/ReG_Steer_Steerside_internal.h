@@ -72,6 +72,8 @@ typedef struct {
 
   /* For steering via SOAP */
   struct {
+    /* whether we're steering via SOAP (1) or not (0) */
+    int  active;
     char address[REG_MAX_STRING_LENGTH];
     /* Holds list of names of service data elements on the SGS for which
        notifications are pending */
