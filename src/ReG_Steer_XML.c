@@ -133,7 +133,7 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg)
     /* Record the message type */
     msg->msg_type = Get_message_type((const char *)(cur->name));
 
-#if REG_DEBUG
+#if REG_DEBUG_FULL
     fprintf(stderr, "Parse_xml: Calling parseStatus...\n");
 #endif
     msg->status = New_status_struct();
@@ -144,7 +144,7 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg)
     /* Record the message type */
     msg->msg_type = Get_message_type((const char *)(cur->name));
 
-#if REG_DEBUG
+#if REG_DEBUG_FULL
     fprintf(stderr, "Parse_xml: Calling parseControl...\n");
 #endif
     msg->control = New_control_struct();
@@ -155,7 +155,7 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg)
     /* Record the message type */
     msg->msg_type = Get_message_type((const char *)(cur->name));
 
-#if REG_DEBUG
+#if REG_DEBUG_FULL
     fprintf(stderr, "Parse_xml: Calling parseSuppCmd...\n");
 #endif
     msg->supp_cmd = New_supp_cmd_struct();
@@ -166,7 +166,7 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg)
     /* Record the message type */
     msg->msg_type = Get_message_type((const char *)(cur->name));
 
-#if REG_DEBUG
+#if REG_DEBUG_FULL
     fprintf(stderr, "Parse_xml: Calling parseStatus...\n");
 #endif
     /* Use code for 'status' messages because one 
@@ -179,7 +179,7 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg)
     /* Record the message type */
     msg->msg_type = Get_message_type((const char *)(cur->name));
 
-#if REG_DEBUG
+#if REG_DEBUG_FULL
     fprintf(stderr, "Parse_xml: Calling parseIOTypeDef...\n");
 #endif
     msg->io_def = New_io_def_struct();
@@ -190,7 +190,7 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg)
     /* Record the message type */
     msg->msg_type = Get_message_type((const char *)(cur->name));
 
-#if REG_DEBUG
+#if REG_DEBUG_FULL
     fprintf(stderr, "Parse_xml: Calling parseChkTypeDef...\n");
 #endif
     msg->chk_def = New_io_def_struct();
@@ -201,7 +201,7 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg)
     /* Record the message type */
     msg->msg_type = Get_message_type((const char *)(cur->name));
 
-#if REG_DEBUG
+#if REG_DEBUG_FULL
     fprintf(stderr, "Parse_xml: Calling parseLog...\n");
 #endif
     msg->log = New_log_struct();
@@ -210,7 +210,7 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg)
 
   /* Print out what we've got */
 
-#if REG_DEBUG
+#if REG_DEBUG_FULL
   fprintf(stderr, "Parse_xml: Calling Print_msg...\n");
   Print_msg(msg);
 #endif
@@ -542,7 +542,7 @@ int parseLogEntry(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
       }
       return_status = parseChkLogEntry(doc, ns, cur, log->chk_log);
     }
-    else if( !xmlStrcmp(cur->name, (const xmlChar *)"Param_log_entry") 
+    else if( !xmlStrcmp(cur->name, (const xmlChar *)"Param") 
 	     && (cur->ns==ns)){
       if(!log->first_param_log){
 
@@ -553,6 +553,7 @@ int parseLogEntry(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 	log->param_log->next = New_param_struct();
 	log->param_log = log->param_log->next;
       }
+
       return_status = parseParam(doc, ns, cur, log->param_log);
     }
 
@@ -1162,9 +1163,8 @@ void Print_msg(struct msg_struct *msg)
   }
 
   if(msg->status){
-    fprintf(stderr, "Calling Print_status_struct...\n");
+
     Print_status_struct(msg->status);
-    fprintf(stderr, "...done\n");
   }
 
   if(msg->control){

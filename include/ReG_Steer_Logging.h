@@ -46,12 +46,15 @@ int Emit_log(Chk_log_type *log, int handle);
    of it and increments it by one, otherwise it sets it to zero. */
 int Set_log_primary_key(Chk_log_type *log);
 
-/* Allocate memory etc. for the log structure supplied */
-int Initialize_log(Chk_log_type *log);
+/* Allocate memory etc. for the log structure supplied.
+   log->filename must be set prior to call. */
+int Initialize_log(Chk_log_type *log, int log_type);
 
 /* Identifies format of log supplied in *buf & converts it to xml if
-   necessary.  Then calls Pack_send_log_entries. */
-int Emit_log_entries(Chk_log_type *log, char *buf);
+   necessary.  If the log is a parameter log then it pulls out values
+   of the parameter with the specified handle. Then calls 
+   Pack_send_log_entries. */
+int Emit_log_entries(Chk_log_type *log, char *buf, int handle);
 
 /* Open log file (in append mode) */
 int Open_log_file(Chk_log_type *log);
@@ -59,7 +62,10 @@ int Open_log_file(Chk_log_type *log);
 /* Close the log file */
 int Close_log_file(Chk_log_type *log);
 
-/* Save current contents of log to file */
+/* (Close and) delete the log file */
+int Delete_log_file(Chk_log_type *log);
+
+/* Save current contents of log to file and cache on SGS */
 int Save_log(Chk_log_type *log);
 
 /* Convert current log to xml and store in buffer pointed to by pchar.
@@ -89,8 +95,10 @@ int Log_to_columns(Chk_log_type *log, char **pchar, int *count,
 /* Convert a columnar-format log back into xml.  buf points to
    the columnar data (space delimited data on lines delimited by
    new-line chars) and out_buf points to a buffer pre-allocated
-   to receive the new format log. */
-int Log_columns_to_xml(char **buf, char* out_buf, int out_buf_size);
+   to receive the new format log. handle specifies which parameter
+   to pull out. */
+int Log_columns_to_xml(char **buf, char* out_buf, int out_buf_size, 
+		       int handle);
 
 /* Takes the xml document describing a log and splits it into separate
    entries which are packed into messages and sent to client */

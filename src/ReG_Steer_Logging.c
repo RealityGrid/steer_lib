@@ -63,21 +63,28 @@ extern int ReG_SteeringActive;
 
 /*----------------------------------------------------------------*/
 
-int Initialize_log(Chk_log_type *log)
+int Initialize_log(Chk_log_type *log, int log_type)
 {
   int i, j;
 
+  log->log_type         = log_type;
   log->num_entries 	= 0;
   log->max_entries 	= REG_INITIAL_CHK_LOG_SIZE;
   log->num_unsent  	= 0;
-  log->send_all    	= REG_TRUE;
-#if REG_SOAP_STEERING
-  if(log->log_type == PARAM){
-      log->send_all    	= REG_FALSE;
-  }
-#endif
   log->emit_in_progress = REG_FALSE;
   log->file_content     = NULL;
+  log->send_all    	= REG_TRUE;
+  if(log->log_type == PARAM){
+    for(i=0; i<REG_MAX_NUM_STR_PARAMS; i++){
+      log->param_send_all[i] = REG_TRUE;
+    }
+#if REG_SOAP_STEERING
+    log->send_all    	= REG_FALSE;
+#endif
+    /* We delete any existing parameter log file rather than
+       append to it */
+    Delete_log_file(log);
+  }
 
   Set_log_primary_key(log);
 
@@ -136,10 +143,21 @@ int Finalize_log(Chk_log_type *log)
 
 /*----------------------------------------------------------------*/
 
+int Delete_log_file(Chk_log_type *log)
+{
+  if(log->file_ptr){
+    fclose(log->file_ptr);
+  }
+
+  remove(log->filename);
+
+  return REG_SUCCESS;
+}
+
+/*----------------------------------------------------------------*/
+
 int Open_log_file(Chk_log_type *log)
 {
-  char filename[REG_MAX_STRING_LENGTH];
-
   if(log->file_ptr){
     fclose(log->file_ptr);
   }
@@ -396,10 +414,9 @@ int Param_log_to_xml(Chk_log_type *log, int handle, char **pchar,
 
       if(log->entry[i].param[j].handle == handle){
 
-	nbytes = snprintf(pentry, bytes_left, "<Param_log_entry>"
-			  "<Handle>%d</Handle>" 
-			  "<Value>%s</Value>"
-			  "</Param_log_entry>\n", 
+	nbytes = snprintf(pentry, bytes_left, "<Param>"
+			  "<Handle>%d</Handle><Value>%s</Value>"
+			  "</Param>\n", 
 			  log->entry[i].param[j].handle,
 			  log->entry[i].param[j].value);
 
@@ -735,11 +752,18 @@ int Emit_log(Chk_log_type *log, int handle)
 {
   char  filename[REG_MAX_STRING_LENGTH];
   int   size = 0;
+  int   index = 0;
   int   return_status = REG_SUCCESS;
+
+  if(log->log_type == PARAM){
+    index = Param_index_from_handle(&Params_table, handle);
+    if(index == REG_PARAM_HANDLE_NOTSET)return REG_FAILURE;
+    fprintf(stderr, "ARPDBG: Emit_log, index = %d\n", index);
+  }
 
   if(log->emit_in_progress == REG_TRUE){
 
-    if(Emit_log_entries(log, log->file_content) == REG_UNFINISHED){
+    if(Emit_log_entries(log, log->file_content, handle) == REG_UNFINISHED){
       return return_status;
     }
     log->emit_in_progress = REG_FALSE;
@@ -755,7 +779,8 @@ int Emit_log(Chk_log_type *log, int handle)
       return REG_FAILURE;
     }
   }
-  else if(log->send_all == REG_TRUE){
+  else if((log->log_type == CHKPT && log->send_all == REG_TRUE)||
+	  (log->log_type == PARAM && log->param_send_all[index] == REG_TRUE)){
 
 #if REG_DEBUG_FULL
     fprintf(stderr, "Emit_log: sending all saved log entries...\n");
@@ -780,7 +805,7 @@ int Emit_log(Chk_log_type *log, int handle)
       return REG_FAILURE;
     }
 
-    if (size > 0) Emit_log_entries(log, log->file_content);
+    if (size > 0) Emit_log_entries(log, log->file_content, handle);
 
     /* Re-open log-file for future buffering */
     if( Open_log_file(log) != REG_SUCCESS){
@@ -809,7 +834,13 @@ int Emit_log(Chk_log_type *log, int handle)
 
       return REG_FAILURE;
     }
-    log->send_all = REG_FALSE;
+
+    if(log->log_type == PARAM){
+      log->param_send_all[index] = REG_FALSE;
+    }
+    else{
+      log->send_all = REG_FALSE;
+    }
   }
   else{
 
@@ -831,8 +862,8 @@ int Emit_log(Chk_log_type *log, int handle)
   /* Pull the entries out of the buffer returned by Log_to_xml and
      send them to the steerer */
   if(size > 0){
-    if( (return_status = Emit_log_entries(log, 
-				   log->file_content)) == REG_UNFINISHED){
+    if( (return_status = Emit_log_entries(log, log->file_content, 
+					  handle)) == REG_UNFINISHED){
       return REG_SUCCESS;
     }
   }
@@ -846,7 +877,7 @@ int Emit_log(Chk_log_type *log, int handle)
   /* Send log of steering commands */
   if(strlen(log->pSteer_cmds) > 0){
 
-    Emit_log_entries(log, log->pSteer_cmds);
+    Emit_log_entries(log, log->pSteer_cmds, handle);
     log->pSteer_cmds[0]='\0';
     log->pSteer_cmds_slot = log->pSteer_cmds;
   }
@@ -863,7 +894,7 @@ int Emit_log(Chk_log_type *log, int handle)
 
 /*----------------------------------------------------------------*/
 
-int Emit_log_entries(Chk_log_type *log, char *buf)
+int Emit_log_entries(Chk_log_type *log, char *buf, int handle)
 {
   static char *pXmlBuf = NULL;
   static char *pmsg_buf = NULL;
@@ -896,7 +927,7 @@ int Emit_log_entries(Chk_log_type *log, char *buf)
       pXmlBuf = Global_scratch_buffer;
 
       status = Log_columns_to_xml(&pmsg_buf, Global_scratch_buffer, 
-				  REG_SCRATCH_BUFFER_SIZE);
+				  REG_SCRATCH_BUFFER_SIZE, handle);
       if(status == REG_FAILURE){
         if(log->log_type == PARAM){
 	  printf("ARPDBG: Log_columns_to_xml failed\n");
@@ -1109,7 +1140,8 @@ int Pack_send_log_entries(char **pBuf, int *msg_count)
 
 /*----------------------------------------------------------------*/
 
-int Log_columns_to_xml(char **buf, char* out_buf, int out_buf_size)
+int Log_columns_to_xml(char **buf, char* out_buf, int out_buf_size,
+		       int handle)
 {
   /* We have contents of log file as:
      key   <handle 0> <value 0> <handle 1> <value 1>... \n
@@ -1126,6 +1158,9 @@ int Log_columns_to_xml(char **buf, char* out_buf, int out_buf_size)
   int   i, key, count;
   int   nbytes = 0;
   int   bytes_left = out_buf_size;
+  char  handle_str[16];
+
+  sprintf(handle_str, "%d", handle);
 
   fields[0] = malloc(REG_MAX_NUM_STR_PARAMS*max_field_length*sizeof(char));
   if(!fields[0]){
@@ -1156,7 +1191,7 @@ int Log_columns_to_xml(char **buf, char* out_buf, int out_buf_size)
     (fields[count])[ptr2-ptr3] = '\0';
     count++;
 
-    nbytes = snprintf(pbuf, bytes_left, "<Log_entry><Key>%s</Key>", 
+    nbytes = snprintf(pbuf, bytes_left, "<Log_entry><Key>%s</Key><Param>", 
 		      fields[0]);
     if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
       *buf = ptr1;
@@ -1167,19 +1202,22 @@ int Log_columns_to_xml(char **buf, char* out_buf, int out_buf_size)
     bytes_left -= nbytes;
 
     for(i=1;i<count;i+=2){
-      nbytes = snprintf(pbuf, bytes_left, 
-			"<Param_log_entry><Handle>%s</Handle>"
-			"<Value>%s</Value></Param_log_entry>", 
-			fields[i], fields[i+1]);
-      if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
-	*buf = ptr1;
-	free(fields[0]);
-	return REG_SUCCESS;     
+      /* Only pull out the parameter with the requested handle */
+      if(strcmp(handle_str, fields[i]) == 0){
+	nbytes = snprintf(pbuf, bytes_left, 
+			  "<Handle>%s</Handle><Value>%s</Value>",
+			  fields[i], fields[i+1]);
+	if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
+	  *buf = ptr1;
+	  free(fields[0]);
+	  return REG_SUCCESS;     
+	}
+	pbuf += nbytes;
+	bytes_left -= nbytes;
+	break;
       }
-      pbuf += nbytes;
-      bytes_left -= nbytes;
     }
-    nbytes = snprintf(pbuf, bytes_left, "</Log_entry>\n");
+    nbytes = snprintf(pbuf, bytes_left, "</Param></Log_entry>\n");
     if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
       *buf = ptr1;
       free(fields[0]);

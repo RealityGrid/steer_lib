@@ -113,6 +113,7 @@ typedef struct {
      sent_to_steerer flags.  This used when a client detaches and
      another one attaches some time later. */
   int                 send_all;
+  int                 param_send_all[REG_MAX_NUM_STR_PARAMS];
   /* Flag to indicate whether a send of the log data (read in on
      a previous occasion) is still in progress.  This feature
      prevents a deluge of log messages being emitted. */

@@ -422,10 +422,10 @@ int Steering_initialize(char *AppName,
   /* Initialise log of checkpoints */
   /* Jens, 09.04.03: Moved these lines here because Open_log_file()
    * needs Initialize_steering_connection to be called before. */
-  sprintf(Chk_log.filename, "%s%s", Steerer_connection.file_root,
-	  REG_LOG_FILENAME);
-  Chk_log.log_type = CHKPT;
-  if( Initialize_log(&Chk_log) != REG_SUCCESS ){
+  strcpy(Chk_log.filename, Steerer_connection.file_root);
+  strcat(Chk_log.filename, REG_LOG_FILENAME);
+
+  if( Initialize_log(&Chk_log, CHKPT) != REG_SUCCESS ){
 
     fprintf(stderr, "Steering_initialize: failed to allocate memory "
 	    "for checkpoint logging\n");
@@ -440,10 +440,10 @@ int Steering_initialize(char *AppName,
   }
 
   /* Initialize table for logging parameter values */
-  sprintf(Param_log.filename, "%s%s", Steerer_connection.file_root,
-	  REG_PARAM_LOG_FILENAME);
-  Param_log.log_type = PARAM;
-  if( Initialize_log(&Param_log) != REG_SUCCESS ){
+  strcpy(Param_log.filename, Steerer_connection.file_root);
+  strcat(Param_log.filename, REG_PARAM_LOG_FILENAME);
+
+  if( Initialize_log(&Param_log, PARAM) != REG_SUCCESS ){
     fprintf(stderr, "Steering_initialize: failed to allocate memory "
 	    "for param logging\n");
     free(IOTypes_table.io_def);
@@ -3778,7 +3778,7 @@ int Consume_control(int    *NumCommands,
 
 int Detach_from_steerer()
 {
-
+  int i;
 #if REG_SOAP_STEERING
 
   Detach_from_steerer_soap();
@@ -3798,6 +3798,9 @@ int Detach_from_steerer()
 #else
   Param_log.send_all         = REG_TRUE;
 #endif
+  for(i=0; i<REG_MAX_NUM_STR_PARAMS; i++){
+    Param_log.param_send_all[i] = REG_TRUE;
+  }
   Param_log.emit_in_progress = REG_FALSE;
   ReG_SteeringActive 	     = REG_FALSE;
   ReG_IOTypesChanged 	     = REG_TRUE;
