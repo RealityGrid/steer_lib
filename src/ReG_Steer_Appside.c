@@ -4071,7 +4071,7 @@ int Get_ptr_value(param_entry *param)
 
     return_status = Base64_encode(param->ptr, 
 				  atoi(param->max_val),
-				  &(param->ptr_raw),
+				  (char **)&(param->ptr_raw),
 				  &(param->raw_buf_size));
 
     break;
