@@ -706,7 +706,9 @@ int Log_param_values()
   int index;
   int count;
 
- /* Check that we have enough storage space - if not then store
+  if(Params_table.log_all == REG_FALSE)return REG_SUCCESS;
+
+  /* Check that we have enough storage space - if not then store
      current entries on disk (rather than continually grab more
      memory) */
 
@@ -724,19 +726,17 @@ int Log_param_values()
   /* This isn't a checkpoint so put meaningless values in next
      two fields */
   sprintf(Param_log.entry[Param_log.num_entries].chk_tag, "REG_PARAM_LOG");
-  Param_log.entry[Param_log.num_entries].chk_handle      = -99;
+  Param_log.entry[Param_log.num_entries].chk_handle = -99;
   count = 0;
 
   for(index = 0; index<Params_table.max_entries; index++){
 
-    if(Params_table.param[index].handle == REG_PARAM_HANDLE_NOTSET ||
-       Params_table.param[index].is_internal == REG_TRUE){
+    if(Params_table.param[index].handle == REG_PARAM_HANDLE_NOTSET)
+      continue;
 
-       /* Although seq. no. is an internal param we do want to log it */
-       if(Params_table.param[index].handle != REG_SEQ_NUM_HANDLE){
-	 continue;
-       }
-    }
+    if(Params_table.param[index].is_internal == REG_TRUE)continue;
+
+    if(Params_table.param[index].logging_on == REG_FALSE)continue;
 
     /* We do not log 'raw binary' parameters */
     if(Params_table.param[index].type == REG_BIN)continue;

@@ -2440,6 +2440,55 @@ int Register_params(int    NumParams,
   return REG_SUCCESS;
 }
 
+/*----------------------------------------------------------------
+   Toggle whether (toggle=REG_TRUE) or not (toggle=REG_FALSE) to 
+   log values of all registered  parameters. Logging is on by
+   default. */
+int Enable_all_param_logging(int toggle)
+{
+  int lToggle = REG_FALSE;
+
+  if(toggle == REG_TRUE){
+    lToggle = REG_TRUE;
+  }
+
+  Params_table.log_all = lToggle;
+
+  return REG_SUCCESS;
+}
+
+/*----------------------------------------------------------------
+   Toggle whether (toggle=REG_TRUE) or not (toggle=REG_FALSE) to log
+   values of the parameter identified by the provided label. Logging
+   is on by default. */
+int Enable_param_logging(char *ParamLabel,
+			 int   toggle)
+{
+  int i;
+  int found = 0;
+  int lToggle = REG_FALSE;
+
+  if(toggle == REG_TRUE){
+    lToggle = REG_TRUE;
+  }
+
+  for(i=0; i<Params_table.max_entries; i++){
+    if(Params_table.param[i].handle != REG_PARAM_HANDLE_NOTSET){
+      if( !(strcmp(Params_table.param[i].label, ParamLabel)) ){
+	Params_table.param[i].logging_on = lToggle;
+	found = 1;
+	break;
+      }
+    }
+  }
+
+  if (found) return REG_SUCCESS;
+
+  fprintf(stderr, "Enable_param_logging: param with label %s not "
+	  "found.\n", ParamLabel);
+  return REG_FAILURE;
+}
+
 /*----------------------------------------------------------------*/
 
 int Steering_control(int     SeqNum,
@@ -2547,7 +2596,7 @@ int Steering_control(int     SeqNum,
   /* Log current parameter values irrespective of whether a 
      steering client is attached */
 
-  Log_param_values();
+  if(Params_table.log_all == REG_TRUE)Log_param_values();
 
   /* Check to see if a steerer is trying to get control */
 

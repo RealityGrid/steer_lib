@@ -168,6 +168,16 @@ extern PREFIX int Register_param(char* ParamLabel,
 /* Un-register the parameters identified by the given labels. */
 extern PREFIX int Unregister_params(int    NumParams,
 				    char* *ParamLabels);
+/* Toggle whether (toggle=REG_TRUE) or not (toggle=REG_FALSE) to 
+   log values of all registered  parameters. Logging is on by
+   default. */
+extern PREFIX int Enable_all_param_logging(int toggle);
+
+/* Toggle whether (toggle=REG_TRUE) or not (toggle=REG_FALSE) to log
+   values of the parameter identified by the provided label. Logging
+   is on by default. */
+extern PREFIX int Enable_param_logging(char *ParamLabel,
+				       int   toggle);
 
 /* Main steering routine to be called at application breakpoint.
    Takes <SeqNum> (an indication of application progress) as input

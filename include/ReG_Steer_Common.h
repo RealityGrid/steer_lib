@@ -157,6 +157,7 @@ typedef struct {
   double* log;
   int     log_index;
   int     log_size;
+  int     logging_on;
 
 } param_entry;
 
@@ -165,6 +166,7 @@ typedef struct {
   int          num_registered;
   int          max_entries;
   int          next_handle;
+  int          log_all;
   param_entry *param;
 
 } Param_table_type;
