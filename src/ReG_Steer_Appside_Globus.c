@@ -532,7 +532,7 @@ int Initialize_IOType_transport_globus(const int direction,
       /* Go out into the world of grid services... */
       if( Get_data_source_address_soap(call_count, 
 		   IOTypes_table.io_def[index].socket_info.connector_hostname,
-	           &IOTypes_table.io_def[index].socket_info.connector_port) 
+	           &(IOTypes_table.io_def[index].socket_info.connector_port)) 
 	  == REG_SUCCESS){
 
 	call_count++;

@@ -216,9 +216,8 @@ int Globus_create_listener(socket_io_type * const socket_info)
   /* NOTE: this is the listener_status */
   socket_info->listener_status=REG_COMMS_STATUS_LISTENING;
 
-#if REG_DEBUG
-  fprintf(stderr, "DBG: Listener on port %d\n", socket_info->listener_port);
-#endif
+  fprintf(stderr, "Globus_create_listener: listener on port %d\n", 
+	  socket_info->listener_port);
 
   /* Get the hostname of the machine we're running on (so we can publish
      the endpoint of this connection) */
@@ -389,6 +388,10 @@ int Globus_create_connector(socket_io_type * const socket_info)
 
   if (result != GLOBUS_SUCCESS) {
     fprintf(stderr, "Globus_create_connector: Error registering connect\n");
+    fprintf(stderr, "                         hostname = %s\n", 
+	    socket_info->connector_hostname);
+    fprintf(stderr, "                         port = %d\n", 
+	    (int)socket_info->connector_port);
     Globus_error_print(result);
     socket_info->comms_status=REG_COMMS_STATUS_FAILURE;
     return REG_FAILURE;
@@ -396,12 +399,10 @@ int Globus_create_connector(socket_io_type * const socket_info)
   else {
     socket_info->comms_status=REG_COMMS_STATUS_WAITING_TO_CONNECT;
 
-#if REG_DEBUG
     fprintf(stderr, "Globus_create_connector: registered connector on "
 	    "connector_port = %d, connector_hostname = %s\n", 
 	    socket_info->connector_port, 
 	    socket_info->connector_hostname);
-#endif
   }
 
   /* attempt to kick the callback function */

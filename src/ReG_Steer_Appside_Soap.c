@@ -382,7 +382,7 @@ int Finalize_steering_connection_soap()
 
 int Get_data_source_address_soap(int   index, 
 				 char *hostname,
-				 int  *port)
+				 unsigned short int  *port)
 {
   char  *pchar;
   char   index_string[10];
@@ -411,7 +411,7 @@ int Get_data_source_address_soap(int   index,
       strcpy(hostname, pchar);
       if(pchar = strtok(NULL, ":")){
 
-	*port = atoi(pchar);
+	*port = (unsigned short int)atoi(pchar);
 	return REG_SUCCESS;
       }
     }
