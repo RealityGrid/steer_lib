@@ -101,6 +101,8 @@ int main(){
 
   float *array;
   char   header[BUFSIZ];
+  int    ichunk, nchunk;
+  int    chunk_dim = 4;
 
   FILE  *fp;
 
@@ -396,22 +398,34 @@ int main(){
 		      continue;
 		    }
 
-		    /* Construct header for this chunk to allow the recipient 
-		       of this data to reconstruct the data set */
-                    status = Make_chunk_header(header, iohandle, nx, ny, nz, 
-					       0, 0, 0, nx, ny, nz);
+		    if(nx % chunk_dim != 0){
 
-		    printf("Second slice...\n");
-		    data_count = strlen(header);
-		    data_type  = REG_CHAR;
-		    status = Emit_data_slice(iohandle, data_type, data_count, &
-					     header);
+		      printf("nx not a multiple of %d\n", chunk_dim);
+		      Emit_stop(&iohandle);
+		      continue;
+		    }
 
-		    printf("Third slice...\n");
-		    data_count = nx*ny*nz;
-		    data_type  = REG_FLOAT;
-		    status = Emit_data_slice(iohandle, data_type, data_count, 
-					     array);
+		    nchunk = nx/chunk_dim;
+
+		    for(ichunk=0; ichunk<nchunk; ichunk++){
+
+		      printf("chunk %d...\n", ichunk);
+
+		      /* Construct header for this chunk to allow the recipient 
+			 of this data to reconstruct the data set */
+		      status = Make_chunk_header(header, iohandle, nx, ny, nz, 
+						 (ichunk*chunk_dim), 0, 0, chunk_dim, ny, nz);
+
+		      data_count = strlen(header);
+		      data_type  = REG_CHAR;
+		      status = Emit_data_slice(iohandle, data_type, data_count, &
+					       header);
+
+		      data_count = chunk_dim*ny*nz;
+		      data_type  = REG_FLOAT;
+		      status = Emit_data_slice(iohandle, data_type, data_count, 
+					       &(array[(ichunk*chunk_dim)*ny*nz]));
+		    }
 
 		    Emit_stop(&iohandle);
 
