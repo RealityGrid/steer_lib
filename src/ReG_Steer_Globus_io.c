@@ -667,11 +667,11 @@ void Globus_error_print(const globus_result_t result)
     error =  globus_error_get(result); 
 
     /* check for globus_io error string */
-    error_string = globus_i_io_error_string_func(error);
+    error_string = (char *) globus_i_io_error_string_func(error);
 
     /* if NULL try general error strings */
     if (error_string == NULL)
-      globus_error_generic_string_func(error);
+      error_string = (char *) globus_error_generic_string_func(error);
 
     if (error_string != NULL)
       fprintf(stderr, "Globus_error_print: %s \n", error_string);
