@@ -35,6 +35,7 @@
 
 #include "ReG_Steer_types.h"
 #include "ReG_Steer_Common.h"
+#include "ReG_Steer_Browser.h"
 #include "ReG_Steer_XML.h"
 
 #include <string.h>
@@ -90,7 +91,7 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg)
 
   cur = xmlDocGetRootElement(doc);
   if (cur == NULL) {
-      fprintf(stderr,"empty document\n");
+      fprintf(stderr,"Parse_xml: empty document\n");
       xmlFreeDoc(doc);
       return REG_FAILURE;
   }
@@ -1301,4 +1302,245 @@ int String_contains_xml_chars(char *string)
   }
 
   return FALSE;
+}
+
+/*-----------------------------------------------------------------*/
+
+/* For handling the xml returned by a findServiceData on a
+ * serviceGroupRegistration - uses SAX rather than DOM.
+ */
+int Parse_registry_entries(char* buf, int size, int *num_entries, 
+			   struct registry_entry **entries)
+{ 
+  static xmlSAXHandler my_handler;
+  struct ParserState my_state;
+  int i;
+
+  /* Set pointers to our event handlers */
+  my_handler.startElement = Start_element_handler;
+  my_handler.endElement = End_element_handler;
+  my_handler.characters = Characters_handler;
+
+  /* Initialise the structure that holds the state of our parser */
+  my_state.num_entries = 0;
+  my_state.max_entries = 15;
+  my_state.depth = STARTING;
+  my_state.return_val = REG_SUCCESS;
+
+  /* malloc memory to hold content */
+  my_state.entries = (struct registry_entry *)malloc(my_state.max_entries*
+					     sizeof(struct registry_entry));
+  if(!(my_state.entries)){
+    fprintf(stderr, "Parse_registry_entries: failed to malloc memory\n");
+    return REG_FAILURE;
+  }
+
+  /* parse the document */
+  if (xmlSAXUserParseMemory(&my_handler, &my_state, buf, size) < 0) {
+
+    free(my_state.entries);
+    my_state.entries = NULL;
+    return REG_FAILURE;
+  } 
+
+  *num_entries = my_state.num_entries;
+  *entries = my_state.entries;
+
+#if REG_DEBUG
+  fprintf(stderr, "Got %d entries from registry:\n", my_state.num_entries);
+  for(i=0; i<my_state.num_entries;i++){
+
+    printf("GSH  %d: %s\n", i, my_state.entries[i].gsh);
+    printf("app   : %s\n", my_state.entries[i].application);
+  }
+#endif
+
+  return REG_SUCCESS;
+}
+
+/*-----------------------------------------------------------------*/
+
+void Start_element_handler(void * 	user_data,
+			   const xmlChar * 	name,
+			   const xmlChar ** 	attrs){
+
+  struct ParserState *state;
+  state = (struct ParserState *)user_data;
+
+  /* Check that we haven't previously hit an error */
+  if(state->return_val != REG_SUCCESS) return;
+
+  if( !xmlStrcmp(name, (const xmlChar *) "ogsi:entry") ){
+
+    if (state->depth == STARTING){
+      state->depth = OGSI_ENTRY;
+      /* Initialise table to hold this content */
+      state->entries[state->num_entries].service_type[0] = '\0';
+      state->entries[state->num_entries].gsh[0] = '\0';
+      state->entries[state->num_entries].application[0] = '\0';
+      state->entries[state->num_entries].start_date_time[0] = '\0';
+      state->entries[state->num_entries].user[0] = '\0';
+      state->entries[state->num_entries].group[0] = '\0';
+      state->entries[state->num_entries].job_description[0] = '\0';
+    }
+  }
+  else if( !xmlStrcmp(name, (const xmlChar *) "ogsi:memberServiceLocator") ){
+
+    if (state->depth == OGSI_ENTRY) state->depth=MEMBER_SERVICE_LOCATOR;
+  }
+  else if( !xmlStrcmp(name, (const xmlChar *) "ogsi:handle") ){
+
+    if(state->depth == MEMBER_SERVICE_LOCATOR) state->depth = HANDLE;
+  } 
+  else if( !xmlStrcmp(name, (const xmlChar *) "ogsi:content") ){
+
+    if(state->depth == OGSI_ENTRY) state->depth = CONTENT;
+  }
+  else if( !xmlStrcmp(name, (const xmlChar *) "serviceType") ){
+
+    if(state->depth == CONTENT) state->depth = SERVICE_TYPE;
+  }
+  else if( !xmlStrcmp(name, (const xmlChar *) "componentContent") ){
+
+    if(state->depth == CONTENT) state->depth = COMPONENT_CONTENT;
+  }
+  else if( !xmlStrcmp(name, (const xmlChar *) "componentStartDateTime") ){
+
+    if(state->depth == COMPONENT_CONTENT) state->depth = COMPONENT_START_DATE_TIME;
+  }
+  else if( !xmlStrcmp(name, (const xmlChar *) "componentCreatorName") ){
+
+    if(state->depth == COMPONENT_CONTENT) state->depth = COMPONENT_CREATOR_NAME;
+  }
+  else if( !xmlStrcmp(name, (const xmlChar *) "componentCreatorGroup") ){
+
+    if(state->depth == COMPONENT_CONTENT) state->depth = COMPONENT_CREATOR_GROUP;
+  }
+  else if( !xmlStrcmp(name, (const xmlChar *) "componentSoftwarePackage") ){
+
+    if(state->depth == COMPONENT_CONTENT) state->depth = COMPONENT_SOFTWARE_PACKAGE;
+  }
+  else if( !xmlStrcmp(name, (const xmlChar *) "componentTaskDescription") ){
+
+    if(state->depth == COMPONENT_CONTENT) state->depth = COMPONENT_TASK_DESCRIPTION;
+  }
+}
+
+/*-----------------------------------------------------------------*/
+
+void End_element_handler(void          *user_data,
+			 const xmlChar *name){
+
+  struct ParserState    *state;
+  struct registry_entry *tmp;
+
+  state = (struct ParserState *)user_data;
+
+  /* Check that we haven't previously hit an error */
+  if(state->return_val != REG_SUCCESS) return;
+
+  if( !xmlStrcmp(name, (const xmlChar *) "ogsi:entry") ){
+
+    if(state->depth == OGSI_ENTRY){
+      state->depth = STARTING;
+
+      /* malloc more memory if required */  
+      if(++(state->num_entries) >= state->max_entries){
+
+	tmp = realloc(state->entries,
+		      2*(state->max_entries)*sizeof(struct registry_entry));
+	if(tmp){
+	  state->entries = tmp;
+	  state->max_entries *= 2;
+	  fprintf(stderr, "ARPDBG: done malloc for %d entries\n", 
+		  state->max_entries);
+	}
+	else{
+	  state->return_val = REG_FAILURE;
+	}
+      }
+    }
+  }
+  else if( !xmlStrcmp(name, (const xmlChar *) "ogsi:memberServiceLocator") ){
+
+    if(state->depth == MEMBER_SERVICE_LOCATOR) state->depth = OGSI_ENTRY;
+  }
+  else if( !xmlStrcmp(name, (const xmlChar *) "ogsi:handle") ){
+
+    if (state->depth == HANDLE) state->depth = MEMBER_SERVICE_LOCATOR;
+  }
+  else if( !xmlStrcmp(name, (const xmlChar *) "ogsi:content") ){
+
+    if (state->depth == CONTENT) state->depth = OGSI_ENTRY;
+  }
+  else if( !xmlStrcmp(name, (const xmlChar *) "serviceType") ){
+
+    if(state->depth == SERVICE_TYPE) state->depth = CONTENT;
+  }
+  else if( !xmlStrcmp(name, (const xmlChar *) "componentContent") ){
+
+    if(state->depth == COMPONENT_CONTENT) state->depth = CONTENT;
+  }
+  else if( !xmlStrcmp(name, (const xmlChar *) "componentStartDateTime") ){
+
+    if(state->depth == COMPONENT_START_DATE_TIME) state->depth = COMPONENT_CONTENT;
+  }
+  else if( !xmlStrcmp(name, (const xmlChar *) "componentCreatorName") ){
+
+    if(state->depth == COMPONENT_CREATOR_NAME) state->depth =  COMPONENT_CONTENT;
+  }
+  else if( !xmlStrcmp(name, (const xmlChar *) "componentCreatorGroup") ){
+
+    if(state->depth == COMPONENT_CREATOR_GROUP) state->depth = COMPONENT_CONTENT;
+  }
+  else if( !xmlStrcmp(name, (const xmlChar *) "componentSoftwarePackage") ){
+
+    if(state->depth == COMPONENT_SOFTWARE_PACKAGE) state->depth = COMPONENT_CONTENT;
+  }
+  else if( !xmlStrcmp(name, (const xmlChar *) "componentTaskDescription") ){
+
+    if(state->depth == COMPONENT_TASK_DESCRIPTION) state->depth = COMPONENT_CONTENT;
+  }
+}
+
+/*-----------------------------------------------------------------*/
+
+void Characters_handler(void          *user_data,
+			const xmlChar *ch,
+			int  	       len){
+
+  struct ParserState *state;
+  state = (struct ParserState *)user_data;
+
+  /* Check that we haven't previously hit an error */
+  if(state->return_val != REG_SUCCESS) return;
+
+  if(state->depth == HANDLE){
+    strncpy(state->entries[state->num_entries].gsh, (char *)ch, len);
+    state->entries[state->num_entries].gsh[len] = '\0';
+  } 
+  else if (state->depth == SERVICE_TYPE){
+    strncpy(state->entries[state->num_entries].service_type, (char *)ch, len);
+    state->entries[state->num_entries].service_type[len]='\0';
+  }
+  else if (state->depth == COMPONENT_START_DATE_TIME){
+    strncpy(state->entries[state->num_entries].start_date_time, (char *)ch, len);
+    state->entries[state->num_entries].start_date_time[len] = '\0';
+  }
+  else if (state->depth == COMPONENT_CREATOR_NAME){
+    strncpy(state->entries[state->num_entries].user, (char *)ch, len);
+    state->entries[state->num_entries].user[len] = '\0';
+  }
+  else if (state->depth == COMPONENT_CREATOR_GROUP){
+    strncpy(state->entries[state->num_entries].group, (char *)ch, len);
+    state->entries[state->num_entries].group[len] = '\0';
+  }
+  else if (state->depth == COMPONENT_SOFTWARE_PACKAGE){
+    strncpy(state->entries[state->num_entries].application, (char *)ch, len);
+    state->entries[state->num_entries].application[len] = '\0';
+  }
+  else if (state->depth == COMPONENT_TASK_DESCRIPTION){
+    strncpy(state->entries[state->num_entries].job_description, (char *)ch, len);
+    state->entries[state->num_entries].job_description[len] = '\0';
+  }
 }
