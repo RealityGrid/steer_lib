@@ -91,7 +91,7 @@ FILE *Open_next_file(char* base_name)
 #else
         sprintf(filename1,"%s_%d", base_name, i);
 #endif
-	time1 = (long)stbuf.st_mtim.tv_sec;
+	time1 = (long)stbuf.st_mtime;
         break;
       }
       else{
@@ -133,7 +133,7 @@ FILE *Open_next_file(char* base_name)
 #else
         sprintf(filename2,"%s_%d", base_name, i);
 #endif
-	time2 = (long)stbuf.st_mtim.tv_sec;
+	time2 = (long)stbuf.st_mtime;/*.tv_sec;*/
         break;
       }
       else{
