@@ -245,7 +245,9 @@ int parseStatus(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
         status->param = status->param->next;
       }
 
+#if DEBUG
       fprintf(stderr, "Calling parseParam...\n");
+#endif
       parseParam(doc, ns, cur, status->param);
     }
     else if( !xmlStrcmp(cur->name, (const xmlChar *) "Command") ){
@@ -294,7 +296,9 @@ int parseControl(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
         ctrl->param = ctrl->param->next;
       }
 
+#if DEBUG
       fprintf(stderr, "Calling parseParam...\n");
+#endif
       parseParam(doc, ns, cur, ctrl->param);
     }
     else if( !xmlStrcmp(cur->name, (const xmlChar *) "Command") ){
@@ -588,6 +592,14 @@ int parseParam(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
     else if( !xmlStrcmp(cur->name, (const xmlChar *) "Is_internal") ){
 
       param->is_internal = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
+    }
+    else if( !xmlStrcmp(cur->name, (const xmlChar *) "Min_value") ){
+
+      param->min_value = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
+    }
+    else if( !xmlStrcmp(cur->name, (const xmlChar *) "Max_value") ){
+
+      param->max_value = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
     }
 
     cur = cur->next;

@@ -53,6 +53,8 @@ struct param_struct{
   xmlChar             *type;
   xmlChar             *steerable;
   xmlChar             *is_internal;
+  xmlChar             *min_value;
+  xmlChar             *max_value;
   struct param_struct *next;
 };
 
