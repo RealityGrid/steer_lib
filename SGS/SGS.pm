@@ -205,10 +205,6 @@ sub Detach {
 
 	    return "SGS_SUCCESS";
 	}
-#	elsif($SGS::serviceData{$appStatusSDE} eq "STOPPING"){
-#
-#
-#	}
     }
     return "SGS_ERROR";
 }
@@ -296,7 +292,7 @@ sub AppStop {
         # Steerer is in process of detaching but application has finished
         # - call AppDetach ourselves to complete the detach process
         # Set flag to say we are free to die after allowing some delay to 
-        # give steerer to get confirmation of Detach.
+        # give steerer time to get confirmation of Detach.
         $SGS::dieAfterDelay = 1;
 	AppDetach();
     }
