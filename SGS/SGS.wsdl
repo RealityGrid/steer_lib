@@ -2,8 +2,8 @@
 <definitions name="SGS" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" targetNamespace="SGS" xmlns:tns="SGS" xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:xsdl="http://vermont.mvc.mcc.ac.uk/WSDL/SGS.xsd">
 	<types>
 		<xsd:schema targetNamespace="http://vermont.mvc.mcc.ac.uk/WSDL/SGS.xsd">
-			<xsd:element name="SetServiceDataRequest" type="xsd:string" />
-			<xsd:element name="SetServiceDataResponse" type="xsd:string" />
+			<xsd:element name="setServiceDataRequest" type="xsd:string" />
+			<xsd:element name="setServiceDataResponse" type="xsd:string" />
 			<xsd:element name="PutControlRequest" type="xsd:string" />
 			<xsd:element name="PutControlResponse" type="xsd:string" />
 			<xsd:element name="ResumeRequest" type="xsd:string" />
@@ -20,8 +20,8 @@
 			<xsd:element name="DetachResponse" type="xsd:string" />
 			<xsd:element name="AppDetachRequest" type="xsd:string" />
 			<xsd:element name="AppDetachResponse" type="xsd:string" />
-			<xsd:element name="FindServiceDataRequest" type="xsd:string" />
-			<xsd:element name="FindServiceDataResponse" type="xsd:string" />
+			<xsd:element name="findServiceDataRequest" type="xsd:string" />
+			<xsd:element name="findServiceDataResponse" type="xsd:string" />
 			<xsd:element name="GetControlRequest" type="xsd:string" />
 			<xsd:element name="GetControlResponse" type="xsd:string" />
 			<xsd:element name="DestroyRequest" type="xsd:string" />
@@ -30,8 +30,6 @@
 			<xsd:element name="AttachResponse" type="xsd:string" />
 			<xsd:element name="PauseRequest" type="xsd:string" />
 			<xsd:element name="PauseResponse" type="xsd:string" />
-			<xsd:element name="SetTerminationTimeRequest" type="xsd:string" />
-			<xsd:element name="SetTerminationTimeResponse" type="xsd:string" />
 			<xsd:element name="AppStartRequest" type="xsd:string" />
 			<xsd:element name="AppStartResponse" type="xsd:string" />
 			<xsd:element name="AppStopRequest" type="xsd:string" />
@@ -71,15 +69,15 @@
 
 	</message>
 	<message name="DetachRequest">
-
+		<part name="DetachRequestSoapMsg" element="xsdl:DetachRequest"/>
 	</message>
 	<message name="DetachResponse">
 		<part name="result" type="xsd:string"/>
 	</message>
-	<message name="FindServiceDataRequest">
+	<message name="findServiceDataRequest">
 		<part name="input" type="xsd:string"/>
 	</message>
-	<message name="FindServiceDataResponse">
+	<message name="findServiceDataResponse">
 		<part name="result" type="xsd:string"/>
 	</message>
 	<message name="GetControlRequest">
@@ -130,17 +128,10 @@
 	<message name="ResumeResponse">
 		<part name="result"  type="xsd:string"/>
 	</message>
-	<message name="SetServiceDataRequest">
+	<message name="setServiceDataRequest">
 		<part name="input" type="xsd:string"/>
-		<part name="sde_value" type="xsd:string"/>
 	</message>
-	<message name="SetServiceDataResponse">
-		<part name="result" type="xsd:string"/>
-	</message>
-	<message name="SetTerminationTimeRequest">
-		<part name="input"  type="xsd:string"/>
-	</message>
-	<message name="SetTerminationTimeResponse">
+	<message name="setServiceDataResponse">
 		<part name="result" type="xsd:string"/>
 	</message>
 	<message name="StopRequest">
@@ -174,9 +165,9 @@
 			<input message="tns:DetachRequest" />
 			<output message="tns:DetachResponse" />
 		</operation>
-		<operation name="FindServiceData">
-			<input message="tns:FindServiceDataRequest" />
-			<output message="tns:FindServiceDataResponse" />
+		<operation name="findServiceData">
+			<input message="tns:findServiceDataRequest" />
+			<output message="tns:findServiceDataResponse" />
 		</operation>
 		<operation name="GetControl">
 			<input message="tns:GetControlRequest" />
@@ -210,13 +201,9 @@
 			<input message="tns:ResumeRequest" />
 			<output message="tns:ResumeResponse" />
 		</operation>
-		<operation name="SetServiceData">
-			<input message="tns:SetServiceDataRequest" />
-			<output message="tns:SetServiceDataResponse" />
-		</operation>
-		<operation name="SetTerminationTime">
-			<input message="tns:SetTerminationTimeRequest" />
-			<output message="tns:SetTerminationTimeResponse" />
+		<operation name="setServiceData">
+			<input message="tns:setServiceDataRequest" />
+			<output message="tns:setServiceDataResponse" />
 		</operation>
 		<operation name="Stop">
 			<input message="tns:StopRequest" />
@@ -279,7 +266,7 @@
 					<soap:body use="literal" namespace="SGS"/>
 				</output>
 			</operation>
-			<operation name="FindServiceData">
+			<operation name="findServiceData">
 				<soap:operation style="document" soapAction=""/>
 				<input>
 					<soap:body use="literal" namespace="SGS"/>
@@ -360,16 +347,7 @@
 					<soap:body use="literal" namespace="SGS"/>
 				</output>
 			</operation>
-			<operation name="SetServiceData">
-				<soap:operation style="document" soapAction=""/>
-				<input>
-					<soap:body use="literal" namespace="SGS"/>
-				</input>
-				<output>
-					<soap:body use="literal" namespace="SGS"/>
-				</output>
-			</operation>
-			<operation name="SetTerminationTime">
+			<operation name="setServiceData">
 				<soap:operation style="document" soapAction=""/>
 				<input>
 					<soap:body use="literal" namespace="SGS"/>

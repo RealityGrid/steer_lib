@@ -73,18 +73,19 @@ for($i=0; $i < $numCtrlMsg; $i++){
 
 # Store SDE names as variables to save typo's - these MUST MATCH
 # those declared in ReG_Steer_Steerside_Soap.h
-$suppCmdsSDE = "Supp_cmds";
-$paramDefsSDE = "Param_defs";
-$ioDefsSDE = "IOType_defs";
-$chkDefsSDE = "ChkType_defs";
-$appStatusSDE = "Application_status";
-$steerStatusSDE = "Steerer_status";
-$dataSourceSDE = "Data_source_list";
+$suppCmdsSDE = "SGS:Supp_cmds";
+$paramDefsSDE = "SGS:Param_defs";
+$ioDefsSDE = "SGS:IOType_defs";
+$chkDefsSDE = "SGS:ChkType_defs";
+$appStatusSDE = "SGS:Application_status";
+$steerStatusSDE = "SGS:Steerer_status";
+$dataSourceSDE = "SGS:Data_source_list";
+$registrySDE = "SGS:Registry_GSH";
 
 # The names of my service data elements
 @serviceDataElements = ($suppCmdsSDE, $paramDefsSDE, $ioDefsSDE, 
 			$chkDefsSDE, $steerStatusSDE, 
-			$appStatusSDE, $dataSourceSDE);
+			$appStatusSDE, $dataSourceSDE, $registrySDE);
 
 # Create hash table to actually hold SDEs
 %serviceData = ("$serviceDataElements[0]", "", 
@@ -93,16 +94,17 @@ $dataSourceSDE = "Data_source_list";
 		"$serviceDataElements[3]", "",
 		"$serviceDataElements[4]", "",
 		"$serviceDataElements[5]", "",
-		"$serviceDataElements[6]", "");
+		"$serviceDataElements[6]", "",
+		"$serviceDataElements[7]", "");
 
 # Set initial states (no steering client attached & application not
 # running - i.e. it hasn't contacted us yet)
 # Possible values for steerer status are: 
 #      DETACHED, ATTACHED, DETACHING
-$serviceData{$steerStatusSDE} = "DETACHED";
+$serviceData{$steerStatusSDE} = "<$steerStatusSDE>DETACHED</$steerStatusSDE>";
 # Possible values for application status are: 
 #      NOT_STARTED, RUNNING, STOPPING, STOPPED, PAUSED
-$serviceData{$appStatusSDE} = "NOT_STARTED";
+$serviceData{$appStatusSDE} = "<$appStatusSDE>NOT_STARTED</$appStatusSDE>";
 
 # For storing notifications that need sending to steerer
 $numNotifications = 0;
@@ -128,12 +130,41 @@ $delayBeforeDeath = 30;
 
 #---------------------------------------------------------
 
+#sub init {
+#
+#    # Designed to be called by factory immediately after we've
+#    # we've been created.
+#    my($class,$gsh) = @_;
+#
+#    # Call init method of superclass first
+#    ILCT:GS::init();
+#
+#    $SGS::serviceData{$registrySDE} = $gsh;
+#
+#    # Register ourselves with the ServiceGroup at the 
+#    # supplied GSH.
+#    my $uri  = "ServiceGroup";
+#    my $func = "Add";
+#
+#    my $ans =  SOAP::Lite
+#               -> uri($uri)             #set the namespace
+#               -> proxy("$gsh")         #location of service
+#               -> $func()  #function + args to invoke
+#               -> result;
+#
+#    return "SGS_SUCCESS";
+#}
+
+#------------------------------
+
 sub Attach {
 
     # Check that we're not already connected to a steerer
     # and that application is up and running
-    if($SGS::serviceData{$steerStatusSDE} eq "DETACHED" &&
-       $SGS::serviceData{$appStatusSDE} eq "RUNNING"){
+#    if($SGS::serviceData{$steerStatusSDE} eq "DETACHED" &&
+#       $SGS::serviceData{$appStatusSDE} eq "RUNNING"){
+    if(($SGS::serviceData{$steerStatusSDE} =~ m/DETACHED/) &&
+       ($SGS::serviceData{$appStatusSDE} =~ m/RUNNING/)){
 
         # Clean up any old data in our buffers
 	for($i=0; $i < $SGS::numStatusMsg; $i++){
@@ -148,19 +179,9 @@ sub Attach {
 	    $SGS::ctrlMsgArray[$i] = "";
 	}
 
-	# Clean up all notifications
-        $SGS::numNotifications = 0;
-	for($i=0; $i < @{SGS::serviceDataElements}; $i++){
-	    $SGS::serviceDataChanged[$i] = 0;
-	}
-
-        # Delete all data in SDEs apart from Supp_cmds
-	$SGS::serviceData{$paramDefsSDE} = "";
-	$SGS::serviceData{$ioDefsSDE} = "";
-	$SGS::serviceData{$chkDefsSDE} = "";
-
         # Set steerer-status SDE to signal that a steerer is attached
-	$SGS::serviceData{$steerStatusSDE} = "ATTACHED";
+	$SGS::serviceData{$steerStatusSDE} = 
+	         "<$steerStatusSDE>ATTACHED</$steerStatusSDE>";
 
 	# Return the supported commands
 	return $SGS::serviceData{$suppCmdsSDE};
@@ -175,6 +196,7 @@ sub Attach {
 
 sub Detach {
     
+    my ($class) = @_;
     my $detachMsg = "<?xml version=\"1.0\"?>" . 
      "<ReG_steer_message xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " . 
      "xmlns=\"http://www.realitygrid.org/xml/steering\" " . 
@@ -191,33 +213,31 @@ sub Detach {
     print "Detach: Application_status = $SGS::serviceData{$appStatusSDE}\n";
 
     # This method can only be called by an attached steering client
-    if($SGS::serviceData{$steerStatusSDE} eq "ATTACHED"){
+    if($SGS::serviceData{$steerStatusSDE} =~ m/ATTACHED/){
 
-	if($SGS::serviceData{$appStatusSDE} eq "STOPPED"){
+	if($SGS::serviceData{$appStatusSDE} =~ m/STOPPED/){
 
 	    # Record change of state
-	    $SGS::serviceData{$steerStatusSDE} = "DETACHED";
+	    $SGS::serviceData{$steerStatusSDE} = 
+		"<$steerStatusSDE>DETACHED</$steerStatusSDE>";
 	    
             # App. has stopped and steerer is detached so quit
-	    Destroy();
+	    $class->Destroy();
 
 	    return "SGS_SUCCESS";
 
 	}
-	elsif($SGS::serviceData{$appStatusSDE} eq "RUNNING"){
+	elsif($SGS::serviceData{$appStatusSDE} =~ m/RUNNING/){
 
 	    # Tell application to detach
-	    PutControl(" ", "$detachMsg");
+	    $class->PutControl(" ", "$detachMsg");
 
 	    # Record change of state
-	    $SGS::serviceData{$steerStatusSDE} = "DETACHING";
+	    $SGS::serviceData{$steerStatusSDE} = 
+		"<$steerStatusSDE>DETACHING</$steerStatusSDE>";
 
 	    return "SGS_SUCCESS";
 	}
-#	elsif($SGS::serviceData{$appStatusSDE} eq "STOPPING"){
-#
-#
-#	}
     }
     return "SGS_ERROR";
 }
@@ -227,10 +247,14 @@ sub Detach {
 
 sub AppStart {
 
-    # Check that application not already attached
-    if($SGS::serviceData{$SGS::appStatusSDE} eq "NOT_STARTED"){
+    my ($class) = @_;
 
-	SetServiceData(" ", $SGS::appStatusSDE, "RUNNING");
+    # Check that application not already attached
+    if($SGS::serviceData{$SGS::appStatusSDE} =~ m/NOT_STARTED/){
+
+	$class->setServiceData("<ogsi:setByServiceDataNames>".
+			       "<$SGS::appStatusSDE>RUNNING</$SGS::appStatusSDE>".
+			       "</ogsi:setByServiceDataNames>");
 	return "SGS_SUCCESS";
 
     } else {
@@ -245,16 +269,19 @@ sub AppStart {
 
 sub AppDetach {
 
+    my ($class) = @_;
     print "AppDetach: Steerer_status = $SGS::serviceData{$steerStatusSDE}\n";
     print "AppDetach: Application_status = $SGS::serviceData{$appStatusSDE}\n";
 
-    if($SGS::serviceData{$SGS::steerStatusSDE} eq "DETACHING"){
+    if($SGS::serviceData{$SGS::steerStatusSDE} =~ m/DETACHING/){
 
-	SetServiceData(" ", $SGS::steerStatusSDE, "DETACHED");	
+	$class->setServiceData("<ogsi:setByServiceDataNames>".
+		       "<$SGS::steerStatusSDE>DETACHED</$SGS::steerStatusSDE>".
+		       "</ogsi:setByServiceDataNames>");
 
         # If app. isn't running and no steerer is attached then it's
         # time we died
-	if($SGS::serviceData{$SGS::appStatusSDE} ne "RUNNING"){
+	if( !($SGS::serviceData{$SGS::appStatusSDE} =~ m/RUNNING/) ){
 
 	    if($SGS::dieAfterDelay == 1){
 		# In theory we are now free to shutdown but actually, since
@@ -264,10 +291,14 @@ sub AppDetach {
 		# changing the steerer status to DETACHED).
                 print "Service will shutdown in $SGS::delayBeforeDeath " .
 		      "seconds\n";
-		SetTerminationTime(" ", $SGS::delayBeforeDeath);
+		my $now = time + $SGS::delayBeforeDeath;
+		my $TimeString = ILCT::GSutil::ConvertEpochTimeToString($now);
+		$TimeString = "<ogsi:ExtendedDateTimeType>$TimeString</ogsi:ExtendedDateTimeType>";
+		my $ans= $class->SUPER::requestTerminationAfter($TimeString);
+
 	    }
 	    else{
-		Destroy();
+		$class->Destroy();
 	    }
 	}
 
@@ -284,30 +315,33 @@ sub AppDetach {
 
 sub AppStop {
 
+    my ($class) = @_;
     print "AppStop: Steerer_status = $SGS::serviceData{$steerStatusSDE}\n";
     print "AppStop: Application_status = $SGS::serviceData{$appStatusSDE}\n";
 
-    if($SGS::serviceData{$SGS::appStatusSDE} eq "NOT_STARTED" ||
-       $SGS::serviceData{$SGS::appStatusSDE} eq "PAUSED"){
+    if($SGS::serviceData{$SGS::appStatusSDE} =~ m/NOT_STARTED/ ||
+       $SGS::serviceData{$SGS::appStatusSDE} =~ m/PAUSED/){
 
 	return "SGS_ERROR";
     }
 
-    SetServiceData(" ", $SGS::appStatusSDE, "STOPPED");
+    $class->setServiceData("<ogsi:setByServiceDataNames>".
+		   "<$SGS::appStatusSDE>STOPPED</$SGS::appStatusSDE>".
+		   "</ogsi:setByServiceDataNames>");
 
     # If no steerer is attached then we're now free to die
-    if($SGS::serviceData{$SGS::steerStatusSDE} eq "DETACHED"){
+    if($SGS::serviceData{$SGS::steerStatusSDE} =~ m/DETACHED/){
 	print "AppStop: calling Destroy\n";
-	Destroy();
+	$class->Destroy();
     }
-    elsif($SGS::serviceData{$SGS::steerStatusSDE} eq "DETACHING"){
+    elsif($SGS::serviceData{$SGS::steerStatusSDE} =~ m/DETACHING/){
 
         # Steerer is in process of detaching but application has finished
         # - call AppDetach ourselves to complete the detach process
         # Set flag to say we are free to die after allowing some delay to 
         # give steerer to get confirmation of Detach.
         $SGS::dieAfterDelay = 1;
-	AppDetach();
+	$class->AppDetach();
     }
 
     return "SGS_SUCCESS";
@@ -316,6 +350,9 @@ sub AppStop {
 #------------------------------
 
 sub GetStatus {
+
+    my ($class) = @_;
+    print "GetStatus has been called\n";
 
     # Search for next buffer to return, starting from the last one 
     # we returned
@@ -416,96 +453,248 @@ sub PutControl {
 
 #------------------------------
 
-sub FindServiceData {
-    my $element_value = "";
+sub findServiceData {
+    my ( $class, $QueryString ) = @_;
+    
+    if ( ! ($QueryString =~ m/ogsi:queryByServiceDataNames/) )
+    {
+      #we only support queryByServiceDataNames 
+      #BUG should through a proper fault
+      return "ExtensibilityNotSupportedFault\n";
+    }
+ 
+    #use DOM to parse the XML fragment that is the QueryString
+    my $parser = new XML::DOM::Parser;
+    my $doc = $parser->parse($QueryString);
+    
+    my $node = $doc->getElementsByTagName("ogsi:queryByServiceDataNames");
+    my $Qnames = $node->item(0)->getAttributeNode("names")->getValue();
+   
+    my @ListofNames = split( /,/,$Qnames );
+   
+    my $ans = "";
+    my $found = 0;
+    my @NewNameList = ();
+    my $count = 0;
 
-    my($class,$element_name) = @_;
-    print "FindServiceData: name = ", $element_name, "\n";
+    #need to strip trailing & leading blank spaces
+    foreach $name ( @ListofNames ){
 
-    # Check that we know about this service data
-    for ($i=0; $i<@{SGS::serviceDataElements}; $i++) {  
+        # Trims leading white space
+        #$temp = s/^ |\t|\n//;
+	$found = 0;
+	for ($i=0; $i<@{SGS::serviceDataElements}; $i++) {  
 
-	if($SGS::serviceDataElements[$i] eq  $element_name){
-	    $element_value = $SGS::serviceData{"$element_name"};
+	    if($SGS::serviceDataElements[$i] eq  $name){
 
-            # Unset any pending notification on this SDE
-	    if($SGS::serviceDataChanged[$i] == 1){
+		$ans .= $SGS::serviceData{"$name"};
 
-		# Re-jig the ordered list of notifications
-		for ($j=0; $j<@{SGS::serviceDataElements}; $j++) {  
-		    if($SGS::notificationOrder[$j] == $i){
+		# Unset any pending notification on this SDE, but only if
+		# steerer is attached (ie we assume the steerer is the one 
+		# calling us if one is attached)
+		# ARPDBG - need concept of session ID?
+		if(($SGS::serviceData{$steerStatusSDE} =~ m/ATTACHED/) && 
+		   $SGS::serviceDataChanged[$i] == 1){
 
-                        # Found the one we're returning - delete it and 
-                        # shuffle up remaining notifications to close gap
-			for ($k=$j; $k<($SGS::numNotifications-$j-1); $k++) {  
+		    # Re-jig the ordered list of notifications
+		    for ($j=0; $j<@{SGS::serviceDataElements}; $j++) {  
+			if($SGS::notificationOrder[$j] == $i){
 
-			    $SGS::notificationOrder[$k] = $SGS::notificationOrder[$k+1];
+			    # Found the one we're returning - delete it and 
+			    # shuffle up remaining notifications to close gap
+			    for ($k=$j; $k<($SGS::numNotifications-$j-1); $k++) {  
+
+				$SGS::notificationOrder[$k] = $SGS::notificationOrder[$k+1];
+			    }
+			    last;
 			}
-			last;
+		    }
+		    $SGS::serviceDataChanged[$i] = 0;
+		    $SGS::numNotifications--;
+		}
+
+		$found = 1;
+		last;
+	    }
+
+	}
+	# If we didn't find this name then we'll have to pass it on to the superclass
+	if($found != 1){
+	    $NewNameList[$count++] = $name;
+	}
+    }
+
+    # If there were SDE names that we didn't know about then pass them on
+    # to the super class method
+    if(@{NewNameList} > 0){
+
+	my $query = join (", ", @NewNameList);
+
+	$query = "<ogsi:queryByServiceDataNames names=$query/>";
+
+	my $superAns = $class->SUPER::findServiceData($query); 
+
+	$superAns =~ s/<\/?sd:serviceDataValues>//og;
+   
+	$ans = "<sd:serviceDataValues>".$ans.$superAns."</sd:serviceDataValues>";  
+
+    } else {
+	$ans = "<sd:serviceDataValues>".$ans."</sd:serviceDataValues>";
+    }
+
+    return $ans;
+ }
+
+#    my $element_value = "";
+#
+#    my($class,$element_name) = @_;
+#    print "findServiceData: name = ", $element_name, "\n";
+#
+#    # Check that we know about this service data
+#    for ($i=0; $i<@{SGS::serviceDataElements}; $i++) {  
+#
+#	if($SGS::serviceDataElements[$i] eq  $element_name){
+#	    $element_value = $SGS::serviceData{"$element_name"};
+#
+#            # Unset any pending notification on this SDE, but only if
+#            # steerer is attached (ie we assume the steerer is the one 
+#            # calling us if one is attached)
+#            # ARPDBG - need concept of session ID?
+#	    if($SGS::serviceData{"Steerer_status"} eq "Attached" && 
+#	       $SGS::serviceDataChanged[$i] == 1){
+#
+#		# Re-jig the ordered list of notifications
+#		for ($j=0; $j<@{SGS::serviceDataElements}; $j++) {  
+#		    if($SGS::notificationOrder[$j] == $i){
+#
+#                        # Found the one we're returning - delete it and 
+#                        # shuffle up remaining notifications to close gap
+#			for ($k=$j; $k<($SGS::numNotifications-$j-1); $k++) {  
+#
+#			    $SGS::notificationOrder[$k] = $SGS::notificationOrder[$k+1];
+#			}
+#			last;
+#		    }
+#		}
+#		$SGS::serviceDataChanged[$i] = 0;
+#		$SGS::numNotifications--;
+#	    }
+#	}
+#    }
+#
+#    print "findServiceData: value = ", $element_value, "\n";
+#    return "$element_value";
+#  }
+
+#------------------------------
+
+sub setServiceData {
+
+#    my $return_val = "";
+#    my($class, $element_name, $element_value) = @_;
+    my($class, $docIn) = @_;
+
+    # Call Super-class method first.  It returns any SDEs it didn't set.
+    my $ans = $class->SUPER::setServiceData($docIn); 
+
+    my $parser = new XML::DOM::Parser;
+    my $doc = $parser->parse($ans);
+
+    my $nodes = $doc->getElementsByTagName("ogsi:setByServiceDataNames");
+    my $NodeSize = $nodes->getLength;
+    if ( $NodeSize != 1 ){
+      print "SGS::setServiceData ogsi:setByServiceDataNames only\n";
+      $doc->dispose;
+      return $docIn;
+    } 
+ 
+    my $ChildNodes = $nodes->item(0)->getChildNodes;
+    my $ChildNodesSize = $ChildNodes->getLength;
+
+    # Store SDE names and values in temporary hash
+    my %SDinHash = ();
+    for my $kid ($nodes->item(0)->getChildNodes)
+    {
+      $SDinHash{$kid->getNodeName} = $kid->toString;
+    }
+
+    foreach my $key (keys %SDinHash){
+
+	# Check that we know about this service data
+	for ($i=0; $i<@{SGS::serviceDataElements}; $i++) {  
+
+# ARPDBG - this can be done much more tidily (see ILCT.pm) but leave
+# like this for the mo' 'cos of my 'notification' stuff.
+	    if($SGS::serviceDataElements[$i] eq  $key){
+
+		# We do - set new value and return it too
+		$SGS::serviceData{$key} = $SDinHash{$key};
+		delete $SDinHash{$key};
+
+		# Set notification flag & increment count - we don't generate
+		# notifications for supported commands because these can only
+		# be set once and are returned to the steering client as
+		# part of the attaching procedure
+		if($key ne $SGS::suppCmdsSDE){
+		    # Can only have as many notifications as SDEs so check  
+		    # that we haven't already got a notification for this SDE
+		    if($SGS::numNotifications < @{SGS::serviceDataElements}){
+
+			if($SGS::serviceDataChanged[$i] != 1){
+			    $SGS::serviceDataChanged[$i] = 1;
+			    $SGS::notificationOrder[$SGS::numNotifications] = $i;
+			    $SGS::numNotifications++;
+			}
 		    }
 		}
-		$SGS::serviceDataChanged[$i] = 0;
-		$SGS::numNotifications--;
 	    }
 	}
     }
 
-    print "FindServiceData: value = ", $element_value, "\n";
-    return "$element_value";
-  }
-
-#------------------------------
-
-sub SetServiceData {
-
-    my $return_val = "";
-    my($class, $element_name, $element_value) = @_;
+    #We return any SDEs we did not set 
+    my $result = "<ogsi:setByServiceDataNames>";
+    foreach $key (keys %SDinHash)
+    {
+      $result .= $SDinHash{$key};
+    }
+    $result .= "</ogsi:setByServiceDataNames>";
+    
+    $doc->dispose;
+    return $result;
 
     # Check that we know about this service data
-    for ($i=0; $i<@{SGS::serviceDataElements}; $i++) {  
-
-	if($SGS::serviceDataElements[$i] eq  $element_name){
-
-            # We do - set new value and return it too
-	    $SGS::serviceData{"$element_name"} = "$element_value";
-	    $return_val = $SGS::serviceData{"$element_name"};
-
-            # Set notification flag & increment count - we don't generate
-	    # notifications for supported commands because these can only
-	    # be set once and are returned to the steering client as
-	    # part of the attaching procedure
-	    if($element_name ne $SGS::suppCmdsSDE){
-		# Can only have as many notifications as SDEs so check that we 
-		# haven't already got a notification for this SDE
-		if($SGS::numNotifications < @{SGS::serviceDataElements}){
-
-		    if($SGS::serviceDataChanged[$i] != 1){
-			$SGS::serviceDataChanged[$i] = 1;
-			$SGS::notificationOrder[$SGS::numNotifications] = $i;
-			$SGS::numNotifications++;
-		    }
-		}
-	    }
-            print "SetServiceData: setting ",$element_name, " = ", 
-                  $element_value, "\n";
-	    return "$return_val";
-	}
-    }
-
-    return "$return_val";
+#    for ($i=0; $i<@{SGS::serviceDataElements}; $i++) {  
+#
+#	if($SGS::serviceDataElements[$i] eq  $element_name){
+#
+#            # We do - set new value and return it too
+#	    $SGS::serviceData{"$element_name"} = "$element_value";
+#	    $return_val = $SGS::serviceData{"$element_name"};
+#
+#            # Set notification flag & increment count - we don't generate
+#	    # notifications for supported commands because these can only
+#	    # be set once and are returned to the steering client as
+#	    # part of the attaching procedure
+#	    if($element_name ne $SGS::suppCmdsSDE){
+#		# Can only have as many notifications as SDEs so check that we 
+#		# haven't already got a notification for this SDE
+#		if($SGS::numNotifications < @{SGS::serviceDataElements}){
+#
+#		    if($SGS::serviceDataChanged[$i] != 1){
+#			$SGS::serviceDataChanged[$i] = 1;
+#			$SGS::notificationOrder[$SGS::numNotifications] = $i;
+#			$SGS::numNotifications++;
+#		    }
+#		}
+#	    }
+#            print "setServiceData: setting ",$element_name, " = ", 
+#                  $element_value, "\n";
+#	    return "$return_val";
+#	}
+#    }
+#
+#    return "$return_val";
   }
-
-#------------------------------
-# Modified by mmk - this function does not even need to exist 
-# since it is inherited from the SUPER class. This shows how
-# the app can customise the function by adding code before/after
-# the call to SUPER. 
-
-sub SetTerminationTime{
-     local($class,@args) = @_;
-     my $ans= $class->SUPER::SetTerminationTime(@args);
-     return $ans;
- }
 
 #------------------------------
 
@@ -513,7 +702,8 @@ sub GetNotifications{
 
     my $return_val = "";
 
-    print "GetNotifications: have ", $SGS::numNotifications, " notifications\n";
+    print "GetNotifications: have ", $SGS::numNotifications, 
+          " notifications\n";
     # Loop over no. of serviceDataElements to make sure we get everything
     for($i=0; $i<@{serviceDataElements}; $i++){
 
@@ -534,6 +724,7 @@ sub GetNotifications{
 #------------------------------
 
 sub Pause{
+    my ($class) = @_;
     my $pauseMsg = "<?xml version=\"1.0\"?>" . 
      "<ReG_steer_message xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " . 
      "xmlns=\"http://www.realitygrid.org/xml/steering\" " . 
@@ -551,7 +742,7 @@ sub Pause{
 
 	if($SGS::serviceData{$SGS::appStatusSDE} eq "RUNNING"){
 	    # Tell application to pause
-	    PutControl(" ", "$pauseMsg");
+	    $class->PutControl("$pauseMsg");
 
 	    # Record change of state
 	    $SGS::serviceData{$SGS::appStatusSDE} = "PAUSED";
@@ -565,6 +756,7 @@ sub Pause{
 #------------------------------
 
 sub Resume{
+    my ($class) = @_;
     my $resumeMsg = "<?xml version=\"1.0\"?>" . 
      "<ReG_steer_message xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " . 
      "xmlns=\"http://www.realitygrid.org/xml/steering\" " . 
@@ -582,7 +774,7 @@ sub Resume{
 
 	if($SGS::serviceData{$SGS::appStatusSDE} eq "PAUSED"){
 	    # Tell application to resume
-	    PutControl(" ", "$resumeMsg");
+	    $class->PutControl("$resumeMsg");
 
 	    # Record change of state
 	    $SGS::serviceData{$SGS::appStatusSDE} = "RUNNING";
@@ -596,6 +788,7 @@ sub Resume{
 #------------------------------
 
 sub Stop{
+    my ($class) = @_;
     my $stopMsg = "<?xml version=\"1.0\"?>" . 
      "<ReG_steer_message xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " . 
      "xmlns=\"http://www.realitygrid.org/xml/steering\" " . 
@@ -620,7 +813,7 @@ sub Stop{
 	   $SGS::serviceData{$SGS::appStatusSDE} eq "PAUSED"){
 
 	    # Tell application to stop
-	    $ans = PutControl(" ", "$stopMsg");
+	    $ans = $class->PutControl(" ", "$stopMsg");
 
 	    # Record change of state
 	    $SGS::serviceData{$SGS::appStatusSDE} = "STOPPING";
@@ -653,6 +846,12 @@ sub GetNthDataSource {
 
     my($class, $index) = @_;
 
+    if($index <= 0){
+
+	print "GetNthDataSource: index must be > 0\n";
+	return "SGS_ERROR"
+    }
+
     # Translate to zero-based index
     $index--;
 
@@ -676,13 +875,15 @@ sub GetNthDataSource {
 
     my $label = substr($sources, 0, index($sources, "<"));
 
+    print "GetNthDataSource: label = $label\n";
+
     # Now we get the IO Types of the SGS with the GSH we've just
     # extracted
-    my $func = "FindServiceData";
+    my $func = "findServiceData";
     my $iotypes = SOAP::Lite
 	        -> uri("SGS")
                 -> proxy("$gsh")
-                -> $func("IOType_defs")
+                -> $func("<ogsi:queryByServiceDataNames names=\"SGS:IOType_defs\"/>")
                 -> result;
  
     my $address = "UNSET";
@@ -699,7 +900,7 @@ sub GetNthDataSource {
 	}
     }
 
-    print "GetNthDataSource: failed to find IOType with matching label";
+    print "GetNthDataSource: failed to find IOType with matching label\n";
     return "SGS_ERROR";
 }
 

@@ -252,7 +252,8 @@ struct msg_struct *Get_service_data(Sim_entry_type *sim, char *sde_name)
 
   findServiceData_response._result = NULL;
   if(soap_call_tns__findServiceData(&soap, sim->SGS_info.address, 
-				    "", sde_name, 
+				    "", "<ogsi:queryByServiceDataNames names=\"" 
+				    sde_name "\"/>", 
 				    &findServiceData_response )){
 
     fprintf(stderr, "Get_service_data: findServiceData failed:\n");
