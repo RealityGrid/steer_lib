@@ -115,7 +115,9 @@ typedef struct {
   char  value[REG_MAX_STRING_LENGTH];
   int   modified;
   int   is_internal;
+  int   min_val_valid;
   char  min_val[REG_MAX_STRING_LENGTH];
+  int   max_val_valid;
   char  max_val[REG_MAX_STRING_LENGTH];
 
 } param_entry;
