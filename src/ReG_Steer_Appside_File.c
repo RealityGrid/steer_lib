@@ -36,6 +36,9 @@
     Initial version by:  A Porter, 30.1.2004       0.1
 
 ---------------------------------------------------------------------------*/
+#include <string.h>
+
+#include "ReG_Steer_Appside_File.h"
 #include "ReG_Steer_types.h"
 #include "ReG_Steer_Appside_internal.h"
 

@@ -41,6 +41,7 @@
 
 #include "ReG_Steer_Appside.h"
 #include <unistd.h>
+#include <string.h>
 
 #ifndef REG_DEBUG
 #define REG_DEBUG 1

@@ -41,6 +41,7 @@
 #include "ReG_Steer_Common.h"
 #include <sys/time.h>
 #include <rpc/rpc.h>
+#include <string.h>
 /* These are for uname and gethostbyname */
 #include <sys/utsname.h>
 #include <sys/types.h>
