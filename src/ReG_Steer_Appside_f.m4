@@ -452,10 +452,11 @@ INT_KIND_1_DECL(Status);
 
 /*----------------------------------------------------------------
 
-SUBROUTINE make_vtk_buffer_f(header, nx, ny, nz, array, status)
+SUBROUTINE make_vtk_buffer_f(header, nx, ny, nz, a, b, c, array, status)
 
   CHARACTER (LEN=BUFSIZ), INTENT(out)     :: header
   INTEGER (KIND=REG_SP_KIND), INTENT(in)  :: nx, ny, nz
+  REAL (KIND=REG_DP_KIND),    INTENT(in)  :: a, b, c
   REAL (KIND=REG_SP_KIND), DIMENSION(nx*ny*nz), INTENT(out) :: array
   INTEGER (KIND=REG_SP_KIND), INTENT(out) :: status
 
@@ -463,6 +464,7 @@ SUBROUTINE make_vtk_buffer_f(header, nx, ny, nz, array, status)
 
 void FUNCTION(make_vtk_buffer_f) ARGS(`STRING_ARG(header), 
                                        nx, ny, nz, 
+                                       a, b, c,
                                        array,
                                        Status')
 STRING_ARG_DECL(header);
@@ -471,13 +473,17 @@ INT_KIND_1_DECL(ny);
 INT_KIND_1_DECL(nz);
 /* Really need an M4 macro for this but since this is just a test
    routine, leave for now ARPDBG */
+double *a;
+double *b;
+double *c;
 float *array;
 INT_KIND_1_DECL(Status);
 {
   *Status = INT_KIND_1_CAST( Make_vtk_buffer(STRING_PTR(header), 
                                              (int)*nx, 
                                              (int)*ny, 
-                                             (int)*nz, 
+                                             (int)*nz,
+                                             *a, *b, *c,
                                              array) );
   return;
 }

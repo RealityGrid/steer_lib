@@ -164,6 +164,9 @@ extern PREFIX int Make_vtk_buffer(char  *header,
 				  int    nx,
 				  int    ny,
 				  int    nz,
+				  double a,
+				  double b,
+				  double c,
 				  float *array);
 
 extern PREFIX int Globus_io_activate(void);

@@ -971,13 +971,14 @@ int Consume_data_slice(int    IOTypeIndex,
   globus_size_t    num_bytes_to_read;
 
   XDR     xdrs;
-  int     dum_int;
   int    *pint;
-  float   dum_float;
   float  *pfloat;
-  double  dum_double;
   double *pdouble;
   void   *tmp_ptr;
+#if DEBUG
+  float   read_time;
+  clock_t start_time, stop_time;
+#endif
 
   /* Calculate how many bytes to expect */
   switch(DataType){
@@ -1052,7 +1053,10 @@ int Consume_data_slice(int    IOTypeIndex,
 #if DEBUG
   fprintf(stderr, "Consume_data_slice: calling globus_io_read for %d bytes\n",
 	  num_bytes_to_read);
+
+  start_time = clock();
 #endif
+
 
   if(IOTypes_table.io_def[IOTypeIndex].use_xdr){
     result = globus_io_read(&(IOTypes_table.io_def[IOTypeIndex].conn_handle), 
@@ -1070,8 +1074,13 @@ int Consume_data_slice(int    IOTypeIndex,
   }
 
 #if DEBUG
+  stop_time = clock();
+  read_time = (float)(start_time - stop_time)/(float)CLOCKS_PER_SEC;
+
   fprintf(stderr, "Consume_data_slice: globus_io_read read %d bytes\n",
 	  nbytes);
+  fprintf(stderr, "                    in %.2f seconds\n", read_time);
+
   if(DataType == REG_CHAR){
     fprintf(stderr, "Consume_data_slice: got char data:\n>>%s<<\n", 
 	    (char *)pData);
@@ -1134,7 +1143,6 @@ int Consume_data_slice(int    IOTypeIndex,
 	  return_status = REG_FAILURE;
 	  break;
 	}
-	/*	*(pint++) = dum_int;*/
       }
       break;
 
@@ -1149,7 +1157,6 @@ int Consume_data_slice(int    IOTypeIndex,
 	  return_status = REG_FAILURE;
 	  break;
 	}
-	/**(pfloat++) = dum_float;*/
       }
       break;
 
@@ -1159,12 +1166,13 @@ int Consume_data_slice(int    IOTypeIndex,
 
       for(i=0; i<Count; i++){
 
+	/*fprintf(stderr, "Consume_data_slice: i = %d\n", i);*/
+
 	if (1!=xdr_double(&xdrs, pdouble++)) {/*&dum_double)) {*/
 	  fprintf(stderr, "Consume_data_slice: error decoding datum %d\n",i);
 	  return_status = REG_FAILURE;
 	  break;
 	}
-	/**(pdouble++) = dum_double;*/
       }
       break;
 
@@ -1177,6 +1185,9 @@ int Consume_data_slice(int    IOTypeIndex,
     xdr_destroy(&xdrs);
   }
 
+#if DEBUG
+  fprintf(stderr, "Consume_data_slice: done XDR decode\n");
+#endif
 
   /* Reset use_xdr flag set as only valid on a per-slice basis */
   IOTypes_table.io_def[IOTypeIndex].use_xdr = FALSE;
@@ -1478,8 +1489,8 @@ int Emit_data_slice(int		      IOTypeIndex,
   float           *fptr;
   double          *dptr;
 
-  char	hbt_buffer[4];	     /* simple HBT */
-  char  reply[REG_MAX_LINE_LEN];  
+  /*char	hbt_buffer[4];	      simple HBT */
+  /*char  reply[REG_MAX_LINE_LEN];  */
 
   /* Check that steering is enabled */
   if(!ReG_SteeringEnabled) return REG_SUCCESS;
@@ -1598,7 +1609,7 @@ int Emit_data_slice(int		      IOTypeIndex,
 #endif
 
   result = globus_io_write(&(IOTypes_table.io_def[IOTypeIndex].conn_handle), 
-			   buffer, 
+			   (globus_byte_t *)buffer, 
 			   strlen(buffer), 
 			   &nbytes);
 
@@ -2859,17 +2870,22 @@ int Make_vtk_buffer(char  *header,
 		    int    nx,
 		    int    ny,
 		    int    nz,
+		    double a,
+		    double b,
+		    double c,
 		    float *array)
 {
   int    i, j, k;
   int    count;
-  double a2 = 0.5*0.5;
-  double b2 = 0.3*0.3;
-  double c2 = 0.1*0.1;
+  double a2, b2, c2;
   float  sum;
   float *fptr;
   char  *pchar;
   char   text[64];
+
+  a2 = a*a;
+  b2 = b*b;
+  c2 = c*c;
 
   /* Make ASCII header to describe data to vtk */
 
@@ -2885,7 +2901,7 @@ int Make_vtk_buffer(char  *header,
   pchar += sprintf(pchar, "%-128s", "nspace=3\n");
   pchar += sprintf(pchar, "%-128s", "field=uniform\n");
   pchar += sprintf(pchar, "%-128s", "veclen=1\n");
-  pchar += sprintf(pchar, "%-128s", "data=xdr_float\n");
+  pchar += sprintf(pchar, "%-128s", "data=float\n");
   pchar += sprintf(pchar, "%-128s", "variable 1 filetype=binary "
   		   "skip=0000000 stride=2\n");
 /*   pchar += sprintf(pchar, "%-128s", "variable 2 filetype=binary " */
@@ -2912,6 +2928,8 @@ int Make_vtk_buffer(char  *header,
 
   return REG_SUCCESS;
 }
+
+/*--------------------------------------------------------------------*/
 
 int Globus_io_activate()
 {
@@ -3004,7 +3022,8 @@ int Globus_create_listener(unsigned short int	*port,
    */
 
   fprintf(stderr, "port = %d\n", *port);
-  result = globus_io_tcp_create_listener(port, -1, &attr, &(IOTypes_table.io_def[*index].listener_handle));
+  result = globus_io_tcp_create_listener(port, -1, &attr, 
+					 &(IOTypes_table.io_def[*index].listener_handle));
   /* SMR XXX backlog -1?*/
   if (result != GLOBUS_SUCCESS) {
     fprintf(stderr, "Globus_create_listener: Error creating listening socket:\n");
@@ -3076,13 +3095,12 @@ Globus_listener_callback (void			*callback_arg,
 			  globus_io_handle_t	*handle,
 			  globus_result_t	resultparam)
 { 
-  int			index = -1;
-  globus_result_t	result;
-  globus_object_t	*err; 
-  int			success = 1;
-
-  globus_bool_t			use_err = GLOBUS_FALSE;
-  Globus_callback_monitor	*lmonitor;
+  int			   index   = -1;
+  globus_result_t	   result;
+  globus_object_t	  *err; 
+  int		  	   success = 1;
+  globus_bool_t		   use_err = GLOBUS_FALSE;
+  Globus_callback_monitor *lmonitor;
 
   index = *((int *) callback_arg);
 
@@ -3227,7 +3245,9 @@ int Globus_create_connector(int		*index)
     return REG_FAILURE;
   }
 
-  fprintf(stderr, "Globus_create_connector: registered connector on connector_port = %d, connector_hostname = %s\n", connector_port, connector_hostname);
+  fprintf(stderr, "Globus_create_connector: registered connector on "
+	  "connector_port = %d, connector_hostname = %s\n", connector_port, 
+	  connector_hostname);
 
   /* attempt to kick the callback function */
   Globus_callback_poll(*index);
@@ -3246,15 +3266,10 @@ Globus_connector_callback (void			*callback_arg,
 			   globus_result_t	resultparam)
 { 
   int	success = 1;
-  int	try_connect=1;
-  int	index = -1;
-  globus_result_t	result;
-  globus_io_attr_t	attr; 
-
-  globus_object_t	*err; 
-  globus_bool_t		use_err = GLOBUS_FALSE;
-
-  Globus_callback_monitor	*lmonitor;
+  int	index   = -1;
+  globus_object_t         *err; 
+  globus_bool_t	           use_err = GLOBUS_FALSE;
+  Globus_callback_monitor *lmonitor;
 
   fprintf(stderr, "Globus_create_connector: In func.\n");
 
