@@ -41,6 +41,8 @@
 #include "ReG_Steer_Common.h"
 #include "ReG_Steer_XML.h"
 
+#include <string.h>
+
 #ifndef REG_DEBUG
 #define REG_DEBUG 1
 #endif
