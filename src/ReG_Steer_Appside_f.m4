@@ -996,6 +996,87 @@ INT_KIND_1_DECL(Status);
 
 /*----------------------------------------------------------------
 
+SUBROUTINE enable_all_param_logging_f(Toggle, Status)
+
+  INTEGER (KIND=REG_SP_KIND), INTENT(in)  :: Toggle
+  INTEGER (KIND=REG_SP_KIND), INTENT(out) :: Status
+----------------------------------------------------------------*/
+
+void FUNCTION(enable_all_param_logging_f) ARGS(`Toggle,
+		        	                Status')
+INT_KIND_1_DECL(Toggle);
+INT_KIND_1_DECL(Status);
+{
+  *Status = INT_KIND_1_CAST( Enable_all_param_logging((int)*Toggle) );
+  return;
+}
+
+/*----------------------------------------------------------------
+
+SUBROUTINE enable_param_logging_f(ParamLabel, Toggle, Status)
+
+  CHARACTER (LEN=REG_MAX_STRING_LENGTH), INTENT(in) :: ParamLabel
+  INTEGER (KIND=REG_SP_KIND), INTENT(in)            :: Toggle
+  INTEGER (KIND=REG_SP_KIND), INTENT(out)           :: Status
+----------------------------------------------------------------*/
+
+void FUNCTION(enable_param_logging_f) ARGS(`STRING_ARG(ParamLabel),
+                                            Toggle,
+		        	            Status')
+STRING_ARG_DECL(ParamLabel);
+INT_KIND_1_DECL(Toggle);
+INT_KIND_1_DECL(Status);
+{
+  char  buf[REG_MAX_STRING_LENGTH];
+  char *pchar;
+  int   len, i, found;
+
+  len = STRING_LEN(ParamLabel);
+  if(len > REG_MAX_STRING_LENGTH){
+
+    fprintf(stderr, "enable_param_logging_f: ERROR - length of param "
+            "label exceeds REG_MAX_STRING_LENGTH (%d) chars\n", 
+            REG_MAX_STRING_LENGTH);
+
+    *Status = INT_KIND_1_CAST(REG_FAILURE);
+    return;
+  }
+
+  memcpy(buf, STRING_PTR(ParamLabel), len);
+
+  if(len == REG_MAX_STRING_LENGTH){
+
+    found = 0;
+    pchar = STRING_PTR(ParamLabel);
+    for(i = (REG_MAX_STRING_LENGTH-1); i == 0; i--){
+      if(pchar[i] == '\0'){
+        found = 1;
+	break;
+      }
+    }
+    if(!found){
+
+      fprintf(stderr, "Enable_param_logging_f: ERROR - length of label "
+                "is REG_MAX_STRING_LENGTH (%d) chars long\nbut contains "
+                "no termination character - shorten label (or its len "
+                "declaration)\n", 
+                REG_MAX_STRING_LENGTH);
+      *Status = INT_KIND_1_CAST(REG_FAILURE);
+      return;
+    }
+  }
+  else{
+
+    /* Terminate string */
+    buf[len] = '\0';
+  }
+
+  *Status = INT_KIND_1_CAST( Enable_param_logging(buf, (int)*Toggle) );
+  return;
+}
+
+/*----------------------------------------------------------------
+
 SUBROUTINE consume_start_f(IOType, IOHandle, Status)
 
   INTEGER (KIND=REG_SP_KIND), INTENT(in)  :: IOType
