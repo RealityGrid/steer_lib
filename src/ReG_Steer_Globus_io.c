@@ -172,13 +172,9 @@ void Globus_socket_info_cleanup(socket_io_type * const socket_info)
 void Globus_callback_poll(socket_io_type * const socket_info)
 {
   globus_abstime_t	timeout;
-  int                   result;
 
   timeout.tv_sec  = 1;
   timeout.tv_nsec = 0;
-#if REG_DEBUG
-  fprintf(stderr, "Globus_callback_poll: call globus_cond_timedwait\n");
-#endif
 
   if( globus_mutex_lock(&(socket_info->mutex)) ){
 
@@ -187,16 +183,9 @@ void Globus_callback_poll(socket_io_type * const socket_info)
   }
 
   /* attempt to kick the callback function */
-  result = globus_cond_timedwait(&(socket_info->cond), 
-				 &(socket_info->mutex), 
-				 &timeout);
-
-#if REG_DEBUG
-  if(result != GLOBUS_SUCCESS){
-
-    fprintf(stderr, "Globus_callback_poll: timed-out\n");
-  }
-#endif
+  globus_cond_timedwait(&(socket_info->cond), 
+			&(socket_info->mutex), 
+			&timeout);
 
   globus_mutex_unlock(&(socket_info->mutex)); 
   

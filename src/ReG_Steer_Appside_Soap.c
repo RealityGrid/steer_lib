@@ -136,8 +136,10 @@ int Initialize_steering_connection_soap(int  NumSupportedCmds,
     return REG_FAILURE;
   }
 
+#if REG_DEBUG
   fprintf(stderr, "Initialize_steering_connection_soap: setServiceData "
 	  "returned: %s\n", setSDE_response._result);
+#endif
 
   return REG_SUCCESS;
 }
