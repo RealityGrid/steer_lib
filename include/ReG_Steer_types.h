@@ -49,7 +49,7 @@
    Only consequence is that the status files emitted by the application
    are all called 'steer_status' and not indexed - i.e. some output will 
    be lost if the status files are not consumed sufficiently rapidly */
-/*#define UNICORE_DEMO*/
+#define UNICORE_DEMO
 
 /* The namespace used for steering messages (which are in xml) */
 #define REG_STEER_NAMESPACE "http://www.realitygrid.org/xml/steering"
@@ -106,8 +106,11 @@
 
 /* Limit on number of files used in communication - filenames
    wrap back on themselves once this limit reached */
-
+#ifdef UNICORE_DEMO
+#define REG_MAX_NUM_FILES 50
+#else
 #define REG_MAX_NUM_FILES 6
+#endif
 
 /* Maximum length for any string */
 
