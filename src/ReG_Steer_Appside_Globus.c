@@ -682,6 +682,7 @@ int Consume_start_data_check_globus(const int index)
     if(result == GLOBUS_SUCCESS){
 
 #if DEBUG
+      fprintf(stderr, "Consume_start_data_check_globus: read %d bytes from socket\n", nbytes);
       fprintf(stderr, "Consume_start_data_check_globus: read <%s> from socket\n", buffer);
 #endif
       /* ARPDBG - globus_io_try_read always returns 0 bytes if connection
@@ -829,6 +830,9 @@ int Emit_header_globus(const int index)
 
     if(result == GLOBUS_SUCCESS){
 
+#if DEBUG
+      fprintf(stderr, "Emit_header_globus: Sent %d bytes\n", nbytes);
+#endif
       return REG_SUCCESS;
     }
     else{
