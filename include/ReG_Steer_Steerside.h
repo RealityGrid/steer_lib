@@ -83,6 +83,10 @@ extern PREFIX int Consume_param_defs(int SimHandle);
    simulation referred to by SimHandle has emitted. */
 extern PREFIX int Consume_IOType_defs(int SimHandle);
 
+/* Consume and store the Chk type definitions that the 
+   simulation referred to by SimHandle has emitted. */
+extern PREFIX int Consume_ChkType_defs(int SimHandle);
+
 /* Consume a status message emitted by the simulation associated
    with SimHandle.  Returns that simulations current sequence no.
    and a list of any commands received (e.g. finish). */
