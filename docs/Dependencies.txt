@@ -15,6 +15,8 @@ Version   2.4.24 (later versions OK but                2.2.3(*)                 
 * - All necessary gSOAP files are included with the steering library distribution
     so this is only for information.  The version used in the steering library
     has been patched for 64-bit systems.  This patch is included in gSOAP 2.3b.
+    It has also been extended to allow control of the client-side port to be
+    used by the socket connection.
 
 -----------------------------------------------------------------------------------------------------------------------
 

@@ -14,13 +14,16 @@ The XML parser.
 The steering library uses libxml2, the XML C library for Gnome.  This
 is available from http://xmlsoft.org/downloads.html and should be
 installed (including the header files) on your machine before
-attempting to install the steering library itself.
+attempting to install the steering library itself.  Note that the library
+is often included with standard Linux distributions (check /usr/lib for
+libxml2.so).
 
 (Note, you'll need to set the CFLAGS environment variable to "-mabi=64" to
 get a 64-bit library on an SGI.  Configure should also be run with the 
 following flags:
 
---with-python=no --with-threads=no --with-xpath=no --with-xptr=no --enable-shared=no flag
+--with-python=no --with-threads=no --with-xpath=no --with-xptr=no 
+--enable-shared=no flag
 
 If you don't have the access rights to install the library in a system-default
 location and don't want to have to set LD_LIBRARY64_PATH/LD_LIBRARYN32_PATH
@@ -34,6 +37,14 @@ you wish to change the version of gSOAP used then the relevant files are:
 
 src/stdsoap2.c
 include/stdsoap2.h
+
+However, PLEASE NOTE that the version of gSOAP used by the library includes
+a bug fix that affects 64-bit builds (this patch in cluded in versions 2.3b
+and later) plus an addition to allow the calling code to control which
+port the http connection uses on the local machine.  The latter is necessary
+to make use of the GLOBUS_TCP_PORT_RANGE holes in firewalls that restrict
+outgoing as well as incoming connections.  Search for client_port_min and
+client_port_max in the source and header file.
 
 The following files are generated from the WSDL describing the Steering
 Grid Service (available in the OGSI::Lite distribution):
@@ -97,7 +108,7 @@ command to your .cshrc or equivalent.
 All platform-dependent build configuration is done in the file
 Makefile.include to be found in this directory.
 
-You should select 64- or 32-bit compilation (if appropriate for you
+You should select 64- or 32-bit compilation (if appropriate for your
 platform). (Ensure that you have a compatible libxml2 library file.)
 
 Set architecture type (necessary for generating F90 bindings).
@@ -115,6 +126,9 @@ steerable and how one might write a steerer with which to control it.
 functionality is truly primitive and often hard-wired. 'mini_app2' is
 similar to 'mini_app' but implemented in F90 instead of C. 'mini_app_para'
 is a parallel (F90 and MPI) example.
+
+For a full description of the environment variables used by the steering
+library see docs/Environment_variables.txt.
 
 ----------------------------------------------------------------------------
 
