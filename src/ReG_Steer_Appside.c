@@ -183,10 +183,29 @@ int Steering_initialize(int  NumSupportedCmds,
 	    "directory\n");
   } 
 
-  /* Get the hostname of this machine */
-  if(Get_fully_qualified_hostname(&pchar, &ip_addr) == REG_SUCCESS){
+  /* Get the hostname of this machine - used to tell the outside
+     world how to contact us and where the (checkpoint) files we've 
+     written live.  On many machines we may be running on a node
+     that cannot be seen by the outside world and therefore globus 
+     connections for file transfer etc. will need an address of a 
+     publicly-accessible node.  This can be passed to us via the
+     REG_MACHINE_NAME environment variable. */
+  if( (pchar = getenv("REG_MACHINE_NAME")) ){
+    
     strcpy(ReG_Hostname, pchar);
   }
+  else if(Get_fully_qualified_hostname(&pchar, &ip_addr) == REG_SUCCESS){
+    strcpy(ReG_Hostname, pchar);
+  }
+  else{
+    ReG_Hostname[0] = '\0';
+    fprintf(stderr, "Steering_initialize: failed to get machine name\n");
+  }
+
+#if REG_DEBUG
+  fprintf(stderr, "Steering_initialize: machine name = %s\n", 
+	  ReG_Hostname);
+#endif
 
   /* Allocate memory and initialise tables of IO types and 
      parameters */
@@ -758,11 +777,6 @@ int Register_ChkTypes(int    NumTypes,
 
       ChkTypes_table.io_def[current].freq_param_handle = 
 	                                 Params_table.next_handle - 1;
-
-#if REG_DEBUG
-      fprintf(stderr, "Register_ChkTypes: handle of freq. param = %d\n",
-	      ChkTypes_table.io_def[current].freq_param_handle);
-#endif
 
       /* Annotate the parameter table entry just created to flag that
          it is a parameter that is internal to the steering library */

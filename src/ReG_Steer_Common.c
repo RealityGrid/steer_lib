@@ -750,11 +750,6 @@ int Read_file(char *filename, char **buf, int *size)
   (*buf)[*size] = 0;
   fclose(fp);
 
-#if REG_DEBUG
-  fprintf(stderr, "Read file, length = %d\n", *size);
-  /* fprintf(stderr, "Read file, content:\n>>%s<<\n", *buf); */
-#endif
-
   return REG_SUCCESS;
 }
 
