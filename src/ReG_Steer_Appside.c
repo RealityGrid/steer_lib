@@ -2468,7 +2468,7 @@ int Enable_all_param_logging(int toggle)
 int Enable_param_logging(char *ParamLabel,
 			 int   toggle)
 {
-  int i, len1, len2;
+  int i, j, len1, len2;
   int found = 0;
   int lToggle = REG_FALSE;
 
@@ -2480,7 +2480,8 @@ int Enable_param_logging(char *ParamLabel,
      space in labels passed to us from F90 */
   len1 = strlen(ParamLabel);
 
-  for(i=0; i<Params_table.max_entries; i++){
+  i = 0;
+  while (i < Params_table.max_entries){
     if(Params_table.param[i].handle != REG_PARAM_HANDLE_NOTSET){
 
       len2 = strlen(Params_table.param[i].label);
@@ -2488,11 +2489,26 @@ int Enable_param_logging(char *ParamLabel,
 
       if( !(strncmp(Params_table.param[i].label, ParamLabel, len2)) ){
 
-	Params_table.param[i].logging_on = lToggle;
 	found = 1;
-	i = Params_table.max_entries; /* break out */
+	j = len2;
+	while(found && Params_table.param[i].label[j] != '\0'){
+	  if(Params_table.param[i].label[j++] != ' ')found = 0;
+	}
+	j = len2;
+	while(found && ParamLabel[j] != '\0'){
+	  if(ParamLabel[j++] != ' ')found = 0;
+	}
+
+	if(found){
+	  printf("ARPDBG: matched >>%s<< with >>%s<<\n",
+		 Params_table.param[i].label,
+		 ParamLabel);
+	  Params_table.param[i].logging_on = lToggle;
+	  i = Params_table.max_entries; /* break out */
+	}
       }
     }
+    i++;
   }
 
   if (found) return REG_SUCCESS;
