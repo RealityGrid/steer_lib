@@ -365,24 +365,6 @@ INT_KIND_1_DECL(Status);
     j++;
   }
 
-  /*
-  for(i=0; i<REG_MAX_NUM_STR_PARAMS; i++){
-
-    str_array[i]=(char *)malloc(REG_MAX_STRING_LENGTH*sizeof(char));
-
-    if(str_array[i] == NULL){
-
-      for(j=(i-1); j>=0; j--){
-	free(str_array[j]);
-      }
-      fprintf(stderr, 
-	      "steering_control_f: Failed to allocate memory for strings\n");
-      *Status = INT_KIND_1_CAST( REG_FAILURE );
-      return;
-    }
-  }
-  */
-
 #if DEBUG
   fprintf(stderr, "steering_control_f: Calling Steering_control...\n");
 #endif
@@ -437,16 +419,6 @@ INT_KIND_1_DECL(Status);
     }
   }
 
-  /* Clean up */
-
-  free(str_array[0]);
-
-  /*
-  for(i=0; i<REG_MAX_NUM_STR_PARAMS; i++){
-
-    free(str_array[i]);
-  }
-  */
   return;
 }
 

@@ -1,3 +1,6 @@
+! Example of a basic steerable parallel F90 application that uses the 
+! RealityGrid steering library.
+
 PROGRAM para_mini_app
   IMPLICIT none
 
@@ -40,6 +43,8 @@ PROGRAM para_mini_app
   INTEGER (KIND=REG_SP_KIND) :: num_recvd_cmds
   INTEGER (KIND=REG_SP_KIND) :: num_params_changed
   INTEGER (KIND=REG_SP_KIND), DIMENSION(REG_MAX_NUM_STR_CMDS) :: recvd_cmds
+  CHARACTER(LEN=REG_MAX_STRING_LENGTH), &
+              DIMENSION(REG_MAX_NUM_STR_CMDS)   :: recvd_cmd_params
   CHARACTER(LEN=REG_MAX_STRING_LENGTH), &
               DIMENSION(REG_MAX_NUM_STR_PARAMS) :: changed_param_labels
 
@@ -127,7 +132,27 @@ PROGRAM para_mini_app
     END IF
   
     WRITE(*,*) 'Returned IOtype = ', iotype_handles(2)
+
+    io_labels(1) = " "
+    io_labels(1) = "SOME_CHECKPOINT"
+    io_labels(1)(12:12) = CHAR(0)
+
+    io_dirn(1) = REG_IO_CHKPT
+    io_supp_auto(1) = reg_false
   
+    CALL register_iotypes_f(num_types, io_labels, io_dirn, io_supp_auto, &
+                            output_freq, iotype_handles(2), status)
+
+    IF(status .ne. REG_SUCCESS)THEN
+  
+      CALL steering_finalize_f(status)
+      CALL MPI_BCAST(REG_FAILURE, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, IERROR)
+      CALL MPI_FINALIZE(IERROR)
+      STOP 'Failed to register IO type'
+    END IF
+  
+    WRITE(*,*) 'Returned IOtype = ', iotype_handles(3)
+
     ! Register some parameters
   
     num_params  = 1
@@ -230,8 +255,9 @@ PROGRAM para_mini_app
     ! Steering is all done on master px only...
     IF(my_id .eq. 0)THEN
 
-      CALL steering_control_f(iloop, num_params_changed, changed_param_labels, &
-                              num_recvd_cmds, recvd_cmds, status)
+      CALL steering_control_f(iloop, num_params_changed, changed_param_labels,&
+                              num_recvd_cmds, recvd_cmds, recvd_cmd_params, &
+                              status)
 
       CALL MPI_BCAST(status, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, IERROR)
 
@@ -282,13 +308,18 @@ PROGRAM para_mini_app
         icmd = 1
         DO
   
+          WRITE (*,FMT='(A, I4, A, A)') "Received cmd: ", recvd_cmds(icmd),&
+                                        " with params: ", &
+                                        TRIM(recvd_cmd_params(icmd))
+
           SELECT CASE (recvd_cmds(icmd))
   
           CASE(REG_STR_PAUSE)
             WRITE (*,*) 'Received pause command from steerer'
   
             CALL steering_pause_f(num_params_changed, changed_param_labels, &
-                                 num_recvd_cmds, recvd_cmds, status)
+                                 num_recvd_cmds, recvd_cmds, &
+                                 recvd_cmd_params, status)
   
             ! Worker processes are blocked on a BCAST and thus have 
             ! effectively been paused too
