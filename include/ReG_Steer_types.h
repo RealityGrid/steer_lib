@@ -124,9 +124,10 @@
 
 #define REG_STR_STOP             1
 #define REG_STR_PAUSE            2
-#define REG_STR_RESUME           3
-#define REG_STR_DETACH           4
-#define REG_STR_EMIT_PARAM_LOG   5
+#define REG_STR_PAUSE_INTERNAL   3
+#define REG_STR_RESUME           4
+#define REG_STR_DETACH           5
+#define REG_STR_EMIT_PARAM_LOG   6
 
 /* All generated IOtype handles must be >= this value because they
    will be interpreted as commands - this value must therefore be >

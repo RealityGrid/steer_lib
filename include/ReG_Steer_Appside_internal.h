@@ -74,11 +74,15 @@ typedef struct {
 
   /* String to hold 'supported commands' message 'cos we can't 
      actually send it until a steerer has connected in the case
-     where we're using globus_io */
+     where we're using SOAP */
   char			supp_cmds[REG_MAX_MSG_SIZE];
 
   /* Buffer to hold received messages */
   char			msg_buffer[REG_MAX_MSG_SIZE];
+
+  /* Flag indicating whether or not lib should handle pause cmd
+     internally (REG_TRUE) or pass it up to the app (REG_FALSE); */
+  int                   handle_pause_cmd;
 
 } Steerer_connection_table_type;
 

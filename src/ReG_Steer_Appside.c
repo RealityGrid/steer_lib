@@ -385,6 +385,10 @@ int Steering_initialize(char *AppName,
      Steering_control is called, 10 means once for every ten calls etc.) */
   Steerer_connection.steer_interval = 1;
 
+  /* By default, we pass any pause command that we receive up to the 
+     application (provided it supports it) */
+  Steerer_connection.handle_pause_cmd = REG_FALSE;
+
   i = Params_table.num_registered;
   Params_table.param[i].ptr       = (void *)(&(Steerer_connection.steer_interval));
   Params_table.param[i].type      = REG_INT;
@@ -3088,16 +3092,19 @@ int Steering_control(int     SeqNum,
 		     int    *SteerCommands,
 		     char  **SteerCmdParams)
 {
-  int    i;
+  int    i, j;
   int    status;
   int    do_steer;
   int    detached;
-  int    count         = 0;
+  int    cmd_count     = 0;
   int    return_status = REG_SUCCESS;
   int    num_commands;
   int    commands[REG_MAX_NUM_STR_CMDS];
   int    param_handles[REG_MAX_NUM_STR_PARAMS];
   char*  param_labels[REG_MAX_NUM_STR_PARAMS];
+  static char** changed_param_labels = NULL;
+  int    param_count = 0;
+  int    num_param = 0;
 
   /* Indices to save having to keep looking-up handles */
   static int     step_time_index = 0;
@@ -3272,7 +3279,7 @@ int Steering_control(int     SeqNum,
     if( Consume_control(&num_commands,
 			commands,
 			SteerCmdParams,
-			NumSteerParams,
+			&num_param,
 			param_handles,
 			param_labels) != REG_SUCCESS ){
 
@@ -3299,21 +3306,13 @@ int Steering_control(int     SeqNum,
       Emit_log(&Param_log);
     }
 
-    /* Set array holding labels of changed params - pass back strings 
-       rather than pointers to strings */
-
-    for(i=0; i<(*NumSteerParams); i++){
-
-      strcpy(SteerParamLabels[i], param_labels[i]);
-    }
-
 #if REG_DEBUG_FULL
     fprintf(stderr, "Steering_control: done Consume_control\n");
 #endif
 
     /* Parse list of commands for any that we can handle ourselves */
 
-    i     = 0;
+    i        = 0;
     detached = REG_FALSE;
 
     while(i<num_commands){
@@ -3358,15 +3357,44 @@ int Steering_control(int     SeqNum,
 #endif
 	break;
 
+      case REG_STR_PAUSE:
+
+	if(Steerer_connection.handle_pause_cmd == REG_TRUE){
+
+	  Steering_pause(NumSteerParams,
+			 SteerParamLabels,
+			 &num_commands,
+			 commands,
+			 SteerCmdParams);
+
+	  /* Add to the list of changed parameters if any were edited
+	     during while we were paused */
+	  for(j=param_count; j<num_param; j++){
+	    if(j<REG_MAX_NUM_STR_PARAMS){
+	      strcpy(SteerParamLabels[j], changed_param_labels[j]);
+	    }
+	    else{
+	      break;
+	    }
+	  }
+	  *NumSteerParams = j-1;
+
+	  /* Throw away any commands received along with the original
+	     pause cmd and just process those received along with
+	     the resume cmd. */
+	  i = -1;
+	  break;
+	}
+	
       default:
 
 #if REG_DEBUG
         fprintf(stderr, "Steering_control: got command %d\n", commands[i]);
 #endif
 
-        SteerCommands[count] = commands[i];
-	if(count != i)strcpy(SteerCmdParams[count], SteerCmdParams[i]);
-	count++;
+        SteerCommands[cmd_count] = commands[i];
+	if(cmd_count != i)strcpy(SteerCmdParams[cmd_count], SteerCmdParams[i]);
+	cmd_count++;
 
 	/* If we've received a stop command then do just that - don't
 	   mess about */
@@ -3398,6 +3426,15 @@ int Steering_control(int     SeqNum,
       i++;
     }
 
+    /* Set array holding labels of changed params - pass back strings 
+       rather than pointers to strings */
+    /*ARPDBG indices need work here*/
+    for(i=0; i<(*NumSteerParams); i++){
+
+      strcpy(SteerParamLabels[i], param_labels[i]);
+    }
+    param_count = *NumSteerParams;
+
     /* Tell the steerer what we've been doing */
     if( !detached ){
 
@@ -3419,10 +3456,11 @@ int Steering_control(int     SeqNum,
 
   /* Deal with automatic emission/consumption of data - this is done
      whether or not a steering client is connected */
-  Auto_generate_steer_cmds(SeqNum, &count, SteerCommands, SteerCmdParams);
+  Auto_generate_steer_cmds(SeqNum, &cmd_count, SteerCommands, 
+			   SteerCmdParams);
 
   /* Record how many commands we're going to pass back to caller */
-  *NumSteerCommands = count;
+  *NumSteerCommands = cmd_count;
 
 #ifdef USE_REG_TIMING
   Get_current_time_seconds(&time1);
@@ -5502,7 +5540,7 @@ int Initialize_steering_connection(int  NumSupportedCmds,
 				   int *SupportedCmds)
 {
   char *pchar;
-  int   interval;
+  int   interval, i;
 
   /* Set-up the minimum interval (in seconds) between checks on
      whether a steerer has connected */
@@ -5513,6 +5551,17 @@ int Initialize_steering_connection(int  NumSupportedCmds,
     if(sscanf(pchar, "%d", &interval) == 1){
 
       Steerer_connection.polling_interval = (double)interval;
+    }
+  }
+
+  /* Check to see whether we should handle a pause command
+     ourselves or pass it up to the application.  Clients only 
+     see whether or not we support pause. */
+  for(i=0; i<NumSupportedCmds; i++){
+    if(SupportedCmds[i] == REG_STR_PAUSE_INTERNAL){
+      Steerer_connection.handle_pause_cmd = REG_TRUE;
+      SupportedCmds[i] = REG_STR_PAUSE;
+      break;
     }
   }
 
