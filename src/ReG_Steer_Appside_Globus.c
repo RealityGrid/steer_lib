@@ -490,6 +490,8 @@ int Initialize_IOType_transport_globus(const int direction,
   int	       len;
 #endif
 
+  IOTypes_table.io_def[index].is_enabled = FALSE;
+
   /* set up socket_info for callback */
   if (Globus_socket_info_init(&(IOTypes_table.io_def[index].socket_info)) 
       != REG_SUCCESS) {
@@ -522,7 +524,6 @@ int Initialize_IOType_transport_globus(const int direction,
       else{
 	  
 	IOTypes_table.io_def[index].is_enabled = TRUE;
-
 #if REG_DEBUG
 	fprintf(stderr, "Initialize_IOType_transport_globus: Created "
 		"listener on port %d, "
@@ -577,7 +578,10 @@ int Initialize_IOType_transport_globus(const int direction,
       if (port_ok && hostname_ok) {
 	
 	/* Don't create socket yet if this flag is set */
-	if (IOTypes_table.enable_on_registration == FALSE) return REG_SUCCESS;
+	if (IOTypes_table.enable_on_registration == FALSE) {
+	  IOTypes_table.io_def[index].is_enabled = FALSE;
+	  return REG_SUCCESS;
+	}
 
 	if (Globus_create_connector(&(IOTypes_table.io_def[index].socket_info)) 
 	    != REG_SUCCESS) {
@@ -691,23 +695,6 @@ int Enable_IOType_globus(int index)
 	      "for IOType\n");
 #endif
       return REG_FAILURE;
-    }
-    fprintf(stderr, "ARPDBG: Enable_IOType_globus, status = %d\n",
-	    IOTypes_table.io_def[index].socket_info.comms_status);
-    sleep(5); /* ARPDBG*/
-    if(IOTypes_table.io_def[index].socket_info.comms_status 
-       == REG_COMMS_STATUS_LISTENING){
-
-      fprintf(stderr, "Enable_IOType_globus: waiting for connection...\n");
-      while((IOTypes_table.io_def[index].socket_info.comms_status 
-	    != REG_COMMS_STATUS_CONNECTED) && 
-	    (IOTypes_table.io_def[index].socket_info.comms_status 
-	     != REG_COMMS_STATUS_FAILURE)){
-
-	Globus_callback_poll(&(IOTypes_table.io_def[index].socket_info));
-      }
-      fprintf(stderr, "Enable_IOType_globus: ...done\n");
-      sleep(5); /* ARPDBG*/
     }
   }
   else if (IOTypes_table.io_def[index].direction == REG_IO_IN){

@@ -666,11 +666,6 @@ int Register_IOTypes(int    NumTypes,
 
     /* set up transport for sample data - eg sockets */
     return_status = Initialize_IOType_transport(direction[i], current);
-    if(return_status == REG_SUCCESS){
-      IOTypes_table.io_def[current].is_enabled = TRUE;
-    } else {
-      IOTypes_table.io_def[current].is_enabled = FALSE;
-    }
 
     /* Create, store and return a handle for this IOType */
     IOTypes_table.io_def[current].handle = Next_IO_Chk_handle++;
@@ -767,7 +762,11 @@ int Enable_IOType(int IOType){
   if(!ReG_SteeringEnabled) return REG_SUCCESS;
 
   /* Can only call this function if steering lib initialised */
-  if (!ReG_SteeringInit) return REG_FAILURE;
+  if(!ReG_SteeringInit){
+    fprintf(stderr, "Enable_IOType: error: steering library not "
+	    "initialised\n");
+    return REG_FAILURE;
+  }
 
   /* Find corresponding entry in table of IOtypes */
   index = IOdef_index_from_handle(&IOTypes_table, IOType);
@@ -784,6 +783,12 @@ int Enable_IOType(int IOType){
     IOTypes_table.io_def[index].is_enabled = TRUE;
 #endif
   }
+#if REG_DEBUG
+  else{
+    fprintf(stderr, "Enable_IOType: IOType %d already enabled\n", 
+	    IOType);
+  }
+#endif
 
   return REG_SUCCESS;
 }
