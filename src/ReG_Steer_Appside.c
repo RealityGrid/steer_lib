@@ -697,6 +697,7 @@ int Register_IOTypes(int    NumTypes,
 int Disable_IOType(int IOType){
 
   int index;
+  int status = REG_FAILURE;
 
   /* Check that steering is enabled */
   if(!ReG_SteeringEnabled) return REG_SUCCESS;
@@ -715,9 +716,18 @@ int Disable_IOType(int IOType){
   if(IOTypes_table.io_def[index].is_enabled == TRUE){
 
 #if REG_GLOBUS_SAMPLES
-    Disable_IOType_globus(index);
+    status = Disable_IOType_globus(index);
 #endif
     IOTypes_table.io_def[index].is_enabled = FALSE;
+
+    /* If this is an output IOType then destroying the socket
+       changes the listening port and so we have to reset its IOType
+       definition. */
+    if(status == REG_SUCCESS && 
+       IOTypes_table.io_def[index].direction == REG_IO_OUT){
+
+      Emit_IOType_defs();
+    }
   }
 
   return REG_SUCCESS;
@@ -748,6 +758,7 @@ int Enable_IOTypes_on_registration(int toggle){
 int Enable_IOType(int IOType){
 
   int index;
+  int status = REG_FAILURE;
 
   /* Check that steering is enabled */
   if(!ReG_SteeringEnabled) return REG_SUCCESS;
@@ -770,9 +781,18 @@ int Enable_IOType(int IOType){
   if(IOTypes_table.io_def[index].is_enabled == FALSE){
 
 #if REG_GLOBUS_SAMPLES
-    Enable_IOType_globus(index);
+    status = Enable_IOType_globus(index);
 #endif
     IOTypes_table.io_def[index].is_enabled = TRUE;
+
+    /* If this is an output IOType then creating the socket
+       changes the listening port and so we have to reset its IOType
+       definition. */
+    if(status == REG_SUCCESS && 
+       IOTypes_table.io_def[index].direction == REG_IO_OUT){
+
+      Emit_IOType_defs();
+    }
   }
 #if REG_DEBUG
   else{

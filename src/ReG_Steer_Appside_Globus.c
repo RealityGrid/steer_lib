@@ -489,6 +489,10 @@ void Globus_cleanup_listener_connection(socket_io_type * const socket_info)
       socket_info->comms_status == REG_COMMS_STATUS_WAITING_FOR_ACCEPT){
     Globus_close_conn_handle(socket_info);
   }
+
+  /* Flag that this listener is dead - used in Emit_IOType_defs */
+  sprintf(socket_info->listener_hostname, "NOT_SET");
+  socket_info->listener_port = 0;
 }
 
 /*--------------------------------------------------------------------*/
