@@ -1,7 +1,8 @@
 divert(-1)
 undefine(`len')
 #
-# append an underscore to FORTRAN function names
+# append two underscores to FORTRAN function names 'cos that's the way
+# g95 likes it...
 #
 define(`FUNCTION',`$1__')
 #
