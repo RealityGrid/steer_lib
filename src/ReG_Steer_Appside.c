@@ -352,6 +352,7 @@ int Steering_initialize(char *AppName,
   Params_table.param[0].steerable = REG_FALSE;
   Params_table.param[0].modified  = REG_FALSE;
   Params_table.param[0].is_internal=REG_FALSE;
+  Params_table.param[0].logging_on =REG_TRUE;
   strcpy(Params_table.param[0].label, "SEQUENCE_NUM");
   strcpy(Params_table.param[0].value, "-1");
   strcpy(Params_table.param[0].min_val, "-1");
@@ -369,6 +370,7 @@ int Steering_initialize(char *AppName,
   Params_table.param[i].steerable = REG_FALSE;
   Params_table.param[i].modified  = REG_FALSE;
   Params_table.param[i].is_internal=REG_FALSE;
+  Params_table.param[i].logging_on =REG_TRUE;
   strcpy(Params_table.param[i].label, "CPU_TIME_PER_STEP");
   strcpy(Params_table.param[i].value, "0.0");
   strcpy(Params_table.param[i].min_val, "");
@@ -386,6 +388,7 @@ int Steering_initialize(char *AppName,
   Params_table.param[i].steerable = REG_FALSE;
   Params_table.param[i].modified  = REG_FALSE;
   Params_table.param[i].is_internal=REG_TRUE;
+  Params_table.param[i].logging_on =REG_FALSE;
   strcpy(Params_table.param[i].label, "TIMESTAMP");
   strcpy(Params_table.param[i].value, "");
   strcpy(Params_table.param[i].min_val, "");
@@ -410,6 +413,7 @@ int Steering_initialize(char *AppName,
   Params_table.param[i].steerable = REG_TRUE;
   Params_table.param[i].modified  = REG_FALSE;
   Params_table.param[i].is_internal=REG_FALSE;
+  Params_table.param[i].logging_on =REG_TRUE;
   strcpy(Params_table.param[i].label, "STEERING_INTERVAL");
   strcpy(Params_table.param[i].value, "1");
   strcpy(Params_table.param[i].min_val, "1");
