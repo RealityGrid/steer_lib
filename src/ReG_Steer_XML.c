@@ -1314,7 +1314,9 @@ int Parse_registry_entries(char* buf, int size, int *num_entries,
 { 
   static xmlSAXHandler my_handler;
   struct ParserState my_state;
+#if REG_DEBUG
   int i;
+#endif
 
   /* Set pointers to our event handlers */
   my_handler.startElement = Start_element_handler;
