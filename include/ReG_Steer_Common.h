@@ -37,8 +37,8 @@
     Initial version by: A Porter, 12/8/2002.
     
 ---------------------------------------------------------------------------*/
+#include "ReG_Steer_Globus_io.h"
 
-#include <globus_io.h>
 /* Following two includes are for use of stat system call 
    in Open_next_file */
 #include <sys/types.h>
@@ -89,13 +89,6 @@ typedef struct {
 
 /* Types and structures for reading IO types */
 
-/* structure used for globus_io callback SMR XXXn may remove some of struct members*/
-typedef struct
-{
-  globus_mutex_t		mutex;
-  globus_cond_t			cond;
-} Globus_callback_monitor;
-
 
 typedef struct {
 
@@ -116,17 +109,8 @@ typedef struct {
   /* Size of this buffer */
   int				buffer_bytes;
 
-  /* port for socket connection */
-  unsigned short int		port;
-  /* socket connection handles */
-  globus_io_handle_t		listener_handle;
-  globus_io_handle_t		conn_handle;
-  /* status indicators for socket comms*/
-  int				listener_status;  
-  int				comms_status;
-  /* monitor struc used for callback */
-  Globus_callback_monitor	monitor;
-  int				index;
+  /* structure used to hold all globus_io socket information */
+  socket_io_type		socket_info;
 
   /* Whether or not to encode non-ASCII data as XDR (set in Emit_start) */
   int				use_xdr;
