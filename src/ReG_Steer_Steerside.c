@@ -360,6 +360,9 @@ int Sim_attach(char *SimID,
 
     sim_ptr->Params_table.param[i].handle   = REG_PARAM_HANDLE_NOTSET;
     sim_ptr->Params_table.param[i].modified = REG_FALSE;
+    sim_ptr->Params_table.param[i].log      = NULL;
+    sim_ptr->Params_table.param[i].log_index= 0;
+    sim_ptr->Params_table.param[i].log_size = 0;
   }
 
   /* ...supported commands */
@@ -1241,19 +1244,12 @@ int Consume_param_log(Sim_entry_type *sim,
   int index;
   int i;
 
-  if(!sim->Params_table.param[i].log){
-
-    if(Realloc_param_log(&(sim->Params_table.param[i])) !=
-       REG_SUCCESS){
-
-      return REG_FAILURE;
-    }
-  }
-
-  index = sim->Params_table.param[i].log_index;
-
   while(param_ptr){
 
+    if(!param_ptr->handle){
+      printf("Consume_param_log: ptr to param handle is NULL!\n");
+      return REG_FAILURE;
+    }
     /* Look-up entry for param to update */
 
     sscanf((char *)(param_ptr->handle), "%d", &handle);
@@ -1268,21 +1264,31 @@ int Consume_param_log(Sim_entry_type *sim,
       continue;
     }
 
+    if(!sim->Params_table.param[i].log){
+
+      if(Realloc_param_log(&(sim->Params_table.param[i])) !=
+	 REG_SUCCESS){
+
+	return REG_FAILURE;
+      }
+    }
+    index = sim->Params_table.param[i].log_index;
+
     /* Update value of this param */
     if(param_ptr->value){
       switch(sim->Params_table.param[i].type){
 
       case REG_INT:
 	sscanf((char *)(param_ptr->value), "%d",
-	       &( ((int *)sim->Params_table.param[i].log)[index++]) );
+	       &( ((int *)(sim->Params_table.param[i].log))[index++]) );
         break;
       case REG_FLOAT:
 	sscanf((char *)(param_ptr->value), "%f",
-	       &( ((float *)sim->Params_table.param[i].log)[index++]) );
+	       &( ((float *)(sim->Params_table.param[i].log))[index++]) );
 	break;
       case REG_DBL:
 	sscanf((char *)(param_ptr->value), "%f",
-	       &( ((double *)sim->Params_table.param[i].log)[index++]) );
+	       &( ((double *)(sim->Params_table.param[i].log))[index++]) );
 	break;
       case REG_CHAR:
 	/* This not implemented yet */
@@ -1292,13 +1298,32 @@ int Consume_param_log(Sim_entry_type *sim,
       default:
 	break;
       }
-
-      if(index >= sim->Params_table.param[i].log_size){
-	Realloc_param_log(&(sim->Params_table.param[i]));
-      }
     }
     else{
+      switch(sim->Params_table.param[i].type){
 
+      /* Store a zero if we have no actual value */
+      case REG_INT:
+	((int *)(sim->Params_table.param[i].log))[index++] = 0;
+        break;
+      case REG_FLOAT:
+	((float *)(sim->Params_table.param[i].log))[index++] = 0.0;
+	break;
+      case REG_DBL:
+	((double *)(sim->Params_table.param[i].log))[index++] = 0.0;
+	break;
+      case REG_CHAR:
+	/* This not implemented yet */
+	fprintf(stderr, "Consume_param_log: logging of char params not "
+		"implemented!\n");
+	break;
+      default:
+	break;
+      }
+    }
+
+    if(index >= sim->Params_table.param[i].log_size){
+      Realloc_param_log(&(sim->Params_table.param[i]));
     }
 
     param_ptr = param_ptr->next;
@@ -1804,8 +1829,9 @@ int Delete_sim_table_entry(int *SimHandle)
 
   sim->Params_table.num_registered = 0;
   sim->Params_table.max_entries = 0;
-  if (sim->Params_table.param) free(sim->Params_table.param);
-  sim->Params_table.param = NULL;
+  if (sim->Params_table.param) {
+    Delete_param_table(&(sim->Params_table));
+  }
 
   sim->IOdef_table.num_registered = 0;
   sim->IOdef_table.max_entries = 0;
@@ -1825,6 +1851,28 @@ int Delete_sim_table_entry(int *SimHandle)
   /* Flag that this entry no longer contains valid data */
   sim->handle = REG_SIM_HANDLE_NOTSET;
   *SimHandle = REG_SIM_HANDLE_NOTSET;
+
+  return REG_SUCCESS;
+}
+
+/*----------------------------------------------------------*/
+
+int Delete_param_table(Param_table_type *param_table)
+{
+  int i;
+
+  for(i=0; i<param_table->max_entries; i++){
+    if(param_table->param[i].handle != REG_PARAM_HANDLE_NOTSET){
+
+      if(param_table->param[i].log)free(param_table->param[i].log);
+      param_table->param[i].log = NULL;
+      param_table->param[i].log_size = 0;
+      param_table->param[i].log_index = 0;
+    }
+  }
+
+  free(param_table->param);
+  param_table->param = NULL;
 
   return REG_SUCCESS;
 }

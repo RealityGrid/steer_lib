@@ -177,6 +177,9 @@ static int Finalize_connection_proxy(Sim_entry_type *sim);
 
 static int Finalize_connection_file(Sim_entry_type *sim);
 
+/* free's any allocated memory held in the parameter table */
+int Delete_param_table(Param_table_type *param_table);
+
 int Consume_chk_log(Sim_entry_type *sim, 
 		    struct chk_log_entry_struct *entry);
 
@@ -189,5 +192,10 @@ static int Get_log_entry_details(Param_table_type   *param_table,
 /* Returns the index of the next free entry in the table of simulations
    being steered */
 static int Next_free_sim_index();
+
+/* Mallocs or reallocs the logging buffer associated with the
+   supplied parameter.  Updates the log_size member of
+   the parameter struct. */
+static int Realloc_param_log(param_entry *param);
 
 #endif

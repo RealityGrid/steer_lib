@@ -121,7 +121,7 @@ extern PREFIX int Consume_status(int   SimHandle,
 				 int  *NumCmds,
 				 int  *Commands);
 
-/* Consume a logging message emitted by the simulatin associated
+/* Consume a logging message emitted by the simulation associated
    with SimHandle.  Contents of the message are stored in the log
    for that simulation. */
 extern PREFIX int Consume_log(int   SimHandle);

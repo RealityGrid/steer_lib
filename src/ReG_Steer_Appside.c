@@ -1650,8 +1650,8 @@ int Save_log(Chk_log_type *log)
   }
 
   if(log->num_entries > 0){
-
-    if( strstr(log->entry[0].chk_tag, "REG_PARAM_LOG") ){
+    if(log->log_type == PARAM){
+      /*   if( strstr(log->entry[0].chk_tag, "REG_PARAM_LOG") ){*/
 
       status = Log_to_columns(log, &buf, &len, REG_FALSE);
     }
@@ -1682,6 +1682,35 @@ int Save_log(Chk_log_type *log)
 int Log_to_xml(Chk_log_type *log, char **pchar, int *count, 
 	       const int not_sent_only)
 {
+  int   size = BUFSIZ;
+
+  if( !(*pchar = (char *)malloc(size*sizeof(char))) ){
+
+    fprintf(stderr, "Log_to_xml: malloc failed\n");
+    return REG_FAILURE;
+  }
+
+  *count = 0;
+
+  if(log->log_type == PARAM){
+    return Param_log_to_xml(log, pchar, count, not_sent_only);
+  }
+  else if(log->log_type == CHKPT){
+    return Chk_log_to_xml(log, pchar, count, not_sent_only);
+  }
+  else{
+    free(*pchar);
+    *pchar = NULL;
+    fprintf(stderr, "Log_to_xml: ERROR, unknown log type\n");
+    return REG_FAILURE;
+  }
+}
+
+/*----------------------------------------------------------------*/
+
+int Chk_log_to_xml(Chk_log_type *log, char **pchar, int *count, 
+		   const int not_sent_only)
+{
   int   i, j, len;
   char  entry[BUFSIZ];
   char *pentry;
@@ -1691,13 +1720,6 @@ int Log_to_xml(Chk_log_type *log, char **pchar, int *count,
   int   nbytes = 0;
   int   bytes_left;
 
-  if( !(*pchar = (char *)malloc(size*sizeof(char))) ){
-
-    fprintf(stderr, "Log_to_xml: malloc failed\n");
-    return REG_FAILURE;
-  }
-
-  *count = 0;
   pbuf = *pchar;
 
   for(i=0; i<log->num_entries; i++){
@@ -1719,7 +1741,7 @@ int Log_to_xml(Chk_log_type *log, char **pchar, int *count,
 #if REG_DEBUG
     /* Check for truncation of message */
     if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
-      fprintf(stderr, "Log_to_xml: message size exceeds BUFSIZ (%d)\n", 
+      fprintf(stderr, "Chk_log_to_xml: message size exceeds BUFSIZ (%d)\n", 
 	      BUFSIZ);
       free(*pchar);
       *pchar = NULL;
@@ -1743,7 +1765,7 @@ int Log_to_xml(Chk_log_type *log, char **pchar, int *count,
 #if REG_DEBUG
       /* Check for truncation of message */
       if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
-	fprintf(stderr, "Log_to_xml: message size exceeds BUFSIZ (%d)\n", 
+	fprintf(stderr, "Chk_log_to_xml: message size exceeds BUFSIZ (%d)\n", 
 		BUFSIZ);
 	free(*pchar);
 	*pchar = NULL;
@@ -1759,7 +1781,7 @@ int Log_to_xml(Chk_log_type *log, char **pchar, int *count,
 #if REG_DEBUG
     /* Check for truncation of message */
     if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
-      fprintf(stderr, "Log_to_xml: message size exceeds BUFSIZ (%d)\n", 
+      fprintf(stderr, "Chk_log_to_xml: message size exceeds BUFSIZ (%d)\n", 
 	      BUFSIZ);
       free(*pchar);
       *pchar = NULL;
@@ -1776,7 +1798,116 @@ int Log_to_xml(Chk_log_type *log, char **pchar, int *count,
       size += ((len/BUFSIZ) + 1)*BUFSIZ;
       if( !(ptr = realloc(*pchar, size*sizeof(char))) ){
 
-	fprintf(stderr, "Log_to_xml: realloc failed\n");
+	fprintf(stderr, "Chk_log_to_xml: realloc failed\n");
+	free(*pchar);
+	*pchar = NULL;
+	return REG_FAILURE;
+      }
+      
+      *pchar = (char *)ptr;
+      pbuf = &((*pchar)[*count]);
+    }
+
+    strncpy(pbuf, entry, len);
+    pbuf += len;
+    *count += len;
+
+    /* Flag this entry as having been sent to steerer */
+    log->entry[i].sent_to_steerer = REG_TRUE;
+  }
+
+  *pbuf = 0;
+
+  return REG_SUCCESS;
+}
+
+/*----------------------------------------------------------------*/
+
+int Param_log_to_xml(Chk_log_type *log, char **pchar, int *count, 
+		     const int not_sent_only)
+{
+  int   i, j, len;
+  char  entry[BUFSIZ];
+  char *pentry;
+  char *pbuf;
+  void *ptr;
+  int   size = BUFSIZ;
+  int   nbytes = 0;
+  int   bytes_left;
+
+  pbuf = *pchar;
+
+  for(i=0; i<log->num_entries; i++){
+
+    /* Check to see whether steerer already has this entry */
+    if (not_sent_only && (log->entry[i].sent_to_steerer == REG_TRUE)) continue;
+
+    bytes_left = size;
+    pentry = entry;
+    nbytes = snprintf(pentry, bytes_left, "<Log_entry>\n"
+		      "<Key>%d</Key>\n",
+		      log->entry[i].key);
+
+#if REG_DEBUG
+    /* Check for truncation of message */
+    if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
+      fprintf(stderr, "Param_log_to_xml: message size exceeds BUFSIZ (%d)\n", 
+	      BUFSIZ);
+      free(*pchar);
+      *pchar = NULL;
+      return REG_FAILURE;
+    }
+#endif
+    bytes_left -= nbytes;
+    pentry += nbytes;
+
+    /* Associated parameters are stored contiguously so need only
+       loop over the no. of params that this entry has */
+    for(j=0; j<log->entry[i].num_param; j++){
+
+      nbytes = snprintf(pentry, bytes_left, "<Param_log_entry>\n"
+			"<Handle>%d</Handle>\n" 
+			"<Value>%s</Value>\n"
+			"</Param_log_entry>\n", 
+		        log->entry[i].param[j].handle,
+		        log->entry[i].param[j].value);
+
+#if REG_DEBUG
+      /* Check for truncation of message */
+      if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
+	fprintf(stderr, "Param_log_to_xml: message size "
+		"exceeds BUFSIZ (%d)\n", BUFSIZ);
+	free(*pchar);
+	*pchar = NULL;
+	return REG_FAILURE;
+      }
+#endif
+      bytes_left -= nbytes;
+      pentry += nbytes;
+    }
+    
+    nbytes = snprintf(pentry, bytes_left, "</Log_entry>\n");
+#if REG_DEBUG
+    /* Check for truncation of message */
+    if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
+      fprintf(stderr, "Param_log_to_xml: message size "
+	      "exceeds BUFSIZ (%d)\n", BUFSIZ);
+      free(*pchar);
+      *pchar = NULL;
+      return REG_FAILURE;
+    }
+#endif
+    bytes_left -= nbytes;
+    pentry += nbytes;
+    
+    len = strlen(entry);
+
+    if( (size - *count) < len){
+
+      size += ((len/BUFSIZ) + 1)*BUFSIZ;
+      if( !(ptr = realloc(*pchar, size*sizeof(char))) ){
+
+	fprintf(stderr, "Param_log_to_xml: realloc failed\n");
 	free(*pchar);
 	*pchar = NULL;
 	return REG_FAILURE;
@@ -1847,7 +1978,7 @@ int Log_to_columns(Chk_log_type *log, char **pchar, int *count,
        loop over the no. of params that this entry has */
     for(j=0; j<log->entry[i].num_param; j++){
 
-      nbytes = snprintf(pentry, bytes_left, "%d %s ", 
+      nbytes = snprintf(pentry, bytes_left, " %d %s", 
 		        log->entry[i].param[j].handle,
 		        log->entry[i].param[j].value);
 
@@ -3148,15 +3279,29 @@ int Steering_control(int     SeqNum,
     }
 
     /* Emit logging info. */
+
     if( Emit_log(&Chk_log) != REG_SUCCESS ){
 
-      fprintf(stderr, "Steering_control: Emit_log failed\n");
+      fprintf(stderr, "Steering_control: Emit chk log failed\n");
     }
 #if REG_DEBUG_FULL
     else{
       fprintf(stderr, "Steering_control: done Emit_log\n");
     }
 #endif
+
+    /* I think we only want to emit the parameter log if a client
+       requests it
+    if( Emit_log(&Param_log) != REG_SUCCESS ){
+
+      fprintf(stderr, "Steering_control: Emit param log failed\n");
+    }
+#if REG_DEBUG_FULL
+    else{
+      fprintf(stderr, "Steering_control: done Emit_log\n");
+    }
+#endif
+    */
 
     /* Set array holding labels of changed params - pass back strings 
        rather than pointers to strings */
@@ -4147,13 +4292,17 @@ int Emit_log_entries(Chk_log_type *log, char *buf)
     return REG_FAILURE;
   }
 
+  pmsg_buf = buf;
   if(!strstr(buf, "<Log_entry>")){
-    Log_columns_to_xml(buf);
+    if(Log_columns_to_xml(buf, Global_scratch_buffer) != REG_SUCCESS){
+      return REG_FAILURE;
+    }
+    pmsg_buf = Global_scratch_buffer;
   }
 
   /* Pull each log entry out of the buffer and pack them into
      messages to the steerer */
-  pbuf1 = strstr(buf, "<Log_entry>");
+  pbuf1 = strstr(pmsg_buf, "<Log_entry>");
   pbuf2 = pbuf1;
   if(pbuf2){
     if(pbuf3 = strstr(pbuf2, "</Log_entry>")){
@@ -4284,7 +4433,7 @@ int Emit_log_entries(Chk_log_type *log, char *buf)
 
 /*----------------------------------------------------------------*/
 
-int Log_columns_to_xml(char *buf)
+int Log_columns_to_xml(char *buf, char* out_buf)
 {
 
   /* We have contents of log file as:
@@ -4293,7 +4442,7 @@ int Log_columns_to_xml(char *buf)
      etc.
   */
   char *fields[REG_MAX_NUM_STR_PARAMS];
-  const int max_field_length;
+  const int max_field_length = 24;
   char *pbuf;
   char *ptr1;
   char *ptr2;
@@ -4307,31 +4456,43 @@ int Log_columns_to_xml(char *buf)
   }
 
   for(i=1;i<REG_MAX_NUM_STR_PARAMS;i++){
-    fields[i] = (char *)(fields[0] + max_field_length);
+    fields[i] = (char *)(fields[0] + i*max_field_length);
   }
 
-  pbuf = Global_scratch_buffer;
-  Write_xml_header(&pbuf);
-  pbuf += sprintf(pbuf, "<Steer_log>\n");
+  /* Set pointer to buffer to take output. ASSUME that this is
+     pre-allocated by caller. */
+  pbuf = out_buf;
 
-  sprintf(pbuf, "<>");/*ARPBDG what element??*/
   ptr1 = buf;
   while(ptr2 = strstr(ptr1, "\n")){
 
     ptr3 = ptr1;
     count = 0;
-    while(ptr4 = strstr(ptr3, " ")){
+    while( (ptr4 = strstr(ptr3, " ")) && ((void*)ptr4 < (void*)ptr2) ){
       memcpy(fields[count], ptr3, ptr4-ptr3);
-      ptr3 = ptr4 + 1;
+      (fields[count])[ptr4-ptr3] = '\0';
+      ptr3 = ptr4;
+      while(*(++ptr3) == ' '){}/* Cope with multiple blank spaces */
       count++;
     }
-    /*ARPDBG what xml to go here ??*/
-    pbuf += sprintf(pbuf, "<Log_entry>%s</Log_entry>", fields[0]);
+    memcpy(fields[count], ptr3, ptr2-ptr3);
+    (fields[count])[ptr2-ptr3] = '\0';
+    count++;
+
+    pbuf += sprintf(pbuf, "<Log_entry>");
+    pbuf += sprintf(pbuf, "<Key>%s</Key>", fields[0]);
+    for(i=1;i<count;i+=2){
+      pbuf += sprintf(pbuf, "<Param_log_entry><Handle>%s</Handle>"
+		      "<Value>%s</Value></Param_log_entry>", 
+		      fields[i], fields[i+1]);
+    }
+    pbuf += sprintf(pbuf, "</Log_entry>\n");
+    ptr1 = ptr2 + 1;
   }
 
-  pbuf += sprintf(pbuf, "</Steer_log>\n");
-
   free(fields[0]);
+
+  return REG_SUCCESS;
 }
 
 /*----------------------------------------------------------------*/

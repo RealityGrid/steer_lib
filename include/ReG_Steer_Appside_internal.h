@@ -263,10 +263,24 @@ static int Save_log(Chk_log_type *log);
 static int Log_to_xml(Chk_log_type *log, char **pchar, int *count, 
 		      const int not_sent_only);
 
+/* Called from Log_to_xml for Checkpoint logs */
+int Chk_log_to_xml(Chk_log_type *log, char **pchar, int *count, 
+		   const int not_sent_only);
+
+/* Called from Log_to_xml for Parameter logs */
+int Param_log_to_xml(Chk_log_type *log, char **pchar, int *count, 
+		     const int not_sent_only);
+
 /* As for Log_to_xml except log is stored in columnar format - for
    storing parameter histories. */
 int Log_to_columns(Chk_log_type *log, char **pchar, int *count, 
 		   const int not_sent_only);
+
+/* Convert a columnar-format log back into xml.  buf points to
+   the columnar data (space delimited data on lines delimited by
+   new-line chars) and out_buf points to a buffer pre-allocated
+   to receive the new format log. */
+int Log_columns_to_xml(char *buf, char* out_buf);
 
 /* Wrapper for call to Realloc_IOdef_entry_buffer */
 static int Realloc_iotype_buffer(int index,
