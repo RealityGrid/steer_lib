@@ -747,6 +747,15 @@ int Steering_control(int     SeqNum,
 
 	  return_status = REG_FAILURE;
 	}
+
+	/* Confirm that we have received the detach command */
+	commands[0] = REG_STR_DETACH;
+	Emit_status(SeqNum,
+		    0,   
+		    NULL,
+		    1,
+		    commands);
+
         detached = TRUE;
 	break;
 
@@ -768,6 +777,15 @@ int Steering_control(int     SeqNum,
 
 	    return_status = REG_FAILURE;
 	  }
+
+	  /* Confirm that we have received the stop command */
+	  commands[0] = REG_STR_STOP;
+          Emit_status(SeqNum,
+		      0,   
+		      NULL,
+		      1,
+		      commands);
+
 	  detached = TRUE;
 	}
 
