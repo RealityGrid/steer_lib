@@ -43,8 +43,8 @@ CC = cc
 C_FLAGS = -xO2 -g
 
 # Location of F90 compiler (if any) and flags to use
-F90 = f90
-F90_FLAGS = -xO2 -64
+F90 = mpf90
+F90_FLAGS = -xO2
 
 # Location of java compiler - used to produce proxy binary
 JAVAC          = /usr/bin/javac
