@@ -1894,8 +1894,6 @@ int Emit_start(int  IOType,
 
 int Emit_stop(int *IOTypeIndex)
 {
-                  /* +1 for '0' of sprintf */
-  char            buffer[REG_PACKET_SIZE+1];
   int             return_status = REG_SUCCESS;
 
   /* Check that steering is enabled */
@@ -1910,11 +1908,11 @@ int Emit_stop(int *IOTypeIndex)
   }
 
   /* Send footer */
-  sprintf(buffer, REG_PACKET_FORMAT, REG_DATA_FOOTER);
+  sprintf(Global_scratch_buffer, REG_PACKET_FORMAT, REG_DATA_FOOTER);
   /* Include termination char WITHIN the packet */
-  buffer[REG_PACKET_SIZE-1] = '\0';
+  Global_scratch_buffer[REG_PACKET_SIZE-1] = '\0';
 
-  return_status = Emit_footer(*IOTypeIndex, buffer);
+  return_status = Emit_footer(*IOTypeIndex, Global_scratch_buffer);
 
 #if !REG_GLOBUS_SAMPLES
   if(IOTypes_table.io_def[*IOTypeIndex].fp){
@@ -4844,7 +4842,10 @@ int Consume_start_data_check(const int index)
   /* Remove the '.lock' from the filename */
   pchar = strstr(IOTypes_table.io_def[index].filename, ".lock");
 
-  if(!pchar)return REG_FAILURE;
+  if(!pchar){
+    fprintf(stderr, "Consume_start_data_check: failed to strip .lock!\n");
+    return REG_FAILURE;
+  }
 
   *pchar = '\0';
   if( !(IOTypes_table.io_def[index].fp = 
@@ -4878,6 +4879,7 @@ int Consume_start_data_check(const int index)
     return REG_FAILURE;
   }
 
+  fprintf(stderr, "ARPDBG Consume_start_data_check: done OK\n");
   return REG_SUCCESS;
 #endif
 }
@@ -4960,19 +4962,19 @@ int Emit_header(const int index)
 
   return Emit_header_globus(index);
 #else
-  char            buffer[REG_PACKET_SIZE];
 
-  sprintf(buffer, REG_PACKET_FORMAT, REG_DATA_HEADER);
-  buffer[REG_PACKET_SIZE-1] = '\0';
+  sprintf(Global_scratch_buffer, REG_PACKET_FORMAT, REG_DATA_HEADER);
+  Global_scratch_buffer[REG_PACKET_SIZE-1] = '\0';
 #if REG_DEBUG
-  fprintf(stderr, "Emit_header: Sending >>%s<<\n", buffer);
+  fprintf(stderr, "Emit_header: Sending >>%s<<\n", Global_scratch_buffer);
 #endif
 
   if(IOTypes_table.io_def[index].fp){
-    /*fprintf(IOTypes_table.io_def[index].fp, "%s\n", buffer);*/
-    fwrite((void *)buffer, sizeof(char), REG_PACKET_SIZE, 
-	   IOTypes_table.io_def[index].fp);
-    return REG_SUCCESS;
+
+    if(fwrite((void *)Global_scratch_buffer, sizeof(char), REG_PACKET_SIZE, 
+	      IOTypes_table.io_def[index].fp) == (size_t)REG_PACKET_SIZE){
+      return REG_SUCCESS;
+    }
   }
 
   return REG_FAILURE;
@@ -4989,12 +4991,16 @@ int Emit_footer(const int index,
 
   return Emit_footer_globus(index, buffer);
 #else
+  int n_written;
+  int nbytes_to_send;
 
+  /* strlen + 1 because it doesn't count '\0' */
+  nbytes_to_send = strlen(buffer)+1;
   if(IOTypes_table.io_def[index].fp){
-    /*fprintf(IOTypes_table.io_def[index].fp, "%s\n", buffer);*/
-    fwrite((void *)buffer, sizeof(char), strlen(buffer), 
-	   IOTypes_table.io_def[index].fp);
-    return REG_SUCCESS;
+
+    n_written = (int)fwrite((void *)buffer, sizeof(char), nbytes_to_send, 
+			    IOTypes_table.io_def[index].fp);
+    if(n_written == nbytes_to_send)return REG_SUCCESS;
   }
 
   return REG_FAILURE;
@@ -5018,8 +5024,8 @@ int Emit_data(const int		index,
   int n_written;
 
   if(IOTypes_table.io_def[index].fp){
-    n_written = fwrite( pData, (int)num_bytes_to_send, 1, 
-			IOTypes_table.io_def[index].fp);
+    n_written = (int)fwrite( pData, (int)num_bytes_to_send, 1, 
+			     IOTypes_table.io_def[index].fp);
 
     if(n_written == 1)return REG_SUCCESS;
   }
@@ -5065,10 +5071,201 @@ int Consume_iotype_msg_header(int  IOTypeIndex,
 				   NumBytes,
 				   IsFortranArray);
 #else
+  char   buffer[REG_PACKET_SIZE];
+  size_t nbytes;
 
-  return REG_FAILURE;
+  if(!IOTypes_table.io_def[IOTypeIndex].fp){
+
+    fprintf(stderr, "Consume_iotype_msg_header: file pointer is null\n");
+    return REG_FAILURE;
+  }
+
+  if(fread(buffer, 1, REG_PACKET_SIZE, IOTypes_table.io_def[IOTypeIndex].fp) 
+     != (size_t)REG_PACKET_SIZE){
+
+    fprintf(stderr, "Consume_iotype_msg_header: fread failed for header\n");
+    fclose(IOTypes_table.io_def[IOTypeIndex].fp);
+    IOTypes_table.io_def[IOTypeIndex].fp = NULL;
+    remove(IOTypes_table.io_def[IOTypeIndex].filename);
+    return REG_FAILURE;
+  }
+
+#if REG_DEBUG
+  fprintf(stderr, "Consume_iotype_msg_header: read >%s< from file\n",
+	  buffer);
 #endif
 
+  /* Check for end of data */
+  if(!strncmp(buffer, REG_DATA_FOOTER, strlen(REG_DATA_FOOTER))){
+
+    return REG_EOD;
+  }
+  else if(strncmp(buffer, BEGIN_SLICE_HEADER, strlen(BEGIN_SLICE_HEADER))){
+
+    fprintf(stderr, "Consume_iotype_msg_header: incorrect header on slice\n");
+    fclose(IOTypes_table.io_def[IOTypeIndex].fp);
+    IOTypes_table.io_def[IOTypeIndex].fp = NULL;
+    remove(IOTypes_table.io_def[IOTypeIndex].filename);
+    return REG_FAILURE;
+  }
+
+  /*--- Type of objects in message ---*/
+
+  if(fread(buffer, 1, REG_PACKET_SIZE, IOTypes_table.io_def[IOTypeIndex].fp) 
+     != (size_t)REG_PACKET_SIZE){
+
+    fprintf(stderr, "Consume_iotype_msg_header: fread failed for object type\n");
+    fclose(IOTypes_table.io_def[IOTypeIndex].fp);
+    IOTypes_table.io_def[IOTypeIndex].fp = NULL;
+    remove(IOTypes_table.io_def[IOTypeIndex].filename);
+    return REG_FAILURE;
+  }
+
+#if REG_DEBUG
+  fprintf(stderr, "Consume_iotype_msg_header: read >%s< from file\n", 
+	  buffer);
+#endif
+
+  if(!strstr(buffer, "<Data_type>")){
+    fclose(IOTypes_table.io_def[IOTypeIndex].fp);
+    IOTypes_table.io_def[IOTypeIndex].fp = NULL;
+    remove(IOTypes_table.io_def[IOTypeIndex].filename);
+    return REG_FAILURE;
+  }
+
+  sscanf(buffer, "<Data_type>%d</Data_type>", DataType);
+
+  /*--- No. of objects in message ---*/
+
+  if(fread(buffer, 1, REG_PACKET_SIZE, IOTypes_table.io_def[IOTypeIndex].fp) 
+     != (size_t)REG_PACKET_SIZE){
+
+    fclose(IOTypes_table.io_def[IOTypeIndex].fp);
+    IOTypes_table.io_def[IOTypeIndex].fp = NULL;
+    remove(IOTypes_table.io_def[IOTypeIndex].filename);
+    return REG_FAILURE;
+  }
+
+#if REG_DEBUG
+  fprintf(stderr, "Consume_iotype_msg_header: read >%s< from file\n", 
+	  buffer);
+#endif
+
+  if(!strstr(buffer, "<Num_objects>")){
+
+    fclose(IOTypes_table.io_def[IOTypeIndex].fp);
+    IOTypes_table.io_def[IOTypeIndex].fp = NULL;
+    remove(IOTypes_table.io_def[IOTypeIndex].filename);
+    return REG_FAILURE;
+  }
+
+  if( sscanf(buffer, "<Num_objects>%d</Num_objects>", Count) != 1){
+
+    fprintf(stderr, "Consume_iotype_msg_header: failed to read Num_objects\n");
+    fclose(IOTypes_table.io_def[IOTypeIndex].fp);
+    IOTypes_table.io_def[IOTypeIndex].fp = NULL;
+    remove(IOTypes_table.io_def[IOTypeIndex].filename);
+    return REG_FAILURE;
+  }
+
+  /*--- No. of bytes in message ---*/
+
+  if(fread(buffer, 1, REG_PACKET_SIZE, IOTypes_table.io_def[IOTypeIndex].fp) 
+     != (size_t)REG_PACKET_SIZE){
+
+    fprintf(stderr, "Consume_iotype_msg_header: fread failed for num bytes\n");
+    fclose(IOTypes_table.io_def[IOTypeIndex].fp);
+    IOTypes_table.io_def[IOTypeIndex].fp = NULL;
+    remove(IOTypes_table.io_def[IOTypeIndex].filename);
+    return REG_FAILURE;
+  }
+
+#if REG_DEBUG
+  fprintf(stderr, "Consume_iotype_msg_header: read >%s< from file\n", 
+	  buffer);
+#endif
+
+  if(!strstr(buffer, "<Num_bytes>")){
+
+    fclose(IOTypes_table.io_def[IOTypeIndex].fp);
+    IOTypes_table.io_def[IOTypeIndex].fp = NULL;
+    remove(IOTypes_table.io_def[IOTypeIndex].filename);
+    return REG_FAILURE;
+  }
+
+  if( sscanf(buffer, "<Num_bytes>%d</Num_bytes>", NumBytes) != 1){
+
+    fprintf(stderr, "Consume_iotype_msg_header: failed to read Num_bytes\n");
+    fclose(IOTypes_table.io_def[IOTypeIndex].fp);
+    IOTypes_table.io_def[IOTypeIndex].fp = NULL;
+    remove(IOTypes_table.io_def[IOTypeIndex].filename);
+    return REG_FAILURE;
+  }
+
+  /*--- Array ordering in message ---*/
+
+  if(fread(buffer, 1, REG_PACKET_SIZE, IOTypes_table.io_def[IOTypeIndex].fp) 
+     != (size_t)REG_PACKET_SIZE){
+
+    fprintf(stderr, "Consume_iotype_msg_header: fread failed for array ordering\n");
+    fclose(IOTypes_table.io_def[IOTypeIndex].fp);
+    IOTypes_table.io_def[IOTypeIndex].fp = NULL;
+    remove(IOTypes_table.io_def[IOTypeIndex].filename);
+    return REG_FAILURE;
+  }
+
+#if REG_DEBUG
+  fprintf(stderr, "Consume_iotype_msg_header: read >%s< from file\n", 
+	  buffer);
+#endif
+
+  if(!strstr(buffer, "<Array_order>")){
+
+    fclose(IOTypes_table.io_def[IOTypeIndex].fp);
+    IOTypes_table.io_def[IOTypeIndex].fp = NULL;
+    remove(IOTypes_table.io_def[IOTypeIndex].filename);
+    return REG_FAILURE;
+  }
+
+  if(strstr(buffer, "FORTRAN")){
+
+    /* Array data is from Fortran */
+    *IsFortranArray = TRUE;
+  }
+  else{
+    /* Array data is not from Fortran */
+    *IsFortranArray = FALSE;
+  }
+
+  /*--- End of header ---*/
+
+  if(fread(buffer, 1, REG_PACKET_SIZE, IOTypes_table.io_def[IOTypeIndex].fp) 
+     != (size_t)REG_PACKET_SIZE){
+
+    fprintf(stderr, "Consume_iotype_msg_header: fread failed for header end\n");
+    fclose(IOTypes_table.io_def[IOTypeIndex].fp);
+    IOTypes_table.io_def[IOTypeIndex].fp = NULL;
+    remove(IOTypes_table.io_def[IOTypeIndex].filename);
+    return REG_FAILURE;
+  }
+
+#if REG_DEBUG
+  fprintf(stderr, "Consume_msg_header: read >%s< from socket\n", 
+	  buffer);
+#endif
+
+  if(strncmp(buffer, END_SLICE_HEADER, strlen(END_SLICE_HEADER))){
+
+    fprintf(stderr, "Consume_msg_header: failed to find "
+	    "end of header\n");
+    fclose(IOTypes_table.io_def[IOTypeIndex].fp);
+    IOTypes_table.io_def[IOTypeIndex].fp = NULL;
+    remove(IOTypes_table.io_def[IOTypeIndex].filename);
+    return REG_FAILURE;
+  }
+
+  return REG_SUCCESS;
+#endif
 }
 
 /*----------------------------------------------------------------*/
