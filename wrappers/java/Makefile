@@ -25,7 +25,10 @@ clean:
 	rm -rf libReG_SteerJava.so *_wrap.* *.class *~ core
 	rm -rf ${REG_PACKAGE_DIR}/SWIGTYPE*.java
 	rm -rf ${REG_PACKAGE_DIR}/*p.java
-	rm -rf ${REG_PACKAGE_DIR}/ReG_Steer*.java
+	rm -rf ${REG_PACKAGE_DIR}/ReG_Steer.java
+	rm -rf ${REG_PACKAGE_DIR}/ReG_SteerJNI.java
+	rm -rf ${REG_PACKAGE_DIR}/ReG_SteerConstants.java
 	rm -rf ${REG_PACKAGE_DIR}/*.class
+	rm -rf ${REG_PACKAGE_DIR}/*~
 	rm -rf examples/*.class
 	rm -rf examples/*~
