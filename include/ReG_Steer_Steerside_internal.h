@@ -116,7 +116,7 @@ typedef struct {
 
 /* Typedef for structure holding details of the main (java) proxy
    that is always associated with the steerer (if not steering
-   via files, Globus or SOAP) */
+   via files or SOAP over http) */
 
 typedef struct {
 

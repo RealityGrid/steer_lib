@@ -41,7 +41,6 @@
 #ifndef __REG_STEER_COMMON_H__
 #define __REG_STEER_COMMON_H__
 
-#include "ReG_Steer_Appside_Globus.h"
 #include "ReG_Steer_Appside_Sockets.h"
 
 /* Following two includes are for use of stat system call 
@@ -205,8 +204,8 @@ typedef struct {
   void			       *buffer;
   /* Size of this buffer */
   int				buffer_bytes;
-#if REG_GLOBUS_SAMPLES || REG_SOCKET_SAMPLES
-  /* structure used to hold all globus_io socket information */
+#if REG_SOCKET_SAMPLES
+  /* structure used to hold all socket information */
   socket_io_type		socket_info;
 #endif
   /* Whether or not to encode non-ASCII data as XDR (set in Emit_start) */
@@ -219,7 +218,7 @@ typedef struct {
   /* Whether or not (1 or 0) we'll need to convert the ordering of 
      the array */
   int                           convert_array_order;
-  /* Whether IOType is enabled or not (for globus_io - whether socket
+  /* Whether IOType is enabled or not (for sockets - whether socket
      has been created) */
   int                           is_enabled;
   /* Index of the input channel - used in mapping to the details
@@ -234,7 +233,7 @@ typedef struct {
   int          max_entries;
   int          next_handle;
   int          enable_on_registration; /* Whether or not to create the socket
-					  (if using globus_io) when an IOType
+					  (if using them) when an IOType
 					  is registered */
   IOdef_entry *io_def;
 
