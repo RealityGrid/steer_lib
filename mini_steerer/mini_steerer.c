@@ -59,7 +59,7 @@ int main(){
   int    num_types;
   int    io_handles[REG_INITIAL_NUM_IOTYPES];
   char  *io_labels[REG_INITIAL_NUM_IOTYPES];
-
+  
   /* Initialise arrays for querying param values */
 
   for(i=0; i<REG_INITIAL_NUM_PARAMS; i++){
@@ -170,6 +170,26 @@ int main(){
 	Emit_control(sim_handle,
 		     num_types,
 		     commands);
+      }
+      break;
+
+    case 'd':
+      Get_supp_cmd_number(sim_handle,
+			  &num_cmds);
+
+      printf("We have %d supported commands:\n", num_cmds);
+
+      /* Cludge rather than malloc and realloc */
+      if(num_cmds > REG_MAX_NUM_STR_CMDS) num_cmds = REG_MAX_NUM_STR_CMDS;
+
+      if( Get_supp_cmds(sim_handle,
+		        num_cmds,
+		        commands) != REG_FAILURE){
+
+	for(i=0; i<num_cmds; i++){
+
+	  printf("Supported command %d = %d\n", i, commands[i]);
+	}
       }
       break;
 
