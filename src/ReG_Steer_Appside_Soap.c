@@ -48,6 +48,8 @@ extern IOdef_table_type IOTypes_table;
 
 extern Steerer_connection_table_type Steerer_connection;
 
+extern Param_table_type Params_table;
+
 /* Soap-specific declarations */
 struct soap soap;
 
@@ -363,6 +365,11 @@ struct msg_struct *Get_control_msg_soap()
       Delete_msg_struct(msg);
       msg = NULL;
     }
+#if REG_LOG_STEERING
+    else{
+      Log_control_msg(getControl_response._result);
+    }
+#endif
   }
 
   return msg;
@@ -431,6 +438,49 @@ int Get_data_source_address_soap(int   index,
 	return REG_SUCCESS;
       }
     }
+  }
+
+  return REG_FAILURE;
+}
+
+/*----------------------------------------------------------------------*/
+
+int Log_control_msg(char *msg_txt)
+{
+
+  fprintf(stderr, "Log_control_msg: got >>%s<<\n", msg_txt);
+
+  printf("num = %d\n", Params_table.num_registered);
+
+  return REG_SUCCESS;
+}
+
+/*----------------------------------------------------------------------*/
+
+int Record_checkpoint_set_soap(char *chk_data,
+			       char *node_data)
+{
+  struct tns__AppRecordChkpointResponse AppRecordChkpoint_response;
+
+  AppRecordChkpoint_response._result = NULL;
+  if(soap_call_tns__AppRecordChkpoint(&soap, 
+					Steerer_connection.SGS_address, 
+					"", chk_data, node_data,  
+					&AppRecordChkpoint_response)){
+    fprintf(stderr, "Record_checkpoint_set_soap: soap call failed:\n");
+    soap_print_fault(&soap, stderr);
+    return REG_FAILURE;
+  }
+
+#if REG_DEBUG
+  fprintf(stderr, "Record_checkpoint_set_soap: \n"
+	  "returned: >>%s<<\n", AppRecordChkpoint_response._result);
+#endif
+
+  if(AppRecordChkpoint_response._result && 
+     strstr(AppRecordChkpoint_response._result, "SGS_SUCCESS")){
+
+    return REG_SUCCESS;
   }
 
   return REG_FAILURE;

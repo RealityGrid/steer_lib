@@ -41,6 +41,12 @@
 #include "ReG_Steer_Common.h"
 #include <sys/time.h>
 #include <rpc/rpc.h>
+/* These are for uname and gethostbyname */
+#include <sys/utsname.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h>
 
 #ifndef REG_DEBUG
 #define REG_DEBUG 0
@@ -1120,5 +1126,30 @@ int Reorder_decode_array(IOdef_entry *io,
   }
 
   return return_status;
+}
+
+
+/*------------------------------------------------------------------*/
+
+char *Get_fully_qualified_hostname()
+{
+  struct utsname  name;
+  struct hostent *host;
+
+  if(uname(&name) < 0){
+
+    fprintf(stderr, "Get_fully_qualified_hostname: uname failed\n");
+    return NULL;
+  }
+
+  host = gethostbyname(name.nodename);
+
+  if(!host){
+
+    fprintf(stderr, "Get_fully_qualified_hostname: gethostbyname failed\n");
+    return NULL;
+  }
+
+  return host->h_name;
 }
 

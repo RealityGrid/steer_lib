@@ -65,7 +65,6 @@ Steerer_connection_table_type Steerer_connection;
 
 IOdef_table_type IOTypes_table;
 
-
 /* Table for registered checkpoint types */
 
 IOdef_table_type ChkTypes_table;
@@ -73,6 +72,10 @@ IOdef_table_type ChkTypes_table;
 /* Log of checkpoints taken */
 
 Chk_log_type Chk_log;
+
+/* Log of steering commands received */
+
+Steer_log_type Steer_log;
 
 /* Param_table_type is declared in ReG_Steer_Common.h since it is 
    used in both the steerer-side and app-side libraries */
@@ -96,6 +99,7 @@ int Steering_initialize(int  NumSupportedCmds,
 {
   int   i, j;
   char *pchar;
+  FILE *fp;
 
   /* Actually defined in ReG_Steer_Common.c because both steerer
      and steered have a variable of this name */
@@ -145,7 +149,25 @@ int Steering_initialize(int  NumSupportedCmds,
     Steering_enable(FALSE);
     return REG_FAILURE;
   }
-  
+
+  /* Get our current working directory - ASSUMES 'pwd' is in our path */
+  memset(ReG_CurrentDir, '\0', REG_MAX_STRING_LENGTH);
+  system("pwd > ReG_current_directory.txt");
+  if( (fp = fopen("ReG_current_directory.txt", "r")) != NULL){
+
+    if(fscanf(fp, "%s", ReG_CurrentDir) != 1){
+
+      fprintf(stderr, "Steering_initialize: failed to get working "
+	      "directory\n");
+    }
+    fclose(fp);
+    remove("ReG_current_directory.txt");
+  } 
+
+  /* Get the hostname of this machine */
+  strcpy(ReG_Hostname, Get_fully_qualified_hostname());
+
+
   /* Allocate memory and initialise tables of IO types and 
      parameters */
 
@@ -336,6 +358,11 @@ int Steering_initialize(int  NumSupportedCmds,
       Chk_log.entry[i].param[j].handle = REG_PARAM_HANDLE_NOTSET;
     }
   }
+
+  /* Initialise table for logging steering commands */
+  
+  Steer_log.num_cmds = 0;
+  Steer_log.num_params = 0;
 
   /* Set up signal handler so can clean up if application 
      exits in a hurry */
@@ -846,6 +873,206 @@ int Record_Chkpt(int   ChkType,
   Chk_log.num_unsent++;
 
   Chk_log.num_entries++;
+
+  return REG_SUCCESS;
+}
+
+/*----------------------------------------------------------------*/
+
+int Record_checkpoint_set(int   ChkType,
+			  char *ChkTag,
+			  char *Path)
+{
+  int    nfiles;
+  int    i, status;
+  int    nbytes, bytes_left;
+  char **filenames;
+  char   cp_data[REG_MAX_MSG_SIZE];
+  char   node_data[REG_MAX_MSG_SIZE];
+  char   time_date[128];
+  char  *pchar;
+  time_t time_now;
+
+  /* Can only call this function if steering lib initialised */
+  if (!ReG_SteeringInit) return REG_FAILURE;
+
+  if (ChkType == REG_IODEF_HANDLE_NOTSET) return REG_SUCCESS;
+
+  /* Get list of checkpoint files */
+  filenames = NULL;
+  status = Get_checkpoint_files(ChkTag, Path, &nfiles, &filenames);
+
+  if( (status != REG_SUCCESS) || !nfiles){
+
+    fprintf(stderr, "Record_checkpoint_set: failed to find checkpoint "
+	    "files with tag >%s<\n", ChkTag);
+    return REG_FAILURE;
+  }
+
+  /* Construct checkpoint meta-data */
+  pchar = cp_data;
+  bytes_left = REG_MAX_MSG_SIZE;
+  nbytes = snprintf(pchar, bytes_left, "<Checkpoint_data>\n<Files>\n");
+  pchar += nbytes;
+  bytes_left -= nbytes;
+
+  for(i=0; i<nfiles; i++){
+    
+    nbytes = snprintf(pchar, bytes_left, "  <file type=\"gsiftp-URL\">\n"
+		      "    gsiftp://%s%s\n    </file>",
+		      ReG_Hostname, filenames[i]);
+
+    /* Check for truncation */
+    if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
+      fprintf(stderr, "Record_checkpoint_set: data exceeds %d chars\n", 
+	      REG_MAX_MSG_SIZE);
+      return REG_FAILURE;
+    }
+    pchar += nbytes;
+    bytes_left -= nbytes;
+  }
+
+  nbytes = snprintf(pchar, bytes_left, "</Files>\n</Checkpoint_data>\n");
+  pchar += nbytes;
+  bytes_left -= nbytes;
+
+  /* Store the values of all registered parameters at this point (so
+     long as they're not internal to the library) */
+  pchar = node_data;
+  bytes_left = REG_MAX_MSG_SIZE;
+  nbytes = snprintf(pchar, bytes_left, "<Checkpoint_node_data>\n"
+		    "<Chk_handle>%d</Chk_handle>\n", ChkType);
+
+  pchar += nbytes;
+  bytes_left -= nbytes;
+
+  for(i = 0; i<Params_table.max_entries; i++){
+
+    if(Params_table.param[i].handle == REG_PARAM_HANDLE_NOTSET ||
+       Params_table.param[i].is_internal == TRUE){
+
+      /* Time stamp is a special case - is internal but we do want
+	 it for checkpoint records */
+      if(Params_table.param[i].handle != REG_TIMESTAMP_HANDLE){
+	continue;
+      }
+
+      /* Get timestamp */
+      if( (int)(time_now = time(NULL)) != -1){
+	strcpy(Params_table.param[i].value, ctime(&time_now));
+	/* Remove new-line character */
+	Params_table.param[i].value[strlen(pchar)-1] = '\0';
+      }
+      else{
+	sprintf(Params_table.param[i].value, "");
+      }
+    }
+
+    /* Update value associated with pointer */
+    Get_ptr_value(&(Params_table.param[i]));
+    
+    nbytes = snprintf(pchar, bytes_left, 
+		      "<Param>\n"
+		      "<Handle>%d</Handle>\n"
+		      "<Label>%s</Label>\n"
+		      "<Value>%s</Value>\n</Param>\n",
+		      Params_table.param[i].handle,
+		      Params_table.param[i].label,
+		      Params_table.param[i].value);
+
+    /* Check for truncation */
+    if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
+      fprintf(stderr, "Record_checkpoint_set: node metadata "
+	      "exceeds %d chars\n", REG_MAX_MSG_SIZE);
+      return REG_FAILURE;
+    }
+
+    pchar += nbytes;
+    bytes_left -= nbytes;
+  }
+
+  /* ARPDBG */
+  fprintf(stderr, "Record_checkpoint_set: node meta data >>%s<<\n",
+	  node_data);
+  fprintf(stderr, "Record_checkpoint_set: cp_data >>%s<<\n",
+	  cp_data);
+
+  /* Record checkpoint */
+#if REG_SOAP_STEERING
+  Record_checkpoint_set_soap(cp_data, node_data);
+#else
+
+#endif
+
+  return REG_SUCCESS;
+}
+
+/*----------------------------------------------------------------*/
+
+int Get_checkpoint_files(char *ChkTag,
+			 char *Path,
+			 int  *num,
+                         char ***names)
+{
+  char *redirection = "* > ReG_Chk_files.txt";
+  char *pchar;
+  char  bufline[REG_MAX_STRING_LENGTH];
+  int   len;
+  int   i;
+  int   return_status = REG_SUCCESS;
+  FILE *fp;
+
+  /* Calc. length of string - 'ls -1' and slashes add 9 chars so
+     add a few more for safety */
+  len = strlen(Path) + strlen(ChkTag) + strlen(ReG_CurrentDir) + 
+        strlen(redirection) + 20;
+
+  printf("Get_checkpoint_files: malloc'ing %d bytes...\n", len);
+
+  if( !(pchar = (char *)malloc(len)) ){
+
+    return REG_FAILURE;
+  }
+
+  sprintf(pchar, "ls -1 %s/%s/*%s%s", 
+	  ReG_CurrentDir, Path, ChkTag, redirection);
+  system(pchar);
+
+  free(pchar);
+  pchar = NULL;
+
+  if( (fp = fopen("ReG_Chk_files.txt", "r")) ){
+
+    *num = 0;
+
+    while(fgets(bufline, REG_MAX_STRING_LENGTH, fp)){
+      (*num)++;
+    }
+
+    if(*num == 0)return REG_SUCCESS;
+
+    *names = (char **)malloc(*num * sizeof(char*));
+    rewind(fp);
+
+    for(i=0; i<*num; i++){
+
+      fgets(bufline, REG_MAX_STRING_LENGTH, fp);
+      /* fgets includes '\n' in the returned buffer */
+      len = (int)strlen(bufline);
+      if(!((*names)[i] = (char *)malloc(len))){
+
+	fprintf(stderr, "Get_checkpoint_files: malloc failed\n");
+	return_status = REG_FAILURE;
+	break;
+      }
+      memcpy((*names)[i], bufline, len);
+      /* Terminate string - overwrite '\n' */
+      (*names)[i][len-1] = '\0';
+    }
+
+    fclose(fp);
+    remove("ReG_Chk_files.txt");
+  }
 
   return REG_SUCCESS;
 }
@@ -1845,17 +2072,6 @@ int Steering_control(int     SeqNum,
       }    
     }
 
-    /* Emit logging info. */
-    if( Emit_log() != REG_SUCCESS ){
-
-      fprintf(stderr, "Steering_control: Emit_log failed\n");
-    }
-#if REG_DEBUG
-    else{
-      fprintf(stderr, "Steering_control: done Emit_log\n");
-    }
-#endif
-
     /* Read anything that the steerer has sent to us */
     if( Consume_control(&num_commands,
 			commands,
@@ -1870,6 +2086,18 @@ int Steering_control(int     SeqNum,
       fprintf(stderr, "Steering_control: call to Consume_control failed\n");
 #endif
     }
+
+    /* Emit logging info. ARPDBG
+    if( Emit_steering_log(SeqNum) != REG_SUCCESS ){
+
+      fprintf(stderr, "Steering_control: Emit_steering_log failed\n");
+    }
+    */
+#if REG_DEBUG
+    else{
+      fprintf(stderr, "Steering_control: done Emit_steering_log\n");
+    }
+#endif
 
     /* Set array holding labels of changed params - pass back strings 
        rather than pointers to strings */
@@ -2668,6 +2896,59 @@ int Emit_ChkType_defs(){
   return REG_FAILURE;
 }
 
+/*----------------------------------------------------------------
+
+int Emit_steering_log(int seq_num)
+{
+  * Log the steering commands we've just acted upon and when
+     we did so (i.e. what sequence number) *
+  char *pchar = NULL;
+  char *ptr = NULL;
+  int   size  = BUFSIZ;
+  int   nbytes = 0;
+  int   bytes_left;
+
+  if( !(*pchar = (char *)malloc(size*sizeof(char))) ){
+
+    fprintf(stderr, "Emit_steering_log: malloc failed\n");
+    return REG_FAILURE;
+  }
+  bytes_left = size;
+  ptr = pchar;
+
+  nbytes = snprintf(ptr, bytes_left, "<ReG_steer_message>\n"
+		    "<Steer_log>\n");
+
+  bytes_left -= nbytes;
+  ptr += nbytes;
+
+  nbytes = snprintf(ptr, bytes_left, "<Log_entry>\n"
+		    "<SeqNum>%d</SeqNum>\n", seq_num);
+#if REG_DEBUG
+  * Check for truncation of message *
+  if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
+    fprintf(stderr, "Log_to_xml: message size exceeds BUFSIZ (%d)\n", 
+	    BUFSIZ);
+    free(*pchar);
+    *pchar = NULL;
+    return REG_FAILURE;
+  }
+#endif
+  bytes_left -= nbytes;
+  ptr += nbytes;
+
+  if(Steer_log.num_params > 0 || Steer_log.num_cmds > 0){
+
+
+
+  }
+
+  * Send to SGS *
+
+  return REG_SUCCESS;
+}
+*/
+
 /*----------------------------------------------------------------*/
 
 int Emit_log()
@@ -2911,6 +3192,7 @@ int Consume_control(int    *NumCommands,
 
   int                  j;
   int                  count;
+  int                  log_count;
   char                *ptr;
   struct msg_struct   *msg;
   struct cmd_struct   *cmd;
@@ -2951,12 +3233,17 @@ int Consume_control(int    *NumCommands,
 	    fprintf(stderr, "Consume_control: unrecognised cmd name: %s\n", 
 		    (char *)cmd->name);
 	    cmd = cmd->next;
+	    continue;
 	  }
+
+	  /* Log this command */
+	  Steer_log.cmd[count].id = Commands[count];
 	}
 	else{
-	  fprintf(stderr, "Consume_control: error - skipping cmd because is missing "
-		  "both id and name\n");
+	  fprintf(stderr, "Consume_control: error - skipping cmd because "
+		  "is missing both id and name\n");
 	  cmd = cmd->next;
+	  continue;
 	}
 
 	if(cmd->first_param){
@@ -2978,6 +3265,10 @@ int Consume_control(int    *NumCommands,
 
 	  sprintf(CommandParams[count], " ");
 	}
+
+	/* Log this cmd parameter */
+	strcpy(Steer_log.cmd[count].params, CommandParams[count]);
+
 #if REG_DEBUG
 	fprintf(stderr, "Consume_control: cmd[%d] = %d\n", count,
 		Commands[count]);
@@ -2996,7 +3287,9 @@ int Consume_control(int    *NumCommands,
 	cmd = cmd->next;
       }
 
+      /* Record how many cmds we've just received */
       *NumCommands = count;
+      Steer_log.num_cmds = count;
 
 #if REG_DEBUG
       fprintf(stderr, "Consume_control: received %d commands\n", 
@@ -3005,6 +3298,7 @@ int Consume_control(int    *NumCommands,
 
       param = msg->control->first_param;
       count = 0;
+      log_count = 0;
 
       while(param){
 
@@ -3040,6 +3334,12 @@ int Consume_control(int    *NumCommands,
 	      SteerParamLabels[count]  = Params_table.param[j].label;
 	      count++;
 	    }
+
+	    /* Log new parameter value */
+	    Steer_log.param[log_count].handle = handle;
+	    strcpy(Steer_log.param[log_count].value, 
+		   Params_table.param[j].value);
+	    log_count++;
 	  }
 	  else{
 	    fprintf(stderr, "Consume_control: empty parameter value "
@@ -3049,6 +3349,9 @@ int Consume_control(int    *NumCommands,
 
 	param = param->next;
       }
+
+      /* Record no. of param. changes in this log entry */
+      Steer_log.num_params = log_count;
 
       /* Update the number of parameters received to allow for fact that
 	 some may be internal and are not passed up to the calling routine */
@@ -3082,6 +3385,7 @@ int Consume_control(int    *NumCommands,
     *NumSteerParams = 0;
     *NumCommands = 0;
   }
+
 
   return return_status;
 }
