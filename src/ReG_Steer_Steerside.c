@@ -331,6 +331,7 @@ int Sim_attach(char *SimID,
 
     fprintf(stderr, "Sim_attach: failed to allocate memory\n");
     free(sim_ptr->Params_table.param);
+    sim_ptr->Params_table.param = NULL;
     return REG_MEM_FAIL;
   }
 
@@ -351,7 +352,9 @@ int Sim_attach(char *SimID,
 
     fprintf(stderr, "Sim_attach: failed to allocate memory\n");
     free(sim_ptr->Params_table.param);
+    sim_ptr->Params_table.param = NULL;
     free(sim_ptr->Cmds_table.cmd);
+    sim_ptr->Cmds_table.cmd = NULL;
     return REG_MEM_FAIL;
   }
 
@@ -372,8 +375,11 @@ int Sim_attach(char *SimID,
 
     fprintf(stderr, "sim_attach: failed to allocate memory for Chk types\n");
     free(sim_ptr->Params_table.param);
+    sim_ptr->Params_table.param = NULL;
     free(sim_ptr->Cmds_table.cmd);
+    sim_ptr->Cmds_table.cmd = NULL;
     free(sim_ptr->IOdef_table.io_def);
+    sim_ptr->IOdef_table.io_def = NULL;
     return REG_MEM_FAIL;
   }
 
@@ -396,9 +402,13 @@ int Sim_attach(char *SimID,
 
     fprintf(stderr, "sim_attach: failed to allocate memory for log table\n");
     free(sim_ptr->Params_table.param);
+    sim_ptr->Params_table.param = NULL;
     free(sim_ptr->Cmds_table.cmd);
+    sim_ptr->Cmds_table.cmd = NULL;
     free(sim_ptr->IOdef_table.io_def);
+    sim_ptr->IOdef_table.io_def = NULL;
     free(sim_ptr->Chkdef_table.io_def);
+    sim_ptr->Chkdef_table.io_def = NULL;
     return REG_MEM_FAIL;
   }
 
@@ -504,10 +514,15 @@ int Sim_attach(char *SimID,
   else{
 
     free(sim_ptr->Params_table.param);
+    sim_ptr->Params_table.param = NULL;
     free(sim_ptr->Cmds_table.cmd);
+    sim_ptr->Cmds_table.cmd = NULL;
     free(sim_ptr->IOdef_table.io_def);
+    sim_ptr->IOdef_table.io_def = NULL;
     free(sim_ptr->Chkdef_table.io_def);
+    sim_ptr->Chkdef_table.io_def = NULL;
     free(sim_ptr->Chk_log.entry);
+    sim_ptr->Chk_log.entry = NULL;
   }
 
   return return_status;

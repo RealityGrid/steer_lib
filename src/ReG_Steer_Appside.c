@@ -170,6 +170,7 @@ int Steering_initialize(int  NumSupportedCmds,
     fprintf(stderr, "Steering_initialize: failed to allocate memory "
 	    "for ChkType table\n");
     free(IOTypes_table.io_def);
+    IOTypes_table.io_def = NULL;
     return REG_FAILURE;
   }
 
@@ -192,8 +193,11 @@ int Steering_initialize(int  NumSupportedCmds,
 	    "for param table\n");
 
     free(IOTypes_table.io_def);
+    IOTypes_table.io_def = NULL;
     free(ChkTypes_table.io_def);
+    ChkTypes_table.io_def = NULL;
     free(Chk_log.entry);
+    Chk_log.entry = NULL;
     return REG_FAILURE;
   }
 
@@ -232,8 +236,11 @@ int Steering_initialize(int  NumSupportedCmds,
 				    SupportedCmds) != REG_SUCCESS){
 
     free(IOTypes_table.io_def);
+    IOTypes_table.io_def = NULL;
     free(ChkTypes_table.io_def);
+    ChkTypes_table.io_def = NULL;
     free(Params_table.param);
+    Params_table.param = NULL;
     return REG_FAILURE;
   }
 
@@ -260,8 +267,11 @@ int Steering_initialize(int  NumSupportedCmds,
     fprintf(stderr, "Steering_initialize: failed to allocate memory "
 	    "for checkpoint logging\n");
     free(IOTypes_table.io_def);
+    IOTypes_table.io_def = NULL;
     free(ChkTypes_table.io_def);
+    ChkTypes_table.io_def = NULL;
     free(Params_table.param);
+    Params_table.param = NULL;
     return REG_FAILURE;
   }
 
@@ -767,10 +777,14 @@ int Save_log()
   if(Log_to_xml(&buf, &len, FALSE) == REG_SUCCESS){
 
     fprintf(Chk_log.file_ptr, "%s", buf);
-    free(buf);
   }
 
   Chk_log.num_entries = 0;
+
+  if(buf){
+    free(buf);
+    buf = NULL;
+  }
 
   return REG_SUCCESS;
 }
@@ -835,6 +849,7 @@ int Log_to_xml(char **pchar, int *count, const int not_sent_only)
 
 	fprintf(stderr, "Log_to_xml: realloc failed\n");
 	free(*pchar);
+	*pchar = NULL;
 	return REG_FAILURE;
       }
       
@@ -861,9 +876,9 @@ int Set_log_primary_key()
 {
   int   size;
   int   return_status = REG_SUCCESS;
-  char *pbuf;
-  char *ptr;
-  char *old_ptr;
+  char *pbuf = NULL;
+  char *ptr = NULL;
+  char *old_ptr = NULL;
   char  filename[REG_MAX_STRING_LENGTH];
 
   Close_log_file();
@@ -878,6 +893,7 @@ int Set_log_primary_key()
   if(Read_file(filename, &pbuf, &size) != REG_SUCCESS){
 
     Chk_log.primary_key_value = 0;
+    if(!pbuf)free(pbuf);
     return REG_SUCCESS;
   }
 
@@ -885,6 +901,7 @@ int Set_log_primary_key()
 
     /* Log file existed but was empty */
     Chk_log.primary_key_value = 0;
+    if(!pbuf)free(pbuf);
     return REG_SUCCESS;
   }
 
@@ -2283,12 +2300,15 @@ int Emit_log()
 		              REG_LOG_FILENAME);
     if(Read_file(filename, &pbuf, &size) != REG_SUCCESS){
 
+      if(!pbuf)free(pbuf);
+      pbuf = NULL;
       return REG_FAILURE;
     }
 
     if (size > 0) Emit_log_entries(pbuf);
 
     free(pbuf);
+    pbuf = NULL;
 
     /* Re-open log-file for future buffering */
     if( Open_log_file() != REG_SUCCESS){
@@ -2324,6 +2344,7 @@ int Emit_log()
      send them to the steerer */
   if(size > 0)return_status = Emit_log_entries(pbuf);
   free(pbuf);
+  pbuf = NULL;
 
   if(return_status == REG_SUCCESS){
 

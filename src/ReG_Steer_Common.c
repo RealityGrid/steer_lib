@@ -694,6 +694,7 @@ int Read_file(char *filename, char **buf, int *size)
 
 	fprintf(stderr, "Read_file: realloc failed, size = %d\n", bufsize);
 	free(*buf);
+	*buf = NULL;
 	fclose(fp);
 	return REG_FAILURE;
       }
