@@ -56,6 +56,10 @@
 #define REG_DEBUG 1
 #endif
 
+/* Buffer used for string handling etc - use 1MB for now */
+#define REG_SCRATCH_BUFFER_SIZE 1048576
+char Global_scratch_buffer[REG_SCRATCH_BUFFER_SIZE];
+
 /* The table holding details of our communication channel with the
    steering client */
 Steerer_connection_table_type Steerer_connection;
@@ -953,7 +957,7 @@ int Record_checkpoint_set(int   ChkType,
   int    i, status;
   int    nbytes, bytes_left;
   char **filenames;
-  char   cp_data[REG_MAX_MSG_SIZE];
+  char  *cp_data;
   char   node_data[REG_MAX_MSG_SIZE];
   char  *pchar;
   time_t time_now;
@@ -981,8 +985,9 @@ int Record_checkpoint_set(int   ChkType,
   }
 
   /* Construct checkpoint meta-data */
+  cp_data = Global_scratch_buffer;
   pchar = cp_data;
-  bytes_left = REG_MAX_MSG_SIZE;
+  bytes_left = REG_SCRATCH_BUFFER_SIZE;
   nbytes = snprintf(pchar, bytes_left, "<Checkpoint_data>\n"		    
 		    "<Chk_type>%d</Chk_type>\n"
 		    "<Chk_UID>%s</Chk_UID>\n"
@@ -1000,7 +1005,7 @@ int Record_checkpoint_set(int   ChkType,
     /* Check for truncation */
     if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
       fprintf(stderr, "Record_checkpoint_set: data exceeds %d chars\n", 
-	      REG_MAX_MSG_SIZE);
+	      REG_SCRATCH_BUFFER_SIZE);
       return REG_FAILURE;
     }
     pchar += nbytes;
@@ -3118,7 +3123,6 @@ int Emit_log()
 
 int Emit_log_entries(char *buf)
 {
-  /*char  msg_buf[REG_MAX_MSG_SIZE];*/
   char *msg_buf;
   char *pmsg_buf;
   char *plast = NULL;
