@@ -38,13 +38,15 @@
 # Architecture of this platform.  Choose the most appropriate from
 # those listed in the src/conf directory. Make sure you don't leave
 # any SPACES at the end of this line!
-ARCH = SGI64
+ARCH = LINUX
 # Edit the two following lines if 32-bit binaries are desired 
 # (NBIT = 32 and C_FLAGS=-n32).
 NBIT = 32
-CC = cc
+CC = gcc
 C_FLAGS = ${CFLAGS} -g
-F90 = f90
+CXX = g++
+CXX_FLAGS = ${CFLAGS} -g
+F90 =
 F90_FLAGS = -g
 # Location of java compiler - used to produce proxy binary
 JAVAC          = 
@@ -70,16 +72,17 @@ STEER_LIBS = -L${REG_STEER_HOME}/lib$(NBIT) \
 #  globus-makefile-header globus_io globus_common -flavor=gcc32dbg > globus_defintions
 # subsititue flavor appropriately for your globus installation but use only non-threaded flavour
 
-GLOBUS_INCLUDES=
-GLOBUS_PKG_LIBS=
-GLOBUS_LDFLAGS=
+#GLOBUS_INCLUDES=
+#GLOBUS_PKG_LIBS=
+#GLOBUS_LDFLAGS=
 
 # Either define GLOBUS_INCLUDES, GLOBUS_PKG_LIBS and GLOBUS_LDFLAGS, OR
 # uncomment this line if using Globus for sample AND/OR steering
-#include ${REG_STEER_HOME}/globus_definitions
+include ${REG_STEER_HOME}/globus_definitions
 
 # Set flag to 1 to use globus for iotype samples communication, 0 to not 
-REG_GLOBUS_SAMPLES_FLAG = 0
+REG_GLOBUS_SAMPLES_FLAG = 1
 
 # Set flag to 1 to use globus for steering communication, 0 to not 
 REG_GLOBUS_STEERING_FLAG = 0
+REG_SOAP_STEERING_FLAG = 1
