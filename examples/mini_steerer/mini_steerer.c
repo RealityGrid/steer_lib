@@ -392,6 +392,7 @@ int main(){
       fprintf(stderr, "  g - Get next message from application\n");
       fprintf(stderr, "  h - display this help message\n");
       fprintf(stderr, "  l - display List of checkpoint types\n");
+      fprintf(stderr, "  o - retrieve param hist. log from application\n");
       fprintf(stderr, "  p - send Pause signal to application\n");
       fprintf(stderr, "  q - Quit steerer - detaches from application\n");
       fprintf(stderr, "  r - send Resume signal to application\n");
@@ -428,6 +429,11 @@ int main(){
 	  fprintf(stderr, "  direction = %d\n", io_types[i]);
 	}
       }
+      break;
+
+    case 'o':
+      /* Get the log of parameters back */
+      Emit_retrieve_param_log_cmd(sim_handle);
       break;
 
     case 'p':
