@@ -82,7 +82,7 @@ extern PREFIX int Register_ChkTypes(int    NumTypes,
    registered type.  The caller must supply a string in ChkTag which
    will allow them to retrieve the data associated with this checkpoint.
    If the same tag is supplied in multiple calls then the checkpoint is 
-   assumed to be have been overwritten (in the case where it the 
+   assumed to be have been overwritten (in the case where the 
    'direction' of the associated ChkType is OUT). */
 extern PREFIX int Record_Chkpt(int   ChkType,
 			       char *ChkTag);

@@ -135,7 +135,7 @@
 
 #define REG_IO_IN    0
 #define REG_IO_OUT   1
-#define REG_IO_CHKPT 2
+#define REG_IO_INOUT 2
 
 /* Size (in bytes) of input buffer for each active IO channel */
 
@@ -191,5 +191,9 @@ typedef int REG_IOHandleType;
    be interpreted as zero */
 
 #define REG_TOL_ZERO 1.0e-6
+
+/* Parameters used to configure table for logging checkpoints */
+
+#define REG_INITIAL_CHK_LOG_SIZE 50
 
 #endif /* __REG_TYPES_INCLUDED defined */

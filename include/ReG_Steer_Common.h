@@ -43,6 +43,25 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+/* Structures for checkpoint logging */
+
+typedef struct {
+
+  int   key;
+  int   chk_handle;
+  char  chk_tag[REG_MAX_STRING_LENGTH];
+  
+} Chk_log_entry_type;
+
+typedef struct {
+
+  int                 num_entries;
+  int                 max_entries;
+  int                 primary_key_value;
+  Chk_log_entry_type *entry;
+  
+} Chk_log_type;
+
 /* Types and structures for reading parameter defs */
 
 typedef struct {
