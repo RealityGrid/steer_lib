@@ -273,8 +273,10 @@ int Get_proxy_message(int pipe_from_proxy, char *buf, int *nbytes)
     return REG_FAILURE;
   }
 
-  /*ARPDBG*/
+#if DEBUG
   fprintf(stderr, "Get_proxy_message: got: <%s>\n", line_buf);
+  fprintf(stderr, "Get_proxy_message: len = %d\n", len);
+#endif
 
   pbuf  = buf;
   count = 0;
@@ -293,8 +295,10 @@ int Get_proxy_message(int pipe_from_proxy, char *buf, int *nbytes)
     /* Get the next line - exit if EOF or error */
     len = getline(line_buf, REG_MAX_LINE_LEN, pipe_from_proxy);
 
-    /*ARPDBG*/
+#if DEBUG
     fprintf(stderr, "Get_proxy_message: got: <%s>\n", line_buf);
+    fprintf(stderr, "Get_proxy_message: len = %d\n", len);
+#endif
 
     if(len == 0){
 

@@ -216,11 +216,19 @@ int Get_sim_list(int   *nSims,
 
   Get_proxy_message(Proxy.pipe_from_proxy, Proxy.buf, &nbytes);
 
+  if(nbytes == 0){
+#if DEBUG
+    fprintf(stderr, "Get_sim_list: no steerable apps available\n");
+#endif
+    return REG_SUCCESS;
+  }
+
   if(Proxy.buf[0] == ' '){
 
     ptr = strtok(&(Proxy.buf[1]), " ");
   }
   else{
+
     ptr = strtok(Proxy.buf, " ");
   }
 
@@ -230,15 +238,18 @@ int Get_sim_list(int   *nSims,
 
     strcpy(simName[count], ptr);
     ptr = strtok(NULL, " ");
-    strcpy(simGSH[count], ptr);
-    ptr = strtok(NULL, " ");
 
-    count++;
+    if(ptr){
+      strcpy(simGSH[count], ptr);
+      ptr = strtok(NULL, " ");
 
-    if(count == REG_MAX_NUM_STEERED_SIM){
+      count++;
 
-      fprintf(stderr, "Get_sim_list: truncating list of steerable apps\n");
-      break;
+      if(count == REG_MAX_NUM_STEERED_SIM){
+
+	fprintf(stderr, "Get_sim_list: truncating list of steerable apps\n");
+	break;
+      }
     }
   }
 
