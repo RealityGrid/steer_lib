@@ -67,9 +67,6 @@ typedef struct {
   int                  pipe_to_proxy;
   int                  pipe_from_proxy;
 
-  /* For steering via globus_io */
-  socket_type_steering socket_info;
-
   /* For steering via SOAP */
   struct {
     /* whether we're steering via SOAP (1) or not (0) */

@@ -76,9 +76,6 @@ typedef struct {
   /* For steering via globus_io - port to listen on */
   int			port_num;
 
-  /* structure used to hold all globus_io socket information */
-  socket_type_steering	socket_info;
-
   /* Address of the Steering Grid Service (for SOAP-based steering) */
   char                  SGS_address[REG_MAX_STRING_LENGTH];
 

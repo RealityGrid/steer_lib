@@ -228,6 +228,9 @@ extern PREFIX int Make_chunk_header(char *header,
 extern PREFIX int Set_f90_array_ordering(int IOTypeIndex,
 				         int flag);
 
+/* Flag that library (flag = TRUE) is being called from F90 code. */
+extern PREFIX int Called_from_f90(int flag);
+
 /* Reorder array pointed to by pInData into array pointed to by
    pOutData (must be of dimension tot_extent[0]*tot_extent[1]*tot_extent[2])
    If to_f90 == 1 then reorders from C to F90, otherwise, F90 to C */

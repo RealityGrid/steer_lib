@@ -54,12 +54,6 @@
   #define PREFIX 
 #endif
 
-#if REG_GLOBUS_STEERING
-typedef socket_io_type	socket_type_steering;
-#else
-typedef int		socket_type_steering;
-#endif
-
 /* Structures for checkpoint logging */
 
 typedef struct {
@@ -285,16 +279,6 @@ extern PREFIX int  Write_xml_header(char **pchar);
 
 extern PREFIX int  Write_xml_footer(char **pchar,
 				    int bytes_free);
-
-/* Read ReG-specific header */
-extern PREFIX int Consume_msg_header(socket_type_steering *sock_info,
-				     int *DataType,
-				     int *Count);
-
-/* Construct and send ReG-specific header */
-extern PREFIX int Emit_msg_header(socket_type_steering *sock_info,
-				  int DataType,
-				  int Count);
 
 /* Read the specified ASCII file and return the contents in the buffer
    pointed to by *buf, the size of which is returned in *size.  It is

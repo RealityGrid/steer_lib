@@ -53,7 +53,7 @@
 #ifndef __REG_STEER_GLOBUS_IO_H__
 #define __REG_STEER_GLOBUS_IO_H__
 
-#if REG_GLOBUS_STEERING || REG_GLOBUS_SAMPLES
+#if REG_GLOBUS_SAMPLES
 
 #include <globus_io.h>
 
@@ -83,9 +83,6 @@ typedef struct
   char			        connector_hostname[REG_MAX_STRING_LENGTH];
   unsigned short int	        connector_port;
 
-#if REG_GLOBUS_SAMPLES
-
-#endif
 } socket_io_type;
 
 /* whether globus_io module has been activated */
@@ -199,5 +196,5 @@ extern int Write_globus(const globus_io_handle_t *handle,
 			const int n,
 			void *buffer);
 
-#endif /* REG_GLOBUS_STEERING || REG_GLOBUS_SAMPLES */
+#endif /* REG_GLOBUS_SAMPLES */
 #endif /* __REG_STEER_GLOBUS_IO_H__ */

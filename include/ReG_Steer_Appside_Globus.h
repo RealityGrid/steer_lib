@@ -39,21 +39,6 @@
 #ifndef __REG_STEER_APPSIDE_GLOBUS_H__
 #define __REG_STEER_APPSIDE_GLOBUS_H__
 
-#if REG_GLOBUS_STEERING
-
-int Send_status_msg_globus(char *buf);
-
-struct msg_struct *Get_control_msg_globus();
-
-int Initialize_steering_connection_globus(int  NumSupportedCmds,
-						 int *SupportedCmds);
-
-int Steerer_connected_globus();
-
-int Finalize_steering_connection_globus();
-
-#endif
-
 #if REG_GLOBUS_SAMPLES
 
 int Initialize_IOType_transport_globus(const int direction,
@@ -86,6 +71,5 @@ int Emit_data_globus(const int		index,
 int Get_communication_status_globus(const int index);
 
 #endif
-
 
 #endif
