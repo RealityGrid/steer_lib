@@ -40,7 +40,7 @@
 
 int Sim_attach_soap(Sim_entry_type *sim, char *SimID)
 {
-  struct tns__AttachResponse attach_response;
+  struct sgs__AttachResponse attach_response;
   struct msg_struct *msg;
   struct cmd_struct *cmd;
   int   return_status;
@@ -61,50 +61,58 @@ int Sim_attach_soap(Sim_entry_type *sim, char *SimID)
   soap_init2(sim->SGS_info.soap, SOAP_IO_KEEPALIVE, SOAP_IO_KEEPALIVE);
 
   /* SimID holds the address of the soap server of the SGS */
-  attach_response._result = NULL;
-  if(soap_call_tns__Attach(sim->SGS_info.soap, SimID, 
+  attach_response._AttachReturn = NULL;
+  if(soap_call_sgs__Attach(sim->SGS_info.soap, SimID, 
 			   "", &attach_response )){
 
     fprintf(stderr, "Sim_attach_soap: Attach to %s failed with message: \n",
 	    SimID);
     soap_print_fault(sim->SGS_info.soap, stderr);
 
+    Finalize_connection_soap(sim);
+
     return REG_FAILURE;
   }
 
-  /* That worked OK so store address of SGS */
-  sprintf(sim->SGS_info.address, SimID);
 
 #if REG_DEBUG
-  if(attach_response._result){
+  if(attach_response._AttachReturn){
     fprintf(stderr, "Sim_attach_soap: Attach returned:\n>>%s<<\n",
-	    attach_response._result);
+	    attach_response._AttachReturn);
   }
   else{
     fprintf(stderr, "Sim_attach_soap: Attach returned null\n");
   }
 #endif
 
-  if(!attach_response._result || strstr(attach_response._result, 
-					REG_SGS_ERROR)) return REG_FAILURE;
+  if(!attach_response._AttachReturn || strstr(attach_response._AttachReturn, 
+					REG_SGS_ERROR)){
+    Finalize_connection_soap(sim);
+    return REG_FAILURE;
+  }
+
+  /* That worked OK so store address of SGS */
+  sprintf(sim->SGS_info.address, SimID);
 
   /* get commands back and parse them... */
-  if(strlen(attach_response._result)){
+  if(strlen(attach_response._AttachReturn)){
 
     /* Strip-off outer tags (present because this is service data
        from the GS) */
-    pchar = strstr(attach_response._result, "<ReG_steer_message ");
-    if (pchar) pchar1= strstr(attach_response._result, 
+    pchar = strstr(attach_response._AttachReturn, "<ReG_steer_message ");
+    if (pchar) pchar1= strstr(attach_response._AttachReturn, 
 				 "</ReG_steer_message>");
     if (!pchar1) {
       fprintf(stderr, "Sim_attach_soap: failed to strip root-element tags "
-	      "from data:\n>>%s<<\n", attach_response._result);
+	      "from data:\n>>%s<<\n", attach_response._AttachReturn);
+      Finalize_connection_soap(sim);
       return REG_FAILURE;
     }
 
     if(!(msg = New_msg_struct())){
 
       fprintf(stderr, "Sim_attach_soap: failed to get new msg struct\n");
+      Finalize_connection_soap(sim);
       return REG_FAILURE;
     }
 
@@ -137,6 +145,7 @@ int Sim_attach_soap(Sim_entry_type *sim, char *SimID)
     return return_status;
   }
   else{
+    Finalize_connection_soap(sim);
     return REG_FAILURE;
   }
 
@@ -146,11 +155,11 @@ int Sim_attach_soap(Sim_entry_type *sim, char *SimID)
 
 int Send_control_msg_soap(Sim_entry_type *sim, char* buf)
 {
-  struct tns__PutControlResponse putControl_response;
+  struct sgs__PutControlResponse putControl_response;
 
   /* Send message */
-  putControl_response._result = NULL;
-  if(soap_call_tns__PutControl(sim->SGS_info.soap, sim->SGS_info.address, 
+  putControl_response._PutControlReturn = NULL;
+  if(soap_call_sgs__PutControl(sim->SGS_info.soap, sim->SGS_info.address, 
 			       "", buf, &putControl_response )){
 
     fprintf(stderr, "Send_control_msg_soap: PutControl failed:\n");
@@ -159,8 +168,8 @@ int Send_control_msg_soap(Sim_entry_type *sim, char* buf)
     return REG_FAILURE;
   }
 
-  if(putControl_response._result && 
-     !strstr(putControl_response._result, REG_SGS_ERROR)) return REG_SUCCESS;
+  if(putControl_response._PutControlReturn && 
+     !strstr(putControl_response._PutControlReturn, REG_SGS_ERROR)) return REG_SUCCESS;
 
   return REG_FAILURE;
 }
@@ -169,8 +178,8 @@ int Send_control_msg_soap(Sim_entry_type *sim, char* buf)
 
 struct msg_struct *Get_status_msg_soap(Sim_entry_type *sim)
 {
-  struct tns__GetNotificationsResponse getNotifications_response;
-  struct tns__GetStatusResponse        getStatus_response;
+  struct sgs__GetNotificationsResponse getNotifications_response;
+  struct sgs__GetStatusResponse        getStatus_response;
   struct msg_struct                   *msg = NULL;
   char                                *ptr;
 
@@ -183,8 +192,8 @@ struct msg_struct *Get_status_msg_soap(Sim_entry_type *sim)
   }
 
   /* Check SGS for new notifications */
-  getNotifications_response._result = NULL;
-  if(soap_call_tns__GetNotifications(sim->SGS_info.soap, sim->SGS_info.address, 
+  getNotifications_response._GetNotificationsReturn = NULL;
+  if(soap_call_sgs__GetNotifications(sim->SGS_info.soap, sim->SGS_info.address, 
 				     "", &getNotifications_response )){
 
     fprintf(stderr, "Get_status_msg_soap: GetNotifications failed:\n");
@@ -194,9 +203,9 @@ struct msg_struct *Get_status_msg_soap(Sim_entry_type *sim)
   }
   
 #if REG_DEBUG
-  if(getNotifications_response._result){
+  if(getNotifications_response._GetNotificationsReturn){
     fprintf(stderr, "Get_status_msg_soap: GetNotifications returned >>%s<<\n",
-	    getNotifications_response._result);
+	    getNotifications_response._GetNotificationsReturn);
   }
   else{
     fprintf(stderr, "Get_status_msg_soap: GetNotifications returned null\n");
@@ -205,10 +214,10 @@ struct msg_struct *Get_status_msg_soap(Sim_entry_type *sim)
 
   /* GetNotifications returns a space-delimited list of the names of
      the SDE's that have changed since we last looked at them */
-  if(getNotifications_response._result &&
-     !strstr(getNotifications_response._result, REG_SGS_ERROR)){
+  if(getNotifications_response._GetNotificationsReturn &&
+     !strstr(getNotifications_response._GetNotificationsReturn, REG_SGS_ERROR)){
 
-    if(ptr = strtok(getNotifications_response._result, " ")){
+    if(ptr = strtok(getNotifications_response._GetNotificationsReturn, " ")){
 
       sim->SGS_info.sde_count = 0;
       while(ptr){
@@ -236,8 +245,8 @@ struct msg_struct *Get_status_msg_soap(Sim_entry_type *sim)
   }
 
   /* Only ask for a status msg if had no notifications */
-  getStatus_response._result = NULL;
-  if(soap_call_tns__GetStatus(sim->SGS_info.soap, sim->SGS_info.address, 
+  getStatus_response._GetStatusReturn = NULL;
+  if(soap_call_sgs__GetStatus(sim->SGS_info.soap, sim->SGS_info.address, 
 			       "", &getStatus_response )){
 
     fprintf(stderr, "Get_status_msg_soap: GetStatus failed:\n");
@@ -247,22 +256,22 @@ struct msg_struct *Get_status_msg_soap(Sim_entry_type *sim)
   }
 
 #if REG_DEBUG
-  if(getStatus_response._result){
+  if(getStatus_response._GetStatusReturn){
     fprintf(stderr, "Get_status_msg_soap: response: %s\n", 
-	    getStatus_response._result);
+	    getStatus_response._GetStatusReturn);
   }
   else{
     fprintf(stderr, "Get_status_msg_soap: null response\n");
   }
 #endif
 
-  if(getStatus_response._result &&
-     !strstr(getStatus_response._result, REG_SGS_ERROR)){
+  if(getStatus_response._GetStatusReturn &&
+     !strstr(getStatus_response._GetStatusReturn, REG_SGS_ERROR)){
 
     msg = New_msg_struct();
 
-    if(Parse_xml_buf(getStatus_response._result, 
-		     strlen(getStatus_response._result), msg) != REG_SUCCESS){
+    if(Parse_xml_buf(getStatus_response._GetStatusReturn, 
+		     strlen(getStatus_response._GetStatusReturn), msg) != REG_SUCCESS){
 
       Delete_msg_struct(msg);
       msg = NULL;
@@ -275,16 +284,16 @@ struct msg_struct *Get_status_msg_soap(Sim_entry_type *sim)
 
 struct msg_struct *Get_service_data(Sim_entry_type *sim, char *sde_name)
 {
-  struct tns__findServiceDataResponse  findServiceData_response;
+  struct sgs__findServiceDataResponse  findServiceData_response;
   struct msg_struct                   *msg = NULL;
   char   query_buf[REG_MAX_STRING_LENGTH];
   char  *pchar = NULL;
   char  *pchar1= NULL;
 
-  findServiceData_response._result = NULL;
+  findServiceData_response._findServiceDataReturn = NULL;
   sprintf(query_buf, "<ogsi:queryByServiceDataNames names=\"%s\"/>", 
 	  sde_name);
-  if(soap_call_tns__findServiceData(sim->SGS_info.soap, sim->SGS_info.address, 
+  if(soap_call_sgs__findServiceData(sim->SGS_info.soap, sim->SGS_info.address, 
 				    "", query_buf, 
 				    &findServiceData_response )){
 
@@ -295,23 +304,23 @@ struct msg_struct *Get_service_data(Sim_entry_type *sim, char *sde_name)
   }
 
 #if REG_DEBUG
-  if(findServiceData_response._result){
+  if(findServiceData_response._findServiceDataReturn){
     fprintf(stderr, "Get_service_data: findServiceData returned: %s\n", 
-	    findServiceData_response._result);
+	    findServiceData_response._findServiceDataReturn);
   }
   else{
     fprintf(stderr, "Get_service_data: findServiceData returned null\n");
   }
 #endif
 
-  if(findServiceData_response._result &&
-     !strstr(findServiceData_response._result, REG_SGS_ERROR)){
+  if(findServiceData_response._findServiceDataReturn &&
+     !strstr(findServiceData_response._findServiceDataReturn, REG_SGS_ERROR)){
 
     /* Not all SDEs will contain XML that we can parse - in particular, 
        those that hold the state of the steerer and application. */
     if(strstr(sde_name, REG_STEER_STATUS_SDE)){
 
-      if(strstr(findServiceData_response._result, "DETACHED")){
+      if(strstr(findServiceData_response._findServiceDataReturn, "DETACHED")){
 	/* Convert from a notification that steerer is now detached
 	   to a message that fits the library spec. */
 	msg = New_msg_struct();
@@ -325,7 +334,7 @@ struct msg_struct *Get_service_data(Sim_entry_type *sim, char *sde_name)
     }
     else if(strstr(sde_name, REG_APP_STATUS_SDE)){
 
-      if(strstr(findServiceData_response._result, "STOPPED")){
+      if(strstr(findServiceData_response._findServiceDataReturn, "STOPPED")){
 	/* Convert from a notification that application is now detached
 	   to a message that fits the library spec. */
 	msg = New_msg_struct();
@@ -341,12 +350,12 @@ struct msg_struct *Get_service_data(Sim_entry_type *sim, char *sde_name)
 
       /* Strip-off outer tags (present because this is service data
 	 from the GS) */
-      pchar = strstr(findServiceData_response._result, "<ReG_steer_message ");
-      if (pchar) pchar1= strstr(findServiceData_response._result, 
+      pchar = strstr(findServiceData_response._findServiceDataReturn, "<ReG_steer_message ");
+      if (pchar) pchar1= strstr(findServiceData_response._findServiceDataReturn, 
 				 "</ReG_steer_message>");
       if (!pchar1) {
 	fprintf(stderr, "Get_service_data: failed to strip root-element tags "
-		"from data:\n>>%s<<\n", findServiceData_response._result);
+		"from data:\n>>%s<<\n", findServiceData_response._findServiceDataReturn);
 	return NULL;
       }
       msg = New_msg_struct();
@@ -366,13 +375,13 @@ struct msg_struct *Get_service_data(Sim_entry_type *sim, char *sde_name)
 
 int Send_pause_msg_soap(Sim_entry_type *sim)
 {
-  struct tns__PauseResponse  pause_response;
+  struct sgs__PauseResponse  pause_response;
 
 #if REG_DEBUG
   fprintf(stderr, "Send_pause_msg_soap: calling Pause...\n");
 #endif
-  pause_response._result = NULL;
-  if(soap_call_tns__Pause(sim->SGS_info.soap, sim->SGS_info.address, 
+  pause_response._PauseReturn = NULL;
+  if(soap_call_sgs__Pause(sim->SGS_info.soap, sim->SGS_info.address, 
 			   "", &pause_response )){
 
     fprintf(stderr, "Send_pause_msg_soap: Pause failed:\n");
@@ -381,8 +390,8 @@ int Send_pause_msg_soap(Sim_entry_type *sim)
     return REG_FAILURE;
   }
 
-  if(pause_response._result && 
-     !strstr(pause_response._result, REG_SGS_ERROR)){
+  if(pause_response._PauseReturn && 
+     !strstr(pause_response._PauseReturn, REG_SGS_ERROR)){
      return REG_SUCCESS;
   }
 
@@ -393,13 +402,13 @@ int Send_pause_msg_soap(Sim_entry_type *sim)
 
 int Send_resume_msg_soap(Sim_entry_type *sim)
 {
-  struct tns__ResumeResponse  resume_response;
+  struct sgs__ResumeResponse  resume_response;
 
 #if REG_DEBUG
   fprintf(stderr, "Send_resume_msg_soap: calling Resume...\n");
 #endif
-  resume_response._result = NULL;
-  if(soap_call_tns__Resume(sim->SGS_info.soap, sim->SGS_info.address, 
+  resume_response._ResumeReturn = NULL;
+  if(soap_call_sgs__Resume(sim->SGS_info.soap, sim->SGS_info.address, 
 			   "", &resume_response )){
 
     fprintf(stderr, "Send_resume_msg_soap: Resume failed:\n");
@@ -408,8 +417,8 @@ int Send_resume_msg_soap(Sim_entry_type *sim)
     return REG_FAILURE;
   }
 
-  if(resume_response._result && 
-     !strstr(resume_response._result, REG_SGS_ERROR)){
+  if(resume_response._ResumeReturn && 
+     !strstr(resume_response._ResumeReturn, REG_SGS_ERROR)){
      return REG_SUCCESS;
   }
 
@@ -420,13 +429,13 @@ int Send_resume_msg_soap(Sim_entry_type *sim)
 
 int Send_detach_msg_soap(Sim_entry_type *sim)
 {
-  struct tns__DetachResponse  detach_response;
+  struct sgs__DetachResponse  detach_response;
 
 #if REG_DEBUG
   fprintf(stderr, "Send_detach_msg_soap: calling Detach...\n");
 #endif
-  detach_response._result = NULL;
-  if(soap_call_tns__Detach(sim->SGS_info.soap, sim->SGS_info.address, 
+  detach_response._DetachReturn = NULL;
+  if(soap_call_sgs__Detach(sim->SGS_info.soap, sim->SGS_info.address, 
 			   "", &detach_response )){
 
     fprintf(stderr, "Send_detach_msg_soap: Detach failed:\n");
@@ -435,8 +444,8 @@ int Send_detach_msg_soap(Sim_entry_type *sim)
     return REG_FAILURE;
   }
 
-  if(detach_response._result && 
-     !strstr(detach_response._result, REG_SGS_ERROR)){
+  if(detach_response._DetachReturn && 
+     !strstr(detach_response._DetachReturn, REG_SGS_ERROR)){
      return REG_SUCCESS;
   }
 
@@ -447,13 +456,13 @@ int Send_detach_msg_soap(Sim_entry_type *sim)
 
 int Send_stop_msg_soap(Sim_entry_type *sim)
 {
-  struct tns__StopResponse  stop_response;
+  struct sgs__StopResponse  stop_response;
 
 #if REG_DEBUG
   fprintf(stderr, "Send_stop_msg_soap: calling Stop...\n");
 #endif
-  stop_response._result = NULL;
-  if(soap_call_tns__Stop(sim->SGS_info.soap, sim->SGS_info.address, 
+  stop_response._StopReturn = NULL;
+  if(soap_call_sgs__Stop(sim->SGS_info.soap, sim->SGS_info.address, 
 			   "", &stop_response )){
 
     fprintf(stderr, "Send_stop_msg_soap: Stop failed:\n");
@@ -462,8 +471,8 @@ int Send_stop_msg_soap(Sim_entry_type *sim)
     return REG_FAILURE;
   }
 
-  if(stop_response._result && 
-     !strstr(stop_response._result, REG_SGS_ERROR)){
+  if(stop_response._StopReturn && 
+     !strstr(stop_response._StopReturn, REG_SGS_ERROR)){
      return REG_SUCCESS;
   }
 
@@ -474,10 +483,10 @@ int Send_stop_msg_soap(Sim_entry_type *sim)
 
 int Send_restart_msg_soap(Sim_entry_type *sim, char *chkGSH)
 {
-  struct tns__RestartResponse  restart_response;
+  struct sgs__RestartResponse  restart_response;
 
-  restart_response._result = NULL;
-  if(soap_call_tns__Restart(sim->SGS_info.soap, sim->SGS_info.address, 
+  restart_response._RestartReturn = NULL;
+  if(soap_call_sgs__Restart(sim->SGS_info.soap, sim->SGS_info.address, 
 			   "", chkGSH, &restart_response )){
 
     fprintf(stderr, "Send_restart_msg_soap: Restart failed:\n");
@@ -486,8 +495,8 @@ int Send_restart_msg_soap(Sim_entry_type *sim, char *chkGSH)
     return REG_FAILURE;
   }
 
-  if(restart_response._result && 
-     !strstr(restart_response._result, REG_SGS_ERROR)){
+  if(restart_response._RestartReturn && 
+     !strstr(restart_response._RestartReturn, REG_SGS_ERROR)){
      return REG_SUCCESS;
   }
 
