@@ -591,10 +591,12 @@ int Initialize_log(Chk_log_type *log)
 {
   int i, j;
 
-  log->num_entries = 0;
-  log->max_entries = REG_INITIAL_CHK_LOG_SIZE;
-  log->num_unsent  = 0;
-  log->send_all    = REG_TRUE;
+  log->num_entries 	= 0;
+  log->max_entries 	= REG_INITIAL_CHK_LOG_SIZE;
+  log->num_unsent  	= 0;
+  log->send_all    	= REG_TRUE;
+  log->emit_in_progress = REG_FALSE;
+  log->file_content     = NULL;
 
   Set_log_primary_key(log);
 
@@ -3281,7 +3283,8 @@ int Steering_control(int     SeqNum,
 #endif
     }
 
-    /* Emit logging info. */
+    /* Emit checkpoint logging info. (parameter logs are only sent
+       on demand because they are large.) */
 
     if( Emit_log(&Chk_log) != REG_SUCCESS ){
 
@@ -3292,6 +3295,9 @@ int Steering_control(int     SeqNum,
       fprintf(stderr, "Steering_control: done Emit_log\n");
     }
 #endif
+    if(Param_log.emit_in_progress == REG_TRUE){
+      Emit_log(&Param_log);
+    }
 
     /* Set array holding labels of changed params - pass back strings 
        rather than pointers to strings */
@@ -4115,8 +4121,6 @@ int Log_param_values()
      current entries on disk (rather than continually grab more
      memory) */
 
-  printf("ARPDBG: Logging: num_entries = %d\n", Param_log.num_entries);
-
   if(Param_log.num_entries == Param_log.max_entries){
 
     /* Save_log also resets Param_log.num_entries to zero */
@@ -4176,12 +4180,29 @@ int Log_param_values()
 
 int Emit_log(Chk_log_type *log)
 {
-  char *pbuf;
   char  filename[REG_MAX_STRING_LENGTH];
   int   size;
   int   return_status = REG_SUCCESS;
 
-  if(log->send_all == REG_TRUE){
+  if(log->emit_in_progress == REG_TRUE){
+
+    if(Emit_log_entries(log, log->file_content) == REG_UNFINISHED){
+      return return_status;
+    }
+    log->emit_in_progress = REG_FALSE;
+
+    free(log->file_content);
+    log->file_content = NULL;
+
+    /* Now send the entries that we have stored in memory - 
+       need to send all current log entries to the steerer */
+    if(Log_to_xml(log, &(log->file_content), &size, 
+		  REG_FALSE) != REG_SUCCESS){
+
+      return REG_FAILURE;
+    }
+  }
+  else if(log->send_all == REG_TRUE){
 
 #if REG_DEBUG_FULL
     fprintf(stderr, "Emit_log: sending all saved log entries...\n");
@@ -4192,23 +4213,21 @@ int Emit_log(Chk_log_type *log)
     /* Read the log file and get back contents in buffer pointed
        to by pbuf.  We must free() this once we're done. */
     if(log->log_type == CHKPT){
-      return_status = Read_file(log->filename, &pbuf, &size, REG_FALSE);
-    }
+      return_status = Read_file(log->filename, &(log->file_content), 
+				&size, REG_FALSE);
+     }
     else if(log->log_type == PARAM){
-      return_status = Read_file(log->filename, &pbuf, &size, REG_TRUE);
-      if(return_status==REG_SUCCESS)printf("ARPDBG read param log Ok");
+      return_status = Read_file(log->filename, &(log->file_content), 
+				&size, REG_TRUE);
     }
 
     if(return_status != REG_SUCCESS){
-      if(!pbuf)free(pbuf);
-      pbuf = NULL;
+      if(!log->file_content)free(log->file_content);
+      log->file_content = NULL;
       return REG_FAILURE;
     }
 
-    if (size > 0) Emit_log_entries(pbuf);
-
-    free(pbuf);
-    pbuf = NULL;
+     if (size > 0) Emit_log_entries(log, log->file_content);
 
     /* Re-open log-file for future buffering */
     if( Open_log_file(log) != REG_SUCCESS){
@@ -4217,11 +4236,22 @@ int Emit_log(Chk_log_type *log)
       fprintf(stderr, "Emit_log: Open_log_file failed\n");
 #endif
     }
+
+    if(log->emit_in_progress == REG_TRUE){
+      /* Don't set log->send_all if going to continue to Log_to_xml
+	 as will affect what log entries are returned */
+      log->send_all = REG_FALSE;
+      return REG_SUCCESS;
+    }
+
+    free(log->file_content);
+    log->file_content = NULL;
+
     /* End of sending buffered entries */
 
     /* Now send the entries that we have stored in memory - 
        need to send all current log entries to the steerer */
-    if(Log_to_xml(log, &pbuf, &size, REG_FALSE) != REG_SUCCESS){
+    if(Log_to_xml(log, &(log->file_content), &size, REG_FALSE) != REG_SUCCESS){
 
       return REG_FAILURE;
     }
@@ -4234,7 +4264,7 @@ int Emit_log(Chk_log_type *log)
 #endif
     /* Third argument specifies that we only want those entries that haven't
        already been sent to the steerer */
-    if(Log_to_xml(log, &pbuf, &size, REG_TRUE) != REG_SUCCESS){
+    if(Log_to_xml(log, &(log->file_content), &size, REG_TRUE) != REG_SUCCESS){
 
       return REG_FAILURE;
     }
@@ -4246,9 +4276,14 @@ int Emit_log(Chk_log_type *log)
 
   /* Pull the entries out of the buffer returned by Log_to_xml and
      send them to the steerer */
-  if(size > 0)return_status = Emit_log_entries(pbuf);
-  free(pbuf);
-  pbuf = NULL;
+  if(size > 0){
+    if( (return_status = Emit_log_entries(log, 
+				   log->file_content)) == REG_UNFINISHED){
+      return REG_SUCCESS;
+    }
+  }
+  free(log->file_content);
+  log->file_content = NULL;
 
 #if REG_DEBUG_FULL
   fprintf(stderr, "Emit_log: sending logged steering commands...\n");
@@ -4257,7 +4292,7 @@ int Emit_log(Chk_log_type *log)
   /* Send log of steering commands */
   if(strlen(log->pSteer_cmds) > 0){
 
-    Emit_log_entries(log->pSteer_cmds);
+    Emit_log_entries(log, log->pSteer_cmds);
     log->pSteer_cmds[0]='\0';
     log->pSteer_cmds_slot = log->pSteer_cmds;
   }
@@ -4274,33 +4309,55 @@ int Emit_log(Chk_log_type *log)
 
 /*----------------------------------------------------------------*/
 
-int Emit_log_entries(char *buf)
+int Emit_log_entries(Chk_log_type *log, char *buf)
 {
-  char *pmsg_buf;
-  int   status;
+  static char *pXmlBuf = NULL;
+  static char *pmsg_buf = NULL;
+  int          status;
 
-  pmsg_buf = buf;
-  if(!strstr(buf, "<Log_entry>")){
+  if(log->emit_in_progress == REG_TRUE){
+    if(Pack_send_log_entries(&pXmlBuf) == REG_UNFINISHED){
+      return REG_UNFINISHED;
+    }
+    /* Check to see if we're all done or whether there's still
+       raw log data to process */
+    if(!pmsg_buf)return REG_SUCCESS;
+  }
+  else{
+    pmsg_buf = buf;
+  }
+
+  pXmlBuf = Global_scratch_buffer;
+  if(!strstr(pmsg_buf, "<Log_entry>")){
 
     while(1){
       status = Log_columns_to_xml(&pmsg_buf, Global_scratch_buffer, 
 				  REG_SCRATCH_BUFFER_SIZE);
-      if(status == REG_FAILURE) return REG_FAILURE;
+      if(status == REG_FAILURE){
+	return REG_FAILURE;
+      }
+      else if(status == REG_EOD){
+	log->emit_in_progress = REG_FALSE;
+	pmsg_buf = NULL;
+      }
 
-      Pack_send_log_entries(Global_scratch_buffer);
+      if(Pack_send_log_entries(&pXmlBuf) == REG_UNFINISHED){
+	log->emit_in_progress = REG_TRUE;
+	return REG_UNFINISHED;
+      }
 
-      if(status == REG_EOD)break;
+      if(status == REG_EOD) break;
     }
   }
   else{
-    Pack_send_log_entries(pmsg_buf);
+    Pack_send_log_entries(&pmsg_buf);
   }
   return REG_SUCCESS;
 }
 
 /*----------------------------------------------------------------*/
 
-int Pack_send_log_entries(char *pBuf)
+int Pack_send_log_entries(char **pBuf)
 {
   char *msg_buf, *pmsg_buf;
   char *plast = NULL;
@@ -4314,6 +4371,7 @@ int Pack_send_log_entries(char *pBuf)
   int   nbytes;
   int   rewind;
   int   return_status = REG_SUCCESS;
+  int   msg_count = 0;
 
   msg_buf_size = REG_MAX_MSG_SIZE;
   if(!(msg_buf = (char *)malloc(msg_buf_size))){
@@ -4324,7 +4382,7 @@ int Pack_send_log_entries(char *pBuf)
 
   /* Pull each log entry out of the buffer and pack them into
      messages to the steerer */
-  pbuf1 = strstr(pBuf, "<Log_entry>");
+  pbuf1 = strstr(*pBuf, "<Log_entry>");
   pbuf2 = pbuf1;
   if(pbuf2){
     if(pbuf3 = strstr(pbuf2, "</Log_entry>")){
@@ -4334,6 +4392,13 @@ int Pack_send_log_entries(char *pBuf)
   }
 
   while(pbuf3){
+
+    if(msg_count > REG_MAX_NUM_LOG_MSG){
+      *pBuf = pbuf3;
+      free(msg_buf);
+      msg_buf = NULL;
+      return REG_UNFINISHED;
+    }
 
     if(tot_len == 0){
       /* Begin the first message */
@@ -4404,14 +4469,14 @@ int Pack_send_log_entries(char *pBuf)
 	if(Write_xml_footer(&pmsg_buf, (msg_buf_size-tot_len)) 
 	                                             != REG_SUCCESS){
 	  fprintf(stderr, "Pack_send_log_entries: error writing footer\n");
+	  free(msg_buf);
+	  msg_buf = NULL;
 	  return REG_FAILURE;
 	}
       }
 
-      if(Send_status_msg(msg_buf) != REG_SUCCESS){
-
-	return REG_FAILURE;
-      }
+      if(Send_status_msg(msg_buf) != REG_SUCCESS) return REG_FAILURE;
+      msg_count++;
 
       /* Begin the next message */
       plast = NULL;
@@ -4443,6 +4508,7 @@ int Pack_send_log_entries(char *pBuf)
                                                    == REG_SUCCESS){
 
       return_status = Send_status_msg(msg_buf);
+      msg_count++;
     }
     else{
       fprintf(stderr, "Pack_send_log_entries: error writing final footer\n");
@@ -4771,13 +4837,14 @@ int Detach_from_steerer()
 
   /* Flag that all entries in log need to be sent to steerer (in case
      another one attaches later on) */
-  Chk_log.send_all   = REG_TRUE;
-  Param_log.send_all = REG_TRUE;
-
-  ReG_SteeringActive = REG_FALSE;
-  ReG_IOTypesChanged = REG_TRUE;
-  ReG_ChkTypesChanged= REG_TRUE;
-  ReG_ParamsChanged  = REG_TRUE;
+  Chk_log.send_all           = REG_TRUE;
+  Chk_log.emit_in_progress   = REG_FALSE;
+  Param_log.send_all         = REG_TRUE;
+  Param_log.emit_in_progress = REG_FALSE;
+  ReG_SteeringActive 	     = REG_FALSE;
+  ReG_IOTypesChanged 	     = REG_TRUE;
+  ReG_ChkTypesChanged	     = REG_TRUE;
+  ReG_ParamsChanged  	     = REG_TRUE;
 
   return REG_SUCCESS;
 }

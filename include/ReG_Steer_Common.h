@@ -113,6 +113,13 @@ typedef struct {
      sent_to_steerer flags.  This used when a client detaches and
      another one attaches some time later. */
   int                 send_all;
+  /* Flag to indicate whether a send of the log data (read in on
+     a previous occasion) is still in progress.  This feature
+     prevents a deluge of log messages being emitted. */
+  int                 emit_in_progress;
+  /* Ptr to buffer holding contents of log buffer for log
+     emits spread over several calls to Emit_log */
+  char               *file_content;
   /* Ptr to buffer containing logged steering cmds */
   char               *pSteer_cmds;
   /* Ptr to next free space in this buffer */

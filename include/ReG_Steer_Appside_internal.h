@@ -244,7 +244,7 @@ int Initialize_log(Chk_log_type *log);
 
 /* Identifies format of log supplied in *buf & converts it to xml if
    necessary.  Then calls Pack_send_log_entries. */
-static int Emit_log_entries(char *buf);
+static int Emit_log_entries(Chk_log_type *log, char *buf);
 
 /* Open log file (in append mode) */
 static int Open_log_file(Chk_log_type *log);
@@ -284,7 +284,7 @@ int Log_columns_to_xml(char **buf, char* out_buf, int out_buf_size);
 
 /* Takes the xml document describing a log and splits it into separate
    entries which are packed into messages and sent to client */
-int Pack_send_log_entries(char *pBuf);
+int Pack_send_log_entries(char **pBuf);
 
 /* Wrapper for call to Realloc_IOdef_entry_buffer */
 static int Realloc_iotype_buffer(int index,
