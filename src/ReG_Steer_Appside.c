@@ -54,36 +54,6 @@
 #define DEBUG 1
 #endif
 
-/*---------------- Global data structures --------------------*/
-
-/* Whether steering is enabled (set by user) *
-static int ReG_SteeringEnabled = FALSE;
-* Whether the set of registered params has changed *
-static int ReG_ParamsChanged   = FALSE;
-* Whether the set of registered IO types has changed *
-static int ReG_IOTypesChanged  = FALSE;
-* Whether the set of registered Chk types has changed *
-static int ReG_ChkTypesChanged  = FALSE;
-* Whether app. is currently being steered *
-static int ReG_SteeringActive  = FALSE;
-* Whether steering library has been initialised *
-static int ReG_SteeringInit    = FALSE;*/
-
-
-/* Table for registered checkpoint types *
-
-IOdef_table_type ChkTypes_table;*/
-
-/* Log of checkpoints taken *
-
-Chk_log_type Chk_log;*/
-
-/* Param_table_type is declared in ReG_Steer_Common.h since it is 
-   used in both the steerer-side and app-side libraries *
-
-Param_table_type Params_table;*/
-
-
 /*----------------------------------------------------------------*/
 
 void Steering_enable(const int EnableSteer)
@@ -99,7 +69,7 @@ void Steering_enable(const int EnableSteer)
 int Steering_initialize(int  NumSupportedCmds,
 			int *SupportedCmds)
 {
-  int   i;
+  int   i, j;
   char *pchar;
 
   /* Actually defined in ReG_Steer_Common.c because both steerer
@@ -141,7 +111,6 @@ int Steering_initialize(int  NumSupportedCmds,
 
   IOTypes_table.num_registered = 0;
   IOTypes_table.max_entries    = REG_INITIAL_NUM_IOTYPES;
-  /*IOTypes_table.next_handle    = REG_MIN_IOTYPE_HANDLE;*/
   IOTypes_table.io_def         = (IOdef_entry *)
                                  malloc(IOTypes_table.max_entries
 					*sizeof(IOdef_entry));
@@ -168,7 +137,6 @@ int Steering_initialize(int  NumSupportedCmds,
 
   ChkTypes_table.num_registered = 0;
   ChkTypes_table.max_entries    = REG_INITIAL_NUM_IOTYPES;
-  /*ChkTypes_table.next_handle    = REG_MIN_IOTYPE_HANDLE;*/
   ChkTypes_table.io_def         = (IOdef_entry *)
                                    malloc(IOTypes_table.max_entries
 				  	  *sizeof(IOdef_entry));
@@ -190,6 +158,7 @@ int Steering_initialize(int  NumSupportedCmds,
 
   Chk_log.num_entries = 0;
   Chk_log.max_entries = REG_INITIAL_CHK_LOG_SIZE;
+  Chk_log.num_unsent  = 0;
   Chk_log.entry = (Chk_log_entry_type *)malloc(Chk_log.max_entries
 					  *sizeof(Chk_log_entry_type));
   if(Chk_log.entry == NULL){
@@ -199,6 +168,15 @@ int Steering_initialize(int  NumSupportedCmds,
     free(IOTypes_table.io_def);
     free(ChkTypes_table.io_def);
     return REG_FAILURE;
+  }
+
+  for(i=0; i<Chk_log.max_entries; i++){
+
+    Chk_log.entry[i].sent_to_steerer = TRUE;
+
+    for(j=0; j<REG_MAX_NUM_STR_PARAMS; j++){
+      Chk_log.entry[i].param[j].handle = REG_PARAM_HANDLE_NOTSET;
+    }
   }
 
   /* Set up table for registered parameters */
@@ -638,7 +616,7 @@ int Register_ChkTypes(int    NumTypes,
 int Record_Chkpt(int   ChkType,
 		 char *ChkTag)
 {
-  /* int   index; */
+  int   index;
   int   new_size;
   void *ptr;
 
@@ -662,11 +640,27 @@ int Record_Chkpt(int   ChkType,
     }
 
     Chk_log.entry = (Chk_log_entry_type *)ptr;
+
+    for(index=Chk_log.num_entries; index<Chk_log.max_entries; index++){
+
+      Chk_log.entry[index].sent_to_steerer = TRUE;
+    }
   }
 
   Chk_log.entry[Chk_log.num_entries].key = Chk_log.primary_key_value++;
   strcpy(Chk_log.entry[Chk_log.num_entries].chk_tag, ChkTag);
-  Chk_log.entry[Chk_log.num_entries].chk_handle = ChkType;
+  Chk_log.entry[Chk_log.num_entries].chk_handle      = ChkType;
+  Chk_log.entry[Chk_log.num_entries].sent_to_steerer = FALSE;
+
+  index = Param_index_from_handle(&(Params_table), REG_SEQ_NUM_HANDLE);
+  if(index != -1){
+    Chk_log.entry[Chk_log.num_entries].param[0].handle = REG_SEQ_NUM_HANDLE;
+    strcpy(Chk_log.entry[Chk_log.num_entries].param[0].value,
+           Params_table.param[index].value);
+  }
+
+  /* Keep a count of entries that we have yet to send to steerer */
+  Chk_log.num_unsent++;
 
   /* Keep this function lightweight - need extra function to 'uncompress'
      log entries and fill in details of the ChkTypes they refer to - code
@@ -1481,6 +1475,11 @@ int Steering_control(int     SeqNum,
       ReG_ChkTypesChanged = FALSE;
     }
 
+
+    /* Emit logging info. */
+    Emit_log();
+
+
     /* Read anything that the steerer has sent to us */
     if( Consume_control(&num_commands,
 			commands,
@@ -2028,6 +2027,70 @@ int Emit_ChkType_defs(){
   
   pbuf += sprintf(pbuf,"</ChkType_defs>\n");
   Write_xml_footer(&pbuf);
+
+  /* Physically send message */
+  return Send_status_msg(buf);
+}
+
+/*----------------------------------------------------------------*/
+
+int Emit_log()
+{
+  int   i, j;
+  char  buf[REG_MAX_MSG_SIZE];
+  char *pbuf;
+  FILE* fp;
+
+  if (Chk_log.num_unsent == 0) return REG_SUCCESS;
+
+  pbuf = buf;
+  Write_xml_header(&pbuf);
+
+  pbuf += sprintf(pbuf, "<Steer_log>\n");
+
+  for(i=0; i<Chk_log.num_entries; i++){
+
+    /* Check to see whether steerer already has this entry */
+    if (Chk_log.entry[i].sent_to_steerer == TRUE) continue;
+
+    pbuf += sprintf(pbuf, "<Log_entry>\n");
+
+    pbuf += sprintf(pbuf, "<Key>%d</Key>\n", Chk_log.entry[i].key);
+    pbuf += sprintf(pbuf, "<Chk_handle>%d</Chk_handle>\n", Chk_log.entry[i].chk_handle);
+    pbuf += sprintf(pbuf, "<Chk_tag>%s</Chk_tag>\n", Chk_log.entry[i].chk_tag);
+
+    pbuf += sprintf(pbuf, "<Param>\n");
+    for(j=0; j<REG_MAX_NUM_STR_PARAMS; j++){
+
+      /* Associated parameters are stored contiguously so once we find an empty
+	 slot we know we've dealt with them all */
+      if (Chk_log.entry[i].param[j].handle == REG_PARAM_HANDLE_NOTSET) break;
+
+      pbuf += sprintf(pbuf, "<Handle>%d</Handle>\n", Chk_log.entry[i].param[j].handle);
+      pbuf += sprintf(pbuf, "<Value>%s</Value>\n", Chk_log.entry[i].param[j].value);
+    }
+    pbuf += sprintf(pbuf, "</Param>\n");
+    pbuf += sprintf(pbuf, "</Log_entry>\n");
+
+    /* Flag this entry as having been sent to steerer */
+    Chk_log.entry[i].sent_to_steerer = TRUE;
+  }
+
+  pbuf += sprintf(pbuf, "</Steer_log>\n");
+
+  /* Zero counter since we're just about to tell steerer all about any log
+     entries it hasn't got */
+  Chk_log.num_unsent = 0;
+
+  /* Complete the xml message */
+  Write_xml_footer(&pbuf);
+
+  /* ARPDBG */
+  fp = fopen("SteeringLog.xml", "a");
+  if(fp){
+    fprintf(fp, "%s", buf);
+    fclose(fp);
+  }
 
   /* Physically send message */
   return Send_status_msg(buf);

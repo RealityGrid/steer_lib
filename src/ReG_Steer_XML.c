@@ -123,6 +123,9 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg)
   if ( cur == 0 )return REG_FAILURE;
 
 
+  /* ARPDBG - Why don't I just call Get_message_type and use the
+     result to decide which parsing routine to call?? */
+
   if( !xmlStrcmp(cur->name, (const xmlChar *) "App_status") ){
 
     /* Record the message type */
@@ -190,6 +193,17 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg)
 #endif
     msg->chk_def = New_io_def_struct();
     parseChkTypeDef(doc, ns, cur, msg->chk_def);
+  }
+  else if( !xmlStrcmp(cur->name, (const xmlChar *) "Steer_log") ){
+
+    /* Record the message type */
+    msg->msg_type = Get_message_type((const char *)(cur->name));
+
+#if DEBUG
+    fprintf(stderr, "Parse_xml: Calling parseSteerLog...\n");
+#endif
+    msg->log = New_log_struct();
+    parseSteerLog(doc, ns, cur, msg->log);
   }
 
   /* Print out what we've got */
@@ -458,6 +472,88 @@ int parseSuppCmd(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 
 /*-----------------------------------------------------------------*/
 
+int parseSteerLog(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
+	          struct log_struct *log)
+{
+  if (!log) return REG_FAILURE;
+
+  cur = cur->xmlChildrenNode;
+  while (cur != NULL) {
+
+    if( !xmlStrcmp(cur->name, (const xmlChar *)"Log_entry") && (cur->ns==ns)){
+
+      if(!log->first_entry){
+
+	log->first_entry = New_log_entry_struct();
+	log->entry = log->first_entry;
+      }
+      else{
+	log->entry->next = New_log_entry_struct();
+	log->entry = log->entry->next;
+      }
+
+#if DEBUG
+      fprintf(stderr, "parseSteerLog: calling parseSteerLogEntry\n");
+#endif
+      parseSteerLogEntry(doc, ns, cur, log->entry);
+
+    }
+    cur = cur->next;
+  }
+  
+  return REG_SUCCESS;
+}
+
+/*-----------------------------------------------------------------*/
+
+int parseSteerLogEntry(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
+	               struct log_entry_struct *log_entry)
+{
+  int return_status = REG_SUCCESS;
+
+  if(!log_entry) return REG_FAILURE;
+
+  cur = cur->xmlChildrenNode;
+  while (cur != NULL) {
+  
+    if( !xmlStrcmp(cur->name, (const xmlChar *)"Key") && (cur->ns==ns)){
+
+      log_entry->key = xmlNodeListGetString(doc, 
+					    cur->xmlChildrenNode, 1);
+    }
+    else if(!xmlStrcmp(cur->name, (const xmlChar *)"Chk_handle")){
+
+      log_entry->chk_handle = xmlNodeListGetString(doc, 
+					    cur->xmlChildrenNode, 1);
+    }
+    else if(!xmlStrcmp(cur->name, (const xmlChar *)"Chk_tag")){
+
+      log_entry->chk_tag = xmlNodeListGetString(doc, 
+					      cur->xmlChildrenNode, 1);
+    }
+    else if(!xmlStrcmp(cur->name, (const xmlChar *)"Param")){
+
+      if(!log_entry->first_param){
+
+	log_entry->first_param = New_param_struct();
+	log_entry->param = log_entry->first_param;
+      }
+      else{
+	log_entry->param->next = New_param_struct();
+	log_entry->param = log_entry->param->next;
+      }
+
+      return_status = parseParam(doc, ns, cur, log_entry->param);
+    }
+    
+    cur = cur->next;
+  }
+
+  return return_status;
+}
+
+/*-----------------------------------------------------------------*/
+
 int parseParam(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 	       struct param_struct *param)
 {
@@ -469,7 +565,7 @@ int parseParam(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
   cur = cur->xmlChildrenNode;
   while (cur != NULL) {
 
-    if( !xmlStrcmp(cur->name, (const xmlChar *) "Handle") && (cur->ns == ns)) {
+    if( !xmlStrcmp(cur->name, (const xmlChar *)"Handle") && (cur->ns==ns)) {
 
       param->handle = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
     }
@@ -556,6 +652,7 @@ struct msg_struct *New_msg_struct()
     msg->supp_cmd = NULL;
     msg->io_def   = NULL;
     msg->chk_def  = NULL;
+    msg->log      = NULL;
   }
 
   return msg;
@@ -647,10 +744,10 @@ struct param_struct *New_param_struct()
     param->handle = NULL;
     param->label  = NULL;
     param->value  = NULL;
-    param->steerable = NULL;
-    param->type   = NULL;
+    param->steerable   = NULL;
+    param->type        = NULL;
     param->is_internal = NULL;
-    param->next   = NULL;
+    param->next        = NULL;
   }
 
   return param;
@@ -694,6 +791,45 @@ struct cmd_struct *New_cmd_struct()
 
 /*-----------------------------------------------------------------*/
 
+struct log_struct *New_log_struct()
+{
+  struct log_struct *log;
+
+  log = (struct log_struct *)malloc(sizeof(struct log_struct));
+
+  if(log){
+
+    log->first_entry = NULL;
+    log->entry       = NULL;
+  }
+
+  return log;
+}
+
+/*-----------------------------------------------------------------*/
+
+struct log_entry_struct *New_log_entry_struct()
+{
+  struct log_entry_struct *entry;
+
+  entry = (struct log_entry_struct *)
+                      malloc(sizeof(struct log_entry_struct));
+
+  if(entry){
+
+    entry->key         = NULL;
+    entry->chk_handle  = NULL;
+    entry->chk_tag     = NULL;
+    entry->param       = NULL;
+    entry->first_param = NULL;
+    entry->next        = NULL;
+  }
+
+  return entry;
+}
+
+/*-----------------------------------------------------------------*/
+
 void Delete_msg_struct(struct msg_struct *msg)
 {
 
@@ -727,6 +863,12 @@ void Delete_msg_struct(struct msg_struct *msg)
 
     Delete_io_def_struct(msg->chk_def);
     msg->chk_def = NULL;
+  }
+
+  if(msg->log){
+
+    Delete_log_struct(msg->log);
+    msg->log = NULL;
   }
 
   free(msg);
@@ -819,16 +961,22 @@ void Delete_cmd_struct(struct cmd_struct *cmd)
 
 void Delete_io_def_struct(struct io_def_struct *io_def)
 {
-  if (!io_def) return;
+/*   if (!io_def) return; */
 
-  if(io_def->first_io){
+/*   if(io_def->first_io){ */
+
+/*     Delete_io_struct(io_def->first_io); */
+/*     io_def->first_io = NULL; */
+/*     io_def->io       = NULL; */
+/*   } */
+
+/*   free (io_def); */
+
+  if(io_def){
 
     Delete_io_struct(io_def->first_io);
-    io_def->first_io = NULL;
-    io_def->io       = NULL;
+    free (io_def);
   }
-
-  free (io_def);
 }
 
 /*-----------------------------------------------------------------*/
@@ -853,9 +1001,47 @@ void Delete_param_struct(struct param_struct *param)
 
   while(param){
 
+    if (param->handle)      xmlFree(param->handle);
+    if (param->label)       xmlFree(param->label);
+    if (param->value)       xmlFree(param->value);
+    if (param->type)        xmlFree(param->type);
+    if (param->steerable)   xmlFree(param->steerable);
+    if (param->is_internal) xmlFree(param->is_internal);
+
     dum_ptr = param->next;
     free(param);
     param = dum_ptr;
+  }
+}
+
+/*-----------------------------------------------------------------*/
+
+void Delete_log_entry_struct(struct log_entry_struct *log)
+{
+  struct log_entry_struct *dum_ptr;
+
+  while(log){
+
+    xmlFree(log->key);
+    xmlFree(log->chk_handle);
+    xmlFree(log->chk_tag);
+
+    Delete_param_struct(log->first_param);
+
+    dum_ptr = log->next;
+    free(log);
+    log = dum_ptr;
+  }
+}
+
+/*-----------------------------------------------------------------*/
+
+void Delete_log_struct(struct log_struct *log)
+{
+  if(log){
+
+    Delete_log_entry_struct(log->first_entry);
+    free(log);
   }
 }
 
@@ -870,7 +1056,6 @@ void Print_msg(struct msg_struct *msg)
   }
 
   if(msg->status){
-
     fprintf(stderr, "Calling Print_status_struct...\n");
     Print_status_struct(msg->status);
     fprintf(stderr, "...done\n");
@@ -894,6 +1079,11 @@ void Print_msg(struct msg_struct *msg)
   if(msg->chk_def){
 
     Print_io_def_struct(msg->chk_def);
+  }
+
+  if(msg->log){
+
+    Print_steer_log_struct(msg->log);
   }
 
   fprintf(stderr, "Print_msg: done\n");
@@ -1031,4 +1221,45 @@ void Print_io_struct(struct io_struct   *io)
     ptr = ptr->next;
   }
   
+}
+
+/*-----------------------------------------------------------------*/
+
+void Print_steer_log_struct(struct log_struct *log)
+{
+  if (!log) return;
+
+  if(log->first_entry){
+
+    fprintf(stderr, "Log entries:\n");
+    Print_steer_log_entry_struct(log->first_entry);
+  }
+}
+
+/*-----------------------------------------------------------------*/
+
+void Print_steer_log_entry_struct(struct log_entry_struct *entry)
+{
+  struct log_entry_struct *ptr = entry;
+  int                      count = 0;
+
+  while(ptr){
+
+    fprintf(stderr, "Log entry no. %d:\n", count);
+
+    if(ptr->key)       fprintf(stderr, "  Key = %s\n", 
+			       (char *)ptr->key);
+
+    if(ptr->chk_handle)fprintf(stderr, "  Chk handle = %s\n", 
+			       (char *)ptr->chk_handle);
+
+    if(ptr->chk_tag)   fprintf(stderr, "  Chk tag = %s\n",
+			       (char *)ptr->chk_tag);
+
+    if(ptr->first_param) Print_param_struct(ptr->first_param);
+
+    count++;
+    ptr = ptr->next;
+  }
+
 }

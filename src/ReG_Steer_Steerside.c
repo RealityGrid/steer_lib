@@ -359,6 +359,30 @@ int Sim_attach(char *SimID,
     sim_ptr->Chkdef_table.io_def[i].handle = REG_IODEF_HANDLE_NOTSET;
   }
 
+  /* Logging table */
+
+  sim_ptr->Chk_log.num_entries = 0;
+  sim_ptr->Chk_log.max_entries = REG_INITIAL_CHK_LOG_SIZE;
+
+  sim_ptr->Chk_log.entry = (Chk_log_entry_type *)malloc(sim_ptr->Chk_log.max_entries
+					  *sizeof(Chk_log_entry_type));
+  if(sim_ptr->Chk_log.entry == NULL){
+
+    fprintf(stderr, "sim_attach: failed to allocate memory for log table\n");
+    free(sim_ptr->Params_table.param);
+    free(sim_ptr->Cmds_table.cmd);
+    free(sim_ptr->IOdef_table.io_def);
+    free(sim_ptr->Chkdef_table.io_def);
+    return REG_MEM_FAIL;
+  }
+
+  for(i=0; i<sim_ptr->Chk_log.max_entries; i++){
+
+    for(j=0; j<REG_MAX_NUM_STR_PARAMS; j++){
+      sim_ptr->Chk_log.entry[i].param[j].handle = REG_PARAM_HANDLE_NOTSET;
+    }
+  }
+
   /* Now we actually connect to the application */
 
   if( (strcmp(SimID, "DEFAULT") != 0) && Proxy.available){
@@ -395,36 +419,35 @@ int Sim_attach(char *SimID,
 
     /* Generate handle that is returned */
 
-    Sim_table.sim[current_sim].handle = current_sim;
+    sim_ptr->handle = current_sim;
     *SimHandle = current_sim;
     Sim_table.num_registered++;
 
     /* If simulation supports the pause command then it must also
        support the resume command so add this to the list */
 
-    for(i=0; i<Sim_table.sim[current_sim].Cmds_table.num_registered; i++){
+    for(i=0; i<sim_ptr->Cmds_table.num_registered; i++){
 
       fprintf(stderr, "Sim_attach: cmd[%d] = %d\n", i, 
-	     Sim_table.sim[current_sim].Cmds_table.cmd[i].cmd_id);
+	      sim_ptr->Cmds_table.cmd[i].cmd_id);
 
-      if(Sim_table.sim[current_sim].Cmds_table.cmd[i].cmd_id == REG_STR_PAUSE){
+      if(sim_ptr->Cmds_table.cmd[i].cmd_id == REG_STR_PAUSE){
 	
-	j = Sim_table.sim[current_sim].Cmds_table.num_registered;
+	j = sim_ptr->Cmds_table.num_registered;
 
 	/* Check that we aren't about to exceed allocated storage */
 
-	if(j == Sim_table.sim[current_sim].Cmds_table.max_entries){
+	if(j == sim_ptr->Cmds_table.max_entries){
 
-	  new_size = Sim_table.sim[current_sim].Cmds_table.max_entries +
+	  new_size = sim_ptr->Cmds_table.max_entries +
 	             REG_INITIAL_NUM_CMDS;
 
-	  dum_ptr = (void *)realloc(Sim_table.sim[current_sim].Cmds_table.cmd,
+	  dum_ptr = (void *)realloc(sim_ptr->Cmds_table.cmd,
 				    new_size*sizeof(supp_cmd_entry));
 
 	  if(dum_ptr){
-	    Sim_table.sim[current_sim].Cmds_table.cmd = 
-	      (supp_cmd_entry *)dum_ptr;
-	    Sim_table.sim[current_sim].Cmds_table.max_entries = new_size;
+	    sim_ptr->Cmds_table.cmd = (supp_cmd_entry *)dum_ptr;
+	    sim_ptr->Cmds_table.max_entries = new_size;
 	  }
 	  else{
 
@@ -433,17 +456,19 @@ int Sim_attach(char *SimID,
 	    return REG_FAILURE;
 	  }
 	}
-	Sim_table.sim[current_sim].Cmds_table.cmd[j].cmd_id = REG_STR_RESUME;
-	Sim_table.sim[current_sim].Cmds_table.num_registered++;
+	sim_ptr->Cmds_table.cmd[j].cmd_id = REG_STR_RESUME;
+	sim_ptr->Cmds_table.num_registered++;
 	break;
       }
     }
   }
   else{
 
-    free(Sim_table.sim[current_sim].Params_table.param);
-    free(Sim_table.sim[current_sim].Cmds_table.cmd);
-    free(Sim_table.sim[current_sim].IOdef_table.io_def);
+    free(sim_ptr->Params_table.param);
+    free(sim_ptr->Cmds_table.cmd);
+    free(sim_ptr->IOdef_table.io_def);
+    free(sim_ptr->Chkdef_table.io_def);
+    free(sim_ptr->Chk_log.entry);
   }
 
   return return_status;
@@ -952,6 +977,92 @@ int Consume_ChkType_defs(int SimHandle)
 
 /*----------------------------------------------------------*/
 
+int Consume_log(int SimHandle)
+{
+  int index;
+  int count;
+  Sim_entry_type          *sim;
+  struct param_struct     *param_ptr;
+  struct log_entry_struct *entry_ptr;
+
+  int return_status = REG_SUCCESS;
+
+  if( (index = Sim_index_from_handle(SimHandle)) == 
+                                          REG_SIM_HANDLE_NOTSET){
+
+    fprintf(stderr, "Consume_log: failed to find sim table entry\n");
+    return REG_FAILURE;
+  }
+
+  sim = &(Sim_table.sim[index]);
+  index = sim->Chk_log.num_entries;
+
+  /* Get_next_message has already parsed the (xml) message and stored
+     it in the structure pointed to by sim->msg */
+
+  if(!sim->msg->log){
+
+    return REG_FAILURE;
+  }
+  if(!(entry_ptr = sim->msg->log->first_entry)){
+
+    return REG_FAILURE;
+  }
+
+  while(entry_ptr){
+
+    if(entry_ptr->key){
+
+      sscanf((char *)entry_ptr->key, "%d", 
+	     &(sim->Chk_log.entry[index].key));
+    }
+    if(entry_ptr->chk_handle){
+
+      sscanf((char *)entry_ptr->chk_handle, "%d", 
+	     &(sim->Chk_log.entry[index].chk_handle));
+    }
+    if(entry_ptr->chk_tag){
+
+      strcpy(sim->Chk_log.entry[index].chk_tag, 
+	     (char *)entry_ptr->chk_tag);
+    }
+
+    param_ptr = entry_ptr->first_param;
+    count = 0;
+
+    while(param_ptr){
+
+      sscanf((char *)(param_ptr->handle), "%d", 
+	     &(sim->Chk_log.entry[index].param[count].handle));
+
+      strcpy(sim->Chk_log.entry[index].param[count].value,
+	     (char *)(param_ptr->value));
+
+      param_ptr = param_ptr->next;
+
+      if(++count >= REG_MAX_NUM_STR_PARAMS){
+
+	fprintf(stderr, "Consume_log: WARNING: discarding parameter "
+		"because max. no. of %d exceeded\n", 
+		REG_MAX_NUM_STR_PARAMS);
+	break;
+      }
+    }
+
+    if(Increment_log_entry(&(sim->Chk_log)) != REG_SUCCESS){
+
+      return_status = REG_FAILURE;
+      break;
+    }
+    index++;
+    entry_ptr = entry_ptr->next;
+  }
+
+  return return_status;
+}
+
+/*----------------------------------------------------------*/
+
 int Consume_status(int   SimHandle,
 		   int  *SeqNum,
 		   int  *NumCmds,
@@ -1288,6 +1399,11 @@ int Delete_sim_table_entry(int *SimHandle)
   entry->Chkdef_table.max_entries = 0;
   if (entry->Chkdef_table.io_def) free(entry->Chkdef_table.io_def);
   entry->Chkdef_table.io_def = NULL;
+
+  entry->Chk_log.num_entries = 0;
+  entry->Chk_log.max_entries = 0;
+  if (entry->Chk_log.entry) free(entry->Chk_log.entry);
+  entry->Chk_log.entry = NULL;
 
   /* Flag that this entry no longer contains valid data */
 
@@ -2182,6 +2298,166 @@ int Get_supp_cmds(int  sim_handle,
   }
 
   return return_status;
+}
+/*-------------------------------------------------------------------*/
+
+int Get_chk_log_number(int   sim_handle,
+		       int   chk_handle,
+		       int  *num_entries)
+{
+  int i;
+  int isim;
+  int return_status = REG_SUCCESS;
+
+  *num_entries = 0;
+
+  if((isim = Sim_index_from_handle(sim_handle)) != -1){
+
+    for(i=0; i<Sim_table.sim[isim].Chk_log.num_entries; i++){
+
+      if(Sim_table.sim[isim].Chk_log.entry[i].chk_handle == chk_handle){
+
+	(*num_entries)++;
+      }
+    }
+  }
+  else{
+
+    return_status = REG_FAILURE;
+  }
+
+  return return_status;
+}
+
+/*-------------------------------------------------------------------*/
+
+int Get_chk_log_entries(int                 sim_handle,
+			int                 chk_handle,
+			int                 num_entries,
+			Output_log_struct  *entries)
+{
+  int i;
+  int isim;
+  int count;
+  Sim_entry_type *sim;
+  int return_status = REG_SUCCESS;
+
+  if(!entries) return REG_FAILURE;
+
+  if((isim = Sim_index_from_handle(sim_handle)) != -1){
+
+    sim = &(Sim_table.sim[isim]);
+    count = 0;
+
+    for(i=0; i<sim->Chk_log.num_entries; i++){
+
+      if(sim->Chk_log.entry[i].chk_handle == chk_handle){
+
+	Get_log_entry_details(&(sim->Params_table),
+			      &(sim->Chk_log.entry[i]),
+			      &(entries[count]));
+
+	count++;
+	if (count >= num_entries) break;
+      }
+    }
+  }
+  else{
+
+    return_status = REG_FAILURE;
+  }
+
+  return return_status;
+}
+
+/*-------------------------------------------------------------------*/
+
+int Get_chk_log_entries_reverse(int                 sim_handle,
+				int                 chk_handle,
+				int                 num_entries,
+				Output_log_struct  *entries)
+{
+  int i;
+  int isim;
+  int count;
+  int return_status = REG_SUCCESS;
+  Sim_entry_type *sim;
+
+  if(!entries) return REG_FAILURE;
+
+  if((isim = Sim_index_from_handle(sim_handle)) != -1){
+
+    sim = &(Sim_table.sim[isim]);
+    count = 0;
+
+    for(i=(sim->Chk_log.num_entries - 1); i>=0; i--){
+
+      if(sim->Chk_log.entry[i].chk_handle == chk_handle){
+
+	Get_log_entry_details(&(sim->Params_table),
+			      &(sim->Chk_log.entry[i]),
+			      &(entries[count]));
+
+	/*
+	index = IOdef_index_from_handle(&(sim->Chk_log), chk_handle);
+
+	if(index == -1){
+	  fprintf(stderr, "Get_chk_log_entries_reverse: error - failed"
+		  " to match chk handle: %d\n", chk_handle);
+	}
+	else{
+	  sim->Chk_log.io_def[index].
+	}
+	*/
+
+	count++;
+	if (count >= num_entries) break;
+      }
+    }
+  }
+  else{
+
+    return_status = REG_FAILURE;
+  }
+
+  return return_status;
+}
+
+/*-------------------------------------------------------------------*/
+
+int Get_log_entry_details(Param_table_type *param_table,
+			  Chk_log_entry_type *in,
+			  Output_log_struct  *out)
+{
+  int i;
+  int index;
+
+  strcpy(out->chk_tag, in->chk_tag);
+
+  for(i=0; i<REG_MAX_NUM_STR_PARAMS; i++){
+
+    if(in->param[i].handle == REG_PARAM_HANDLE_NOTSET) break;
+
+    index = Param_index_from_handle(param_table, 
+				    in->param[i].handle);
+
+    if(index == -1){
+      fprintf(stderr, "Get_log_entry_details: error - failed"
+	      " to match param handle: %d\n", 
+	      in->param[i].handle);
+      continue;
+    }
+
+    strcpy(out->param_labels[i], 
+	   param_table->param[index].label);
+
+    strcpy(out->param_values[i],
+	   in->param[i].value);
+
+  }
+  out->num_param = i;
+
+  return REG_SUCCESS;
 }
 
 /*-------------------------------------------------------------------*/
