@@ -84,6 +84,8 @@
 		    minOccurs="1" maxOccurs="1" />
 		<xs:element name="Freq_handle" type="xs:integer"
 		    minOccurs="0" maxOccurs="1" />
+		<xs:element name="Address" type="xs:token"
+		    minOccurs="0" maxOccurs="1" />
 	</xs:sequence>
 </xs:complexType>
 
@@ -100,6 +102,10 @@
 		<xs:element name="Value" type="xs:token" 
 	            minOccurs="0" maxOccurs="1" />	
 		<xs:element name="Is_internal" type="xs:token" 
+	            minOccurs="0" maxOccurs="1" />	
+		<xs:element name="Min_value" type="xs:token" 
+	            minOccurs="0" maxOccurs="1" />	
+		<xs:element name="Max_value" type="xs:token" 
 	            minOccurs="0" maxOccurs="1" />	
 	</xs:sequence>
 </xs:complexType>
