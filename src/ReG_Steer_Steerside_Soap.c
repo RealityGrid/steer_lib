@@ -39,7 +39,6 @@
 #include "ReG_Steer_Steerside.h"
 #include "ReG_Steer_Steerside_internal.h"
 #include "ReG_Steer_Steerside_Soap.h"
-#include "soapH.h"
 #include "soapSGS.nsmap"
 
 static struct soap soap;
