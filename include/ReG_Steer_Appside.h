@@ -169,35 +169,59 @@ extern PREFIX int Make_vtk_buffer(char  *header,
 				  double c,
 				  float *array);
 
+/* Activate the globus IO module if it hasn't already been activated */
 extern PREFIX int Globus_io_activate(void);
 
+/* Deactivate the globus module if it was ever activated */
 extern PREFIX void Globus_io_deactivate(void);
 
+/* Initialise Globus_callback_monitor structure - this is member of 
+   IOdef_entry structure in in IOTypes_table */
 extern PREFIX void Globus_monitor_init(const int index);
 
+/* Kick the Globus callback mechanism */
 extern PREFIX void Globus_callback_poll(const int index);
 
+
+/* Register listener callback function Globus_listener_callback on any
+   available port (within GLOBUS_TCP_PORT_RANGE environment varaible
+   if set) */
 extern PREFIX int Globus_create_listener(unsigned short int	*port,
 					 int			*index);
 
+/* The callback function called when connector connects to socket -
+   this function accepts the connection - the function is executed
+   when kicked via a call to Globus_callback_poll, thus there could be
+   time delay between connection being made and connection being
+   accepted */
 extern PREFIX void Globus_listener_callback (void		*callback_arg,
 					     globus_io_handle_t	*handle,
 					     globus_result_t	result);
 
+
+/* Register callback function Globus_connector_callback to attempt to
+   connect using globals connector_hostname and connector_port - use
+   of globals will be removed eventually */
 extern PREFIX int Globus_create_connector(int			*index);
 
+
+/* The connector callback function - this callback is kicked within Globus_create_connector
+   as is called immediately after registration to attempt a connect */
 extern PREFIX void Globus_connector_callback (void			*callback_arg,
 					      globus_io_handle_t	*handle,
 					      globus_result_t		result);
 
-
+/* Close and clean up a listener connection */
 extern PREFIX void Globus_close_listener_connections(const int index);
 
-
+/* Close and clean up a connector connection */
 extern PREFIX void Globus_close_connector_connection(const int index);
 
+/* Call globus funtions to cancel and close connections for the given handle */
 extern PREFIX void Globus_close_connection(globus_io_handle_t	*conn_handle);
 
+/* Callback function for globus_io_register_cancel in
+   Globus_close_connection - this does nothing - hopefully we can remove it */
 extern PREFIX void Globus_cancel_callback (void			*callback_arg,
 					   globus_io_handle_t	*handle,
 					   globus_result_t	resultparam);
