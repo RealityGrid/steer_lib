@@ -44,6 +44,13 @@
 /* Flag for debugging - set to one to retain all xml messages */
 #define NO_FILE_DELETE 0
 
+/* UNICORE_DEMO must be defined in order to produce a steering lib
+   compatible with the UNICORE steering demonstration framework.
+   Only consequence is that the status files emitted by the application
+   are all called 'steer_status' and not indexed - i.e. some output will 
+   be lost if the status files are not consumed sufficiently rapidly */
+/*#define UNICORE_DEMO*/
+
 /* The namespace used for steering messages (which are in xml) */
 #define REG_STEER_NAMESPACE "http://www.realitygrid.org/xml/steering"
 
@@ -100,7 +107,7 @@
 /* Limit on number of files used in communication - filenames
    wrap back on themselves once this limit reached */
 
-#define REG_MAX_NUM_FILES 100
+#define REG_MAX_NUM_FILES 6
 
 /* Maximum length for any string */
 
@@ -167,8 +174,9 @@ typedef int REG_IOHandleType;
 
 /* Definitions used in communicating with the java proxy */
 
+#define REG_MAX_LINE_LEN 256
 #define REG_MAX_MSG_SIZE BUFSIZ
-#define REG_HEADER_BYTES 4
+/*#define REG_HEADER_BYTES 4*/
 #define REG_PIPE_UNSET   -1
 
 #endif /* __REG_TYPES_INCLUDED defined */

@@ -34,6 +34,7 @@
 ---------------------------------------------------------------------------*/
 
 #include "ReG_Steer_Common.h"
+#include "ReG_Steer_XML.h"
 
 /*--------- Prototypes of internal library functions -------------*/
 

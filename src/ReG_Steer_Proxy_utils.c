@@ -120,7 +120,7 @@ int Create_proxy(int *to_proxy, int *from_proxy)
     if( (status = dup(pipe_to_proxy[0])) != stdin_fd){
 
       fprintf(stderr, "Failed to attach to stdin, status = %d\n", status);
-      Send_proxy_message(pipe_from_proxy[1], "ERROR");
+      Send_proxy_message(pipe_from_proxy[1], ERR_MSG);
       exit(1);
     }
 
@@ -132,7 +132,7 @@ int Create_proxy(int *to_proxy, int *from_proxy)
     if( (status = dup(pipe_from_proxy[1])) != stdout_fd){
 
       fprintf(stderr, "Failed to attach to stdout, status = %d\n", status);
-      Send_proxy_message(pipe_from_proxy[1], "ERROR");
+      Send_proxy_message(pipe_from_proxy[1], ERR_MSG);
       exit(1);
     }
 
@@ -143,7 +143,7 @@ int Create_proxy(int *to_proxy, int *from_proxy)
     /* If execlp returned then it failed... */
     fprintf(stderr, "Create_proxy: execv failed...\n");
 
-    Send_proxy_message(pipe_from_proxy[1], "ERROR");
+    Send_proxy_message(pipe_from_proxy[1], ERR_MSG);
     exit(1);
   }
   else{
@@ -152,7 +152,7 @@ int Create_proxy(int *to_proxy, int *from_proxy)
     /* Check that proxy has launched OK */
     Get_proxy_message(pipe_from_proxy[0], msg, &nbytes);
 
-    if(strcmp(msg, "ERROR") == 0){
+    if(strncmp(msg, ERR_MSG, nbytes) == 0){
 
       return REG_FAILURE;
     }
@@ -174,9 +174,44 @@ int Send_proxy_message(int pipe_to_proxy, const char *buf)
 {
   int   nbytes;
   int   buf_len;
-  char *len;
+  int   foot_len;
+  int   tot_len;
+  char *complete_msg;
+  char  footer[REG_MAX_STRING_LENGTH];
 
-  /* Send how many bytes... */
+  buf_len = strlen(buf);
+
+  /* Messages are done in terms of lines so make sure we end in '\n'
+     (END_OF_MSG includes a '\n') */
+  if(buf[buf_len-1] != '\n'){
+
+    sprintf(footer, "\n%s", END_OF_MSG);
+  }
+  else{
+
+    strcpy(footer, END_OF_MSG);
+  }
+    
+  foot_len = strlen(footer);
+  tot_len  = buf_len + foot_len;
+
+  complete_msg = (char *)malloc(tot_len);
+
+  strcpy(complete_msg, buf);
+  strcpy(&(complete_msg[buf_len]), footer);
+
+  nbytes = write(pipe_to_proxy, complete_msg, tot_len);
+
+  free(complete_msg);
+
+  if(nbytes != tot_len){
+
+    fprintf(stderr, "Send_proxy_message: error writing to pipe\n");
+    return REG_FAILURE;
+  }
+
+  /*
+  * Send how many bytes... *
   buf_len = strlen(buf);
   len = (char *) &buf_len;
 
@@ -188,7 +223,7 @@ int Send_proxy_message(int pipe_to_proxy, const char *buf)
     return REG_FAILURE;
   }
 
-  /* Send the message itself */
+  * Send the message itself *
   nbytes = write(pipe_to_proxy, buf, buf_len);
 
   if(nbytes != buf_len){
@@ -196,6 +231,7 @@ int Send_proxy_message(int pipe_to_proxy, const char *buf)
     fprintf(stderr, "Send_proxy_message: error writing to pipe\n");
     return REG_FAILURE;
   }
+  */
 
   return REG_SUCCESS;
 }
@@ -204,10 +240,10 @@ int Send_proxy_message(int pipe_to_proxy, const char *buf)
 
 int Get_proxy_message(int pipe_from_proxy, char *buf, int *nbytes)
 {
-  int  i;
-  int *int_ptr;
-  int  num_recvd;
-  char rubbish;
+  char *pbuf;
+  char  line_buf[REG_MAX_LINE_LEN];
+  int   count;
+  int   len;
 
   /* Routine assumes buf points to a large enough buffer to receive
      message */
@@ -217,47 +253,97 @@ int Get_proxy_message(int pipe_from_proxy, char *buf, int *nbytes)
     return REG_FAILURE;
   }
 
+  /* Wipe buffer to avoid confusion */
+  memset(buf, 0, REG_MAX_MSG_SIZE);
+
   /* Block until message received */
-  while( (*nbytes = read(pipe_from_proxy, buf, REG_HEADER_BYTES)) == 0){
+#if DEBUG
+  fprintf(stderr, "Get_proxy_message: waiting for msg from proxy...\n");
+#endif
+
+  while( (len = getline(line_buf, REG_MAX_LINE_LEN, pipe_from_proxy)) == 0){
 
     sleep(1);
     fprintf(stderr, ".");
   }
  
-  if(*nbytes == -1){
+  if(len == -1){
 
     fprintf(stderr, "Get_proxy_message: error reading from pipe\n");
     return REG_FAILURE;
   }
 
-  int_ptr = (int *)buf;
-  *nbytes = *int_ptr;
+  /*ARPDBG*/
+  fprintf(stderr, "Get_proxy_message: got: <%s>\n", line_buf);
 
-  if(*nbytes > REG_MAX_MSG_SIZE){
+  pbuf  = buf;
+  count = 0;
 
-    fprintf(stderr, "Get_proxy_message: WARNING: truncating message\n");
- 
-    read(pipe_from_proxy, buf, REG_MAX_MSG_SIZE);
+  while(strncmp(line_buf, END_OF_MSG, strlen(END_OF_MSG))){
 
-    /* Throw-away rest of message */
-    for(i=0; i<(*nbytes - REG_MAX_MSG_SIZE); i++){
 
-      read(pipe_from_proxy, &rubbish, 1);
+    if((count+len) < REG_MAX_MSG_SIZE){
+
+      count += len;
+      strcpy(pbuf, line_buf);
+
+      pbuf += len;
     }
-  }
-  else{
 
-    if( (num_recvd = read(pipe_from_proxy, buf, *nbytes)) != *nbytes ){
+    /* Get the next line - exit if EOF or error */
+    len = getline(line_buf, REG_MAX_LINE_LEN, pipe_from_proxy);
 
-      fprintf(stderr, "Get_proxy_message: failed to read message\n");
-      *nbytes = num_recvd;
+    /*ARPDBG*/
+    fprintf(stderr, "Get_proxy_message: got: <%s>\n", line_buf);
+
+    if(len == 0){
+
+      fprintf(stderr, "Get_proxy_message: hit EOD while reading message\n");
+      return REG_FAILURE;
+    }
+    else if(len == -1){
+
+      fprintf(stderr, "Get_proxy_message: hit error while reading message\n");
       return REG_FAILURE;
     }
   }
+
+  if(count >= REG_MAX_MSG_SIZE){
+
+    fprintf(stderr, "Get_proxy_message: WARNING: truncating message\n");
+    return REG_FAILURE;
+  }
+
+  *nbytes = count;
 
 #if DEBUG
   fprintf(stderr, "Get_proxy_message: received: %s\n", buf);
 #endif
 
   return REG_SUCCESS;
+}
+
+/*-------------------------------------------------------------*/
+
+/* Routine taken from Kernighan and Ritchie, slightly tweaked */
+
+int getline(char s[], int lim, int fd)
+{
+  int n, i;
+  char c;
+
+  i = 0;
+
+  while(--lim > 0 && (n=read(fd, &c, 1)) == 1 && c != '\n')
+    s[i++] = c;
+
+  if(n == -1)
+     return -1;
+
+  if(c == '\n')
+    s[i++] = c;
+
+  s[i] = '\0';
+
+  return i;
 }

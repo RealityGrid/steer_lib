@@ -30,6 +30,7 @@ public class ReG_Steer_Proxy {
     private static final int REG_SUCCESS   = 0;
     private static final int REG_FAILURE   = 1;
 
+    private static final String END_OF_MSG     = "END_OF_MSG";
     private static final String OK_MSG         = "STATUS_OK";
     private static final String ERR_MSG        = "ERROR";
     private static final String ATTACH_MSG     = "ATTACH";
@@ -62,17 +63,43 @@ public class ReG_Steer_Proxy {
    time a file is written and limited to 0 <= n <= REG_MAX_NUM_FILES-1 */
     private static final String  STR_TO_APP_FILENAME = "control_info";
 
-    private static IRegistry		gs_registry	 = null;
-    private static IHandleMap		handlemap	 = null;
-    private static IGridServiceFactory	factory		 = null;
-    private static Context 		context 	 = null;
+    private  IRegistry		  gs_registry	 = null;
+    private  IHandleMap		  handlemap	 = null;
+    private  IGridServiceFactory  factory	 = null;
+    private  Context 		  context 	 = null;
     // The application being steered
-    private static ISteeringGridService app	         = null;
+    private  ISteeringGridService app	         = null;
 
-    private static String recvd_msg;
+    private  InputStreamReader    isReader       = null;
+    private  BufferedReader       pipeReader     = null;
+    private  String               recvd_msg;
 
     //-------------------------------------------------------
    
+    protected void finalize() throws Throwable {
+
+	super.finalize();
+
+	try{
+	    if(pipeReader != null){
+
+		pipeReader.close();
+	    }
+
+	    if(isReader != null){
+
+		isReader.close();
+	    }
+	}
+	catch(IOException ioe){
+
+	    System.err.println("proxy.finalize: error closing readers: "
+			       +ioe);
+	}
+    }
+
+    //-------------------------------------------------------
+
     public static void main ( String[] args) throws Exception {
 
        int    nparam;
@@ -139,7 +166,7 @@ public class ReG_Steer_Proxy {
        }
 
        String registry_contents = gs_registry.registryQuery();
-       System.err.println ("Registry Contents : \n" + registry_contents);
+       //System.err.println ("Registry Contents : \n" + registry_contents);
         
        // 2.2 Find and start a Grid Service Factory. There will be only one.
         
@@ -154,7 +181,12 @@ public class ReG_Steer_Proxy {
            factory_gsh = registry_contents.substring(i_start,i_end);
        }
        startFactory (factory_gsh);
-	
+       
+       // Create a buffered reader for getting messages from the
+       // incoming pipe
+       isReader   = new InputStreamReader(System.in);
+       pipeReader = new BufferedReader(isReader);
+
        return REG_SUCCESS;
     }
 
@@ -202,8 +234,14 @@ public class ReG_Steer_Proxy {
     }
 
     //-------------------------------------------------------
+    // Attach to a running SteeringGridService.
+    // Currently does not check whether or not the service is
+    // already being steered.
 
     private int attach() {
+
+	// ARPDBG
+	System.err.println("attach: entered routine");
 
 	try{
 
@@ -221,14 +259,27 @@ public class ReG_Steer_Proxy {
 						    ISteeringGridService.class,
 						    context);
 
+	    // Clean up any existing files
+	    // app.removeFiles("steer_status");
+
+	    // Signal app that it is now being steered
+	    app.sendFile(STR_CONNECTED_FILENAME, " ");
+
+	    // ARPDBG - ugly ugly. Give the app a chance to spot that steerer
+	    // has attached and thus write necessary files (otherwise getFile
+	    // will fail).
+	    Thread.sleep(2000);
+
 	    // Get the commands that the app. supports
 	    String supp_cmds = app.getFile(APP_STEERABLE_FILENAME, false);
 
 	    System.err.println("attach: got commands:\n"+supp_cmds);
 
-	    // Signal app that it is now being steered
-	    app.sendFile(STR_CONNECTED_FILENAME, " ");
+	    // Tell steerer that everything is hunkydory
+	    sendMessage(OK_MSG);
 
+	    // Send list of commands (as raw xml) back to steerer
+	    sendMessage(supp_cmds);
 	}
 	catch(Exception e){
 
@@ -238,9 +289,6 @@ public class ReG_Steer_Proxy {
 	    sendMessage(ERR_MSG);
 	    return REG_FAILURE;
 	}
-
-	// Tell steerer that everything is hunkydory
-	sendMessage(OK_MSG);
 
 	return REG_SUCCESS;
     }
@@ -279,27 +327,27 @@ public class ReG_Steer_Proxy {
 
 	    if((status = getMessage()) == REG_FAILURE) break;
 
-	    if (recvd_msg.trim().compareTo("QUIT") == 0){
+	    if (recvd_msg.trim().compareTo(QUIT_MSG) == 0){
 
 		break;
 	    }
-	    else if (recvd_msg.trim().compareTo("GET_APPS") == 0){
+	    else if (recvd_msg.trim().compareTo(GET_APPS_MSG) == 0){
 
 		getApps();		
 	    }
-	    else if (recvd_msg.trim().compareTo("GET_STATUS") == 0){
+	    else if (recvd_msg.trim().compareTo(GET_STATUS_MSG) == 0){
 
 		getStatus();
 	    }
-	    else if (recvd_msg.trim().compareTo("SEND_CTRL") == 0){
+	    else if (recvd_msg.trim().compareTo(SEND_CTRL_MSG) == 0){
 
 		sendControl();
 	    }
-	    else if (recvd_msg.trim().compareTo("ATTACH") == 0){
+	    else if (recvd_msg.trim().compareTo(ATTACH_MSG) == 0){
 
 		attach();
 	    }
-	    else if (recvd_msg.trim().compareTo("DETACH") == 0){
+	    else if (recvd_msg.trim().compareTo(DETACH_MSG) == 0){
 
 		detach();
 	    }
@@ -310,61 +358,55 @@ public class ReG_Steer_Proxy {
 
     private int getMessage() {
 
-	StringBuffer buf = new StringBuffer();
-	int    c;
-	int    len;
-	int    i;
-	byte[] b;
+	// pipeReader should have been created in init()
+
+	if(pipeReader == null){
+
+	    System.err.println("getMessage: reader not initialised");
+	    return REG_FAILURE;
+	}
 
 	try{
 
-	    // Wait for a message telling us how many bytes
-	    // to receive
-	    while( (c = System.in.read()) == 0){
+            String  contents = new String();
+            boolean done     = false;
+            String  line;
 
-		Thread.sleep(250);
-	    }
+            do {
+                try {
+                    line=pipeReader.readLine();
 
-	    if(c == -1){
-		return 1;
-	    }
+                    if (line != null) {
 
-	    // Allocate memory for message
+			if(line.equals(END_OF_MSG)){
+			    done=true;
+			}
+			else{
+			    System.err.println("getMessage: got: "+line);
+			    contents += line+"\n";
+			}
+                    } 
+		    else {
+                        done=true;
+                    }
+                } 
+		catch (java.io.EOFException e) {
+                    done=true;
+                }
+            } while (!done);
 
-	    b = new byte[c];
-
-	    // Read the specified no. of bytes
-
-	    System.in.read(b, 0, c);
-
-	    // Convert from bytes to a string
-
-	    if( (len = buf.length()) > 0){
-
-		buf.delete(0, len);
-	    }
-
-	    buf.append((char)(b[0]));
-	    for(i=1; i<c; i++){
-
-		buf.append((char)(b[i]));
-	    }
-
-	    // Set class member variable to msg just received
-	    recvd_msg = buf.toString();
+	    // Set class member variable to msg just received minus the
+	    // final new-line character
+	    recvd_msg = contents.substring(0, (contents.length()-1));
 
 	    System.err.println("Got string: " + recvd_msg);
 
-	    return 0;
+	    return REG_SUCCESS;
 
 	}
 	catch(IOException e){
 
-	    return 1;
-	}
-	catch(InterruptedException e){
-
-	    return 1;
+	    return REG_FAILURE;
 	}
     }
 
@@ -372,13 +414,35 @@ public class ReG_Steer_Proxy {
 
     private int sendMessage(String msg) throws NegativeArraySizeException {
 
-	int     len;
-       	byte[]  b;
+	int          len;
+       	byte[]       b;
+	final String END_OF_LINE = new String(new byte[] {'\n'});
+	StringBuffer fullMsg = new StringBuffer();
 
 	try{
 	    // Send message to process that launched this one using the
 	    // (redirected) stdout pipe
 
+	    fullMsg.append(msg);
+
+	    // Ensure that message ends in a new-line character
+	    if( !msg.endsWith(END_OF_LINE) ){
+
+		fullMsg.append(END_OF_LINE);
+		//System.out.println("");
+		System.err.println("sendMessage: adding new-line char");
+	    }
+
+	    // Flag the end of the message
+
+	    fullMsg.append(END_OF_MSG+"\n");
+	    //System.out.println(END_OF_MSG);
+
+	    System.out.print(fullMsg.toString());
+	    System.err.println("sendMessage: sending <"+fullMsg.toString()+">");
+
+	    //System.out.flush();
+	    /*
 	    // Get no. of characters in string
 	    len = msg.length();
 
@@ -393,10 +457,14 @@ public class ReG_Steer_Proxy {
 	    // to ensure that we send four bytes
 	    DataOutputStream outstream = new DataOutputStream(System.out);
 
+	    //ARPDBG
+	    System.err.println("sendMsg: sending "+len+" bytes to steerer");
+
 	    outstream.writeInt(len);
 
 	    // Send string itself
 	    System.out.write(b, 0, len);
+	    */
 	}
 	catch(Exception e){
 
@@ -410,10 +478,10 @@ public class ReG_Steer_Proxy {
     /*
      * Start the handle mapper, if necessary.
      */
-    private static int startHandleMap () {
+    private int startHandleMap () {
     
-        if (handlemap == null ) { // First time there is no handle 
-	                          // mapper accessable.
+        if (this.handlemap == null ) { // First time there is no handle 
+	                               // mapper accessable.
             try {
             
                 // We can construct the Home Handle Mapper endpoint from the 
@@ -423,8 +491,8 @@ public class ReG_Steer_Proxy {
                 String mapper_endpoint = gsh.substring(0,gsh.lastIndexOf('/'))+
 		    "/handleMap.wsdl";
 
-                handlemap = (IHandleMap) Registry.bind (mapper_endpoint, 
-							IHandleMap.class, 
+                this.handlemap = (IHandleMap) Registry.bind (mapper_endpoint, 
+							     IHandleMap.class, 
 							context);
             }
             catch (RegistryException ex) {
@@ -443,7 +511,7 @@ public class ReG_Steer_Proxy {
     /*
      * Start the registry, if necessary.
      */
-    private static int startRegistry (String gsh) {
+    private int startRegistry (String gsh) {
     
         if (gs_registry == null) {
             try {
@@ -452,7 +520,7 @@ public class ReG_Steer_Proxy {
 		    return REG_FAILURE;
 		}
 
-                GridServiceReference gsr = handlemap.findByHandle (gsh);
+                GridServiceReference gsr = this.handlemap.findByHandle (gsh);
 
                 String registry_endpoint = gsr.getEndpoint();
 
@@ -483,25 +551,23 @@ public class ReG_Steer_Proxy {
     /**
      * Start the factory, if necessary.
      */
-    private static void startFactory (String gsh) {
+    private void startFactory (String gsh) throws Exception {
     
         if (factory == null ) { // First time there is no factory accessable.
             try {
-                GridServiceReference gsr = handlemap.findByHandle (gsh);
-                String factory_endpoint = gsr.getEndpoint();
+                GridServiceReference gsr = this.handlemap.findByHandle (gsh);
+                String factory_endpoint  = gsr.getEndpoint();
                 System.err.println ("Binding to Factory....");
                 factory = (IGridServiceFactory) Registry.bind(factory_endpoint,
 					        IGridServiceFactory.class, 
 							      context);
             }
             catch (RegistryException ex) {
-                System.err.println ("Problems connecting to factory: "+ex);
-                // ARPDBG System.exit(1);
+                throw new Exception("Problems connecting to factory: "+ex);
             }
             catch (GridServiceException ex) {
-                System.err.println ("Can't find factory <"+gsh+
+                throw new Exception("Can't find factory <"+gsh+
 				    "> at handle map: "+ex);
-                // ARPDBG System.exit(1);
             }
         }
     }
@@ -522,14 +588,17 @@ public class ReG_Steer_Proxy {
 
 	try{
 
-	    String status_xml = app.getStatusFile();
+	    //String status_xml = app.getStatusFile();
+	    String status_xml = app.getFile("status_info", true);
+	    sendMessage(OK_MSG);
 	    sendMessage(status_xml);
-
 	}
 	catch(GridServiceException e){
 
+	    // There won't always be a status file for us to
+	    // get so this isn't really a failure
 	    System.err.println(e.getMessage());
-	    return REG_FAILURE;
+	    sendMessage(ERR_MSG);
 	}
 
 	return REG_SUCCESS;
@@ -544,20 +613,22 @@ public class ReG_Steer_Proxy {
 	// Get control message to send from steerer
 	status = getMessage();
 
-	if(app == null){
-
-	    System.err.println("sendControl: not attached to an app");
-	    return REG_FAILURE;
-	}
-
 	try{
+	    if(app == null){
+
+		throw new GridServiceException("sendControl: not attached "+
+					       "to an app");
+	    }
 
 	    // Send it to the attached application
 	    app.sendControlFile(recvd_msg);
+
+	    sendMessage(OK_MSG);
 	}
 	catch(GridServiceException e){
 
 	    System.err.println(e.getMessage());
+	    sendMessage(ERR_MSG);;
 	    return REG_FAILURE;
 	}
 
@@ -603,7 +674,7 @@ public class ReG_Steer_Proxy {
 
 	    for(i=0; i<gsh_array.length; i++){
 
-		gsr_array[i] = handlemap.findByHandle (gsh_array[i]);
+		gsr_array[i] = this.handlemap.findByHandle (gsh_array[i]);
 
 		implementation = gsr_array[i].getImplementation();
 

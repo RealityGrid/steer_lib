@@ -37,6 +37,23 @@
 
 #include "ReG_Steer_types.h"
 
+/*-----------------------------------------------------------------*/
+
+/* Messages used to communicate with proxy steerer - these MUST
+   MATCH the definitions in ReG_Steer_Proxy.java */
+
+static char *END_OF_MSG     = "END_OF_MSG\n";
+static char *OK_MSG         = "STATUS_OK\n";
+static char *ERR_MSG        = "ERROR\n";
+static char *ATTACH_MSG     = "ATTACH\n";
+static char *DETACH_MSG     = "DETACH\n";
+static char *QUIT_MSG       = "QUIT\n";
+static char *GET_APPS_MSG   = "GET_APPS\n";
+static char *GET_STATUS_MSG = "GET_STATUS\n";
+static char *SEND_CTRL_MSG  = "SEND_CTRL\n";
+
+/*-----------------------------------------------------------------*/
+
 int Create_proxy(int *to_proxy, int *from_proxy);
 
 int Destroy_proxy(int pipe_to_proxy);

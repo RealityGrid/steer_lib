@@ -7,8 +7,10 @@ TARGET   = mini_app2
 F90       = f90
 F90_FLAGS = -C $(G)
 
+# STEER_LIBS is the directory where libReG_Steer.a &
+# libxml2.a can be found
 STEER_LIBS = -L${REG_STEER_HOME}/lib$(NBIT)
-XML_LIBS   = -L${REG_STEER_HOME}/expat/xmlparse
+XML_LIBS   = -L${REG_XML_LIBDIR}$(NBIT)
 
 .f90.o:
 	${F90} ${F90_FLAGS} -I${REG_STEER_HOME}/include -c $< -o $@
@@ -16,7 +18,7 @@ XML_LIBS   = -L${REG_STEER_HOME}/expat/xmlparse
 ${TARGET}: ${TARGET}.o \
 mini_app2.f90 \
 ${REG_STEER_HOME}/include/reg_steer_f90.inc
-	${F90} ${F90_FLAGS} ${TARGET}.o -o $@ ${XML_LIBS} ${STEER_LIBS} -lReG_Steer -lexpat
+	${F90} ${F90_FLAGS} ${TARGET}.o -o $@ ${XML_LIBS} ${STEER_LIBS} -lReG_Steer -lxml2 -lz -lm
 	mv ${TARGET} ${HOME}/bin/.
 
 clean:

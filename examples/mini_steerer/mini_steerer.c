@@ -83,7 +83,7 @@ int main(){
     param_labels[i] = (char *)malloc(REG_MAX_STRING_LENGTH*sizeof(char));
 
     if(param_vals[i]==NULL || param_labels[i]==NULL){
-      printf("Error allocating memory for params - quitting\n");
+      fprintf(stderr, "Error allocating memory for params - quitting\n");
       return 1;
     }
   }
@@ -99,7 +99,7 @@ int main(){
 
   if( (status = Steerer_initialize()) != REG_SUCCESS){
 
-    printf("Steerer_initialize failed\n");
+    fprintf(stderr, "Steerer_initialize failed\n");
     return 1;
   }
 
@@ -120,6 +120,7 @@ int main(){
     sim_gsh[i]  = char_ptr;
     char_ptr += REG_MAX_STRING_LENGTH;
   }
+  char_ptr = NULL;
 
   if( Get_sim_list(&nsims, sim_name, sim_gsh) == REG_SUCCESS){
 
@@ -148,7 +149,7 @@ int main(){
     }
   }
 
-  printf("Attached to sim, sim_handle = %d\n", sim_handle);
+  fprintf(stderr, "Attached to sim, sim_handle = %d\n", sim_handle);
 
   done = FALSE;
 
@@ -160,7 +161,7 @@ int main(){
 
     if(Get_param_number(sim_handle, FALSE, &num_params) != REG_FAILURE){
 
-      printf("Have %d monitored parameters:\n", num_params);
+      fprintf(stderr, "Have %d monitored parameters:\n", num_params);
 
       /* This is simple cludge - should really realloc to make arrays
 	 big enough */
@@ -178,16 +179,16 @@ int main(){
 
 	for(i=0; i<num_params; i++){
 
-	  printf("Handle: %d, Label: %s, Value: %s, Type: %d\n", 
-		 param_handles[i], 
-		 param_labels[i], param_vals[i], param_types[i]);
+	  fprintf(stderr, "Handle: %d, Label: %s, Value: %s, Type: %d\n", 
+		  param_handles[i], 
+		  param_labels[i], param_vals[i], param_types[i]);
 	}
       }
     }
 
     /* Wait for a command from the user */
 
-    printf("\nCommand: ");
+    fprintf(stderr, "\nCommand: ");
 
     while(TRUE){
       scanf("%c", user_char);
@@ -197,7 +198,7 @@ int main(){
     switch(user_char[0]){
 
     case 'c':
-      printf("Sending Consume command\n");
+      fprintf(stderr, "Sending Consume command\n");
       Get_iotype_number(sim_handle,
 			&num_types);
 
@@ -232,7 +233,7 @@ int main(){
       Get_supp_cmd_number(sim_handle,
 			  &num_cmds);
 
-      printf("We have %d supported commands:\n", num_cmds);
+      fprintf(stderr, "We have %d supported commands:\n", num_cmds);
 
       /* Cludge rather than malloc and realloc */
       if(num_cmds > REG_MAX_NUM_STR_CMDS) num_cmds = REG_MAX_NUM_STR_CMDS;
@@ -243,7 +244,7 @@ int main(){
 
 	for(i=0; i<num_cmds; i++){
 
-	  printf("Supported command %d = %d\n", i, commands[i]);
+	  fprintf(stderr, "Supported command %d = %d\n", i, commands[i]);
 	}
       }
       break;
@@ -256,7 +257,7 @@ int main(){
 		     NULL);
       }
       else{
-	printf("Failed to edit param values :(\n");
+	fprintf(stderr, "Failed to edit param values :(\n");
       }
       break;
 
@@ -286,8 +287,9 @@ int main(){
 	  /* Just edit the first one we find... */
 	  if(io_auto[i] == TRUE){
 	    
-	    printf("Freq. of iotype %s = %d\n", io_labels[i], io_freqs[i]);
-	    printf("Enter new value: ");
+	    fprintf(stderr, 
+		    "Freq. of iotype %s = %d\n", io_labels[i], io_freqs[i]);
+	    fprintf(stderr, "Enter new value: ");
 
 	    while(TRUE){
 	      scanf("%s", user_str);
@@ -296,7 +298,7 @@ int main(){
 
 	    sscanf(user_str, "%d", &new_freq);
 
-	    printf("\nSetting frequency to %d\n", new_freq);
+	    fprintf(stderr, "\nSetting frequency to %d\n", new_freq);
 
 	    Set_iotype_freq(sim_handle, 1, &(io_handles[i]), &new_freq);
 
@@ -311,7 +313,7 @@ int main(){
       break;
 
     case 's':
-      printf("Sending stop signal...\n");
+      fprintf(stderr, "Sending stop signal...\n");
       commands[0] = REG_STR_STOP;
       Emit_control(sim_handle,
 		   1,
@@ -322,7 +324,7 @@ int main(){
 
     case 'p':
       /* Pause the application */
-      printf("Pausing application...\n");
+      fprintf(stderr, "Pausing application...\n");
       commands[0] = REG_STR_PAUSE;
       Emit_control(sim_handle,
 		   1,
@@ -336,7 +338,7 @@ int main(){
 
     case 'r':
       /* Resume a paused application */
-      printf("Resuming application...\n");
+      fprintf(stderr, "Resuming application...\n");
       commands[0] = REG_STR_RESUME;
       Emit_control(sim_handle,
 		   1,
@@ -353,33 +355,33 @@ int main(){
 	/* Supported commands should only be output once (as part
 	   of handshaking process - read in Sim_attach) */
 #if DEBUG
-	printf("ERROR: Got supported cmds message\n");
+	fprintf(stderr, "ERROR: Got supported cmds message\n");
 #endif
 	break;
 
       case MSG_NOTSET:
 #if DEBUG
-	printf("No messages to retrieve\n");
+	fprintf(stderr, "No messages to retrieve\n");
 #endif
 	break;
 
       case IO_DEFS:
 #if DEBUG
-	printf("Got IOdefs message\n");
+	fprintf(stderr, "Got IOdefs message\n");
 #endif
 	if(Consume_IOType_defs(sim_handle) != REG_SUCCESS){
 
-	  printf("Consume_IOType_defs failed\n");
+	  fprintf(stderr, "Consume_IOType_defs failed\n");
 	}
 	break;
 
       case PARAM_DEFS:
 #if DEBUG
-	printf("Got param defs message\n");
+	fprintf(stderr, "Got param defs message\n");
 #endif
 	if(Consume_param_defs(sim_handle) != REG_SUCCESS){
 
-	  printf("Consume_param_defs failed\n");
+	  fprintf(stderr, "Consume_param_defs failed\n");
 	}
 #if DEBUG
 	Dump_sim_table();
@@ -388,14 +390,14 @@ int main(){
 
       case STATUS:
 #if DEBUG
-	printf("Got status message\n");
+	fprintf(stderr, "Got status message\n");
 #endif
 	status = Consume_status(sim_handle,
 				&app_seqnum,
 				&num_cmds,
 				commands);
 	if(status == REG_FAILURE){
-	  printf("Consume_status failed\n");
+	  fprintf(stderr, "Consume_status failed\n");
 	  done = TRUE;
 	}
 	else{
@@ -406,13 +408,13 @@ int main(){
 	  for(i=0; i<num_cmds; i++){
 
 #if DEBUG
-	    printf("Cmd %d = %d\n", i, commands[i]);
+	    fprintf(stderr, "Cmd %d = %d\n", i, commands[i]);
 #endif
 	    switch(commands[i]){
 
 	    case REG_STR_DETACH:
 #if DEBUG
-	      printf("App has signalled that it has finished\n");
+	      fprintf(stderr, "App has signalled that it has finished\n");
 #endif
 	      Delete_sim_table_entry(&sim_handle);
 	      done = TRUE;
@@ -426,17 +428,17 @@ int main(){
 	  }
 
 #if DEBUG
-	  printf("Application SeqNum = %d\n", app_seqnum);
+	  fprintf(stderr, "Application SeqNum = %d\n", app_seqnum);
 #endif
 	}
 	break;
 
       case CONTROL:
-	printf("Got control message\n");
+	fprintf(stderr, "Got control message\n");
 	break;
 
       default:
-	printf("Unrecognised msg returned by Get_next_message\n");
+	fprintf(stderr, "Unrecognised msg returned by Get_next_message\n");
 	break;
       }
       break;
@@ -448,18 +450,18 @@ int main(){
 
   if( (status = Sim_detach(&sim_handle)) != REG_SUCCESS){
 
-    printf("Sim_detach failed...\n");
+    fprintf(stderr, "Sim_detach failed...\n");
   }
   else{
 
-    printf("Detached from sim, sim_handle = %d\n", sim_handle);
+    fprintf(stderr, "Detached from sim, sim_handle = %d\n", sim_handle);
   }
 
   status = Steerer_finalize();
 
   if(status != REG_SUCCESS){
 
-    printf("Steerer_finalize failed\n");
+    fprintf(stderr, "Steerer_finalize failed\n");
     return 1;
   }
 
@@ -505,7 +507,7 @@ int Edit_parameter(int sim_handle)
     param_labels[i] = (char *)malloc(REG_MAX_STRING_LENGTH*sizeof(char));
 
     if(param_vals[i]==NULL || param_labels[i]==NULL){
-      printf("Error allocating memory for params - quitting\n");
+      fprintf(stderr, "Error allocating memory for params - quitting\n");
       return REG_FAILURE;
     }
   }
@@ -526,20 +528,20 @@ int Edit_parameter(int sim_handle)
     			param_vals,
 			param_types) != REG_FAILURE){
     
-      printf("Which of the following do you wish to edit?\n\n");
+      fprintf(stderr, "Which of the following do you wish to edit?\n\n");
     
       for(i=0; i<num_params; i++){
-    	printf("%d: %s = %s\n", i, param_labels[i], param_vals[i]);
+    	fprintf(stderr, "%d: %s = %s\n", i, param_labels[i], param_vals[i]);
       }
 
-      printf("Enter choice or 'c' to cancel: ");
+      fprintf(stderr, "Enter choice or 'c' to cancel: ");
 
       while(TRUE){
 	scanf("%s", user_str);
 	if(user_str[0] != '\n' && user_str[0] != ' ')break;
       }
 
-      printf("user_str[0] = %c\n", user_str[0]);
+      fprintf(stderr, "user_str[0] = %c\n", user_str[0]);
 
       if( !strchr(user_str, 'c') ){
 
@@ -547,10 +549,10 @@ int Edit_parameter(int sim_handle)
 
 	  if(input >= 0 && input < num_params){
 
-	    printf("Editing parameter %d, current value = %s...\n", 
-		   input, param_vals[input]);
+	    fprintf(stderr, "Editing parameter %d, current value = %s...\n", 
+		    input, param_vals[input]);
 
-	    printf("New value: ");
+	    fprintf(stderr, "New value: ");
 
 	    while(TRUE){
 	      scanf("%s", user_str);
@@ -564,11 +566,11 @@ int Edit_parameter(int sim_handle)
 					     param_vals);
 	  }
 	  else{
-	    printf("That is not a valid selection.\n");
+	    fprintf(stderr, "That is not a valid selection.\n");
 	  }
 	}
 	else{
-	  printf("Failed to get integer from input string\n");
+	  fprintf(stderr, "Failed to get integer from input string\n");
 	}
       }
     }

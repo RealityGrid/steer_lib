@@ -53,7 +53,7 @@ PROGRAM para_mini_app
 
   CALL MPI_INIT(IERROR)
 
-  CALL MPI_COMM_RANK(MPI_COMM_WORLD, my_id)
+  CALL MPI_COMM_RANK(MPI_COMM_WORLD, my_id, IERROR)
 
 ! Initialise dummy steered/monitored variables on all processes
   dum_int2  = 123
@@ -75,8 +75,6 @@ PROGRAM para_mini_app
     num_cmds = 2
     commands(1) = REG_STR_STOP
     commands(2) = REG_STR_PAUSE
-
-    WRITE (*,*) 'Calling steering_initialize_f'
 
     CALL steering_initialize_f(num_cmds, commands, status)
 
@@ -227,7 +225,7 @@ PROGRAM para_mini_app
   iloop = 0
   DO WHILE(iloop<20 .AND. (finished .ne. 1))
 
-    CALL MPI_BARRIER(MPI_COMM_WORLD)
+    CALL MPI_BARRIER(MPI_COMM_WORLD, IERROR)
 
     ! Steering is all done on master px only...
     IF(my_id .eq. 0)THEN
@@ -269,7 +267,7 @@ PROGRAM para_mini_app
         DO iparam=1, num_params_changed, 1
   
           WRITE(*,*) 'Px ', my_id, ' changed param no. ', iparam,' = ', &
-                     changed_param_labels(iparam)
+                     TRIM(changed_param_labels(iparam))
         END DO
       END IF
   
@@ -379,6 +377,8 @@ PROGRAM para_mini_app
       CALL MPI_BCAST(num_params_changed, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, &
                      IERROR)
 
+      WRITE (*,*) 'Px ', my_id, ' num_params_changed = ', num_params_changed
+
       IF(num_params_changed > 0)THEN
 
         CALL MPI_BCAST(dum_int, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, IERROR)
@@ -398,6 +398,8 @@ PROGRAM para_mini_app
 
       CALL MPI_BCAST(num_recvd_cmds, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, IERROR)
       
+      WRITE (*,*) 'Px ', my_id, ' num_recvd_cmds = ', num_recvd_cmds
+
       IF(num_recvd_cmds > 0)THEN
       
         parse_finished = 0
@@ -442,16 +444,19 @@ PROGRAM para_mini_app
 
     END IF ! my_id == 0
 
-    ! Just calls 'sleep' command for a bit as we don't have
-    ! a simulation here
-    CALL steering_sleep_f()
+    IF(finished .ne. 1)THEN
 
-    ! Adjust values of monitored variables
-    dum_int2 = dum_int2 + 6
-    dum_real = dum_real - 1.5
+      ! Just calls 'sleep' command for a bit as we don't have
+      ! a simulation here
+      CALL steering_sleep_f()
 
-    ! Increment loop counter
-    iloop = iloop + 1
+      ! Adjust values of monitored variables
+      dum_int2 = dum_int2 + 6
+      dum_real = dum_real - 1.5
+
+      ! Increment loop counter
+      iloop = iloop + 1
+    END IF
 
   END DO ! End of main loop
 

@@ -197,9 +197,9 @@ extern REG_MsgType Get_message_type(const char *name);
 
 /* 'Callback' routines for XML parser */
 
-extern void startElement(void *userData, const char *name, const char **atts);
+extern void expat_startElement(void *userData, const char *name, const char **atts);
 
-extern void endElement(void *userData, const char *name);
+extern void expat_endElement(void *userData, const char *name);
 
 extern void dataHandler(void *userData, const XML_Char *s, int len);
 
@@ -214,7 +214,10 @@ extern void scan_endElement(void *userData, const char *name);
 /* Utility routines for identifying and storing values from
    XML elements */
 
-extern int  Write_xml_header(FILE *fp);
+/* extern int  Write_xml_header(FILE *fp); */
+extern int  Write_xml_header(char **pchar);
+
+extern int  Write_xml_footer(char **pchar);
 
 extern void Set_param_field_type(void *ptr, const char* name);
        
@@ -235,4 +238,3 @@ extern void Store_iodef_field_value(void *ptr, char *buf);
 extern void Store_control_field_value(void *ptr, char *buf);
 
 extern void Store_status_field_value(void *ptr, char *buf);
-

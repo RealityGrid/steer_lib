@@ -36,6 +36,7 @@
 ---------------------------------------------------------------------------*/
 
 #include "ReG_Steer_Appside.h"
+#include <unistd.h>
 
 #ifndef DEBUG
 #define DEBUG 1
@@ -242,7 +243,8 @@ INT_KIND_1_DECL(Status);
       ptr_array[i] = ((void **)ParamPtrs)[i];
 
 #if DEBUG
-      printf("register_params_f: got string %s\n", (char *)(ptr_array[i]));
+      fprintf(stderr, 
+	      "register_params_f: got string %s\n", (char *)(ptr_array[i]));
 #endif
       break;
 
@@ -252,7 +254,7 @@ INT_KIND_1_DECL(Status);
       break;
 
     default:
-      printf("register_params_f: unrecognised data type\n");
+      fprintf(stderr, "register_params_f: unrecognised data type\n");
       *Status = REG_FAILURE;
       break;
     }
@@ -340,7 +342,7 @@ INT_KIND_1_DECL(NumSteerCommands);
 INT_KIND_1_DECL(SteerCommands);
 INT_KIND_1_DECL(Status);
 {
-  int   i, j;
+  int   i, j, len, pos;
   char *str_array[REG_MAX_NUM_STR_PARAMS];
 
   for(i=0; i<REG_MAX_NUM_STR_PARAMS; i++){
@@ -352,14 +354,15 @@ INT_KIND_1_DECL(Status);
       for(j=(i-1); j>=0; j--){
 	free(str_array[j]);
       }
-      printf("steering_control_f: Failed to allocate memory for strings\n");
+      fprintf(stderr, 
+	      "steering_control_f: Failed to allocate memory for strings\n");
       *Status = INT_KIND_1_CAST( REG_FAILURE );
       return;
     }
   }
 
 #if DEBUG
-  printf("steering_control_f: Calling Steering_control...\n");
+  fprintf(stderr, "steering_control_f: Calling Steering_control...\n");
 #endif
 
   *Status = INT_KIND_1_CAST( Steering_control((int)*SeqNum,
@@ -368,8 +371,9 @@ INT_KIND_1_DECL(Status);
 			     		      (int *)NumSteerCommands,
 			     		      (int *)SteerCommands) );
 #if DEBUG
-  printf("steering_control_f: got %d params and %d cmds\n", *NumSteerParams,
-							    *NumSteerCommands);
+  fprintf(stderr, 
+          "steering_control_f: got %d params and %d cmds\n", 
+          *NumSteerParams, *NumSteerCommands);
 #endif
 
   if(*Status == INT_KIND_1_CAST(REG_SUCCESS) ){
@@ -379,8 +383,18 @@ INT_KIND_1_DECL(Status);
 
     for(i=0; i<(int)(*NumSteerParams); i++){
 
-	strcpy(&(STRING_PTR(SteerParamLabels)[i*STRING_LEN(SteerParamLabels)]),
-               str_array[i]);
+      strcpy(&(STRING_PTR(SteerParamLabels)[i*STRING_LEN(SteerParamLabels)]),
+             str_array[i]);
+
+      /* Blank the remainder of the string being returned to the F90 
+         routine */
+      len = strlen(str_array[i]);
+      pos = i*STRING_LEN(SteerParamLabels) + len;
+      
+      if( (len = (STRING_LEN(SteerParamLabels) - len)) > 0){
+
+        memset(&(STRING_PTR(SteerParamLabels)[pos]), ' ', len);
+      }
     }
   }
 
@@ -449,7 +463,7 @@ SUBROUTINE steering_sleep_f()
 
 void FUNCTION(steering_sleep_f) ARGS(`')
 {
-  system("sleep 2");
+  sleep(2);
   return;
 }
 
@@ -470,14 +484,14 @@ INT_KIND_1D0_DECL(ptr);
      to be passed to register_params_f as type void*. */
 
 #if DEBUG
-  printf("steering_char_to_ptr_f: Entered routine, "
-	 "string = %s\n", STRING_PTR(string));
+  fprintf(stderr, "steering_char_to_ptr_f: Entered routine, "
+	  "string = %s\n", STRING_PTR(string));
 #endif
 
   *ptr = INT_KIND_1D0_CAST(STRING_PTR(string));
 
 #if DEBUG
-  printf("steering_char_to_ptr_f: Leaving routine\n");
+  fprintf(stderr, "steering_char_to_ptr_f: Leaving routine\n");
 #endif
 
 }

@@ -69,7 +69,12 @@ FILE *Open_next_file(char* base_name)
   while(i<REG_MAX_NUM_FILES){
     
     /* Look for presence of lock file */
+#ifdef UNICORE_DEMO
+    sprintf(tmp_filename,"%s.lock", base_name);
+#else
     sprintf(tmp_filename,"%s_%d.lock", base_name, i);
+#endif
+
     fp = fopen(tmp_filename, "r");
 
     if (fp != NULL) {
@@ -81,7 +86,11 @@ FILE *Open_next_file(char* base_name)
         /* timespec_t     st_mtim;      Time of last data modification
            Times measured in seconds and nanoseconds
            since 00:00:00 UTC, Jan. 1, 1970 */
+#ifdef UNICORE_DEMO
+        sprintf(filename1,"%s", base_name);
+#else
         sprintf(filename1,"%s_%d", base_name, i);
+#endif
 	time1 = (long)stbuf.st_mtim.tv_sec;
         break;
       }
@@ -102,7 +111,12 @@ FILE *Open_next_file(char* base_name)
   while(i > -1){
     
     /* Look for presence of lock file */
+#ifdef UNICORE_DEMO
+    sprintf(tmp_filename,"%s.lock", base_name);
+#else
     sprintf(tmp_filename,"%s_%d.lock", base_name, i);
+#endif
+
     fp = fopen(tmp_filename, "r");
 
     if (fp != NULL) {
@@ -114,7 +128,11 @@ FILE *Open_next_file(char* base_name)
         /* timespec_t     st_mtim;      Time of last data modification
            Times measured in seconds and nanoseconds
            since 00:00:00 UTC, Jan. 1, 1970 */
+#ifdef UNICORE_DEMO
+        sprintf(filename2,"%s", base_name);
+#else
         sprintf(filename2,"%s_%d", base_name, i);
+#endif
 	time2 = (long)stbuf.st_mtim.tv_sec;
         break;
       }
@@ -247,69 +265,6 @@ int Remove_files(char* base_name)
   return REG_SUCCESS;
 }
 
-/*-----------------------------------------------------------------*/
-
-void startElement(void *userData, const char *name, const char **atts)
-{
-  user_data_type *user_data = userData;
-
-#if DEBUG
-  fprintf(stderr, "startElement: name = %s\n", name);
-#endif /* DEBUG */
-
-  /* This is the start of a field within a message */
-  
-  switch(user_data->msg_type){
-  
-  case MSG_NOTSET:
-  
-    user_data->msg_type = Get_message_type(name);
-
-    if(user_data->msg_type == MSG_NOTSET){
-
-#if DEBUG
-      fprintf(stderr, "startElement: unrecognised message type: %s\n", name);
-#endif /* DEBUG */
-    }
-    break;
-  
-  case PARAM_DEFS:
-    /* Already within a param def message so identify which field 
-       this is */
-    Set_param_field_type((void *)(user_data->gen_xml_struct), name);
-    break;
-  
-  case IO_DEFS:
-    Set_iodef_field_type((void *)(user_data->gen_xml_struct), name);
-    break;
-  
-  case SUPP_CMDS:
-#if DEBUG
-    fprintf(stderr, "Start of supp cmds element\n");
-#endif /* DEBUG */
-    Set_supp_cmd_field_type((void *)(user_data->gen_xml_struct), name);
-    break;
-
-  case STATUS:
-    Set_status_field_type((void *)(user_data->gen_xml_struct), name);
-    break;
-
-  case CONTROL:
-#if DEBUG
-    fprintf(stderr, "Start of steering-control element\n");
-#endif /* DEBUG */
-    Set_ctrl_field_type((void *)(user_data->gen_xml_struct), name);
-    break;
-
-  default:
-#if DEBUG
-    fprintf(stderr, "startElement: unrecognised message type\n");
-#endif /* DEBUG */
-    break;
-  }
-
-}
-
 /*----------------------------------------------------------*/
 
 REG_MsgType Get_message_type(const char *name)
@@ -344,766 +299,6 @@ REG_MsgType Get_message_type(const char *name)
     return MSG_NOTSET;
   }
 
-}
-
-/*-----------------------------------------------------------------*/
-
-void Set_param_field_type(void *ptr, const char* name)
-{
-  param_xml_struct *param_struct;
-
-  param_struct = (param_xml_struct *)(ptr);
-
-  if(strcmp(name, "Label") == 0){
-    param_struct->field_type = PARAM_LABEL;
-  }
-  else if(strcmp(name, "Steerable") == 0){
-    param_struct->field_type = STRABLE;
-  }
-  else if(strcmp(name, "Type") == 0){
-    param_struct->field_type = TYPE;
-  }
-  else if(strcmp(name, "Handle") == 0){
-    param_struct->field_type = HANDLE;
-  }
-  else if(strcmp(name, "Value") == 0){
-    param_struct->field_type = VALUE;
-  }
-  else if(strcmp(name, "Is_internal") == 0){
-    param_struct->field_type = IS_INTERNAL;
-  }
-  else{
-#if DEBUG
-    fprintf(stderr, "Set_param_field_type: unrecognised field type\n");
-#endif
-  }
-}
-
-/*-----------------------------------------------------------------*/
-
-void Set_iodef_field_type(void *ptr, const char* name)
-{
-  iodef_xml_struct *iodef_struct;
-
-  iodef_struct = (iodef_xml_struct *)(ptr);
-
-  if(strcmp(name, "Label") == 0){
-    iodef_struct->field_type = IODEF_LABEL;
-  }
-  else if(strcmp(name, "Handle") == 0){
-    iodef_struct->field_type = IODEF_HANDLE;
-  }
-  else if(strcmp(name, "Direction") == 0){
-    iodef_struct->field_type = IODEF_DIRN;
-  }
-  else if(strcmp(name, "Support_auto_io") == 0){
-    iodef_struct->field_type = IODEF_AUTO_SUPP;
-  }
-  else if(strcmp(name, "Freq_handle") == 0){
-    iodef_struct->field_type = IODEF_FREQ_HANDLE;
-  }
-  else{
-    fprintf(stderr, "Set_iodef_field_type: unrecognised field type\n");
-  }
-
-}
-
-/*-----------------------------------------------------------------*/
-
-void Set_supp_cmd_field_type(void *ptr, const char* name)
-{
-  supp_cmds_xml_struct *supp_cmds_struct;
-
-  supp_cmds_struct = (supp_cmds_xml_struct *)(ptr);
-
-#if DEBUG
-  fprintf(stderr, "Set_supp_cmd_field_type: name = %s\n", name);
-#endif /* DEBUG */
-
-  if(strcmp(name, "Cmd_id") == 0){
-    supp_cmds_struct->field_type = CMD_ID;
-  }
-  else if(strcmp(name, "Cmd_param") == 0){
-    supp_cmds_struct->field_type = CMD_PARAM;
-  }
-  else{
-#if DEBUG
-    fprintf(stderr, "Set_supp_cmd_field_type: unrecognised field type\n");
-#endif
-  }
-
-}
-
-/*-----------------------------------------------------------------*/
-
-void Set_ctrl_field_type(void *ptr, const char* name)
-{
-  control_xml_struct *ctrl_struct;
-
-  ctrl_struct = (control_xml_struct *)(ptr);
-
-  switch(ctrl_struct->field_type){
-
-  case CTRL_NOTSET:
-
-    if(strcmp(name, "Command") == 0){
-
-      ctrl_struct->field_type = CTRL_CMD;
-    }
-    else if(strcmp(name, "Param") == 0){
-
-      ctrl_struct->field_type = CTRL_PARAM;
-    }
-    break;
-
-  case CTRL_PARAM:
-
-    Set_param_field_type((void *)ctrl_struct->param_struct, name);
-    break;
-
-  case CTRL_CMD:
-    Set_supp_cmd_field_type((void *)ctrl_struct->cmd_struct, name);
-    break;
-
-  default:
-    break;
-  }
-}
-
-/*-----------------------------------------------------------------*/
-
-void Set_status_field_type(void *ptr, const char* name)
-{
-  status_xml_struct *status_struct;
-
-  status_struct = (status_xml_struct *)(ptr);
-
-  switch(status_struct->field_type){
-
-  case STAT_NOTSET:
-
-    if(strcmp(name, "Command") == 0){
-
-      status_struct->field_type = STAT_CMD;
-    }
-    else if(strcmp(name, "Param") == 0){
-
-      status_struct->field_type = STAT_PARAM;
-    }
-    break;
-  
-  case STAT_PARAM:
-
-    Set_param_field_type((void *)status_struct->param_struct, name);
-    break;
-
-  case STAT_CMD:
-
-    Set_supp_cmd_field_type((void *)status_struct->cmd_struct, name);
-    break;
-
-  default:
-    break;
-  }
-}
-
-/*-----------------------------------------------------------------*/
-
-void endElement(void *userData, const char *name)
-{
-  param_xml_struct     *param_struct;
-  supp_cmds_xml_struct *supp_cmds_struct;
-  iodef_xml_struct     *iodef_struct;
-  control_xml_struct   *ctrl_struct;
-  status_xml_struct    *status_struct;
-
-  user_data_type *data = userData;
-
-#if DEBUG
-  fprintf(stderr, "endElement: name = %s\n", name);
-#endif
-
-  switch(data->msg_type){
-
-  case MSG_NOTSET:
-#if DEBUG
-    fprintf(stderr, "endElement: Warning - no element flagged as started\n");
-#endif
-    break;
-
-  case SUPP_CMDS:
-    supp_cmds_struct = (supp_cmds_xml_struct *)(data->gen_xml_struct);
-
-    if(supp_cmds_struct->field_type != CMD_NOTSET){
-
-      if(supp_cmds_struct->field_type == CMD_PARAM){
-
-	/* Command parameters not currently implemented..
-
-	if(supp_cmds_struct->param_struct->field_type != PARAM_NOTSET){
-
-	  / End of a parameter sub-element /
-	  supp_cmds_struct->param_struct->field_type = PARAM_NOTSET;
-	}
-	else{
-
-	  / Have reached end of a parameter element /
-	  Increment_param_registered(supp_cmds_struct->param_struct->table);
- 	  supp_cmds_struct->field_type = CMD_NOTSET;
-	}
-
-	...just flag section as ended... */
-
-	supp_cmds_struct->field_type = CMD_NOTSET;
-      }
-      else{
-
-	/* Have reached end of a command sub-element */
-	supp_cmds_struct->field_type = CMD_NOTSET;
-      }
-    }
-    else{
-
-      /* If name is a recognised message type then we've come to
-	 the end of the message.  If it isn't then we've only
-	 come to the end of a sub-element of the message */
-      if( Get_message_type(name) != MSG_NOTSET ){
-
-        data->msg_type = MSG_NOTSET;
-      }
-      else{
-	/* Increment counter & allocate more memory if required */
-	if(supp_cmds_struct->read_status != REG_FAILURE){
-	  Increment_cmd_registered(supp_cmds_struct->table);
-	}
-	else{
-	  /* Unset the 'failed' flag as we've reached end of element */
-	  supp_cmds_struct->read_status = REG_SUCCESS;
-	}
-      }
-    }
-    break;
-
-  case IO_DEFS:
-    iodef_struct = (iodef_xml_struct *)(data->gen_xml_struct);
-
-    if(iodef_struct->field_type != IODEF_NOTSET){
-
-      iodef_struct->field_type = IODEF_NOTSET;
-    }
-    else{
-
-      /* If name is a recognised message type then we've come to
-	 the end of the message.  If it isn't then we've only
-	 come to the end of a sub-element of the message */
-      if( Get_message_type(name) != MSG_NOTSET ){
-
-        data->msg_type = MSG_NOTSET;
-      }
-      else{
-	if(iodef_struct->read_status != REG_FAILURE){
-  	  Increment_iodef_registered(iodef_struct->table);
-	}
-	else{
-	  /* Unset the 'failed' flag as we've reached end of element */
-	  iodef_struct->read_status = REG_SUCCESS;
-	}
-      }
-    }
-    break;
-
-  case PARAM_DEFS:
-    param_struct = (param_xml_struct *)(data->gen_xml_struct);
-
-    if(param_struct->field_type != PARAM_NOTSET){
-
-      param_struct->field_type = PARAM_NOTSET;
-    }
-    else{
-
-      /* If name is a recognised message type then we've come to
-	 the end of the message.  If it isn't then we've only
-	 come to the end of a sub-element of the message */
-      if( Get_message_type(name) != MSG_NOTSET ){
-
-	data->msg_type = MSG_NOTSET;
-      }
-      else{
-	if(param_struct->read_status != REG_FAILURE){
-	  Increment_param_registered(param_struct->table);
-	}
-	else{
-	  /* Unset the 'failed' flag as we've reached end of element */
-	  param_struct->read_status = REG_SUCCESS;
-	}
-      }
-    }
-    break;
-
-  case STATUS:
-    status_struct = (status_xml_struct *)(data->gen_xml_struct);
-
-    if(status_struct->field_type != STAT_NOTSET){
-
-      if(status_struct->field_type == STAT_PARAM){
-
-	if(status_struct->param_struct->field_type != PARAM_NOTSET){
-
-	  /* Have reached the end of a param sub-element */
-	  status_struct->param_struct->field_type = PARAM_NOTSET;
-	}
-	else{
-
-	  /* Have reached end of param element */
-	  if(status_struct->param_struct->read_status != REG_FAILURE){
-	    Increment_param_registered(status_struct->param_struct->table);
-	  }
-	  else{
-	    /* Unset the 'failed' flag as we've reached end of element */
-	    status_struct->param_struct->read_status = REG_SUCCESS;
-	  }
-	  status_struct->field_type = STAT_NOTSET;
-	}
-      }
-      else{
-
-	if(status_struct->cmd_struct->field_type != CMD_NOTSET){
-
-	  /* Have reached the end of a cmd sub-element */
-	  status_struct->cmd_struct->field_type = CMD_NOTSET;
-	}
-	else{
-
-	  /* Have reached end of command element */
-	  if(status_struct->cmd_struct->read_status != REG_FAILURE){
-	    Increment_cmd_registered(status_struct->cmd_struct->table);
-	  }
-	  else{
-	    /* Unset the 'failed' flag as we've reached end of element */
-	    status_struct->cmd_struct->read_status = REG_SUCCESS;
-	  }
-	  status_struct->field_type = STAT_NOTSET;
-	}
-      }
-    }
-    else{
-
-      /* If name is a recognised message type then we've come to
-	 the end of the message.  If it isn't then we've only
-	 come to the end of a sub-element of the message */
-      if( Get_message_type(name) != MSG_NOTSET ){
-
-        data->msg_type = MSG_NOTSET;
-      }
-    }
-    break;
-
-  case CONTROL:
-    ctrl_struct = (control_xml_struct *)(data->gen_xml_struct);
-
-    if(ctrl_struct->field_type != CTRL_NOTSET){
-
-      if(ctrl_struct->field_type == CTRL_PARAM){
-
-	if(ctrl_struct->param_struct->field_type != PARAM_NOTSET){
-
-	  /* Have reached end of some element of param */
-	  ctrl_struct->param_struct->field_type = PARAM_NOTSET;
-	}
-	else{
-
-	  /* Have reached end of an actual param element */
-	  if(ctrl_struct->param_struct->read_status != REG_FAILURE){
-	    Increment_param_registered(ctrl_struct->param_struct->table);
-	  }
-	  else{
-	    /* Unset the 'failed' flag as we've reached end of element */
-	    ctrl_struct->param_struct->read_status = REG_SUCCESS;
-	  }
-	  ctrl_struct->field_type = CTRL_NOTSET;
-	}
-      }
-      else{
-
-	if(ctrl_struct->cmd_struct->field_type != CMD_NOTSET){
-
-	  /* Have reached end of command sub-element */
-	  ctrl_struct->cmd_struct->field_type = CMD_NOTSET;
-	}
-	else{
-
-	  /* Have reached end of command element */
-	  if(ctrl_struct->cmd_struct->read_status != REG_FAILURE){
-	    Increment_cmd_registered(ctrl_struct->cmd_struct->table);
-	  }
-	  else{
-	    /* Unset the 'failed' flag as we've reached end of element */
-	    ctrl_struct->cmd_struct->read_status = REG_SUCCESS;
-	  }
-	  ctrl_struct->field_type = CTRL_NOTSET;
-	}
-      }
-    }
-    else{
-
-      /* If name is a recognised message type then we've come to
-	 the end of the message.  If it isn't then we've only
-	 come to the end of a sub-element of the message */
-      if( Get_message_type(name) != MSG_NOTSET ){
-
-       data->msg_type = MSG_NOTSET;
-      }
-    }
-    break;
-  }
-
-}
-
-/*-----------------------------------------------------------------*/
-
-void dataHandler(void *userData, const XML_Char *s, int len)
-{
-  char            buf[REG_MAX_STRING_LENGTH];
-  user_data_type *data = userData;
-  
-  /* Create null-terminated string from input array of XML_Char */
-  strncpy(buf, s, len);
-  buf[len] = 0;
-
-  /* This routine gets called if we have sub-elements beginning
-     on new lines so check for this */
-  if(buf[0] == '\n'){
-    return;
-  }
-
-  switch(data->msg_type){
-
-  case MSG_NOTSET:
-#if DEBUG
-    fprintf(stderr, "dataHandler: Warning - no element flagged as started\n");
-#endif
-    break;
-
-  case SUPP_CMDS:
-#if DEBUG
-    fprintf(stderr, "dataHandler: calling Store_supp_cmds_field_value\n");
-    fprintf(stderr, "dataHandler: buf = %s\n", buf);
-#endif
-    Store_supp_cmds_field_value(data->gen_xml_struct, buf);
-    break;
-
-  case IO_DEFS:
-#if DEBUG
-    fprintf(stderr, "dataHandler: calling Store_iodef_field_value\n");
-    fprintf(stderr, "dataHandler: buf = %s\n", buf);
-#endif
-    Store_iodef_field_value(data->gen_xml_struct, buf);
-    break;
-
-  case PARAM_DEFS:
-#if DEBUG
-    fprintf(stderr, "dataHandler: calling Store_param_field_value\n");
-    fprintf(stderr, "dataHandler: buf = %s\n", buf);
-#endif
-    Store_param_field_value(data->gen_xml_struct, buf);
-    break;
-
-  case STATUS:
-#if DEBUG
-    fprintf(stderr, "dataHandler: calling Store_status_field_value\n");
-    fprintf(stderr, "dataHandler: buf = %s\n", buf);
-#endif
-    Store_status_field_value(data->gen_xml_struct, buf);
-    break;
-
-  case CONTROL:
-#if DEBUG
-    fprintf(stderr, "dataHandler: calling Store_control_field_value\n");
-    fprintf(stderr, "dataHandler: buf = %s\n", buf);
-#endif
-    Store_control_field_value(data->gen_xml_struct, buf);
-    break;
-
-  default:
-#if DEBUG
-    fprintf(stderr, "dataHandler: unrecognised message type\n");
-#endif
-    break;
-  }
-
-}
-
-/*----------------------------------------------------------*/
-
-void Store_control_field_value(void *ptr, char *buf)
-{
-  control_xml_struct *ctrl_struct;
-
-  ctrl_struct = (control_xml_struct *)(ptr);
-
-  switch(ctrl_struct->field_type){
-
-  case CTRL_NOTSET:
-    break;
-
-  case CTRL_CMD:
-    
-    Store_supp_cmds_field_value((void*)ctrl_struct->cmd_struct, buf);
-    break;
-
-  case CTRL_PARAM:
-
-    Store_param_field_value((void*)ctrl_struct->param_struct, buf);
-    break;
-
-  default:
-#if DEBUG
-    fprintf(stderr, "Store_control_field_value: unrecognised field_type\n");
-#endif
-    break;
-  }
-
-}
-
-/*----------------------------------------------------------*/
-
-void Store_status_field_value(void *ptr, char *buf)
-{
-  status_xml_struct *status_struct;
-
-  status_struct = (status_xml_struct *)(ptr);
-
-  switch(status_struct->field_type){
-
-  case STAT_NOTSET:
-    break;
-
-  case STAT_CMD:
-
-    Store_supp_cmds_field_value((void*)status_struct->cmd_struct, buf);
-    break;
-
-  case STAT_PARAM:
-
-    Store_param_field_value((void*)status_struct->param_struct, buf);
-    break;
-
-  default:
-#if DEBUG
-    fprintf(stderr, 
-	    "Store_status_field_value: unrecognised status field_type\n");
-#endif
-    break;
-  }
-
-}
-
-/*----------------------------------------------------------*/
-
-void Store_param_field_value(void *ptr, char *buf)
-{
-  int               index;
-  int               nitem;
-  param_xml_struct *param_struct;
-
-  param_struct = (param_xml_struct *)(ptr);
-
-  index = param_struct->table->num_registered;
-
-#if DEBUG
-  fprintf(stderr, "Store_param_field_value: index = %d\n", index);
-#endif
-
-  switch(param_struct->field_type){
-
-  case PARAM_NOTSET:
-    break;
-
-  case PARAM_LABEL:
-    if(strlen(buf)){
-
-      strcpy(param_struct->table->param[index].label, buf);
-    }
-    else{
-      param_struct->read_status = REG_FAILURE;
-    }
-    break;
-
-  case STRABLE:
-    nitem = sscanf(buf , "%d", &(param_struct->table->param[index].steerable));
-
-    if(nitem != 1) param_struct->read_status = REG_FAILURE;
-    break;
-
-  case TYPE:
-    nitem = sscanf(buf , "%d", &(param_struct->table->param[index].type) );
-
-    if(nitem != 1) param_struct->read_status = REG_FAILURE;
-    break;
-
-  case HANDLE:
-    nitem = sscanf(buf , "%d", &(param_struct->table->param[index].handle) );
-
-    if(nitem != 1) param_struct->read_status = REG_FAILURE;
-    break;
-
-  case VALUE:
-
-    if(strlen(buf)){
-
-      strcpy(param_struct->table->param[index].value, buf);
-    }
-    else{
-      param_struct->read_status = REG_FAILURE;
-    }
-    break;
-
-  case IS_INTERNAL:
-
-    if(strcmp(buf, "TRUE") == 0){
-
-      param_struct->table->param[index].is_internal = TRUE;
-    }
-    else{
-      param_struct->table->param[index].is_internal = FALSE;
-    }
-    break;
-
-  default:
-#if DEBUG
-    fprintf(stderr, "Store_param_field_value: no element ID set\n");
-#endif
-    break;
-  }  
-}
-
-/*----------------------------------------------------------*/
-
-void Store_supp_cmds_field_value(void *ptr, char *buf)
-{
-  int                   index;
-  supp_cmds_xml_struct *cmd_struct;
-
-  cmd_struct = (supp_cmds_xml_struct *)(ptr);
-
-  index = cmd_struct->table->num_registered;
-
-#if DEBUG
-  fprintf(stderr, "Store_supp_cmds_field_value: index = %d\n", index);
-  fprintf(stderr, "                               buf = %s\n", buf);
-  fprintf(stderr, "                             table = %p\n", 
-	  cmd_struct->table);
-#endif
-
-  switch(cmd_struct->field_type){
-
-  case CMD_NOTSET:
-    break;
-
-  case CMD_ID:
-    sscanf(buf , "%d", &(cmd_struct->table->cmd[index].cmd_id) );    
-#if DEBUG
-    fprintf(stderr, "Store_supp_cmds_field_value: stored id = %d\n",
-	   cmd_struct->table->cmd[index].cmd_id);
-#endif
-    break;
-
-  case CMD_PARAM:
-    /* Command parameters not currently implemented... 
-    Store_param_field_value((void*)cmd_struct->param_struct, buf);
-    */
-    break;
-
-  default:
-#if DEBUG
-    fprintf(stderr, "Store_supp_cmds_field_value: unrecognised field type\n");
-    fprintf(stderr, "                             field type = %d\n", 
-	    cmd_struct->field_type);
-#endif
-    break;
-  }
-}
-
-/*----------------------------------------------------------*/
-
-void Store_iodef_field_value(void *ptr, char *buf)
-{
-  int               index;
-  char              input[REG_MAX_STRING_LENGTH];
-  iodef_xml_struct *iodef_struct;
-
-  iodef_struct = (iodef_xml_struct *)(ptr);
-
-  index = iodef_struct->table->num_registered;
-
-  switch(iodef_struct->field_type){
-
-  case IODEF_NOTSET:
-    fprintf(stderr, "Store_IOdef_field_value: field type not set\n");
-    break;
-
-  case IODEF_LABEL:
-    strcpy(iodef_struct->table->io_def[index].label, buf);
-    break;
-
-  case IODEF_HANDLE:
-    sscanf(buf, "%d", &(iodef_struct->table->io_def[index].handle) );
-    break;
-
-  case IODEF_DIRN:
-    sscanf(buf, "%s", input);
-
-    if(strcmp(input, "IN") == 0){
-      iodef_struct->table->io_def[index].direction = REG_IO_IN;
-    }
-    else if(strcmp(input, "OUT") == 0){
-      iodef_struct->table->io_def[index].direction = REG_IO_OUT;
-    }
-    else if(strcmp(input, "CHECKPOINT") == 0){
-      iodef_struct->table->io_def[index].direction = REG_IO_CHKPT;
-    }
-    else{
-
-#if DEBUG
-      fprintf(stderr, "Store_IOdef_field_value: unrecognised direction type\n");
-#endif
-      /* Set it to something to be on the safe side... */
-      iodef_struct->table->io_def[index].direction = REG_IO_IN;
-    }
-    break;
-
-  case IODEF_AUTO_SUPP:
-    sscanf(buf, "%s", input);
-
-    if(strcmp(input, "TRUE") == 0){
-
-      iodef_struct->table->io_def[index].auto_io_support = TRUE;
-    }
-    else if(strcmp(input, "FALSE") == 0){
-
-      iodef_struct->table->io_def[index].auto_io_support = FALSE;
-    }
-    else{
-
-#if DEBUG
-      fprintf(stderr, 
-	      "Store_IOdef_field_value: unrecognised auto_supp value\n");
-#endif
-      /* Set to false to be on the safe side */
-      iodef_struct->table->io_def[index].auto_io_support = FALSE;
-    }
-    break;
-
-  case IODEF_FREQ_HANDLE:
-    sscanf(buf, "%d", &(iodef_struct->table->io_def[index].freq_param_handle) );
-    break;
-
-  default:
-#if DEBUG
-    fprintf(stderr, "Store_IOdef_field_value: unrecognised field type\n");
-#endif
-    break;
-  }
 }
 
 /*----------------------------------------------------------------*/
@@ -1194,7 +389,7 @@ int Increment_param_registered(Param_table_type *table)
       }
     }
     else{
-      fprintf(stderr, "endElement: failed to allocate more param memory\n");
+      fprintf(stderr, "expat_endElement: failed to allocate more param memory\n");
       table->num_registered--;
       return_status = REG_FAILURE;
     }
@@ -1225,7 +420,7 @@ int Increment_cmd_registered(Supp_cmd_table_type *table)
       table->max_entries = new_size;
     }
     else{
-      fprintf(stderr, "endElement: failed to allocate more cmd memory\n");
+      fprintf(stderr, "expat_endElement: failed to allocate more cmd memory\n");
       table->num_registered--;
       return_status = REG_FAILURE;
     }
@@ -1262,7 +457,7 @@ int Increment_iodef_registered(IOdef_table_type *table)
       }
     }
     else{
-      fprintf(stderr, "endElement: failed to allocate more IOdef memory\n");
+      fprintf(stderr, "expat_endElement: failed to allocate more IOdef memory\n");
       table->num_registered--;
       return_status = REG_FAILURE;
     }
@@ -1273,22 +468,22 @@ int Increment_iodef_registered(IOdef_table_type *table)
 
 /*--------------------------------------------------------------------*/
 
-int Write_xml_header(FILE *fp)
+int Write_xml_header(char **buf)
 {
   int return_status = REG_SUCCESS;
 
   /* Write header for a ReG steering message */
 
-  if(fp){
+  if(buf){
 
-    fprintf(fp, "<?xml version=\"1.0\"?>\n");
+    *buf += sprintf(*buf, "<?xml version=\"1.0\"?>\n");
 
-    fprintf(fp, "<ReG_steer_message xmlns:xsi=\""
+    *buf += sprintf(*buf, "<ReG_steer_message xmlns:xsi=\""
 	        "http://www.w3.org/2001/XMLSchema-instance\"\n");
-    fprintf(fp, "xmlns=\"%s\"\n", REG_STEER_NAMESPACE);
-    fprintf(fp, "       xsi:SchemaLocation=\"%s %s\">\n", 
-	        REG_STEER_NAMESPACE,
-	        ReG_Steer_Schema_Locn);
+    *buf += sprintf(*buf, "xmlns=\"%s\"\n", REG_STEER_NAMESPACE);
+    *buf += sprintf(*buf, "       xsi:SchemaLocation=\"%s %s\">\n", 
+		    REG_STEER_NAMESPACE,
+		    ReG_Steer_Schema_Locn);
   }
   else{
     return_status = REG_FAILURE;
@@ -1299,48 +494,20 @@ int Write_xml_header(FILE *fp)
 
 /*--------------------------------------------------------------------*/
 
-int Write_xml_footer(FILE *fp)
+int Write_xml_footer(char **buf)
 {
   int return_status = REG_SUCCESS;
 
   /* Write end of ReG steering message */
 
-  if(fp){
-    fprintf(fp, "</ReG_steer_message>\n");
+  if(*buf){
+    *buf += sprintf(*buf, "</ReG_steer_message>\n");
   }
   else{
     return_status = REG_FAILURE;
   }
 
   return return_status;
-}
-
-/*-----------------------------------------------------------------*/
-
-void scan_startElement(void *userData, const char *name, const char **atts)
-{
-  REG_MsgType *msg_type = (REG_MsgType *)userData;
-
-  /* Used when scanning a message to see what sort it is - we just keep
-     scanning until we find an element that is a recognised message
-     type */
-
-  if(*msg_type != MSG_NOTSET) return;
-
-  *msg_type = Get_message_type(name);
-
-  return;
-}
-
-/*-----------------------------------------------------------------*/
-
-void scan_endElement(void *userData, const char *name)
-{
-  /* Used when scanning a message to see what sort it is - this routine
-     is not actually needed in this case but have to pass something
-     to the XML parser */
-
-  return;
 }
 
 /*-----------------------------------------------------------------*/

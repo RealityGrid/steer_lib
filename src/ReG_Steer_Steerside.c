@@ -38,6 +38,7 @@
 
 #include "ReG_Steer_Steerside.h"
 #include "ReG_Steer_Steerside_internal.h"
+#include "ReG_Steer_Proxy_utils.h"
 
 #ifndef DEBUG
 #define DEBUG 0
@@ -125,7 +126,10 @@ int Steerer_initialize()
 
   for(i=0; i<Sim_table.max_entries; i++){
 
-    Sim_table.sim[i].handle = REG_SIM_HANDLE_NOTSET;
+    Sim_table.sim[i].handle    = REG_SIM_HANDLE_NOTSET;
+    Sim_table.sim[i].msg       = NULL;
+    Sim_table.sim[i].pipe_to_proxy   = REG_PIPE_UNSET;
+    Sim_table.sim[i].pipe_from_proxy = REG_PIPE_UNSET;
   }
 
   /* Create the main proxy - we use this one to query the 'grid' about
@@ -189,6 +193,8 @@ int Get_sim_list(int   *nSims,
   int   count;
   int   nbytes;
 
+  *nSims = 0;
+
   /* Routine to get list of available steerable applications.
      Assumes that simName and simGSH are arrays of 
      REG_MAX_NUM_STEERED_SIM pointers to char arrays of length
@@ -206,7 +212,7 @@ int Get_sim_list(int   *nSims,
   /* Get (space-delimited) list of steerable apps & associated
      grid-service handles */
 
-  Send_proxy_message(Proxy.pipe_to_proxy, "GET_APPS");
+  Send_proxy_message(Proxy.pipe_to_proxy, GET_APPS_MSG);
 
   Get_proxy_message(Proxy.pipe_from_proxy, Proxy.buf, &nbytes);
 
@@ -250,8 +256,6 @@ int Sim_attach(char *SimID,
   int                  i, j;
   int                  new_size;
   void                *dum_ptr;
-  char                 file_root[REG_MAX_STRING_LENGTH];
-  char                 sys_cmd[REG_MAX_STRING_LENGTH];
   int                  return_status = REG_SUCCESS;
 
   /* Get next free entry in simulation table (allocates more memory if
@@ -267,6 +271,7 @@ int Sim_attach(char *SimID,
 
   Sim_table.sim[current_sim].pipe_to_proxy   = REG_PIPE_UNSET;
   Sim_table.sim[current_sim].pipe_from_proxy = REG_PIPE_UNSET;
+  Sim_table.sim[current_sim].msg             = NULL;
 
   /* ...registered parameters */
 
@@ -312,7 +317,7 @@ int Sim_attach(char *SimID,
   Sim_table.sim[current_sim].Cmds_table.cmd[0].cmd_id = REG_STR_DETACH;
   Increment_cmd_registered(&(Sim_table.sim[current_sim].Cmds_table));
 
-  /* ...IO types */
+ /* ...IO types */
 
   Sim_table.sim[current_sim].IOdef_table.io_def = 
     (IOdef_entry *)malloc(REG_INITIAL_NUM_IOTYPES*sizeof(IOdef_entry));
@@ -340,17 +345,18 @@ int Sim_attach(char *SimID,
   if( (strcmp(SimID, "DEFAULT") != 0) && Proxy.available){
 
     /* Use a proxy to interact with the 'grid' */
+#if DEBUG
+    fprintf(stderr, "Sim_attach: calling Sim_attach_proxy...\n");
+#endif
     return_status = Sim_attach_proxy(&(Sim_table.sim[current_sim]), SimID);
   }
   else{
 
     /* Have no proxy so have no 'grid' - use local file system */
+#if DEBUG
+    fprintf(stderr, "Sim_attach: calling Sim_attach_local...\n");
+#endif
     return_status = Sim_attach_local(&(Sim_table.sim[current_sim]), SimID);
-
-    /* Read the commands that the application supports */
-    if(return_status == REG_SUCCESS){
-      return_status = Consume_supp_cmds_local(&(Sim_table.sim[current_sim]));
-    }
   }
 
 
@@ -360,7 +366,6 @@ int Sim_attach(char *SimID,
 
     Sim_table.sim[current_sim].handle = current_sim;
     *SimHandle = current_sim;
-    strcpy(Sim_table.sim[current_sim].file_root, file_root);
     Sim_table.num_registered++;
 
     /* If simulation supports the pause command then it must also
@@ -402,14 +407,15 @@ int Sim_attach(char *SimID,
 	break;
       }
     }
+  }
+  else{
 
-    /* Create lock file to indicate that steerer has connected to sim */
-
-    sprintf(sys_cmd, "touch %s%s", file_root, STR_CONNECTED_FILENAME);
-    system(sys_cmd);
+    free(Sim_table.sim[current_sim].Params_table.param);
+    free(Sim_table.sim[current_sim].Cmds_table.cmd);
+    free(Sim_table.sim[current_sim].IOdef_table.io_def);
   }
 
-  return REG_SUCCESS;
+  return return_status;
 }
 
 /*----------------------------------------------------------*/
@@ -442,78 +448,115 @@ int Sim_detach(int *SimHandle)
 int Get_next_message(int         *SimHandle,
 		     REG_MsgType *msg_type)
 {
-  int        return_status = REG_SUCCESS;
   int        isim;
-  FILE      *fp;
-
-  XML_Parser parser = XML_ParserCreate(NULL);
-  size_t     len;
-  char       buf[BUFSIZ];
-  int        done;
+  char       buf[REG_MAX_MSG_SIZE];
+  char       filename[REG_MAX_STRING_LENGTH];
   int        count_active;
+  int        nbytes;
+  int        got_message;
+  FILE      *fp;
   static int last_sim = 0;
+  int        return_status = REG_SUCCESS;
 
   /* This routine checks for any messages from connected
      simulations */
 
-  *msg_type = MSG_NOTSET;
-
-  /* Initialise XML parser */
-
-  XML_SetUserData(parser, (void *)msg_type);
-  XML_SetElementHandler(parser, scan_startElement, scan_endElement);
+  *msg_type  = MSG_NOTSET;
 
   count_active = 0;
 
   for(isim=last_sim; isim<Sim_table.max_entries; isim++){
-  
+
     if(Sim_table.sim[isim].handle != REG_SIM_HANDLE_NOTSET){
   
+      got_message = FALSE;
 
-      sprintf(buf, "%s%s", Sim_table.sim[isim].file_root,
-  		           APP_TO_STR_FILENAME);
-  	
-      if(fp = Open_next_file(buf)){
-  
-	do {
-  
-	  len  = fread(buf, 1, sizeof(buf), fp);
-	  done = len < sizeof(buf);
-  
-	  if (!XML_Parse(parser, buf, len, done)) {
-  
-	    fprintf(stderr, "%s at line %d\n",
-		    XML_ErrorString(XML_GetErrorCode(parser)),
-		    XML_GetCurrentLineNumber(parser));
-	    break;
+      if(Sim_table.sim[isim].pipe_to_proxy != REG_PIPE_UNSET){
+
+	/* Have a proxy so communicate with sim. using it */
+
+	Send_proxy_message(Sim_table.sim[isim].pipe_to_proxy, GET_STATUS_MSG);
+
+	/* Check the success of the request */
+	Get_proxy_message(Sim_table.sim[isim].pipe_from_proxy, buf, &nbytes);
+
+	if(!strncmp(buf, OK_MSG, nbytes)){
+
+	  got_message = TRUE;
+
+	  /* Get the message itself */
+	  Get_proxy_message(Sim_table.sim[isim].pipe_from_proxy, buf, &nbytes);
+
+	  /* Parse it and store it in structure pointed to by msg */
+	  if(Sim_table.sim[isim].msg){
+
+	    Delete_msg_struct(Sim_table.sim[isim].msg);
+	    Sim_table.sim[isim].msg = NULL;
 	  }
 
-	  if (*msg_type != MSG_NOTSET) break;
+	  Sim_table.sim[isim].msg = New_msg_struct();
 
-	} while (!done);
-  
-  	fclose(fp);
+	  return_status = Parse_xml_buf(buf, nbytes, 
+					Sim_table.sim[isim].msg);
+	}
+      }
+      else{
 
-	if(*msg_type != MSG_NOTSET){
+	/* No proxy available so using 'local' file system */
 
-	  *SimHandle = Sim_table.sim[isim].handle;
+        sprintf(filename, "%s%s", Sim_table.sim[isim].file_root,
+		APP_TO_STR_FILENAME);
 
-	  /* Keep a record of the last sim we received a msg
-	     from and then breakout */
-	  last_sim = isim;
-	  break;
+        if(fp = Open_next_file(filename)){
+	
+	  fclose(fp);
+
+	  got_message = TRUE;
+
+	  /* Parse it and store it in structure pointed to by msg */
+	  if(Sim_table.sim[isim].msg){
+
+	    Delete_msg_struct(Sim_table.sim[isim].msg);
+	    Sim_table.sim[isim].msg = NULL;
+	  }
+
+	  Sim_table.sim[isim].msg = New_msg_struct();
+
+	  return_status = Parse_xml_file(filename, 
+	  			         Sim_table.sim[isim].msg);
+
+	  /* Consume the file now that we've read it */
+	  Delete_file(filename);
 	}
       }
 
+      /* If we got a message & parsed it successfully then we're done */
+
+      if((return_status == REG_SUCCESS) && (got_message == TRUE)){
+
+	/* Pass back the message type */
+	*msg_type = Sim_table.sim[isim].msg->msg_type;
+
+	*SimHandle = Sim_table.sim[isim].handle;
+
+	/* Keep a record of the last sim we received a msg
+	   from and then breakout */
+	last_sim = isim;
+
+	break;
+      }
+      else{
+        Delete_msg_struct(Sim_table.sim[isim].msg);
+        Sim_table.sim[isim].msg = NULL;
+      }
+
       /* Count no. of active sim.'s we've checked so that we can
-	 break out of loop once Sim_table.num_registered have
-	 been done - this will only happen when there are no
+         break out of loop once Sim_table.num_registered have
+         been done - this will only happen when there are no
          messages to retrieve */
       if (++count_active == Sim_table.num_registered) break;
     }
   }
-
-  XML_ParserFree(parser);
 
   return return_status;
 }
@@ -522,19 +565,12 @@ int Get_next_message(int         *SimHandle,
 
 int Consume_param_defs(int SimHandle)
 {
-  char             base_name[REG_MAX_STRING_LENGTH];
-  int              index;
-  int              i;
-  int              j;
-  int              done;
-  FILE            *fp;
-  XML_Parser       parser = XML_ParserCreate(NULL);
-  user_data_type   User_data;
-  size_t           len;
-  char             buf[BUFSIZ];
-  param_xml_struct param_struct;
-  Param_table_type param_table;
-  int              return_status = REG_SUCCESS;
+  int                  index;
+  int                  i, j;
+  struct param_struct *ptr;
+  int                  handle;
+  int                  found;
+  int                  return_status = REG_SUCCESS;
 
   /* Read a message containing parameter definitions.  Table of
      stored definitions is then updated to match those just read */
@@ -545,79 +581,20 @@ int Consume_param_defs(int SimHandle)
     return REG_FAILURE;
   }
 
-  /* Initialise temporary param table to fill - can't put stuff straight into
-     the main table until we've checked handles */
-
-  param_table.param = (param_entry *)malloc(REG_INITIAL_NUM_PARAMS*
-					    sizeof(param_entry));
-
-  if(param_table.param == NULL) return REG_FAILURE;
-
-  param_table.num_registered = 0;
-  param_table.max_entries    = REG_INITIAL_NUM_PARAMS;
-
-  for(i=0; i<REG_INITIAL_NUM_PARAMS; i++){
-
-    param_table.param[i].handle   = REG_PARAM_HANDLE_NOTSET;
-    param_table.param[i].modified = FALSE;
-  }
-
-  /* Initialise XML parser */
-
-  XML_SetUserData(parser, &User_data);
-  XML_SetElementHandler(parser, startElement, endElement);
-  XML_SetCharacterDataHandler(parser, dataHandler);
-
-
-  /* Set ptr to the table to fill */
-
-  param_struct.field_type  = PARAM_NOTSET;
-  param_struct.table       = &(param_table);
-  User_data.msg_type       = MSG_NOTSET;
-  User_data.gen_xml_struct = &param_struct;
-
-  /* Get name of file to read */
-
-  sprintf(base_name,"%s%s",Sim_table.sim[SimHandle].file_root,
-	  APP_TO_STR_FILENAME);
-
-  fp = Open_next_file(base_name);
-
-  if(fp == NULL){
-    fprintf(stderr, "Consume_param_defs: failed to find file to read\n");
-    XML_ParserFree(parser);
-    free(param_table.param);
-    return REG_FAILURE;
-  }
-
-  /* Parse the file */
-
-  do {
-  
-    len = fread(buf, 1, sizeof(buf), fp);
-    done = len < sizeof(buf);
-  
-    if (!XML_Parse(parser, buf, len, done)) {
-  
-  	fprintf(stderr, "%s at line %d\n",
-		XML_ErrorString(XML_GetErrorCode(parser)),
-		XML_GetCurrentLineNumber(parser));
-  	return REG_FAILURE;
-    }
-  } while (!done);
-
-  fclose(fp);
-  Delete_file(base_name);
-
   /* Must now check the param definitions we've received and update the
      parameters part of the Sim_table appropriately */
 
-  for(i=0; i<param_table.num_registered; i++){
+  ptr = Sim_table.sim[index].msg->status->first_param;
 
-    if( Param_index_from_handle(&(Sim_table.sim[index].Params_table), 
-		  param_table.param[i].handle) == REG_PARAM_HANDLE_NOTSET){
+  while(ptr){
+
+    sscanf((char *)(ptr->handle), "%d", &handle);
+
+    if( Param_index_from_handle(&(Sim_table.sim[index].Params_table),
+				handle) == REG_PARAM_HANDLE_NOTSET){
 
       /* Our table doesn't have this parameter in it so add it */
+
       j = Next_free_param_index(&(Sim_table.sim[index].Params_table));
 
       if(j == -1){
@@ -625,18 +602,60 @@ int Consume_param_defs(int SimHandle)
 	return_status = REG_FAILURE;
 	break;
       }
-      Sim_table.sim[index].Params_table.param[j] = param_table.param[i];
+
+      Sim_table.sim[index].Params_table.param[j].handle = handle;
+
+      if(ptr->label){
+	strcpy(Sim_table.sim[index].Params_table.param[j].label,
+	       (char *)(ptr->label));
+      }
+
+      if(ptr->steerable){
+	sscanf((char *)(ptr->steerable), "%d", 
+	       &(Sim_table.sim[index].Params_table.param[j].steerable));
+      }
+
+      if(ptr->type){
+	sscanf((char *)(ptr->type), "%d",
+	       &(Sim_table.sim[index].Params_table.param[j].type));
+      }
+
+      Sim_table.sim[index].Params_table.param[j].ptr = NULL;
+
+      if(ptr->value){
+	strcpy(Sim_table.sim[index].Params_table.param[j].value,
+		(char *)(ptr->value));
+      }
+
+      if(ptr->is_internal){
+	sscanf((char *)(ptr->is_internal), "%d",
+	       &(Sim_table.sim[index].Params_table.param[j].is_internal));
+      }
+
       Sim_table.sim[index].Params_table.num_registered++;
     }
+    ptr = ptr->next;
   }
 
   /* Remove any parameters that have been deleted */
 
   for(i=0; i<Sim_table.sim[index].Params_table.max_entries; i++){
 
-    if( Param_index_from_handle(&(param_table), 
-			 Sim_table.sim[index].Params_table.param[i].handle)
-	                                          == REG_PARAM_HANDLE_NOTSET){
+    ptr = Sim_table.sim[index].msg->status->first_param;
+
+    while(ptr){
+
+      sscanf((char *)(ptr->handle), "%d", &handle);
+
+      if(handle == Sim_table.sim[index].Params_table.param[i].handle){
+
+	found = TRUE;
+	break;
+      }
+      ptr = ptr->next;
+    }
+
+    if(!found){
 
       /* Only indication that param deleted is change of handle - hence loop
 	 over max_entries here */
@@ -644,12 +663,13 @@ int Consume_param_defs(int SimHandle)
       Sim_table.sim[index].Params_table.param[i].handle = 
 	                                       REG_PARAM_HANDLE_NOTSET;
       Sim_table.sim[index].Params_table.num_registered--;
-    }    
+    }
   }
 
   /* Clean up */
 
-  free(param_table.param);
+  Delete_msg_struct(Sim_table.sim[index].msg);
+  Sim_table.sim[index].msg = NULL;
 
   return return_status;
 }
@@ -657,21 +677,14 @@ int Consume_param_defs(int SimHandle)
 
 /*----------------------------------------------------------*/
 
-int Consume_IOType_defs(int     SimHandle)
+int Consume_IOType_defs(int SimHandle)
 {
-  char             base_name[REG_MAX_STRING_LENGTH];
-  int              index;
-  int              done;
-  int              i;
-  int              j;
-  FILE            *fp;
-  XML_Parser       parser = XML_ParserCreate(NULL);
-  user_data_type   User_data;
-  size_t           len;
-  char             buf[BUFSIZ];
-  iodef_xml_struct iodef_struct;
-  IOdef_table_type iodef_table;
-  int              return_status = REG_SUCCESS;
+  int               index;
+  int               i, j;
+  int               return_status = REG_SUCCESS;
+  int               handle;
+  int               found;
+  struct io_struct *ptr;
 
   if( (index = Sim_index_from_handle(SimHandle)) == REG_SIM_HANDLE_NOTSET){
 
@@ -679,77 +692,16 @@ int Consume_IOType_defs(int     SimHandle)
     return REG_FAILURE;
   }
 
-  /* Initialise table to fill initially - can't fill actual table 
-     during read as need to allow for IOtypes being added and removed */
-
-  iodef_table.io_def = (IOdef_entry *)malloc(REG_INITIAL_NUM_IOTYPES*
-					     sizeof(IOdef_entry));
-
-  if(iodef_table.io_def == NULL){
-
-    fprintf(stderr, "Consume_IOType_defs: failed to allocate memory\n");
-    return REG_FAILURE;
-  }
-
-  iodef_table.num_registered = 0;
-  iodef_table.max_entries    = REG_INITIAL_NUM_IOTYPES;
-
-  for(i=0; i<REG_INITIAL_NUM_IOTYPES; i++){
-
-    iodef_table.io_def[i].handle = REG_IODEF_HANDLE_NOTSET;
-  }
-
-  /* Initialise XML parser */
-
-  XML_SetUserData(parser, &User_data);
-  XML_SetElementHandler(parser, startElement, endElement);
-  XML_SetCharacterDataHandler(parser, dataHandler);
-
-  /* Set ptr to the table to fill */
-
-  iodef_struct.field_type  = IODEF_NOTSET;
-  iodef_struct.table       = &(iodef_table);
-  User_data.msg_type       = MSG_NOTSET;
-  User_data.gen_xml_struct = &iodef_struct;
-
-  /* Get name of file to read */
-
-  sprintf(base_name,"%s%s",Sim_table.sim[index].file_root,
-	  APP_TO_STR_FILENAME);
-
-  fp = Open_next_file(base_name);
-
-  if(fp == NULL){
-    fprintf(stderr, "Consume_IOType_defs: failed to find file to read\n");
-    XML_ParserFree(parser);
-    return REG_FAILURE;
-  }
-
-  /* Parse the file */
-
-  do {
-  
-    len = fread(buf, 1, sizeof(buf), fp);
-    done = len < sizeof(buf);
-  
-    if (!XML_Parse(parser, buf, len, done)) {
-  
-  	fprintf(stderr, "%s at line %d\n",
-		XML_ErrorString(XML_GetErrorCode(parser)),
-		XML_GetCurrentLineNumber(parser));
-  	return REG_FAILURE;
-    }
-  } while (!done);
-
-  fclose(fp);
-  Delete_file(base_name);
-
   /* Compare new IOdefs with those currently stored in table */
 
-  for(i=0; i<iodef_table.num_registered; i++){
+  ptr = Sim_table.sim[index].msg->io_def->first_io;
+
+  while(ptr){
+
+    sscanf((char *)(ptr->handle), "%d", &handle);
 
     if( IOdef_index_from_handle(&(Sim_table.sim[index].IOdef_table), 
-		  iodef_table.io_def[i].handle) == REG_IODEF_HANDLE_NOTSET){
+				handle) == REG_IODEF_HANDLE_NOTSET){
 
       /* Our table doesn't have this IOdef so add it */
       j = Next_free_iodef_index(&(Sim_table.sim[index].IOdef_table));
@@ -760,18 +712,57 @@ int Consume_IOType_defs(int     SimHandle)
 	break;
       }
 
-      Sim_table.sim[index].IOdef_table.io_def[j] = iodef_table.io_def[i];
+      Sim_table.sim[index].IOdef_table.io_def[j].handle = handle;
+
+      if(ptr->label){
+
+	strcpy(Sim_table.sim[index].IOdef_table.io_def[j].label,
+	       (char *)(ptr->label));
+      }
+
+      if(ptr->direction){
+
+	sscanf((char *)(ptr->direction), "%d",
+	       &(Sim_table.sim[index].IOdef_table.io_def[j].direction));
+      }
+
+      if(ptr->support_auto){
+
+	sscanf((char *)(ptr->support_auto), "%d",
+	       &(Sim_table.sim[index].IOdef_table.io_def[j].auto_io_support));
+      }
+
+      if(ptr->freq_handle){
+
+	sscanf((char *)(ptr->freq_handle), "%d",
+	       &(Sim_table.sim[index].IOdef_table.io_def[j].freq_param_handle));
+      }
+
       Sim_table.sim[index].IOdef_table.num_registered++;
     }
+
+    ptr = ptr->next;
   }
 
   /* Remove any IO defs that have been deleted */
 
   for(i=0; i<Sim_table.sim[index].IOdef_table.max_entries; i++){
 
-    if( IOdef_index_from_handle(&iodef_table, 
-			   Sim_table.sim[index].IOdef_table.io_def[i].handle) 
-	                                          == REG_IODEF_HANDLE_NOTSET){
+    ptr = Sim_table.sim[index].msg->io_def->first_io;
+
+    while(ptr){
+
+      sscanf((char *)(ptr->handle), "%d", &handle);
+
+      if(handle == Sim_table.sim[index].IOdef_table.io_def[i].handle){
+
+	found = TRUE;
+	break;
+      }
+      ptr = ptr->next;
+    }
+
+    if(!found){
 
       /* Only indication that IOdef deleted is change of handle - hence loop
 	 over max_entries here */
@@ -784,7 +775,8 @@ int Consume_IOType_defs(int     SimHandle)
 
   /* Clean up */
 
-  free(iodef_table.io_def);
+  Delete_msg_struct(Sim_table.sim[index].msg);
+  Sim_table.sim[index].msg = NULL;
 
   return return_status;
 }
@@ -796,27 +788,19 @@ int Consume_status(int   SimHandle,
 		   int  *NumCmds,
 		   int  *Commands)
 {
-  FILE                *fp;
-  int                  i, j;
+  int                  j;
   int                  index;
+  int                  handle;
+  int                  count;
   int                  return_status;
-  int                  NumParams;
-  char                 filename[REG_MAX_STRING_LENGTH];
 
   /* For XML parser */
 
-  size_t               len;
-  char                 buf[BUFSIZ];
-  XML_Parser           parser = XML_ParserCreate(NULL);
-  int                  done;
-  user_data_type       User_data;
-  param_xml_struct     param_struct;
-  status_xml_struct    status_struct;
-  supp_cmds_xml_struct cmd_struct;
-  Param_table_type     recvd_params;
-  Supp_cmd_table_type  recvd_cmds;
+  struct param_struct *param_ptr;
+  struct   cmd_struct *cmd_ptr;
 
   return_status = REG_SUCCESS;
+  *NumCmds = 0;
 
   /* Find the table entry for simulation */
 
@@ -826,143 +810,61 @@ int Consume_status(int   SimHandle,
     return REG_FAILURE;
   }
 
-  /* Set up tables and pointers to receive data... */
+  /* Get_next_message has already parsed the (xml) message and stored it
+     in the structure pointed to by Sim_table.sim[index].msg */
 
-  /* ...for parameters */
+  /* Copy data out of structures - commands first... */
 
-  recvd_params.num_registered = 0;
-  recvd_params.max_entries    = REG_MAX_NUM_STR_PARAMS;
-  recvd_params.param = (param_entry *)malloc(REG_MAX_NUM_STR_PARAMS*
-					     sizeof(param_entry));
+  cmd_ptr = Sim_table.sim[index].msg->status->first_cmd;
 
-  if(recvd_params.param == NULL){
+  count = 0;
+  while(cmd_ptr){
 
-    fprintf(stderr, "Consume_control: failed to allocate memory");
-    return REG_MEM_FAIL;
-  }
+    sscanf((char *)(cmd_ptr->id), "%d", &(Commands[count]));
 
-  for(i=0; i<recvd_params.max_entries; i++){
+    count++;
 
-    recvd_params.param[i].handle = REG_PARAM_HANDLE_NOTSET;
-  }
+    if(count >= REG_MAX_NUM_STR_CMDS){
 
-  /* ...for commands */
-
-  recvd_cmds.num_registered = 0;
-  recvd_cmds.max_entries    = REG_MAX_NUM_STR_CMDS;
-  recvd_cmds.cmd = (supp_cmd_entry *)malloc(REG_MAX_NUM_STR_CMDS*
-					    sizeof(supp_cmd_entry));
-
-  if(recvd_cmds.cmd == NULL){
-
-    fprintf(stderr, "Consume_status: failed to allocate memory");
-    free(recvd_params.param);
-    return REG_MEM_FAIL;
-  }
-
-  /* Each command may have parameters associated with it so prepare
-     appropriate structures */
-
-  for(i=0; i<recvd_cmds.max_entries; i++){
-
-    recvd_cmds.cmd[i].cmd_params.num_registered = 0;
-    recvd_cmds.cmd[i].cmd_params.max_entries    = REG_INITIAL_NUM_PARAMS;
-
-    recvd_cmds.cmd[i].cmd_params.param = 
-      (param_entry *)malloc(REG_INITIAL_NUM_PARAMS*sizeof(param_entry));
-
-    if(recvd_cmds.cmd[i].cmd_params.param == NULL){
-
-      for(j=i-1; j>-1; j--){
-
-	free(recvd_cmds.cmd[j].cmd_params.param);
-      }
-      free(recvd_cmds.cmd);
-      free(recvd_params.param);
-
-      return REG_MEM_FAIL;
+      fprintf(stderr, "Consume_status: WARNING: truncating list of cmds\n");
+      break;
     }
+    cmd_ptr = cmd_ptr->next;
   }
 
-  /* Set pointers to structures to fill */
-
-  param_struct.table         = &recvd_params;
-  param_struct.field_type    = PARAM_NOTSET;
-  cmd_struct.table           = &recvd_cmds;
-  cmd_struct.field_type      = CMD_NOTSET;
-  status_struct.param_struct = &param_struct;
-  status_struct.cmd_struct   = &cmd_struct;
-  status_struct.field_type   = STAT_NOTSET;
-  User_data.gen_xml_struct   = (void *)(&status_struct);
-  User_data.msg_type         = MSG_NOTSET;
-
-  /* Initialise XML parser */
-
-  XML_SetUserData(parser, &User_data);
-  XML_SetElementHandler(parser, startElement, endElement);
-  XML_SetCharacterDataHandler(parser, dataHandler);
-
-  sprintf(filename, "%s%s", Sim_table.sim[index].file_root,
-	  APP_TO_STR_FILENAME);
-
-  if( (fp = Open_next_file(filename)) != NULL){
-
-    do {
-  
-      len  = fread(buf, 1, sizeof(buf), fp);
-      done = len < sizeof(buf);
-  
-      if (!XML_Parse(parser, buf, len, done)) {
-  
-  	  fprintf(stderr, "%s at line %d\n",
-		  XML_ErrorString(XML_GetErrorCode(parser)),
-		  XML_GetCurrentLineNumber(parser));
-  	  return_status = REG_FAILURE;
-	  break;
-      }
-    } while (!done);
-  
-    XML_ParserFree(parser);
-    fclose(fp);
-    Delete_file(filename);
-
-    /* Copy data out of structures */
-
-    *NumCmds = recvd_cmds.num_registered;
+  *NumCmds = count;
 
 #if DEBUG
-    fprintf(stderr, "Consume_status: got %d commands\n", (*NumCmds));
+  fprintf(stderr, "Consume_status: got %d commands\n", (*NumCmds));
 #endif
-    for(i=0; i<(*NumCmds); i++){
 
-      Commands[i] = recvd_cmds.cmd[i].cmd_id;
+  /* ...and now the parameters... */
+
+  param_ptr = Sim_table.sim[index].msg->status->first_param;
+
+  count = 0;
+  while(param_ptr){
+
+    sscanf((char *)(param_ptr->handle), "%d", &handle);
+
+    /* Look-up entry for param to update */
+
+    if( (j=Param_index_from_handle(&(Sim_table.sim[index].Params_table),
+				   handle)) == REG_PARAM_HANDLE_NOTSET){
+
+      fprintf(stderr, "Consume_status: failed to match param handles\n");
+      fprintf(stderr, "                handle = %d\n", handle);
+
+      param_ptr = param_ptr->next;
+      continue;
     }
 
-    NumParams = recvd_params.num_registered;
+    /* Update value of this param */
+    strcpy(Sim_table.sim[index].Params_table.param[j].value,
+	   (char *)(param_ptr->value));
 
-    for(i=0; i<NumParams; i++){
-
-      /* Look-up entry for param to update */
-
-      if( (j=Param_index_from_handle(&(Sim_table.sim[index].Params_table),
-	           recvd_params.param[i].handle)) == REG_PARAM_HANDLE_NOTSET){
-
-	fprintf(stderr, "Consume_status: failed to match param handles\n");
-	fprintf(stderr, "                handle = %d\n", 
-		recvd_params.param[i].handle);
-	continue;
-      }
-
-      /* Update value of this param */
-      strcpy(Sim_table.sim[index].Params_table.param[j].value, 
-	     recvd_params.param[i].value);
-    }
-
-  }
-  else{
-
-    /* Failed to open file */
-    *NumCmds = 0;
+    count++;
+    param_ptr = param_ptr->next;
   }
 
   /* Return sequence number */
@@ -978,10 +880,8 @@ int Consume_status(int   SimHandle,
 
   /* Clean up */
 
-  free(recvd_params.param);
-  recvd_params.param = NULL;
-  free(recvd_cmds.cmd);
-  recvd_cmds.cmd = NULL;
+  Delete_msg_struct(Sim_table.sim[index].msg);
+  Sim_table.sim[index].msg = NULL;
 
   return return_status;
 }
@@ -998,6 +898,9 @@ int Emit_control(int    SimHandle,
   int   count;
   int   num_to_emit;
   char  filename[REG_MAX_STRING_LENGTH];
+  char  buf[REG_MAX_MSG_SIZE];
+  char *pbuf;
+  int   nbytes;
 
   /* Find the simulation referred to */
 
@@ -1007,20 +910,12 @@ int Emit_control(int    SimHandle,
     return REG_FAILURE;
   }
 
-  if( Generate_control_filename(SimHandle, filename) != REG_SUCCESS){
+  /* Create control message in buffer */
 
-    fprintf(stderr, "Emit_control: failed to create filename\n");
-    return REG_FAILURE;
-  }
+  pbuf = buf;
+  Write_xml_header(&pbuf);
 
-  if( (fp = fopen(filename, "w")) == NULL){
-
-    fprintf(stderr, "Emit_control: failed to open file\n");
-    return REG_FAILURE;
-  }
-
-  Write_xml_header(fp);
-  fprintf(fp, "<Steer_control>\n");
+  pbuf += sprintf(pbuf, "<Steer_control>\n");
 
   /* Enforce a hard limit of no more than REG_MAX_NUM_STR_CMDS commands
      per message */
@@ -1038,9 +933,9 @@ int Emit_control(int    SimHandle,
     /* Check that simulation supports each requested command */
     if(Command_supported(simid, SysCommands[i])==REG_SUCCESS){
 
-      fprintf(fp, "<Command>\n");
-      fprintf(fp, "<Cmd_id>%d</Cmd_id>\n", SysCommands[i]);
-      fprintf(fp, "</Command>\n");
+      pbuf += sprintf(pbuf, "<Command>\n");
+      pbuf += sprintf(pbuf, "<Cmd_id>%d</Cmd_id>\n", SysCommands[i]);
+      pbuf += sprintf(pbuf, "</Command>\n");
     }
   }
 
@@ -1064,12 +959,12 @@ int Emit_control(int    SimHandle,
 	break;
       }
 
-      fprintf(fp, "<Param>\n");
-      fprintf(fp, "<Handle>%d</Handle>\n", 
+      pbuf += sprintf(pbuf, "<Param>\n");
+      pbuf += sprintf(pbuf, "<Handle>%d</Handle>\n", 
 	      Sim_table.sim[simid].Params_table.param[i].handle);
-      fprintf(fp, "<Value>%s</Value>\n", 
+      pbuf += sprintf(pbuf, "<Value>%s</Value>\n", 
 	      Sim_table.sim[simid].Params_table.param[i].value);
-      fprintf(fp, "</Param>\n");
+      pbuf += sprintf(pbuf, "</Param>\n");
 
       /* Unset 'modified' flag */
       Sim_table.sim[simid].Params_table.param[i].modified = FALSE;
@@ -1078,13 +973,50 @@ int Emit_control(int    SimHandle,
     }
   }
 
-  fprintf(fp, "</Steer_control>\n");
-  Write_xml_footer(fp);
-  fclose(fp);
+  pbuf += sprintf(pbuf, "</Steer_control>\n");
+  Write_xml_footer(&pbuf);
 
-  /* The application only attempts to read files for which it can find an
-     associated lock file */
-  Create_lock_file(filename);
+
+  if(Sim_table.sim[simid].pipe_to_proxy != REG_PIPE_UNSET){
+
+    /* Instruct proxy to send control message to application */
+
+    Send_proxy_message(Sim_table.sim[simid].pipe_to_proxy,
+		       SEND_CTRL_MSG);
+
+    /* Send buffer to proxy for forwarding to application */
+
+    Send_proxy_message(Sim_table.sim[simid].pipe_to_proxy,
+		       buf);
+
+    Get_proxy_message(Sim_table.sim[simid].pipe_from_proxy,
+		      buf, &nbytes);
+
+    if(!strncmp(buf, ERR_MSG, nbytes)) return REG_FAILURE;
+  }
+  else{
+
+    /* Don't have a proxy... write to a 'local' file */
+
+    if( Generate_control_filename(SimHandle, filename) != REG_SUCCESS){
+
+      fprintf(stderr, "Emit_control: failed to create filename\n");
+      return REG_FAILURE;
+    }
+
+    if( (fp = fopen(filename, "w")) == NULL){
+
+      fprintf(stderr, "Emit_control: failed to open file\n");
+      return REG_FAILURE;
+    }
+
+    fprintf(fp, "%s", buf);
+    fclose(fp);
+
+    /* The application only attempts to read files for which it can find an
+       associated lock file */
+    Create_lock_file(filename);
+  }
   
   return REG_SUCCESS;
 }
@@ -1836,6 +1768,8 @@ int Sim_attach_local(Sim_entry_type *sim, char *SimID)
   char *pchar;
   char  file_root[REG_MAX_STRING_LENGTH];
   char  filename[REG_MAX_STRING_LENGTH];
+  char  sys_cmd[REG_MAX_STRING_LENGTH];
+  int   return_status = REG_SUCCESS;
 
   pchar = getenv("REG_STEER_DIRECTORY");
 
@@ -1859,10 +1793,6 @@ int Sim_attach_local(Sim_entry_type *sim, char *SimID)
 	      "steering messages: %s\n",
 	      file_root);
 
-      free(sim->Params_table.param);
-      free(sim->Cmds_table.cmd);
-      free(sim->IOdef_table.io_def);
-
       return REG_FAILURE;
     }
     else{
@@ -1874,9 +1804,6 @@ int Sim_attach_local(Sim_entry_type *sim, char *SimID)
   else{
     fprintf(stderr, "Sim_attach: failed to get scratch directory\n");
     
-    free(sim->Params_table.param);
-    free(sim->Cmds_table.cmd);
-    free(sim->IOdef_table.io_def);
     return REG_FAILURE;
   }
 
@@ -1888,7 +1815,21 @@ int Sim_attach_local(Sim_entry_type *sim, char *SimID)
 
   Remove_files(filename);
 
-  return REG_SUCCESS;
+  /* Save directory used for communication */
+  strcpy(sim->file_root, file_root);
+ 
+  /* Read the commands that the application supports */
+  return_status = Consume_supp_cmds_local(sim);
+
+  if(return_status == REG_SUCCESS){
+
+    /* Create lock file to indicate that steerer has connected to sim */
+    sprintf(sys_cmd, "touch %s%s", sim->file_root, 
+	    STR_CONNECTED_FILENAME);
+    system(sys_cmd);
+  }
+
+  return return_status;
 }
 
 /*-------------------------------------------------------------------*/
@@ -1897,7 +1838,10 @@ int Sim_attach_proxy(Sim_entry_type *sim, char *SimID)
 {
   char  buf[REG_MAX_MSG_SIZE];
   int   nbytes;
-  int   return_status;
+  int   return_status = REG_SUCCESS;
+
+  struct msg_struct *msg;
+  struct cmd_struct *cmd;
 
   /* Create a proxy for the simulation and use this to attach to it */
 
@@ -1908,15 +1852,11 @@ int Sim_attach_proxy(Sim_entry_type *sim, char *SimID)
 
     fprintf(stderr, "Sim_attach_proxy: failed to launch proxy\n");
     
-    free(sim->Params_table.param);
-    free(sim->Cmds_table.cmd);
-    free(sim->IOdef_table.io_def);
-
     return REG_FAILURE;
   }
 
   /* Send 'attach' instruction */
-  Send_proxy_message(sim->pipe_to_proxy, "ATTACH");
+  Send_proxy_message(sim->pipe_to_proxy, ATTACH_MSG);
 
   /* Send GSH of grid-service to attach to */
   Send_proxy_message(sim->pipe_to_proxy, SimID);
@@ -1924,104 +1864,140 @@ int Sim_attach_proxy(Sim_entry_type *sim, char *SimID)
   /* Check success */
   Get_proxy_message(sim->pipe_from_proxy, buf, &nbytes);
 
-  if(strncmp(buf, "STATUS_OK", nbytes) != 0){
+  if(strncmp(buf, OK_MSG, nbytes) != 0){
 
     fprintf(stderr, "Sim_attach_proxy: proxy failed to attach to application\n");
 
-    free(sim->Params_table.param);
-    free(sim->Cmds_table.cmd);
-    free(sim->IOdef_table.io_def);
-
     /* Signal proxy to stop */
-    Send_proxy_message(sim->pipe_to_proxy, "QUIT");
+    Send_proxy_message(sim->pipe_to_proxy, QUIT_MSG);
 
     return REG_FAILURE;      
   }
 
   /* If OK, then get list of supported commands back from proxy */
-  Get_proxy_message(sim->pipe_from_proxy, buf, &nbytes);
+  return_status = Get_proxy_message(sim->pipe_from_proxy, buf, &nbytes);
 
+  if(return_status != REG_SUCCESS){
 
-  return REG_SUCCESS;
+    fprintf(stderr, "Sim_attach_proxy: failed to get list of cmds from proxy\n");
+    /* Signal proxy to stop */
+    Send_proxy_message(sim->pipe_to_proxy, QUIT_MSG);
+
+    return REG_FAILURE;
+  }
+
+  /* Get message structure to fill */
+  msg = New_msg_struct();
+
+  if(!msg){
+
+    fprintf(stderr, "Sim_attach_proxy: failed to get new message struct\n");
+
+    /* Signal proxy to stop */
+    Send_proxy_message(sim->pipe_to_proxy, QUIT_MSG);
+
+    return REG_FAILURE;
+  }
+
+  /* Parse the returned string */
+  return_status = Parse_xml_buf(buf, nbytes, msg);
+
+  if(return_status == REG_SUCCESS){
+
+    cmd = msg->supp_cmd->first_cmd;
+
+    while(cmd != NULL){
+
+      if(sscanf((char *)cmd->id , "%d", 
+		&(sim->Cmds_table.cmd[sim->Cmds_table.num_registered].cmd_id))
+		!= 1){
+
+	fprintf(stderr, "Sim_attach_proxy: error reading cmd_id\n");
+	return_status = REG_FAILURE;
+	break;
+      }
+
+      /* ARPDBG - need to do cmd params too? */
+
+      cmd = cmd->next;
+      Increment_cmd_registered(&(sim->Cmds_table));
+    }
+  }
+
+  if(return_status != REG_SUCCESS){
+    
+    /* Signal proxy to stop */
+    Send_proxy_message(sim->pipe_to_proxy, QUIT_MSG);
+  }
+
+  /* Clean up */
+
+  Delete_msg_struct(msg);
+  msg = NULL;
+
+  return return_status;
 }
 
 /*-------------------------------------------------------------------*/
 
 int Consume_supp_cmds_local(Sim_entry_type *sim)
 {
-  FILE                *fp1;
-  FILE                *fp2;
-  char                 buf[REG_MAX_MSG_SIZE];
-  char                 file_root[REG_MAX_STRING_LENGTH];
-  char                 filename[REG_MAX_STRING_LENGTH];
-  XML_Parser           parser = XML_ParserCreate(NULL);
-  int                  done;
-  user_data_type       User_data;
-  supp_cmds_xml_struct cmds_xml_struct;
-  int                  return_status = REG_SUCCESS;
-
- /* Initialise XML parser */
-
-  XML_SetUserData(parser, &User_data);
-  XML_SetElementHandler(parser, startElement, endElement);
-  XML_SetCharacterDataHandler(parser, dataHandler);
-
-  /* Set ptr to the table to fill */
-
-  cmds_xml_struct.field_type = CMD_NOTSET;
-  cmds_xml_struct.table      = &(sim->Cmds_table);
-  User_data.gen_xml_struct = (void *) (&(cmds_xml_struct));
-
-  /* Check for presence of lock file indicating sim is steerable */
-
-  sprintf(filename, "%s%s", file_root, APP_STEERABLE_FILENAME);
-  fp1 = fopen(filename, "r");
+  FILE              *fp1;
+  FILE              *fp2;
+  char               filename[REG_MAX_STRING_LENGTH];
+  struct msg_struct *msg;
+  struct cmd_struct *cmd;
+  int                return_status = REG_SUCCESS;
 
   /* Check for absence of lock file indicating that sim is
      already being steered */
 
-  sprintf(filename, "%s%s", file_root, STR_CONNECTED_FILENAME);
+  sprintf(filename, "%s%s", sim->file_root, STR_CONNECTED_FILENAME);
   fp2 = fopen(filename, "r");
+
+  /* Check for presence of lock file indicating sim is steerable */
+
+  sprintf(filename, "%s%s", sim->file_root, APP_STEERABLE_FILENAME);
+  fp1 = fopen(filename, "r");
 
   if(fp1 != NULL && fp2 == NULL){
 
-    /* Read supported commands */
-
-    do {
-
-      size_t len = fread(buf, 1, sizeof(buf), fp1);
-      done = len < sizeof(buf);
-
-      if (!XML_Parse(parser, buf, len, done)) {
-
-	fprintf(stderr, "%s at line %d\n",
-		XML_ErrorString(XML_GetErrorCode(parser)),
-		XML_GetCurrentLineNumber(parser));
-	return_status = REG_FAILURE;
-	break;
-      }
-    } while (!done);
-
     fclose(fp1);
 
-    if(return_status == REG_FAILURE){
+    msg = New_msg_struct();
 
-      free(sim->Params_table.param);
-      free(sim->Cmds_table.cmd);
-      free(sim->IOdef_table.io_def);
-      return return_status;
+    return_status = Parse_xml_file(filename, msg);
+
+    if(return_status == REG_SUCCESS){
+
+      cmd = msg->supp_cmd->first_cmd;
+
+      while(cmd){
+
+	sscanf((char *)(cmd->id), "%d", 
+	       &(sim->Cmds_table.cmd[sim->Cmds_table.num_registered].cmd_id));
+
+	/* ARPDBG - may need to add cmd parameters here too */
+
+	Increment_cmd_registered(&(sim->Cmds_table));
+
+	cmd = cmd->next;
+      }
+    }
+    else{
+
+      fprintf(stderr, "Consume_supp_cmds_local: error parsing <%s>\n",
+	      filename);
     }
 
-    XML_ParserFree(parser);
+    Delete_msg_struct(msg);
   }
   else{
 
     if(fp2) fclose(fp2);
 
-    XML_ParserFree(parser);
-
     return REG_FAILURE;
   }
 
-  return REG_SUCCESS;
+  return return_status;
 }

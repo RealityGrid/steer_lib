@@ -34,7 +34,6 @@
 # Set-up access to M4 scripts for production of F90 wrappers, this is
 # taken from the PVM project.
 ARCH           = SGI64
-# include ${REG_STEER_HOME}/src/conf/${ARCH}.def
 M4             = m4
 M4FILE         = ${REG_STEER_HOME}/src/conf/${ARCH}.m4
 RMCMD          = rm
@@ -45,12 +44,13 @@ JAVAC          = /usr/java2/bin/javac
 # Whether to use 32 or 64-bit depends on contents of G and NBIT - these
 # are passed to make on the cmd line
 EXPAT_PARSE_PATH = ${REG_STEER_HOME}/expat/xmlparse
-XML_PARSE_PATH = ${REG_STEER_HOME}/libxml2-2.4.24/.libs
+#XML_INCLUDE_PATH = ${HOME}/projects/xml_parsing/libxml2-2.4.24/include
+XML_INCLUDE_PATH = ${REG_XML_INCDIR}
 
 REG_INCLUDE_PATH = ${REG_STEER_HOME}/include
 INCLUDE_PATH   = -I${REG_INCLUDE_PATH}  \
--I${REG_STEER_HOME}/libxml2-2.4.24/include \
--I${EXPAT_PARSE_PATH}
+                 -I${XML_INCLUDE_PATH} \
+                 -I${EXPAT_PARSE_PATH}
 
 LIB_PATH       = ${REG_STEER_HOME}/lib$(NBIT)
 CC             = cc
@@ -59,50 +59,29 @@ CC_FLAGS       = -ansi $(G) ${INCLUDE_PATH}
 .c.o:
 	${CC} ${CC_FLAGS} -c $< -o $@
 
-all:
-	make ReG_Steer_Appside
-	make ReG_Steer_Appside_f
-	make ReG_Steer_Steerside
-	make ReG_Steer_Common
-	make ReG_Steer_Proxy_utils
-	make ReG_Steer_Proxy
+${LIB_PATH}/libReG_Steer.a: ReG_Steer_Appside_f.o \
+	ReG_Steer_Appside.o \
+	ReG_Steer_Steerside.o \
+	ReG_Steer_Common.o \
+	ReG_Steer_Proxy_utils.o \
+	${BIN_DIR}/ReG_Steer_Proxy.class \
+	ReG_Steer_XML.o
 
-appside:
-	make ReG_Steer_Appside
+${BIN_DIR}/ReG_Steer_Proxy.class: *.java
 
-appside_f:
-	make ReG_Steer_Appside_f
-
-steerside:
-	make ReG_Steer_Steerside
-
-common:
-	make ReG_Steer_Common
-
-proxy_utils:
-	make ReG_Steer_Proxy_utils
-
-proxy:
-	make ReG_Steer_Proxy
-
-ReG_Steer_Appside_f: ReG_Steer_Appside_f.o
+${LIB_PATH}/libReG_Steer.a:
 	ar rv ${LIB_PATH}/libReG_Steer.a ReG_Steer_Appside_f.o
-
-ReG_Steer_Appside: ReG_Steer_Appside.o
 	ar rv ${LIB_PATH}/libReG_Steer.a ReG_Steer_Appside.o
-
-ReG_Steer_Steerside: ReG_Steer_Steerside.o
 	ar rv ${LIB_PATH}/libReG_Steer.a ReG_Steer_Steerside.o
-
-ReG_Steer_Common: ReG_Steer_Common.o
 	ar rv ${LIB_PATH}/libReG_Steer.a ReG_Steer_Common.o
-
-ReG_Steer_Proxy_utils: ReG_Steer_Proxy_utils.o
 	ar rv ${LIB_PATH}/libReG_Steer.a ReG_Steer_Proxy_utils.o
+	ar rv ${LIB_PATH}/libReG_Steer.a ReG_Steer_XML.o
 
-ReG_Steer_Proxy: ReG_Steer_Proxy.java
+${BIN_DIR}/ReG_Steer_Proxy.class:
 	${JAVAC} ReG_Steer_Proxy.java
 	mv -f ReG_Steer_Proxy.class ${BIN_DIR}/.
+
+#---------------------------------------------------------------
 
 ReG_Steer_Appside.o: ReG_Steer_Appside.c \
 	 ${REG_INCLUDE_PATH}/ReG_Steer_Appside.h \
@@ -113,6 +92,8 @@ ReG_Steer_Appside.o: ReG_Steer_Appside.c \
 ReG_Steer_Steerside.o: ReG_Steer_Steerside.c \
          ReG_Steer_Proxy.java \
          ReG_Steer_Proxy_utils.c \
+	 ReG_Steer_XML.c \
+	 ${REG_INCLUDE_PATH}/ReG_Steer_XML.h \
 	 ${REG_INCLUDE_PATH}/ReG_Steer_Proxy_utils.h \
 	 ${REG_INCLUDE_PATH}/ReG_Steer_Steerside.h \
 	 ${REG_INCLUDE_PATH}/ReG_Steer_types.h \
@@ -133,6 +114,12 @@ ReG_Steer_Appside_f.c: ReG_Steer_Appside_f.m4 \
 
 ReG_Steer_Appside_f.o: ReG_Steer_Appside_f.c \
          ${REG_INCLUDE_PATH}/ReG_Steer_Appside_internal.h
+
+ReG_Steer_XML.o: ReG_Steer_XML.c \
+	${REG_INCLUDE_PATH}/ReG_Steer_XML.h \
+	${REG_INCLUDE_PATH}/ReG_Steer_types.h
+
+#---------------------------------------------------------------
 
 clean:
 	rm -f *.o ReG_Steer.ln *~ 

@@ -44,13 +44,6 @@
 #define DEBUG 0
 #endif
 
-/* UNICORE_DEMO must be defined in order to produce a steering lib
-   compatible with the UNICORE steering demonstration framework.
-   Only consequence is that the status files emitted by the application
-   are all called 'steer_status' and not indexed - i.e. some output will 
-   be lost if the status files are not consumed sufficiently rapidly */
-/* #define UNICORE_DEMO */
-
 /*---------------- Global data structures --------------------*/
 
 /* Whether steering is enabled (set by user) */
@@ -99,6 +92,7 @@ int Steering_initialize(int  NumSupportedCmds,
   FILE *fp;
   char *pchar;
   char  filename[REG_MAX_STRING_LENGTH];
+  char  buf[REG_MAX_MSG_SIZE];
 
   /* Actually defined in ReG_Steer_Common.c because both steerer
      and steered have a variable of this name */
@@ -130,7 +124,7 @@ int Steering_initialize(int  NumSupportedCmds,
   }
   else{
 
-    printf("Steering_initialize: failed to get schema location\n");
+    fprintf(stderr, "Steering_initialize: failed to get schema location\n");
     return REG_FAILURE;
   }
 
@@ -154,17 +148,17 @@ int Steering_initialize(int  NumSupportedCmds,
 
     if(Directory_valid(Steerer_connection.file_root) != REG_SUCCESS){
 
-      printf("Steering_initialize: invalid dir for steering messages: %s\n",
-	     Steerer_connection.file_root);
+      fprintf(stderr, "Steering_initialize: invalid dir for steering "
+	      "messages: %s\n", Steerer_connection.file_root);
       return REG_FAILURE;
     }
     else{
-      printf("Using following dir for steering messages: %s\n", 
+      fprintf(stderr, "Using following dir for steering messages: %s\n", 
 	     Steerer_connection.file_root);
     }
   }
   else{
-    printf("Steering_initialize: failed to get scratch directory\n");
+    fprintf(stderr, "Steering_initialize: failed to get scratch directory\n");
     return REG_FAILURE;
   }
 
@@ -187,7 +181,8 @@ int Steering_initialize(int  NumSupportedCmds,
  
   if(IOTypes_table.io_def == NULL){
     
-    printf("Steering_initialize: failed to allocate memory for IOType table\n");
+    fprintf(stderr, "Steering_initialize: failed to allocate memory "
+	    "for IOType table\n");
     return REG_FAILURE;
   }
 
@@ -206,7 +201,8 @@ int Steering_initialize(int  NumSupportedCmds,
 
   if(Params_table.param == NULL){
 
-    printf("Steering_initialize: failed to allocate memory for param table\n");
+    fprintf(stderr, "Steering_initialize: failed to allocate memory "
+	    "for param table\n");
     return REG_FAILURE;
   }
 
@@ -222,12 +218,16 @@ int Steering_initialize(int  NumSupportedCmds,
   Params_table.param[0].type      = REG_INT;
   Params_table.param[0].handle    = REG_SEQ_NUM_HANDLE;
   Params_table.param[0].steerable = FALSE;
+  Params_table.param[0].modified  = FALSE;
+  Params_table.param[0].is_internal=FALSE;
   sprintf(Params_table.param[0].label, "REG_SEQ_NUM");
   sprintf(Params_table.param[0].value, "-1");
   Increment_param_registered(&Params_table);
 
-  /* Clean up any old files */
+  /* Clean up any old files... */
 
+  /* ...file indicating a steerer is connected (which it can't be since we've
+     only just begun) */ 
   sprintf(filename, "%s%s", Steerer_connection.file_root, 
 	  STR_CONNECTED_FILENAME);
   fp = fopen(filename, "w");
@@ -236,9 +236,20 @@ int Steering_initialize(int  NumSupportedCmds,
     fclose(fp);
     if(remove(filename)){
 
-      printf("Steering_initialize: failed to remove %s\n",filename);
+      fprintf(stderr, "Steering_initialize: failed to remove %s\n",filename);
     }
+#if DEBUG
+    else{
+      fprintf(stderr, "Steering_initialize: removed %s\n", filename);
+    }
+#endif
   }
+
+  /* ...files containing messages from a steerer */
+  sprintf(filename, "%s%s", Steerer_connection.file_root, 
+	  STR_TO_APP_FILENAME);
+
+  Remove_files(filename);
 
   /* Signal that component is available to be steered */
 
@@ -248,21 +259,32 @@ int Steering_initialize(int  NumSupportedCmds,
 
   if(fp == NULL){
 
-    printf("Steering_initialize: failed to open %s\n",
-	   filename);
+    fprintf(stderr, "Steering_initialize: failed to open %s\n",
+	    filename);
     return REG_FAILURE;
   }
 
-  fprintf(fp, "<Supported_commands>\n");
+#if DEBUG
+  fprintf(stderr, "Writing file: %s\n", filename);
+#endif
+
+  pchar = buf;
+
+  Write_xml_header(&pchar);
+
+  pchar += sprintf(pchar, "<Supported_commands>\n");
 
   for(i=0; i<NumSupportedCmds; i++){
-    fprintf(fp, "<Command>\n");
-    fprintf(fp, "<Cmd_id>%d</Cmd_id>\n", SupportedCmds[i]);
-    fprintf(fp, "</Command>\n");
+    pchar += sprintf(pchar, "<Command>\n");
+    pchar += sprintf(pchar, "<Cmd_id>%d</Cmd_id>\n", SupportedCmds[i]);
+    pchar += sprintf(pchar, "</Command>\n");
   }
 
-  fprintf(fp, "</Supported_commands>\n");
+  pchar += sprintf(pchar, "</Supported_commands>\n");
 
+  Write_xml_footer(&pchar);
+
+  fprintf(fp, "%s", buf);
   fclose(fp);
 
   /* Flag that library has successfully been initialised */
@@ -327,7 +349,7 @@ int Steering_finalize()
   max += strlen(Steerer_connection.file_root);
   if(max > REG_MAX_STRING_LENGTH ){
 
-    printf("Steering_finalize: WARNING: truncating filename\n");
+    fprintf(stderr, "Steering_finalize: WARNING: truncating filename\n");
   }
 
   /* Delete the lock file that indicates we are steerable */
@@ -335,7 +357,7 @@ int Steering_finalize()
 	  APP_STEERABLE_FILENAME);
   if(remove(sys_command)){
 
-    printf("Steering_finalize: failed to remove %s\n", sys_command);
+    fprintf(stderr, "Steering_finalize: failed to remove %s\n", sys_command);
   }
 
   /* Delete the lock file that indicates we are being steered */
@@ -345,7 +367,7 @@ int Steering_finalize()
 	    STR_CONNECTED_FILENAME);
     if(remove(sys_command)){
 
-      printf("Steering_finalize: failed to remove %s\n", sys_command);
+      fprintf(stderr, "Steering_finalize: failed to remove %s\n", sys_command);
     }
   }
 
@@ -384,6 +406,16 @@ int Register_IOTypes(int    NumTypes,
   int          iofreq_type;
   int          iparam;
   int          return_status = REG_SUCCESS;
+
+  /* Check that steering is enabled */
+
+  if(!ReG_SteeringEnabled){
+
+    for(i=0; i<NumTypes; i++){
+      IOType[i] = REG_IODEF_HANDLE_NOTSET;
+    }
+    return REG_SUCCESS;
+  }
 
   /* Can only call this function if steering lib initialised */
 
@@ -479,7 +511,7 @@ int Register_IOTypes(int    NumTypes,
 
       if(dum_ptr == NULL){
 
-        printf("Register_IOTypes: failed to allocate memory\n");
+        fprintf(stderr, "Register_IOTypes: failed to allocate memory\n");
 	return REG_FAILURE;
       }
       else{
@@ -505,6 +537,10 @@ int Consume_start(int               IOType,
 		  REG_IOHandleType *IOHandle)
 {
 
+  /* Check that steering is enabled */
+
+  if(!ReG_SteeringEnabled) return REG_SUCCESS;
+
   /* Can only call this function if steering lib initialised */
 
   if (!ReG_SteeringInit) return REG_FAILURE;
@@ -516,6 +552,10 @@ int Consume_start(int               IOType,
 
 int Consume_stop(REG_IOHandleType *IOHandle)
 {
+  /* Check that steering is enabled */
+
+  if(!ReG_SteeringEnabled) return REG_SUCCESS;
+
   /* Can only call this function if steering lib initialised */
 
   if (!ReG_SteeringInit) return REG_FAILURE;
@@ -534,6 +574,10 @@ int Register_params(int    NumParams,
   int           i;
   int           current;
   
+  /* Check that steering is enabled */
+
+  if(!ReG_SteeringEnabled) return REG_SUCCESS;
+
   /* Can only call this function if steering lib initialised */
 
   if (!ReG_SteeringInit) return REG_FAILURE;
@@ -545,7 +589,8 @@ int Register_params(int    NumParams,
 
     if(current == -1){
 
-      printf("Register_params: failed to get find free param entry\n");
+      fprintf(stderr, "Register_params: failed to get find free "
+	      "param entry\n");
       return REG_FAILURE;
     }
 
@@ -597,10 +642,6 @@ int Steering_control(int     SeqNum,
   char*  param_labels[REG_MAX_NUM_STR_PARAMS];
   char   filename[REG_MAX_STRING_LENGTH];
 
-  /* Can only call this function if steering lib initialised */
-
-  if (!ReG_SteeringInit) return REG_FAILURE;
-
   return_status     = REG_SUCCESS;
   *NumSteerParams   = 0;
   *NumSteerCommands = 0;
@@ -608,6 +649,10 @@ int Steering_control(int     SeqNum,
   /* Check that steering is enabled */
 
   if(!ReG_SteeringEnabled) return REG_SUCCESS;
+
+  /* Can only call this function if steering lib initialised */
+
+  if (!ReG_SteeringInit) return REG_FAILURE;
 
   /* Check to see if a steerer is trying to get control */
 
@@ -620,9 +665,9 @@ int Steering_control(int     SeqNum,
 
       fclose(fp);
       ReG_SteeringActive = TRUE;
-      #if DEBUG
-      printf("Steering_control: steerer has connected\n");
-      #endif
+#if DEBUG
+      fprintf(stderr, "Steering_control: steerer has connected\n");
+#endif
     }
   }
 
@@ -636,9 +681,9 @@ int Steering_control(int     SeqNum,
       
       Emit_param_defs();
 
-      #if DEBUG
-      printf("Steering_control: done Emit_param_defs\n");
-      #endif
+#if DEBUG
+      fprintf(stderr, "Steering_control: done Emit_param_defs\n");
+#endif
 
       ReG_ParamsChanged  = FALSE;
     }
@@ -649,9 +694,9 @@ int Steering_control(int     SeqNum,
 
       Emit_IOType_defs();
 
-      #if DEBUG
-      printf("Steering_control: done Emit_IOType_defs\n");
-      #endif
+#if DEBUG
+      fprintf(stderr, "Steering_control: done Emit_IOType_defs\n");
+#endif
 
       ReG_IOTypesChanged = FALSE;
     }
@@ -666,7 +711,7 @@ int Steering_control(int     SeqNum,
       return_status = REG_FAILURE;
 
 #if DEBUG
-      printf("Steering_control: call to Consume_control failed\n");
+      fprintf(stderr, "Steering_control: call to Consume_control failed\n");
 #endif
     }
 
@@ -679,7 +724,7 @@ int Steering_control(int     SeqNum,
     }
 
 #if DEBUG
-    printf("Steering_control: done Consume_control\n");
+    fprintf(stderr, "Steering_control: done Consume_control\n");
 #endif
 
     /* Parse list of commands for any that we can handle ourselves */
@@ -695,7 +740,7 @@ int Steering_control(int     SeqNum,
       case REG_STR_DETACH:
 
 #if DEBUG
-        printf("Steering_control: got detach command\n");
+        fprintf(stderr, "Steering_control: got detach command\n");
 #endif
 
 	if( Detach_from_steerer() != REG_SUCCESS){
@@ -708,7 +753,7 @@ int Steering_control(int     SeqNum,
       default:
 
 #if DEBUG
-        printf("Steering_control: got command %d\n", commands[i]);
+        fprintf(stderr, "Steering_control: got command %d\n", commands[i]);
 #endif
 
         SteerCommands[count] = commands[i];
@@ -853,6 +898,7 @@ int Steering_pause(int   *NumSteerParams,
 
 	  paused = FALSE;
 	  return_status = Detach_from_steerer();
+	  *NumCommands  = 0;
 	  break;
 	}
 	else if(commands[i] == REG_STR_STOP){
@@ -885,6 +931,8 @@ int Emit_param_defs(){
   int   i;
   int   status;
   char  filename[REG_MAX_STRING_LENGTH];
+  char  buf[REG_MAX_MSG_SIZE];
+  char *pbuf;
 
   /* Check to see that we do actually have something to emit */
   if (Params_table.num_registered == 0) return REG_SUCCESS;
@@ -901,12 +949,14 @@ int Emit_param_defs(){
   fp = fopen(filename, "w");
   
   if(fp == NULL){
-    printf("Emit_param_defs: Failed to open file\n");
+    fprintf(stderr, "Emit_param_defs: Failed to open file\n");
     return REG_FAILURE;
   }
   
-  Write_xml_header(fp);
-  fprintf(fp,"<Param_defs>\n");
+  pbuf = buf;
+  Write_xml_header(&pbuf);
+
+  pbuf += sprintf(pbuf,"<Param_defs>\n");
   
   for(i=0; i<Params_table.max_entries; i++){
   
@@ -918,30 +968,36 @@ int Emit_param_defs(){
       /* Update the 'value' part of this parameter's table entry */
       if(Get_ptr_value(&(Params_table.param[i])) == REG_SUCCESS){
     	 
-	fprintf(fp,"<Param>\n");
-	fprintf(fp,"<Label>%s</Label>\n", Params_table.param[i].label);
-	fprintf(fp,"<Steerable>%d</Steerable>\n", 
-		Params_table.param[i].steerable);
-	fprintf(fp,"<Type>%d</Type>\n", Params_table.param[i].type);
-	fprintf(fp,"<Handle>%d</Handle>\n",Params_table.param[i].handle);
-	fprintf(fp,"<Value>%s</Value>\n", Params_table.param[i].value);
+	pbuf += sprintf(pbuf,"<Param>\n");
+	pbuf += sprintf(pbuf,"<Label>%s</Label>\n", 
+			Params_table.param[i].label);
+	pbuf += sprintf(pbuf,"<Steerable>%d</Steerable>\n", 
+			Params_table.param[i].steerable);
+	pbuf += sprintf(pbuf,"<Type>%d</Type>\n", 
+			Params_table.param[i].type);
+	pbuf += sprintf(pbuf,"<Handle>%d</Handle>\n",
+			Params_table.param[i].handle);
+	pbuf += sprintf(pbuf,"<Value>%s</Value>\n", 
+			Params_table.param[i].value);
 
 	if(Params_table.param[i].is_internal == TRUE){
 
-	  fprintf(fp,"<Is_internal>TRUE</Is_internal>\n");
+	  pbuf += sprintf(pbuf,"<Is_internal>TRUE</Is_internal>\n");
 	}
 	else{
 
-	  fprintf(fp,"<Is_internal>FALSE</Is_internal>\n");
+	  pbuf += sprintf(pbuf,"<Is_internal>FALSE</Is_internal>\n");
 	}
 
-	fprintf(fp,"</Param>\n");
+	pbuf += sprintf(pbuf,"</Param>\n");
       }
     }
   }
   
-  fprintf(fp,"</Param_defs>\n");
-  Write_xml_footer(fp);
+  pbuf += sprintf(pbuf,"</Param_defs>\n");
+  Write_xml_footer(&pbuf);
+
+  fprintf(fp, "%s", buf);
   fclose(fp);
   Create_lock_file(filename);
 
@@ -956,6 +1012,8 @@ int Emit_IOType_defs(){
   int   i;
   FILE *fp;
   char  filename[REG_MAX_STRING_LENGTH];
+  char  buf[REG_MAX_MSG_SIZE];
+  char *pbuf;
 
   /* Check that we do actually have something to emit */
   if (IOTypes_table.num_registered == 0) return REG_SUCCESS;
@@ -976,29 +1034,33 @@ int Emit_IOType_defs(){
     return REG_FAILURE;
   }
   
-  Write_xml_header(fp);
-  fprintf(fp,"<IOType_defs>\n");
+  pbuf = buf;
+  Write_xml_header(&pbuf);
+
+  pbuf += sprintf(pbuf, "<IOType_defs>\n");
   
   for(i=0; i<IOTypes_table.max_entries; i++){
   
     if(IOTypes_table.io_def[i].handle != REG_IODEF_HANDLE_NOTSET){
   
-      fprintf(fp,"<IOType>\n");
-      fprintf(fp,"<Label>%s</Label>\n", IOTypes_table.io_def[i].label);
-      fprintf(fp,"<Handle>%d</Handle>\n", IOTypes_table.io_def[i].handle);
+      pbuf += sprintf(pbuf,"<IOType>\n");
+      pbuf += sprintf(pbuf,"<Label>%s</Label>\n", 
+		      IOTypes_table.io_def[i].label);
+      pbuf += sprintf(pbuf,"<Handle>%d</Handle>\n", 
+		      IOTypes_table.io_def[i].handle);
 
       switch(IOTypes_table.io_def[i].direction){
 
       case REG_IO_IN:
-        fprintf(fp,"<Direction>IN</Direction>\n");
+        pbuf += sprintf(pbuf,"<Direction>IN</Direction>\n");
 	break;
 
       case REG_IO_OUT:
-        fprintf(fp,"<Direction>OUT</Direction>\n");
+        pbuf += sprintf(pbuf,"<Direction>OUT</Direction>\n");
 	break;
 
       case REG_IO_CHKPT:
-        fprintf(fp,"<Direction>CHECKPOINT</Direction>\n");
+        pbuf += sprintf(pbuf,"<Direction>CHECKPOINT</Direction>\n");
 	break;
 
       default:
@@ -1013,22 +1075,24 @@ int Emit_IOType_defs(){
 
       if(IOTypes_table.io_def[i].auto_io_support){
 
-	fprintf(fp,"<Support_auto_io>TRUE</Support_auto_io>\n");
+	pbuf += sprintf(pbuf,"<Support_auto_io>TRUE</Support_auto_io>\n");
 
-	fprintf(fp,"<Freq_handle>%d</Freq_handle>\n",
+	pbuf += sprintf(pbuf,"<Freq_handle>%d</Freq_handle>\n",
 		IOTypes_table.io_def[i].freq_param_handle);
       }
       else{
 
-	fprintf(fp,"<Support_auto_io>FALSE</Support_auto_io>\n");
+	pbuf += sprintf(pbuf,"<Support_auto_io>FALSE</Support_auto_io>\n");
       }
 
-      fprintf(fp,"</IOType>\n");
+      pbuf += sprintf(pbuf,"</IOType>\n");
     }
   }
   
-  fprintf(fp,"</IOType_defs>\n");
-  Write_xml_footer(fp);
+  pbuf += sprintf(pbuf,"</IOType_defs>\n");
+  Write_xml_footer(&pbuf);
+
+  fprintf(fp, "%s", buf);
   fclose(fp);
   
   Create_lock_file(filename);
@@ -1045,65 +1109,14 @@ int Consume_control(int    *NumCommands,
 		    char  **SteerParamLabels){
 
   FILE                *fp;
-  int                  i, j;
+  int                  j;
   int                  count;
-  int                  return_status;
   char                 filename[REG_MAX_STRING_LENGTH];
-
-  /* For XML parser */
-
-  size_t               len;
-  char                 buf[BUFSIZ];
-  XML_Parser           parser = XML_ParserCreate(NULL);
-  int                  done;
-  user_data_type       User_data;
-  param_xml_struct     param_struct;
-  supp_cmds_xml_struct cmd_struct;
-  control_xml_struct   ctrl_struct;
-  Supp_cmd_table_type  recvd_cmds;
-  Param_table_type     recvd_params;
-
-  return_status = REG_SUCCESS;
-
-  /* Set up tables and pointers to receive data */
-
-  recvd_params.num_registered = 0;
-  recvd_params.max_entries    = REG_MAX_NUM_STR_PARAMS;
-  recvd_params.param = (param_entry *)malloc(REG_MAX_NUM_STR_PARAMS*
-					     sizeof(param_entry));
-
-  if(recvd_params.param == NULL){
-
-    printf("Consume_control: failed to allocate memory");
-    return REG_MEM_FAIL;
-  }
-
-  recvd_cmds.num_registered = 0;
-  recvd_cmds.max_entries    = REG_MAX_NUM_STR_CMDS;
-  recvd_cmds.cmd = (supp_cmd_entry *)malloc(REG_MAX_NUM_STR_CMDS*
-					    sizeof(supp_cmd_entry));
-
-  if(recvd_cmds.cmd == NULL){
-
-    printf("Consume_control: failed to allocate memory");
-    return REG_MEM_FAIL;
-  }
-
-  param_struct.table       = &recvd_params;
-  param_struct.field_type  = PARAM_NOTSET;
-  cmd_struct.table         = &recvd_cmds;
-  cmd_struct.field_type    = CMD_NOTSET;
-  ctrl_struct.param_struct = &param_struct;
-  ctrl_struct.cmd_struct   = &cmd_struct;
-  ctrl_struct.field_type   = CTRL_NOTSET;
-  User_data.gen_xml_struct = (void *)(&ctrl_struct);
-  User_data.msg_type       = MSG_NOTSET;
-
-  /* Initialise XML parser */
-
-  XML_SetUserData(parser, &User_data);
-  XML_SetElementHandler(parser, startElement, endElement);
-  XML_SetCharacterDataHandler(parser, dataHandler);
+  struct msg_struct   *msg;
+  struct cmd_struct   *cmd;
+  struct param_struct *param;
+  int                  handle;
+  int                  return_status = REG_SUCCESS;
 
   /* Read the file produced by the steerer - may contain commands and/
      or new parameter values */
@@ -1112,50 +1125,139 @@ int Consume_control(int    *NumCommands,
 
   if( (fp = Open_next_file(filename)) != NULL){
 
-    do {
-  
-      len  = fread(buf, 1, sizeof(buf), fp);
-      done = len < sizeof(buf);
-  
-      if (!XML_Parse(parser, buf, len, done)) {
-  
-  	  printf("%s at line %d\n",
-  	         XML_ErrorString(XML_GetErrorCode(parser)),
-  	         XML_GetCurrentLineNumber(parser));
-  	  return REG_FAILURE;
-      }
-    } while (!done);
-  
-    XML_ParserFree(parser);
     fclose(fp);
+
+    msg = New_msg_struct();
+
+    return_status = Parse_xml_file(filename, msg);
+
+    if(return_status == REG_SUCCESS){
+
+      if(msg->control){
+
+	cmd   = msg->control->first_cmd;
+	count = 0;
+
+	while(cmd){
+
+	  sscanf((char *)(cmd->id), "%d", &(Commands[count]));
+
+#if DEBUG
+	  fprintf(stderr, "Consume_control: cmd[%d] = %d\n", count,
+		  Commands[count]);
+#endif
+	  count++;
+
+	  if(count >= REG_MAX_NUM_STR_CMDS){
+
+	    fprintf(stderr, 
+		    "Consume_control: WARNING: truncating list of commands\n");
+	    break;
+	  }
+
+	  cmd = cmd->next;
+	}
+
+	*NumCommands = count;
+
+#if DEBUG
+	fprintf(stderr, "Consume_control: received %d commands\n", 
+		*NumCommands);
+#endif
+
+	param = msg->control->first_param;
+	count = 0;
+
+	while(param){
+
+	  sscanf((char *)(param->handle), "%d", &handle);
+
+	  for(j=0; j<Params_table.max_entries; j++){
   
-    /* Delete the file once we've read it */
+	    if(Params_table.param[j].handle == handle){
+	  
+	      break;
+	    }
+	  }
 
-    if( Delete_file(filename) != REG_SUCCESS){
+	  if(j == Params_table.max_entries){
+  
+	    fprintf(stderr, "Consume_control: failed to match param handles\n");
+	    return_status = REG_FAILURE;
+	  }
+	  else{
 
-      printf("Consume_control: failed to delete %s\n",filename);
+	    /* Store char representation of new parameter value */
+	    if(param->value){
+
+	      strcpy(Params_table.param[j].value, (char *)(param->value));
+
+	      /* Update value associated with pointer */
+	      Update_ptr_value(&(Params_table.param[j]));
+
+	      if( !(Params_table.param[j].is_internal) ){
+
+		SteerParamHandles[count] = handle;
+		SteerParamLabels[count]  = Params_table.param[j].label;
+		count++;
+	      }
+	    }
+	    else{
+	      fprintf(stderr, "Consume_control: empty parameter value field\n");
+	    }
+	  }
+
+	  param = param->next;
+	}
+
+	/* Update the number of parameters received to allow for fact that
+	   some may be internal and are not passed up to the calling routine */
+	*NumSteerParams = count;
+
+#if DEBUG
+	fprintf(stderr, "Consume_control: received %d params\n", *NumSteerParams);
+#endif
+      }
+      else{
+	fprintf(stderr, "Consume_control: error, no control data\n");
+	*NumSteerParams = 0;
+	*NumCommands    = 0;
+	return_status   = REG_FAILURE;
+      }
+
+      /* Delete the file once we've read it */
+
+      if( Delete_file(filename) != REG_SUCCESS){
+
+	fprintf(stderr, "Consume_control: failed to delete %s\n",filename);
+      }
+    }
+    else{
+
+      fprintf(stderr, "Consume_control: failed to parse <%s>\n", filename);
+      *NumSteerParams = 0;
+      *NumCommands    = 0;
     }
 
-    /* Copy data out of structures */
+    Delete_msg_struct(msg);
+
+    /* Copy data out of structures *
 
     *NumCommands = recvd_cmds.num_registered;
 
-#if DEBUG
-    printf("Consume_control: received %d commands\n", *NumCommands);
-#endif
 
     for(i=0; i<(*NumCommands); i++){
 
       Commands[i] = recvd_cmds.cmd[i].cmd_id;
 #if DEBUG
-      printf("Consume_control: cmd[%d] = %d\n", i, Commands[i]);
+      fprintf(stderr, "Consume_control: cmd[%d] = %d\n", i, Commands[i]);
 #endif
     }
 
     *NumSteerParams = recvd_params.num_registered;
   
 #if DEBUG
-    printf("Consume_control: received %d params\n", *NumSteerParams);
+    fprintf(stderr, "Consume_control: received %d params\n", *NumSteerParams);
 #endif
 
     count = 0;
@@ -1172,21 +1274,21 @@ int Consume_control(int    *NumCommands,
 
       if(j == Params_table.max_entries){
   
-  	printf("Consume_control: failed to match param handles\n");
+  	fprintf(stderr, "Consume_control: failed to match param handles\n");
   	return_status = REG_FAILURE;
       }
       else{
 
-  	/* Store char representation of new parameter value */
+  	* Store char representation of new parameter value *
 	if( strlen(recvd_params.param[count].value) ){
 
 	  strcpy(Params_table.param[j].value, recvd_params.param[count].value);
   
-	  /* Update value associated with pointer */
+	  * Update value associated with pointer *
 	  Update_ptr_value(&(Params_table.param[j]));
 
-	  /* Return list of handles to inform caller of what's changed 
-	     unless parameter is internal to the library */
+	  * Return list of handles to inform caller of what's changed 
+	     unless parameter is internal to the library *
 	  if( !(Params_table.param[j].is_internal) ){
 
 	    SteerParamHandles[i] = recvd_params.param[count].handle;
@@ -1195,21 +1297,22 @@ int Consume_control(int    *NumCommands,
 	  }
 	}
 	else{
-	  printf("Consume_control: empty parameter value field\n");
+	  fprintf(stderr, "Consume_control: empty parameter value field\n");
 	}
       }
 
       count++;
     }
 
-    /* Update the number of parameters received to allow for fact that
-       some may be internal and are not passed up to the calling routine */
+    * Update the number of parameters received to allow for fact that
+       some may be internal and are not passed up to the calling routine *
     *NumSteerParams = i;
+    */
   }
   else{
 
 #if DEBUG
-    printf("Consume_control: failed to open file %s\n", filename);
+    fprintf(stderr, "Consume_control: failed to open file %s\n", filename);
 #endif
 
     /* No file found */
@@ -1217,13 +1320,6 @@ int Consume_control(int    *NumCommands,
     *NumSteerParams = 0;
     *NumCommands = 0;
   }
-
-  /* Clean up */
-
-  free(recvd_params.param);
-  recvd_params.param = NULL;
-  free(recvd_cmds.cmd);
-  recvd_cmds.cmd = NULL;
 
   return return_status;
 }
@@ -1300,6 +1396,8 @@ int Emit_status(int   SeqNum,
   int   cmddone   = FALSE;
   int   paramdone = FALSE;
   char  filename[REG_MAX_STRING_LENGTH];
+  char  buf[REG_MAX_MSG_SIZE];
+  char *pbuf;
 
   /* Emit a status report - this is complicated because we must ensure we
      don't write too many params or commands to a single file (self-imposed
@@ -1316,6 +1414,16 @@ int Emit_status(int   SeqNum,
   num_param = pcount;
   pcount = 0;
 
+  /* If we are sending a 'detach' command then don't send any
+     parameter values */
+  if(NumCommands > 0){
+
+    if(Commands[0] == REG_STR_DETACH){
+
+      paramdone = TRUE;
+    }
+  }
+
   if(NumCommands == 0) cmddone = TRUE;
   if(num_param == 0) paramdone = TRUE;
 
@@ -1327,12 +1435,14 @@ int Emit_status(int   SeqNum,
 
     if( (fp = fopen(filename, "w")) == NULL){
 
-      printf("Emit_status: failed to open file\n");
+      fprintf(stderr, "Emit_status: failed to open file\n");
       return REG_FAILURE;
     }
 
-    Write_xml_header(fp);
-    fprintf(fp, "<App_status>\n");
+    pbuf = buf;
+
+    Write_xml_header(&pbuf);
+    pbuf += sprintf(pbuf, "<App_status>\n");
 
     /* Parameter values section */
 
@@ -1357,12 +1467,12 @@ int Emit_status(int   SeqNum,
  	    sprintf(Params_table.param[tot_pcount].value, "%d", SeqNum);
  	  }
   
- 	  fprintf(fp, "<Param>\n");
- 	  fprintf(fp, "<Handle>%d</Handle>\n", 
+ 	  pbuf += sprintf(pbuf, "<Param>\n");
+ 	  pbuf += sprintf(pbuf, "<Handle>%d</Handle>\n", 
  		  Params_table.param[tot_pcount].handle);
- 	  fprintf(fp, "<Value>%s</Value>\n", 
+ 	  pbuf += sprintf(pbuf, "<Value>%s</Value>\n", 
 		  Params_table.param[tot_pcount].value);
- 	  fprintf(fp, "</Param>\n");
+ 	  pbuf += sprintf(pbuf, "</Param>\n");
   
  	  pcount++;
     	}
@@ -1388,9 +1498,9 @@ int Emit_status(int   SeqNum,
 
       for(i=0; i<REG_MAX_NUM_STR_CMDS; i++){
   
-    	fprintf(fp, "<Command>\n");
-	fprintf(fp, "<Cmd_id>%d</Cmd_id>\n", Commands[ccount]);
-	fprintf(fp, "</Command>\n");
+    	pbuf += sprintf(pbuf, "<Command>\n");
+	pbuf += sprintf(pbuf, "<Cmd_id>%d</Cmd_id>\n", Commands[ccount]);
+	pbuf += sprintf(pbuf, "</Command>\n");
     	ccount++;
   
     	if(ccount >= NumCommands){
@@ -1400,9 +1510,11 @@ int Emit_status(int   SeqNum,
       }
     }
 
-    fprintf(fp, "</App_status>\n");
+    pbuf += sprintf(pbuf, "</App_status>\n");
 
-    Write_xml_footer(fp);
+    Write_xml_footer(&pbuf);
+
+    fprintf(fp, "%s", buf);
     fclose(fp);
 
     Create_lock_file(filename);
@@ -1435,7 +1547,7 @@ int Update_ptr_value(param_entry *param)
     break;
 
   default:
-    printf("Update_ptr_value: unrecognised parameter type\n");
+    fprintf(stderr, "Update_ptr_value: unrecognised parameter type\n");
     return REG_FAILURE;
   }
 
@@ -1479,10 +1591,10 @@ int Get_ptr_value(param_entry *param)
     break;
   
   default:
-    printf("Get_ptr_value: unrecognised parameter type\n");
-    printf("Param type   = %d\n", param->type);
-    printf("Param handle = %d\n", param->handle);
-    printf("Param label  = %s\n", param->label);
+    fprintf(stderr, "Get_ptr_value: unrecognised parameter type\n");
+    fprintf(stderr, "Param type   = %d\n", param->type);
+    fprintf(stderr, "Param handle = %d\n", param->handle);
+    fprintf(stderr, "Param label  = %s\n", param->label);
 
     return_status = REG_FAILURE;
     break;

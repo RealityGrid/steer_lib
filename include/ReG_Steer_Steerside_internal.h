@@ -35,6 +35,7 @@
 ---------------------------------------------------------------------------*/
 
 #include "ReG_Steer_Common.h"
+#include "ReG_Steer_XML.h"
 
 /*---------------- Data structure definitions -----------------*/
 
@@ -48,12 +49,16 @@
 
 typedef struct {
 
-  char   file_root[REG_MAX_STRING_LENGTH];
   int    handle;
+
+  /* For connection to applications using local file system*/
+  char   file_root[REG_MAX_STRING_LENGTH];
+
   /* File descriptors used to talk to (java) proxy for
      this simulation */
-  int    pipe_to_proxy;
-  int    pipe_from_proxy;
+  int                pipe_to_proxy;
+  int                pipe_from_proxy;
+  struct msg_struct *msg;
 
   /* Table of registered commands for this sim */
   Supp_cmd_table_type Cmds_table;
