@@ -184,6 +184,13 @@ static int Initialize_IOType_transport(const int direction,
 /* Finalize the transport mechanism for IOtypes */
 static void Finalize_IOType_transport();
 
+/* Check for an acknowledgement from the consumer for the last
+   data set emitted */
+static int Consume_ack(const int index);
+
+/* Acknowledge the last data set sent to us and indicate we are
+   ready for the next */
+static int Emit_ack(const int index);
 
 /* Check if any sample data needs to be consumed */
 static int Consume_start_data_check(const int index);

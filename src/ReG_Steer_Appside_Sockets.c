@@ -86,7 +86,8 @@ int socket_info_init(const int index) {
   }
 
 #if REG_DEBUG
-  fprintf(stderr, "socket_info_init: local tcp interface: %s\n", IOTypes_table.io_def[index].socket_info.tcp_interface);
+  fprintf(stderr, "socket_info_init: local tcp interface: %s\n", 
+	  IOTypes_table.io_def[index].socket_info.tcp_interface);
 #endif
 
   IOTypes_table.io_def[index].socket_info.min_port = min;
@@ -232,7 +233,8 @@ int create_connector(const int index) {
   i = IOTypes_table.io_def[index].socket_info.min_port;
   myAddr.sin_port = htons((short) i);
 
-  while(bind(connector, (struct sockaddr*) &myAddr, sizeof(struct sockaddr)) == REG_SOCKETS_ERROR) {
+  while(bind(connector, (struct sockaddr*) &myAddr, 
+	     sizeof(struct sockaddr)) == REG_SOCKETS_ERROR) {
     if(++i > IOTypes_table.io_def[index].socket_info.max_port) {
       perror("bind");
       close(connector);
@@ -543,6 +545,34 @@ int dns_lookup(char* hostname) {
 
 /*--------------------------------------------------------------------*/
 
+int recv_non_block(socket_io_type  *sock_info, char *pbuf, int nbytes){
+
+  int nbytes_read = 0;
+
+#ifdef _AIX
+
+  /* So it looks like AIX blocks by default... So make the socket
+   * non-blocking as we can't control this with flags to recv() in AIX... */
+  fcntl(sock_info->connector_handle, F_SETFL, 
+	fcntl(sock_info->connector_handle, F_GETFL)|O_NONBLOCK);
+
+  nbytes_read = recv(sock_info->connector_handle, pbuf, nbytes, 0);
+
+  /* ...And turn off non-blocking again... */
+  fcntl(sock_info->connector_handle, F_SETFL, 
+	fcntl(sock_info->connector_handle, F_GETFL)&~O_NONBLOCK);
+
+#else
+
+  nbytes_read = recv(sock_info->connector_handle, pbuf, 
+		     nbytes, MSG_DONTWAIT);
+#endif
+  
+  return nbytes_read;
+}
+
+/*--------------------------------------------------------------------*/
+
 /*--------------------------------------------------------------------*
  *                         EXTERNAL METHODS                           *
  *--------------------------------------------------------------------*/
@@ -597,7 +627,9 @@ int Initialize_IOType_transport_sockets(const int direction, const int index) {
       }
 #if REG_DEBUG
       else {
-	fprintf(stderr, "Initialize_IOType_transport_sockets: registered connector on port %d, hostname = %s, index %d, label %s\n", 
+	fprintf(stderr, "Initialize_IOType_transport_sockets: "
+		"registered connector on port %d, hostname = %s, "
+		"index %d, label %s\n", 
 		IOTypes_table.io_def[index].socket_info.connector_port,
 		IOTypes_table.io_def[index].socket_info.connector_hostname,
 		index, IOTypes_table.io_def[index].label );
@@ -709,7 +741,7 @@ int Write_sockets(const int index, const int size, void* buffer) {
   pchar = (char*) buffer;
 
 #if REG_DEBUG
-  fprintf(stderr, "Writing...\n");
+  fprintf(stderr, "Write_sockets: writing...\n");
 #endif
   while(bytes_left > 0) {
 #ifndef __linux
@@ -834,7 +866,8 @@ int Emit_data_sockets(const int index, const size_t num_bytes_to_send, void* pDa
   }
 
 #if REG_DEBUG
-  fprintf(stderr, "Emit_data_sockets: sent %d bytes...\n", (int) num_bytes_to_send);
+  fprintf(stderr, "Emit_data_sockets: sent %d bytes...\n", 
+	  (int) num_bytes_to_send);
 #endif
   
   return REG_SUCCESS;
@@ -843,7 +876,8 @@ int Emit_data_sockets(const int index, const size_t num_bytes_to_send, void* pDa
 
 /*---------------------------------------------------*/
 
-int Consume_msg_header_sockets(int index, int* datatype, int* count, int* num_bytes, int* is_fortran_array) {
+int Consume_msg_header_sockets(int index, int* datatype, int* count, 
+			       int* num_bytes, int* is_fortran_array) {
 
   int nbytes;
   char buffer[REG_PACKET_SIZE];
@@ -854,12 +888,13 @@ int Consume_msg_header_sockets(int index, int* datatype, int* count, int* num_by
   if (sock_info->comms_status != REG_COMMS_STATUS_CONNECTED) return REG_FAILURE;
 
   /* Read header */
-#if REG_DEBUG
+#if REG_DEBUG_FULL
   fprintf(stderr, "Consume_msg_header_sockets: calling recv...\n");
 #endif
 
   /* Blocks until REG_PACKET_SIZE bytes received */
-  if((nbytes = recv(sock_info->connector_handle, buffer, REG_PACKET_SIZE, MSG_WAITALL)) <= 0) {
+  if((nbytes = recv(sock_info->connector_handle, buffer, REG_PACKET_SIZE, 
+		    MSG_WAITALL)) <= 0) {
     if(nbytes < 0) {
       /* error */
       perror("recv");
@@ -875,8 +910,9 @@ int Consume_msg_header_sockets(int index, int* datatype, int* count, int* num_by
   }
 
   /* if we're here, we've got data */
-#if REG_DEBUG
-  fprintf(stderr, "Consume_msg_header_sockets: read <%s> from socket\n", buffer);
+#if REG_DEBUG_FULL
+  fprintf(stderr, "Consume_msg_header_sockets: read <%s> from socket\n", 
+	  buffer);
 #endif
 
   /* Check for end of data */
@@ -884,12 +920,14 @@ int Consume_msg_header_sockets(int index, int* datatype, int* count, int* num_by
     return REG_EOD;
   }
   else if(strncmp(buffer, BEGIN_SLICE_HEADER, strlen(BEGIN_SLICE_HEADER))) {
-    fprintf(stderr, "Consume_msg_header_sockets: incorrect header on slice\n");
+    fprintf(stderr, "ERROR: Consume_msg_header_sockets: incorrect "
+	    "header on slice\n");
     return REG_FAILURE;
   }
 
   /*--- Type of objects in message ---*/
-  if((nbytes = recv(sock_info->connector_handle, buffer, REG_PACKET_SIZE, MSG_WAITALL)) <= 0) {
+  if((nbytes = recv(sock_info->connector_handle, buffer, REG_PACKET_SIZE, 
+		    MSG_WAITALL)) <= 0) {
     if(nbytes == 0) {
       /* closed connection */
       fprintf(stderr, "Consume_msg_header_sockets: hung up!\n");
@@ -902,8 +940,9 @@ int Consume_msg_header_sockets(int index, int* datatype, int* count, int* num_by
     return REG_FAILURE;
   }
 
-#if REG_DEBUG
-  fprintf(stderr, "Consume_msg_header_sockets: read <%s> from socket\n", buffer);
+#if REG_DEBUG_FULL
+  fprintf(stderr, "Consume_msg_header_sockets: read <%s> from socket\n", 
+	  buffer);
 #endif
 
   if(!strstr(buffer, "<Data_type>")) {
@@ -913,7 +952,8 @@ int Consume_msg_header_sockets(int index, int* datatype, int* count, int* num_by
   sscanf(buffer, "<Data_type>%d</Data_type>", datatype);
 
   /*--- No. of objects in message ---*/
-  if((nbytes = recv(sock_info->connector_handle, buffer, REG_PACKET_SIZE, MSG_WAITALL)) <= 0) {
+  if((nbytes = recv(sock_info->connector_handle, buffer, REG_PACKET_SIZE, 
+		    MSG_WAITALL)) <= 0) {
     if(nbytes == 0) {
       /* closed connection */
       fprintf(stderr, "Consume_msg_header_sockets: hung up!\n");
@@ -926,8 +966,9 @@ int Consume_msg_header_sockets(int index, int* datatype, int* count, int* num_by
     return REG_FAILURE;
   }
 
-#if REG_DEBUG
-  fprintf(stderr, "Consume_msg_header_sockets: read <%s> from socket\n", buffer);
+#if REG_DEBUG_FULL
+  fprintf(stderr, "Consume_msg_header_sockets: read <%s> from socket\n", 
+	  buffer);
 #endif
 
   if(!strstr(buffer, "<Num_objects>")) {
@@ -935,12 +976,14 @@ int Consume_msg_header_sockets(int index, int* datatype, int* count, int* num_by
   }
 
   if(sscanf(buffer, "<Num_objects>%d</Num_objects>", count) != 1){
-    fprintf(stderr, "Consume_msg_header_sockets: failed to read Num_objects\n");
+    fprintf(stderr, "ERROR: Consume_msg_header_sockets: failed to "
+	    "read Num_objects\n");
     return REG_FAILURE;
   }
 
   /*--- No. of bytes in message ---*/
-  if((nbytes = recv(sock_info->connector_handle, buffer, REG_PACKET_SIZE, MSG_WAITALL)) <= 0) {
+  if((nbytes = recv(sock_info->connector_handle, buffer, REG_PACKET_SIZE, 
+		    MSG_WAITALL)) <= 0) {
     if(nbytes == 0) {
       /* closed connection */
       fprintf(stderr, "Consume_msg_header_sockets: hung up!\n");
@@ -953,8 +996,9 @@ int Consume_msg_header_sockets(int index, int* datatype, int* count, int* num_by
     return REG_FAILURE;
   }
 
-#if REG_DEBUG
-  fprintf(stderr, "Consume_msg_header_sockets: read >%s< from socket\n", buffer);
+#if REG_DEBUG_FULL
+  fprintf(stderr, "Consume_msg_header_sockets: read >%s< from socket\n", 
+	  buffer);
 #endif
 
   if(!strstr(buffer, "<Num_bytes>")) {
@@ -962,12 +1006,14 @@ int Consume_msg_header_sockets(int index, int* datatype, int* count, int* num_by
   }
 
   if(sscanf(buffer, "<Num_bytes>%d</Num_bytes>", num_bytes) != 1) {
-    fprintf(stderr, "Consume_msg_header_sockets: failed to read Num_bytes\n");
+    fprintf(stderr, "ERROR: Consume_msg_header_sockets: failed to read "
+	    "Num_bytes\n");
     return REG_FAILURE;
   }
 
   /*--- Array ordering in message ---*/
-  if((nbytes = recv(sock_info->connector_handle, buffer, REG_PACKET_SIZE, MSG_WAITALL)) <= 0) {
+  if((nbytes = recv(sock_info->connector_handle, buffer, REG_PACKET_SIZE, 
+		    MSG_WAITALL)) <= 0) {
     if(nbytes == 0) {
       /* closed connection */
       fprintf(stderr, "Consume_msg_header_sockets: hung up!\n");
@@ -980,8 +1026,9 @@ int Consume_msg_header_sockets(int index, int* datatype, int* count, int* num_by
     return REG_FAILURE;
   }
 
-#if REG_DEBUG
-  fprintf(stderr, "Consume_msg_header_socket: read >%s< from socket\n", buffer);
+#if REG_DEBUG_FULL
+  fprintf(stderr, "Consume_msg_header_socket: read >%s< from socket\n", 
+	  buffer);
 #endif
 
   if(!strstr(buffer, "<Array_order>")) {
@@ -998,7 +1045,8 @@ int Consume_msg_header_sockets(int index, int* datatype, int* count, int* num_by
   }
 
   /*--- End of header ---*/
-  if((nbytes = recv(sock_info->connector_handle, buffer, REG_PACKET_SIZE, MSG_WAITALL)) <= 0) {
+  if((nbytes = recv(sock_info->connector_handle, buffer, REG_PACKET_SIZE, 
+		    MSG_WAITALL)) <= 0) {
     if(nbytes == 0) {
       /* closed connection */
       fprintf(stderr, "Consume_msg_header_sockets: hung up!\n");
@@ -1011,12 +1059,14 @@ int Consume_msg_header_sockets(int index, int* datatype, int* count, int* num_by
     return REG_FAILURE;
   }
 
-#if REG_DEBUG
-  fprintf(stderr, "Consume_msg_header_sockets: read <%s> from socket\n", buffer);
+#if REG_DEBUG_FULL
+  fprintf(stderr, "Consume_msg_header_sockets: read <%s> from socket\n", 
+	  buffer);
 #endif
 
   if(strncmp(buffer, END_SLICE_HEADER, strlen(END_SLICE_HEADER))) {
-    fprintf(stderr, "Consume_msg_header_sockets: failed to find end of header\n");
+    fprintf(stderr, "ERROR: Consume_msg_header_sockets: failed to find "
+	    "end of header\n");
     return REG_FAILURE;
   }
 
@@ -1035,22 +1085,22 @@ int Consume_start_data_check_sockets(const int index) {
   sock_info = &(IOTypes_table.io_def[index].socket_info);
 
   /* if not connected attempt to connect now */
-  if(IOTypes_table.io_def[index].socket_info.comms_status != REG_COMMS_STATUS_CONNECTED) {
+  if(sock_info->comms_status != REG_COMMS_STATUS_CONNECTED) {
     attempt_connector_connect(index);
   }
 
   /* check if socket connection has been made */
-  if(IOTypes_table.io_def[index].socket_info.comms_status != REG_COMMS_STATUS_CONNECTED) {
+  if(sock_info->comms_status != REG_COMMS_STATUS_CONNECTED) {
 #if REG_DEBUG
-    fprintf(stderr, "Consume_start_data_check_socket: socket is NOT connected, "
-	    "index = %d\n", index);
+    fprintf(stderr, "INFO: Consume_start_data_check_socket: socket is NOT "
+	    "connected, index = %d\n", index);
 #endif
     return REG_FAILURE;
   }
 
 #if REG_DEBUG
-  fprintf(stderr, "Consume_start_data_check_socket: socket status is connected, "
-	  "index = %d\n", index);
+  fprintf(stderr, "INFO: Consume_start_data_check_socket: socket status "
+	  "is connected, index = %d\n", index);
 #endif
 
   /* Drain socket until start tag found */
@@ -1063,25 +1113,7 @@ int Consume_start_data_check_sockets(const int index) {
 
   while(!(pstart = strstr(buffer, REG_DATA_HEADER))) {
 
-#ifdef _AIX
-
-    /* So it looks like AIX blocks by default... So make the socket
-     * non-blocking as we can't control this with flags to recv() in AIX... */
-    fcntl(sock_info->connector_handle, F_SETFL, 
-	  fcntl(sock_info->connector_handle, F_GETFL)|O_NONBLOCK);
-
-    nbytes = recv(sock_info->connector_handle, buffer, REG_PACKET_SIZE, 0);
-
-    /* ...And turn off non-blocking again... */
-    fcntl(sock_info->connector_handle, F_SETFL, 
-	  fcntl(sock_info->connector_handle, F_GETFL)&~O_NONBLOCK);
-
-    if(nbytes <= 0) {
-#else
-
-    if((nbytes = recv(sock_info->connector_handle, buffer, 
-		      REG_PACKET_SIZE, MSG_DONTWAIT)) <= 0) {
-#endif
+    if( (nbytes = recv_non_block(sock_info, buffer, REG_PACKET_SIZE)) <= 0){
 
       if(nbytes < 0) {
 	if(errno == EAGAIN) {
@@ -1122,7 +1154,8 @@ int Consume_start_data_check_sockets(const int index) {
 
       /* check if socket reconnection has been made and check for 
 	 data if it has */
-      if (IOTypes_table.io_def[index].socket_info.comms_status != REG_COMMS_STATUS_CONNECTED) {
+      if (IOTypes_table.io_def[index].socket_info.comms_status 
+	  != REG_COMMS_STATUS_CONNECTED) {
 	return REG_FAILURE;
       }
     
@@ -1142,7 +1175,8 @@ int Consume_start_data_check_sockets(const int index) {
   if(nbytes > 0) {
 
 #if REG_DEBUG
-    fprintf(stderr, "Consume_start_data_check_sockets: read >>%s<< from socket\n", buffer);
+    fprintf(stderr, "Consume_start_data_check_sockets: read >>%s<< "
+	    "from socket\n", buffer);
 #endif
 
     /* Need to make sure we've read the full packet marking the 
@@ -1163,7 +1197,8 @@ int Consume_start_data_check_sockets(const int index) {
 	}
 
 	if(nbytes != nbytes1) {
-	  fprintf(stderr, "Consume_start_data_check_sockets: failed to read remaining %d bytes of header\n", (int) nbytes1);
+	  fprintf(stderr, "ERROR: Consume_start_data_check_sockets: failed "
+		  "to read remaining %d bytes of header\n", (int) nbytes1);
 	  return REG_FAILURE;
 	}
       }
@@ -1173,7 +1208,8 @@ int Consume_start_data_check_sockets(const int index) {
     IOTypes_table.io_def[index].buffer = (void*) malloc(REG_IO_BUFSIZE);
     if(!IOTypes_table.io_def[index].buffer) {
       IOTypes_table.io_def[index].buffer_max_bytes = 0;
-      fprintf(stderr, "Consume_start_data_check_sockets: malloc of IO buffer failed\n");
+      fprintf(stderr, "ERROR: Consume_start_data_check_sockets: malloc "
+	      "of IO buffer failed\n");
       return REG_FAILURE;
     }
 
@@ -1228,7 +1264,7 @@ int Consume_data_read_sockets(const int index, const int datatype, const int num
   if(nbytes <= 0) {
       if(nbytes == 0) {
 	/* closed connection */
-	fprintf(stderr, "Consume_data_read_sockets: hung up!\n");
+	fprintf(stderr, "INFO: Consume_data_read_sockets: hung up!\n");
       }
       else {
 	/* error */
@@ -1250,13 +1286,90 @@ int Consume_data_read_sockets(const int index, const int datatype, const int num
 void signal_handler_sockets(int a_signal) {
 
 #if REG_DEBUG
-  fprintf(stderr, "Caught SIGPIPE!\n");
+  fprintf(stderr, "INFO: Caught SIGPIPE!\n");
 #endif
 
   signal(SIGPIPE, signal_handler_sockets);
 
 }
 #endif
+
+/*---------------------------------------------------*/
+
+int Emit_ack_sockets(int index){
+
+  char *ack_msg = "<ACK/>          ";
+  return Write_sockets(index, strlen(ack_msg), (void*)ack_msg);
+}
+
+/*---------------------------------------------------*/
+
+int Consume_ack_sockets(int index){
+
+  char *ack_msg = "<ACK/>";
+  char  buf[32];
+  char *pchar;
+  int   nbytes;
+
+  if(IOTypes_table.io_def[index].ack_needed == FALSE)return REG_SUCCESS;
+
+  memset(buf, '\0', 32);
+
+  socket_io_type  *sock_info;
+  sock_info = &(IOTypes_table.io_def[index].socket_info);
+
+  /* Search for an ACK tag */
+  if((nbytes = recv_non_block(&(IOTypes_table.io_def[index].socket_info),
+			      (void *)buf, 
+			      16)) == 16){
+    pchar = strchr(buf, '<');
+
+    if(pchar){
+      if(strstr(pchar, ack_msg)){
+	return REG_SUCCESS;
+      }
+      else{
+	if( (&(buf[15])- pchar + 1) > strlen(ack_msg) ){
+
+	  /* We found the opening angle bracket but the rest of the tag
+	     is missing so we fail */
+	  return REG_FAILURE;
+	}
+	else{
+	  /* Looks like our ack msg drops off end of buffer so get another
+	     16 bytes */
+	  if(recv_non_block(&(IOTypes_table.io_def[index].socket_info),
+			    (void *)&(buf[16]), 
+			    16) == 16){
+
+	    if( strstr(buf, ack_msg) ) return REG_SUCCESS;
+	  }
+	}
+      }
+    }
+  }
+
+  if(nbytes < 0) {
+    if(errno == EAGAIN) {
+      /* Call would have blocked because no data to read
+       * Call was OK but there's no data to read... */
+      return REG_FAILURE;
+    }
+    else {
+      /* Some error occurred */
+      IOTypes_table.io_def[index].ack_needed = FALSE;
+    }
+  }
+  else {
+    /* recv returned 0 bytes => closed connection */
+    IOTypes_table.io_def[index].ack_needed = FALSE;
+  }
+
+#if REG_DEBUG_FULL
+  printf("INFO: Consume_ack_sockets: no ack received\n", buf);
+#endif
+  return REG_FAILURE;
+}
 
 /*---------------------------------------------------*/
 

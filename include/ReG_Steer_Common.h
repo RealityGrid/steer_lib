@@ -199,7 +199,7 @@ typedef struct {
   /* Pointer to buffer to hold data */
   void			       *buffer;
   /* How much data there is currently in the buffer */
-  int                          buffer_bytes;
+  int                           buffer_bytes;
   /* Size of this buffer */
   int				buffer_max_bytes;
 #if REG_SOCKET_SAMPLES
@@ -222,6 +222,9 @@ typedef struct {
   /* Index of the input channel - used in mapping to the details
      held by the SGS (when steering via SOAP) */
   int                           input_index;
+  /* Whether or not we need to check for an acknowledgement before
+     attempting to emit the next data set */
+  int                           ack_needed;
 
 } IOdef_entry;
 

@@ -692,6 +692,8 @@ int Register_IOTypes(int    NumTypes,
     IOTypes_table.io_def[current].array.sz = 0;
     IOTypes_table.io_def[current].convert_array_order = FALSE;
     IOTypes_table.io_def[current].is_enabled = IOTypes_table.enable_on_registration;
+    /* No ack needed for first data set to be emitted */
+    IOTypes_table.io_def[current].ack_needed = FALSE;
 
     /* set up transport for sample data - eg sockets */
     return_status = Initialize_IOType_transport(direction[i], current);
@@ -832,6 +834,8 @@ int Enable_IOType(int IOType){
 
       Emit_IOType_defs();
     }
+
+    IOTypes_table.io_def[index].ack_needed = FALSE;
   }
 #if REG_DEBUG
   else{
@@ -1352,7 +1356,7 @@ int Record_checkpoint_set(int   ChkType,
     return REG_FAILURE;
   }
 
-#if REG_DEBUG
+#if REG_DEBUG_FULL
   fprintf(stderr, "Record_checkpoint_set: node meta data >>%s<<\n",
 	  node_data);
   fprintf(stderr, "Record_checkpoint_set: cp_data >>%s<<\n",
@@ -1703,6 +1707,14 @@ int Consume_start(int  IOType,
     return REG_FAILURE;
   }
 
+  if(IOTypes_table.io_def[*IOTypeIndex].ack_needed == TRUE){
+
+    /* Signal that we have read this data and are ready for the next
+       set */
+    Emit_ack(*IOTypeIndex);
+    IOTypes_table.io_def[*IOTypeIndex].ack_needed = FALSE;
+  }
+
   /* Initialise array-ordering flags */
   IOTypes_table.io_def[*IOTypeIndex].convert_array_order = FALSE;
 
@@ -1731,6 +1743,11 @@ int Consume_stop(int *IOTypeIndex)
   if(IOTypes_table.io_def[*IOTypeIndex].is_enabled == FALSE){
     return REG_FAILURE;
   }
+
+  /* Set flag that we should signal data source that we are ready for new data
+     when we next call Consume_start */
+  IOTypes_table.io_def[*IOTypeIndex].ack_needed = TRUE;
+
 
 #if !REG_SOCKET_SAMPLES
   /* Close any file associated with this channel */
@@ -1979,6 +1996,11 @@ int Emit_start(int  IOType,
   /* Initialise array-ordering flags */
   IOTypes_table.io_def[*IOTypeIndex].convert_array_order = FALSE;
 
+  if(Consume_ack(*IOTypeIndex) != REG_SUCCESS){
+
+    return REG_NOT_READY;
+  }
+
 #if !REG_SOCKET_SAMPLES
 
   /* Currently have no way of looking up what filename to use so 
@@ -2027,7 +2049,12 @@ int Emit_start(int  IOType,
   }
 #endif
 
-  return Emit_header(*IOTypeIndex);
+  if( Emit_header(*IOTypeIndex) != REG_SUCCESS){
+
+    IOTypes_table.io_def[*IOTypeIndex].ack_needed = FALSE;
+    return REG_FAILURE;
+  }
+  return REG_SUCCESS;
 }
 
 /*----------------------------------------------------------------*/
@@ -2063,6 +2090,23 @@ int Emit_stop(int *IOTypeIndex)
      conditions */
   Create_lock_file(IOTypes_table.io_def[*IOTypeIndex].filename);
 #endif
+
+  /* Flag that we'll want an acknowledgement of this data set
+     before we try to read another one */
+  if(return_status == REG_SUCCESS){
+    IOTypes_table.io_def[*IOTypeIndex].ack_needed = TRUE;
+#if REG_DEBUG_FULL
+    printf("INFO: Emit_stop: set ack_needed = TRUE for index %d\n", 
+	   *IOTypeIndex);
+#endif
+  }
+  else{
+    IOTypes_table.io_def[*IOTypeIndex].ack_needed = FALSE;
+#if REG_DEBUG_FULL
+    printf("INFO: Emit_stop: set ack_needed = FALSE for index %d\n", 
+	   *IOTypeIndex);
+#endif
+  }
 
   *IOTypeIndex = REG_IODEF_HANDLE_NOTSET;
 
@@ -2113,6 +2157,7 @@ int Emit_data_slice(int		      IOTypeIndex,
 
 	if(Realloc_iotype_buffer(IOTypeIndex, num_bytes_to_send) 
 	   != REG_SUCCESS){
+	  IOTypes_table.io_def[IOTypeIndex].ack_needed = FALSE;
 	  return REG_FAILURE;
 	}
       }
@@ -2145,6 +2190,7 @@ int Emit_data_slice(int		      IOTypeIndex,
 
 	if(Realloc_iotype_buffer(IOTypeIndex, num_bytes_to_send) 
 	   != REG_SUCCESS){
+	  IOTypes_table.io_def[IOTypeIndex].ack_needed = FALSE;
 	  return REG_FAILURE;
 	}
       }
@@ -2178,6 +2224,7 @@ int Emit_data_slice(int		      IOTypeIndex,
 	/* This function will malloc if buffer not already set */
 	if(Realloc_iotype_buffer(IOTypeIndex, num_bytes_to_send) 
 	   != REG_SUCCESS){
+	  IOTypes_table.io_def[IOTypeIndex].ack_needed = FALSE;
 	  return REG_FAILURE;
 	}
       }
@@ -2218,6 +2265,7 @@ int Emit_data_slice(int		      IOTypeIndex,
 
   default:
     fprintf(stderr, "Emit_data_slice: Unrecognised data type\n");
+    IOTypes_table.io_def[IOTypeIndex].ack_needed = FALSE;
     return REG_FAILURE;
     break;
   }
@@ -2228,15 +2276,17 @@ int Emit_data_slice(int		      IOTypeIndex,
 			     datatype,
 			     actual_count,
 			     num_bytes_to_send,
-			     ReG_CalledFromF90)!= REG_SUCCESS){
-    return REG_FAILURE;
+			     ReG_CalledFromF90) == REG_SUCCESS){
+
+    /* Send data */
+    if( Emit_data(IOTypeIndex,
+		  datatype,
+		  num_bytes_to_send,
+		  out_ptr) == REG_SUCCESS) return REG_SUCCESS;
   }
 
-  /* Send data */
-  return Emit_data(IOTypeIndex,
-		   datatype,
-		   num_bytes_to_send,
-		   out_ptr);
+  IOTypes_table.io_def[IOTypeIndex].ack_needed = FALSE;
+  return REG_FAILURE;
 }
 
 /*----------------------------------------------------------------*/
@@ -2711,7 +2761,7 @@ int Steering_control(int     SeqNum,
 
       fprintf(stderr, "Steering_control: Emit_log failed\n");
     }
-#if REG_DEBUG
+#if REG_DEBUG_FULL
     else{
       fprintf(stderr, "Steering_control: done Emit_log\n");
     }
@@ -2725,7 +2775,7 @@ int Steering_control(int     SeqNum,
       strcpy(SteerParamLabels[i], param_labels[i]);
     }
 
-#if REG_DEBUG
+#if REG_DEBUG_FULL
     fprintf(stderr, "Steering_control: done Consume_control\n");
 #endif
 
@@ -3525,7 +3575,7 @@ int Emit_log()
 
   if(Chk_log.send_all == TRUE){
 
-#if REG_DEBUG
+#if REG_DEBUG_FULL
     fprintf(stderr, "Emit_log: sending all saved log entries...\n");
 #endif
     /* Then we have to send any entries we've saved to file too... */
@@ -3566,7 +3616,7 @@ int Emit_log()
   }
   else{
 
-#if REG_DEBUG
+#if REG_DEBUG_FULL
     fprintf(stderr, "Emit_log: sending unsent log entries...\n");
 #endif
     /* Third argument specifies that we only want those entries that haven't
@@ -3577,7 +3627,7 @@ int Emit_log()
     }
   }
 
-#if REG_DEBUG
+#if REG_DEBUG_FULL
   fprintf(stderr, "Emit_log: calling Emit_log_entries...\n");
 #endif
 
@@ -3587,7 +3637,7 @@ int Emit_log()
   free(pbuf);
   pbuf = NULL;
 
-#if REG_DEBUG
+#if REG_DEBUG_FULL
   fprintf(stderr, "Emit_log: sending logged steering commands...\n");
 #endif
 
@@ -4597,7 +4647,7 @@ int Steerer_connected()
 
 int Send_status_msg(char *buf)
 {
-#if REG_DEBUG
+#if REG_DEBUG_FULL
   fprintf(stderr, "Send_status_msg: sending:\n>>%s<<\n", buf);
 #endif
 
@@ -4868,6 +4918,47 @@ int Consume_data_read(const int		index,
 
 /*---------------------------------------------------*/
 
+int Emit_ack(const int index)
+{
+
+  if(IOTypes_table.io_def[index].is_enabled == FALSE){
+
+    return REG_FAILURE;
+  }
+#if REG_SOCKET_SAMPLES
+
+  return Emit_ack_sockets(index);
+		   
+#else
+
+  return Emit_ack_file(index);
+
+#endif
+}
+
+/*---------------------------------------------------*/
+
+int Consume_ack(const int index)
+{
+
+  if(IOTypes_table.io_def[index].is_enabled == FALSE){
+
+    return REG_FAILURE;
+  }
+
+#if REG_SOCKET_SAMPLES
+
+  return Consume_ack_sockets(index);
+		   
+#else
+
+  return Consume_ack_file(index);
+
+#endif
+}
+
+/*---------------------------------------------------*/
+
 int Emit_header(const int index)
 {
 #if REG_SOCKET_SAMPLES
@@ -5022,9 +5113,11 @@ int Emit_iotype_msg_header(int IOTypeIndex,
 
 #else
 
-  fwrite((void *)buffer, sizeof(char), (int)(pchar-buffer), 
-	 IOTypes_table.io_def[IOTypeIndex].fp);
-  return REG_SUCCESS;
+  if(fwrite((void *)buffer, sizeof(char), (int)(pchar-buffer), 
+	    IOTypes_table.io_def[IOTypeIndex].fp) == (pchar-buffer)){
+    return REG_SUCCESS;
+  }
+  return REG_FAILURE;
 #endif
 
 }

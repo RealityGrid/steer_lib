@@ -105,6 +105,10 @@ int Consume_data_read_sockets(const int index, const int datatype, const int num
 void signal_handler_sockets(int a_signal);
 #endif
 
+int Emit_ack_sockets(int index);
+
+int Consume_ack_sockets(int index);
+
 /*************************************
  * Internal Methods.
  * Should NOT be called from outside
@@ -142,6 +146,9 @@ static void retry_connect(const int index);
 static void poll_socket(const int index);
 
 static int dns_lookup(char* hostname);
+
+static int recv_non_block(socket_io_type  *sock_info, 
+			  char *pbuf, int nbytes);
 
 #endif /* REG_SOCKET_SAMPLES */
 #endif /* __REG_STEER_SOCKETS_IO_H__ */

@@ -52,6 +52,9 @@ extern Steerer_connection_table_type Steerer_connection;
    application - defined in ReG_Steer_Appside.c */
 extern IOdef_table_type IOTypes_table;
 
+/* Global scratch buffer - declared in ReG_Steer_Appside.c */
+extern char Global_scratch_buffer[];
+
 /*-----------------------------------------------------------------------*/
 
 int Detach_from_steerer_file(){
@@ -397,7 +400,6 @@ int Consume_start_data_check_file(int index){
      '_'s) as the filename */
   sprintf(fileroot, "%s%s", IOTypes_table.io_def[index].directory,
 	  IOTypes_table.io_def[index].label);
-  /*  strcpy(fileroot, IOTypes_table.io_def[index].label);*/
 
   /* Remove trailing white space */
   i = strlen(fileroot);
@@ -872,4 +874,48 @@ int Initialize_IOType_transport_file(int direction,
   }
 
   return REG_SUCCESS;
+}
+
+/*----------------------------------------------------------------*/
+
+int Consume_ack_file(const int index)
+{
+  FILE*  fp;
+
+  if(IOTypes_table.io_def[index].ack_needed == FALSE)return REG_SUCCESS;
+
+  /* In the short term, use the label (with spaces replaced by
+     '_'s) as the filename */
+  sprintf(Global_scratch_buffer, "%s_ACK", 
+	  IOTypes_table.io_def[index].filename);
+
+  if(fp = fopen(Global_scratch_buffer, "r")){
+
+    fclose(fp);
+    remove(Global_scratch_buffer);
+
+    return REG_SUCCESS;
+  }
+
+  return REG_FAILURE;
+}
+
+/*----------------------------------------------------------------*/
+
+int Emit_ack_file(const int index)
+{
+  FILE*  fp;
+
+  /* In the short term, use the label (with spaces replaced by
+     '_'s) as the filename */
+  sprintf(Global_scratch_buffer, "%s_ACK", 
+	  IOTypes_table.io_def[index].filename);
+
+  if(fp = fopen(Global_scratch_buffer, "w")){
+
+    fclose(fp);
+    return REG_SUCCESS;
+  }
+
+  return REG_FAILURE;
 }

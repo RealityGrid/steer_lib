@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------------
   This header file contains routines and data structures for
-  SOAP-based steering communication.
+  file-based data communication.
 
   (C) Copyright 2002, 2004, University of Manchester, United Kingdom,
   all rights reserved.
@@ -102,4 +102,13 @@ int Consume_msg_header_file(int  index,
 			    int *Count,
 			    int *NumBytes,
 			    int *IsFortranArray);
+
+/* Check for acknowledgement that consumer has read the last data set
+   that we emitted */
+int Consume_ack_file(const int index);
+
+/* Create an acknowledgement that we've consumed the last data set
+   sent to us */
+int Emit_ack_file(const int index);
+
 #endif
