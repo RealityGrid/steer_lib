@@ -38,12 +38,16 @@ NBIT = 64
 
 # Location of C compiler and flags to use
 CC = xlc
-C_FLAGS = -O2 -q64 -bdynamic 
+C_FLAGS = -O2 -q64 -bdynamic -brtl
+LIB_C_FLAGS = ${C_FLAGS} -I../include
+
+# Linker flags to use
+LD_FLAGS = -q64 -qmkshrobj -L${REG_XML_LIBDIR}${NBIT} -lm -lz -lxml2 -liconv
 
 # Location of F90 compiler (if any) and flags to use
 F90 = mpxlf90_r
 F90_MPI = mpxlf90_r
-F90_FLAGS = -O2 -qsuffix=f=f90:cpp=f90 -q64
+F90_FLAGS = -O2 -qsuffix=f=f90:cpp=f90 -q64 -brtl
 MPI_FLAGS = -lmpi
 
 # Location of java compiler - used to produce proxy binary
