@@ -47,14 +47,31 @@ ARCH = LINUX
 # Directory to install executables to (mini_app, mini_steerer etc.)
 LOCAL_BIN_DIR  = ${HOME}/bin
 
+#------------------------------------
+# Medium to use for steering communication - you have a choice of
+# files or SOAP over http.
+# Set flag to 1 to use SOAP for steering communication, 0 to use files 
+REG_SOAP_STEERING_FLAG = 0
+
+#------------------------------------
+# Medium to use for data set transfer - you have a choice of globus_io,
+# tcp socket or files.  Setting both of the flags below to zero means
+# that data transfer will use files (written to either the current working
+# directory or to that specified by REG_DATA_DIRECTORY if set). DO NOT 
+# set both of these flags to 1!
+
 # Set flag to 1 to use globus for iotype samples communication, 0 to not 
 REG_GLOBUS_SAMPLES_FLAG = 0
 
 # Set flag to 1 to use sockets for iotype samples communication, 0 to not 
-REG_SOCKET_SAMPLES_FLAG = 1
+REG_SOCKET_SAMPLES_FLAG = 0
 
-# Set flag to 1 to use SOAP for steering communication, 0 to not 
-REG_SOAP_STEERING_FLAG = 0
-
+#------------------------------------
 # Set flag to 1 to get (a lot of) debug output, 0 otherwise.
 REG_DEBUG_FLAG = 1
+
+#--------------------------------------------------------------------
+# Don't edit anything below this line
+
+# Pass version information to compile
+REG_STEER_LIB_VERSION = 1.1
