@@ -78,6 +78,7 @@ int main(){
 
   int                num_entries;
   Output_log_struct  chk_entries[10];
+  double            *log_ptr;
 
   /* Initialise arrays for querying param values */
 
@@ -399,6 +400,7 @@ int main(){
       fprintf(stderr, "  R - send Restart signal to application\n");
       fprintf(stderr, "  s - send Stop signal to application\n");
       fprintf(stderr, "  v - view logged checkpoints\n");
+      fprintf(stderr, "  V - view logged parameters\n");
       fprintf(stderr, "\n");
       break;
 
@@ -633,6 +635,22 @@ int main(){
 	  }
 	}
       }
+      break;
+
+    case 'V':
+      if(Get_param_log(sim_handle,		//ReG library
+		       param_details[0].handle,
+		       &(log_ptr),
+		       &i) == REG_SUCCESS){
+	printf("Got %d param log entries for handle %d\n",
+	       i, param_details[0].handle);
+
+	for(j=0; j<i; j++){
+	  printf("%f ", log_ptr[j]);
+	}
+	printf("\n\n");
+      }
+
       break;
 
     default:
