@@ -1323,19 +1323,14 @@ int Consume_start_data_check_globus(const int index)
   int             attempt_reconnect;
   int             status;
 
-  fprintf(stderr,"ARPDBG - entered Consume_start_data_check_globus\n");
-
   /* if not connected attempt to connect now */
   if (IOTypes_table.io_def[index].socket_info.comms_status 
       != REG_COMMS_STATUS_CONNECTED){
-
-    fprintf(stderr,"ARPDBG - Consume_start_data_check_globus not connected\n");
 
     /* Check to see that we know where we're supposed to be connecting to */
     if(IOTypes_table.io_def[index].socket_info.connector_port == 0){
 #if REG_SOAP_STEERING	  
 
-      fprintf(stderr,"ARPDBG - Consume_start_data_check_globus calling Get_data_source_address_soap\n");
       /* Go out into the world of grid services... */
       status = Get_data_source_address_soap(IOTypes_table.io_def[index].input_index, 
 		   IOTypes_table.io_def[index].socket_info.connector_hostname,
