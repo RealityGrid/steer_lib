@@ -44,6 +44,10 @@
 #define REG_DEBUG 1
 #endif
 
+/** @file ReG_Steer_XML.c
+ *  @author Andrew Porter
+ *  @brief Code for parsing xml documents */
+
 /*-----------------------------------------------------------------*/
 
 int Parse_xml_file(char* filename, struct msg_struct *msg)
@@ -288,7 +292,11 @@ int parseControl(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 
   while (cur != NULL) {
 
-    if( !xmlStrcmp(cur->name, (const xmlChar *) "Param") ){
+    if( !xmlStrcmp(cur->name, (const xmlChar *) "Valid_after") ){
+
+      ctrl->valid_after = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
+    }
+    else if( !xmlStrcmp(cur->name, (const xmlChar *) "Param") ){
 
       if( !ctrl->first_param ){
 
@@ -758,6 +766,7 @@ struct control_struct *New_control_struct()
   ctrl = (struct control_struct *)malloc(sizeof(struct control_struct));
 
   if(ctrl){
+    ctrl->valid_after = NULL;
     ctrl->first_param = NULL;
     ctrl->param       = NULL;
     ctrl->first_cmd   = NULL;
@@ -999,6 +1008,8 @@ void Delete_status_struct(struct status_struct *status)
 void Delete_control_struct(struct control_struct *ctrl)
 {
   if (!ctrl) return;
+
+  if (ctrl->valid_after) xmlFree(ctrl->valid_after);
 
   if(ctrl->first_param){
 
