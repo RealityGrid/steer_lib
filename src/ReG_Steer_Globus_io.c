@@ -891,6 +891,8 @@ int Emit_msg_header_globus(socket_io_type *sock_info,
   sprintf(tmp_buffer, "<Num_objects>%d</Num_objects>", Count);
   pchar += sprintf(pchar, REG_PACKET_FORMAT, tmp_buffer);
   pchar += sprintf(pchar, REG_PACKET_FORMAT, "</ReG_data_slice_header>");
+  /* Put terminating char within the 128-byte packet */
+  *(pchar-1) = '\0';
 
 #if DEBUG
   fprintf(stderr, "Emit_msg_header_globus: sending >>%s<<\n", buffer);
@@ -898,7 +900,8 @@ int Emit_msg_header_globus(socket_io_type *sock_info,
 
   result = globus_io_write(&(sock_info->conn_handle), 
 			   (globus_byte_t *)buffer, 
-			   strlen(buffer), 
+			   /* strlen doesn't count the '\0' */
+			   strlen(buffer)+1, 
 			   &nbytes);
 
   if (result != GLOBUS_SUCCESS ) {

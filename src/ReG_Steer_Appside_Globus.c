@@ -72,10 +72,11 @@ int Send_status_msg_globus(char *buf)
 
   /* Send message header */
   sprintf(hdr_buf, REG_PACKET_FORMAT, REG_DATA_HEADER);
+  hdr_buf[REG_PACKET_SIZE-1] = '\0';
 
   result = globus_io_write(&(Steerer_connection.socket_info.conn_handle), 
 			   (globus_byte_t *)hdr_buf, 
-			   strlen(hdr_buf), 
+			   REG_PACKET_SIZE, 
 			   &nbytes);
 
   if(result != GLOBUS_SUCCESS){
@@ -93,7 +94,7 @@ int Send_status_msg_globus(char *buf)
 
     result = globus_io_write(&(Steerer_connection.socket_info.conn_handle), 
 			     (globus_byte_t *)hdr_buf, 
-			     strlen(hdr_buf), 
+			     REG_PACKET_SIZE, 
 			     &nbytes);
 
     if(result != GLOBUS_SUCCESS){
@@ -139,10 +140,11 @@ int Send_status_msg_globus(char *buf)
 
   /* Send message header */
   sprintf(hdr_buf, REG_PACKET_FORMAT, REG_DATA_FOOTER);
+  hdr_buf[REG_PACKET_SIZE-1] = '\0';
 
   result = globus_io_write(&(Steerer_connection.socket_info.conn_handle), 
 			   (globus_byte_t *)hdr_buf, 
-			   strlen(hdr_buf), 
+			   REG_PACKET_SIZE, 
 			   &nbytes);
 
   if(result != GLOBUS_SUCCESS){
@@ -408,7 +410,8 @@ int Steerer_connected_globus()
        steerer about supported commands */
     result = globus_io_write(&(Steerer_connection.socket_info.conn_handle), 
 			     (globus_byte_t *)Steerer_connection.supp_cmds, 
-			     strlen(Steerer_connection.supp_cmds), 
+			     /* strlen doesn't count '\0' */
+			     strlen(Steerer_connection.supp_cmds)+1, 
 			     &nbytes);
 
     if(result == GLOBUS_SUCCESS){
@@ -435,7 +438,8 @@ int Steerer_connected_globus()
 #endif    
 	result = globus_io_write(&(Steerer_connection.socket_info.conn_handle), 
 				 (globus_byte_t *)Steerer_connection.supp_cmds,
-				 strlen(Steerer_connection.supp_cmds), 
+				 /* strlen doesn't count '\0' */
+				 strlen(Steerer_connection.supp_cmds) + 1, 
 				 &nbytes);
 	
 	if(result != GLOBUS_SUCCESS){
@@ -669,8 +673,8 @@ int Consume_start_data_check_globus(const int index)
       }
       else {
 #if DEBUG
-      fprintf(stderr, "Consume_start_data_check_globus: reconnect attempt failed - "
-	      "socket is not connected status id %d\n", 
+      fprintf(stderr, "Consume_start_data_check_globus: reconnect "
+	      "attempt failed - socket is not connected status id %d\n", 
 	      IOTypes_table.io_def[index].socket_info.comms_status);
 #endif
       return REG_FAILURE;
@@ -682,8 +686,10 @@ int Consume_start_data_check_globus(const int index)
     if(result == GLOBUS_SUCCESS){
 
 #if DEBUG
-      fprintf(stderr, "Consume_start_data_check_globus: read %d bytes from socket\n", nbytes);
-      fprintf(stderr, "Consume_start_data_check_globus: read <%s> from socket\n", buffer);
+      fprintf(stderr, "Consume_start_data_check_globus: read %d "
+	      "bytes from socket\n", nbytes);
+      fprintf(stderr, "Consume_start_data_check_globus: read >>%s<< "
+	      "from socket\n", buffer);
 #endif
       /* ARPDBG - globus_io_try_read always returns 0 bytes if connection
 	 configugured to use GSSAPI or SSL data wrapping. */
@@ -818,14 +824,14 @@ int Emit_header_globus(const int index)
     /* Send header */
     
     sprintf(buffer, REG_PACKET_FORMAT, REG_DATA_HEADER);
-
+    buffer[REG_PACKET_SIZE-1] = '\0';
 #if DEBUG
     fprintf(stderr, "Emit_header_globus: Sending >>%s<<\n", buffer);
 #endif
 
     result = globus_io_write(&(IOTypes_table.io_def[index].socket_info.conn_handle), 
 			     (globus_byte_t *)buffer, 
-			     strlen(buffer), 
+			     REG_PACKET_SIZE,
 			     &nbytes);
 
     if(result == GLOBUS_SUCCESS){
@@ -853,7 +859,7 @@ int Emit_header_globus(const int index)
 #endif    
 	result = globus_io_write(&(IOTypes_table.io_def[index].socket_info.conn_handle), 
 				 (globus_byte_t *)buffer, 
-				 strlen(buffer), 
+				 REG_PACKET_SIZE, 
 				 &nbytes);
 	
 	if(result == GLOBUS_SUCCESS){
@@ -896,8 +902,9 @@ int Emit_footer_globus(const int index,
 #endif
 
   result = globus_io_write(&(IOTypes_table.io_def[index].socket_info.conn_handle), 
-			   (globus_byte_t *)buffer, 
-			   strlen(buffer), 
+			   (globus_byte_t *)buffer,
+			   /* strlen doesn't count '\0' */
+			   strlen(buffer)+1, 
 			   &nbytes);
   
   if(result != GLOBUS_SUCCESS){

@@ -1344,6 +1344,8 @@ int Emit_stop(int *IOTypeIndex)
 
   /* Send footer */
   sprintf(buffer, REG_PACKET_FORMAT, REG_DATA_FOOTER);
+  /* Include termination char WITHIN the packet */
+  buffer[REG_PACKET_SIZE-1] = '\0';
 
   return_status = Emit_footer(*IOTypeIndex, buffer);
 
@@ -1369,12 +1371,14 @@ int Emit_data_slice(int		      IOTypeIndex,
 {
   int              datatype;
   int              i;
+  int              actual_count;
   size_t	   num_bytes_to_send;
 
   XDR              xdrs;
   int             *iptr;
   float           *fptr;
   double          *dptr;
+  char            *pChar;
 
   /* Check that steering is enabled */
   if(!ReG_SteeringEnabled) return REG_SUCCESS;
@@ -1386,6 +1390,8 @@ int Emit_data_slice(int		      IOTypeIndex,
   if (Get_communication_status(IOTypeIndex) !=  REG_SUCCESS)
     return REG_FAILURE;
 
+  actual_count = Count;
+
   /* Check data type, calculate number of bytes to send and convert
      to XDR if required */
   switch(DataType){
@@ -1393,7 +1399,7 @@ int Emit_data_slice(int		      IOTypeIndex,
   case REG_INT:
     if(IOTypes_table.io_def[IOTypeIndex].use_xdr){
       datatype = REG_XDR_INT;
-      num_bytes_to_send = Count*REG_SIZEOF_XDR_INT;
+      num_bytes_to_send = actual_count*REG_SIZEOF_XDR_INT;
 
       xdrmem_create(&xdrs, 
 		    IOTypes_table.io_def[IOTypeIndex].buffer,
@@ -1402,7 +1408,7 @@ int Emit_data_slice(int		      IOTypeIndex,
 
       iptr = (int *)pData;
 
-      for(i=0; i<Count; i++){
+      for(i=0; i<actual_count; i++){
 
 	xdr_int(&xdrs, iptr++);
       }
@@ -1411,14 +1417,14 @@ int Emit_data_slice(int		      IOTypeIndex,
     }
     else{
       datatype = DataType;
-      num_bytes_to_send = Count*sizeof(int);
+      num_bytes_to_send = actual_count*sizeof(int);
     }
     break;
 
   case REG_FLOAT:
     if(IOTypes_table.io_def[IOTypeIndex].use_xdr){
       datatype = REG_XDR_FLOAT;
-      num_bytes_to_send = Count*REG_SIZEOF_XDR_FLOAT;
+      num_bytes_to_send = actual_count*REG_SIZEOF_XDR_FLOAT;
 
       xdrmem_create(&xdrs, 
 		    IOTypes_table.io_def[IOTypeIndex].buffer,
@@ -1427,7 +1433,7 @@ int Emit_data_slice(int		      IOTypeIndex,
 
       fptr = (float *)pData;
 
-      for(i=0; i<Count; i++){
+      for(i=0; i<actual_count; i++){
 
 	xdr_float(&xdrs, fptr++);
       }
@@ -1436,14 +1442,14 @@ int Emit_data_slice(int		      IOTypeIndex,
     }
     else{
       datatype = DataType;
-      num_bytes_to_send = Count*sizeof(float);
+      num_bytes_to_send = actual_count*sizeof(float);
     }
     break;
 
   case REG_DBL:
     if(IOTypes_table.io_def[IOTypeIndex].use_xdr){
       datatype = REG_XDR_DOUBLE;
-      num_bytes_to_send = Count*REG_SIZEOF_XDR_DOUBLE;
+      num_bytes_to_send = actual_count*REG_SIZEOF_XDR_DOUBLE;
 
       xdrmem_create(&xdrs, 
 		    IOTypes_table.io_def[IOTypeIndex].buffer,
@@ -1452,7 +1458,7 @@ int Emit_data_slice(int		      IOTypeIndex,
 
       dptr = (double *)pData;
 
-      for(i=0; i<Count; i++){
+      for(i=0; i<actual_count; i++){
 
 	xdr_double(&xdrs, dptr++);
       }
@@ -1461,13 +1467,20 @@ int Emit_data_slice(int		      IOTypeIndex,
     }
     else{
       datatype = DataType;
-      num_bytes_to_send = Count*sizeof(double);
+      num_bytes_to_send = actual_count*sizeof(double);
     }
     break;
 
   case REG_CHAR:
     datatype = DataType;
-    num_bytes_to_send = Count*sizeof(char);
+
+    /* Ensure we send termination character */
+    pChar = (char *)pData;
+    if(pChar[actual_count-1] != '\0'){
+      pChar[actual_count] = '\0';
+      actual_count++;
+    }
+    num_bytes_to_send = actual_count*sizeof(char);
     break;
 
   default:
@@ -1480,7 +1493,7 @@ int Emit_data_slice(int		      IOTypeIndex,
 
   if( Emit_iotype_msg_header(IOTypeIndex,
 			     datatype,
-			     Count) != REG_SUCCESS){
+			     actual_count) != REG_SUCCESS){
 
     return REG_FAILURE;
   }
