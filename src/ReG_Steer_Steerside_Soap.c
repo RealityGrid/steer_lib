@@ -184,29 +184,33 @@ struct msg_struct *Get_status_msg_soap(Sim_entry_type *sim)
 
   /* GetNotifications returns a space-delimited list of the names of
      the SDE's that have changed since we last looked at them */
-  if(ptr = strtok(getNotifications_response._result, " ")){
+  if(getNotifications_response._result){
 
-    sim->SGS_info.sde_count = 0;
-    while(ptr){
+    if(ptr = strtok(getNotifications_response._result, " ")){
 
-      if(sim->SGS_info.sde_count >= REG_MAX_NUM_SGS_SDE){
+      sim->SGS_info.sde_count = 0;
+      while(ptr){
 
-	fprintf(stderr, "Get_status_msg_soap: ERROR - max. no. of service data "
-		"elements (%d) exceeded\n", REG_MAX_NUM_SGS_SDE);
-	break;
+        if(sim->SGS_info.sde_count >= REG_MAX_NUM_SGS_SDE){
+
+	  fprintf(stderr, "Get_status_msg_soap: ERROR - max. no. of "
+		  "service data elements (%d) exceeded\n", 
+		  REG_MAX_NUM_SGS_SDE);
+	  break;
+	}
+
+	sprintf(sim->SGS_info.notifications[sim->SGS_info.sde_count++], "%s", ptr);
+
+	ptr = strtok(NULL, " ");
       }
 
-      sprintf(sim->SGS_info.notifications[sim->SGS_info.sde_count++], "%s", ptr);
-
-      ptr = strtok(NULL, " ");
+      /* sde_index holds the index of the notification to use _next time_ 
+	 we call Get_service_data - the zeroth notification is always
+	 dealt with here. */
+      sim->SGS_info.sde_index = 1;
+      sim->SGS_info.sde_count--;
+      return Get_service_data(sim, sim->SGS_info.notifications[0]);
     }
-
-    /* sde_index holds the index of the notification to use _next time_ 
-       we call Get_service_data - the zeroth notification is always
-       dealt with here. */
-    sim->SGS_info.sde_index = 1;
-    sim->SGS_info.sde_count--;
-    return Get_service_data(sim, sim->SGS_info.notifications[0]);
   }
 
   /* Only ask for a status msg if had no notifications */
@@ -274,6 +278,7 @@ struct msg_struct *Get_service_data(Sim_entry_type *sim, char *sde_name)
 	/* Convert from a notification that steerer is now detached
 	   to a message that fits the library spec. */
 	msg = New_msg_struct();
+	msg->msg_type = STATUS;
 	msg->status = New_status_struct();
 	msg->status->first_cmd = New_cmd_struct();
 	msg->status->cmd = msg->status->first_cmd;
@@ -287,6 +292,7 @@ struct msg_struct *Get_service_data(Sim_entry_type *sim, char *sde_name)
 	/* Convert from a notification that application is now detached
 	   to a message that fits the library spec. */
 	msg = New_msg_struct();
+	msg->msg_type = STATUS;
 	msg->status = New_status_struct();
 	msg->status->first_cmd = New_cmd_struct();
 	msg->status->cmd = msg->status->first_cmd;

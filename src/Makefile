@@ -148,7 +148,7 @@ ReG_Steer_Globus_io.o: ReG_Steer_Globus_io.c \
 	../include/ReG_Steer_types.h
 
 ReG_Steer_Appside_Globus.o: ReG_Steer_Appside_Globus.c \
-	../include/ReG_Steer_Globus_io.h
+	../include/ReG_Steer_Globus_io.h \
 	../include/ReG_Steer_Appside_Globus.h \
 	../include/ReG_Steer_Appside_internal.h \
 	../include/ReG_Steer_types.h \
