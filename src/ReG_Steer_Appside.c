@@ -450,7 +450,7 @@ int Steering_initialize(int  NumSupportedCmds,
   signal(SIGILL, Steering_signal_handler);
   signal(SIGABRT, Steering_signal_handler);
   signal(SIGFPE, Steering_signal_handler);
-#ifdef __sgi
+#ifndef __linux
   /* Catch the broken pipe signal for sending down a disconnected
      socket. Linux allows us to do this with a flag to send()    */
   signal(SIGPIPE, signal_handler_sockets);
