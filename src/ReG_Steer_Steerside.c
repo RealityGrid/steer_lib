@@ -48,15 +48,6 @@
 
 #define REG_TOP_LEVEL_REGISTRY "http://yaffel.mvc.mcc.ac.uk:50000/Session/ServiceGroupRegistration/service?3893432997"
 
-/* MR: Temporary fix - forward declaration of the Consume_param_log */
-/*     function so it can be used throughout this implementation    */
-/*     file. Sticking it in the header causes problems due to       */
-/*     struct param_struct (from ReG_Steer_XML.h) not being         */
-/*     available. Including the XML header in the Steerside causes  */
-/*     other problems.                                              */
-int Consume_param_log(Sim_entry_type *sim, 
-		      struct param_struct *param_ptr);
-
 /*--------------------- Data structures -------------------*/
 
 /* Main table used to record all simulations currently
