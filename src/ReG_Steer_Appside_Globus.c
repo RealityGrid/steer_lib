@@ -135,7 +135,6 @@ int Send_status_msg_globus(char *buf)
     return REG_FAILURE;
   }
 
-
   /* and finally, the footer of the message */
 
   /* Send message header */
@@ -635,7 +634,6 @@ void Finalize_IOType_transport_globus()
   }
   /* deactivate globus module */
   Globus_io_deactivate();
-  
 }
 #endif
 
@@ -657,12 +655,8 @@ int Disable_IOType_globus(int index)
 
     while(IOTypes_table.io_def[index].socket_info.comms_status != REG_COMMS_STATUS_NULL
 	  && IOTypes_table.io_def[index].socket_info.comms_status != REG_COMMS_STATUS_FAILURE){
-      /* ARPDBG */
-      printf("(%d) ", IOTypes_table.io_def[index].socket_info.comms_status);
       Globus_callback_poll(&(IOTypes_table.io_def[index].socket_info));
-      sleep(1);
     }
-    printf("\n");
   }
   else if (IOTypes_table.io_def[index].direction == REG_IO_IN) {
     /* close globus sockets */
@@ -670,12 +664,8 @@ int Disable_IOType_globus(int index)
 
     while(IOTypes_table.io_def[index].socket_info.comms_status != REG_COMMS_STATUS_NULL
 	  && IOTypes_table.io_def[index].socket_info.comms_status != REG_COMMS_STATUS_FAILURE){
-      /* ARPDBG */
-      printf("%d ", IOTypes_table.io_def[index].socket_info.comms_status);
       Globus_callback_poll(&(IOTypes_table.io_def[index].socket_info));
-      sleep(1);
     }
-    printf("\n");
   }
 
   return REG_SUCCESS;
@@ -701,6 +691,23 @@ int Enable_IOType_globus(int index)
 	      "for IOType\n");
 #endif
       return REG_FAILURE;
+    }
+    fprintf(stderr, "ARPDBG: Enable_IOType_globus, status = %d\n",
+	    IOTypes_table.io_def[index].socket_info.comms_status);
+    sleep(5); /* ARPDBG*/
+    if(IOTypes_table.io_def[index].socket_info.comms_status 
+       == REG_COMMS_STATUS_LISTENING){
+
+      fprintf(stderr, "Enable_IOType_globus: waiting for connection...\n");
+      while((IOTypes_table.io_def[index].socket_info.comms_status 
+	    != REG_COMMS_STATUS_CONNECTED) && 
+	    (IOTypes_table.io_def[index].socket_info.comms_status 
+	     != REG_COMMS_STATUS_FAILURE)){
+
+	Globus_callback_poll(&(IOTypes_table.io_def[index].socket_info));
+      }
+      fprintf(stderr, "Enable_IOType_globus: ...done\n");
+      sleep(5); /* ARPDBG*/
     }
   }
   else if (IOTypes_table.io_def[index].direction == REG_IO_IN){
@@ -755,10 +762,15 @@ int Consume_start_data_check_globus(const int index)
   attempt_reconnect = 1;
   memset(buffer, '\0', 1);
 
-  printf("ARPDBG: Consume_start_data_check_globus - searching for start tag\n");
+#if REG_DEBUG
+  fprintf(stderr, "Consume_start_data_check_globus: searching for start tag\n");
+#endif
+
   while(!(pstart = strstr(buffer, REG_DATA_HEADER))){
 
-    printf(".");
+#if REG_DEBUG
+    fprintf(stderr, ".");
+#endif
     result = globus_io_try_read(&(IOTypes_table.io_def[index].socket_info.conn_handle),
 				(globus_byte_t *)buffer,
 				REG_PACKET_SIZE,
@@ -768,19 +780,17 @@ int Consume_start_data_check_globus(const int index)
 
       if( globus_object_type_match(globus_object_get_type(globus_error_get(result)),
 				   GLOBUS_IO_ERROR_TYPE_EOF) ){
-	/*      if( globus_object_get_type(globus_error_get(result)) == GLOBUS_IO_ERROR_TYPE_EOF){
-	 */
-	printf("ARPDBG: Consume_start_data_check_globus - hit EOF\n");	
+	fprintf(stderr, "\nConsume_start_data_check_globus: hit EOF\n");	
 	return REG_FAILURE;
       }
 
-      printf("ARPDBG: Consume_start_data_check_globus - try read failed\n");
+      fprintf(stderr, "\nConsume_start_data_check_globus: try read failed\n");
       if(!attempt_reconnect){
 	return REG_FAILURE;
       }
 
 #if REG_DEBUG
-      fprintf(stderr, "Consume_start_data_check_globus: globus_io_try_read"
+      fprintf(stderr, "\nConsume_start_data_check_globus: globus_io_try_read"
 	      " failed - try immediate reconnect for index %d\n", index);
 #endif
       Globus_error_print(result);
@@ -799,13 +809,16 @@ int Consume_start_data_check_globus(const int index)
       memset(buffer, '\0', 1);
     }
     else if(nbytes == 0){
-      printf("\n");
-      printf("ARPDBG: Consume_start_data_check_globus - no data\n");
+#if REG_DEBUG
+      fprintf(stderr, "\n");
+#endif
       /* Call was OK but there's no data to read... */
       return REG_FAILURE;
     }
   }
-  printf("\n");
+#if REG_DEBUG
+  fprintf(stderr, "\n");
+#endif
 
   if(nbytes > 0){
 
@@ -817,8 +830,6 @@ int Consume_start_data_check_globus(const int index)
     /* Need to make sure we've read the full packet marking the 
        beginning of the next data slice */
     nbytes1 = (int)(pstart - buffer) + (REG_PACKET_SIZE - nbytes);
-    printf("ARPDBG: Consume_start_data_check_globus - nbytes1 = %d\n", 
-	   nbytes1);
 
     if(nbytes1 > 0){
       result = globus_io_try_read(&(IOTypes_table.io_def[index].socket_info.conn_handle),
@@ -842,77 +853,6 @@ int Consume_start_data_check_globus(const int index)
     }
     return REG_SUCCESS;
   }
-
-
-
-  /* Check for data on socket - non-blocking *
-
-  result = globus_io_try_read(&(IOTypes_table.io_def[index].socket_info.conn_handle),
-			      (globus_byte_t *)buffer,
-			      REG_PACKET_SIZE,
-			      &nbytes);
-
-  if (result != GLOBUS_SUCCESS){
-#if REG_DEBUG
-    fprintf(stderr, "Consume_start_data_check_globus: globus_io_try_read failed - "
-	    "try immediate reconnect for index %d\n", index);
-#endif
-    Globus_error_print(result);
-
-    Globus_retry_connect(&(IOTypes_table.io_def[index].socket_info));
-     
-    /* check if socket reconnection has been made and check for data if it has *
-    if (IOTypes_table.io_def[index].socket_info.comms_status == 
-	REG_COMMS_STATUS_CONNECTED) {
-      result = globus_io_try_read(&(IOTypes_table.io_def[index].socket_info.conn_handle),
-				  (globus_byte_t *)buffer,
-				  REG_PACKET_SIZE,
-				  &nbytes);
-    }
-    else {
-#if REG_DEBUG
-      fprintf(stderr, "Consume_start_data_check_globus: reconnect "
-	      "attempt failed - socket is not connected status id %d\n", 
-	      IOTypes_table.io_def[index].socket_info.comms_status);
-#endif
-      return REG_FAILURE;
-    }
-  }
-
-  if(result == GLOBUS_SUCCESS){
-
-#if REG_DEBUG
-    fprintf(stderr, "Consume_start_data_check_globus: read %d "
-	    "bytes from socket\n", (int)nbytes);
-#endif
-    /* ARPDBG - globus_io_try_read always returns 0 bytes if connection
-       configugured to use GSSAPI or SSL data wrapping. *
-    if(nbytes > 0){
-
-#if REG_DEBUG
-      fprintf(stderr, "Consume_start_data_check_globus: read >>%s<< "
-	      "from socket\n", buffer);
-#endif
-      if(!strncmp(buffer, REG_DATA_HEADER, strlen(REG_DATA_HEADER))){
-
-	IOTypes_table.io_def[index].buffer_bytes = REG_IO_BUFSIZE;
-	IOTypes_table.io_def[index].buffer = (void *)malloc(REG_IO_BUFSIZE);
-
-	if(!IOTypes_table.io_def[index].buffer) return REG_FAILURE;
-
-	return REG_SUCCESS;
-      }
-    }   
-  }
-  else {
-    
-#if REG_DEBUG
-    fprintf(stderr, "Consume_start_data_check_globus: reconnect attempt"
-	    " success - but globus_io_try_read failed\n");
-#endif
-    Globus_error_print(result);    
-  }
-  */
   return REG_FAILURE;
 }
 #endif
@@ -1115,6 +1055,8 @@ int Emit_data_globus(const int		index,
   return REG_SUCCESS;
 }
 #endif
+
+/*---------------------------------------------------*/
 
 #if REG_GLOBUS_SAMPLES
 int Get_communication_status_globus(const int index)

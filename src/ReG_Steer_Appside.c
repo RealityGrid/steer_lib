@@ -170,7 +170,8 @@ int Steering_initialize(int  NumSupportedCmds,
   }
   else{
 
-    fprintf(stderr, "Steering_initialize: failed to get schema location\n");
+    fprintf(stderr, "Steering_initialize: Error - REG_STEER_HOME "
+	    "environment variable not set\n");
     Steering_enable(FALSE);
     return REG_FAILURE;
   }
@@ -1575,6 +1576,12 @@ int Consume_stop(int *IOTypeIndex)
   /* Can only call this function if steering lib initialised */
   if (!ReG_SteeringInit) return REG_FAILURE;
 
+  if(*IOTypeIndex < 0 || *IOTypeIndex >= IOTypes_table.num_registered){
+
+    fprintf(stderr, "Consume_stop: IOType index out of range\n");
+    return REG_FAILURE;
+  }
+
   /* Check that this IOType is enabled */
   if(IOTypes_table.io_def[*IOTypeIndex].is_enabled == FALSE){
     return REG_FAILURE;
@@ -1602,6 +1609,9 @@ int Consume_data_slice_header(int  IOTypeIndex,
   int status;
   int NumBytes;
   int IsFortranArray;
+
+  /* Check that steering is enabled */
+  if(!ReG_SteeringEnabled) return REG_SUCCESS;
 
   /* Check that this IOType is enabled */
   if(IOTypes_table.io_def[IOTypeIndex].is_enabled == FALSE){
@@ -1672,6 +1682,9 @@ int Consume_data_slice(int    IOTypeIndex,
 {
   int              return_status = REG_SUCCESS;
   size_t	   num_bytes_to_read;
+
+  /* Check that steering is enabled */
+  if(!ReG_SteeringEnabled) return REG_SUCCESS;
 
   /* Check that this IOType is enabled */
   if(IOTypes_table.io_def[IOTypeIndex].is_enabled == FALSE){

@@ -822,10 +822,6 @@ int Reorder_decode_array(IOdef_entry *io,
 	fprintf(stderr, "Reorder_decode_array: xdr_vector decode failed\n");
 	return_status = REG_FAILURE;
       }
-      /* ARPDBG */
-      for(i=0; i<count; i++){
-	printf("Reorder_decode_array: pData[%d] = %d\n", i, ((int *)pData)[i]);
-      }
       break;
 
     case REG_FLOAT:
