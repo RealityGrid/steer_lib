@@ -88,8 +88,12 @@ typedef struct {
 
 } Chk_log_entry_type;
 
+typedef enum {PARAM, CHKPT} log_type_type ;
+
 typedef struct {
 
+  /* What sort of log this is */
+  log_type_type       log_type;
   /* Current no. of entries in table */
   int                 num_entries;
   /* Max. no. of entries table can currently hold (is dynamic) */
@@ -102,6 +106,8 @@ typedef struct {
   Chk_log_entry_type *entry;
   /* Ptr to file containing previous log entries */
   FILE               *file_ptr;
+  /* Name of this file */
+  char                filename[REG_MAX_STRING_LENGTH];
   /* Flag to indicate whether or not all entries must be sent to
      steerer, IRRESPECTIVE of the value of their individual 
      sent_to_steerer flags.  This used when a client detaches and
@@ -299,8 +305,11 @@ extern PREFIX int Write_xml_footer(char **pchar,
 
 /* Read the specified ASCII file and return the contents in the buffer
    pointed to by *buf, the size of which is returned in *size.  It is
-   the caller's responsibility to free() the memory pointed to by buf. */
-extern PREFIX int Read_file(char *filename, char **buf, int *size);
+   the caller's responsibility to free() the memory pointed to by buf. 
+   If retain_newlines then the routine retains any newline '\n' 
+   characters. */
+extern PREFIX int Read_file(char *filename, char **buf, int *size, 
+			    int retain_newlines);
 
 #ifdef USE_REG_TIMING
 /* Return the time since the epoch in seconds */

@@ -97,7 +97,7 @@ static int Emit_IOType_defs();
 static int Emit_ChkType_defs();
 
 /* Emit any log entries that steerer doesn't know about */
-static int Emit_log();
+static int Emit_log(Chk_log_type *log);
 
 /* Consume a control message (if any present) from the steerer. Returns
    any commands and associated parameters (the latter as a space-separated 
@@ -236,28 +236,37 @@ static int Emit_iotype_msg_header(int IOTypeIndex,
 /* Sets the value of the next primary key to be used in generating
    log entries.  If a log file exists then it pulls the last value out
    of it and increments it by one, otherwise it sets it to zero. */
-int Set_log_primary_key();
+int Set_log_primary_key(Chk_log_type *log);
+
+/* Allocate memory etc. for the log structure supplied */
+int Initialize_log(Chk_log_type *log);
 
 /* Pulls log entries out of the supplied buffer, packs them into
    messages and sends them to the steerer. Log entries are assumed
    to be contiguous in the buffer. */
-static int Emit_log_entries(char *buf);
+static int Emit_log_entries(Chk_log_type *log, char *buf);
 
 /* Open log file (in append mode) */
-static int Open_log_file();
+static int Open_log_file(Chk_log_type *log);
 
 /* Close the log file */
-static int Close_log_file();
+static int Close_log_file(Chk_log_type *log);
 
 /* Save current contents of log to file */
-static int Save_log();
+static int Save_log(Chk_log_type *log);
 
 /* Convert current log to xml and store in buffer pointed to by pchar.
    Length of buffer is returned in count. The memory pointed to by
    *pchar must be free()'d by the caller once finished.  If
    not_sent_only == REG_TRUE then only those entries not already returned
    to the steering client are retrieved */
-static int Log_to_xml(char **pchar, int *count, const int not_sent_only);
+static int Log_to_xml(Chk_log_type *log, char **pchar, int *count, 
+		      const int not_sent_only);
+
+/* As for Log_to_xml except log is stored in columnar format - for
+   storing parameter histories. */
+int Log_to_columns(Chk_log_type *log, char **pchar, int *count, 
+		   const int not_sent_only);
 
 /* Wrapper for call to Realloc_IOdef_entry_buffer */
 static int Realloc_iotype_buffer(int index,

@@ -641,7 +641,7 @@ int Directory_valid(char *directory)
 
 /*----------------------------------------------------------------*/
 
-int Read_file(char *filename, char **buf, int *size)
+int Read_file(char *filename, char **buf, int *size, int retain_newlines)
 { 
   FILE *fp;
   const int maxlen = 80;
@@ -649,6 +649,7 @@ int Read_file(char *filename, char **buf, int *size)
   void *ptr;
   int   len;
   int   bufsize = BUFSIZ;
+  int   newline_adj = 1;
 
   if( !(fp = fopen(filename, "r")) ){
 
@@ -663,10 +664,14 @@ int Read_file(char *filename, char **buf, int *size)
 
   *size = 0;
 
+  if(retain_newlines == REG_TRUE){
+    newline_adj = 0;
+  }
+
   while(fgets(bufline, maxlen, fp)){
 
-    /* '- 1' to allow for '\n' */
-    len = (int)strlen(bufline) - 1;
+    /* '- 1' to allow for '\n' or '- 0' to keep them */
+    len = (int)strlen(bufline) - newline_adj;
     memcpy(&((*buf)[*size]), bufline, len);
     *size += len;
 

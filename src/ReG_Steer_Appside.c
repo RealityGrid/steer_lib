@@ -73,6 +73,10 @@ IOdef_table_type ChkTypes_table;
 
 Chk_log_type Chk_log;
 
+/* Log of values of parameters for which logging has 
+   been requested */
+Chk_log_type Param_log;
+
 /* Log of steering commands received */
 
 Steer_log_type Steer_log;
@@ -406,7 +410,6 @@ int Steering_initialize(char *AppName,
     ChkTypes_table.io_def = NULL;
     free(Params_table.param);
     Params_table.param = NULL;
-
     Steering_enable(REG_FALSE);
     return REG_FAILURE;
   }
@@ -414,26 +417,10 @@ int Steering_initialize(char *AppName,
   /* Initialise log of checkpoints */
   /* Jens, 09.04.03: Moved these lines here because Open_log_file()
    * needs Initialize_steering_connection to be called before. */
-
-  Chk_log.num_entries = 0;
-  Chk_log.max_entries = REG_INITIAL_CHK_LOG_SIZE;
-  Chk_log.num_unsent  = 0;
-  Chk_log.send_all    = REG_TRUE;
-
-  Set_log_primary_key();
-
-  if( Open_log_file() != REG_SUCCESS ){
-    fprintf(stderr, "Steering_initialize: failed to create log file, "
-	    "log will not be saved to file\n");
-  }
-
-  Chk_log.entry = (Chk_log_entry_type *)malloc(Chk_log.max_entries
-					  *sizeof(Chk_log_entry_type));
-
-  Chk_log.pSteer_cmds = (char *)malloc(REG_MAX_MSG_SIZE*sizeof(char));
-  Chk_log.steer_cmds_bytes = REG_MAX_MSG_SIZE;
-
-  if(!(Chk_log.entry) || !(Chk_log.pSteer_cmds) ){
+  sprintf(Chk_log.filename, "%s%s", Steerer_connection.file_root,
+	  REG_LOG_FILENAME);
+  Chk_log.log_type = CHKPT;
+  if( Initialize_log(&Chk_log) != REG_SUCCESS ){
 
     fprintf(stderr, "Steering_initialize: failed to allocate memory "
 	    "for checkpoint logging\n");
@@ -447,18 +434,22 @@ int Steering_initialize(char *AppName,
     return REG_FAILURE;
   }
 
-  Chk_log.pSteer_cmds[0] = '\0';
-  /* pSteer_cmds_slot points to next free space in the buffer */
-  Chk_log.pSteer_cmds_slot = Chk_log.pSteer_cmds;
-
-  for(i=0; i<Chk_log.max_entries; i++){
-
-    Chk_log.entry[i].sent_to_steerer = REG_TRUE;
-    Chk_log.entry[i].num_param       = 0;
-
-    for(j=0; j<REG_MAX_NUM_STR_PARAMS; j++){
-      Chk_log.entry[i].param[j].handle = REG_PARAM_HANDLE_NOTSET;
-    }
+  /* Initialize table for logging parameter values */
+  sprintf(Param_log.filename, "%s%s", Steerer_connection.file_root,
+	  REG_PARAM_LOG_FILENAME);
+  Param_log.log_type = PARAM;
+  if( Initialize_log(&Param_log) != REG_SUCCESS ){
+    fprintf(stderr, "Steering_initialize: failed to allocate memory "
+	    "for param logging\n");
+    free(IOTypes_table.io_def);
+    IOTypes_table.io_def = NULL;
+    free(ChkTypes_table.io_def);
+    ChkTypes_table.io_def = NULL;
+    free(Params_table.param);
+    Params_table.param = NULL;
+    Finalize_log(&Chk_log);
+    Steering_enable(REG_FALSE);
+    return REG_FAILURE;
   }
 
   /* Initialise table for logging steering commands */
@@ -489,7 +480,6 @@ int Steering_initialize(char *AppName,
 #endif
 
   /* Flag that library has been successfully initialised */
-
   ReG_SteeringInit = REG_TRUE;
 
   return REG_SUCCESS;
@@ -510,10 +500,12 @@ int Steering_finalize()
   Finalize_steering_connection();
 
   /* Save remaining log entries to file */
-  Save_log();
+  Save_log(&Chk_log);
+  Save_log(&Param_log);
 
   /* Close log file */
-  Close_log_file();
+  Close_log_file(&Chk_log);
+  Close_log_file(&Param_log);
 
   /* Clean-up IOTypes table */
 
@@ -557,19 +549,9 @@ int Steering_finalize()
   ChkTypes_table.num_registered = 0;
   ChkTypes_table.max_entries = REG_INITIAL_NUM_IOTYPES;
 
-  /* Clean-up log of checkpoints */
-
-  if(Chk_log.entry != NULL){
-
-    free(Chk_log.entry);
-    Chk_log.entry = NULL;
-  }
-  Chk_log.num_entries = 0;
-  Chk_log.max_entries = REG_INITIAL_CHK_LOG_SIZE;
-  /* Buffer for logged commands */
-  free(Chk_log.pSteer_cmds);
-  Chk_log.pSteer_cmds = NULL;
-  Chk_log.steer_cmds_bytes = 0;
+  /* Clean-up log of checkpoints & params */
+  Finalize_log(&Chk_log);
+  Finalize_log(&Param_log);
 
   /* Clean-up parameters table */
 
@@ -599,6 +581,72 @@ int Steering_finalize()
   fprintf(stderr, "**** RealityGrid Computational Steering Library "
 	  "cleanup done ****\n\n");
 #endif
+
+  return REG_SUCCESS;
+}
+
+/*----------------------------------------------------------------*/
+
+int Initialize_log(Chk_log_type *log)
+{
+  int i, j;
+
+  log->num_entries = 0;
+  log->max_entries = REG_INITIAL_CHK_LOG_SIZE;
+  log->num_unsent  = 0;
+  log->send_all    = REG_TRUE;
+
+  Set_log_primary_key(log);
+
+  if( Open_log_file(log) != REG_SUCCESS ){
+    fprintf(stderr, "Initialize_log: failed to create log file, "
+	    "log will not be saved to file\n");
+  }
+
+  log->entry = (Chk_log_entry_type *)malloc(Chk_log.max_entries
+					  *sizeof(Chk_log_entry_type));
+
+  log->pSteer_cmds = (char *)malloc(REG_MAX_MSG_SIZE*sizeof(char));
+  log->steer_cmds_bytes = REG_MAX_MSG_SIZE;
+
+  if(!(log->entry) || !(log->pSteer_cmds) ){
+
+    fprintf(stderr, "Initialize_log: failed to allocate memory "
+	    "for checkpoint logging\n");
+    return REG_FAILURE;
+  }
+
+  log->pSteer_cmds[0] = '\0';
+  /* pSteer_cmds_slot points to next free space in the buffer */
+  log->pSteer_cmds_slot = log->pSteer_cmds;
+
+  for(i=0; i<log->max_entries; i++){
+
+    log->entry[i].sent_to_steerer = REG_TRUE;
+    log->entry[i].num_param       = 0;
+
+    for(j=0; j<REG_MAX_NUM_STR_PARAMS; j++){
+      log->entry[i].param[j].handle = REG_PARAM_HANDLE_NOTSET;
+    }
+  }
+  return REG_SUCCESS;
+}
+
+/*----------------------------------------------------------------*/
+
+int Finalize_log(Chk_log_type *log)
+{
+  if(log->entry != NULL){
+
+    free(log->entry);
+    log->entry = NULL;
+  }
+  log->num_entries = 0;
+  log->max_entries = REG_INITIAL_CHK_LOG_SIZE;
+  /* Buffer for logged commands */
+  free(Chk_log.pSteer_cmds);
+  log->pSteer_cmds = NULL;
+  log->steer_cmds_bytes = 0;
 
   return REG_SUCCESS;
 }
@@ -1182,7 +1230,7 @@ int Record_Chkpt(int   ChkType,
   if(Chk_log.num_entries == Chk_log.max_entries){
 
     /* Save_log also resets Chk_log.num_entries to zero */
-    if(Save_log() != REG_SUCCESS){
+    if(Save_log(&Chk_log) != REG_SUCCESS){
 
       fprintf(stderr, "Record_Chkpt: Save_log failed\n");
       return REG_FAILURE;
@@ -1563,27 +1611,26 @@ int Add_checkpoint_file(int   ChkType,
 
 /*----------------------------------------------------------------*/
 
-int Open_log_file()
+int Open_log_file(Chk_log_type *log)
 {
   char filename[REG_MAX_STRING_LENGTH];
 
-  if(Chk_log.file_ptr){
-    fclose(Chk_log.file_ptr);
+  if(log->file_ptr){
+    fclose(log->file_ptr);
   }
-  sprintf(filename, "%s%s", Steerer_connection.file_root, 
-          REG_LOG_FILENAME);
-  Chk_log.file_ptr = fopen(filename, "a");
+
+  log->file_ptr = fopen(log->filename, "a");
 
   return REG_SUCCESS;
 }
 
 /*----------------------------------------------------------------*/
 
-int Close_log_file()
+int Close_log_file(Chk_log_type *log)
 {
-  if(Chk_log.file_ptr){
-    fclose(Chk_log.file_ptr);
-    Chk_log.file_ptr = NULL;
+  if(log->file_ptr){
+    fclose(log->file_ptr);
+    log->file_ptr = NULL;
   }
 
   return REG_SUCCESS;
@@ -1591,24 +1638,36 @@ int Close_log_file()
 
 /*----------------------------------------------------------------*/
 
-int Save_log()
+int Save_log(Chk_log_type *log)
 {
-  char *buf;
+  char *buf = NULL;
   int   len;
+  int   status;
 
-  if(!Chk_log.file_ptr){
+  if(!log->file_ptr){
 
     return REG_FAILURE;
   }
 
-  /* Third argument says we want all entries - not just those that
-     haven't already been sent to the steerer */
-  if(Log_to_xml(&buf, &len, REG_FALSE) == REG_SUCCESS){
+  if(log->num_entries > 0){
 
-    fprintf(Chk_log.file_ptr, "%s", buf);
+    if( strstr(log->entry[0].chk_tag, "REG_PARAM_LOG") ){
+
+      status = Log_to_columns(log, &buf, &len, REG_FALSE);
+    }
+    else{
+    
+       /* 3rd argument says we want all entries - not just those that
+	  haven't already been sent to the steerer */
+      status = Log_to_xml(log, &buf, &len, REG_FALSE);
+    }
+
+    if(status == REG_SUCCESS){
+      fprintf(log->file_ptr, "%s", buf);
+    }
   }
 
-  Chk_log.num_entries = 0;
+  log->num_entries = 0;
 
   if(buf){
     free(buf);
@@ -1620,14 +1679,14 @@ int Save_log()
 
 /*----------------------------------------------------------------*/
 
-int Log_to_xml(char **pchar, int *count, const int not_sent_only)
+int Log_to_xml(Chk_log_type *log, char **pchar, int *count, 
+	       const int not_sent_only)
 {
-  int   i, j;
+  int   i, j, len;
   char  entry[BUFSIZ];
   char *pentry;
   char *pbuf;
   void *ptr;
-  int   len;
   int   size = BUFSIZ;
   int   nbytes = 0;
   int   bytes_left;
@@ -1641,10 +1700,10 @@ int Log_to_xml(char **pchar, int *count, const int not_sent_only)
   *count = 0;
   pbuf = *pchar;
 
-  for(i=0; i<Chk_log.num_entries; i++){
+  for(i=0; i<log->num_entries; i++){
 
     /* Check to see whether steerer already has this entry */
-    if (not_sent_only && (Chk_log.entry[i].sent_to_steerer == REG_TRUE)) continue;
+    if (not_sent_only && (log->entry[i].sent_to_steerer == REG_TRUE)) continue;
 
     bytes_left = size;
     pentry = entry;
@@ -1652,9 +1711,9 @@ int Log_to_xml(char **pchar, int *count, const int not_sent_only)
 		      "<Key>%d</Key>\n"
 		      "<Chk_handle>%d</Chk_handle>\n"
 		      "<Chk_tag>%s</Chk_tag>\n", 
-		      Chk_log.entry[i].key, 
-		      Chk_log.entry[i].chk_handle, 
-		      Chk_log.entry[i].chk_tag);
+		      log->entry[i].key, 
+		      log->entry[i].chk_handle, 
+		      log->entry[i].chk_tag);
 
 #if REG_DEBUG
     /* Check for truncation of message */
@@ -1671,14 +1730,14 @@ int Log_to_xml(char **pchar, int *count, const int not_sent_only)
 
     /* Associated parameters are stored contiguously so need only
        loop over the no. of params that this entry has */
-    for(j=0; j<Chk_log.entry[i].num_param; j++){
+    for(j=0; j<log->entry[i].num_param; j++){
 
       nbytes = snprintf(pentry, bytes_left, "<Param>\n"
 			"<Handle>%d</Handle>\n" 
 			"<Value>%s</Value>\n"
 			"</Param>\n", 
-		        Chk_log.entry[i].param[j].handle,
-		        Chk_log.entry[i].param[j].value);
+		        log->entry[i].param[j].handle,
+		        log->entry[i].param[j].value);
 
 #if REG_DEBUG
       /* Check for truncation of message */
@@ -1730,7 +1789,7 @@ int Log_to_xml(char **pchar, int *count, const int not_sent_only)
     *count += len;
 
     /* Flag this entry as having been sent to steerer */
-    Chk_log.entry[i].sent_to_steerer = REG_TRUE;
+    log->entry[i].sent_to_steerer = REG_TRUE;
   }
 
   *pbuf = 0;
@@ -1740,7 +1799,116 @@ int Log_to_xml(char **pchar, int *count, const int not_sent_only)
 
 /*----------------------------------------------------------------*/
 
-int Set_log_primary_key()
+int Log_to_columns(Chk_log_type *log, char **pchar, int *count, 
+		   const int not_sent_only)
+{
+  int   i, j, len;
+  int   size = BUFSIZ;
+  int   bytes_left;
+  int   nbytes;
+  char *pentry;
+  char *pbuf;
+  char  entry[BUFSIZ];
+  void *ptr;
+
+  if( !(*pchar = (char *)malloc(size*sizeof(char))) ){
+
+    fprintf(stderr, "Log_to_columns: malloc failed\n");
+    return REG_FAILURE;
+  }
+
+  *count = 0;
+  pbuf = *pchar;
+
+  for(i=0; i<log->num_entries; i++){
+
+    /* Check to see whether steerer already has this entry */
+    if (not_sent_only && (log->entry[i].sent_to_steerer == REG_TRUE)) continue;
+    bytes_left = size;
+    pentry = entry;
+    nbytes = snprintf(pentry, bytes_left, "%d ", log->entry[i].key);
+
+#if REG_DEBUG
+    /* Check for truncation of message */
+    if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
+      fprintf(stderr, "Log_to_columns: message size exceeds BUFSIZ (%d)\n", 
+	      BUFSIZ);
+      free(*pchar);
+      *pchar = NULL;
+      return REG_FAILURE;
+    }
+#endif
+    bytes_left -= nbytes;
+    pentry += nbytes;
+
+    /* Associated parameters are stored contiguously so need only
+       loop over the no. of params that this entry has */
+    for(j=0; j<log->entry[i].num_param; j++){
+
+      nbytes = snprintf(pentry, bytes_left, "%d %s ", 
+		        log->entry[i].param[j].handle,
+		        log->entry[i].param[j].value);
+
+#if REG_DEBUG
+      /* Check for truncation of message */
+      if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
+	fprintf(stderr, "Log_to_columns: message size exceeds BUFSIZ (%d)\n", 
+		BUFSIZ);
+	free(*pchar);
+	*pchar = NULL;
+	return REG_FAILURE;
+      }
+#endif
+      bytes_left -= nbytes;
+      pentry += nbytes;
+    }
+    
+    nbytes = snprintf(pentry, bytes_left, "\n");
+#if REG_DEBUG
+    /* Check for truncation of message */
+    if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
+      fprintf(stderr, "Log_to_columns: message size exceeds BUFSIZ (%d)\n", 
+	      BUFSIZ);
+      free(*pchar);
+      *pchar = NULL;
+      return REG_FAILURE;
+    }
+#endif
+    bytes_left -= nbytes;
+    pentry += nbytes;
+    
+    len = strlen(entry);
+
+    if( (size - *count) < len){
+
+      size += ((len/BUFSIZ) + 1)*BUFSIZ;
+      if( !(ptr = realloc(*pchar, size*sizeof(char))) ){
+
+	fprintf(stderr, "Log_to_columns: realloc failed\n");
+	free(*pchar);
+	*pchar = NULL;
+	return REG_FAILURE;
+      }
+      
+      *pchar = (char *)ptr;
+      pbuf = &((*pchar)[*count]);
+    }
+
+    strncpy(pbuf, entry, len);
+    pbuf += len;
+    *count += len;
+
+    /* Flag this entry as having been sent to steerer */
+    log->entry[i].sent_to_steerer = REG_TRUE;
+  }
+  *pbuf = 0;
+
+  return REG_SUCCESS;
+}
+
+/*----------------------------------------------------------------*/
+
+int Set_log_primary_key(Chk_log_type *log)
 {
   int   size;
   int   return_status = REG_SUCCESS;
@@ -1749,18 +1917,14 @@ int Set_log_primary_key()
   char *old_ptr = NULL;
   char  filename[REG_MAX_STRING_LENGTH];
 
-  Close_log_file();
+  Close_log_file(log);
 
   /* Read the log file and get back contents in buffer pointed
      to by pbuf.  We must free() this once we're done. */
 
-  /* Added by Jens, 09.04.03: */
-  sprintf(filename, "%s%s", Steerer_connection.file_root,
-		            REG_LOG_FILENAME);
+  if(Read_file(log->filename, &pbuf, &size, REG_TRUE) != REG_SUCCESS){
 
-  if(Read_file(filename, &pbuf, &size) != REG_SUCCESS){
-
-    Chk_log.primary_key_value = 0;
+    log->primary_key_value = 0;
     if(pbuf)free(pbuf);
     return REG_SUCCESS;
   }
@@ -1768,32 +1932,60 @@ int Set_log_primary_key()
   if(size == 0){
 
     /* Log file existed but was empty */
-    Chk_log.primary_key_value = 0;
+    log->primary_key_value = 0;
     if(pbuf)free(pbuf);
     return REG_SUCCESS;
   }
 
   ptr = pbuf;
-  while(ptr = strstr((ptr+1), "<Key>")){
 
-    old_ptr = ptr;
-  }
+  /* Check whether we've got xml or columns... */
+  if(!strstr(pbuf, "<Key>")){
+    /* We have columns of data, first column holds key values... */
+
+    while(ptr = strstr((ptr+1), "\n")){
+
+      if(*(ptr+1) == '\0')break;
+      old_ptr = ptr;
+    }
 
 #if REG_DEBUG
-  fprintf(stderr, "Set_log_primary_key: last chunk = >>%s<<\n", old_ptr);
+    fprintf(stderr, "Set_log_primary_key: last chunk = >>%s<<\n", old_ptr);
 #endif
 
-  if( 1 != sscanf(old_ptr, "<Key>%d</Key>", &(Chk_log.primary_key_value))){
-
-    Chk_log.primary_key_value = 0;
-    return_status = REG_FAILURE;
+    if(2 != sscanf(old_ptr, "%d %s", &(log->primary_key_value), 
+		   Global_scratch_buffer)){
+      log->primary_key_value = 0;
+      return_status = REG_FAILURE;
+    }
+    else{
+      log->primary_key_value++;
+    }
   }
   else{
-    Chk_log.primary_key_value++;
+    /* We have xml...*/
+
+    while(ptr = strstr((ptr+1), "<Key>")){
+
+      old_ptr = ptr;
+    }
+
+#if REG_DEBUG
+    fprintf(stderr, "Set_log_primary_key: last chunk = >>%s<<\n", old_ptr);
+#endif
+
+    if( 1 != sscanf(old_ptr, "<Key>%d</Key>", &(log->primary_key_value))){
+
+      log->primary_key_value = 0;
+      return_status = REG_FAILURE;
+    }
+    else{
+      log->primary_key_value++;
+    }
   }
 
   free(pbuf);
-  Open_log_file();
+  Open_log_file(log);
 
   return return_status;
 }
@@ -2815,6 +3007,11 @@ int Steering_control(int     SeqNum,
 
   if (!ReG_SteeringInit) return REG_FAILURE;
 
+  /* Log current parameter values irrespective of whether a 
+     steering client is attached */
+
+  Log_param_values();
+
   /* Check to see if a steerer is trying to get control */
 
   if(!ReG_SteeringActive){
@@ -2949,7 +3146,7 @@ int Steering_control(int     SeqNum,
     }
 
     /* Emit logging info. */
-    if( Emit_log() != REG_SUCCESS ){
+    if( Emit_log(&Chk_log) != REG_SUCCESS ){
 
       fprintf(stderr, "Steering_control: Emit_log failed\n");
     }
@@ -3758,39 +3955,111 @@ int Emit_ChkType_defs(){
 
 /*----------------------------------------------------------------*/
 
-int Emit_log()
+int Log_param_values()
+{
+  int index;
+  int count;
+
+ /* Check that we have enough storage space - if not then store
+     current entries on disk (rather than continually grab more
+     memory) */
+
+  printf("ARPDBG: Logging: num_entries = %d\n", Param_log.num_entries);
+
+  if(Param_log.num_entries == Param_log.max_entries){
+
+    /* Save_log also resets Param_log.num_entries to zero */
+    if(Save_log(&Param_log) != REG_SUCCESS){
+
+      fprintf(stderr, "Log_param_values: Save_log failed\n");
+      return REG_FAILURE;
+    }
+  }
+
+  Param_log.entry[Param_log.num_entries].key = Param_log.primary_key_value++;
+  /* This isn't a checkpoint so put meaningless values in next
+     two fields */
+  sprintf(Param_log.entry[Param_log.num_entries].chk_tag, "REG_PARAM_LOG");
+  Param_log.entry[Param_log.num_entries].chk_handle      = -99;
+  Param_log.entry[Param_log.num_entries].sent_to_steerer = REG_FALSE;
+  count = 0;
+
+  for(index = 0; index<Params_table.max_entries; index++){
+
+    if(Params_table.param[index].handle == REG_PARAM_HANDLE_NOTSET ||
+       Params_table.param[index].is_internal == REG_TRUE){
+
+       /* Although seq. no. is an internal param we do want to log it */
+       if(Params_table.param[index].handle != REG_SEQ_NUM_HANDLE){
+	 continue;
+       }
+    }
+
+    /* This is one we want - store its handle and current value */
+    Param_log.entry[Param_log.num_entries].param[count].handle = 
+                                           Params_table.param[index].handle;
+
+    /* Update value associated with pointer */
+    Get_ptr_value(&(Params_table.param[index]));
+
+    /* Save this value */
+    strcpy(Param_log.entry[Param_log.num_entries].param[count].value,
+           Params_table.param[index].value);
+    
+    /* Storage for params associated with log entry is static */
+    if(++count >= REG_MAX_NUM_STR_PARAMS)break;  
+  }
+
+  /* Store the no. of params this entry has */
+  Param_log.entry[Param_log.num_entries].num_param = count;
+
+  /* Keep a count of entries that we have yet to send to steerer */
+  Param_log.num_unsent++;
+
+  Param_log.num_entries++;
+
+  return REG_SUCCESS;
+}
+
+/*----------------------------------------------------------------*/
+
+int Emit_log(Chk_log_type *log)
 {
   char *pbuf;
   char  filename[REG_MAX_STRING_LENGTH];
   int   size;
   int   return_status = REG_SUCCESS;
 
-  if(Chk_log.send_all == REG_TRUE){
+  if(log->send_all == REG_TRUE){
 
 #if REG_DEBUG_FULL
     fprintf(stderr, "Emit_log: sending all saved log entries...\n");
 #endif
     /* Then we have to send any entries we've saved to file too... */
-    Close_log_file();
+    Close_log_file(log);
 
     /* Read the log file and get back contents in buffer pointed
        to by pbuf.  We must free() this once we're done. */
-    sprintf(filename, "%s%s", Steerer_connection.file_root,
-		              REG_LOG_FILENAME);
-    if(Read_file(filename, &pbuf, &size) != REG_SUCCESS){
+    if(log->log_type == CHKPT){
+      return_status = Read_file(log->filename, &pbuf, &size, REG_FALSE);
+    }
+    else if(log->log_type == PARAM){
+      return_status = Read_file(log->filename, &pbuf, &size, REG_TRUE);
+    }
 
+    if(return_status != REG_SUCCESS){
       if(!pbuf)free(pbuf);
       pbuf = NULL;
       return REG_FAILURE;
     }
 
-    if (size > 0) Emit_log_entries(pbuf);
+    if (size > 0) Emit_log_entries(log, pbuf);
 
     free(pbuf);
     pbuf = NULL;
 
     /* Re-open log-file for future buffering */
-    if( Open_log_file() != REG_SUCCESS){
+    if( Open_log_file(log) != REG_SUCCESS){
 
 #if REG_DEBUG
       fprintf(stderr, "Emit_log: Open_log_file failed\n");
@@ -3800,11 +4069,11 @@ int Emit_log()
 
     /* Now send the entries that we have stored in memory - 
        need to send all current log entries to the steerer */
-    if(Log_to_xml(&pbuf, &size, REG_FALSE) != REG_SUCCESS){
+    if(Log_to_xml(log, &pbuf, &size, REG_FALSE) != REG_SUCCESS){
 
       return REG_FAILURE;
     }
-    Chk_log.send_all = REG_FALSE;
+    log->send_all = REG_FALSE;
   }
   else{
 
@@ -3813,7 +4082,7 @@ int Emit_log()
 #endif
     /* Third argument specifies that we only want those entries that haven't
        already been sent to the steerer */
-    if(Log_to_xml(&pbuf, &size, REG_TRUE) != REG_SUCCESS){
+    if(Log_to_xml(log, &pbuf, &size, REG_TRUE) != REG_SUCCESS){
 
       return REG_FAILURE;
     }
@@ -3825,7 +4094,7 @@ int Emit_log()
 
   /* Pull the entries out of the buffer returned by Log_to_xml and
      send them to the steerer */
-  if(size > 0)return_status = Emit_log_entries(pbuf);
+  if(size > 0)return_status = Emit_log_entries(log, pbuf);
   free(pbuf);
   pbuf = NULL;
 
@@ -3834,18 +4103,18 @@ int Emit_log()
 #endif
 
   /* Send log of steering commands */
-  if(strlen(Chk_log.pSteer_cmds) > 0){
+  if(strlen(log->pSteer_cmds) > 0){
 
-    Emit_log_entries(Chk_log.pSteer_cmds);
-    Chk_log.pSteer_cmds[0]='\0';
-    Chk_log.pSteer_cmds_slot = Chk_log.pSteer_cmds;
+    Emit_log_entries(log, log->pSteer_cmds);
+    log->pSteer_cmds[0]='\0';
+    log->pSteer_cmds_slot = log->pSteer_cmds;
   }
 
   if(return_status == REG_SUCCESS){
 
     /* Zero counter since we've just told steerer all about any log
        entries it hadn't got */
-    Chk_log.num_unsent = 0;
+    log->num_unsent = 0;
   }
 
   return return_status;
@@ -3853,7 +4122,7 @@ int Emit_log()
 
 /*----------------------------------------------------------------*/
 
-int Emit_log_entries(char *buf)
+int Emit_log_entries(Chk_log_type *log, char *buf)
 {
   char *msg_buf;
   char *pmsg_buf;
@@ -3874,6 +4143,10 @@ int Emit_log_entries(char *buf)
 
     fprintf(stderr, "Emit_log_entries: malloc failed\n");
     return REG_FAILURE;
+  }
+
+  if(!strstr(buf, "<Log_entry>")){
+    Log_columns_to_xml(buf);
   }
 
   /* Pull each log entry out of the buffer and pack them into
@@ -4005,6 +4278,58 @@ int Emit_log_entries(char *buf)
   free(msg_buf);
   msg_buf = NULL;
   return return_status;
+}
+
+/*----------------------------------------------------------------*/
+
+int Log_columns_to_xml(char *buf)
+{
+
+  /* We have contents of log file as:
+     key   <handle 0> <value 0> <handle 1> <value 1>... \n
+     key++ <handle 0> <value 0> <handle 1> <value 1>... \n
+     etc.
+  */
+  char *fields[REG_MAX_NUM_STR_PARAMS];
+  const int max_field_length;
+  char *pbuf;
+  char *ptr1;
+  char *ptr2;
+  char *ptr3;
+  char *ptr4;
+  int  i, key, count;
+
+  fields[0] = malloc(REG_MAX_NUM_STR_PARAMS*max_field_length*sizeof(char));
+  if(!fields[0]){
+    return REG_FAILURE;
+  }
+
+  for(i=1;i<REG_MAX_NUM_STR_PARAMS;i++){
+    fields[i] = (char *)(fields[0] + max_field_length);
+  }
+
+  pbuf = Global_scratch_buffer;
+  Write_xml_header(&pbuf);
+  pbuf += sprintf(pbuf, "<Steer_log>\n");
+
+  sprintf(pbuf, "<>");/*ARPBDG what element??*/
+  ptr1 = buf;
+  while(ptr2 = strstr(ptr1, "\n")){
+
+    ptr3 = ptr1;
+    count = 0;
+    while(ptr4 = strstr(ptr3, " ")){
+      memcpy(fields[count], ptr3, ptr4-ptr3);
+      ptr3 = ptr4 + 1;
+      count++;
+    }
+    /*ARPDBG what xml to go here ??*/
+    pbuf += sprintf(pbuf, "<Log_entry>%s</Log_entry>", fields[0]);
+  }
+
+  pbuf += sprintf(pbuf, "</Steer_log>\n");
+
+  free(fields[0]);
 }
 
 /*----------------------------------------------------------------*/
