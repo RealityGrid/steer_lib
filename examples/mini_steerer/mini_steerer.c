@@ -42,7 +42,7 @@
 #endif
 
 static int Edit_parameter(int sim_handle);
-static int Choose_parameter(int sim_handle);
+static int Choose_parameter(int sim_handle, int steerable);
 
 /*-------------------------------------------------------------------------*/
 
@@ -438,7 +438,7 @@ int main(){
 
     case 'o':
       /* Get the log of parameters back */
-      handle = Choose_parameter(sim_handle);
+      handle = Choose_parameter(sim_handle, REG_FALSE);
 
       if(handle != REG_PARAM_HANDLE_NOTSET)
 	Emit_retrieve_param_log_cmd(sim_handle, handle);
@@ -708,7 +708,7 @@ int main(){
 
 /*--------------------------------------------------------------------*/
 
-int Choose_parameter(int sim_handle)
+int Choose_parameter(int sim_handle, int steerable)
 {
   int    num_params;
   char  *param_val[1];
@@ -722,14 +722,14 @@ int Choose_parameter(int sim_handle)
 
   /* Find out what parameters there are available */
   
-  if(Get_param_number(sim_handle, REG_TRUE, &num_params) != REG_FAILURE){
+  if(Get_param_number(sim_handle, steerable, &num_params) != REG_FAILURE){
 
     if(num_params > REG_INITIAL_NUM_PARAMS){
       num_params = REG_INITIAL_NUM_PARAMS;
     }
     
     if(Get_param_values(sim_handle, 
-    			REG_TRUE,
+    			steerable,
     			num_params,
 			param_details) != REG_FAILURE){
     
@@ -778,7 +778,7 @@ int Edit_parameter(int sim_handle)
   int    handle;
 
   /* Choose a parameter to edit */
-  handle = Choose_parameter(sim_handle);
+  handle = Choose_parameter(sim_handle, REG_TRUE);
 
   if(handle == REG_PARAM_HANDLE_NOTSET)return REG_FAILURE;
 
