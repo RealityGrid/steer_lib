@@ -294,7 +294,7 @@ int connect_connector(const int index) {
     
     /* ...finally connect to the remote address! */
     if(connect(connector, (struct sockaddr*) &theirAddr, sizeof(struct sockaddr)) == REG_SOCKETS_ERROR) {
-      perror("connect");
+      perror("connect_connector: connect");
       IOTypes_table.io_def[index].socket_info.connector_port = 0;
       return REG_FAILURE;
     }
@@ -577,13 +577,11 @@ int Initialize_IOType_transport_sockets(const int direction, const int index) {
 #endif
 	return_status = REG_FAILURE;
       }
-#if REG_DEBUG
       else {
 	fprintf(stderr, "Initialize_IOType_transport_sockets: Created listener on port %d, index %d, label %s\n", 
 		IOTypes_table.io_def[index].socket_info.listener_port, 
 		index, IOTypes_table.io_def[index].label );
       }
-#endif
     }
     else if(direction == REG_IO_IN) {
 
