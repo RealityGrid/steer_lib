@@ -298,27 +298,33 @@ int Send_status_msg_soap(char* msg)
   /* Status & log messages are both sent as 'status' messages */
   if(strstr(msg, "<App_status>") || strstr(msg, "<Steer_log>")){
 
-    putStatus_response._PutStatusReturn = NULL;
-    if(soap_call_sgs__PutStatus(&soap, Steerer_connection.SGS_address, 
-				"", msg, &putStatus_response )){
-      soap_print_fault(&soap, stderr);
-
-      return REG_FAILURE;
-    }
+    /* We loop until we have a clear-cut success or failure - i.e.
+       if we have a deadlock we fall back to here and try again */
+    while(1){
+      putStatus_response._PutStatusReturn = NULL;
+      if(soap_call_sgs__PutStatus(&soap, Steerer_connection.SGS_address, 
+				  "", msg, &putStatus_response )){
+	soap_print_fault(&soap, stderr);
+	
+	return REG_FAILURE;
+      }
 
 #if REG_DEBUG
-    if(putStatus_response._PutStatusReturn){
-      fprintf(stderr, "Send_status_msg_soap: PutStatus returned: %s\n", 
-	      putStatus_response._PutStatusReturn);
-    }
-    else{
-      fprintf(stderr, "Send_status_msg_soap: PutStatus returned null\n");
-    }
+      if(putStatus_response._PutStatusReturn){
+	fprintf(stderr, "Send_status_msg_soap: PutStatus returned: %s\n", 
+		putStatus_response._PutStatusReturn);
+      }
+      else{
+	fprintf(stderr, "Send_status_msg_soap: PutStatus returned null\n");
+      }
 #endif
 
-    if(!putStatus_response._PutStatusReturn ||
-       strstr(putStatus_response._PutStatusReturn, REG_SGS_ERROR)){
-      return REG_FAILURE;
+      if(!putStatus_response._PutStatusReturn ||
+	 strstr(putStatus_response._PutStatusReturn, REG_SGS_ERROR)){
+	return REG_FAILURE;
+      }
+
+      if(!strstr(putStatus_response._PutStatusReturn, REG_SGS_TIMEOUT))break;
     }
   }
   else{
