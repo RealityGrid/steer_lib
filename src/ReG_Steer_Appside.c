@@ -161,6 +161,8 @@ int Steering_initialize(int  NumSupportedCmds,
   Chk_log.num_unsent  = 0;
   Chk_log.send_all    = TRUE;
 
+  Set_log_primary_key();
+
   if( Open_log_file() != REG_SUCCESS ){
     fprintf(stderr, "Steering_initialize: failed to create log file, "
 	    "log will not be saved to file\n");
@@ -818,6 +820,49 @@ int Log_to_xml(char **pchar, int *count, const int not_sent_only)
   *pbuf = 0;
 
   return REG_SUCCESS;
+}
+
+/*----------------------------------------------------------------*/
+
+int Set_log_primary_key()
+{
+  int   size;
+  int   return_status = REG_SUCCESS;
+  char *pbuf;
+  char *ptr;
+  char *old_ptr;
+
+  Close_log_file();
+
+  /* Read the log file and get back contents in buffer pointed
+     to by pbuf.  We must free() this once we're done. */
+  if(Read_file(REG_LOG_FILENAME, &pbuf, &size) != REG_SUCCESS){
+
+    Chk_log.primary_key_value = 0;
+    return REG_SUCCESS;
+  }
+
+  ptr = pbuf;
+  while(ptr = strstr((ptr+1), "<Key>")){
+
+    old_ptr = ptr;
+  }
+
+  fprintf(stderr, "Set_log_primary_key: last chunk = >>%s<<\n", old_ptr);
+
+  if( 1 != sscanf(old_ptr, "<Key>%d</Key>", &(Chk_log.primary_key_value))){
+
+    Chk_log.primary_key_value = 0;
+    return_status = REG_FAILURE;
+  }
+  else{
+    Chk_log.primary_key_value++;
+  }
+
+  free(pbuf);
+  Open_log_file();
+
+  return return_status;
 }
 
 /*----------------------------------------------------------------*/

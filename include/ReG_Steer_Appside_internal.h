@@ -266,6 +266,11 @@ static int Emit_iotype_msg_header(int IOTypeIndex,
 				  int DataType,
 				  int Count);
 
+/* Sets the value of the next primary key to be used in generating
+   log entries.  If a log file exists then it pulls the last value out
+   of it and increments it by one, otherwise it sets it to zero. */
+int Set_log_primary_key();
+
 /* Pulls log entries out of the supplied buffer, packs them into
    messages and sends them to the steerer. Log entries are assumed
    to be contiguous in the buffer. */
