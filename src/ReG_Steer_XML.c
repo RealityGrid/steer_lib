@@ -66,7 +66,7 @@ int Parse_xml_buf(char* buf, int size, struct msg_struct *msg)
 { 
   xmlDocPtr doc;
 
-  if(buf == NULL){
+  if(!buf){
 
     fprintf(stderr, "Parse_xml_buf: ptr to buffer is NULL\n");
     return REG_FAILURE;

@@ -41,6 +41,8 @@
 ---------------------------------------------------------------------------*/
 #if REG_GLOBUS_STEERING
 
+#include "ReG_Steer_Steerside.h"
+#include "ReG_Steer_Steerside_internal.h"
 #include "ReG_Steer_Steerside_Globus.h"
 
 int Sim_attach_globus(Sim_entry_type *sim, char *SimID)
@@ -138,41 +140,19 @@ int Consume_supp_cmds_globus(Sim_entry_type *sim)
 
 /*-------------------------------------------------------------------*/
 
-int Send_control_msg_globus(int SimIndex, char* buf)
+int Send_control_msg_globus(Sim_entry_type *sim, char* buf)
 {
   char            hdr_buf[REG_MAX_MSG_SIZE];
   globus_size_t   nbytes;
   globus_result_t result;
 
   /* This routine won't be called unless we think we do have an active
-     connection to the simulation...
-  if(Sim_table.sim[SimIndex].socket_info.comms_status != 
-     REG_COMMS_STATUS_CONNECTED) {
-
-    if(Globus_create_connector(&(Sim_table.sim[SimIndex].socket_info))
-       != REG_SUCCESS){
-
-      fprintf(stderr, "Send_control_msg_globus: failed to register "
-	      "connector\n");
-      return REG_FAILURE;
-    }
-    else{
-      fprintf(stderr, "Send_control_msg_globus: registered connector on "
-	      "port %d, "
-	      "hostname = %s\n", 
-	      Sim_table.sim[SimIndex].socket_info.connector_port, 
-	      Sim_table.sim[SimIndex].socket_info.connector_hostname);
-    }
-  }
-
-  if (Sim_table.sim[SimIndex].socket_info.comms_status != 
-      REG_COMMS_STATUS_CONNECTED) return REG_FAILURE;
-  */
+     connection to the simulation... */
 
   /* Send message header */
   sprintf(hdr_buf, REG_PACKET_FORMAT, REG_DATA_HEADER);
 
-  result = globus_io_write(&(Sim_table.sim[SimIndex].socket_info.conn_handle), 
+  result = globus_io_write(&(sim->socket_info.conn_handle), 
 			   (globus_byte_t *)hdr_buf, 
 			   strlen(hdr_buf), 
 			   &nbytes);
@@ -183,14 +163,13 @@ int Send_control_msg_globus(int SimIndex, char* buf)
 
     /* Try again in case application has dropped connection */
     
-    Globus_attempt_connector_connect(&(Sim_table.sim[SimIndex].socket_info));
+    Globus_attempt_connector_connect(&(sim->socket_info));
 
-    if (Sim_table.sim[SimIndex].socket_info.comms_status 
-	  != REG_COMMS_STATUS_CONNECTED) {
+    if (sim->socket_info.comms_status != REG_COMMS_STATUS_CONNECTED) {
       return REG_FAILURE;
     }
 
-    result = globus_io_write(&(Sim_table.sim[SimIndex].socket_info.conn_handle), 
+    result = globus_io_write(&(sim->socket_info.conn_handle), 
 			     (globus_byte_t *)hdr_buf, 
 			     strlen(hdr_buf), 
 			     &nbytes);
@@ -206,7 +185,7 @@ int Send_control_msg_globus(int SimIndex, char* buf)
     }	
   }
 
-  if( Emit_msg_header(&(Sim_table.sim[SimIndex].socket_info),
+  if( Emit_msg_header(&(sim->socket_info),
 		      REG_CHAR,
 		      strlen(buf)) != REG_SUCCESS){
 
@@ -218,7 +197,7 @@ int Send_control_msg_globus(int SimIndex, char* buf)
 
   /* Send message proper */
 
-  result = globus_io_write(&(Sim_table.sim[SimIndex].socket_info.conn_handle), 
+  result = globus_io_write(&(sim->socket_info.conn_handle), 
 			   (globus_byte_t *)buf, 
 			   strlen(buf), 
 			   &nbytes);
@@ -237,7 +216,7 @@ int Send_control_msg_globus(int SimIndex, char* buf)
   /* Send message header */
   sprintf(hdr_buf, REG_PACKET_FORMAT, REG_DATA_FOOTER);
 
-  result = globus_io_write(&(Sim_table.sim[SimIndex].socket_info.conn_handle), 
+  result = globus_io_write(&(sim->socket_info.conn_handle), 
 			   (globus_byte_t *)hdr_buf, 
 			   strlen(hdr_buf), 
 			   &nbytes);

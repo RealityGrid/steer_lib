@@ -56,7 +56,9 @@ proxy:
 
 .c.o:
 	${CC} ${C_FLAGS} -DREG_GLOBUS_SAMPLES=${REG_GLOBUS_SAMPLES_FLAG} \
-	-DREG_GLOBUS_STEERING=${REG_GLOBUS_STEERING_FLAG} ${INCLUDE_PATH} -c $< -o $@
+	-DREG_GLOBUS_STEERING=${REG_GLOBUS_STEERING_FLAG} \
+        -DREG_SOAP_STEERING=${REG_SOAP_STEERING_FLAG} \
+        ${INCLUDE_PATH} -c $< -o $@
 
 ${LIB_PATH}/libReG_Steer.a: ReG_Steer_Appside_f.o \
 	ReG_Steer_Appside.o \
@@ -66,7 +68,10 @@ ${LIB_PATH}/libReG_Steer.a: ReG_Steer_Appside_f.o \
 	ReG_Steer_XML.o \
 	ReG_Steer_Globus_io.o \
 	ReG_Steer_Steerside_Globus.o \
-	ReG_Steer_Appside_Globus.o
+	ReG_Steer_Appside_Globus.o \
+        ReG_Steer_Steerside_Soap.o \
+        ReG_Steer_Appside_Soap.o \
+	soapC.o soapClient.o
 
 
 ${LIB_PATH}/libReG_Steer.a:
@@ -79,6 +84,10 @@ ${LIB_PATH}/libReG_Steer.a:
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Globus_io.o
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Appside_Globus.o
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Steerside_Globus.o
+	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Appside_Soap.o
+	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Steerside_Soap.o
+	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a soapC.o
+	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a soapClient.o
 
 
 ${LOCAL_BIN_DIR}/ReG_Steer_Proxy.class:
@@ -93,7 +102,8 @@ ReG_Steer_Appside.o: ReG_Steer_Appside.c \
 	 ../include/ReG_Steer_Appside_internal.h \
 	 ../include/ReG_Steer_Common.h \
 	 ../include/ReG_Steer_Globus_io.h \
-	 ../include/ReG_Steer_Appside_Globus.h
+	 ../include/ReG_Steer_Appside_Globus.h \
+         ../include/ReG_Steer_Appside_Soap.h
 
 ReG_Steer_Steerside.o: ReG_Steer_Steerside.c \
          ReG_Steer_Proxy.java \
@@ -106,7 +116,8 @@ ReG_Steer_Steerside.o: ReG_Steer_Steerside.c \
 	 ../include/ReG_Steer_Steerside_internal.h \
 	 ../include/ReG_Steer_Common.h \
 	 ../include/ReG_Steer_Globus_io.h \
-	 ../include/ReG_Steer_Steerside_Globus.h
+	 ../include/ReG_Steer_Steerside_Globus.h \
+	 ../include/ReG_Steer_Steerside_Soap.h
 
 ReG_Steer_Common.o: ReG_Steer_Common.c \
 	 ../include/ReG_Steer_types.h \
@@ -145,6 +156,19 @@ ReG_Steer_Steerside_Globus.o: ReG_Steer_Steerside_Globus.c \
 	../include/ReG_Steer_Steerside_Globus.h \
 	../include/ReG_Steer_Steerside_internal.h
 
+ReG_Steer_Appside_Soap.o: ReG_Steer_Appside_Soap.c \
+        ../include/ReG_Steer_Appside_Soap.h \
+        ../include/ReG_Steer_Appside_internal.h
+
+ReG_Steer_Steerside_Soap.o: ReG_Steer_Steerside_Soap.c \
+        ../include/ReG_Steer_Steerside_Soap.h \
+        ../include/ReG_Steer_Steerside_internal.h
+
+soapC.o: soapC.c \
+         ../include/soapH.h
+
+soapClient.o: soapClient.c \
+         ../include/soapH.h
 
 #---------------------------------------------------------------
 

@@ -41,14 +41,17 @@
 ---------------------------------------------------------------------------*/
 #include "ReG_Steer_types.h"
 #include "ReG_Steer_Common.h"
+#include "ReG_Steer_Appside_internal.h"
 #include "ReG_Steer_Globus_io.h"
 #include "ReG_Steer_Appside_Globus.h"
 
 #define DEBUG 0
 
-/* Need access to this table which is actually declared in 
+/* Need access to these tables which are actually declared in 
    ReG_Steer_Appside_internal.h */
 extern IOdef_table_type IOTypes_table;
+
+extern Steerer_connection_table_type Steerer_connection;
 
 #if REG_GLOBUS_STEERING
 int Send_status_msg_globus(char *buf)

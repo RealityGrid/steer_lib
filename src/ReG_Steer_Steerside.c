@@ -43,6 +43,7 @@
 #include "ReG_Steer_Steerside_internal.h"
 #include "ReG_Steer_Proxy_utils.h"
 #include "ReG_Steer_Steerside_Globus.h"
+#include "ReG_Steer_Steerside_Soap.h"
 
 #ifndef DEBUG
 #define DEBUG 0
@@ -50,6 +51,14 @@
 
 /*--------------------- Data structures -------------------*/
 
+/* Main table used to record all simulations currently
+   being steered */
+Sim_table_type Sim_table;
+
+/* Structure holding details of the main (java) proxy
+   that is always associated with the steerer (if not steering
+   via files, Globus or SOAP) */
+Proxy_table_type Proxy;
 
 /*----- Routines to be used by the steering component ------*/
 
@@ -134,6 +143,10 @@ int Steerer_initialize()
   }
   */
 
+#if REG_SOAP_STEERING
+  Steerer_initialize_soap();
+#endif
+
   return REG_SUCCESS;
 }
 
@@ -187,13 +200,24 @@ int Get_sim_list(int   *nSims,
      REG_MAX_NUM_STEERED_SIM pointers to char arrays of length
      REG_MAX_STRING_LENGTH. */
 
-  /* This routine requires that the proxy be up and running... */
   if(Proxy.available != TRUE){
+
+#if REG_SOAP_STEERING
+
+    *nSims = 1;
+    sprintf(simName[0], "Simulation");
+    sprintf(simGSH[0], "http://vermont.mvc.mcc.ac.uk:50005/");
+
+    return REG_SUCCESS;
+
+#else
 
 #if DEBUG
     fprintf(stderr, "Get_sim_list: no proxy available\n");
 #endif
     return REG_FAILURE;
+
+#endif /* REG_SOAP_STEERING */
   }
 
   /* Get (space-delimited) list of steerable apps & associated
@@ -403,6 +427,13 @@ int Sim_attach(char *SimID,
 #endif
     return_status = Sim_attach_globus(&(Sim_table.sim[current_sim]), SimID);
 
+#elif REG_SOAP_STEERING
+
+#if DEBUG
+    fprintf(stderr, "Sim_attach: calling Sim_attach_soap, "
+	    "current_sim = %d\n", current_sim);
+#endif
+    return_status = Sim_attach_soap(&(Sim_table.sim[current_sim]), SimID);
 #else
 
     /* Have no proxy so have no 'grid' - use local file system */
@@ -478,23 +509,14 @@ int Sim_attach(char *SimID,
 
 int Sim_detach(int *SimHandle)
 {
-  int   SysCommands[1];
-
   /* Check that handle is valid */
 
   if(*SimHandle == REG_SIM_HANDLE_NOTSET) return REG_SUCCESS;
 
   /* Signal simulation that we are finished steering */
-
-  SysCommands[0] = REG_STR_DETACH;
-
-  Emit_control(*SimHandle,
-	       1,
-	       SysCommands,
-               NULL);
+  Emit_detach_cmd(*SimHandle);
 
   /* Delete associated table entry */
-
   Delete_sim_table_entry(SimHandle);
 
   return REG_SUCCESS;
@@ -532,6 +554,10 @@ int Get_next_message(int         *SimHandle,
 
 	Sim_table.sim[isim].msg = 
 	                Get_status_msg_globus(&(Sim_table.sim[isim]));
+#elif REG_SOAP_STEERING
+	fprintf(stderr, "Get_next_message: calling Get_status_msg_soap...\n");
+	Sim_table.sim[isim].msg = Get_status_msg_soap(&(Sim_table.sim[isim]));
+	fprintf(stderr, "Get_next_message: done call to Get_status_msg_soap\n");
 #else
 
 	/* No proxy available so using 'local' file system */
@@ -1170,6 +1196,134 @@ int Consume_status(int   SimHandle,
 
 /*----------------------------------------------------------*/
 
+int Emit_detach_cmd(int SimHandle)
+{
+#if REG_SOAP_STEERING
+  int index;
+#else
+  int SysCommands[1];
+#endif
+
+  /* Check that handle is valid */
+  if(SimHandle == REG_SIM_HANDLE_NOTSET) return REG_SUCCESS;
+
+#if REG_SOAP_STEERING
+  if( (index = Sim_index_from_handle(SimHandle)) == -1){
+
+    return REG_FAILURE;
+  }
+
+  return Send_detach_msg_soap(&(Sim_table.sim[index]));
+
+#else
+  SysCommands[0] = REG_STR_DETACH;
+
+  return Emit_control(SimHandle,
+		      1,
+		      SysCommands,
+		      NULL);
+#endif /* REG_SOAP_STEERING */
+
+}
+
+/*----------------------------------------------------------*/
+
+int Emit_stop_cmd(int SimHandle)
+{
+#if REG_SOAP_STEERING
+  int index;
+#else
+  int SysCommands[1];
+#endif
+
+  /* Check that handle is valid */
+  if(SimHandle == REG_SIM_HANDLE_NOTSET) return REG_SUCCESS;
+
+#if REG_SOAP_STEERING
+  if( (index = Sim_index_from_handle(SimHandle)) == -1){
+
+    return REG_FAILURE;
+  }
+
+  return Send_stop_msg_soap(&(Sim_table.sim[index]));
+
+#else
+  SysCommands[0] = REG_STR_STOP;
+
+  return Emit_control(SimHandle,
+		      1,
+		      SysCommands,
+		      NULL);
+#endif /* REG_SOAP_STEERING */
+
+}
+
+/*----------------------------------------------------------*/
+
+int Emit_pause_cmd(int SimHandle)
+{
+#if REG_SOAP_STEERING
+  int index;
+#else
+  int SysCommands[1];
+#endif
+
+  /* Check that handle is valid */
+  if(SimHandle == REG_SIM_HANDLE_NOTSET) return REG_SUCCESS;
+
+#if REG_SOAP_STEERING
+  if( (index = Sim_index_from_handle(SimHandle)) == -1){
+
+    return REG_FAILURE;
+  }
+
+  return Send_pause_msg_soap(&(Sim_table.sim[index]));
+
+#else
+  SysCommands[0] = REG_STR_PAUSE;
+
+  return Emit_control(SimHandle,
+		      1,
+		      SysCommands,
+		      NULL);
+#endif /* REG_SOAP_STEERING */
+
+}
+
+/*----------------------------------------------------------*/
+
+int Emit_resume_cmd(int SimHandle)
+{
+#if REG_SOAP_STEERING
+  int index;
+#else
+  int SysCommands[1];
+#endif
+
+  /* Check that handle is valid */
+  if(SimHandle == REG_SIM_HANDLE_NOTSET) return REG_SUCCESS;
+
+#if REG_SOAP_STEERING
+  if( (index = Sim_index_from_handle(SimHandle)) == -1){
+
+    return REG_FAILURE;
+  }
+
+  return Send_resume_msg_soap(&(Sim_table.sim[index]));
+
+#else
+  SysCommands[0] = REG_STR_RESUME;
+
+  return Emit_control(SimHandle,
+		      1,
+		      SysCommands,
+		      NULL);
+#endif /* REG_SOAP_STEERING */
+
+}
+
+/*----------------------------------------------------------*/
+
 int Emit_control(int    SimHandle,
 		 int    NumCommands,
 		 int   *SysCommands,
@@ -1285,17 +1439,22 @@ int Emit_control(int    SimHandle,
 
 int Send_control_msg(int SimIndex, char* buf)
 {
+  Sim_entry_type *sim = &(Sim_table.sim[SimIndex]);
 
-  if(Sim_table.sim[SimIndex].pipe_to_proxy != REG_PIPE_UNSET){
+  if(sim->pipe_to_proxy != REG_PIPE_UNSET){
 
-    return Send_control_msg_proxy(SimIndex, buf);
+    return Send_control_msg_proxy(sim, buf);
   }
   else{
 
 #if REG_GLOBUS_STEERING
 
-    return Send_control_msg_globus(SimIndex, buf);
+    return Send_control_msg_globus(sim, buf);
 
+#elif REG_SOAP_STEERING
+
+    fprintf(stderr, "Send_control_msg: calling Send_control_msg_soap\n");
+    return Send_control_msg_soap(sim, buf);
 #else
 
     return Send_control_msg_file(SimIndex, buf);
@@ -1307,22 +1466,19 @@ int Send_control_msg(int SimIndex, char* buf)
 
 /*--------------------------------------------------------------------*/
 
-int Send_control_msg_proxy(int SimIndex, char* buf)
+int Send_control_msg_proxy(Sim_entry_type *sim, char* buf)
 {
   int   nbytes;
 
   /* Instruct proxy to send control message to application */
 
-  Send_proxy_message(Sim_table.sim[SimIndex].pipe_to_proxy,
-		     SEND_CTRL_MSG);
+  Send_proxy_message(sim->pipe_to_proxy, SEND_CTRL_MSG);
 
   /* Send buffer to proxy for forwarding to application */
 
-  Send_proxy_message(Sim_table.sim[SimIndex].pipe_to_proxy,
-		     buf);
+  Send_proxy_message(sim->pipe_to_proxy, buf);
 
-  Get_proxy_message(Sim_table.sim[SimIndex].pipe_from_proxy,
-		    buf, &nbytes);
+  Get_proxy_message(sim->pipe_from_proxy, buf, &nbytes);
 
   if(!strncmp(buf, ERR_MSG, nbytes)) return REG_FAILURE;
 
@@ -1340,13 +1496,13 @@ int Send_control_msg_file(int SimIndex, char* buf)
 
   if( Generate_control_filename(SimIndex, filename) != REG_SUCCESS){
 
-    fprintf(stderr, "Emit_control: failed to create filename\n");
+    fprintf(stderr, "Send_control_msg_file: failed to create filename\n");
     return REG_FAILURE;
   }
 
   if( (fp = fopen(filename, "w")) == NULL){
 
-    fprintf(stderr, "Emit_control: failed to open file\n");
+    fprintf(stderr, "Send_control_msg_file: failed to open file\n");
     return REG_FAILURE;
   }
 
@@ -1363,54 +1519,49 @@ int Send_control_msg_file(int SimIndex, char* buf)
 int Delete_sim_table_entry(int *SimHandle)
 {
   int             index;
-  Sim_entry_type *entry;
+  Sim_entry_type *sim;
 
   if(*SimHandle == REG_SIM_HANDLE_NOTSET) return REG_SUCCESS;
   
-  /* Find associated entry to delete */
+  if( (index = Sim_index_from_handle(*SimHandle)) == -1){
 
-  if( (index = Sim_index_from_handle(*SimHandle)) == REG_SIM_HANDLE_NOTSET){
-
-    fprintf(stderr, "Delete_sim_table_entry: failed to match handles\n");
     return REG_FAILURE;
   }
+  sim = &(Sim_table.sim[index]);
 
-  entry = &(Sim_table.sim[index]);
-
-  Finalize_connection(entry);
+  Finalize_connection(sim);
 
   /* Clean-up the provided entry in the table of connected
      simulations */
 
-  entry->Cmds_table.num_registered = 0;
-  entry->Cmds_table.max_entries = 0;
-  if (entry->Cmds_table.cmd) free(entry->Cmds_table.cmd);
-  entry->Cmds_table.cmd = NULL;
+  sim->Cmds_table.num_registered = 0;
+  sim->Cmds_table.max_entries = 0;
+  if (sim->Cmds_table.cmd) free(sim->Cmds_table.cmd);
+  sim->Cmds_table.cmd = NULL;
 
-  entry->Params_table.num_registered = 0;
-  entry->Params_table.max_entries = 0;
-  if (entry->Params_table.param) free(entry->Params_table.param);
-  entry->Params_table.param = NULL;
+  sim->Params_table.num_registered = 0;
+  sim->Params_table.max_entries = 0;
+  if (sim->Params_table.param) free(sim->Params_table.param);
+  sim->Params_table.param = NULL;
 
-  entry->IOdef_table.num_registered = 0;
-  entry->IOdef_table.max_entries = 0;
-  if (entry->IOdef_table.io_def) free(entry->IOdef_table.io_def);
-  entry->IOdef_table.io_def = NULL;
+  sim->IOdef_table.num_registered = 0;
+  sim->IOdef_table.max_entries = 0;
+  if (sim->IOdef_table.io_def) free(sim->IOdef_table.io_def);
+  sim->IOdef_table.io_def = NULL;
 
-  entry->Chkdef_table.num_registered = 0;
-  entry->Chkdef_table.max_entries = 0;
-  if (entry->Chkdef_table.io_def) free(entry->Chkdef_table.io_def);
-  entry->Chkdef_table.io_def = NULL;
+  sim->Chkdef_table.num_registered = 0;
+  sim->Chkdef_table.max_entries = 0;
+  if (sim->Chkdef_table.io_def) free(sim->Chkdef_table.io_def);
+  sim->Chkdef_table.io_def = NULL;
 
-  entry->Chk_log.num_entries = 0;
-  entry->Chk_log.max_entries = 0;
-  if (entry->Chk_log.entry) free(entry->Chk_log.entry);
-  entry->Chk_log.entry = NULL;
+  sim->Chk_log.num_entries = 0;
+  sim->Chk_log.max_entries = 0;
+  if (sim->Chk_log.entry) free(sim->Chk_log.entry);
+  sim->Chk_log.entry = NULL;
 
   /* Flag that this entry no longer contains valid data */
-
-  entry->handle = REG_SIM_HANDLE_NOTSET;
-  *SimHandle    = REG_SIM_HANDLE_NOTSET;
+  sim->handle = REG_SIM_HANDLE_NOTSET;
+  *SimHandle = REG_SIM_HANDLE_NOTSET;
 
   return REG_SUCCESS;
 }

@@ -41,6 +41,7 @@
 #include "ReG_Steer_Appside_internal.h"
 #include "ReG_Steer_Appside_Globus.h"
 #include "ReG_Steer_Globus_io.h"
+#include "ReG_Steer_Appside_Soap.h"
 
 #include <signal.h>
 #include <unistd.h>
@@ -53,8 +54,6 @@
 #ifndef DEBUG
 #define DEBUG 1
 #endif
-
-/*#define DEBUG 1*/
 
 /*----------------------------------------------------------------*/
 
@@ -1738,6 +1737,7 @@ int Steering_control(int     SeqNum,
 	  return_status = REG_FAILURE;
 	}
 
+#if !REG_SOAP_STEERING
 	/* Confirm that we have received the detach command */
 	commands[0] = REG_STR_DETACH;
 	Emit_status(SeqNum,
@@ -1745,6 +1745,7 @@ int Steering_control(int     SeqNum,
 		    NULL,
 		    1,
 		    commands);
+#endif
 
         detached = TRUE;
 	break;
@@ -2409,7 +2410,7 @@ int Consume_control(int    *NumCommands,
   int                  handle;
   int                  return_status = REG_SUCCESS;
   
-  /* Read the file produced by the steerer - may contain commands and/or
+  /* Read any message sent by the steerer - may contain commands and/or
      new parameter values */
 
   if((msg = Get_control_msg()) != NULL){
@@ -2583,6 +2584,17 @@ int Generate_status_filename(char* filename)
 
 int Detach_from_steerer()
 {
+
+#if REG_GLOBUS_STEERING
+
+
+
+#elif REG_SOAP_STEERING
+
+  Detach_from_steerer_soap();
+
+#else
+
   char  filename[REG_MAX_STRING_LENGTH];
 
   /* Remove lock file that indicates app is being steered */
@@ -2597,6 +2609,8 @@ int Detach_from_steerer()
   sprintf(filename, "%s%s", Steerer_connection.file_root, 
 	  STR_TO_APP_FILENAME);
   Remove_files(filename);
+
+#endif
 
   /* Flag that all entries in log need to be sent to steerer (in case
      another one attaches later on) */
@@ -3111,6 +3125,11 @@ int Steerer_connected()
 #if REG_GLOBUS_STEERING
 
   return Steerer_connected_globus();
+
+#elif REG_SOAP_STEERING
+
+  return Steerer_connected_soap();
+
 #else
 
   return Steerer_connected_file();
@@ -3147,6 +3166,11 @@ int Send_status_msg(char *buf)
 #if REG_GLOBUS_STEERING
 
   return Send_status_msg_globus(buf);
+
+#elif REG_SOAP_STEERING
+
+  return Send_status_msg_soap(buf);
+
 #else
 
   return Send_status_msg_file(buf);
@@ -3184,6 +3208,10 @@ struct msg_struct *Get_control_msg()
 #if REG_GLOBUS_STEERING
 
   return Get_control_msg_globus();
+
+#elif REG_SOAP_STEERING
+
+  return Get_control_msg_soap();
 
 #else
 
@@ -3236,6 +3264,12 @@ int Initialize_steering_connection(int  NumSupportedCmds,
 
   return Initialize_steering_connection_globus(NumSupportedCmds,
 					       SupportedCmds);
+
+#elif REG_SOAP_STEERING
+
+  return Initialize_steering_connection_soap(NumSupportedCmds,
+					     SupportedCmds);
+
 #else
 
   return Initialize_steering_connection_file(NumSupportedCmds,
@@ -3353,6 +3387,10 @@ int Finalize_steering_connection()
 #if REG_GLOBUS_STEERING
 
   return Finalize_steering_connection_globus();
+
+#elif REG_SOAP_STEERING
+
+  return Finalize_steering_connection_soap();
 #else
 
   return Finalize_steering_connection_file();
