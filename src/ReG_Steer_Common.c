@@ -596,7 +596,7 @@ int Write_xml_footer(char **buf, int bytes_free)
     n = snprintf(*buf, bytes_free, "</ReG_steer_message>\n");
 
     if(n >= (bytes_free-1) || (n < 1)){
-      printf("ARPDBG: bytes_free = %d, n = %d\n", bytes_free, n);
+
       return_status = REG_FAILURE;
     }
     else{

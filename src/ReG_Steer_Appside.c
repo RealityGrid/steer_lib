@@ -2771,16 +2771,11 @@ int Emit_log_entries(char *buf)
       pmsg_buf += sprintf(pmsg_buf, "<Steer_log>\n");
       tot_len = (int)(pmsg_buf - msg_buf);
     }
-
     len = (int)(pbuf3 - pbuf2);
-    printf("\nlen = %d\n", len);
-    printf("tot_len = %d\n", tot_len);
-    printf("msg_buf_size = %d\n", msg_buf_size);
 
     /* 35 = strlen("</Steer_log>\n</ReG_steer_message>\n"); */
     if((tot_len + len) < (msg_buf_size - 35)){
 
-      printf("ADDING ENTRY TO MESSAGE\n");
       /* Buffer has enough free space so add this entry to it */
       plast = pmsg_buf;
       strncpy(pmsg_buf, pbuf2, len);
@@ -2789,7 +2784,6 @@ int Emit_log_entries(char *buf)
     }
     else if(!plast){
 
-      printf("REALLOCING\n");
       /* We've not managed to fit a single entry into the buffer
 	 - time for a realloc... */
       msg_buf_size *= 2;
@@ -2808,7 +2802,6 @@ int Emit_log_entries(char *buf)
     }
     else{
       /* Complete the xml message */
-      printf("COMPLETING A MESSAGE\n");
       nbytes = snprintf(pmsg_buf, (msg_buf_size-tot_len), 
 			"</Steer_log>\n");
 
@@ -2826,7 +2819,6 @@ int Emit_log_entries(char *buf)
 
       if(rewind){
 
-	printf("REWINDING\n");
 	/* Can't fit the footer in remaining space in buffer - go
 	   back to last complete entry */
 	tot_len = (int)(plast - msg_buf);
@@ -2850,7 +2842,6 @@ int Emit_log_entries(char *buf)
       }
 
       /* Begin the next message */
-      printf("BEGINNING NEW MESSAGE\n");
       plast = NULL;
       pmsg_buf = msg_buf;
       Write_xml_header(&pmsg_buf);
