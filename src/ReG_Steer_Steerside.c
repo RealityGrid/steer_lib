@@ -1913,7 +1913,6 @@ int Get_param_values(int    sim_handle,
   int isim;
   int i, j;
   int count;
-  char *pchar;
 
   /* Return lists of registered parameter handles and associated
      values (as strings), types and limits for the steered simulation 
@@ -1952,13 +1951,12 @@ int Get_param_values(int    sim_handle,
 		 Sim_table.sim[isim].Params_table.param[i].label);
 	  /* Strip off any trailing space (often an issue with strings
 	     supplied from F90) */
-	  pchar = param_details[count].label;
-	  j = strlen(pchar);
-	  while(pchar[--j] == ' ');
+	  j = strlen(param_details[count].label);
+	  while(param_details[count].label[--j] == ' ');
 
-	  if(pchar[j] != '\0'){
+	  if(param_details[count].label[j] != '\0'){
 
-	    pchar[j+1] = '\0';
+	    param_details[count].label[j+1] = '\0';
 	  }
 
 	  strcpy(param_details[count].value, 
