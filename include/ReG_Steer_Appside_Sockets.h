@@ -41,6 +41,7 @@
 
 #if REG_SOCKET_SAMPLES
 
+#include <errno.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -109,36 +110,36 @@ int Consume_data_read_sockets(const int index, const int datatype, const int num
  ************************************/
 
 /* Initialise socket_io_type structure */
-int socket_info_init(const int index);
+static int socket_info_init(const int index);
 
 /* Clean up members of socket_io_type structure */
-void socket_info_cleanup(const int index);
+static void socket_info_cleanup(const int index);
 
-int create_listener(const int index);
+static int create_listener(const int index);
 
-int create_connector(const int index);
+static int create_connector(const int index);
 
-int connect_connector(const int index);
+static int connect_connector(const int index);
 
-void cleanup_listener_connection(const int index);
+static void cleanup_listener_connection(const int index);
 
-void cleanup_connector_connection(const int index);
+static void cleanup_connector_connection(const int index);
 
-void close_listener_handle(const int index);
+static void close_listener_handle(const int index);
 
-void close_connector_handle(const int index);
+static void close_connector_handle(const int index);
 
-void attempt_listener_connect(const int index);
+static void attempt_listener_connect(const int index);
 
-void retry_accept_connect(const int index);
+static void retry_accept_connect(const int index);
 
-void attempt_connector_connect(const int index);
+static void attempt_connector_connect(const int index);
 
-void retry_connect(const int index);
+static void retry_connect(const int index);
 
-void poll(const int index);
+static void poll(const int index);
 
-int dns_lookup(char* hostname);
+static int dns_lookup(char* hostname);
 
 #endif /* REG_SOCKET_SAMPLES */
 #endif /* __REG_STEER_SOCKETS_IO_H__ */
