@@ -90,9 +90,9 @@ int main(){
   int   finished           = FALSE;
   int   icmd;
   int   i, j;
-  const int NX = 16;
-  const int NY = 16;
-  const int NZ = 16;
+  const int NX = 64;
+  const int NY = 64;
+  const int NZ = 64;
   
   double aaxis = 1.5;
   double baxis = 1.5;
@@ -147,7 +147,7 @@ int main(){
 
   iotype_labels[1] = "VTK_OUTPUT_GLOBUS_IO";
   iotype_dirn[1] = REG_IO_OUT;
-  iotype_frequency[1] = output_freq;
+  iotype_frequency[1] = 1;/*output_freq;*/
 
   num_iotypes = 2;
 
@@ -358,6 +358,7 @@ int main(){
 		      == REG_SUCCESS ){
 
 
+		    printf("First slice...\n");
 		    data_count = strlen(header);
 		    data_type  = REG_CHAR;
 		    status = Emit_data_slice(iohandle, data_type, data_count, 
@@ -370,6 +371,17 @@ int main(){
 		      continue;
 		    }
 
+		    /* Construct header for this chunk to allow the recipient 
+		       of this data to reconstruct the data set */
+                    status = Make_chunk_header(header, 0, 0, 0, NX, NY, NZ);
+
+		    printf("Second slice...\n");
+		    data_count = strlen(header);
+		    data_type  = REG_CHAR;
+		    status = Emit_data_slice(iohandle, data_type, data_count, &
+					     header);
+
+		    printf("Third slice...\n");
 		    data_count = NX*NY*NZ;
 		    data_type  = REG_FLOAT;
 		    status = Emit_data_slice(iohandle, data_type, data_count, 
