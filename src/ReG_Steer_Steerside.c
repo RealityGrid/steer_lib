@@ -39,6 +39,7 @@
 #include "ReG_Steer_Steerside_internal.h"
 #include "ReG_Steer_Proxy_utils.h"
 #include "ReG_Steer_Steerside_Soap.h"
+#include "ReG_Steer_Browser.h"
 
 #ifndef REG_DEBUG
 #define REG_DEBUG 0
@@ -189,6 +190,10 @@ int Get_sim_list(int   *nSims,
   char *ptr;
   int   count;
   int   nbytes;
+  int   status;
+  int   i;
+  char  registry_address[256];
+  struct registry_entry *entries;
 
   *nSims = 0;
 
@@ -199,29 +204,60 @@ int Get_sim_list(int   *nSims,
 
   if(Proxy.available != TRUE){
 
-    /* ARPDBG - ultimately we will contact a registry here
+    /* Get address of top-level registry from env. variable if set */
+    if(ptr = getenv("REG_REGISTRY_ADDRESS")){
+      strcpy(registry_address, ptr);
+    } else{
+      sprintf(registry_address, "http://yaffel.mvc.mcc.ac.uk:50000/Session/ServiceGroupRegistration/service?3893432997");
+    }
+
+    /* Contact a registry here
        and ask it for the location of any SGSs it knows of */
+    status = Get_registry_entries(registry_address, 
+				  nSims, &entries);
 
-    if(ptr = getenv("REG_SGS_ADDRESS")){
+    if(status == REG_SUCCESS){
 
-      *nSims = 1;
-      sprintf(simName[0], "Simulation");
-      strcpy(simGSH[0], ptr);
+      /* Hard limit on no. of sims we can return details on */
+      if(*nSims > REG_MAX_NUM_STEERED_SIM)*nSims = REG_MAX_NUM_STEERED_SIM;
+      
+      count = 0;
+      for(i=0; i<*nSims; i++){
+
+	/* should check type of service here
+	   if(strstr(entries[i].serviceType, "Registry")){
+
+	   } */
+
+	if(strlen(entries[i].application) > 0){
+	  /*strcpy(simName[count], entries[i].application);*/
+	  sprintf(simName[count], "%s %s", entries[i].application, 
+		  entries[i].start_date_time);
+	  strcpy(simGSH[count], entries[i].gsh);
+	  count++;
+	}
+      }
+      *nSims = count;
+
+      free(entries);
+      entries = NULL;
     }
-    else{
+    else {
+      if(ptr = getenv("REG_SGS_ADDRESS")){
 
-      fprintf(stderr, "Get_sim_list: REG_SGS_ADDRESS environment variable "
-	      "is not set\n");
-      *nSims = 0;
-      sprintf(simName[0], " ");
+	*nSims = 1;
+	sprintf(simName[0], "Simulation");
+	strcpy(simGSH[0], ptr);
+      }
+      else{
+
+	fprintf(stderr, "Get_sim_list: REG_SGS_ADDRESS environment variable "
+		"is not set\n");
+	*nSims = 0;
+	sprintf(simName[0], " ");
+      }
     }
-
     return REG_SUCCESS;
-  }
-  else{
-
-    fprintf(stderr, "Get_sim_list: no proxy and no SGS available\n");
-    return REG_FAILURE;
   }
 
   /* Get (space-delimited) list of steerable apps & associated
