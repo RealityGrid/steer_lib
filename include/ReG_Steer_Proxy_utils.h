@@ -33,7 +33,9 @@
 ---------------------------------------------------------------------------*/
 
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <unistd.h>
+#include <string.h>
 
 #include "ReG_Steer_types.h"
 
@@ -61,3 +63,7 @@ int Destroy_proxy(int pipe_to_proxy);
 int Send_proxy_message(int pipe_to_proxy, const char *buf);
 
 int Get_proxy_message(int pipe_from_proxy, char *buf, int *nbytes);
+
+/* Function to check that the specified java executable (assumed to
+   need ".class" appending to it) is on the specified class path */
+int Proxy_is_in_path(const char *class_path, const char *exec);
