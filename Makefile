@@ -36,6 +36,7 @@
 #----------------------------------------------------------------------
 
 include Makefile.include
+include make/Makefile.${ARCH}
 
 all:
 	make steerer

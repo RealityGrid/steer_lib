@@ -38,62 +38,14 @@
 # Architecture of this platform.  Choose the most appropriate from
 # those listed in the src/conf directory. Make sure you don't leave
 # any SPACES at the end of this line!
+#
+# if there is not a corresponding Makefile.<ARCH> file in the make
+# directory, feel free to add one. It just means we haven't tested
+# on that platform yet!
 ARCH = LINUX
-# Edit the two following lines to switch between 32/64-bit binaries 
-# (NBIT = 32 or 64 and:
-#       C_FLAGS=-n32 or -64 with SGI compilers;
-#       C_FLAGS=-mabi=n32 or 64 with gcc).
-NBIT = 32
-# Location of C compiler and flags to use
-CC = gcc
-C_FLAGS = -O2
-# Location of F90 compiler (if any) and flags to use
-F90 = 
-F90_FLAGS = 
-# Location of java compiler - used to produce proxy binary
-JAVAC          = /usr/bin/javac
-# Location of the M4 macro processor (used to generate F90 wrappers)
-M4 = m4
-# Location of the archive command
-AR = ar
-# Flags need to add an object file to an archive
-AR_FLAGS = rv
-# Directory to put executables in (mini_app, mini_steerer etc.)
+
+# Directory to install executables to (mini_app, mini_steerer etc.)
 LOCAL_BIN_DIR  = ${HOME}/bin
-
-STEER_INCLUDES = -I${REG_STEER_HOME}/include \
-                 -I${REG_XML_INCDIR}
-
-# Note that on some machines you won't need to concatenate NBIT onto
-# the contents of REG_XML_LIBDIR (e.g. linux boxes that only have 
-# /usr/local/lib rather than /usr/local/lib32, say).
-STEER_LIBS = -L${REG_STEER_HOME}/lib$(NBIT) \
-             -L${REG_XML_LIBDIR}$(NBIT)
-
-# Libraries to link example applications against
-STEER_LDFLAGS = -lm -lz
-
-# The globus_definitions file can be generated using the following 
-# globus command:
-# globus-makefile-header --flavor=gcc32dbg globus_io globus_common > globus_defintions
-# Subsititue flavor (sic) as appropriate for your globus installation 
-# but use only non-threaded flavours.
-
-#GLOBUS_INCLUDES = -I/usr/local/globus/include/gcc${NBIT}dbg
-#GLOBUS_PKG_LIBS = -lglobus_io_gcc${NBIT}dbg \
-#                  -lglobus_common_gcc${NBIT}dbg \
-#                  -lglobus_gss_assist_gcc${NBIT}dbg \
-#                  -lglobus_gssapi_gsi_gcc${NBIT}dbg \
-#                  -lssl_gcc${NBIT}dbg \
-#                  -lcrypto_gcc${NBIT}dbg 
-#GLOBUS_LDFLAGS = -L/usr/local/globus/lib
-GLOBUS_INCLUDES = 
-GLOBUS_PKG_LIBS = 
-GLOBUS_LDFLAGS = 
-
-# Either define GLOBUS_INCLUDES, GLOBUS_PKG_LIBS and GLOBUS_LDFLAGS, OR
-# uncomment this line if using Globus for sample output/input.
-#include ${REG_STEER_HOME}/globus_definitions
 
 # Set flag to 1 to use globus for iotype samples communication, 0 to not 
 REG_GLOBUS_SAMPLES_FLAG = 0
@@ -102,7 +54,7 @@ REG_GLOBUS_SAMPLES_FLAG = 0
 REG_SOCKET_SAMPLES_FLAG = 1
 
 # Set flag to 1 to use SOAP for steering communication, 0 to not 
-REG_SOAP_STEERING_FLAG = 1
+REG_SOAP_STEERING_FLAG = 0
 
 # Set flag to 1 to get (a lot of) debug output, 0 otherwise.
 REG_DEBUG_FLAG = 1

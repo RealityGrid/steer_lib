@@ -37,6 +37,7 @@
 #
 
 include ../../Makefile.include
+include ../../make/Makefile.${ARCH}
 
 TARGET   = mini_app_para
 

@@ -38,6 +38,7 @@
 #--------------------------------------------------------------------
 
 include ../../Makefile.include
+include ../../make/Makefile.${ARCH}
 
 # Set-up access to M4 scripts for production of F90 wrappers, this is
 # taken from the PVM project.

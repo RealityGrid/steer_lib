@@ -36,6 +36,7 @@
 #-----------------------------------------------------------------
 
 include ../../Makefile.include
+include ../../make/Makefile.${ARCH}
 
 # G and NBIT are passed to make on cmd line
 
