@@ -651,12 +651,16 @@ int main(){
       break;
 
     case 'V':
+
+      handle = Choose_parameter(sim_handle, REG_FALSE);
+      if(handle == REG_PARAM_HANDLE_NOTSET)break;
+
       if(Get_param_log(sim_handle,		//ReG library
-		       param_details[0].handle,
+		       handle,
 		       &(log_ptr),
 		       &i) == REG_SUCCESS){
 	printf("Got %d param log entries for handle %d\n",
-	       i, param_details[0].handle);
+	       i, handle);
 
 	for(j=0; j<i; j++){
 	  printf("%f ", log_ptr[j]);
