@@ -42,7 +42,7 @@
 #include "soapH.h"
 #include "soapSGS.nsmap"
 
-struct soap soap;
+static struct soap soap;
 
 /*-------------------------------------------------------------------------*/
 
