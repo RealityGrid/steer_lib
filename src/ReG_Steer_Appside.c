@@ -371,11 +371,11 @@ int Steering_finalize()
     for (index=0; index<IOTypes_table.num_registered; index++) {
       if (IOTypes_table.io_def[index].direction == REG_IO_OUT) {
 	/* close globus sockets */
-	Globus_close_listener_connections(index);
+	Globus_cleanup_listener_connection(index);
       }
       else if (IOTypes_table.io_def[index].direction == REG_IO_IN) {
 	/* close globus sockets */
-	Globus_close_connector_connection(index);
+	Globus_cleanup_connector_connection(index);
       }
     }
     /* deactivate globus module */
@@ -563,6 +563,7 @@ int Register_IOTypes(int    NumTypes,
     /* deal with the globus sockets for sample data */
     IOTypes_table.io_def[current].buffer = NULL;
     IOTypes_table.io_def[current].port = 0;
+    IOTypes_table.io_def[current].listener_status = REG_COMMS_STATUS_NULL;
     IOTypes_table.io_def[current].comms_status = REG_COMMS_STATUS_NULL;
     IOTypes_table.io_def[current].index=current;
     IOTypes_table.io_def[current].use_xdr = FALSE;
@@ -586,6 +587,9 @@ int Register_IOTypes(int    NumTypes,
 #if DEBUG
 	fprintf(stderr, "Register_IOTypes: Created listener on port %d, index %d, label %s\n", IOTypes_table.io_def[current].port, current, IOLabel[i] );
 #endif
+	/* attempt to kick the callback function (in case accept callback) */
+	Globus_callback_poll(current);
+
       }
 	
 
@@ -719,7 +723,7 @@ int Consume_start(int  IOType,
       REG_COMMS_STATUS_CONNECTED) {
 
 #if DEBUG
-    fprintf(stderr, "Consume_start: socket IS connected, index = %d\n",
+    fprintf(stderr, "Consume_start: socket status is connected, index = %d\n",
 	    *IOTypeIndex );
 #endif
 
@@ -735,6 +739,32 @@ int Consume_start(int  IOType,
  			    REG_PACKET_SIZE,
  			    REG_PACKET_SIZE,
  			    &nbytes); */
+
+
+    if (result != GLOBUS_SUCCESS){
+#if DEBUG
+      fprintf(stderr, "Consume_start: globus_io_try_read failed - try immediate reconnect for index %d\n", *IOTypeIndex);
+#endif
+    
+      Globus_retry_connect(*IOTypeIndex);
+     
+      /* check if socket reconnection has been made and check for data if it has */
+      if (IOTypes_table.io_def[*IOTypeIndex].comms_status == 
+	  REG_COMMS_STATUS_CONNECTED) {
+	result = globus_io_try_read(&(IOTypes_table.io_def[*IOTypeIndex].conn_handle),
+				    (globus_byte_t *)buffer,
+				    REG_PACKET_SIZE,
+				    &nbytes);
+      }
+      else {
+#if DEBUG
+      fprintf(stderr, "Consume_start: reconnect attempt failed - socket is not connected status id %d\n", IOTypes_table.io_def[*IOTypeIndex].comms_status);
+#endif
+      return REG_FAILURE;
+
+      }
+
+    }
 
     if(result == GLOBUS_SUCCESS){
 
@@ -756,17 +786,22 @@ int Consume_start(int  IOType,
 	  return REG_SUCCESS;
 	}
       }
+      
+
+    }
+    else {
+    
+#if DEBUG
+    fprintf(stderr, "Consume_start: reconnect attempt success - but globus_io_try_read failed\n");
+#endif
     }
 
-#if DEBUG
-    fprintf(stderr, "Consume_start: globus_io_try_read failed\n");
-#endif
-
     return REG_FAILURE;
+    
   }
   else {
 #if DEBUG
-    fprintf(stderr, "Consume_start: socket si NOT connected, index = %d\n",*IOTypeIndex );
+    fprintf(stderr, "Consume_start: socket is NOT connected, index = %d\n",*IOTypeIndex );
 #endif
   }
 
@@ -1367,16 +1402,14 @@ int Emit_start(int  IOType,
   }
 
   /* check if socket connection has been made */
+  if (IOTypes_table.io_def[*IOTypeIndex].comms_status != REG_COMMS_STATUS_CONNECTED) 
+    Globus_attempt_listener_connect(*IOTypeIndex);
 
-  if (IOTypes_table.io_def[*IOTypeIndex].comms_status == REG_COMMS_STATUS_LISTENING) {
-    /* attempt to kick the callback function */
-    Globus_callback_poll(*IOTypeIndex);
-  }
 
   if (IOTypes_table.io_def[*IOTypeIndex].comms_status == REG_COMMS_STATUS_CONNECTED) {
 
 #if DEBUG
-    fprintf(stderr, "Emit_start: socket IS connected, index = %d\n",
+    fprintf(stderr, "Emit_start: socket status is connected, index = %d\n",
 	    *IOTypeIndex );
 #endif
 
@@ -1401,17 +1434,38 @@ int Emit_start(int  IOType,
     else{
 
 #if DEBUG
+      fprintf(stderr, "Emit_start: globus_io_write failed - immediate retry connect\n");
+#endif
+
+      Globus_retry_accept_connect(*IOTypeIndex);
+      if (IOTypes_table.io_def[*IOTypeIndex].comms_status == REG_COMMS_STATUS_CONNECTED) {  
+
+#if DEBUG
+    fprintf(stderr, "Emit_start: Sending >>%s<<\n", buffer);
+#endif    
+	result = globus_io_write(&(IOTypes_table.io_def[*IOTypeIndex].conn_handle), 
+				 (globus_byte_t *)buffer, 
+				 strlen(buffer), 
+				 &nbytes);
+	
+	if(result == GLOBUS_SUCCESS){
+
+	  return REG_SUCCESS;
+	}
+	
+#if DEBUG
       fprintf(stderr, "Emit_start: globus_io_write failed\n");
 #endif
+
+      }
+
       /* ARPDBG add check on error code */
       return REG_FAILURE;
     }
   }
   else {
-    /* SMR XXX - add stuff to close and recreate listener if lost connection*/
-
 #if DEBUG
-    fprintf(stderr, "Emit_start: socket not yet connected, index = %d\n",*IOTypeIndex );
+    fprintf(stderr, "Emit_start: socket not connected, index = %d\n",*IOTypeIndex );
 #endif
     return REG_FAILURE;
   }
@@ -2937,12 +2991,14 @@ int Globus_io_activate()
   if (!globus_module_activated) {
 
     if (globus_module_activate(GLOBUS_IO_MODULE) != GLOBUS_SUCCESS) {
-      fprintf(stderr, "Globus_io_activate: failed to activate Globus IO module\n");
+      fprintf(stderr, "Globus_io_activate: ERROR: failed to activate Globus IO module\n");
       return REG_FAILURE;
     }
     else
     {
+#if DEBUG
       fprintf(stderr, "Globus_io_activate: activated Globus IO module OK\n");
+#endif
       globus_module_activated = TRUE;
     }
 
@@ -2951,27 +3007,32 @@ int Globus_io_activate()
   return REG_SUCCESS;
 }
 
+/*--------------------------------------------------------------------*/
+
 void Globus_io_deactivate()
 {
   /* Deactivate the globus module if it was ever activated */
   if (globus_module_activated) {
     if (globus_module_deactivate(GLOBUS_IO_MODULE) != GLOBUS_SUCCESS)
       fprintf(stderr, "Globus_io_deactivate: Globus IO module deactivation error\n");
-    else
+    else {
+#if DEBUG
       fprintf(stderr, "Globus_io_deactivate: Globus IO module deactivation OK\n");
+#endif
+    }
   }
 }
+
+/*--------------------------------------------------------------------*/
 
 void Globus_monitor_init(const int index)
 {
   globus_mutex_init(&IOTypes_table.io_def[index].monitor.mutex, GLOBUS_NULL);
   globus_cond_init(&IOTypes_table.io_def[index].monitor.cond, GLOBUS_NULL);
-  IOTypes_table.io_def[index].monitor.done = GLOBUS_FALSE;
-  IOTypes_table.io_def[index].monitor.err = GLOBUS_NULL;
-  IOTypes_table.io_def[index].monitor.use_err = GLOBUS_FALSE;
-    
+     
 }
 
+/*--------------------------------------------------------------------*/
 
 void Globus_callback_poll(const int index)
 {
@@ -2980,20 +3041,19 @@ void Globus_callback_poll(const int index)
 
   /* attempt to kick the callback function */
   globus_mutex_lock(&(IOTypes_table.io_def[index].monitor.mutex));
-  if (!IOTypes_table.io_def[index].monitor.done)
-    {
-      printf("do globus_cond_wait\n");
-      if (globus_cond_timedwait(&(IOTypes_table.io_def[index].monitor.cond), 
-				&(IOTypes_table.io_def[index].monitor.mutex), 
-				&timeout)==ETIMEDOUT)
-	printf("cond wait timed out\n");
-      
-    }
+
+#if DEBUG
+  fprintf(stderr, "Globus_callback_poll: call globus_cond_timedwait\n");
+#endif
+  globus_cond_timedwait(&(IOTypes_table.io_def[index].monitor.cond), 
+			&(IOTypes_table.io_def[index].monitor.mutex), 
+			&timeout);
+
   globus_mutex_unlock(&(IOTypes_table.io_def[index].monitor.mutex)); 
   
 }
 
-
+/*--------------------------------------------------------------------*/
 
 int Globus_create_listener(unsigned short int	*port,
 			   int			*index)
@@ -3041,27 +3101,26 @@ int Globus_create_listener(unsigned short int	*port,
 					 globus_object_get_type(err))) {
       fprintf(stderr, " - globus error type: system failure\n");
 	}
+
         
     return REG_FAILURE;
   }
 
-  /* SMR XXX DBG*/
+  /* NOTE: this is the listener_status */
+  IOTypes_table.io_def[*index].listener_status=REG_COMMS_STATUS_LISTENING;
+
+#if DEBUG
   fprintf(stderr, "DBG: Listener on port %d\n", *port);
+#endif
 
 
   /* now register listener so can accept connections when they happen */
-  IOTypes_table.io_def[*index].comms_status=REG_COMMS_STATUS_LISTENING;
   result = globus_io_tcp_register_listen(&(IOTypes_table.io_def[*index].listener_handle),
 					 Globus_listener_callback,
 					 (void *) index);
   if (result != GLOBUS_SUCCESS) {
 
-    /* SMR XXXn check this */
-    IOTypes_table.io_def[*index].monitor.done = GLOBUS_TRUE;
-    IOTypes_table.io_def[*index].monitor.err = globus_error_get(result);
-    IOTypes_table.io_def[*index].monitor.use_err = GLOBUS_TRUE;
-    
-    fprintf(stderr, "Globus_create_listener: Error creating listening socket:\n");
+    fprintf(stderr, "Globus_create_listener: Error registering listen :\n");
     err =  globus_error_get(result);
     if (globus_object_type_match(GLOBUS_IO_ERROR_TYPE_NULL_PARAMETER,
 				 globus_object_get_type(err))) {
@@ -3080,15 +3139,20 @@ int Globus_create_listener(unsigned short int	*port,
      fprintf(stderr, " - globus error type: invalid handle type\n");
     }
 
-    IOTypes_table.io_def[*index].comms_status=REG_COMMS_STATUS_NULL;
+    /* SMR XXXn - but still listening.... so what is status? close listener?
+       IOTypes_table.io_def[*index].listener_status=REG_COMMS_STATUS_NULL; */
     return REG_FAILURE;
   }
-
- 
+  else {
+    IOTypes_table.io_def[*index].comms_status=REG_COMMS_STATUS_LISTENING;
+    /* attempt to kick the callback function */
+    Globus_callback_poll(*index);
+  } 
   return REG_SUCCESS;
 
 }
 
+/*--------------------------------------------------------------------*/
 
 void
 Globus_listener_callback (void			*callback_arg,
@@ -3098,99 +3162,121 @@ Globus_listener_callback (void			*callback_arg,
   int			   index   = -1;
   globus_result_t	   result;
   globus_object_t	  *err; 
-  int		  	   success = 1;
-  globus_bool_t		   use_err = GLOBUS_FALSE;
   Globus_callback_monitor *lmonitor;
 
   index = *((int *) callback_arg);
 
-  if (index < 0) {
-    success = 0;
-    fprintf(stderr, "Globus_listen_callback: Invalid index=%d\n", index);
+  if (index < 0) { 
+    /* SMR XXXn ??? what do now? */
+    fprintf(stderr, "Globus_listen_callback: ERROR: Invalid index=%d\n", index);
   }
+  else {
+#if DEBUG
+    fprintf(stderr, "DBG: In Globus_listen_callback index =%d\n", index);
+#endif
 
-  if (success)
-  {
     lmonitor = &(IOTypes_table.io_def[index].monitor);
+    globus_mutex_lock(&lmonitor->mutex);
 
     if (resultparam != GLOBUS_SUCCESS) {
       err = globus_error_get(resultparam);
-      use_err = GLOBUS_TRUE;
+      IOTypes_table.io_def[index].comms_status=REG_COMMS_STATUS_FAILURE;
+      fprintf(stderr, "Entered Globus_listener_callback resultparam FALSE, no connection\n");
     }
-    globus_mutex_lock(&lmonitor->mutex);
-
-    if(use_err) {
-      lmonitor->use_err = GLOBUS_TRUE;
-      lmonitor->err = err;	
-    }
-    
-    /* do the callback stuff */
-    if (!use_err) {
-      fprintf(stderr, "DBG: In Globus_listen_callback index =%d\n", index);
-            
-      if (success) {
-	/*  Accept connection  - this is a blocking call */
-	result = globus_io_tcp_accept(handle, GLOBUS_NULL, &(IOTypes_table.io_def[index].conn_handle));
-	if (result != GLOBUS_SUCCESS) {
-	  success = 0;
-	  fprintf(stderr, "Globus_listen_callback: Error accepting connection:"); 
-	  err =  globus_error_get(result);
+    else {            
+      /*  register callback to accept connection  */
+      result = globus_io_tcp_register_accept(handle, 
+					     GLOBUS_NULL, 
+					     &(IOTypes_table.io_def[index].conn_handle),
+					     Globus_accept_callback,
+					     (void *) &index);
       
-	  if (globus_object_type_match(GLOBUS_IO_ERROR_TYPE_NULL_PARAMETER,
-				       globus_object_get_type(err))) {
-	    fprintf(stderr, " - globus error type: null parameter\n");
-	  }
-	  else if (globus_object_type_match(GLOBUS_IO_ERROR_TYPE_CLOSE_ALREADY_REGISTERED,
-					    globus_object_get_type(err))) {
-	    fprintf(stderr, " - globus error type: close already registered on handle\n"); 
-	  }
-	  else if (globus_object_type_match(GLOBUS_IO_ERROR_TYPE_NOT_INITIALIZED,
-					    globus_object_get_type(err))) {
-	    fprintf(stderr, " - globus error type: handle not initialised\n"); 
-	  }
-	  else if (globus_object_type_match( GLOBUS_IO_ERROR_TYPE_INVALID_TYPE,
-					     globus_object_get_type(err))) {
-	    fprintf(stderr, " - globus error type: invalid handle\n"); 
-	  }
-	  else if (globus_object_type_match(GLOBUS_IO_ERROR_TYPE_SYSTEM_FAILURE,
-					    globus_object_get_type(err))) {
-	    fprintf(stderr, " - globus error type: system failure\n"); 
-	  }
-	  else if (globus_object_type_match(GLOBUS_IO_ERROR_TYPE_AUTHENTICATION_FAILED,
-					    globus_object_get_type(err))) {
-	    fprintf(stderr, " - globus error type: authentication failed\n"); 
-	  }
-      
-	  else if (globus_object_type_match(GLOBUS_IO_ERROR_TYPE_AUTHORIZATION_FAILED,
-					    globus_object_get_type(err))) {
-	    fprintf(stderr, " - globus error type: authorization failed\n"); 
-	  }
+      if (result != GLOBUS_SUCCESS) {
+	IOTypes_table.io_def[index].comms_status=REG_COMMS_STATUS_FAILURE;
+	fprintf(stderr, "Globus_listen_callback: Error registering accept:");
+ 
+	err =  globus_error_get(result);	
+	if (globus_object_type_match(GLOBUS_IO_ERROR_TYPE_NULL_PARAMETER,
+				     globus_object_get_type(err))) {
+	  fprintf(stderr, " - globus error type: null parameter\n");
 	}
-      }
-  
+	else if (globus_object_type_match(GLOBUS_IO_ERROR_TYPE_CLOSE_ALREADY_REGISTERED,
+					  globus_object_get_type(err))) {
+	  fprintf(stderr, " - globus error type: close already registered on handle\n"); 
+	}
+	else if (globus_object_type_match(GLOBUS_IO_ERROR_TYPE_NOT_INITIALIZED,
+					  globus_object_get_type(err))) {
+	  fprintf(stderr, " - globus error type: handle not initialised\n"); 
+	}
+	else if (globus_object_type_match( GLOBUS_IO_ERROR_TYPE_INVALID_TYPE,
+					   globus_object_get_type(err))) {
+	  fprintf(stderr, " - globus error type: invalid attribute type\n"); 
+	}
+	else if (globus_object_type_match(GLOBUS_IO_ERROR_TYPE_SYSTEM_FAILURE,
+					  globus_object_get_type(err))) {
+	  fprintf(stderr, " - globus error type: system failure\n"); 
+	}
 
-      if (success) {
-	IOTypes_table.io_def[index].comms_status=REG_COMMS_STATUS_CONNECTED;
-	fprintf(stderr, "DBG: Globus_listen_callback - connection accepted index = %d\n", index);
       }
       else {
-	fprintf(stderr, "DBG: Globus_listen_callback - connection accept FAILED\n");
+	IOTypes_table.io_def[index].comms_status=REG_COMMS_STATUS_WAITING_FOR_ACCEPT;
+#if DEBUG
+	fprintf(stderr, "DBG: Globus_listen_callback - registered accept index = %d\n", index);
+#endif
       }
       
     }
+  
+    globus_cond_signal(&lmonitor->cond);
+    globus_mutex_unlock(&lmonitor->mutex);
+
+    /* attempt to kick the callback function - need for accept just registered */
+    Globus_callback_poll(index);    
   }
-
-  /* SMR XXX TO DO :check even though accept failed, we are still listening 
-   * BUT need to re-register callback ???
-   */
-
-
-  lmonitor->done = GLOBUS_TRUE;
-  globus_cond_signal(&lmonitor->cond);
-  globus_mutex_unlock(&lmonitor->mutex);
 
 }
 
+/*--------------------------------------------------------------------*/
+
+void
+Globus_accept_callback (void			*callback_arg,
+			globus_io_handle_t	*handle,
+			globus_result_t		resultparam)
+{
+  int				index   = -1;
+  globus_object_t		*err; 
+  Globus_callback_monitor	*lmonitor;
+
+  index = *((int *) callback_arg);
+
+  if (index < 0) {
+    /* SMR XXX - what do now? */
+    fprintf(stderr, "Globus_accept_callback: ERROR: Invalid index=%d\n", index);
+  }
+  else {
+    lmonitor = &(IOTypes_table.io_def[index].monitor);
+    globus_mutex_lock(&lmonitor->mutex);
+
+    if (resultparam != GLOBUS_SUCCESS) {
+      fprintf(stderr, "DBG: Entered Globus_accept_callback resultparam FALSE, no connection\n");
+      err = globus_error_get(resultparam);
+      IOTypes_table.io_def[index].comms_status=REG_COMMS_STATUS_FAILURE;
+    }
+    else {
+#if DEBUG
+      fprintf(stderr, "DBG: Globus_accept_callback has connected, index =%d\n", index);
+#endif
+      IOTypes_table.io_def[index].comms_status=REG_COMMS_STATUS_CONNECTED;
+    }
+
+    globus_cond_signal(&lmonitor->cond);
+    globus_mutex_unlock(&lmonitor->mutex);
+
+  }
+  
+}
+
+/*--------------------------------------------------------------------*/
 
 int Globus_create_connector(int		*index)
 {
@@ -3216,7 +3302,6 @@ int Globus_create_connector(int		*index)
    * - will connect and call callback function when port listens
    */
 
-  IOTypes_table.io_def[*index].comms_status=REG_COMMS_STATUS_WAITING_TO_CONNECT;
   result = globus_io_tcp_register_connect(connector_hostname,
 					  connector_port,
 					  &attr,
@@ -3224,11 +3309,6 @@ int Globus_create_connector(int		*index)
 					  (void *) index,
 					  &(IOTypes_table.io_def[*index].conn_handle));
   if (result != GLOBUS_SUCCESS) {
-
-    /* SMR XXXn check this */
-    IOTypes_table.io_def[*index].monitor.done = GLOBUS_TRUE;
-    IOTypes_table.io_def[*index].monitor.err = globus_error_get(result);
-    IOTypes_table.io_def[*index].monitor.use_err = GLOBUS_TRUE;
 
     fprintf(stderr, "Globus_create_connector: Error registering connect:\n");
     err =  globus_error_get(result);
@@ -3244,10 +3324,15 @@ int Globus_create_connector(int		*index)
     IOTypes_table.io_def[*index].comms_status=REG_COMMS_STATUS_NULL;
     return REG_FAILURE;
   }
+  else {
+    IOTypes_table.io_def[*index].comms_status=REG_COMMS_STATUS_WAITING_TO_CONNECT;
 
-  fprintf(stderr, "Globus_create_connector: registered connector on "
-	  "connector_port = %d, connector_hostname = %s\n", connector_port, 
-	  connector_hostname);
+#if DEBUG
+    fprintf(stderr, "Globus_create_connector: registered connector on "
+	    "connector_port = %d, connector_hostname = %s\n", connector_port, 
+	    connector_hostname);
+#endif
+  }
 
   /* attempt to kick the callback function */
   Globus_callback_poll(*index);
@@ -3256,117 +3341,95 @@ int Globus_create_connector(int		*index)
 
 }
 
+/*--------------------------------------------------------------------*/
+
 /* NOTE: for globus_io_register_connect, callback just happens immediately - 
  * i.e. a connect attempt is made straight away and callback invoked
- * therefore to attempt another connect need to re-register callback SMR XXXn ?????
+ * therefore to attempt another connect need to re-register callback
  */
 void
 Globus_connector_callback (void			*callback_arg,
 			   globus_io_handle_t	*handle,
 			   globus_result_t	resultparam)
 { 
-  int	success = 1;
-  int	index   = -1;
-  globus_object_t         *err; 
-  globus_bool_t	           use_err = GLOBUS_FALSE;
-  Globus_callback_monitor *lmonitor;
-
-  fprintf(stderr, "Globus_create_connector: In func.\n");
+  int				index   = -1;
+  globus_object_t		*err; 
+  Globus_callback_monitor	*lmonitor;
 
   index = *((int *) callback_arg);
-  fprintf(stderr, "DBG: Entered Globus_connector_callback index =%d\n", index);
 
   if (index < 0) {
-    success = 0;
-    fprintf(stderr, "Globus_connector_callback: Invalid index=%d\n", index);
+    fprintf(stderr, "Globus_connector_callback: ERROR: Invalid index=%d\n", index);
   }
-
-  if (success) {
+  else {
     lmonitor = &(IOTypes_table.io_def[index].monitor);
+    globus_mutex_lock(&lmonitor->mutex);
 
     if (resultparam != GLOBUS_SUCCESS) {
+      IOTypes_table.io_def[index].comms_status=REG_COMMS_STATUS_NULL;
       fprintf(stderr, "DBG: Entered Globus_connector_callback resultparam FALSE, no connection\n");
       err = globus_error_get(resultparam);
-      use_err = GLOBUS_TRUE;
     }
-    
-    globus_mutex_lock(&lmonitor->mutex);
-	
-    if(use_err) {
-      lmonitor->use_err = GLOBUS_TRUE;
-      lmonitor->err = err;	
-      IOTypes_table.io_def[index].comms_status=REG_COMMS_STATUS_NULL;
-    }
-  
-    if (!use_err) {  
-      /* connected if resultparam == GLOBUS_SUCCESS */
+    else {
       IOTypes_table.io_def[index].comms_status=REG_COMMS_STATUS_CONNECTED;
+#if DEBUG
       fprintf(stderr, "DBG: Globus_connector_callback has connected, index =%d\n", index);
+#endif
     }
 
+    globus_cond_signal(&lmonitor->cond);
+    globus_mutex_unlock(&lmonitor->mutex);
+    
   }
-   
-  lmonitor->done = GLOBUS_TRUE;
-  globus_cond_signal(&lmonitor->cond);
-  globus_mutex_unlock(&lmonitor->mutex);
   
 }
 
+/*--------------------------------------------------------------------*/
 
-
-void Globus_close_listener_connections(const int index)
+void Globus_cleanup_listener_connection(const int index)
 {
 
-  if (IOTypes_table.io_def[index].comms_status == REG_COMMS_STATUS_CONNECTED)
-     Globus_close_connection(&(IOTypes_table.io_def[index].conn_handle));
+  if (IOTypes_table.io_def[index].comms_status == REG_COMMS_STATUS_CONNECTED || 
+      IOTypes_table.io_def[index].comms_status == REG_COMMS_STATUS_WAITING_FOR_ACCEPT)
+    Globus_close_conn_handle(index);
 
-  Globus_close_connection(&(IOTypes_table.io_def[index].listener_handle));
+  if (IOTypes_table.io_def[index].listener_status == REG_COMMS_STATUS_LISTENING)
+    Globus_close_listener_handle(index);
 
   globus_mutex_destroy(&(IOTypes_table.io_def[index].monitor.mutex));
   globus_cond_destroy(&(IOTypes_table.io_def[index].monitor.cond)); 
   
 }
 
+/*--------------------------------------------------------------------*/
 
-void Globus_close_connector_connection(const int index)
+void Globus_cleanup_connector_connection(const int index)
 {
   if (IOTypes_table.io_def[index].comms_status == REG_COMMS_STATUS_CONNECTED ||
       IOTypes_table.io_def[index].comms_status == REG_COMMS_STATUS_WAITING_TO_CONNECT )
-     Globus_close_connection(&(IOTypes_table.io_def[index].conn_handle));
-  
-  IOTypes_table.io_def[index].comms_status = REG_COMMS_STATUS_NULL;
+    Globus_close_conn_handle(index);
+
 
   globus_mutex_destroy(&(IOTypes_table.io_def[index].monitor.mutex));
   globus_cond_destroy(&(IOTypes_table.io_def[index].monitor.cond)); 
 
 }
 
-void Globus_close_connection(globus_io_handle_t	*conn_handle)
+/*--------------------------------------------------------------------*/
+
+void Globus_close_conn_handle(const int index)
 {
 
   globus_object_t	*err; 
   globus_result_t	result;
 
-  /* SMR XXXn - do we need both cancel and close, or just close?
-     can callback_func just be NULL?
-  */
-
-  result = globus_io_register_cancel(conn_handle, 
-				     TRUE,
-				     Globus_cancel_callback,
-				     NULL);
+  /* Note that globus cancel is done as part of globus close */
+  result = globus_io_register_close(&(IOTypes_table.io_def[index].conn_handle), 
+				    Globus_close_callback, 
+				    (void *) &index);
 
   if (result != GLOBUS_SUCCESS) {
-    fprintf(stderr, "Globus_close_connection: Error register cancel connection\n");
-  }
-  else {
-    fprintf(stderr, "Globus_close_connection: Register cancel OK\n");
-  }
-
-  result = globus_io_register_close(conn_handle, Globus_cancel_callback, NULL);
-
-  if (result != GLOBUS_SUCCESS) {
-    fprintf(stderr, "Globus_close_connection: Error register close connection\n");
+    fprintf(stderr, "Globus_close_conn_handle: Error register close connection\n");
     err =  globus_error_get(result);
 
     if (globus_object_type_match(GLOBUS_IO_ERROR_TYPE_NULL_PARAMETER,
@@ -3383,22 +3446,203 @@ void Globus_close_connection(globus_io_handle_t	*conn_handle)
     }
   }
   else {
-    fprintf(stderr, "DBG: Globus_close_connection:  Register close OK\n");
+    fprintf(stderr, "DBG: Globus_close_conn_handle:  Register close OK\n");
   }
+
+  Globus_callback_poll(index);
+
 }
 
+/*--------------------------------------------------------------------*/
 
-/* SMR XXXn tmp hack */
+void Globus_close_listener_handle(const int index)
+{
+
+  globus_object_t	*err; 
+  globus_result_t	result;
+
+  result = globus_io_register_close(&(IOTypes_table.io_def[index].listener_handle), 
+				    Globus_close_listener_callback, 
+				    (void *) &index);
+
+  if (result != GLOBUS_SUCCESS) {
+    fprintf(stderr, "Globus_close_listener_handle: Error register close connection\n");
+    err =  globus_error_get(result);
+
+    if (globus_object_type_match(GLOBUS_IO_ERROR_TYPE_NULL_PARAMETER,
+				 globus_object_get_type(err))) {
+     fprintf(stderr, " - globus error type: null parameter\n");
+    }
+    else if (globus_object_type_match(GLOBUS_IO_ERROR_TYPE_NOT_INITIALIZED,
+				 globus_object_get_type(err))) {
+     fprintf(stderr, " - globus error type: handle not initialised\n");
+    }
+    else if (globus_object_type_match(GLOBUS_IO_ERROR_TYPE_CLOSE_ALREADY_REGISTERED,
+				      globus_object_get_type(err))) {
+      fprintf(stderr, " - globus error type: handle close already registered\n");
+    }
+  }
+  else {
+    fprintf(stderr, "DBG: Globus_close_listener_handle:  Register close OK\n");
+  }
+
+  Globus_callback_poll(index);
+
+}
+
+/*--------------------------------------------------------------------*/
+
 void
-Globus_cancel_callback (void			*callback_arg,
-			   globus_io_handle_t	*handle,
-			   globus_result_t	resultparam)
+Globus_close_callback (void			*callback_arg,
+		       globus_io_handle_t	*handle,
+		       globus_result_t		resultparam)
 { 
-  /*  globus_abstime_t	timeout;
-  timeout.tv_sec = 5000;
-  */
-  fprintf(stderr, "In Globus_cancel_callback TMP TEST HACK\n");
 
-  /*  globus_cond_timedwait(&(IOTypes_table.io_def[1].monitor.cond), &(IOTypes_table.io_def[1].monitor.mutex), &timeout);
-   */
+  int				index   = -1;
+
+  index = *((int *) callback_arg);
+
+  if (index < 0) {
+    fprintf(stderr, "Globus_close_callback: ERROR: Invalid index=%d\n", index);
+  }
+  else
+  {
+#if DEBUG
+    fprintf(stderr, "Globus_close_callback: done\n");
+#endif
+    IOTypes_table.io_def[index].comms_status = REG_COMMS_STATUS_NULL;
+  }
+
 }
+
+/*--------------------------------------------------------------------*/
+
+void
+Globus_close_listener_callback (void			*callback_arg,
+		       globus_io_handle_t	*handle,
+		       globus_result_t		resultparam)
+{
+
+  int				index   = -1;
+
+  index = *((int *) callback_arg);
+
+  if (index < 0) {
+    fprintf(stderr, "Globus_close_listener_callback: ERROR: Invalid index=%d\n", index);
+  }
+  else
+  {
+#if DEBUG
+    fprintf(stderr, "Globus_close_listener_callback: done\n");
+#endif
+    IOTypes_table.io_def[index].listener_status = REG_COMMS_STATUS_NULL;
+  }
+
+}
+
+/*--------------------------------------------------------------------*/
+
+void Globus_attempt_listener_connect(const int index)
+{
+
+  if (IOTypes_table.io_def[index].comms_status == REG_COMMS_STATUS_LISTENING) {
+    /* we're waiting for connect callback so attempt to kick the callback function */
+#if DEBUG    
+    fprintf(stderr, "Globus_attempt_listener_connect:kick callback_poll\n");
+#endif
+    Globus_callback_poll(index);
+  }
+  else if (IOTypes_table.io_def[index].comms_status == REG_COMMS_STATUS_FAILURE) {
+    /* connection has broken - we're still listeneing so see if anything to connect */
+#if DEBUG
+    fprintf(stderr, "Globus_attempt_listener_connect:retry accept connect\n");
+#endif
+    Globus_retry_accept_connect(index);
+  }
+
+}
+
+/*--------------------------------------------------------------------*/
+
+void Globus_retry_accept_connect(const int index)
+{
+  /* if this called a globus_io read  has failed */
+  globus_result_t    result;
+  globus_object_t    *err; 
+
+  /* if we're here and  status is connected  we've lost a connection, so first close socket */
+  if (IOTypes_table.io_def[index].comms_status==REG_COMMS_STATUS_CONNECTED) {
+
+    Globus_close_conn_handle(index);
+
+  }
+
+  /* assume list_handle is still listening and see if there is a connection to accept */
+  result = globus_io_tcp_register_accept(&(IOTypes_table.io_def[index].listener_handle), 
+					 GLOBUS_NULL, 
+					 &(IOTypes_table.io_def[index].conn_handle),
+					 Globus_accept_callback,
+					 (void *) &index);
+
+  if (result != GLOBUS_SUCCESS) {
+	 
+    fprintf(stderr, "Globus_retry_accept_connect: Error registering accept:"); 
+    err =  globus_error_get(result);
+      
+    if (globus_object_type_match(GLOBUS_IO_ERROR_TYPE_NULL_PARAMETER,
+				 globus_object_get_type(err))) {
+      fprintf(stderr, " - globus error type: null parameter\n");
+    }
+    else if (globus_object_type_match(GLOBUS_IO_ERROR_TYPE_CLOSE_ALREADY_REGISTERED,
+				      globus_object_get_type(err))) {
+      fprintf(stderr, " - globus error type: close already registered on handle\n"); 
+    }
+    else if (globus_object_type_match(GLOBUS_IO_ERROR_TYPE_NOT_INITIALIZED,
+				      globus_object_get_type(err))) {
+      fprintf(stderr, " - globus error type: handle not initialised\n"); 
+    }
+    else if (globus_object_type_match( GLOBUS_IO_ERROR_TYPE_INVALID_TYPE,
+				       globus_object_get_type(err))) {
+      fprintf(stderr, " - globus error type: invalid attribute type\n"); 
+    }
+    else if (globus_object_type_match(GLOBUS_IO_ERROR_TYPE_SYSTEM_FAILURE,
+				      globus_object_get_type(err))) {
+      fprintf(stderr, " - globus error type: no connection pending\n"); 
+    }
+
+    /* Set to FAILURE so retry is attempted again next time round */
+    IOTypes_table.io_def[index].comms_status=REG_COMMS_STATUS_FAILURE;
+  }
+  else {
+#if DEBUG
+    fprintf(stderr, "Globus_retry_accept_connect: register accept success\n");
+#endif
+    IOTypes_table.io_def[index].comms_status=REG_COMMS_STATUS_WAITING_FOR_ACCEPT;
+
+    /* attempt to kick the callback function - need for accept just registered */
+    Globus_callback_poll(index);
+
+  }
+
+}
+
+/*--------------------------------------------------------------------*/
+
+void Globus_retry_connect(int index){
+
+  /* close the failed connector and retry to connect */
+
+  if (IOTypes_table.io_def[index].comms_status==REG_COMMS_STATUS_CONNECTED) {
+    Globus_close_conn_handle(index);
+  }
+  
+   if (Globus_create_connector(&index) != REG_SUCCESS) {
+#if DEBUG
+     fprintf(stderr, "Register_IOTypes: failed to register connector for IOType\n");
+#endif
+      /* Set to NULL so Globus_create_connector is attempted again next time round */
+     IOTypes_table.io_def[index].comms_status=REG_COMMS_STATUS_NULL;
+   }
+}
+
+/*--------------------------------------------------------------------*/

@@ -199,6 +199,11 @@ extern PREFIX void Globus_listener_callback (void		*callback_arg,
 					     globus_result_t	result);
 
 
+extern PREFIX void Globus_accept_callback (void			*callback_arg,
+					   globus_io_handle_t	*handle,
+					   globus_result_t	resultparam);
+
+
 /* Register callback function Globus_connector_callback to attempt to
    connect using globals connector_hostname and connector_port - use
    of globals will be removed eventually */
@@ -212,16 +217,36 @@ extern PREFIX void Globus_connector_callback (void			*callback_arg,
 					      globus_result_t		result);
 
 /* Close and clean up a listener connection */
-extern PREFIX void Globus_close_listener_connections(const int index);
+extern PREFIX void Globus_cleanup_listener_connection(const int index);
 
 /* Close and clean up a connector connection */
-extern PREFIX void Globus_close_connector_connection(const int index);
+extern PREFIX void Globus_cleanup_connector_connection(const int index);
 
-/* Call globus funtions to cancel and close connections for the given handle */
-extern PREFIX void Globus_close_connection(globus_io_handle_t	*conn_handle);
+/* Call globus funtion close connections for the conn_handle */
+extern PREFIX void Globus_close_conn_handle(const int index);
 
-/* Callback function for globus_io_register_cancel in
-   Globus_close_connection - this does nothing - hopefully we can remove it */
-extern PREFIX void Globus_cancel_callback (void			*callback_arg,
+/* Call globus funtions to close listener handle */
+extern PREFIX void Globus_close_listener_handle(const int index);
+
+/* Callback function for globus_io_register_close in
+   Globus_close_conn_handle */
+extern PREFIX void Globus_close_callback (void			*callback_arg,
 					   globus_io_handle_t	*handle,
 					   globus_result_t	resultparam);
+
+/* Callback function for globus_io_register_close in
+   Globus_close_listener_handle */
+void
+Globus_close_listener_callback (void			*callback_arg,
+				globus_io_handle_t	*handle,
+				globus_result_t		resultparam);
+
+/* Call globus functions to accept pending connections */
+void Globus_attempt_listener_connect(const int index);
+
+
+/* Call globus functions to close failed socket and accept any pending connection attempts */
+extern PREFIX void Globus_retry_accept_connect(const int index);
+
+/* Call globus functions to close failed socket and retry to connect */
+extern PREFIX void Globus_retry_connect(int index);

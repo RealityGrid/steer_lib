@@ -94,9 +94,6 @@ typedef struct
 {
   globus_mutex_t		mutex;
   globus_cond_t			cond;
-  globus_object_t *		err;
-  globus_bool_t			use_err;
-  globus_bool_t		        done;
 } Globus_callback_monitor;
 
 
@@ -123,7 +120,8 @@ typedef struct {
   /* socket connection handles */
   globus_io_handle_t		listener_handle;
   globus_io_handle_t		conn_handle;
-  /* status indicator for socket comms*/
+  /* status indicators for socket comms*/
+  int				listener_status;  
   int				comms_status;
   /* monitor struc used for callback */
   Globus_callback_monitor	monitor;
