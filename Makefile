@@ -46,6 +46,7 @@ no_f90:
 	$(MAKE) c_examples
 
 c_examples:
+	$(MAKE) simple
 	$(MAKE) app
 	$(MAKE) steerer
 	$(MAKE) sink
@@ -116,6 +117,10 @@ libfd: include/*.h \
 	rm -f $(LIB_PATH)/libReG_Steer.so
 	ln -s libReG_SteerFileDebug.so $(LIB_PATH)/libReG_Steer.so
 
+simple: $(LIB_PATH)/$(LIB_NAME) \
+ examples/simple/*.c
+	cd examples/simple; $(MAKE)
+
 app: $(LIB_PATH)/$(LIB_NAME) \
  examples/mini_app/*.c
 	cd examples/mini_app; $(MAKE)
@@ -140,6 +145,7 @@ sink: $(LIB_PATH)/$(LIB_NAME) \
 	cd examples/sink; $(MAKE)
 
 install:
+	cd examples/simple; $(MAKE) install
 	cd examples/mini_app; $(MAKE) install
 	cd examples/mini_steerer; $(MAKE) install
 	cd examples/mini_app_f90; $(MAKE) install
@@ -148,6 +154,7 @@ install:
 
 clean:
 	cd src; $(MAKE) clean 
+	cd examples/simple; $(MAKE) clean
 	cd examples/mini_app; $(MAKE) clean
 	cd examples/mini_steerer; $(MAKE) clean
 	cd examples/mini_app_f90; $(MAKE) clean
