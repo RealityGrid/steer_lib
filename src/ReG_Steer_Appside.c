@@ -106,7 +106,7 @@ char ReG_CurrentDir[REG_MAX_STRING_LENGTH];
 /* Hostname of machine we are executing on */
 char ReG_Hostname[REG_MAX_STRING_LENGTH];
 /* Name (and version) of the application that has called us */
-static char ReG_AppName[REG_MAX_STRING_LENGTH];
+char ReG_AppName[REG_MAX_STRING_LENGTH];
 
 /* Global variable used to store next valid handle value for both
    IOTypes and ChkTypes - these MUST have unique handles because
@@ -205,7 +205,6 @@ int Steering_initialize(char *AppName,
     return REG_FAILURE;
   }
   strcpy(ReG_AppName, AppName);
-  fprintf(stderr, "ARPDBG: AppName = >>%s<<\n", ReG_AppName);
 
   /* Get the hostname of this machine - used to tell the outside
      world how to contact us and where the (checkpoint) files we've 
@@ -1176,7 +1175,7 @@ int Record_checkpoint_set(int   ChkType,
     return REG_FAILURE;
   }
 
-  /* Copy tag until first blank space - i.e.tag must not contain any
+  /* Copy tag until first blank space - i.e. tag must not contain any
      spaces. */
   for(i=j; i<len; i++){
     if(ChkTag[i] == ' ')break;
@@ -1201,11 +1200,11 @@ int Record_checkpoint_set(int   ChkType,
   cp_data = Global_scratch_buffer;
   pchar = cp_data;
   bytes_left = REG_SCRATCH_BUFFER_SIZE;
-  nbytes = snprintf(pchar, bytes_left, "<Checkpoint_data>\n"		    
+  nbytes = snprintf(pchar, bytes_left, "<Checkpoint_data Application=\"%s\">\n"		    
 		    "<Chk_type>%d</Chk_type>\n"
 		    "<Chk_UID>%s</Chk_UID>\n"
 		    "<Files location=\"%s\">\n", 
-		    ChkType, ChkTag, ReG_Hostname);
+		    ReG_AppName, ChkType, ChkTag, ReG_Hostname);
   pchar += nbytes;
   bytes_left -= nbytes;
 

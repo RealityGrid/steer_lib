@@ -57,6 +57,9 @@ extern char ReG_CurrentDir[REG_MAX_STRING_LENGTH];
 /* Hostname of machine we are executing on */
 extern char ReG_Hostname[REG_MAX_STRING_LENGTH];
 
+/* Name (and version) of the application that has called us */
+extern char ReG_AppName[REG_MAX_STRING_LENGTH];
+
 /* Soap-specific declarations */
 static struct soap soap;
 
@@ -69,6 +72,7 @@ char *CHKTYPE_DEFS_SDE   = "SGS:ChkType_defs";
 char *STEER_STATUS_SDE   = "SGS:Steerer_status";
 char *MACHINE_ADDRESS_SDE= "SGS:Machine_address";
 char *WORKING_DIR_SDE    = "SGS:Working_directory";
+char *APP_NAME_SDE       = "SGS:Application_name";
 
 /*-------------------------------------------------------------------------*/
 
@@ -179,9 +183,10 @@ int Initialize_steering_connection_soap(int  NumSupportedCmds,
      are set in Steering_initialize prior to calling us */
   snprintf(query_buf, REG_MAX_MSG_SIZE, 
 	   "<ogsi:setByServiceDataNames><%s>%s</%s>"
-	   "<%s>%s</%s></ogsi:setByServiceDataNames>", 
+	   "<%s>%s</%s><%s>%s</%s></ogsi:setByServiceDataNames>", 
 	   WORKING_DIR_SDE, ReG_CurrentDir, WORKING_DIR_SDE,
-	   MACHINE_ADDRESS_SDE, ReG_Hostname, MACHINE_ADDRESS_SDE);
+	   MACHINE_ADDRESS_SDE, ReG_Hostname, MACHINE_ADDRESS_SDE,
+	   APP_NAME_SDE, ReG_AppName, APP_NAME_SDE);
 
   if (soap_call_tns__setServiceData(&soap, 
 				    Steerer_connection.SGS_address, "", 
