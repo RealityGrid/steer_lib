@@ -83,6 +83,7 @@ struct tns__ResumeResponse
 #define _SOAP_tns__destroyResponse
 struct tns__destroyResponse
 {
+        void *rubbish; /* ARPDBG */
 };
 #endif
 
