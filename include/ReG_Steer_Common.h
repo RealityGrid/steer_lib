@@ -42,6 +42,7 @@
 #define __REG_STEER_COMMON_H__
 
 #include "ReG_Steer_Appside_Globus.h"
+#include "ReG_Steer_Appside_Sockets.h"
 
 /* Following two includes are for use of stat system call 
    in Open_next_file */
@@ -200,7 +201,7 @@ typedef struct {
   void			       *buffer;
   /* Size of this buffer */
   int				buffer_bytes;
-#if REG_GLOBUS_SAMPLES
+#if REG_GLOBUS_SAMPLES || REG_SOCKET_SAMPLES
   /* structure used to hold all globus_io socket information */
   socket_io_type		socket_info;
 #endif
