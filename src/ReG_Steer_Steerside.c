@@ -210,9 +210,20 @@ int Get_sim_list(int   *nSims,
 
     /* ARPDBG - ultimately we will contact a registry here
        and ask it for the location of any SGSs it knows of */
-    *nSims = 1;
-    sprintf(simName[0], "Simulation");
-    sprintf(simGSH[0], "http://vermont.mvc.mcc.ac.uk:50005/");
+
+    if(ptr = getenv("REG_SGS_ADDRESS")){
+
+      *nSims = 1;
+      sprintf(simName[0], "Simulation");
+      strcpy(simGSH[0], ptr);
+    }
+    else{
+
+      fprintf(stderr, "Get_sim_list: REG_SGS_ADDRESS environment variable "
+	      "is not set\n");
+      *nSims = 0;
+      return REG_FAILURE;
+    }
 
     return REG_SUCCESS;
 
