@@ -50,6 +50,11 @@
   EXTERNAL steering_control_f
   EXTERNAL steering_pause_f
   EXTERNAL steering_char_to_ptr_f
+  EXTERNAL enable_iotypes_on_registrn_f
+  EXTERNAL enable_iotype_f
+  EXTERNAL disable_iotype_f
+  EXTERNAL enable_iotype_acks_f
+  EXTERNAL disable_iotype_acks_f
 
 ! KIND parameters to ensure we match types when passing between
 ! C and F90

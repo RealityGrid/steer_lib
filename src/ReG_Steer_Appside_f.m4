@@ -172,13 +172,13 @@ INT_KIND_1_DECL(Status);
 
 /*----------------------------------------------------------------
 
-SUBROUTINE enable_iotypes_on_registration_f(Toggle, Status)
+SUBROUTINE enable_iotypes_on_registrn_f(Toggle, Status)
 
   INTEGER (KIND=REG_SP_KIND), INTENT(in)  :: Toggle
   INTEGER (KIND=REG_SP_KIND), INTENT(out) :: Status
 ----------------------------------------------------------------*/
 
-void FUNCTION(enable_iotypes_on_registration_f) ARGS(`Toggle,
+void FUNCTION(enable_iotypes_on_registrn_f) ARGS(`Toggle,
                                                       Status')
 INT_KIND_1_DECL(Toggle);
 INT_KIND_1_DECL(Status);
@@ -218,6 +218,42 @@ INT_KIND_1_DECL(IOType);
 INT_KIND_1_DECL(Status);
 {
   *Status = INT_KIND_1_CAST( Disable_IOType((int)(*IOType)) );
+  return;
+}
+
+/*----------------------------------------------------------------
+
+SUBROUTINE enable_iotype_acks_f(IOType, Status)
+
+  INTEGER (KIND=REG_SP_KIND), INTENT(in)  :: IOType
+  INTEGER (KIND=REG_SP_KIND), INTENT(out) :: Status
+----------------------------------------------------------------*/
+
+void FUNCTION(enable_iotype_acks_f) ARGS(`IOType,
+                                                      Status')
+INT_KIND_1_DECL(IOType);
+INT_KIND_1_DECL(Status);
+{
+  *Status = INT_KIND_1_CAST( Enable_IOType_acknowledgements((int)(*IOType)) );
+
+  return;
+}
+
+/*----------------------------------------------------------------
+
+SUBROUTINE disable_iotype_acks_f(IOType, Status)
+
+  INTEGER (KIND=REG_SP_KIND), INTENT(in)  :: IOType
+  INTEGER (KIND=REG_SP_KIND), INTENT(out) :: Status
+----------------------------------------------------------------*/
+
+void FUNCTION(disable_iotype_acks_f) ARGS(`IOType,
+                                                       Status')
+INT_KIND_1_DECL(IOType);
+INT_KIND_1_DECL(Status);
+{
+  *Status = INT_KIND_1_CAST( Disable_IOType_acknowledgements((int)(*IOType)) );
+
   return;
 }
 
