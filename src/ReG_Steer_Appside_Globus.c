@@ -767,7 +767,7 @@ void Globus_error_print(const globus_result_t result)
 
 /*--------------------------------------------------------------------*/
 
-int Consume_msg_header_globus(socket_io_type *sock_info,
+int Consume_msg_header_globus(int  index,
 			      int *DataType,
 			      int *Count,
 			      int *NumBytes,
@@ -776,6 +776,9 @@ int Consume_msg_header_globus(socket_io_type *sock_info,
   globus_result_t  result;
   globus_size_t    nbytes;
   char             buffer[REG_PACKET_SIZE];
+  socket_io_type  *sock_info;
+
+  sock_info = &(IOTypes_table.io_def[index].socket_info);
 
   /* check socket connection has been made */
   if (sock_info->comms_status != 
@@ -972,47 +975,6 @@ int Consume_msg_header_globus(socket_io_type *sock_info,
 
 /*----------------------------------------------------------------*/
 
-int Emit_msg_header_globus(socket_io_type *sock_info,
-			   int DataType,
-			   int Count,
-			   int NumBytes,
-			   int IsFortranArray)
-{
-  char  buffer[7*REG_PACKET_SIZE];
-  char  tmp_buffer[REG_PACKET_SIZE];
-  char *pchar;
-
-  pchar = buffer;
-  pchar += sprintf(pchar, REG_PACKET_FORMAT, "<ReG_data_slice_header>");
-  /* Put terminating char within the 128-byte packet */
-  *(pchar-1) = '\0';
-  sprintf(tmp_buffer, "<Data_type>%d</Data_type>", DataType);
-  pchar += sprintf(pchar, REG_PACKET_FORMAT, tmp_buffer);
-  *(pchar-1) = '\0';
-  sprintf(tmp_buffer, "<Num_objects>%d</Num_objects>", Count);
-  pchar += sprintf(pchar, REG_PACKET_FORMAT, tmp_buffer);
-  *(pchar-1) = '\0';
-  sprintf(tmp_buffer, "<Num_bytes>%d</Num_bytes>", NumBytes);
-  pchar += sprintf(pchar, REG_PACKET_FORMAT, tmp_buffer);
-  *(pchar-1) = '\0';
-  if(IsFortranArray){
-    sprintf(tmp_buffer, "<Array_order>FORTRAN</Array_order>");
-  }
-  else{
-    sprintf(tmp_buffer, "<Array_order>C</Array_order>");
-  }
-  pchar += sprintf(pchar, REG_PACKET_FORMAT, tmp_buffer);
-  *(pchar-1) = '\0';
-  pchar += sprintf(pchar, REG_PACKET_FORMAT, "</ReG_data_slice_header>");
-  *(pchar-1) = '\0';
-
-  return Write_globus(&(sock_info->conn_handle), 
-		      (int)(pchar-buffer), 
-		      (void *)buffer);
-}
-
-/*----------------------------------------------------------------*/
-
 int Write_globus(const globus_io_handle_t *handle,
 		 const int n,
 		 void *buffer)
@@ -1034,19 +996,13 @@ int Write_globus(const globus_io_handle_t *handle,
   bytes_left = nbytes;
   pchar = (char *)buffer;
 
-  /*while(bytes_left > 0 && count < 10){*/
   while(bytes_left > 0){
 
     result = globus_io_try_write((globus_io_handle_t *)handle, 
 				 (globus_byte_t *)pchar, 
 				 bytes_left,
 				 &nbytes);
-    /*
-    result = globus_io_write((globus_io_handle_t *)handle, 
-			     (globus_byte_t *)pchar, 
-			     bytes_left,
-			     &nbytes);
-    */
+
     if(result != GLOBUS_SUCCESS){
       fprintf(stderr, "Write_globus: call to globus_io_try_write failed\n");
       Globus_error_print(result);

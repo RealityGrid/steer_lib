@@ -868,9 +868,8 @@ int Register_ChkTypes(int    NumTypes,
 
     strcpy(ChkTypes_table.io_def[current].label, ChkLabel[i]);
 
-    /* filename not used currently ARPDBG
+    /* filename not used currently */
     sprintf(ChkTypes_table.io_def[current].filename, "NOT_SET");
-    */
 
     /* Whether input or output */
     ChkTypes_table.io_def[current].direction = direction[i];
@@ -1245,80 +1244,6 @@ int Record_checkpoint_set(int   ChkType,
 
 #endif /* REG_SOAP_STEERING */
 
-}
-
-/*----------------------------------------------------------------*/
-
-int Get_file_list(char *fileroot,
-		  int  *num,
-		  char ***names)
-{
-  char *redirection = " > ReG_files.tmp";
-  char *pchar;
-  char  bufline[REG_MAX_STRING_LENGTH];
-  int   len;
-  int   i, j;
-  FILE *fp;
-
-  /* Calc. length of string - 'ls -1' and slashes add 9 chars so
-     add a few more for safety.  Ask for 2*strlen(ChkTag) so that
-     we can use the end of this buffer to hold the trimmed version
-     of the tag. */
-  len = strlen(fileroot) + strlen(redirection) + 20;
-
-  if( !(pchar = (char *)malloc(len)) ){
-
-    fprintf(stderr, "Get_file_list: malloc of %d bytes failed\n",
-	    len);
-    return REG_FAILURE;
-  }
-
-  sprintf(pchar, "ls -1 %s %s", fileroot, redirection);
-  system(pchar);
-
-  free(pchar);
-  pchar = NULL;
-
-  if( (fp = fopen("ReG_files.tmp", "r")) ){
-
-    *num = 0;
-
-    while(fgets(bufline, REG_MAX_STRING_LENGTH, fp)){
-      (*num)++;
-    }
-
-    if(*num == 0)return REG_FAILURE;
-
-    *names = (char **)malloc(*num * sizeof(char*));
-    rewind(fp);
-
-    for(i=0; i<*num; i++){
-
-      fgets(bufline, REG_MAX_STRING_LENGTH, fp);
-      /* fgets includes '\n' in the returned buffer */
-      len = (int)strlen(bufline);
-      if(!((*names)[i] = (char *)malloc(len))){
-
-	fprintf(stderr, "Get_checkpoint_files: malloc failed\n");
-	for(j=i; j>=0; j--){
-	  free((*names)[i]);
-	  (*names)[i] = NULL;
-	}
-	free(*names);
-	*names = NULL;
-
-	return REG_FAILURE;
-      }
-      memcpy((*names)[i], bufline, len);
-      /* Terminate string - overwrite '\n' */
-      (*names)[i][len-1] = '\0';
-    }
-
-    fclose(fp);
-    remove("ReG_files.tmp");
-  }
-
-  return REG_SUCCESS;
 }
 
 /*----------------------------------------------------------------*/
@@ -3692,35 +3617,6 @@ int Consume_control(int    *NumCommands,
 
 /*----------------------------------------------------------------*/
 
-int Generate_status_filename(char* filename)
-{
-
-#ifdef UNICORE_DEMO
-
-  /* Always just output <path>/steer_status for UNICORE demo */
-  sprintf(filename, "%ssteer_status", Steerer_connection.file_root);
-
-#else /* Not UNICORE demo - use full, indexed filenames */
-
-  static int output_file_index = 0;
-
-  /* Generate next filename in sequence for sending data to
-     steerer & increment counter */
-
-  sprintf(filename, "%s%s_%d", Steerer_connection.file_root, 
-	  APP_TO_STR_FILENAME, output_file_index++);
-
-  /* Wrap counter if no. of distinct files exceeded */
-
-  if(output_file_index == REG_MAX_NUM_FILES) output_file_index = 0;
-
-#endif /* UNICORE_DEMO */
-
-  return REG_SUCCESS;
-}
-
-/*----------------------------------------------------------------*/
-
 int Detach_from_steerer()
 {
 
@@ -3730,40 +3626,7 @@ int Detach_from_steerer()
 
 #else /* File-based steering */
 
-  int   nbytes;
-  char  filename[REG_MAX_STRING_LENGTH];
-
-  /* Remove lock file that indicates app is being steered */
-
-  nbytes = snprintf(filename, REG_MAX_STRING_LENGTH, "%s%s", 
-		    Steerer_connection.file_root, 
-		    STR_CONNECTED_FILENAME);
-
-  if(nbytes >= (REG_MAX_STRING_LENGTH-1) || (nbytes < 1)){
-
-    fprintf(stderr, "Detach_from_steerer: name of lock-file exceeds %d"
-	    " characters - increase REG_MAX_STRING_LENGTH\n", 
-	    REG_MAX_STRING_LENGTH);
-    return REG_FAILURE;
-  }
-
-  remove(filename);
-
-  /* Remove any files that steerer has produced that we won't
-     now be consuming */
-
-  nbytes = snprintf(filename, REG_MAX_STRING_LENGTH, "%s%s", 
-		    Steerer_connection.file_root, 
-		    STR_TO_APP_FILENAME);
-
-  if( nbytes >= (REG_MAX_STRING_LENGTH-1) || (nbytes < 1)){
-
-    fprintf(stderr, "Detach_from_steerer: name of steerer ctrl files "
-	    "exceeds %d characters - increase REG_MAX_STRING_LENGTH\n", 
-	    REG_MAX_STRING_LENGTH);
-    return REG_FAILURE;
-  }
-  Remove_files(filename);
+  Detach_from_steerer_file();
 
 #endif /* File-based steering */
 
@@ -4359,35 +4222,6 @@ int Steerer_connected()
 #endif
 }
 
-/*--------------------------------------------------------------------*/
-
-int Steerer_connected_file()
-{
-  char   filename[REG_MAX_STRING_LENGTH];
-  FILE  *fp;
-  int    nbytes;
-
-  nbytes = snprintf(filename, REG_MAX_STRING_LENGTH, "%s%s", 
-		    Steerer_connection.file_root, 
-		    STR_CONNECTED_FILENAME);
-
-  if( nbytes >= (REG_MAX_STRING_LENGTH-1) || (nbytes < 1)){
-
-    fprintf(stderr, "Steerer_connected_file: full path name of lockfile "
-	    "indicating steerrer connected exceeds %d chars - increase "
-	    "REG_MAX_STRING_LENGTH\n", REG_MAX_STRING_LENGTH);
-    return REG_FAILURE;
-  }
-
-  if( (fp = fopen(filename, "r")) ){
-
-      fclose(fp);
-      return REG_SUCCESS;
-  }
-
-  return REG_FAILURE;
-}
-
 /*-------------------------------------------------------------------*/
 
 int Send_status_msg(char *buf)
@@ -4408,29 +4242,6 @@ int Send_status_msg(char *buf)
 
 /*-------------------------------------------------------------------*/
 
-int Send_status_msg_file(char *buf)
-{
-  FILE *fp;
-  char  filename[REG_MAX_STRING_LENGTH];
-
-  Generate_status_filename(filename);
-
-  if( (fp = fopen(filename, "w")) == NULL){
-
-    fprintf(stderr, "Send_status_msg: failed to open file\n");
-    return REG_FAILURE;
-  }
-
-  fprintf(fp, "%s", buf);
-  fclose(fp);
-
-  Create_lock_file(filename);
-
-  return REG_SUCCESS;
-}
-
-/*-------------------------------------------------------------------*/
-
 struct msg_struct *Get_control_msg()
 {
 
@@ -4444,49 +4255,6 @@ struct msg_struct *Get_control_msg()
 
 #endif
 
-}
-
-/*-------------------------------------------------------------------*/
-
-struct msg_struct *Get_control_msg_file()
-{
-  struct msg_struct   *msg = NULL;
-  FILE                *fp;
-  char                 filename[REG_MAX_STRING_LENGTH];
-  int                  nbytes;
-
-  nbytes = snprintf(filename, REG_MAX_STRING_LENGTH, "%s%s", 
-		    Steerer_connection.file_root, 
-		    STR_TO_APP_FILENAME);
-
-  if( nbytes >= (REG_MAX_STRING_LENGTH-1) || (nbytes < 1)){
-
-    fprintf(stderr, "Get_control_msg_file: length of ctrl msg filename "
-	    "exceeds %d chars - increase REG_MAX_STRING_LENGTH\n", 
-	    REG_MAX_STRING_LENGTH);
-  }
-
-  if( (fp = Open_next_file(filename)) != NULL){
-
-    fclose(fp);
-
-    msg = New_msg_struct();
-
-    if(Parse_xml_file(filename, msg) != REG_SUCCESS){
-
-      fprintf(stderr, "Read_control: failed to parse <%s>\n", filename);
-      Delete_msg_struct(msg);
-      msg = NULL;
-    }
-
-    /* Delete the file once we've read it */
-    if( Delete_file(filename) != REG_SUCCESS){
-
-      fprintf(stderr, "Read_control: failed to delete %s\n",filename);
-    }
-  }
-
-  return msg;
 }
 
 /*-------------------------------------------------------------------*/
@@ -4525,76 +4293,6 @@ int Initialize_steering_connection(int  NumSupportedCmds,
 					     SupportedCmds);
 #endif
 
-}
-
-/*-------------------------------------------------------------------*/
-
-int Initialize_steering_connection_file(int  NumSupportedCmds,
-					int *SupportedCmds)
-{
-  FILE *fp;
-  char  buf[REG_MAX_MSG_SIZE];
-  char  filename[REG_MAX_STRING_LENGTH];
-
-  /* Set location of all comms files */
-  if(Set_steering_directory() != REG_SUCCESS){
-
-    return REG_FAILURE;
-  }
-
-  /* Clean up any old files... */
-
-  /* ...file indicating a steerer is connected (which it can't be since we've
-     only just begun) */ 
-  sprintf(filename, "%s%s", Steerer_connection.file_root, 
-	  STR_CONNECTED_FILENAME);
-  fp = fopen(filename, "w");
-  if(fp != NULL){
-
-    fclose(fp);
-    if(remove(filename)){
-
-      fprintf(stderr, "Initialize_steering_connection_file: failed to "
-	      "remove %s\n",filename);
-    }
-#if REG_DEBUG
-    else{
-      fprintf(stderr, "Initialize_steering_connection_file: removed "
-	      "%s\n", filename);
-    }
-#endif
-  }
-
-  /* ...files containing messages from a steerer */
-  sprintf(filename, "%s%s", Steerer_connection.file_root, 
-	  STR_TO_APP_FILENAME);
-
-  Remove_files(filename);
-
-  /* Signal that component is available to be steered */
-
-  sprintf(filename, "%s%s", Steerer_connection.file_root, 
-	                    APP_STEERABLE_FILENAME);
-  fp = fopen(filename,"w");
-
-  if(fp == NULL){
-
-    fprintf(stderr, "Initialize_steering_connection_file: failed to open %s\n",
-	    filename);
-    return REG_FAILURE;
-  }
-
-#if REG_DEBUG
-  fprintf(stderr, "Initialize_steering_connection_file: writing file: %s\n", 
-	  filename);
-#endif
-
-  Make_supp_cmds_msg(NumSupportedCmds, SupportedCmds, buf);
-
-  fprintf(fp, "%s", buf);
-  fclose(fp);
-
-  return REG_SUCCESS;
 }
 
 /*-------------------------------------------------------------------*/
@@ -4694,57 +4392,6 @@ int Finalize_steering_connection()
 #endif
 
 }
-
-/*-------------------------------------------------------------------*/
-
-int Finalize_steering_connection_file()
-{
-  char sys_command[REG_MAX_STRING_LENGTH];
-
-#if REG_DEBUG
-  int  max, max1;
-
-  max = strlen(APP_STEERABLE_FILENAME);
-  max1 = strlen(STR_CONNECTED_FILENAME);
-
-  if(max1 > max) max=max1;
-  
-  max += strlen(Steerer_connection.file_root);
-  if(max > REG_MAX_STRING_LENGTH ){
-
-    fprintf(stderr, "Finalize_steering_connection: WARNING: truncating "
-	    "filename\n");
-  }
-#endif
-
-  /* Delete the lock file that indicates we are steerable */
-  sprintf(sys_command, "%s%s", Steerer_connection.file_root,
-	  APP_STEERABLE_FILENAME);
-  if(remove(sys_command)){
-
-    fprintf(stderr, "Finalize_steering_connection: failed to remove "
-	    "%s\n", sys_command);
-  }
-
-  /* Delete the lock file that indicates we are being steered */
-  if(ReG_SteeringActive){
-
-    sprintf(sys_command, "%s%s", Steerer_connection.file_root,
-	    STR_CONNECTED_FILENAME);
-    if(remove(sys_command)){
-
-      fprintf(stderr, "Finalize_steering_connection: failed to remove "
-	      "%s\n", sys_command);
-    }
-  }
-
-  /* Delete any files we'd have consumed if we'd lived longer */
-  sprintf(sys_command, "%s%s", Steerer_connection.file_root, 
-	  STR_TO_APP_FILENAME);
-  Remove_files(sys_command);
-
-  return REG_SUCCESS;
-}
 /*---------------------------------------------------*/
 
 int Make_supp_cmds_msg(int   NumSupportedCmds,
@@ -4813,83 +4460,8 @@ int Consume_start_data_check(const int index)
 
   return Consume_start_data_check_globus(index);
 #else
-  int    i;
-  int    nfiles;
-  char  *pchar;
-  char** filenames;
-  char   fileroot[REG_MAX_STRING_LENGTH];
 
-  /* In the short term, use the label (with spaces replaced by
-     '_'s as the filename */
-  strcpy(fileroot, IOTypes_table.io_def[index].label);
-
-  /* Replace any spaces with '_' */
-  pchar = strchr(fileroot, ' ');
-  while( pchar && ((pchar - fileroot + 1) 
-		   < REG_MAX_STRING_LENGTH) ){
-    *pchar = '_';
-    pchar = strchr(++pchar,' ');
-  }
-
-  strcat(fileroot, "_*.lock");
-
-  filenames = NULL;
-  if(Get_file_list(fileroot, &nfiles, &filenames) != REG_SUCCESS){
-    return REG_FAILURE;
-  }
-
-  strcpy(IOTypes_table.io_def[index].filename, filenames[0]);
-
-  for(i=0; i<nfiles; i++){
-    free(filenames[i]);
-  }
-  free(filenames);
-
-  /* Remove the lock file to take ownership of the data file */
-  remove(IOTypes_table.io_def[index].filename);
-
-  /* Remove the '.lock' from the filename */
-  pchar = strstr(IOTypes_table.io_def[index].filename, ".lock");
-
-  if(!pchar){
-    fprintf(stderr, "Consume_start_data_check: failed to strip .lock!\n");
-    return REG_FAILURE;
-  }
-
-  *pchar = '\0';
-  if( !(IOTypes_table.io_def[index].fp = 
-	fopen(IOTypes_table.io_def[index].filename, "r")) ){
-
-    fprintf(stderr, "Consume_start_data_check: failed to open file: %s\n",
-	    IOTypes_table.io_def[index].filename);
-    return REG_FAILURE;
-  }
-
-  /* Use fileroot buffer as is plenty big enough for the small header
-     we want to read here */
-  if(fread((void *)fileroot, 
-	   (size_t)1, 
-	   REG_PACKET_SIZE, 
-	   IOTypes_table.io_def[index].fp) != (size_t)REG_PACKET_SIZE){
-
-    fprintf(stderr, "Consume_start_data_check: failed to read "
-	    "header from file: %s\n",
-	    IOTypes_table.io_def[index].filename);
-    remove(IOTypes_table.io_def[index].filename);
-    return REG_FAILURE;
-  }
-
-  if(!strstr(fileroot, REG_DATA_HEADER)){
-
-    fprintf(stderr, "Consume_start_data_check: wrong "
-	    "header from file: %s\n",
-	    IOTypes_table.io_def[index].filename);
-    remove(IOTypes_table.io_def[index].filename);
-    return REG_FAILURE;
-  }
-
-  fprintf(stderr, "ARPDBG Consume_start_data_check: done OK\n");
-  return REG_SUCCESS;
+  return Consume_start_data_check_file(index);
 #endif
 }
 
@@ -4900,8 +4472,6 @@ int Consume_data_read(const int		index,
 		      const size_t	num_bytes_to_read, 
 		      void		*pData)
 {
-  size_t nbytes;
-
   if(index < 0 || index >= IOTypes_table.num_registered){
 
     fprintf(stderr, "Consume_data_read: ERROR: IOType index out of range\n");
@@ -4916,50 +4486,10 @@ int Consume_data_read(const int		index,
 				  pData);
 #else
 
-  if(!IOTypes_table.io_def[index].fp){
-
-    fprintf(stderr, "Consume_data_read: ERROR: null file pointer\n");
-    return REG_FAILURE;
-  }
-
-  if(IOTypes_table.io_def[index].use_xdr ||
-     IOTypes_table.io_def[index].convert_array_order == TRUE){
-
-    nbytes = fread((void *)IOTypes_table.io_def[index].buffer,
-		   1,
-		   (size_t)num_bytes_to_read, 
-		   IOTypes_table.io_def[index].fp);
-  }
-  else{
-    nbytes = fread(pData,
-		   1,
-		   (size_t)num_bytes_to_read, 
-		   IOTypes_table.io_def[index].fp);
-  }
-#if REG_DEBUG
-  fprintf(stderr, "Consume_data_read: read %d bytes\n",
-	  (int) nbytes);
-
-  if(datatype == REG_CHAR){
-    fprintf(stderr, "Consume_data_read: got char data:\n>>%s<<\n", 
-	    (char *)pData);
-  }
-#endif /* REG_DEBUG */
-
-  if((int)nbytes != num_bytes_to_read){
-
-    fprintf(stderr, "Consume_data_read: failed to read expected "
-	    "quantity of data\n");
-    /* Reset use_xdr flag set as only valid on a per-slice basis */
-    IOTypes_table.io_def[index].use_xdr = FALSE;
-
-    fclose(IOTypes_table.io_def[index].fp);
-    IOTypes_table.io_def[index].fp = NULL;
-    remove(IOTypes_table.io_def[index].filename);
-    return REG_FAILURE;
-  }
-
-  return REG_SUCCESS;
+  return Consume_data_read_file(index,
+				datatype,
+				num_bytes_to_read,
+				pData);
 #endif
 }
 
@@ -4979,17 +4509,10 @@ int Emit_header(const int index)
   fprintf(stderr, "Emit_header: Sending >>%s<<\n", Global_scratch_buffer);
 #endif
 
-  if(IOTypes_table.io_def[index].fp){
-
-    if(fwrite((void *)Global_scratch_buffer, sizeof(char), REG_PACKET_SIZE, 
-	      IOTypes_table.io_def[index].fp) == (size_t)REG_PACKET_SIZE){
-      return REG_SUCCESS;
-    }
-  }
-
-  return REG_FAILURE;
+  return Emit_data_file(index,
+			REG_PACKET_SIZE,
+			(void *)Global_scratch_buffer);
 #endif
-
 }
 
 /*---------------------------------------------------*/
@@ -5004,19 +4527,11 @@ int Emit_footer(const int index,
 
 #if REG_GLOBUS_SAMPLES
 
-  return Emit_data_globus(index, nbytes_to_send, buffer);
+  return Emit_data_globus(index, nbytes_to_send, (void*)buffer);
 
 #else
-  int n_written;
 
-  if(IOTypes_table.io_def[index].fp){
-
-    n_written = (int)fwrite((void *)buffer, sizeof(char), nbytes_to_send, 
-			    IOTypes_table.io_def[index].fp);
-    if(n_written == nbytes_to_send)return REG_SUCCESS;
-  }
-
-  return REG_FAILURE;
+  return Emit_data_file(index, nbytes_to_send, (void*)buffer);
 #endif
 }
 
@@ -5033,15 +4548,10 @@ int Emit_data(const int		index,
 			  num_bytes_to_send,
 			  pData);
 #else
-  int n_written;
 
-  if(IOTypes_table.io_def[index].fp){
-    n_written = (int)fwrite( pData, (int)num_bytes_to_send, 1, 
-			     IOTypes_table.io_def[index].fp);
-
-    if(n_written == 1)return REG_SUCCESS;
-  }
-  return REG_FAILURE;
+  return Emit_data_file(index, 
+			num_bytes_to_send,
+			pData);
 #endif
 
 }
@@ -5076,207 +4586,23 @@ int Consume_iotype_msg_header(int  IOTypeIndex,
 			      int *IsFortranArray)
 {
   
+  if(IOTypeIndex < 0 || IOTypeIndex >= IOTypes_table.num_registered){
+    fprintf(stderr, "Consume_iotype_msg_header: IOType index out of range\n");
+    return REG_FAILURE;
+  }
+
 #if REG_GLOBUS_SAMPLES
-  return Consume_msg_header_globus(&(IOTypes_table.io_def[IOTypeIndex].socket_info),
+  return Consume_msg_header_globus(IOTypeIndex,
 				   DataType,
 				   Count,
 				   NumBytes,
 				   IsFortranArray);
 #else
-  char   buffer[REG_PACKET_SIZE];
-  size_t nbytes;
-
-  if(!IOTypes_table.io_def[IOTypeIndex].fp){
-
-    fprintf(stderr, "Consume_iotype_msg_header: file pointer is null\n");
-    return REG_FAILURE;
-  }
-
-  if(fread(buffer, 1, REG_PACKET_SIZE, IOTypes_table.io_def[IOTypeIndex].fp) 
-     != (size_t)REG_PACKET_SIZE){
-
-    fprintf(stderr, "Consume_iotype_msg_header: fread failed for header\n");
-    fclose(IOTypes_table.io_def[IOTypeIndex].fp);
-    IOTypes_table.io_def[IOTypeIndex].fp = NULL;
-    remove(IOTypes_table.io_def[IOTypeIndex].filename);
-    return REG_FAILURE;
-  }
-
-#if REG_DEBUG
-  fprintf(stderr, "Consume_iotype_msg_header: read >%s< from file\n",
-	  buffer);
-#endif
-
-  /* Check for end of data */
-  if(!strncmp(buffer, REG_DATA_FOOTER, strlen(REG_DATA_FOOTER))){
-
-    return REG_EOD;
-  }
-  else if(strncmp(buffer, BEGIN_SLICE_HEADER, strlen(BEGIN_SLICE_HEADER))){
-
-    fprintf(stderr, "Consume_iotype_msg_header: incorrect header on slice\n");
-    fclose(IOTypes_table.io_def[IOTypeIndex].fp);
-    IOTypes_table.io_def[IOTypeIndex].fp = NULL;
-    remove(IOTypes_table.io_def[IOTypeIndex].filename);
-    return REG_FAILURE;
-  }
-
-  /*--- Type of objects in message ---*/
-
-  if(fread(buffer, 1, REG_PACKET_SIZE, IOTypes_table.io_def[IOTypeIndex].fp) 
-     != (size_t)REG_PACKET_SIZE){
-
-    fprintf(stderr, "Consume_iotype_msg_header: fread failed for object type\n");
-    fclose(IOTypes_table.io_def[IOTypeIndex].fp);
-    IOTypes_table.io_def[IOTypeIndex].fp = NULL;
-    remove(IOTypes_table.io_def[IOTypeIndex].filename);
-    return REG_FAILURE;
-  }
-
-#if REG_DEBUG
-  fprintf(stderr, "Consume_iotype_msg_header: read >%s< from file\n", 
-	  buffer);
-#endif
-
-  if(!strstr(buffer, "<Data_type>")){
-    fclose(IOTypes_table.io_def[IOTypeIndex].fp);
-    IOTypes_table.io_def[IOTypeIndex].fp = NULL;
-    remove(IOTypes_table.io_def[IOTypeIndex].filename);
-    return REG_FAILURE;
-  }
-
-  sscanf(buffer, "<Data_type>%d</Data_type>", DataType);
-
-  /*--- No. of objects in message ---*/
-
-  if(fread(buffer, 1, REG_PACKET_SIZE, IOTypes_table.io_def[IOTypeIndex].fp) 
-     != (size_t)REG_PACKET_SIZE){
-
-    fclose(IOTypes_table.io_def[IOTypeIndex].fp);
-    IOTypes_table.io_def[IOTypeIndex].fp = NULL;
-    remove(IOTypes_table.io_def[IOTypeIndex].filename);
-    return REG_FAILURE;
-  }
-
-#if REG_DEBUG
-  fprintf(stderr, "Consume_iotype_msg_header: read >%s< from file\n", 
-	  buffer);
-#endif
-
-  if(!strstr(buffer, "<Num_objects>")){
-
-    fclose(IOTypes_table.io_def[IOTypeIndex].fp);
-    IOTypes_table.io_def[IOTypeIndex].fp = NULL;
-    remove(IOTypes_table.io_def[IOTypeIndex].filename);
-    return REG_FAILURE;
-  }
-
-  if( sscanf(buffer, "<Num_objects>%d</Num_objects>", Count) != 1){
-
-    fprintf(stderr, "Consume_iotype_msg_header: failed to read Num_objects\n");
-    fclose(IOTypes_table.io_def[IOTypeIndex].fp);
-    IOTypes_table.io_def[IOTypeIndex].fp = NULL;
-    remove(IOTypes_table.io_def[IOTypeIndex].filename);
-    return REG_FAILURE;
-  }
-
-  /*--- No. of bytes in message ---*/
-
-  if(fread(buffer, 1, REG_PACKET_SIZE, IOTypes_table.io_def[IOTypeIndex].fp) 
-     != (size_t)REG_PACKET_SIZE){
-
-    fprintf(stderr, "Consume_iotype_msg_header: fread failed for num bytes\n");
-    fclose(IOTypes_table.io_def[IOTypeIndex].fp);
-    IOTypes_table.io_def[IOTypeIndex].fp = NULL;
-    remove(IOTypes_table.io_def[IOTypeIndex].filename);
-    return REG_FAILURE;
-  }
-
-#if REG_DEBUG
-  fprintf(stderr, "Consume_iotype_msg_header: read >%s< from file\n", 
-	  buffer);
-#endif
-
-  if(!strstr(buffer, "<Num_bytes>")){
-
-    fclose(IOTypes_table.io_def[IOTypeIndex].fp);
-    IOTypes_table.io_def[IOTypeIndex].fp = NULL;
-    remove(IOTypes_table.io_def[IOTypeIndex].filename);
-    return REG_FAILURE;
-  }
-
-  if( sscanf(buffer, "<Num_bytes>%d</Num_bytes>", NumBytes) != 1){
-
-    fprintf(stderr, "Consume_iotype_msg_header: failed to read Num_bytes\n");
-    fclose(IOTypes_table.io_def[IOTypeIndex].fp);
-    IOTypes_table.io_def[IOTypeIndex].fp = NULL;
-    remove(IOTypes_table.io_def[IOTypeIndex].filename);
-    return REG_FAILURE;
-  }
-
-  /*--- Array ordering in message ---*/
-
-  if(fread(buffer, 1, REG_PACKET_SIZE, IOTypes_table.io_def[IOTypeIndex].fp) 
-     != (size_t)REG_PACKET_SIZE){
-
-    fprintf(stderr, "Consume_iotype_msg_header: fread failed for array ordering\n");
-    fclose(IOTypes_table.io_def[IOTypeIndex].fp);
-    IOTypes_table.io_def[IOTypeIndex].fp = NULL;
-    remove(IOTypes_table.io_def[IOTypeIndex].filename);
-    return REG_FAILURE;
-  }
-
-#if REG_DEBUG
-  fprintf(stderr, "Consume_iotype_msg_header: read >%s< from file\n", 
-	  buffer);
-#endif
-
-  if(!strstr(buffer, "<Array_order>")){
-
-    fclose(IOTypes_table.io_def[IOTypeIndex].fp);
-    IOTypes_table.io_def[IOTypeIndex].fp = NULL;
-    remove(IOTypes_table.io_def[IOTypeIndex].filename);
-    return REG_FAILURE;
-  }
-
-  if(strstr(buffer, "FORTRAN")){
-
-    /* Array data is from Fortran */
-    *IsFortranArray = TRUE;
-  }
-  else{
-    /* Array data is not from Fortran */
-    *IsFortranArray = FALSE;
-  }
-
-  /*--- End of header ---*/
-
-  if(fread(buffer, 1, REG_PACKET_SIZE, IOTypes_table.io_def[IOTypeIndex].fp) 
-     != (size_t)REG_PACKET_SIZE){
-
-    fprintf(stderr, "Consume_iotype_msg_header: fread failed for header end\n");
-    fclose(IOTypes_table.io_def[IOTypeIndex].fp);
-    IOTypes_table.io_def[IOTypeIndex].fp = NULL;
-    remove(IOTypes_table.io_def[IOTypeIndex].filename);
-    return REG_FAILURE;
-  }
-
-#if REG_DEBUG
-  fprintf(stderr, "Consume_msg_header: read >%s< from file\n", 
-	  buffer);
-#endif
-
-  if(strncmp(buffer, END_SLICE_HEADER, strlen(END_SLICE_HEADER))){
-
-    fprintf(stderr, "Consume_msg_header: failed to find "
-	    "end of header\n");
-    fclose(IOTypes_table.io_def[IOTypeIndex].fp);
-    IOTypes_table.io_def[IOTypeIndex].fp = NULL;
-    remove(IOTypes_table.io_def[IOTypeIndex].filename);
-    return REG_FAILURE;
-  }
-
-  return REG_SUCCESS;
+  return Consume_msg_header_file(IOTypeIndex,
+				 DataType,
+				 Count,
+				 NumBytes,
+				 IsFortranArray);
 #endif
 }
 
@@ -5321,13 +4647,6 @@ int Emit_iotype_msg_header(int IOTypeIndex,
 		      (int)(pchar-buffer), 
 		      (void *)buffer);
 
-  /*
-  return Emit_msg_header_globus(&(IOTypes_table.io_def[IOTypeIndex].socket_info),
-				DataType,
-				Count,
-				NumBytes,
-				IsFortranArray);
-  */
 #else
 
   fwrite((void *)buffer, sizeof(char), (int)(pchar-buffer), 
