@@ -380,9 +380,11 @@ int main(){
 		printf("Got checkpoint command, parameters: %s\n", 
 		       recvd_cmd_params[icmd]);
 
-		/* Pretend we've taken a checkpoint here */
-		sprintf(chk_tag, "checkpoint_%d.dat", i);
-		Record_Chkpt(chktype_handle[j], chk_tag);
+		if(strstr(recvd_cmd_params[icmd], "OUT")){
+		  /* Pretend we've taken a checkpoint here */
+		  sprintf(chk_tag, "checkpoint_%d.dat", i);
+		  Record_Chkpt(chktype_handle[j], chk_tag);
+		}
 		break;
 	      }
 	    }
