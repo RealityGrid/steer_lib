@@ -201,7 +201,6 @@ static int Initialize_steering_connection(int  NumSupportedCmds,
 static int Initialize_steering_connection_file(int  NumSupportedCmds,
 					       int *SupportedCmds);
 
-
 /* Check for a connection from a steering client - return REG_SUCCESS
    if a client is attempting to connect */
 static int Steerer_connected();

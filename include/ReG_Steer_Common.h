@@ -195,6 +195,11 @@ extern PREFIX int Delete_file(char *filename);
 
 extern PREFIX int Directory_valid(char *directory);
 
+/* Routine to get (& check validity of) steering scratch directory
+   from REG_STEER_DIRECTORY env. variable.  Used even when steering
+   is NOT file based. */
+extern PREFIX int Set_steering_directory();
+
 extern PREFIX int Next_free_param_index(Param_table_type *table);
 
 /* A look-up function - return the index of the parameter with handle

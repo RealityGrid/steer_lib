@@ -68,6 +68,14 @@ int Initialize_steering_connection_soap(int  NumSupportedCmds,
   char                              *pchar;
   char                               query_buf[REG_MAX_MSG_SIZE];
 
+  /* Set location of steering scratch directory */
+  if(Set_steering_directory() != REG_SUCCESS){
+
+    fprintf(stderr, "Initialize_steering_connection_soap: failed to set "
+	    "steering scratch directory - checkpoint info. will be "
+	    "written to ./");;
+  }
+
   /* Get the address of the SGS for this application from an environment
      variable */
   pchar = getenv("REG_SGS_ADDRESS");
