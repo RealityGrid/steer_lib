@@ -1,5 +1,5 @@
 #---------------------------------------------------------------------
-#    IRIX Makefile for mini-steerer
+#    Makefile for mini-steerer
 #
 #    (C)Copyright 2002 The University of Manchester, United Kingdom,
 #    all rights reserved.
@@ -35,22 +35,17 @@
 #    Initial version by:   A Porter
 #---------------------------------------------------------------------
 #
-# G and NBIT are passed to make on command line 
+
+include ../../Makefile.include
 
 TARGET   = mini_steerer
-CC       = cc
-CC_FLAGS = -ansi $(G) -I${REG_STEER_HOME}/include
-
-# STEER_LIBS is the directory where libReG_Steer.a
-STEER_LIBS = -L${REG_STEER_HOME}/lib$(NBIT)
-XML_LIBS   = -L${REG_XML_LIBDIR}$(NBIT)
 
 .c.o:
-	${CC} ${CC_FLAGS} -c $< -o $@
+	${CC} ${C_FLAGS} ${STEER_INCLUDES} ${GLOBUS_INCLUDES} -c $< -o $@
 
 ${TARGET}: ${TARGET}.o
-	${CC} ${CC_FLAGS} ${TARGET}.o -o $@ \
-${XML_LIBS} ${STEER_LIBS} -lReG_Steer -lxml2 -lz -lm
+	${CC} ${C_FLAGS} ${TARGET}.o -o $@ \
+${STEER_LIBS} -lReG_Steer -lxml2
 	mv ${TARGET} ${HOME}/bin/.
 
 clean:
