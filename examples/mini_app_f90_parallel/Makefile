@@ -51,7 +51,6 @@ XML_LIBS   = -L${REG_XML_LIBDIR}$(NBIT)
 	${F90} ${F90_FLAGS} -I${REG_STEER_HOME}/include -c $< -o $@
 
 ${TARGET}: ${TARGET}.o \
-mini_app_para.f90 \
 ${REG_STEER_HOME}/include/reg_steer_f90.inc
 	${F90} ${F90_FLAGS} ${TARGET}.o -o $@ ${XML_LIBS} ${STEER_LIBS} -lmpi -lReG_Steer -lxml2 -lz -lm
 	mv ${TARGET} ${HOME}/bin/.

@@ -237,7 +237,7 @@ PROGRAM mini_app
 
   WRITE(*,*) 'Entering main simulation loop...'
 
-  DO WHILE(i<20 .AND. (finished .ne. 1))
+  DO WHILE(i<200 .AND. (finished .ne. 1))
 
     CALL steering_control_f(i, num_params_changed, changed_param_labels, &
                             num_recvd_cmds, recvd_cmds, recvd_cmd_params, &

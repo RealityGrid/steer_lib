@@ -289,6 +289,7 @@ PROGRAM para_mini_app
 
       CALL steering_control_f(iloop, num_params_changed, changed_param_labels,&
                               num_recvd_cmds, recvd_cmds, recvd_cmd_params, &
+
                               status)
 
       CALL MPI_BCAST(status, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, IERROR)
