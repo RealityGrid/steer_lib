@@ -1636,7 +1636,7 @@ int Set_iotype_freq(int sim_handle,
   int  isim;
   int  i;
   int  itype;
-  char **val_array;
+  char *val_array;
   char param_val[REG_MAX_STRING_LENGTH];
   int  return_status = REG_SUCCESS;
 
@@ -1668,11 +1668,12 @@ int Set_iotype_freq(int sim_handle,
 	 emit/consume frequency for this iodef */
       sprintf(param_val, "%d", freqs[itype]);
 
-      *val_array = param_val;
+      val_array = param_val;
+
       return_status =  Set_param_values(sim_handle,
 					1,
 					&(Sim_table.sim[isim].IOdef_table.io_def[i].freq_param_handle),
-					val_array);
+					&val_array);
       
     }
   }
