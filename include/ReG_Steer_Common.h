@@ -1,4 +1,8 @@
 #include "xmlparse.h"
+/* Following two includes are for use of stat system call 
+   in Open_next_file */
+#include <sys/types.h>
+#include <sys/stat.h>
 
 /* Types and structures for reading parameter defs */
 

@@ -52,66 +52,93 @@ char ReG_Steer_Schema_Locn[REG_MAX_STRING_LENGTH];
 FILE *Open_next_file(char* base_name)
 {
   FILE *fp;
-  char  filename[REG_MAX_STRING_LENGTH+9];
+  char  tmp_filename[REG_MAX_STRING_LENGTH+9];
   char  filename1[REG_MAX_STRING_LENGTH+9];
   char  filename2[REG_MAX_STRING_LENGTH+9];
+  struct stat stbuf;
+  long  time1;
+  long  time2;
   int   i;
 
+  fp = NULL;
+
   i = 0;
-  /*
+  time1 = -1;
   while(i<REG_MAX_NUM_FILES){
     
-     Look for presence of lock file 
-    sprintf(filename1,"%s_%d.lock", base_name, i);
-    fp = fopen(filename1, "r");
+    /* Look for presence of lock file */
+    sprintf(tmp_filename,"%s_%d.lock", base_name, i);
+    fp = fopen(tmp_filename, "r");
 
     if (fp != NULL) {
      
-       Found one - open associated data file 
+      /* Found one - check its last-modified time */
       fclose(fp);
+      if(stat(tmp_filename, &stbuf) != -1){
 
-      sprintf(filename,"%s_%d", base_name, i);
-      
-      if(fp = fopen(filename, "r")){
-
-#if DEBUG
-	printf("Open_next_file: opening %s\n", filename);
-#endif
-	 Return the name of the file actually opened 
-	strcpy(base_name, filename);
+        /* timespec_t     st_mtim;      Time of last data modification
+           Times measured in seconds and nanoseconds
+           since 00:00:00 UTC, Jan. 1, 1970 */
+        sprintf(filename1,"%s_%d", base_name, i);
+	time1 = (long)stbuf.st_mtim.tv_sec;
+        break;
       }
-      break;
+      else{
+
+	printf("Open_next_file: failed to stat %s\n", tmp_filename);
+      }
     }
 
     i++;
   }
-  */
 
-  while(i<REG_MAX_NUM_FILES){
+  /* Now search in the opposite direction (in case consumption lags
+     creation and we've wrapped around the REG_MAX_NUM_FILES counter */
+
+  i = REG_MAX_NUM_FILES - 1;
+  time2 = -1;
+  while(i > -1){
     
     /* Look for presence of lock file */
-    sprintf(filename,"%s_%d.lock", base_name, i);
-    fp = fopen(filename, "r");
+    sprintf(tmp_filename,"%s_%d.lock", base_name, i);
+    fp = fopen(tmp_filename, "r");
 
     if (fp != NULL) {
      
-      /* Found one - open associated data file */
+      /* Found one - check its last-modified time */
       fclose(fp);
+      if(stat(tmp_filename, &stbuf) != -1){
 
-      sprintf(filename,"%s_%d", base_name, i);
-      
-      if(fp = fopen(filename, "r")){
-
-#if DEBUG
-	printf("Open_next_file: opening %s\n", filename);
-#endif
-	/* Return the name of the file actually opened */
-	strcpy(base_name, filename);
+        /* timespec_t     st_mtim;      Time of last data modification
+           Times measured in seconds and nanoseconds
+           since 00:00:00 UTC, Jan. 1, 1970 */
+        sprintf(filename2,"%s_%d", base_name, i);
+	time2 = (long)stbuf.st_mtim.tv_sec;
+        break;
       }
-      break;
+      else{
+
+	printf("Open_next_file: failed to stat %s\n", tmp_filename);
+      }
     }
 
-    i++;
+    i--;
+  }
+
+  /* We want to open the oldest file that we've found... */
+
+  if(time1 != -1 && time2 != -1){
+
+    if(time2 < time1) strcpy(filename1, filename2);
+
+    if(fp = fopen(filename1, "r")){
+
+#if DEBUG
+      printf("Open_next_file: opening %s\n", filename1);
+#endif
+      /* Return the name of the file actually opened */
+      strcpy(base_name, filename1);
+    }
   }
 
   return fp;
