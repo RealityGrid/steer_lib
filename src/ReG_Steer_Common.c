@@ -959,5 +959,23 @@ int Reorder_array(Array_type *array,
     break;
   }
 
+  /* In this context, array->is_f90 flags whether we want to
+     convert _to_ an F90-style array */
+  if(array->is_f90 != TRUE){
+    /* Convert from F90 to C...
+       ...convert origin to be zero-indexed - sx etc are converted
+       to be unity-indexed in make_chunk_header_f */
+    array->sx--;
+    array->sy--;
+    array->sz--;
+  }
+  else{
+    /* Convert from C to F90...
+       ...convert origin to be unity-indexed */
+    array->sx++;
+    array->sy++;
+    array->sz++;
+  }
+
   return REG_SUCCESS;
 }

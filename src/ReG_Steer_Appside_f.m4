@@ -827,10 +827,14 @@ SUBROUTINE make_chunk_header_f(header, sx, sy, sz, nx, ny, nz, status)
 ----------------------------------------------------------------*/
 
 void FUNCTION(make_chunk_header_f) ARGS(`STRING_ARG(header),
+                                         arrayx, arrayy, arrayz,
                                          sx, sy, sz,
                                          nx, ny, nz,
                                          Status')
 STRING_ARG_DECL(header);
+INT_KIND_1_DECL(arrayx);
+INT_KIND_1_DECL(arrayy);
+INT_KIND_1_DECL(arrayz);
 INT_KIND_1_DECL(sx);
 INT_KIND_1_DECL(sy);
 INT_KIND_1_DECL(sz);
@@ -839,6 +843,12 @@ INT_KIND_1_DECL(ny);
 INT_KIND_1_DECL(nz);
 INT_KIND_1_DECL(Status);
 {
+  /* Convert to an array indexed from 1 - arrayx etc. holds the
+     absolute origin of the array. */
+  *sx += 1 - *arrayx;
+  *sy += 1 - *arrayy;
+  *sz += 1 - *arrayz;
+
   *Status = INT_KIND_1_CAST( Make_chunk_header(STRING_PTR(header),
                                                (int)*sx, 
                                                (int)*sy, 
