@@ -43,7 +43,7 @@
 int main(){
 
   /* No. of 'simulation' loops to do */
-  const int nloops = 20;
+  const int nloops = 100;
 
   /* For steering */
   int    num_iotypes;
