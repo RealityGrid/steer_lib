@@ -83,7 +83,7 @@
 ! and parameters
 
   INTEGER (KIND=4), PARAMETER :: REG_INITIAL_NUM_IOTYPES = 20
-  INTEGER (KIND=4), PARAMETER :: REG_INITIAL_NUM_PARAMS = 20
+  INTEGER (KIND=4), PARAMETER :: REG_INITIAL_NUM_PARAMS = 40
 
 ! Initial limit on no. of registered supported commands
 

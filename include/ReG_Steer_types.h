@@ -93,7 +93,7 @@
 #define REG_MAX_NUM_STR_CMDS 20
 
 /* Limit on number of parameters steerer can modify at any one time */
-#define REG_MAX_NUM_STR_PARAMS 20
+#define REG_MAX_NUM_STR_PARAMS 40
 
 /* Initial sizes for internal tables of registered IO types 
    and parameters */
