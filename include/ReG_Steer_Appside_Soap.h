@@ -1,8 +1,8 @@
 /*----------------------------------------------------------------------------
     This header file contains routines and data structures for
-    steerside socket communication using Globus IO.
+    SOAP-based steering communication.
 
-    (C)Copyright 2002 The University of Manchester, United Kingdom,
+    (C)Copyright 2003, The University of Manchester, United Kingdom,
     all rights reserved.
 
     This software is produced by the Supercomputing, Visualization &
@@ -33,26 +33,23 @@
     Tel:    +44 161 275 6095
     Fax:    +44 161 275 6800    
 
-    Initial version by:  S Ramsden, 26.2.2003       0.1               
+    Initial version by:  A Porter, 23.4.2003       0.1               
 
 ---------------------------------------------------------------------------*/
-#ifndef __REG_STEER_STEERSIDE_GLOBUS_H__
-#define __REG_STEER_STEERSIDE_GLOBUS_H__
+#ifndef __REG_STEER_APPSIDE_SOAP_H__
+#define __REG_STEER_APPSIDE_SOAP_H__
 
-/*#include "ReG_Steer_Steerside_internal.h"*/
+/*------------------------------------------------------------------*/
 
-#if REG_GLOBUS_STEERING
+int Initialize_steering_connection_soap(int  NumSupportedCmds,
+					int *SupportedCmds);
 
-/* Attach to specified simulation using globus_io */
-int Sim_attach_globus(Sim_entry_type *sim, char *SimID);
+int Steerer_connected_soap();
 
-int Consume_supp_cmds_globus(Sim_entry_type *sim);
+int Send_status_msg_soap(char* msg);
 
-int Send_control_msg_globus(Sim_entry_type *sim, char* buf);
+struct msg_struct *Get_control_msg_soap();
 
-struct msg_struct *Get_status_msg_globus(Sim_entry_type *sim);
+int Finalize_steering_connection_soap();
 
-int Finalize_connection_globus(Sim_entry_type *sim);
-
-#endif
 #endif

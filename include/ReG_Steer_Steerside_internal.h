@@ -49,68 +49,72 @@
 
 
 /* Definition of entry in main table holding data for connected simulations.  
-   Contains three sub-tables - the first holding the commands that the 
+   Contains five sub-tables - the first holding the commands that the 
    simulation supports, the second its registered parameters (both 
-   steerable and monitored) and the third its registered IO types.
-   'file_root' contains the location of the directory used to communicate
-   with the simulation. */
+   steerable and monitored), the third its registered IO types, the fourth
+   its registered Chk types and the fifth a log of checkpoints taken. */
 
 typedef struct {
 
-  int                 handle;
+  int                  handle;
 
-  /* For connection to applications using local file system*/
-  char                file_root[REG_MAX_STRING_LENGTH];
+  /* For connection to applications using local file system - contains
+     the location of the directory used to communicate with the sim. */
+  char                 file_root[REG_MAX_STRING_LENGTH];
 
   /* File descriptors used to talk to (java) proxy for
      this simulation */
-  int                 pipe_to_proxy;
-  int                 pipe_from_proxy;
-  struct msg_struct  *msg;
+  int                  pipe_to_proxy;
+  int                  pipe_from_proxy;
+  struct msg_struct   *msg;
 
   /* For steering via globus_io */
   socket_type_steering socket_info;
 
+  /* For steering via SOAP */
+  char                 SGS_address[REG_MAX_STRING_LENGTH];
+
   /* Table of registered commands for this sim */
-  Supp_cmd_table_type Cmds_table;
+  Supp_cmd_table_type  Cmds_table;
 
   /* Table of registered params for this sim */
-  Param_table_type    Params_table;
+  Param_table_type     Params_table;
 
   /* Table of registered IOTypes for this sim */
-  IOdef_table_type    IOdef_table;
+  IOdef_table_type     IOdef_table;
 
   /* Table of registered ChkTypes for this sim */
-  IOdef_table_type    Chkdef_table;
+  IOdef_table_type     Chkdef_table;
 
   /* Table for logging checkpoint activity */
-  Chk_log_type        Chk_log;
+  Chk_log_type         Chk_log;
 
 } Sim_entry_type;
 
 
-/* Main table used to record all simulations currently
+/* Type of main table used to record all simulations currently
    being steered */
 
-static struct {
+typedef struct {
 
   int             num_registered;
   int             max_entries;
   Sim_entry_type *sim;
 
-} Sim_table;
+} Sim_table_type;
 
-/* Structure holding details of the main (java) proxy
-   that is always associated with the steerer */
+/* Typedef for structure holding details of the main (java) proxy
+   that is always associated with the steerer (if not steering
+   via files, Globus or SOAP) */
 
-static struct {
+typedef struct {
 
   char buf[REG_MAX_MSG_SIZE];
   int  pipe_to_proxy;
   int  pipe_from_proxy;
   int  available;
 
-} Proxy;
+} Proxy_table_type;
 
 
 /*--------- Prototypes of internal library functions -------------*/
@@ -145,7 +149,7 @@ static int Consume_supp_cmds_local(Sim_entry_type *sim);
 
 static int Send_control_msg(int SimIndex, char* buf);
 
-static int Send_control_msg_proxy(int SimIndex, char* buf);
+static int Send_control_msg_proxy(Sim_entry_type *sim, char* buf);
 
 static int Send_control_msg_file(int SimIndex, char* buf);
 
@@ -159,6 +163,8 @@ static int Finalize_connection_proxy(Sim_entry_type *sim);
 
 static int Finalize_connection_file(Sim_entry_type *sim);
 
+/* Obtain details associated with the supplied Chk log entry (e.g. values
+   of steerable parameters at that point) */
 static int Get_log_entry_details(Param_table_type   *param_table,
 				 Chk_log_entry_type *in,
 				 Output_log_struct  *out);

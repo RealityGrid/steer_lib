@@ -58,7 +58,7 @@ typedef struct {
 
 static IO_channel_table_type IO_channel[REG_INITIAL_NUM_IOTYPES];
 
-static struct {
+typedef struct {
 
   /* Where to write files for file-based steering */
   char			file_root[REG_MAX_STRING_LENGTH];
@@ -77,7 +77,9 @@ static struct {
   /* Buffer to hold received messages */
   char			msg_buffer[REG_MAX_MSG_SIZE];
 
-} Steerer_connection;
+} Steerer_connection_table_type;
+
+Steerer_connection_table_type Steerer_connection;
 
 /* IOdef_table_type is declared in ReG_Steer_Common.h since it is 
    used in both the steerer-side and app-side libraries */

@@ -1,8 +1,8 @@
 /*----------------------------------------------------------------------------
     This header file contains routines and data structures for
-    steerside socket communication using Globus IO.
+    steerside SOAP-based communication.
 
-    (C)Copyright 2002 The University of Manchester, United Kingdom,
+    (C)Copyright 2003, The University of Manchester, United Kingdom,
     all rights reserved.
 
     This software is produced by the Supercomputing, Visualization &
@@ -33,26 +33,32 @@
     Tel:    +44 161 275 6095
     Fax:    +44 161 275 6800    
 
-    Initial version by:  S Ramsden, 26.2.2003       0.1               
+    Initial version by:  A Porter, 23.4.2003       0.1               
 
 ---------------------------------------------------------------------------*/
-#ifndef __REG_STEER_STEERSIDE_GLOBUS_H__
-#define __REG_STEER_STEERSIDE_GLOBUS_H__
+#ifndef __REG_STEER_STEERSIDE_SOAP_H__
+#define __REG_STEER_STEERSIDE_SOAP_H__
 
-/*#include "ReG_Steer_Steerside_internal.h"*/
+/*-------------------------------------------------------------------*/
 
-#if REG_GLOBUS_STEERING
+/* Initialise soap-specific structures etc. */
+int Steerer_initialize_soap();
 
-/* Attach to specified simulation using globus_io */
-int Sim_attach_globus(Sim_entry_type *sim, char *SimID);
+/* Attach to simulation via SOAP */
+int Sim_attach_soap(Sim_entry_type *sim, char *SimID);
 
-int Consume_supp_cmds_globus(Sim_entry_type *sim);
+int Send_control_msg_soap(Sim_entry_type *sim, char* buf);
 
-int Send_control_msg_globus(Sim_entry_type *sim, char* buf);
+int Send_detach_msg_soap(Sim_entry_type *sim);
 
-struct msg_struct *Get_status_msg_globus(Sim_entry_type *sim);
+int Send_stop_msg_soap(Sim_entry_type *sim);
 
-int Finalize_connection_globus(Sim_entry_type *sim);
+int Send_pause_msg_soap(Sim_entry_type *sim);
 
-#endif
+int Send_resume_msg_soap(Sim_entry_type *sim);
+
+struct msg_struct *Get_status_msg_soap(Sim_entry_type *sim);
+
+struct msg_struct *Get_service_data(Sim_entry_type *sim, char *sde_name);
+
 #endif

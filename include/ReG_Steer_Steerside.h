@@ -124,6 +124,12 @@ extern PREFIX int Emit_control(int    SimHandle,
 			       int   *SysCommands,
 			       char **SysCmdParams);
 
+/* Wrappers for generating common steering commands */
+extern PREFIX int Emit_detach_cmd(int SimHandle);
+extern PREFIX int Emit_stop_cmd(int SimHandle);
+extern PREFIX int Emit_pause_cmd(int SimHandle);
+extern PREFIX int Emit_resume_cmd(int SimHandle);
+
 /* Initialise the internal tables etc. used by the steering library
    on the steering application sied.  Must be called before all other
    steering-library routines. */
