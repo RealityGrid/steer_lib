@@ -123,8 +123,10 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg)
         cur = cur -> next;
   }
 
-  if ( cur == 0 )return REG_FAILURE;
-
+  if ( cur == 0 ){
+    xmlFreeDoc(doc);
+    return REG_FAILURE;
+  }
 
   /* ARPDBG - Why don't I just call Get_message_type and use the
      result to decide which parsing routine to call?? */
@@ -217,7 +219,7 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg)
 #endif
 
   /* Clean up everything else before quitting. */
-
+  xmlFreeDoc(doc);
   xmlCleanupParser();
 
   return REG_SUCCESS;

@@ -581,6 +581,12 @@ int Get_next_message(int   *SimHandle,
 
     if(Sim_table.sim[isim].handle != REG_SIM_HANDLE_NOTSET){
   
+      /* Just to make sure we don't leak - wipe any existing msg */
+      if(Sim_table.sim[isim].msg){
+	Delete_msg_struct(Sim_table.sim[isim].msg);
+	Sim_table.sim[isim].msg = NULL;
+      }
+
       if(Sim_table.sim[isim].pipe_to_proxy != REG_PIPE_UNSET){
 
 	/* Have a proxy so communicate with sim. using it */
@@ -3118,6 +3124,7 @@ int Consume_supp_cmds_local(Sim_entry_type *sim)
     }
 
     Delete_msg_struct(msg);
+    msg = NULL;
   }
   else{
 
