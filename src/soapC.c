@@ -141,14 +141,14 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_getindependent(struct soap *soap)
 		case SOAP_TYPE_tns__GetStatus:
 			soap_in_tns__GetStatus(soap, NULL, NULL, "tns:GetStatus");
 			break;
-		case SOAP_TYPE_tns__FindServiceData:
-			soap_in_tns__FindServiceData(soap, NULL, NULL, "tns:FindServiceData");
+		case SOAP_TYPE_tns__findServiceData:
+			soap_in_tns__findServiceData(soap, NULL, NULL, "tns:findServiceData");
 			break;
 		case SOAP_TYPE_tns__Detach:
 			soap_in_tns__Detach(soap, NULL, NULL, "tns:Detach");
 			break;
-		case SOAP_TYPE_tns__SetServiceData:
-			soap_in_tns__SetServiceData(soap, NULL, NULL, "tns:SetServiceData");
+		case SOAP_TYPE_tns__setServiceData:
+			soap_in_tns__setServiceData(soap, NULL, NULL, "tns:setServiceData");
 			break;
 		case SOAP_TYPE_tns__Attach:
 			soap_in_tns__Attach(soap, NULL, NULL, "tns:Attach");
@@ -186,8 +186,8 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_getindependent(struct soap *soap)
 		case SOAP_TYPE_tns__ResumeResponse:
 			soap_in_tns__ResumeResponse(soap, NULL, NULL, "tns:ResumeResponse");
 			break;
-		case SOAP_TYPE_tns__FindServiceDataResponse:
-			soap_in_tns__FindServiceDataResponse(soap, NULL, NULL, "tns:FindServiceDataResponse");
+		case SOAP_TYPE_tns__findServiceDataResponse:
+			soap_in_tns__findServiceDataResponse(soap, NULL, NULL, "tns:findServiceDataResponse");
 			break;
 		case SOAP_TYPE_tns__GetNthDataSourceResponse:
 			soap_in_tns__GetNthDataSourceResponse(soap, NULL, NULL, "tns:GetNthDataSourceResponse");
@@ -198,8 +198,8 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_getindependent(struct soap *soap)
 		case SOAP_TYPE_tns__AppStopResponse:
 			soap_in_tns__AppStopResponse(soap, NULL, NULL, "tns:AppStopResponse");
 			break;
-		case SOAP_TYPE_tns__SetServiceDataResponse:
-			soap_in_tns__SetServiceDataResponse(soap, NULL, NULL, "tns:SetServiceDataResponse");
+		case SOAP_TYPE_tns__setServiceDataResponse:
+			soap_in_tns__setServiceDataResponse(soap, NULL, NULL, "tns:setServiceDataResponse");
 			break;
 		case SOAP_TYPE_tns__StopResponse:
 			soap_in_tns__StopResponse(soap, NULL, NULL, "tns:StopResponse");
@@ -249,14 +249,14 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_getindependent(struct soap *soap)
 		case SOAP_TYPE_PointerTotns__GetStatusResponse:
 			soap_in_PointerTotns__GetStatusResponse(soap, NULL, NULL, "tns:GetStatusResponse");
 			break;
-		case SOAP_TYPE_PointerTotns__FindServiceDataResponse:
-			soap_in_PointerTotns__FindServiceDataResponse(soap, NULL, NULL, "tns:FindServiceDataResponse");
+		case SOAP_TYPE_PointerTotns__findServiceDataResponse:
+			soap_in_PointerTotns__findServiceDataResponse(soap, NULL, NULL, "tns:findServiceDataResponse");
 			break;
 		case SOAP_TYPE_PointerTotns__DetachResponse:
 			soap_in_PointerTotns__DetachResponse(soap, NULL, NULL, "tns:DetachResponse");
 			break;
-		case SOAP_TYPE_PointerTotns__SetServiceDataResponse:
-			soap_in_PointerTotns__SetServiceDataResponse(soap, NULL, NULL, "tns:SetServiceDataResponse");
+		case SOAP_TYPE_PointerTotns__setServiceDataResponse:
+			soap_in_PointerTotns__setServiceDataResponse(soap, NULL, NULL, "tns:setServiceDataResponse");
 			break;
 		case SOAP_TYPE_PointerTotns__AttachResponse:
 			soap_in_PointerTotns__AttachResponse(soap, NULL, NULL, "tns:AttachResponse");
@@ -312,17 +312,17 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_getindependent(struct soap *soap)
 		case SOAP_TYPE_xsdl__PauseResponse:
 			soap_in_xsdl__PauseResponse(soap, NULL, NULL, "xsdl:PauseResponse");
 			break;
-		case SOAP_TYPE_xsdl__SetServiceDataRequest:
-			soap_in_xsdl__SetServiceDataRequest(soap, NULL, NULL, "xsdl:SetServiceDataRequest");
+		case SOAP_TYPE_xsdl__setServiceDataRequest:
+			soap_in_xsdl__setServiceDataRequest(soap, NULL, NULL, "xsdl:setServiceDataRequest");
 			break;
 		case SOAP_TYPE_xsdl__GetStatusRequest:
 			soap_in_xsdl__GetStatusRequest(soap, NULL, NULL, "xsdl:GetStatusRequest");
 			break;
-		case SOAP_TYPE_xsdl__FindServiceDataRequest:
-			soap_in_xsdl__FindServiceDataRequest(soap, NULL, NULL, "xsdl:FindServiceDataRequest");
+		case SOAP_TYPE_xsdl__findServiceDataRequest:
+			soap_in_xsdl__findServiceDataRequest(soap, NULL, NULL, "xsdl:findServiceDataRequest");
 			break;
-		case SOAP_TYPE_xsdl__SetServiceDataResponse:
-			soap_in_xsdl__SetServiceDataResponse(soap, NULL, NULL, "xsdl:SetServiceDataResponse");
+		case SOAP_TYPE_xsdl__setServiceDataResponse:
+			soap_in_xsdl__setServiceDataResponse(soap, NULL, NULL, "xsdl:setServiceDataResponse");
 			break;
 		case SOAP_TYPE_xsdl__StopResponse:
 			soap_in_xsdl__StopResponse(soap, NULL, NULL, "xsdl:StopResponse");
@@ -360,8 +360,8 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_getindependent(struct soap *soap)
 		case SOAP_TYPE_xsdl__DestroyRequest:
 			soap_in_xsdl__DestroyRequest(soap, NULL, NULL, "xsdl:DestroyRequest");
 			break;
-		case SOAP_TYPE_xsdl__FindServiceDataResponse:
-			soap_in_xsdl__FindServiceDataResponse(soap, NULL, NULL, "xsdl:FindServiceDataResponse");
+		case SOAP_TYPE_xsdl__findServiceDataResponse:
+			soap_in_xsdl__findServiceDataResponse(soap, NULL, NULL, "xsdl:findServiceDataResponse");
 			break;
 		case SOAP_TYPE_xsdl__PutControlRequest:
 			soap_in_xsdl__PutControlRequest(soap, NULL, NULL, "xsdl:PutControlRequest");
@@ -418,11 +418,11 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_getindependent(struct soap *soap)
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
 				soap_in_tns__GetStatus(soap, NULL, NULL, "tns:GetStatus");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
-				soap_in_tns__FindServiceData(soap, NULL, NULL, "tns:FindServiceData");
+				soap_in_tns__findServiceData(soap, NULL, NULL, "tns:findServiceData");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
 				soap_in_tns__Detach(soap, NULL, NULL, "tns:Detach");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
-				soap_in_tns__SetServiceData(soap, NULL, NULL, "tns:SetServiceData");
+				soap_in_tns__setServiceData(soap, NULL, NULL, "tns:setServiceData");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
 				soap_in_tns__Attach(soap, NULL, NULL, "tns:Attach");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
@@ -448,7 +448,7 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_getindependent(struct soap *soap)
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
 				soap_in_tns__ResumeResponse(soap, NULL, NULL, "tns:ResumeResponse");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
-				soap_in_tns__FindServiceDataResponse(soap, NULL, NULL, "tns:FindServiceDataResponse");
+				soap_in_tns__findServiceDataResponse(soap, NULL, NULL, "tns:findServiceDataResponse");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
 				soap_in_tns__GetNthDataSourceResponse(soap, NULL, NULL, "tns:GetNthDataSourceResponse");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
@@ -456,7 +456,7 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_getindependent(struct soap *soap)
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
 				soap_in_tns__AppStopResponse(soap, NULL, NULL, "tns:AppStopResponse");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
-				soap_in_tns__SetServiceDataResponse(soap, NULL, NULL, "tns:SetServiceDataResponse");
+				soap_in_tns__setServiceDataResponse(soap, NULL, NULL, "tns:setServiceDataResponse");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
 				soap_in_tns__StopResponse(soap, NULL, NULL, "tns:StopResponse");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
@@ -496,13 +496,13 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_getindependent(struct soap *soap)
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
 				soap_in_xsdl__PauseResponse(soap, NULL, NULL, "xsdl:PauseResponse");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
-				soap_in_xsdl__SetServiceDataRequest(soap, NULL, NULL, "xsdl:SetServiceDataRequest");
+				soap_in_xsdl__setServiceDataRequest(soap, NULL, NULL, "xsdl:setServiceDataRequest");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
 				soap_in_xsdl__GetStatusRequest(soap, NULL, NULL, "xsdl:GetStatusRequest");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
-				soap_in_xsdl__FindServiceDataRequest(soap, NULL, NULL, "xsdl:FindServiceDataRequest");
+				soap_in_xsdl__findServiceDataRequest(soap, NULL, NULL, "xsdl:findServiceDataRequest");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
-				soap_in_xsdl__SetServiceDataResponse(soap, NULL, NULL, "xsdl:SetServiceDataResponse");
+				soap_in_xsdl__setServiceDataResponse(soap, NULL, NULL, "xsdl:setServiceDataResponse");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
 				soap_in_xsdl__StopResponse(soap, NULL, NULL, "xsdl:StopResponse");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
@@ -528,7 +528,7 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_getindependent(struct soap *soap)
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
 				soap_in_xsdl__DestroyRequest(soap, NULL, NULL, "xsdl:DestroyRequest");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
-				soap_in_xsdl__FindServiceDataResponse(soap, NULL, NULL, "xsdl:FindServiceDataResponse");
+				soap_in_xsdl__findServiceDataResponse(soap, NULL, NULL, "xsdl:findServiceDataResponse");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
 				soap_in_xsdl__PutControlRequest(soap, NULL, NULL, "xsdl:PutControlRequest");
 			if (soap->error == SOAP_TYPE_MISMATCH && soap->level == 2)
@@ -610,14 +610,14 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_putindependent(struct soap *soap)
 				case SOAP_TYPE_tns__GetStatus:
 					soap_out_tns__GetStatus(soap, "id", pp->id, (const struct tns__GetStatus *)pp->ptr, "tns:GetStatus");
 					break;
-				case SOAP_TYPE_tns__FindServiceData:
-					soap_out_tns__FindServiceData(soap, "id", pp->id, (const struct tns__FindServiceData *)pp->ptr, "tns:FindServiceData");
+				case SOAP_TYPE_tns__findServiceData:
+					soap_out_tns__findServiceData(soap, "id", pp->id, (const struct tns__findServiceData *)pp->ptr, "tns:findServiceData");
 					break;
 				case SOAP_TYPE_tns__Detach:
 					soap_out_tns__Detach(soap, "id", pp->id, (const struct tns__Detach *)pp->ptr, "tns:Detach");
 					break;
-				case SOAP_TYPE_tns__SetServiceData:
-					soap_out_tns__SetServiceData(soap, "id", pp->id, (const struct tns__SetServiceData *)pp->ptr, "tns:SetServiceData");
+				case SOAP_TYPE_tns__setServiceData:
+					soap_out_tns__setServiceData(soap, "id", pp->id, (const struct tns__setServiceData *)pp->ptr, "tns:setServiceData");
 					break;
 				case SOAP_TYPE_tns__Attach:
 					soap_out_tns__Attach(soap, "id", pp->id, (const struct tns__Attach *)pp->ptr, "tns:Attach");
@@ -655,8 +655,8 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_putindependent(struct soap *soap)
 				case SOAP_TYPE_tns__ResumeResponse:
 					soap_out_tns__ResumeResponse(soap, "id", pp->id, (const struct tns__ResumeResponse *)pp->ptr, "tns:ResumeResponse");
 					break;
-				case SOAP_TYPE_tns__FindServiceDataResponse:
-					soap_out_tns__FindServiceDataResponse(soap, "id", pp->id, (const struct tns__FindServiceDataResponse *)pp->ptr, "tns:FindServiceDataResponse");
+				case SOAP_TYPE_tns__findServiceDataResponse:
+					soap_out_tns__findServiceDataResponse(soap, "id", pp->id, (const struct tns__findServiceDataResponse *)pp->ptr, "tns:findServiceDataResponse");
 					break;
 				case SOAP_TYPE_tns__GetNthDataSourceResponse:
 					soap_out_tns__GetNthDataSourceResponse(soap, "id", pp->id, (const struct tns__GetNthDataSourceResponse *)pp->ptr, "tns:GetNthDataSourceResponse");
@@ -667,8 +667,8 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_putindependent(struct soap *soap)
 				case SOAP_TYPE_tns__AppStopResponse:
 					soap_out_tns__AppStopResponse(soap, "id", pp->id, (const struct tns__AppStopResponse *)pp->ptr, "tns:AppStopResponse");
 					break;
-				case SOAP_TYPE_tns__SetServiceDataResponse:
-					soap_out_tns__SetServiceDataResponse(soap, "id", pp->id, (const struct tns__SetServiceDataResponse *)pp->ptr, "tns:SetServiceDataResponse");
+				case SOAP_TYPE_tns__setServiceDataResponse:
+					soap_out_tns__setServiceDataResponse(soap, "id", pp->id, (const struct tns__setServiceDataResponse *)pp->ptr, "tns:setServiceDataResponse");
 					break;
 				case SOAP_TYPE_tns__StopResponse:
 					soap_out_tns__StopResponse(soap, "id", pp->id, (const struct tns__StopResponse *)pp->ptr, "tns:StopResponse");
@@ -718,14 +718,14 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_putindependent(struct soap *soap)
 				case SOAP_TYPE_PointerTotns__GetStatusResponse:
 					soap_out_PointerTotns__GetStatusResponse(soap, "id", pp->id, (struct tns__GetStatusResponse *const*)pp->ptr, "tns:GetStatusResponse");
 					break;
-				case SOAP_TYPE_PointerTotns__FindServiceDataResponse:
-					soap_out_PointerTotns__FindServiceDataResponse(soap, "id", pp->id, (struct tns__FindServiceDataResponse *const*)pp->ptr, "tns:FindServiceDataResponse");
+				case SOAP_TYPE_PointerTotns__findServiceDataResponse:
+					soap_out_PointerTotns__findServiceDataResponse(soap, "id", pp->id, (struct tns__findServiceDataResponse *const*)pp->ptr, "tns:findServiceDataResponse");
 					break;
 				case SOAP_TYPE_PointerTotns__DetachResponse:
 					soap_out_PointerTotns__DetachResponse(soap, "id", pp->id, (struct tns__DetachResponse *const*)pp->ptr, "tns:DetachResponse");
 					break;
-				case SOAP_TYPE_PointerTotns__SetServiceDataResponse:
-					soap_out_PointerTotns__SetServiceDataResponse(soap, "id", pp->id, (struct tns__SetServiceDataResponse *const*)pp->ptr, "tns:SetServiceDataResponse");
+				case SOAP_TYPE_PointerTotns__setServiceDataResponse:
+					soap_out_PointerTotns__setServiceDataResponse(soap, "id", pp->id, (struct tns__setServiceDataResponse *const*)pp->ptr, "tns:setServiceDataResponse");
 					break;
 				case SOAP_TYPE_PointerTotns__AttachResponse:
 					soap_out_PointerTotns__AttachResponse(soap, "id", pp->id, (struct tns__AttachResponse *const*)pp->ptr, "tns:AttachResponse");
@@ -781,17 +781,17 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_putindependent(struct soap *soap)
 				case SOAP_TYPE_xsdl__PauseResponse:
 					soap_out_string(soap, "id", pp->id, (char**)&pp->ptr, "xsdl:PauseResponse");
 					break;
-				case SOAP_TYPE_xsdl__SetServiceDataRequest:
-					soap_out_string(soap, "id", pp->id, (char**)&pp->ptr, "xsdl:SetServiceDataRequest");
+				case SOAP_TYPE_xsdl__setServiceDataRequest:
+					soap_out_string(soap, "id", pp->id, (char**)&pp->ptr, "xsdl:setServiceDataRequest");
 					break;
 				case SOAP_TYPE_xsdl__GetStatusRequest:
 					soap_out_string(soap, "id", pp->id, (char**)&pp->ptr, "xsdl:GetStatusRequest");
 					break;
-				case SOAP_TYPE_xsdl__FindServiceDataRequest:
-					soap_out_string(soap, "id", pp->id, (char**)&pp->ptr, "xsdl:FindServiceDataRequest");
+				case SOAP_TYPE_xsdl__findServiceDataRequest:
+					soap_out_string(soap, "id", pp->id, (char**)&pp->ptr, "xsdl:findServiceDataRequest");
 					break;
-				case SOAP_TYPE_xsdl__SetServiceDataResponse:
-					soap_out_string(soap, "id", pp->id, (char**)&pp->ptr, "xsdl:SetServiceDataResponse");
+				case SOAP_TYPE_xsdl__setServiceDataResponse:
+					soap_out_string(soap, "id", pp->id, (char**)&pp->ptr, "xsdl:setServiceDataResponse");
 					break;
 				case SOAP_TYPE_xsdl__StopResponse:
 					soap_out_string(soap, "id", pp->id, (char**)&pp->ptr, "xsdl:StopResponse");
@@ -829,8 +829,8 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_putindependent(struct soap *soap)
 				case SOAP_TYPE_xsdl__DestroyRequest:
 					soap_out_string(soap, "id", pp->id, (char**)&pp->ptr, "xsdl:DestroyRequest");
 					break;
-				case SOAP_TYPE_xsdl__FindServiceDataResponse:
-					soap_out_string(soap, "id", pp->id, (char**)&pp->ptr, "xsdl:FindServiceDataResponse");
+				case SOAP_TYPE_xsdl__findServiceDataResponse:
+					soap_out_string(soap, "id", pp->id, (char**)&pp->ptr, "xsdl:findServiceDataResponse");
 					break;
 				case SOAP_TYPE_xsdl__PutControlRequest:
 					soap_out_string(soap, "id", pp->id, (char**)&pp->ptr, "xsdl:PutControlRequest");
@@ -984,9 +984,9 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_getattachments(struct soap *soap)
 				*a = soap->dime_ptr;
 			break;
 		}
-		case SOAP_TYPE_xsdl__SetServiceDataRequest:
+		case SOAP_TYPE_xsdl__setServiceDataRequest:
 		{	char ** a;
-			a = (char **)soap_id_enter(soap, soap->dime_id, NULL, SOAP_TYPE_xsdl__SetServiceDataRequest, sizeof(char *), 0);
+			a = (char **)soap_id_enter(soap, soap->dime_id, NULL, SOAP_TYPE_xsdl__setServiceDataRequest, sizeof(char *), 0);
 			if (a)
 				*a = soap->dime_ptr;
 			break;
@@ -998,16 +998,16 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_getattachments(struct soap *soap)
 				*a = soap->dime_ptr;
 			break;
 		}
-		case SOAP_TYPE_xsdl__FindServiceDataRequest:
+		case SOAP_TYPE_xsdl__findServiceDataRequest:
 		{	char ** a;
-			a = (char **)soap_id_enter(soap, soap->dime_id, NULL, SOAP_TYPE_xsdl__FindServiceDataRequest, sizeof(char *), 0);
+			a = (char **)soap_id_enter(soap, soap->dime_id, NULL, SOAP_TYPE_xsdl__findServiceDataRequest, sizeof(char *), 0);
 			if (a)
 				*a = soap->dime_ptr;
 			break;
 		}
-		case SOAP_TYPE_xsdl__SetServiceDataResponse:
+		case SOAP_TYPE_xsdl__setServiceDataResponse:
 		{	char ** a;
-			a = (char **)soap_id_enter(soap, soap->dime_id, NULL, SOAP_TYPE_xsdl__SetServiceDataResponse, sizeof(char *), 0);
+			a = (char **)soap_id_enter(soap, soap->dime_id, NULL, SOAP_TYPE_xsdl__setServiceDataResponse, sizeof(char *), 0);
 			if (a)
 				*a = soap->dime_ptr;
 			break;
@@ -1096,9 +1096,9 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_getattachments(struct soap *soap)
 				*a = soap->dime_ptr;
 			break;
 		}
-		case SOAP_TYPE_xsdl__FindServiceDataResponse:
+		case SOAP_TYPE_xsdl__findServiceDataResponse:
 		{	char ** a;
-			a = (char **)soap_id_enter(soap, soap->dime_id, NULL, SOAP_TYPE_xsdl__FindServiceDataResponse, sizeof(char *), 0);
+			a = (char **)soap_id_enter(soap, soap->dime_id, NULL, SOAP_TYPE_xsdl__findServiceDataResponse, sizeof(char *), 0);
 			if (a)
 				*a = soap->dime_ptr;
 			break;
@@ -2942,58 +2942,58 @@ SOAP_FMAC1 struct tns__GetStatus * SOAP_FMAC2 soap_in_tns__GetStatus(struct soap
 	return a;
 }
 
-SOAP_FMAC1 void SOAP_FMAC2 soap_serialize_tns__FindServiceData(struct soap *soap, struct tns__FindServiceData const*a)
+SOAP_FMAC1 void SOAP_FMAC2 soap_serialize_tns__findServiceData(struct soap *soap, struct tns__findServiceData const*a)
 {
-	if (!soap_reference(soap, a, SOAP_TYPE_tns__FindServiceData))
-		soap_mark_tns__FindServiceData(soap, a);
+	if (!soap_reference(soap, a, SOAP_TYPE_tns__findServiceData))
+		soap_mark_tns__findServiceData(soap, a);
 }
 
-SOAP_FMAC1 void SOAP_FMAC2 soap_mark_tns__FindServiceData(struct soap *soap, const struct tns__FindServiceData *a)
+SOAP_FMAC1 void SOAP_FMAC2 soap_mark_tns__findServiceData(struct soap *soap, const struct tns__findServiceData *a)
 {
 	soap_embedded(soap, &a->input, SOAP_TYPE_xsd__string);
 	soap_mark_xsd__string(soap, &a->input);
 }
 
-SOAP_FMAC1 void SOAP_FMAC2 soap_default_tns__FindServiceData(struct soap *soap, struct tns__FindServiceData *a)
+SOAP_FMAC1 void SOAP_FMAC2 soap_default_tns__findServiceData(struct soap *soap, struct tns__findServiceData *a)
 {
 	soap_default_xsd__string(soap, &a->input);
 }
 
-SOAP_FMAC1 int SOAP_FMAC2 soap_put_tns__FindServiceData(struct soap *soap, struct tns__FindServiceData *a, const char *tag, const char *type)
+SOAP_FMAC1 int SOAP_FMAC2 soap_put_tns__findServiceData(struct soap *soap, struct tns__findServiceData *a, const char *tag, const char *type)
 {
 	int i;
 	struct soap_plist *pp;
-	if ((i = soap_pointer_lookup(soap, a, SOAP_TYPE_tns__FindServiceData, &pp)))
+	if ((i = soap_pointer_lookup(soap, a, SOAP_TYPE_tns__findServiceData, &pp)))
 		if (soap_is_embedded(soap, pp))
 			soap_element_ref(soap, tag, 0, i);
 		else if (soap_is_single(soap, pp))
-			soap_out_tns__FindServiceData(soap, tag, 0, a, type);
+			soap_out_tns__findServiceData(soap, tag, 0, a, type);
 		else
 		{
 			soap_set_embedded(soap, pp);
-			soap_out_tns__FindServiceData(soap, tag, i, a, type);
+			soap_out_tns__findServiceData(soap, tag, i, a, type);
 		}
 	else
-		soap_out_tns__FindServiceData(soap, tag, 0, a, type);
+		soap_out_tns__findServiceData(soap, tag, 0, a, type);
 	return soap_putindependent(soap);
 }
 
-SOAP_FMAC1 int SOAP_FMAC2 soap_out_tns__FindServiceData(struct soap *soap, const char *tag, int id, const struct tns__FindServiceData *a, const char *type)
+SOAP_FMAC1 int SOAP_FMAC2 soap_out_tns__findServiceData(struct soap *soap, const char *tag, int id, const struct tns__findServiceData *a, const char *type)
 {
-	soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_tns__FindServiceData), type);
+	soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_tns__findServiceData), type);
 	soap_out_xsd__string(soap, "input", -1, &a->input, "xsd:string");
 	soap_element_end_out(soap, tag);
 	return SOAP_OK;
 }
 
-SOAP_FMAC1 struct tns__FindServiceData * SOAP_FMAC2 soap_get_tns__FindServiceData(struct soap *soap, struct tns__FindServiceData *p, const char *tag, const char *type)
+SOAP_FMAC1 struct tns__findServiceData * SOAP_FMAC2 soap_get_tns__findServiceData(struct soap *soap, struct tns__findServiceData *p, const char *tag, const char *type)
 {
-	if ((p = soap_in_tns__FindServiceData(soap, tag, p, type)))
+	if ((p = soap_in_tns__findServiceData(soap, tag, p, type)))
 		soap_getindependent(soap);
 	return p;
 }
 
-SOAP_FMAC1 struct tns__FindServiceData * SOAP_FMAC2 soap_in_tns__FindServiceData(struct soap *soap, const char *tag, struct tns__FindServiceData *a, const char *type)
+SOAP_FMAC1 struct tns__findServiceData * SOAP_FMAC2 soap_in_tns__findServiceData(struct soap *soap, const char *tag, struct tns__findServiceData *a, const char *type)
 {
 	short soap_flag_input = 1;
 	if (soap_element_begin_in(soap, tag))
@@ -3012,11 +3012,11 @@ SOAP_FMAC1 struct tns__FindServiceData * SOAP_FMAC2 soap_in_tns__FindServiceData
 			return a;
 	}
 	if (!*soap->href)
-	{	a = (struct tns__FindServiceData *)soap_id_enter(soap, soap->id, a, SOAP_TYPE_tns__FindServiceData, sizeof(struct tns__FindServiceData), 0);
+	{	a = (struct tns__findServiceData *)soap_id_enter(soap, soap->id, a, SOAP_TYPE_tns__findServiceData, sizeof(struct tns__findServiceData), 0);
 		if (!a)
 			return NULL;
 		if (soap->alloced)
-			soap_default_tns__FindServiceData(soap, a);
+			soap_default_tns__findServiceData(soap, a);
 		if (soap->body)
 		{	for (;;)
 			{	soap->error = SOAP_TAG_MISMATCH;
@@ -3038,9 +3038,9 @@ SOAP_FMAC1 struct tns__FindServiceData * SOAP_FMAC2 soap_in_tns__FindServiceData
 		}
 	}
 	else
-	{	a = (struct tns__FindServiceData *)soap_id_forward(soap, soap->href, (void**)soap_id_enter(soap, soap->id, a, SOAP_TYPE_tns__FindServiceData, sizeof(struct tns__FindServiceData), 0), SOAP_TYPE_tns__FindServiceData, sizeof(struct tns__FindServiceData));
+	{	a = (struct tns__findServiceData *)soap_id_forward(soap, soap->href, (void**)soap_id_enter(soap, soap->id, a, SOAP_TYPE_tns__findServiceData, sizeof(struct tns__findServiceData), 0), SOAP_TYPE_tns__findServiceData, sizeof(struct tns__findServiceData));
 		if (soap->alloced)
-			soap_default_tns__FindServiceData(soap, a);
+			soap_default_tns__findServiceData(soap, a);
 		if (soap->body && soap_element_end_in(soap, tag))
 			return NULL;
 	}
@@ -3142,13 +3142,13 @@ SOAP_FMAC1 struct tns__Detach * SOAP_FMAC2 soap_in_tns__Detach(struct soap *soap
 	return a;
 }
 
-SOAP_FMAC1 void SOAP_FMAC2 soap_serialize_tns__SetServiceData(struct soap *soap, struct tns__SetServiceData const*a)
+SOAP_FMAC1 void SOAP_FMAC2 soap_serialize_tns__setServiceData(struct soap *soap, struct tns__setServiceData const*a)
 {
-	if (!soap_reference(soap, a, SOAP_TYPE_tns__SetServiceData))
-		soap_mark_tns__SetServiceData(soap, a);
+	if (!soap_reference(soap, a, SOAP_TYPE_tns__setServiceData))
+		soap_mark_tns__setServiceData(soap, a);
 }
 
-SOAP_FMAC1 void SOAP_FMAC2 soap_mark_tns__SetServiceData(struct soap *soap, const struct tns__SetServiceData *a)
+SOAP_FMAC1 void SOAP_FMAC2 soap_mark_tns__setServiceData(struct soap *soap, const struct tns__setServiceData *a)
 {
 	soap_embedded(soap, &a->input, SOAP_TYPE_xsd__string);
 	soap_mark_xsd__string(soap, &a->input);
@@ -3156,48 +3156,48 @@ SOAP_FMAC1 void SOAP_FMAC2 soap_mark_tns__SetServiceData(struct soap *soap, cons
 	soap_mark_xsd__string(soap, &a->sde_USCORE_value);
 }
 
-SOAP_FMAC1 void SOAP_FMAC2 soap_default_tns__SetServiceData(struct soap *soap, struct tns__SetServiceData *a)
+SOAP_FMAC1 void SOAP_FMAC2 soap_default_tns__setServiceData(struct soap *soap, struct tns__setServiceData *a)
 {
 	soap_default_xsd__string(soap, &a->input);
 	soap_default_xsd__string(soap, &a->sde_USCORE_value);
 }
 
-SOAP_FMAC1 int SOAP_FMAC2 soap_put_tns__SetServiceData(struct soap *soap, struct tns__SetServiceData *a, const char *tag, const char *type)
+SOAP_FMAC1 int SOAP_FMAC2 soap_put_tns__setServiceData(struct soap *soap, struct tns__setServiceData *a, const char *tag, const char *type)
 {
 	int i;
 	struct soap_plist *pp;
-	if ((i = soap_pointer_lookup(soap, a, SOAP_TYPE_tns__SetServiceData, &pp)))
+	if ((i = soap_pointer_lookup(soap, a, SOAP_TYPE_tns__setServiceData, &pp)))
 		if (soap_is_embedded(soap, pp))
 			soap_element_ref(soap, tag, 0, i);
 		else if (soap_is_single(soap, pp))
-			soap_out_tns__SetServiceData(soap, tag, 0, a, type);
+			soap_out_tns__setServiceData(soap, tag, 0, a, type);
 		else
 		{
 			soap_set_embedded(soap, pp);
-			soap_out_tns__SetServiceData(soap, tag, i, a, type);
+			soap_out_tns__setServiceData(soap, tag, i, a, type);
 		}
 	else
-		soap_out_tns__SetServiceData(soap, tag, 0, a, type);
+		soap_out_tns__setServiceData(soap, tag, 0, a, type);
 	return soap_putindependent(soap);
 }
 
-SOAP_FMAC1 int SOAP_FMAC2 soap_out_tns__SetServiceData(struct soap *soap, const char *tag, int id, const struct tns__SetServiceData *a, const char *type)
+SOAP_FMAC1 int SOAP_FMAC2 soap_out_tns__setServiceData(struct soap *soap, const char *tag, int id, const struct tns__setServiceData *a, const char *type)
 {
-	soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_tns__SetServiceData), type);
+	soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_tns__setServiceData), type);
 	soap_out_xsd__string(soap, "input", -1, &a->input, "xsd:string");
 	soap_out_xsd__string(soap, "sde_value", -1, &a->sde_USCORE_value, "xsd:string");
 	soap_element_end_out(soap, tag);
 	return SOAP_OK;
 }
 
-SOAP_FMAC1 struct tns__SetServiceData * SOAP_FMAC2 soap_get_tns__SetServiceData(struct soap *soap, struct tns__SetServiceData *p, const char *tag, const char *type)
+SOAP_FMAC1 struct tns__setServiceData * SOAP_FMAC2 soap_get_tns__setServiceData(struct soap *soap, struct tns__setServiceData *p, const char *tag, const char *type)
 {
-	if ((p = soap_in_tns__SetServiceData(soap, tag, p, type)))
+	if ((p = soap_in_tns__setServiceData(soap, tag, p, type)))
 		soap_getindependent(soap);
 	return p;
 }
 
-SOAP_FMAC1 struct tns__SetServiceData * SOAP_FMAC2 soap_in_tns__SetServiceData(struct soap *soap, const char *tag, struct tns__SetServiceData *a, const char *type)
+SOAP_FMAC1 struct tns__setServiceData * SOAP_FMAC2 soap_in_tns__setServiceData(struct soap *soap, const char *tag, struct tns__setServiceData *a, const char *type)
 {
 	short soap_flag_input = 1, soap_flag_sde_USCORE_value = 1;
 	if (soap_element_begin_in(soap, tag))
@@ -3216,11 +3216,11 @@ SOAP_FMAC1 struct tns__SetServiceData * SOAP_FMAC2 soap_in_tns__SetServiceData(s
 			return a;
 	}
 	if (!*soap->href)
-	{	a = (struct tns__SetServiceData *)soap_id_enter(soap, soap->id, a, SOAP_TYPE_tns__SetServiceData, sizeof(struct tns__SetServiceData), 0);
+	{	a = (struct tns__setServiceData *)soap_id_enter(soap, soap->id, a, SOAP_TYPE_tns__setServiceData, sizeof(struct tns__setServiceData), 0);
 		if (!a)
 			return NULL;
 		if (soap->alloced)
-			soap_default_tns__SetServiceData(soap, a);
+			soap_default_tns__setServiceData(soap, a);
 		if (soap->body)
 		{	for (;;)
 			{	soap->error = SOAP_TAG_MISMATCH;
@@ -3247,9 +3247,9 @@ SOAP_FMAC1 struct tns__SetServiceData * SOAP_FMAC2 soap_in_tns__SetServiceData(s
 		}
 	}
 	else
-	{	a = (struct tns__SetServiceData *)soap_id_forward(soap, soap->href, (void**)soap_id_enter(soap, soap->id, a, SOAP_TYPE_tns__SetServiceData, sizeof(struct tns__SetServiceData), 0), SOAP_TYPE_tns__SetServiceData, sizeof(struct tns__SetServiceData));
+	{	a = (struct tns__setServiceData *)soap_id_forward(soap, soap->href, (void**)soap_id_enter(soap, soap->id, a, SOAP_TYPE_tns__setServiceData, sizeof(struct tns__setServiceData), 0), SOAP_TYPE_tns__setServiceData, sizeof(struct tns__setServiceData));
 		if (soap->alloced)
-			soap_default_tns__SetServiceData(soap, a);
+			soap_default_tns__setServiceData(soap, a);
 		if (soap->body && soap_element_end_in(soap, tag))
 			return NULL;
 	}
@@ -4486,58 +4486,58 @@ SOAP_FMAC1 struct tns__ResumeResponse * SOAP_FMAC2 soap_in_tns__ResumeResponse(s
 	return a;
 }
 
-SOAP_FMAC1 void SOAP_FMAC2 soap_serialize_tns__FindServiceDataResponse(struct soap *soap, struct tns__FindServiceDataResponse const*a)
+SOAP_FMAC1 void SOAP_FMAC2 soap_serialize_tns__findServiceDataResponse(struct soap *soap, struct tns__findServiceDataResponse const*a)
 {
-	if (!soap_reference(soap, a, SOAP_TYPE_tns__FindServiceDataResponse))
-		soap_mark_tns__FindServiceDataResponse(soap, a);
+	if (!soap_reference(soap, a, SOAP_TYPE_tns__findServiceDataResponse))
+		soap_mark_tns__findServiceDataResponse(soap, a);
 }
 
-SOAP_FMAC1 void SOAP_FMAC2 soap_mark_tns__FindServiceDataResponse(struct soap *soap, const struct tns__FindServiceDataResponse *a)
+SOAP_FMAC1 void SOAP_FMAC2 soap_mark_tns__findServiceDataResponse(struct soap *soap, const struct tns__findServiceDataResponse *a)
 {
 	soap_embedded(soap, &a->_result, SOAP_TYPE_xsd__string);
 	soap_mark_xsd__string(soap, &a->_result);
 }
 
-SOAP_FMAC1 void SOAP_FMAC2 soap_default_tns__FindServiceDataResponse(struct soap *soap, struct tns__FindServiceDataResponse *a)
+SOAP_FMAC1 void SOAP_FMAC2 soap_default_tns__findServiceDataResponse(struct soap *soap, struct tns__findServiceDataResponse *a)
 {
 	soap_default_xsd__string(soap, &a->_result);
 }
 
-SOAP_FMAC1 int SOAP_FMAC2 soap_put_tns__FindServiceDataResponse(struct soap *soap, struct tns__FindServiceDataResponse *a, const char *tag, const char *type)
+SOAP_FMAC1 int SOAP_FMAC2 soap_put_tns__findServiceDataResponse(struct soap *soap, struct tns__findServiceDataResponse *a, const char *tag, const char *type)
 {
 	int i;
 	struct soap_plist *pp;
-	if ((i = soap_pointer_lookup(soap, a, SOAP_TYPE_tns__FindServiceDataResponse, &pp)))
+	if ((i = soap_pointer_lookup(soap, a, SOAP_TYPE_tns__findServiceDataResponse, &pp)))
 		if (soap_is_embedded(soap, pp))
 			soap_element_ref(soap, tag, 0, i);
 		else if (soap_is_single(soap, pp))
-			soap_out_tns__FindServiceDataResponse(soap, tag, 0, a, type);
+			soap_out_tns__findServiceDataResponse(soap, tag, 0, a, type);
 		else
 		{
 			soap_set_embedded(soap, pp);
-			soap_out_tns__FindServiceDataResponse(soap, tag, i, a, type);
+			soap_out_tns__findServiceDataResponse(soap, tag, i, a, type);
 		}
 	else
-		soap_out_tns__FindServiceDataResponse(soap, tag, 0, a, type);
+		soap_out_tns__findServiceDataResponse(soap, tag, 0, a, type);
 	return soap_putindependent(soap);
 }
 
-SOAP_FMAC1 int SOAP_FMAC2 soap_out_tns__FindServiceDataResponse(struct soap *soap, const char *tag, int id, const struct tns__FindServiceDataResponse *a, const char *type)
+SOAP_FMAC1 int SOAP_FMAC2 soap_out_tns__findServiceDataResponse(struct soap *soap, const char *tag, int id, const struct tns__findServiceDataResponse *a, const char *type)
 {
-	soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_tns__FindServiceDataResponse), type);
+	soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_tns__findServiceDataResponse), type);
 	soap_out_xsd__string(soap, "result", -1, &a->_result, "xsd:string");
 	soap_element_end_out(soap, tag);
 	return SOAP_OK;
 }
 
-SOAP_FMAC1 struct tns__FindServiceDataResponse * SOAP_FMAC2 soap_get_tns__FindServiceDataResponse(struct soap *soap, struct tns__FindServiceDataResponse *p, const char *tag, const char *type)
+SOAP_FMAC1 struct tns__findServiceDataResponse * SOAP_FMAC2 soap_get_tns__findServiceDataResponse(struct soap *soap, struct tns__findServiceDataResponse *p, const char *tag, const char *type)
 {
-	if ((p = soap_in_tns__FindServiceDataResponse(soap, tag, p, type)))
+	if ((p = soap_in_tns__findServiceDataResponse(soap, tag, p, type)))
 		soap_getindependent(soap);
 	return p;
 }
 
-SOAP_FMAC1 struct tns__FindServiceDataResponse * SOAP_FMAC2 soap_in_tns__FindServiceDataResponse(struct soap *soap, const char *tag, struct tns__FindServiceDataResponse *a, const char *type)
+SOAP_FMAC1 struct tns__findServiceDataResponse * SOAP_FMAC2 soap_in_tns__findServiceDataResponse(struct soap *soap, const char *tag, struct tns__findServiceDataResponse *a, const char *type)
 {
 	short soap_flag__result = 1;
 	if (soap_element_begin_in(soap, tag))
@@ -4556,11 +4556,11 @@ SOAP_FMAC1 struct tns__FindServiceDataResponse * SOAP_FMAC2 soap_in_tns__FindSer
 			return a;
 	}
 	if (!*soap->href)
-	{	a = (struct tns__FindServiceDataResponse *)soap_id_enter(soap, soap->id, a, SOAP_TYPE_tns__FindServiceDataResponse, sizeof(struct tns__FindServiceDataResponse), 0);
+	{	a = (struct tns__findServiceDataResponse *)soap_id_enter(soap, soap->id, a, SOAP_TYPE_tns__findServiceDataResponse, sizeof(struct tns__findServiceDataResponse), 0);
 		if (!a)
 			return NULL;
 		if (soap->alloced)
-			soap_default_tns__FindServiceDataResponse(soap, a);
+			soap_default_tns__findServiceDataResponse(soap, a);
 		if (soap->body)
 		{	for (;;)
 			{	soap->error = SOAP_TAG_MISMATCH;
@@ -4582,9 +4582,9 @@ SOAP_FMAC1 struct tns__FindServiceDataResponse * SOAP_FMAC2 soap_in_tns__FindSer
 		}
 	}
 	else
-	{	a = (struct tns__FindServiceDataResponse *)soap_id_forward(soap, soap->href, (void**)soap_id_enter(soap, soap->id, a, SOAP_TYPE_tns__FindServiceDataResponse, sizeof(struct tns__FindServiceDataResponse), 0), SOAP_TYPE_tns__FindServiceDataResponse, sizeof(struct tns__FindServiceDataResponse));
+	{	a = (struct tns__findServiceDataResponse *)soap_id_forward(soap, soap->href, (void**)soap_id_enter(soap, soap->id, a, SOAP_TYPE_tns__findServiceDataResponse, sizeof(struct tns__findServiceDataResponse), 0), SOAP_TYPE_tns__findServiceDataResponse, sizeof(struct tns__findServiceDataResponse));
 		if (soap->alloced)
-			soap_default_tns__FindServiceDataResponse(soap, a);
+			soap_default_tns__findServiceDataResponse(soap, a);
 		if (soap->body && soap_element_end_in(soap, tag))
 			return NULL;
 	}
@@ -4906,58 +4906,58 @@ SOAP_FMAC1 struct tns__AppStopResponse * SOAP_FMAC2 soap_in_tns__AppStopResponse
 	return a;
 }
 
-SOAP_FMAC1 void SOAP_FMAC2 soap_serialize_tns__SetServiceDataResponse(struct soap *soap, struct tns__SetServiceDataResponse const*a)
+SOAP_FMAC1 void SOAP_FMAC2 soap_serialize_tns__setServiceDataResponse(struct soap *soap, struct tns__setServiceDataResponse const*a)
 {
-	if (!soap_reference(soap, a, SOAP_TYPE_tns__SetServiceDataResponse))
-		soap_mark_tns__SetServiceDataResponse(soap, a);
+	if (!soap_reference(soap, a, SOAP_TYPE_tns__setServiceDataResponse))
+		soap_mark_tns__setServiceDataResponse(soap, a);
 }
 
-SOAP_FMAC1 void SOAP_FMAC2 soap_mark_tns__SetServiceDataResponse(struct soap *soap, const struct tns__SetServiceDataResponse *a)
+SOAP_FMAC1 void SOAP_FMAC2 soap_mark_tns__setServiceDataResponse(struct soap *soap, const struct tns__setServiceDataResponse *a)
 {
 	soap_embedded(soap, &a->_result, SOAP_TYPE_xsd__string);
 	soap_mark_xsd__string(soap, &a->_result);
 }
 
-SOAP_FMAC1 void SOAP_FMAC2 soap_default_tns__SetServiceDataResponse(struct soap *soap, struct tns__SetServiceDataResponse *a)
+SOAP_FMAC1 void SOAP_FMAC2 soap_default_tns__setServiceDataResponse(struct soap *soap, struct tns__setServiceDataResponse *a)
 {
 	soap_default_xsd__string(soap, &a->_result);
 }
 
-SOAP_FMAC1 int SOAP_FMAC2 soap_put_tns__SetServiceDataResponse(struct soap *soap, struct tns__SetServiceDataResponse *a, const char *tag, const char *type)
+SOAP_FMAC1 int SOAP_FMAC2 soap_put_tns__setServiceDataResponse(struct soap *soap, struct tns__setServiceDataResponse *a, const char *tag, const char *type)
 {
 	int i;
 	struct soap_plist *pp;
-	if ((i = soap_pointer_lookup(soap, a, SOAP_TYPE_tns__SetServiceDataResponse, &pp)))
+	if ((i = soap_pointer_lookup(soap, a, SOAP_TYPE_tns__setServiceDataResponse, &pp)))
 		if (soap_is_embedded(soap, pp))
 			soap_element_ref(soap, tag, 0, i);
 		else if (soap_is_single(soap, pp))
-			soap_out_tns__SetServiceDataResponse(soap, tag, 0, a, type);
+			soap_out_tns__setServiceDataResponse(soap, tag, 0, a, type);
 		else
 		{
 			soap_set_embedded(soap, pp);
-			soap_out_tns__SetServiceDataResponse(soap, tag, i, a, type);
+			soap_out_tns__setServiceDataResponse(soap, tag, i, a, type);
 		}
 	else
-		soap_out_tns__SetServiceDataResponse(soap, tag, 0, a, type);
+		soap_out_tns__setServiceDataResponse(soap, tag, 0, a, type);
 	return soap_putindependent(soap);
 }
 
-SOAP_FMAC1 int SOAP_FMAC2 soap_out_tns__SetServiceDataResponse(struct soap *soap, const char *tag, int id, const struct tns__SetServiceDataResponse *a, const char *type)
+SOAP_FMAC1 int SOAP_FMAC2 soap_out_tns__setServiceDataResponse(struct soap *soap, const char *tag, int id, const struct tns__setServiceDataResponse *a, const char *type)
 {
-	soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_tns__SetServiceDataResponse), type);
+	soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_tns__setServiceDataResponse), type);
 	soap_out_xsd__string(soap, "result", -1, &a->_result, "xsd:string");
 	soap_element_end_out(soap, tag);
 	return SOAP_OK;
 }
 
-SOAP_FMAC1 struct tns__SetServiceDataResponse * SOAP_FMAC2 soap_get_tns__SetServiceDataResponse(struct soap *soap, struct tns__SetServiceDataResponse *p, const char *tag, const char *type)
+SOAP_FMAC1 struct tns__setServiceDataResponse * SOAP_FMAC2 soap_get_tns__setServiceDataResponse(struct soap *soap, struct tns__setServiceDataResponse *p, const char *tag, const char *type)
 {
-	if ((p = soap_in_tns__SetServiceDataResponse(soap, tag, p, type)))
+	if ((p = soap_in_tns__setServiceDataResponse(soap, tag, p, type)))
 		soap_getindependent(soap);
 	return p;
 }
 
-SOAP_FMAC1 struct tns__SetServiceDataResponse * SOAP_FMAC2 soap_in_tns__SetServiceDataResponse(struct soap *soap, const char *tag, struct tns__SetServiceDataResponse *a, const char *type)
+SOAP_FMAC1 struct tns__setServiceDataResponse * SOAP_FMAC2 soap_in_tns__setServiceDataResponse(struct soap *soap, const char *tag, struct tns__setServiceDataResponse *a, const char *type)
 {
 	short soap_flag__result = 1;
 	if (soap_element_begin_in(soap, tag))
@@ -4976,11 +4976,11 @@ SOAP_FMAC1 struct tns__SetServiceDataResponse * SOAP_FMAC2 soap_in_tns__SetServi
 			return a;
 	}
 	if (!*soap->href)
-	{	a = (struct tns__SetServiceDataResponse *)soap_id_enter(soap, soap->id, a, SOAP_TYPE_tns__SetServiceDataResponse, sizeof(struct tns__SetServiceDataResponse), 0);
+	{	a = (struct tns__setServiceDataResponse *)soap_id_enter(soap, soap->id, a, SOAP_TYPE_tns__setServiceDataResponse, sizeof(struct tns__setServiceDataResponse), 0);
 		if (!a)
 			return NULL;
 		if (soap->alloced)
-			soap_default_tns__SetServiceDataResponse(soap, a);
+			soap_default_tns__setServiceDataResponse(soap, a);
 		if (soap->body)
 		{	for (;;)
 			{	soap->error = SOAP_TAG_MISMATCH;
@@ -5002,9 +5002,9 @@ SOAP_FMAC1 struct tns__SetServiceDataResponse * SOAP_FMAC2 soap_in_tns__SetServi
 		}
 	}
 	else
-	{	a = (struct tns__SetServiceDataResponse *)soap_id_forward(soap, soap->href, (void**)soap_id_enter(soap, soap->id, a, SOAP_TYPE_tns__SetServiceDataResponse, sizeof(struct tns__SetServiceDataResponse), 0), SOAP_TYPE_tns__SetServiceDataResponse, sizeof(struct tns__SetServiceDataResponse));
+	{	a = (struct tns__setServiceDataResponse *)soap_id_forward(soap, soap->href, (void**)soap_id_enter(soap, soap->id, a, SOAP_TYPE_tns__setServiceDataResponse, sizeof(struct tns__setServiceDataResponse), 0), SOAP_TYPE_tns__setServiceDataResponse, sizeof(struct tns__setServiceDataResponse));
 		if (soap->alloced)
-			soap_default_tns__SetServiceDataResponse(soap, a);
+			soap_default_tns__setServiceDataResponse(soap, a);
 		if (soap->body && soap_element_end_in(soap, tag))
 			return NULL;
 	}
@@ -6730,79 +6730,79 @@ SOAP_FMAC1 struct tns__GetStatusResponse ** SOAP_FMAC2 soap_in_PointerTotns__Get
 	return a;
 }
 
-SOAP_FMAC1 void SOAP_FMAC2 soap_serialize_PointerTotns__FindServiceDataResponse(struct soap *soap, struct tns__FindServiceDataResponse *const*a)
+SOAP_FMAC1 void SOAP_FMAC2 soap_serialize_PointerTotns__findServiceDataResponse(struct soap *soap, struct tns__findServiceDataResponse *const*a)
 {
-	if (!soap_reference(soap, a, SOAP_TYPE_PointerTotns__FindServiceDataResponse))
-		soap_mark_PointerTotns__FindServiceDataResponse(soap, a);
+	if (!soap_reference(soap, a, SOAP_TYPE_PointerTotns__findServiceDataResponse))
+		soap_mark_PointerTotns__findServiceDataResponse(soap, a);
 }
 
-SOAP_FMAC1 void SOAP_FMAC2 soap_mark_PointerTotns__FindServiceDataResponse(struct soap *soap, struct tns__FindServiceDataResponse *const*a)
+SOAP_FMAC1 void SOAP_FMAC2 soap_mark_PointerTotns__findServiceDataResponse(struct soap *soap, struct tns__findServiceDataResponse *const*a)
 {
-	if (!soap_reference(soap, *a, SOAP_TYPE_tns__FindServiceDataResponse))
-		soap_mark_tns__FindServiceDataResponse(soap, *a);
+	if (!soap_reference(soap, *a, SOAP_TYPE_tns__findServiceDataResponse))
+		soap_mark_tns__findServiceDataResponse(soap, *a);
 }
 
-SOAP_FMAC1 void SOAP_FMAC2 soap_default_PointerTotns__FindServiceDataResponse(struct soap *soap, struct tns__FindServiceDataResponse **a)
+SOAP_FMAC1 void SOAP_FMAC2 soap_default_PointerTotns__findServiceDataResponse(struct soap *soap, struct tns__findServiceDataResponse **a)
 {
 	*a = NULL;
 }
 
-SOAP_FMAC1 int SOAP_FMAC2 soap_put_PointerTotns__FindServiceDataResponse(struct soap *soap, struct tns__FindServiceDataResponse **a, const char *tag, const char *type)
+SOAP_FMAC1 int SOAP_FMAC2 soap_put_PointerTotns__findServiceDataResponse(struct soap *soap, struct tns__findServiceDataResponse **a, const char *tag, const char *type)
 {
 	int i;
 	struct soap_plist *pp;
-	if ((i = soap_pointer_lookup(soap, a, SOAP_TYPE_PointerTotns__FindServiceDataResponse, &pp)))
+	if ((i = soap_pointer_lookup(soap, a, SOAP_TYPE_PointerTotns__findServiceDataResponse, &pp)))
 		if (soap_is_embedded(soap, pp))
 			soap_element_ref(soap, tag, 0, i);
 		else if (soap_is_single(soap, pp))
-			soap_out_PointerTotns__FindServiceDataResponse(soap, tag, 0, a, type);
+			soap_out_PointerTotns__findServiceDataResponse(soap, tag, 0, a, type);
 		else
 		{
 			soap_set_embedded(soap, pp);
-			soap_out_PointerTotns__FindServiceDataResponse(soap, tag, i, a, type);
+			soap_out_PointerTotns__findServiceDataResponse(soap, tag, i, a, type);
 		}
 	else
-		soap_out_PointerTotns__FindServiceDataResponse(soap, tag, 0, a, type);
+		soap_out_PointerTotns__findServiceDataResponse(soap, tag, 0, a, type);
 	return soap_putindependent(soap);
 }
 
-SOAP_FMAC1 int SOAP_FMAC2 soap_out_PointerTotns__FindServiceDataResponse(struct soap *soap, const char *tag, int id, struct tns__FindServiceDataResponse *const*a, const char *type)
+SOAP_FMAC1 int SOAP_FMAC2 soap_out_PointerTotns__findServiceDataResponse(struct soap *soap, const char *tag, int id, struct tns__findServiceDataResponse *const*a, const char *type)
 {
-	id = soap_embedded_id(soap, id, a, SOAP_TYPE_PointerTotns__FindServiceDataResponse);
+	id = soap_embedded_id(soap, id, a, SOAP_TYPE_PointerTotns__findServiceDataResponse);
 	if (!*a)
 		soap_element_null(soap, tag, id, type);
 	else
 	{	struct soap_plist *pp;
-		int i = soap_pointer_lookup(soap, *a, SOAP_TYPE_tns__FindServiceDataResponse, &pp);
+		int i = soap_pointer_lookup(soap, *a, SOAP_TYPE_tns__findServiceDataResponse, &pp);
 		if (i)
 			if (soap_is_embedded(soap, pp))
 				soap_element_ref(soap, tag, id, i);
 			else if (soap_is_single(soap, pp))
-				soap_out_tns__FindServiceDataResponse(soap, tag, 0, *a, type);
+				soap_out_tns__findServiceDataResponse(soap, tag, 0, *a, type);
 			else
 			{	soap_set_embedded(soap, pp);
-				soap_out_tns__FindServiceDataResponse(soap, tag, i, *a, type);
+				soap_out_tns__findServiceDataResponse(soap, tag, i, *a, type);
 			}
 		else
-			soap_out_tns__FindServiceDataResponse(soap, tag, soap_pointer_enter(soap, *a, SOAP_TYPE_tns__FindServiceDataResponse, &pp), *a, type);
+			soap_out_tns__findServiceDataResponse(soap, tag, soap_pointer_enter(soap, *a, SOAP_TYPE_tns__findServiceDataResponse, &pp), *a, type);
 	}
 	return SOAP_OK;
 }
 
-SOAP_FMAC1 struct tns__FindServiceDataResponse ** SOAP_FMAC2 soap_get_PointerTotns__FindServiceDataResponse(struct soap *soap, struct tns__FindServiceDataResponse **p, const char *tag, const char *type)
+SOAP_FMAC1 struct tns__findServiceDataResponse ** SOAP_FMAC2 soap_get_PointerTotns__findServiceDataResponse(struct soap *soap, struct tns__findServiceDataResponse **p, const char *tag, const char *type)
 {
-	if ((p = soap_in_PointerTotns__FindServiceDataResponse(soap, tag, p, type)))
+	if ((p = soap_in_PointerTotns__findServiceDataResponse(soap, tag, p, type)))
 		soap_getindependent(soap);
 	return p;
 }
 
-SOAP_FMAC1 struct tns__FindServiceDataResponse ** SOAP_FMAC2 soap_in_PointerTotns__FindServiceDataResponse(struct soap *soap, const char *tag, struct tns__FindServiceDataResponse **a, const char *type)
+SOAP_FMAC1 struct tns__findServiceDataResponse ** SOAP_FMAC2 soap_in_PointerTotns__findServiceDataResponse(struct soap *soap, const char *tag, struct tns__findServiceDataResponse **a, const char *type)
 {
-	struct tns__FindServiceDataResponse *p;
+	struct tns__findServiceDataResponse *p;
 	if (soap_element_begin_in(soap, tag))
 		return NULL;
 	if (soap->null)
-	{	a = (struct tns__FindServiceDataResponse **)soap_id_enter(soap, soap->id, a, SOAP_TYPE_PointerTotns__FindServiceDataResponse, sizeof(struct tns__FindServiceDataResponse *), 1);
+	{	a = (struct tns__findServiceDataResponse **)soap_id_enter(soap, soap->id, a, SOAP_TYPE_PointerTotns__findServiceDataResponse, sizeof(struct tns__findServiceDataResponse *), 1);
 		if (a)
 			*a = NULL;
 		if (soap->body && soap_element_end_in(soap, tag))
@@ -6811,19 +6811,19 @@ SOAP_FMAC1 struct tns__FindServiceDataResponse ** SOAP_FMAC2 soap_in_PointerTotn
 	else if (!*soap->href)
 	{	soap_revert(soap);
 		if (a)
-		{	if ((p = soap_in_tns__FindServiceDataResponse(soap, tag, *a, type)))
+		{	if ((p = soap_in_tns__findServiceDataResponse(soap, tag, *a, type)))
 				*a = p;
 			else
 				a = NULL;
 		}
-		else if ((p = soap_in_tns__FindServiceDataResponse(soap, tag, NULL, type)))
-		{	a = (struct tns__FindServiceDataResponse **)soap_id_enter(soap, "", NULL, SOAP_TYPE_PointerTotns__FindServiceDataResponse, sizeof(struct tns__FindServiceDataResponse *), 0);
+		else if ((p = soap_in_tns__findServiceDataResponse(soap, tag, NULL, type)))
+		{	a = (struct tns__findServiceDataResponse **)soap_id_enter(soap, "", NULL, SOAP_TYPE_PointerTotns__findServiceDataResponse, sizeof(struct tns__findServiceDataResponse *), 0);
 			if (a)
 				*a = p;
 		}
 	}
 	else
-	{	a = (struct tns__FindServiceDataResponse **)soap_id_lookup(soap, soap->href, (void**)soap_id_enter(soap, soap->id, a, SOAP_TYPE_PointerTotns__FindServiceDataResponse, sizeof(struct tns__FindServiceDataResponse *), 1), SOAP_TYPE_tns__FindServiceDataResponse, sizeof(struct tns__FindServiceDataResponse), 0);
+	{	a = (struct tns__findServiceDataResponse **)soap_id_lookup(soap, soap->href, (void**)soap_id_enter(soap, soap->id, a, SOAP_TYPE_PointerTotns__findServiceDataResponse, sizeof(struct tns__findServiceDataResponse *), 1), SOAP_TYPE_tns__findServiceDataResponse, sizeof(struct tns__findServiceDataResponse), 0);
 		if (soap->body && soap_element_end_in(soap, tag))
 			return NULL;
 	}
@@ -6930,79 +6930,79 @@ SOAP_FMAC1 struct tns__DetachResponse ** SOAP_FMAC2 soap_in_PointerTotns__Detach
 	return a;
 }
 
-SOAP_FMAC1 void SOAP_FMAC2 soap_serialize_PointerTotns__SetServiceDataResponse(struct soap *soap, struct tns__SetServiceDataResponse *const*a)
+SOAP_FMAC1 void SOAP_FMAC2 soap_serialize_PointerTotns__setServiceDataResponse(struct soap *soap, struct tns__setServiceDataResponse *const*a)
 {
-	if (!soap_reference(soap, a, SOAP_TYPE_PointerTotns__SetServiceDataResponse))
-		soap_mark_PointerTotns__SetServiceDataResponse(soap, a);
+	if (!soap_reference(soap, a, SOAP_TYPE_PointerTotns__setServiceDataResponse))
+		soap_mark_PointerTotns__setServiceDataResponse(soap, a);
 }
 
-SOAP_FMAC1 void SOAP_FMAC2 soap_mark_PointerTotns__SetServiceDataResponse(struct soap *soap, struct tns__SetServiceDataResponse *const*a)
+SOAP_FMAC1 void SOAP_FMAC2 soap_mark_PointerTotns__setServiceDataResponse(struct soap *soap, struct tns__setServiceDataResponse *const*a)
 {
-	if (!soap_reference(soap, *a, SOAP_TYPE_tns__SetServiceDataResponse))
-		soap_mark_tns__SetServiceDataResponse(soap, *a);
+	if (!soap_reference(soap, *a, SOAP_TYPE_tns__setServiceDataResponse))
+		soap_mark_tns__setServiceDataResponse(soap, *a);
 }
 
-SOAP_FMAC1 void SOAP_FMAC2 soap_default_PointerTotns__SetServiceDataResponse(struct soap *soap, struct tns__SetServiceDataResponse **a)
+SOAP_FMAC1 void SOAP_FMAC2 soap_default_PointerTotns__setServiceDataResponse(struct soap *soap, struct tns__setServiceDataResponse **a)
 {
 	*a = NULL;
 }
 
-SOAP_FMAC1 int SOAP_FMAC2 soap_put_PointerTotns__SetServiceDataResponse(struct soap *soap, struct tns__SetServiceDataResponse **a, const char *tag, const char *type)
+SOAP_FMAC1 int SOAP_FMAC2 soap_put_PointerTotns__setServiceDataResponse(struct soap *soap, struct tns__setServiceDataResponse **a, const char *tag, const char *type)
 {
 	int i;
 	struct soap_plist *pp;
-	if ((i = soap_pointer_lookup(soap, a, SOAP_TYPE_PointerTotns__SetServiceDataResponse, &pp)))
+	if ((i = soap_pointer_lookup(soap, a, SOAP_TYPE_PointerTotns__setServiceDataResponse, &pp)))
 		if (soap_is_embedded(soap, pp))
 			soap_element_ref(soap, tag, 0, i);
 		else if (soap_is_single(soap, pp))
-			soap_out_PointerTotns__SetServiceDataResponse(soap, tag, 0, a, type);
+			soap_out_PointerTotns__setServiceDataResponse(soap, tag, 0, a, type);
 		else
 		{
 			soap_set_embedded(soap, pp);
-			soap_out_PointerTotns__SetServiceDataResponse(soap, tag, i, a, type);
+			soap_out_PointerTotns__setServiceDataResponse(soap, tag, i, a, type);
 		}
 	else
-		soap_out_PointerTotns__SetServiceDataResponse(soap, tag, 0, a, type);
+		soap_out_PointerTotns__setServiceDataResponse(soap, tag, 0, a, type);
 	return soap_putindependent(soap);
 }
 
-SOAP_FMAC1 int SOAP_FMAC2 soap_out_PointerTotns__SetServiceDataResponse(struct soap *soap, const char *tag, int id, struct tns__SetServiceDataResponse *const*a, const char *type)
+SOAP_FMAC1 int SOAP_FMAC2 soap_out_PointerTotns__setServiceDataResponse(struct soap *soap, const char *tag, int id, struct tns__setServiceDataResponse *const*a, const char *type)
 {
-	id = soap_embedded_id(soap, id, a, SOAP_TYPE_PointerTotns__SetServiceDataResponse);
+	id = soap_embedded_id(soap, id, a, SOAP_TYPE_PointerTotns__setServiceDataResponse);
 	if (!*a)
 		soap_element_null(soap, tag, id, type);
 	else
 	{	struct soap_plist *pp;
-		int i = soap_pointer_lookup(soap, *a, SOAP_TYPE_tns__SetServiceDataResponse, &pp);
+		int i = soap_pointer_lookup(soap, *a, SOAP_TYPE_tns__setServiceDataResponse, &pp);
 		if (i)
 			if (soap_is_embedded(soap, pp))
 				soap_element_ref(soap, tag, id, i);
 			else if (soap_is_single(soap, pp))
-				soap_out_tns__SetServiceDataResponse(soap, tag, 0, *a, type);
+				soap_out_tns__setServiceDataResponse(soap, tag, 0, *a, type);
 			else
 			{	soap_set_embedded(soap, pp);
-				soap_out_tns__SetServiceDataResponse(soap, tag, i, *a, type);
+				soap_out_tns__setServiceDataResponse(soap, tag, i, *a, type);
 			}
 		else
-			soap_out_tns__SetServiceDataResponse(soap, tag, soap_pointer_enter(soap, *a, SOAP_TYPE_tns__SetServiceDataResponse, &pp), *a, type);
+			soap_out_tns__setServiceDataResponse(soap, tag, soap_pointer_enter(soap, *a, SOAP_TYPE_tns__setServiceDataResponse, &pp), *a, type);
 	}
 	return SOAP_OK;
 }
 
-SOAP_FMAC1 struct tns__SetServiceDataResponse ** SOAP_FMAC2 soap_get_PointerTotns__SetServiceDataResponse(struct soap *soap, struct tns__SetServiceDataResponse **p, const char *tag, const char *type)
+SOAP_FMAC1 struct tns__setServiceDataResponse ** SOAP_FMAC2 soap_get_PointerTotns__setServiceDataResponse(struct soap *soap, struct tns__setServiceDataResponse **p, const char *tag, const char *type)
 {
-	if ((p = soap_in_PointerTotns__SetServiceDataResponse(soap, tag, p, type)))
+	if ((p = soap_in_PointerTotns__setServiceDataResponse(soap, tag, p, type)))
 		soap_getindependent(soap);
 	return p;
 }
 
-SOAP_FMAC1 struct tns__SetServiceDataResponse ** SOAP_FMAC2 soap_in_PointerTotns__SetServiceDataResponse(struct soap *soap, const char *tag, struct tns__SetServiceDataResponse **a, const char *type)
+SOAP_FMAC1 struct tns__setServiceDataResponse ** SOAP_FMAC2 soap_in_PointerTotns__setServiceDataResponse(struct soap *soap, const char *tag, struct tns__setServiceDataResponse **a, const char *type)
 {
-	struct tns__SetServiceDataResponse *p;
+	struct tns__setServiceDataResponse *p;
 	if (soap_element_begin_in(soap, tag))
 		return NULL;
 	if (soap->null)
-	{	a = (struct tns__SetServiceDataResponse **)soap_id_enter(soap, soap->id, a, SOAP_TYPE_PointerTotns__SetServiceDataResponse, sizeof(struct tns__SetServiceDataResponse *), 1);
+	{	a = (struct tns__setServiceDataResponse **)soap_id_enter(soap, soap->id, a, SOAP_TYPE_PointerTotns__setServiceDataResponse, sizeof(struct tns__setServiceDataResponse *), 1);
 		if (a)
 			*a = NULL;
 		if (soap->body && soap_element_end_in(soap, tag))
@@ -7011,19 +7011,19 @@ SOAP_FMAC1 struct tns__SetServiceDataResponse ** SOAP_FMAC2 soap_in_PointerTotns
 	else if (!*soap->href)
 	{	soap_revert(soap);
 		if (a)
-		{	if ((p = soap_in_tns__SetServiceDataResponse(soap, tag, *a, type)))
+		{	if ((p = soap_in_tns__setServiceDataResponse(soap, tag, *a, type)))
 				*a = p;
 			else
 				a = NULL;
 		}
-		else if ((p = soap_in_tns__SetServiceDataResponse(soap, tag, NULL, type)))
-		{	a = (struct tns__SetServiceDataResponse **)soap_id_enter(soap, "", NULL, SOAP_TYPE_PointerTotns__SetServiceDataResponse, sizeof(struct tns__SetServiceDataResponse *), 0);
+		else if ((p = soap_in_tns__setServiceDataResponse(soap, tag, NULL, type)))
+		{	a = (struct tns__setServiceDataResponse **)soap_id_enter(soap, "", NULL, SOAP_TYPE_PointerTotns__setServiceDataResponse, sizeof(struct tns__setServiceDataResponse *), 0);
 			if (a)
 				*a = p;
 		}
 	}
 	else
-	{	a = (struct tns__SetServiceDataResponse **)soap_id_lookup(soap, soap->href, (void**)soap_id_enter(soap, soap->id, a, SOAP_TYPE_PointerTotns__SetServiceDataResponse, sizeof(struct tns__SetServiceDataResponse *), 1), SOAP_TYPE_tns__SetServiceDataResponse, sizeof(struct tns__SetServiceDataResponse), 0);
+	{	a = (struct tns__setServiceDataResponse **)soap_id_lookup(soap, soap->href, (void**)soap_id_enter(soap, soap->id, a, SOAP_TYPE_PointerTotns__setServiceDataResponse, sizeof(struct tns__setServiceDataResponse *), 1), SOAP_TYPE_tns__setServiceDataResponse, sizeof(struct tns__setServiceDataResponse), 0);
 		if (soap->body && soap_element_end_in(soap, tag))
 			return NULL;
 	}
@@ -8110,59 +8110,59 @@ SOAP_FMAC1 char * * SOAP_FMAC2 soap_in_xsdl__PauseResponse(struct soap *soap, co
 	return soap_instring(soap, tag, a, type, SOAP_TYPE_xsdl__PauseResponse, 1);
 }
 
-SOAP_FMAC1 void SOAP_FMAC2 soap_default_xsdl__SetServiceDataRequest(struct soap *soap, char **a)
+SOAP_FMAC1 void SOAP_FMAC2 soap_default_xsdl__setServiceDataRequest(struct soap *soap, char **a)
 {
-#ifdef SOAP_DEFAULT_xsdl__SetServiceDataRequest
-	*a = SOAP_DEFAULT_xsdl__SetServiceDataRequest;
+#ifdef SOAP_DEFAULT_xsdl__setServiceDataRequest
+	*a = SOAP_DEFAULT_xsdl__setServiceDataRequest;
 #else
 	*a = (char *)0;
 #endif
 }
 
-SOAP_FMAC1 void SOAP_FMAC2 soap_serialize_xsdl__SetServiceDataRequest(struct soap *soap, char *const*a)
+SOAP_FMAC1 void SOAP_FMAC2 soap_serialize_xsdl__setServiceDataRequest(struct soap *soap, char *const*a)
 {
-	soap_reference(soap, *a, SOAP_TYPE_xsdl__SetServiceDataRequest);
+	soap_reference(soap, *a, SOAP_TYPE_xsdl__setServiceDataRequest);
 }
 
-SOAP_FMAC1 void SOAP_FMAC2 soap_mark_xsdl__SetServiceDataRequest(struct soap *soap, char *const*a)
+SOAP_FMAC1 void SOAP_FMAC2 soap_mark_xsdl__setServiceDataRequest(struct soap *soap, char *const*a)
 {
-	soap_reference(soap, *a, SOAP_TYPE_xsdl__SetServiceDataRequest);
+	soap_reference(soap, *a, SOAP_TYPE_xsdl__setServiceDataRequest);
 }
 
-SOAP_FMAC1 int SOAP_FMAC2 soap_put_xsdl__SetServiceDataRequest(struct soap *soap, char **a, const char *tag, const char *type)
+SOAP_FMAC1 int SOAP_FMAC2 soap_put_xsdl__setServiceDataRequest(struct soap *soap, char **a, const char *tag, const char *type)
 {
 	int i;
 	struct soap_plist *pp;
-	if ((i = soap_pointer_lookup(soap, a, SOAP_TYPE_xsdl__SetServiceDataRequest, &pp)))
+	if ((i = soap_pointer_lookup(soap, a, SOAP_TYPE_xsdl__setServiceDataRequest, &pp)))
 		if (soap_is_embedded(soap, pp))
 			soap_element_ref(soap, tag, 0, i);
 		else if (soap_is_single(soap, pp))
-			soap_out_xsdl__SetServiceDataRequest(soap, tag, 0, a, type);
+			soap_out_xsdl__setServiceDataRequest(soap, tag, 0, a, type);
 		else
 		{
 			soap_set_embedded(soap, pp);
-			soap_out_xsdl__SetServiceDataRequest(soap, tag, i, a, type);
+			soap_out_xsdl__setServiceDataRequest(soap, tag, i, a, type);
 		}
 	else
-		soap_out_xsdl__SetServiceDataRequest(soap, tag, 0, a, type);
+		soap_out_xsdl__setServiceDataRequest(soap, tag, 0, a, type);
 	return soap_putindependent(soap);
 }
 
-SOAP_FMAC1 int SOAP_FMAC2 soap_out_xsdl__SetServiceDataRequest(struct soap *soap, const char *tag, int id, char *const*a, const char *type)
+SOAP_FMAC1 int SOAP_FMAC2 soap_out_xsdl__setServiceDataRequest(struct soap *soap, const char *tag, int id, char *const*a, const char *type)
 {
-	return soap_outstring(soap, tag, id, a, type, SOAP_TYPE_xsdl__SetServiceDataRequest);
+	return soap_outstring(soap, tag, id, a, type, SOAP_TYPE_xsdl__setServiceDataRequest);
 }
 
-SOAP_FMAC1 char ** SOAP_FMAC2 soap_get_xsdl__SetServiceDataRequest(struct soap *soap, char **p, const char *tag, const char *type)
+SOAP_FMAC1 char ** SOAP_FMAC2 soap_get_xsdl__setServiceDataRequest(struct soap *soap, char **p, const char *tag, const char *type)
 {
-	if ((p = soap_in_xsdl__SetServiceDataRequest(soap, tag, p, type)))
+	if ((p = soap_in_xsdl__setServiceDataRequest(soap, tag, p, type)))
 		soap_getindependent(soap);
 	return p;
 }
 
-SOAP_FMAC1 char * * SOAP_FMAC2 soap_in_xsdl__SetServiceDataRequest(struct soap *soap, const char *tag, char **a, const char *type)
+SOAP_FMAC1 char * * SOAP_FMAC2 soap_in_xsdl__setServiceDataRequest(struct soap *soap, const char *tag, char **a, const char *type)
 {
-	return soap_instring(soap, tag, a, type, SOAP_TYPE_xsdl__SetServiceDataRequest, 1);
+	return soap_instring(soap, tag, a, type, SOAP_TYPE_xsdl__setServiceDataRequest, 1);
 }
 
 SOAP_FMAC1 void SOAP_FMAC2 soap_default_xsdl__GetStatusRequest(struct soap *soap, char **a)
@@ -8220,114 +8220,114 @@ SOAP_FMAC1 char * * SOAP_FMAC2 soap_in_xsdl__GetStatusRequest(struct soap *soap,
 	return soap_instring(soap, tag, a, type, SOAP_TYPE_xsdl__GetStatusRequest, 1);
 }
 
-SOAP_FMAC1 void SOAP_FMAC2 soap_default_xsdl__FindServiceDataRequest(struct soap *soap, char **a)
+SOAP_FMAC1 void SOAP_FMAC2 soap_default_xsdl__findServiceDataRequest(struct soap *soap, char **a)
 {
-#ifdef SOAP_DEFAULT_xsdl__FindServiceDataRequest
-	*a = SOAP_DEFAULT_xsdl__FindServiceDataRequest;
+#ifdef SOAP_DEFAULT_xsdl__findServiceDataRequest
+	*a = SOAP_DEFAULT_xsdl__findServiceDataRequest;
 #else
 	*a = (char *)0;
 #endif
 }
 
-SOAP_FMAC1 void SOAP_FMAC2 soap_serialize_xsdl__FindServiceDataRequest(struct soap *soap, char *const*a)
+SOAP_FMAC1 void SOAP_FMAC2 soap_serialize_xsdl__findServiceDataRequest(struct soap *soap, char *const*a)
 {
-	soap_reference(soap, *a, SOAP_TYPE_xsdl__FindServiceDataRequest);
+	soap_reference(soap, *a, SOAP_TYPE_xsdl__findServiceDataRequest);
 }
 
-SOAP_FMAC1 void SOAP_FMAC2 soap_mark_xsdl__FindServiceDataRequest(struct soap *soap, char *const*a)
+SOAP_FMAC1 void SOAP_FMAC2 soap_mark_xsdl__findServiceDataRequest(struct soap *soap, char *const*a)
 {
-	soap_reference(soap, *a, SOAP_TYPE_xsdl__FindServiceDataRequest);
+	soap_reference(soap, *a, SOAP_TYPE_xsdl__findServiceDataRequest);
 }
 
-SOAP_FMAC1 int SOAP_FMAC2 soap_put_xsdl__FindServiceDataRequest(struct soap *soap, char **a, const char *tag, const char *type)
+SOAP_FMAC1 int SOAP_FMAC2 soap_put_xsdl__findServiceDataRequest(struct soap *soap, char **a, const char *tag, const char *type)
 {
 	int i;
 	struct soap_plist *pp;
-	if ((i = soap_pointer_lookup(soap, a, SOAP_TYPE_xsdl__FindServiceDataRequest, &pp)))
+	if ((i = soap_pointer_lookup(soap, a, SOAP_TYPE_xsdl__findServiceDataRequest, &pp)))
 		if (soap_is_embedded(soap, pp))
 			soap_element_ref(soap, tag, 0, i);
 		else if (soap_is_single(soap, pp))
-			soap_out_xsdl__FindServiceDataRequest(soap, tag, 0, a, type);
+			soap_out_xsdl__findServiceDataRequest(soap, tag, 0, a, type);
 		else
 		{
 			soap_set_embedded(soap, pp);
-			soap_out_xsdl__FindServiceDataRequest(soap, tag, i, a, type);
+			soap_out_xsdl__findServiceDataRequest(soap, tag, i, a, type);
 		}
 	else
-		soap_out_xsdl__FindServiceDataRequest(soap, tag, 0, a, type);
+		soap_out_xsdl__findServiceDataRequest(soap, tag, 0, a, type);
 	return soap_putindependent(soap);
 }
 
-SOAP_FMAC1 int SOAP_FMAC2 soap_out_xsdl__FindServiceDataRequest(struct soap *soap, const char *tag, int id, char *const*a, const char *type)
+SOAP_FMAC1 int SOAP_FMAC2 soap_out_xsdl__findServiceDataRequest(struct soap *soap, const char *tag, int id, char *const*a, const char *type)
 {
-	return soap_outstring(soap, tag, id, a, type, SOAP_TYPE_xsdl__FindServiceDataRequest);
+	return soap_outstring(soap, tag, id, a, type, SOAP_TYPE_xsdl__findServiceDataRequest);
 }
 
-SOAP_FMAC1 char ** SOAP_FMAC2 soap_get_xsdl__FindServiceDataRequest(struct soap *soap, char **p, const char *tag, const char *type)
+SOAP_FMAC1 char ** SOAP_FMAC2 soap_get_xsdl__findServiceDataRequest(struct soap *soap, char **p, const char *tag, const char *type)
 {
-	if ((p = soap_in_xsdl__FindServiceDataRequest(soap, tag, p, type)))
+	if ((p = soap_in_xsdl__findServiceDataRequest(soap, tag, p, type)))
 		soap_getindependent(soap);
 	return p;
 }
 
-SOAP_FMAC1 char * * SOAP_FMAC2 soap_in_xsdl__FindServiceDataRequest(struct soap *soap, const char *tag, char **a, const char *type)
+SOAP_FMAC1 char * * SOAP_FMAC2 soap_in_xsdl__findServiceDataRequest(struct soap *soap, const char *tag, char **a, const char *type)
 {
-	return soap_instring(soap, tag, a, type, SOAP_TYPE_xsdl__FindServiceDataRequest, 1);
+	return soap_instring(soap, tag, a, type, SOAP_TYPE_xsdl__findServiceDataRequest, 1);
 }
 
-SOAP_FMAC1 void SOAP_FMAC2 soap_default_xsdl__SetServiceDataResponse(struct soap *soap, char **a)
+SOAP_FMAC1 void SOAP_FMAC2 soap_default_xsdl__setServiceDataResponse(struct soap *soap, char **a)
 {
-#ifdef SOAP_DEFAULT_xsdl__SetServiceDataResponse
-	*a = SOAP_DEFAULT_xsdl__SetServiceDataResponse;
+#ifdef SOAP_DEFAULT_xsdl__setServiceDataResponse
+	*a = SOAP_DEFAULT_xsdl__setServiceDataResponse;
 #else
 	*a = (char *)0;
 #endif
 }
 
-SOAP_FMAC1 void SOAP_FMAC2 soap_serialize_xsdl__SetServiceDataResponse(struct soap *soap, char *const*a)
+SOAP_FMAC1 void SOAP_FMAC2 soap_serialize_xsdl__setServiceDataResponse(struct soap *soap, char *const*a)
 {
-	soap_reference(soap, *a, SOAP_TYPE_xsdl__SetServiceDataResponse);
+	soap_reference(soap, *a, SOAP_TYPE_xsdl__setServiceDataResponse);
 }
 
-SOAP_FMAC1 void SOAP_FMAC2 soap_mark_xsdl__SetServiceDataResponse(struct soap *soap, char *const*a)
+SOAP_FMAC1 void SOAP_FMAC2 soap_mark_xsdl__setServiceDataResponse(struct soap *soap, char *const*a)
 {
-	soap_reference(soap, *a, SOAP_TYPE_xsdl__SetServiceDataResponse);
+	soap_reference(soap, *a, SOAP_TYPE_xsdl__setServiceDataResponse);
 }
 
-SOAP_FMAC1 int SOAP_FMAC2 soap_put_xsdl__SetServiceDataResponse(struct soap *soap, char **a, const char *tag, const char *type)
+SOAP_FMAC1 int SOAP_FMAC2 soap_put_xsdl__setServiceDataResponse(struct soap *soap, char **a, const char *tag, const char *type)
 {
 	int i;
 	struct soap_plist *pp;
-	if ((i = soap_pointer_lookup(soap, a, SOAP_TYPE_xsdl__SetServiceDataResponse, &pp)))
+	if ((i = soap_pointer_lookup(soap, a, SOAP_TYPE_xsdl__setServiceDataResponse, &pp)))
 		if (soap_is_embedded(soap, pp))
 			soap_element_ref(soap, tag, 0, i);
 		else if (soap_is_single(soap, pp))
-			soap_out_xsdl__SetServiceDataResponse(soap, tag, 0, a, type);
+			soap_out_xsdl__setServiceDataResponse(soap, tag, 0, a, type);
 		else
 		{
 			soap_set_embedded(soap, pp);
-			soap_out_xsdl__SetServiceDataResponse(soap, tag, i, a, type);
+			soap_out_xsdl__setServiceDataResponse(soap, tag, i, a, type);
 		}
 	else
-		soap_out_xsdl__SetServiceDataResponse(soap, tag, 0, a, type);
+		soap_out_xsdl__setServiceDataResponse(soap, tag, 0, a, type);
 	return soap_putindependent(soap);
 }
 
-SOAP_FMAC1 int SOAP_FMAC2 soap_out_xsdl__SetServiceDataResponse(struct soap *soap, const char *tag, int id, char *const*a, const char *type)
+SOAP_FMAC1 int SOAP_FMAC2 soap_out_xsdl__setServiceDataResponse(struct soap *soap, const char *tag, int id, char *const*a, const char *type)
 {
-	return soap_outstring(soap, tag, id, a, type, SOAP_TYPE_xsdl__SetServiceDataResponse);
+	return soap_outstring(soap, tag, id, a, type, SOAP_TYPE_xsdl__setServiceDataResponse);
 }
 
-SOAP_FMAC1 char ** SOAP_FMAC2 soap_get_xsdl__SetServiceDataResponse(struct soap *soap, char **p, const char *tag, const char *type)
+SOAP_FMAC1 char ** SOAP_FMAC2 soap_get_xsdl__setServiceDataResponse(struct soap *soap, char **p, const char *tag, const char *type)
 {
-	if ((p = soap_in_xsdl__SetServiceDataResponse(soap, tag, p, type)))
+	if ((p = soap_in_xsdl__setServiceDataResponse(soap, tag, p, type)))
 		soap_getindependent(soap);
 	return p;
 }
 
-SOAP_FMAC1 char * * SOAP_FMAC2 soap_in_xsdl__SetServiceDataResponse(struct soap *soap, const char *tag, char **a, const char *type)
+SOAP_FMAC1 char * * SOAP_FMAC2 soap_in_xsdl__setServiceDataResponse(struct soap *soap, const char *tag, char **a, const char *type)
 {
-	return soap_instring(soap, tag, a, type, SOAP_TYPE_xsdl__SetServiceDataResponse, 1);
+	return soap_instring(soap, tag, a, type, SOAP_TYPE_xsdl__setServiceDataResponse, 1);
 }
 
 SOAP_FMAC1 void SOAP_FMAC2 soap_default_xsdl__StopResponse(struct soap *soap, char **a)
@@ -8990,59 +8990,59 @@ SOAP_FMAC1 char * * SOAP_FMAC2 soap_in_xsdl__DestroyRequest(struct soap *soap, c
 	return soap_instring(soap, tag, a, type, SOAP_TYPE_xsdl__DestroyRequest, 1);
 }
 
-SOAP_FMAC1 void SOAP_FMAC2 soap_default_xsdl__FindServiceDataResponse(struct soap *soap, char **a)
+SOAP_FMAC1 void SOAP_FMAC2 soap_default_xsdl__findServiceDataResponse(struct soap *soap, char **a)
 {
-#ifdef SOAP_DEFAULT_xsdl__FindServiceDataResponse
-	*a = SOAP_DEFAULT_xsdl__FindServiceDataResponse;
+#ifdef SOAP_DEFAULT_xsdl__findServiceDataResponse
+	*a = SOAP_DEFAULT_xsdl__findServiceDataResponse;
 #else
 	*a = (char *)0;
 #endif
 }
 
-SOAP_FMAC1 void SOAP_FMAC2 soap_serialize_xsdl__FindServiceDataResponse(struct soap *soap, char *const*a)
+SOAP_FMAC1 void SOAP_FMAC2 soap_serialize_xsdl__findServiceDataResponse(struct soap *soap, char *const*a)
 {
-	soap_reference(soap, *a, SOAP_TYPE_xsdl__FindServiceDataResponse);
+	soap_reference(soap, *a, SOAP_TYPE_xsdl__findServiceDataResponse);
 }
 
-SOAP_FMAC1 void SOAP_FMAC2 soap_mark_xsdl__FindServiceDataResponse(struct soap *soap, char *const*a)
+SOAP_FMAC1 void SOAP_FMAC2 soap_mark_xsdl__findServiceDataResponse(struct soap *soap, char *const*a)
 {
-	soap_reference(soap, *a, SOAP_TYPE_xsdl__FindServiceDataResponse);
+	soap_reference(soap, *a, SOAP_TYPE_xsdl__findServiceDataResponse);
 }
 
-SOAP_FMAC1 int SOAP_FMAC2 soap_put_xsdl__FindServiceDataResponse(struct soap *soap, char **a, const char *tag, const char *type)
+SOAP_FMAC1 int SOAP_FMAC2 soap_put_xsdl__findServiceDataResponse(struct soap *soap, char **a, const char *tag, const char *type)
 {
 	int i;
 	struct soap_plist *pp;
-	if ((i = soap_pointer_lookup(soap, a, SOAP_TYPE_xsdl__FindServiceDataResponse, &pp)))
+	if ((i = soap_pointer_lookup(soap, a, SOAP_TYPE_xsdl__findServiceDataResponse, &pp)))
 		if (soap_is_embedded(soap, pp))
 			soap_element_ref(soap, tag, 0, i);
 		else if (soap_is_single(soap, pp))
-			soap_out_xsdl__FindServiceDataResponse(soap, tag, 0, a, type);
+			soap_out_xsdl__findServiceDataResponse(soap, tag, 0, a, type);
 		else
 		{
 			soap_set_embedded(soap, pp);
-			soap_out_xsdl__FindServiceDataResponse(soap, tag, i, a, type);
+			soap_out_xsdl__findServiceDataResponse(soap, tag, i, a, type);
 		}
 	else
-		soap_out_xsdl__FindServiceDataResponse(soap, tag, 0, a, type);
+		soap_out_xsdl__findServiceDataResponse(soap, tag, 0, a, type);
 	return soap_putindependent(soap);
 }
 
-SOAP_FMAC1 int SOAP_FMAC2 soap_out_xsdl__FindServiceDataResponse(struct soap *soap, const char *tag, int id, char *const*a, const char *type)
+SOAP_FMAC1 int SOAP_FMAC2 soap_out_xsdl__findServiceDataResponse(struct soap *soap, const char *tag, int id, char *const*a, const char *type)
 {
-	return soap_outstring(soap, tag, id, a, type, SOAP_TYPE_xsdl__FindServiceDataResponse);
+	return soap_outstring(soap, tag, id, a, type, SOAP_TYPE_xsdl__findServiceDataResponse);
 }
 
-SOAP_FMAC1 char ** SOAP_FMAC2 soap_get_xsdl__FindServiceDataResponse(struct soap *soap, char **p, const char *tag, const char *type)
+SOAP_FMAC1 char ** SOAP_FMAC2 soap_get_xsdl__findServiceDataResponse(struct soap *soap, char **p, const char *tag, const char *type)
 {
-	if ((p = soap_in_xsdl__FindServiceDataResponse(soap, tag, p, type)))
+	if ((p = soap_in_xsdl__findServiceDataResponse(soap, tag, p, type)))
 		soap_getindependent(soap);
 	return p;
 }
 
-SOAP_FMAC1 char * * SOAP_FMAC2 soap_in_xsdl__FindServiceDataResponse(struct soap *soap, const char *tag, char **a, const char *type)
+SOAP_FMAC1 char * * SOAP_FMAC2 soap_in_xsdl__findServiceDataResponse(struct soap *soap, const char *tag, char **a, const char *type)
 {
-	return soap_instring(soap, tag, a, type, SOAP_TYPE_xsdl__FindServiceDataResponse, 1);
+	return soap_instring(soap, tag, a, type, SOAP_TYPE_xsdl__findServiceDataResponse, 1);
 }
 
 SOAP_FMAC1 void SOAP_FMAC2 soap_default_xsdl__PutControlRequest(struct soap *soap, char **a)

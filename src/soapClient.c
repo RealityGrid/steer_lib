@@ -107,22 +107,22 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_call_tns__Attach(struct soap *soap, const char *U
 	return SOAP_OK;
 }
 
-SOAP_FMAC1 int SOAP_FMAC2 soap_call_tns__SetServiceData(struct soap *soap, const char *URL, const char *action, char *input, char *sde_USCORE_value, struct tns__SetServiceDataResponse *out)
+SOAP_FMAC1 int SOAP_FMAC2 soap_call_tns__setServiceData(struct soap *soap, const char *URL, const char *action, char *input, char *sde_USCORE_value, struct tns__setServiceDataResponse *out)
 {
-	struct tns__SetServiceData soap_tmp_tns__SetServiceData;
+	struct tns__setServiceData soap_tmp_tns__setServiceData;
 	if (!action)
 		action = "";
-	soap_tmp_tns__SetServiceData.input=input;
-	soap_tmp_tns__SetServiceData.sde_USCORE_value=sde_USCORE_value;
+	soap_tmp_tns__setServiceData.input=input;
+	soap_tmp_tns__setServiceData.sde_USCORE_value=sde_USCORE_value;
 	soap_begin(soap);
 	soap_serializeheader(soap);
-	soap_serialize_tns__SetServiceData(soap, &soap_tmp_tns__SetServiceData);
+	soap_serialize_tns__setServiceData(soap, &soap_tmp_tns__setServiceData);
 	soap_begin_count(soap);
 	if (soap->mode & SOAP_IO_LENGTH)
 	{	soap_envelope_begin_out(soap);
 		soap_putheader(soap);
 		soap_body_begin_out(soap);
-		soap_put_tns__SetServiceData(soap, &soap_tmp_tns__SetServiceData, "tns:SetServiceData", "");
+		soap_put_tns__setServiceData(soap, &soap_tmp_tns__setServiceData, "tns:setServiceData", "");
 		soap_body_end_out(soap);
 		soap_envelope_end_out(soap);
 	}
@@ -130,19 +130,19 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_call_tns__SetServiceData(struct soap *soap, const
 	 || soap_envelope_begin_out(soap)
 	 || soap_putheader(soap)
 	 || soap_body_begin_out(soap)
-	 || soap_put_tns__SetServiceData(soap, &soap_tmp_tns__SetServiceData, "tns:SetServiceData", "")
+	 || soap_put_tns__setServiceData(soap, &soap_tmp_tns__setServiceData, "tns:setServiceData", "")
 	 || soap_body_end_out(soap)
 	 || soap_envelope_end_out(soap)
 	 || soap_putattachments(soap)
 	 || soap_end_send(soap))
 		return soap->error;
-	soap_default_tns__SetServiceDataResponse(soap, out);
+	soap_default_tns__setServiceDataResponse(soap, out);
 	if (soap_begin_recv(soap)
 	 || soap_envelope_begin_in(soap)
 	 || soap_recv_header(soap)
 	 || soap_body_begin_in(soap))
 		return soap->error;
-	soap_get_tns__SetServiceDataResponse(soap, out, "tns:SetServiceDataResponse", "tns:SetServiceDataResponse");
+	soap_get_tns__setServiceDataResponse(soap, out, "tns:setServiceDataResponse", "tns:setServiceDataResponse");
 	if (soap->error)
 	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
 			soap_recv_fault(soap);
@@ -205,21 +205,21 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_call_tns__Detach(struct soap *soap, const char *U
 	return SOAP_OK;
 }
 
-SOAP_FMAC1 int SOAP_FMAC2 soap_call_tns__FindServiceData(struct soap *soap, const char *URL, const char *action, char *input, struct tns__FindServiceDataResponse *out)
+SOAP_FMAC1 int SOAP_FMAC2 soap_call_tns__findServiceData(struct soap *soap, const char *URL, const char *action, char *input, struct tns__findServiceDataResponse *out)
 {
-	struct tns__FindServiceData soap_tmp_tns__FindServiceData;
+	struct tns__findServiceData soap_tmp_tns__findServiceData;
 	if (!action)
 		action = "";
-	soap_tmp_tns__FindServiceData.input=input;
+	soap_tmp_tns__findServiceData.input=input;
 	soap_begin(soap);
 	soap_serializeheader(soap);
-	soap_serialize_tns__FindServiceData(soap, &soap_tmp_tns__FindServiceData);
+	soap_serialize_tns__findServiceData(soap, &soap_tmp_tns__findServiceData);
 	soap_begin_count(soap);
 	if (soap->mode & SOAP_IO_LENGTH)
 	{	soap_envelope_begin_out(soap);
 		soap_putheader(soap);
 		soap_body_begin_out(soap);
-		soap_put_tns__FindServiceData(soap, &soap_tmp_tns__FindServiceData, "tns:FindServiceData", "");
+		soap_put_tns__findServiceData(soap, &soap_tmp_tns__findServiceData, "tns:findServiceData", "");
 		soap_body_end_out(soap);
 		soap_envelope_end_out(soap);
 	}
@@ -227,19 +227,19 @@ SOAP_FMAC1 int SOAP_FMAC2 soap_call_tns__FindServiceData(struct soap *soap, cons
 	 || soap_envelope_begin_out(soap)
 	 || soap_putheader(soap)
 	 || soap_body_begin_out(soap)
-	 || soap_put_tns__FindServiceData(soap, &soap_tmp_tns__FindServiceData, "tns:FindServiceData", "")
+	 || soap_put_tns__findServiceData(soap, &soap_tmp_tns__findServiceData, "tns:findServiceData", "")
 	 || soap_body_end_out(soap)
 	 || soap_envelope_end_out(soap)
 	 || soap_putattachments(soap)
 	 || soap_end_send(soap))
 		return soap->error;
-	soap_default_tns__FindServiceDataResponse(soap, out);
+	soap_default_tns__findServiceDataResponse(soap, out);
 	if (soap_begin_recv(soap)
 	 || soap_envelope_begin_in(soap)
 	 || soap_recv_header(soap)
 	 || soap_body_begin_in(soap))
 		return soap->error;
-	soap_get_tns__FindServiceDataResponse(soap, out, "tns:FindServiceDataResponse", "tns:FindServiceDataResponse");
+	soap_get_tns__findServiceDataResponse(soap, out, "tns:findServiceDataResponse", "tns:findServiceDataResponse");
 	if (soap->error)
 	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
 			soap_recv_fault(soap);

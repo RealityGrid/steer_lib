@@ -51,18 +51,19 @@ extern Steerer_connection_table_type Steerer_connection;
 /* Soap-specific declarations */
 struct soap soap;
 
-/* Names of the SGS' service data elements */
-char *SUPPORTED_CMDS_SDE = "Supp_cmds";
-char *PARAM_DEFS_SDE     = "Param_defs";
-char *IOTYPE_DEFS_SDE    = "IOType_defs";
-char *CHKTYPE_DEFS_SDE   = "ChkType_defs";
+/* Names of the SGS' service data elements - MUST match those
+   used in SGS.pm (as launched by container) */
+char *SUPPORTED_CMDS_SDE = "SGS:Supp_cmds";
+char *PARAM_DEFS_SDE     = "SGS:Param_defs";
+char *IOTYPE_DEFS_SDE    = "SGS:IOType_defs";
+char *CHKTYPE_DEFS_SDE   = "SGS:ChkType_defs";
 
 /*-------------------------------------------------------------------------*/
 
 int Initialize_steering_connection_soap(int  NumSupportedCmds,
 					int *SupportedCmds)
 {
-  struct tns__SetServiceDataResponse setSDE_response;
+  struct tns__setServiceDataResponse setSDE_response;
   struct tns__AppStartResponse       appStart_response;
   char                              *pchar;
 
@@ -107,8 +108,9 @@ int Initialize_steering_connection_soap(int  NumSupportedCmds,
 		     Steerer_connection.supp_cmds);
 
   setSDE_response._result = NULL;
-  if (soap_call_tns__SetServiceData(&soap, 
-				    Steerer_connection.SGS_address, "", "Supp_cmds", 
+  if (soap_call_tns__setServiceData(&soap, 
+				    Steerer_connection.SGS_address, "", 
+				    SUPPORTED_CMDS_SDE, 
 				    Steerer_connection.supp_cmds, 
 				    &setSDE_response)){
 
@@ -117,7 +119,7 @@ int Initialize_steering_connection_soap(int  NumSupportedCmds,
     return REG_FAILURE;
   }
 
-  fprintf(stderr, "Initialize_steering_connection_soap: SetServiceData "
+  fprintf(stderr, "Initialize_steering_connection_soap: setServiceData "
 	  "returned: %s\n", setSDE_response._result);
 
   return REG_SUCCESS;
@@ -133,7 +135,7 @@ int Detach_from_steerer_soap()
   if(soap_call_tns__AppDetach(&soap, Steerer_connection.SGS_address, 
 			      "", &appDetach_response )){
 
-    fprintf(stderr, "Steerer_connected_soap: FindServiceData failed:\n");
+    fprintf(stderr, "Detach_from_steerer_soap: AppDetach failed:\n");
     soap_print_fault(&soap, stderr);
 
     return REG_FAILURE;
@@ -152,21 +154,21 @@ int Detach_from_steerer_soap()
 
 int Steerer_connected_soap()
 {
-  struct tns__FindServiceDataResponse  findServiceData_response;
+  struct tns__findServiceDataResponse  findServiceData_response;
 
   findServiceData_response._result = NULL;
-  if(soap_call_tns__FindServiceData(&soap, Steerer_connection.SGS_address, 
+  if(soap_call_tns__findServiceData(&soap, Steerer_connection.SGS_address, 
 				    "", "Steerer_status", 
 				    &findServiceData_response )){
 
-    fprintf(stderr, "Steerer_connected_soap: FindServiceData failed:\n");
+    fprintf(stderr, "Steerer_connected_soap: findServiceData failed:\n");
     soap_print_fault(&soap, stderr);
 
     return REG_FAILURE;
   }
 
 #if DEBUG
-  fprintf(stderr, "Steerer_connected_soap: FindServiceData returned: %s\n", 
+  fprintf(stderr, "Steerer_connected_soap: findServiceData returned: %s\n", 
 	  findServiceData_response._result);
 #endif
 
@@ -183,7 +185,7 @@ int Steerer_connected_soap()
 int Send_status_msg_soap(char* msg)
 {
   struct tns__PutStatusResponse       putStatus_response;
-  struct tns__SetServiceDataResponse  setSDE_response;
+  struct tns__setServiceDataResponse  setSDE_response;
   char *sde_name;
 
   /* Status & log messages are both sent as 'status' messages */
@@ -227,9 +229,9 @@ int Send_status_msg_soap(char* msg)
     }
 
     setSDE_response._result = NULL;
-    if(soap_call_tns__SetServiceData (&soap, Steerer_connection.SGS_address, "",
+    if(soap_call_tns__setServiceData (&soap, Steerer_connection.SGS_address, "",
 				      sde_name, msg,  &setSDE_response)){
-      fprintf(stderr, "Send_status_msg_soap: SetServiceData failed:\n");
+      fprintf(stderr, "Send_status_msg_soap: setServiceData failed:\n");
       soap_print_fault(&soap,stderr);
       return REG_FAILURE;
     }

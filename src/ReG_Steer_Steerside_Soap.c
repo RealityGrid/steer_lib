@@ -247,22 +247,22 @@ struct msg_struct *Get_status_msg_soap(Sim_entry_type *sim)
 
 struct msg_struct *Get_service_data(Sim_entry_type *sim, char *sde_name)
 {
-  struct tns__FindServiceDataResponse  findServiceData_response;
+  struct tns__findServiceDataResponse  findServiceData_response;
   struct msg_struct                   *msg = NULL;
 
   findServiceData_response._result = NULL;
-  if(soap_call_tns__FindServiceData(&soap, sim->SGS_info.address, 
+  if(soap_call_tns__findServiceData(&soap, sim->SGS_info.address, 
 				    "", sde_name, 
 				    &findServiceData_response )){
 
-    fprintf(stderr, "Get_service_data: FindServiceData failed:\n");
+    fprintf(stderr, "Get_service_data: findServiceData failed:\n");
     soap_print_fault(&soap, stderr);
 
     return NULL;
   }
 
 #if DEBUG
-  fprintf(stderr, "Get_service_data: FindServiceData returned: %s\n", 
+  fprintf(stderr, "Get_service_data: findServiceData returned: %s\n", 
 	  findServiceData_response._result);
 #endif
 

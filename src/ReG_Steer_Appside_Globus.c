@@ -480,7 +480,9 @@ int Initialize_IOType_transport_globus(const int direction,
   int	       port_ok = 0;
   char	      *pchar;
   int	       len;
-  static int   call_count = 0;
+#if REG_SOAP_STEERING	  
+  static int   call_count = 1;
+#endif
 
     /* set up socket_info for callback */
     if (Globus_socket_info_init(&(IOTypes_table.io_def[index].socket_info)) 
@@ -523,13 +525,18 @@ int Initialize_IOType_transport_globus(const int direction,
 
 	/* register connector against port */
 
-#if REG_STEERING_SOAP	  
+#if REG_SOAP_STEERING	  
 
 	/* Go out into the world of grid services... */
-	Get_data_source_address_soap(call_count, 
+	if( Get_data_source_address_soap(call_count, 
 		       IOTypes_table.io_def[index].socket_info.connector_hostname,
-		       &IOTypes_table.io_def[index].socket_info.connector_port);
-	call_count++;
+		       &IOTypes_table.io_def[index].socket_info.connector_port) 
+	    == REG_SUCCESS){
+
+	  call_count++;
+	  hostname_ok = 1;
+	  port_ok = 1;
+	}
 #else
 	/* get hostname and port from environment variables */
 
@@ -554,7 +561,7 @@ int Initialize_IOType_transport_globus(const int direction,
 	  port_ok = 1;
 	}
 
-#endif /* !REG_STEERING_SOAP */
+#endif /* !REG_SOAP_STEERING */
 	  
 	if (port_ok && hostname_ok) {
 	    
