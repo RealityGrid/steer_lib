@@ -360,10 +360,6 @@ int parseIOType(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 
       io->direction = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
     }
-    else if( !xmlStrcmp(cur->name, (const xmlChar *) "Support_auto_io") && (cur->ns == ns)){
-
-      io->support_auto = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
-    }
     else if( !xmlStrcmp(cur->name, (const xmlChar *) "Freq_handle") && (cur->ns == ns)){
 
       io->freq_handle = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
@@ -580,7 +576,6 @@ struct io_struct *New_io_struct()
     io->label        = NULL;
     io->handle       = NULL;
     io->direction    = NULL;
-    io->support_auto = NULL;
     io->freq_handle  = NULL;
     io->next         = NULL;
   }
@@ -964,8 +959,6 @@ void Print_io_struct(struct io_struct   *io)
 			   (char *)(ptr->handle));
     if(ptr->direction)fprintf(stderr, "Dirn = %s\n", 
 			      (char *)(ptr->direction));
-    if(ptr->support_auto)fprintf(stderr, "support_auto = %s\n", 
-				(char *)(ptr->support_auto));
     if(ptr->freq_handle)fprintf(stderr, "Freq_handle = %s\n",
 			       (char *)(ptr->freq_handle));
 

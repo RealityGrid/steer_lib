@@ -430,8 +430,7 @@ int Steering_finalize()
 int Register_IOTypes(int    NumTypes,
                      char* *IOLabel,
 		     int   *type,
-		     int   *support_auto_io,
-		     int  **IOFrequency,
+		     int   *IOFrequency,
                      int   *IOType)
 {
   int          i;
@@ -442,6 +441,7 @@ int Register_IOTypes(int    NumTypes,
   int          iofreq_strbl;
   int          iofreq_type;
   int          iparam;
+  void        *ptr_array[1];
   int          return_status = REG_SUCCESS;
 
   /* Check that steering is enabled */
@@ -458,12 +458,6 @@ int Register_IOTypes(int    NumTypes,
 
   if (!ReG_SteeringInit) return REG_FAILURE;
 
-  /* Set variables required for registration of associated io
-     frequency as a steerable parameter */
-
-  iofreq_label = "IO_Frequency";
-  iofreq_strbl = TRUE;
-  iofreq_type  = REG_INT;
 
   /* IO types cannot be deleted so is safe to use num_registered to 
      get next free entry */
@@ -492,46 +486,46 @@ int Register_IOTypes(int    NumTypes,
 
     IOTypes_table.io_def[current].direction = type[i];
 
-    /* Whether automatic emission/consumption is supported */
+    /* Whether automatic emission/consumption is supported
 
     IOTypes_table.io_def[current].auto_io_support = support_auto_io[i];
+    */
 
-    /* We only expect a frequency variable to register if the application
-       claims to support automatic emission/consumption */
-    if(support_auto_io[i] == TRUE){
+    /* Set variables required for registration of associated io
+       frequency as a steerable parameter */
 
-      Register_params(1,
-		      &iofreq_label,
-		      &iofreq_strbl,
-		      (void **)(&(IOFrequency[i])),
-		      &iofreq_type);
+    iofreq_label = "IO_Frequency";
+    iofreq_strbl = TRUE;
+    iofreq_type  = REG_INT;
+    IOTypes_table.io_def[current].frequency = IOFrequency[i];
+    ptr_array[0] = (void *)&(IOTypes_table.io_def[current].frequency);
 
-      /* Store the handle given to this parameter - this line must
-	 immediately succeed the call to Register_params */
+    Register_params(1,
+		    &iofreq_label,
+		    &iofreq_strbl,
+		    ptr_array,
+		    &iofreq_type);
 
-      IOTypes_table.io_def[current].freq_param_handle = 
+    /* Store the handle given to this parameter - this line must
+       immediately succeed the call to Register_params */
+
+    IOTypes_table.io_def[current].freq_param_handle = 
 	                                 Params_table.next_handle - 1;
 
-      /* Annotate the parameter table entry just created to flag that
-	 it is a parameter that is internal to the steering library */
-      iparam = Param_index_from_handle(&Params_table, 
-				       IOTypes_table.io_def[current].freq_param_handle);
-      if(iparam != REG_PARAM_HANDLE_NOTSET){
-	Params_table.param[iparam].is_internal = TRUE;
-      }
-      else{
-#if DEBUG
-	fprintf(stderr, "Register_IOTypes: failed to get handle for param\n");
-#endif
-	return_status = REG_FAILURE;
-      }
-      
+    /* Annotate the parameter table entry just created to flag that
+       it is a parameter that is internal to the steering library */
+    iparam = Param_index_from_handle(&Params_table, 
+				     IOTypes_table.io_def[current].freq_param_handle);
+    if(iparam != REG_PARAM_HANDLE_NOTSET){
+      Params_table.param[iparam].is_internal = TRUE;
     }
     else{
-
-      IOTypes_table.io_def[current].freq_param_handle = 
-	                                 REG_PARAM_HANDLE_NOTSET;
+#if DEBUG
+      fprintf(stderr, "Register_IOTypes: failed to get handle for param\n");
+#endif
+      return_status = REG_FAILURE;
     }
+      
 
     /* Create, store and return a handle for this IOType */
     IOTypes_table.io_def[current].handle = IOTypes_table.next_handle++;
@@ -1480,17 +1474,12 @@ int Emit_IOType_defs(){
 	return REG_FAILURE;
       }
 
-      if(IOTypes_table.io_def[i].auto_io_support){
+      /* ARPDBG - will always have freq. associated with IO channel now
+	 so need to update schema and parser and get rid of this */
+      pbuf += sprintf(pbuf,"<Support_auto_io>TRUE</Support_auto_io>\n");
 
-	pbuf += sprintf(pbuf,"<Support_auto_io>TRUE</Support_auto_io>\n");
-
-	pbuf += sprintf(pbuf,"<Freq_handle>%d</Freq_handle>\n",
-		IOTypes_table.io_def[i].freq_param_handle);
-      }
-      else{
-
-	pbuf += sprintf(pbuf,"<Support_auto_io>FALSE</Support_auto_io>\n");
-      }
+      pbuf += sprintf(pbuf,"<Freq_handle>%d</Freq_handle>\n",
+	      IOTypes_table.io_def[i].freq_param_handle);
 
       pbuf += sprintf(pbuf,"</IOType>\n");
     }

@@ -760,6 +760,7 @@ int Consume_IOType_defs(int SimHandle)
 	}
       }
 
+      /*
       if(ptr->support_auto){
 
         if(!xmlStrcmp(ptr->support_auto, (const xmlChar *) "TRUE")){
@@ -770,6 +771,7 @@ int Consume_IOType_defs(int SimHandle)
 	  Sim_table.sim[index].IOdef_table.io_def[j].auto_io_support = FALSE;
 	}
       }
+      */
 
       if(ptr->freq_handle){
 
@@ -1545,7 +1547,6 @@ int Get_iotypes(int    sim_handle,
 		int   *handles,
 		char* *labels,
 		int   *types,
-		int   *auto_io_supported,
 		int   *io_freqs)
 {
   int isim;
@@ -1575,37 +1576,31 @@ int Get_iotypes(int    sim_handle,
 
 	types[count] = Sim_table.sim[isim].IOdef_table.io_def[i].direction;
 
-	auto_io_supported[count] = 
-	             Sim_table.sim[isim].IOdef_table.io_def[i].auto_io_support;
+	/* Get the current frequency at which this occurs */
+	iparam = Param_index_from_handle(&(Sim_table.sim[isim].Params_table),
+		                         Sim_table.sim[isim].IOdef_table.io_def[i].freq_param_handle);
 
-	/* If this IO type supports automatic emission/consumption then get
-	   the current frequency at which this occurs */
-	if(auto_io_supported[count]){
+	if(iparam != REG_PARAM_HANDLE_NOTSET){
 
-	  iparam = Param_index_from_handle(&(Sim_table.sim[isim].Params_table),
-		                           Sim_table.sim[isim].IOdef_table.io_def[i].freq_param_handle);
-
-	  if(iparam != REG_PARAM_HANDLE_NOTSET){
-
-	    nitem = sscanf(Sim_table.sim[isim].Params_table.param[iparam].value, 
+	  nitem = sscanf(Sim_table.sim[isim].Params_table.param[iparam].value, 
 			   "%d", &(io_freqs[count]) );
-	    if(nitem != 1){
+	  if(nitem != 1){
 
 #if DEBUG
-	      fprintf(stderr, "Get_iotypes: failed to retrieve freq value\n");
-#endif
-	      io_freqs[count] = 0;
-	      return_status = REG_FAILURE;
-	    }
-	  }
-	  else{
-#if DEBUG
-	    fprintf(stderr, "Get_iotypes: failed to match param handle\n");
+	    fprintf(stderr, "Get_iotypes: failed to retrieve freq value\n");
 #endif
 	    io_freqs[count] = 0;
 	    return_status = REG_FAILURE;
 	  }
 	}
+	else{
+#if DEBUG
+	  fprintf(stderr, "Get_iotypes: failed to match param handle\n");
+#endif
+	  io_freqs[count] = 0;
+	  return_status = REG_FAILURE;
+	}
+	
 	count++;
 
 	if(count == num_iotypes)break;
