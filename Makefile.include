@@ -59,14 +59,14 @@ AR_FLAGS = rv
 # Directory to put executables in (mini_app, mini_steerer etc.)
 LOCAL_BIN_DIR  = ${HOME}/bin
 
-#----------------------------------------------------------------
-
 STEER_INCLUDES = -I${REG_STEER_HOME}/include \
                  -I${REG_XML_INCDIR}
+
+# Note that on some machines you won't need to concatenate NBIT onto
+# the contents of REG_XML_LIBDIR (e.g. linux boxes that only have 
+# /usr/local/lib rather than /usr/local/lib32, say).
 STEER_LIBS = -L${REG_STEER_HOME}/lib$(NBIT) \
              -L${REG_XML_LIBDIR}$(NBIT)
-
-#----------------------------------------------------------------
 
 # The globus_definitions file can be generated using the following globus command
 #  globus-makefile-header globus_io globus_common -flavor=gcc32dbg > globus_defintions
@@ -85,4 +85,9 @@ REG_GLOBUS_SAMPLES_FLAG = 1
 
 # Set flag to 1 to use globus for steering communication, 0 to not 
 REG_GLOBUS_STEERING_FLAG = 0
+
+
+# Set flag to 1 to use SOAP for steering communication, 0 to not 
 REG_SOAP_STEERING_FLAG = 1
+SOAP_PKG_LIBS = -lgsoap
+SOAP_LDFLAGS = 
