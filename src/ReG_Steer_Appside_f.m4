@@ -1075,7 +1075,7 @@ INT_KIND_1_DECL(Status);
 
     *Status = INT_KIND_1_CAST( Register_param( pbuf,
 	  		      		       REG_FALSE,
-			      		       &ParamPtr,
+			      		       ParamPtr,
 			      		       REG_BIN,
                                                "",
                                                len_buf ) );

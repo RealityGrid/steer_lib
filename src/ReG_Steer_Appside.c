@@ -2484,7 +2484,7 @@ int Register_bin_param(char *ParamLabel, void *ParamPtr,
 
   /* REG_BIN always just monitored */
   return Register_param(ParamLabel, REG_FALSE, ParamPtr,
-			ParamType, "", len_buf);
+			REG_BIN, "", len_buf);
 }
 
 /*----------------------------------------------------------------
