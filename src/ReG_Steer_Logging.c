@@ -844,20 +844,20 @@ int Emit_log_entries(Chk_log_type *log, char *buf)
   static char *pmsg_buf = NULL;
   int          status;
 
-  printf("ARPDBG: start of Emit_log_entries\n");
+  if(log->log_type == PARAM)printf("ARPDBG: start of Emit_log_entries\n");
 
   /* Zero the count of messages sent this time around */
   log->num_sent = 0;
 
   if(log->emit_in_progress == REG_TRUE){
     if(Pack_send_log_entries(&pXmlBuf, &(log->num_sent)) == REG_UNFINISHED){
-      printf("ARPDBG: end of Emit_log_entries\n");
+      if(log->log_type == PARAM)printf("ARPDBG: end of Emit_log_entries\n");
       return REG_UNFINISHED;
     }
     /* Check to see if we're all done or whether there's still
        raw log data to process */
     if(!pmsg_buf){
-      printf("ARPDBG: end of Emit_log_entries\n");
+      if(log->log_type == PARAM)printf("ARPDBG: end of Emit_log_entries\n");
       return REG_SUCCESS;
     }
   }
@@ -865,13 +865,18 @@ int Emit_log_entries(Chk_log_type *log, char *buf)
     pmsg_buf = buf;
   }
 
-  pXmlBuf = Global_scratch_buffer;
   if(!strstr(pmsg_buf, "<Log_entry>")){
 
     while(1){
+      pXmlBuf = Global_scratch_buffer;
+
       status = Log_columns_to_xml(&pmsg_buf, Global_scratch_buffer, 
 				  REG_SCRATCH_BUFFER_SIZE);
       if(status == REG_FAILURE){
+        if(log->log_type == PARAM){
+	  printf("ARPDBG: Log_columns_to_xml failed\n");
+	  printf("ARPDBG: end of Emit_log_entries\n");
+	}
 	return REG_FAILURE;
       }
       else if(status == REG_EOD){
@@ -879,19 +884,22 @@ int Emit_log_entries(Chk_log_type *log, char *buf)
 	pmsg_buf = NULL;
       }
 
-      if(Pack_send_log_entries(&pXmlBuf, &(log->num_sent)) == REG_UNFINISHED){
-	log->emit_in_progress = REG_TRUE;
-	printf("ARPDBG: end of Emit_log_entries\n");
-	return REG_UNFINISHED;
+      if(log->log_type == PARAM)printf("ARPDBG: we're here...\n");
+      while(Pack_send_log_entries(&pXmlBuf, &(log->num_sent)) 
+	    == REG_UNFINISHED){
+	log->num_sent = 0;
+	usleep(500000);
+	printf(". ");
       }
 
+      log->num_sent = 0;
       if(status == REG_EOD) break;
     }
   }
   else{
     Pack_send_log_entries(&pmsg_buf, &(log->num_sent));
   }
-  printf("ARPDBG: end of Emit_log_entries\n");
+  if(log->log_type == PARAM)printf("ARPDBG: actual end of Emit_log_entries\n");
 
   return REG_SUCCESS;
 }
@@ -937,6 +945,7 @@ int Pack_send_log_entries(char **pBuf, int *msg_count)
       *pBuf = pbuf3;
       free(msg_buf);
       msg_buf = NULL;
+      printf("ARPDBG: hit max msg count\n");
       return REG_UNFINISHED;
     }
 
@@ -1016,7 +1025,7 @@ int Pack_send_log_entries(char **pBuf, int *msg_count)
       }
 
       if(Send_status_msg(msg_buf) != REG_SUCCESS){
-	*pBuf = pbuf3;
+	*pBuf = pbuf2;
 	free(msg_buf);
 	msg_buf = NULL;
 	return REG_UNFINISHED;
@@ -1055,7 +1064,7 @@ int Pack_send_log_entries(char **pBuf, int *msg_count)
       return_status = Send_status_msg(msg_buf);
       if(return_status != REG_SUCCESS){
 	/* pbuf3 is NULL here 'cos we've broken out of while loop*/
-	*pBuf = pbuf2;
+	*pBuf = pbuf1;
 	free(msg_buf);
 	msg_buf = NULL;
 	return REG_UNFINISHED;
