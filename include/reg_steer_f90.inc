@@ -77,7 +77,7 @@
 
 ! Limit on number of parameters steerer can modify at any one time
 
-  INTEGER (KIND=4), PARAMETER :: REG_MAX_NUM_STR_PARAMS = 20
+  INTEGER (KIND=4), PARAMETER :: REG_MAX_NUM_STR_PARAMS = 40
 
 ! Initial sizes for internal tables of registered IO types 
 ! and parameters
@@ -91,7 +91,7 @@
 
 ! Initial limit on no. of sims being steered at any one time
 
-  INTEGER (KIND=4), PARAMETER :: REG_MAX_NUM_STEERED_SIM = 10
+  INTEGER (KIND=4), PARAMETER :: REG_MAX_NUM_STEERED_SIM = 5
 
 ! Limit on number of files used in communication - filenames
 !  wrap back on themselves once this limit reached
@@ -100,7 +100,7 @@
 
 ! Maximum length for any string
 
-  INTEGER (KIND=4), PARAMETER :: REG_MAX_STRING_LENGTH = 80
+  INTEGER (KIND=4), PARAMETER :: REG_MAX_STRING_LENGTH = 256
 
 ! Steering commands
 
