@@ -5,6 +5,7 @@ undefine(`len')
 # g95 likes it...
 #
 define(`FUNCTION',`$1__')
+#define(`FUNCTION',`$1_')
 #
 # FORTRAN character strings are passed as follows:
 # a pointer to the base of the string is passed in the normal
