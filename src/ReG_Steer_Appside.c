@@ -33,6 +33,10 @@
   Authors........: Andrew Porter, Robert Haines
 ---------------------------------------------------------------------------*/
 
+/** @file ReG_Steer_Appside.c 
+    @brief File containing main application-side routines
+  */
+
 #include "ReG_Steer_Appside.h"
 #include "ReG_Steer_Appside_internal.h"
 #include "ReG_Steer_Appside_Sockets.h"
@@ -63,67 +67,76 @@
 #define REG_DEBUG 1
 #endif
 
-/* Buffer used for string handling etc - size set 
-   in ReG_steer_types.h */
+/**
+   Buffer used for string handling etc - size set 
+   in ReG_steer_types.h 
+ */
 char Global_scratch_buffer[REG_SCRATCH_BUFFER_SIZE];
 
-/* The table holding details of our communication channel with the
-   steering client */
+/**
+   The table holding details of our communication channel with the
+   steering client 
+ */
 Steerer_connection_table_type Steerer_connection;
 
-/* IOdef_table_type is declared in ReG_Steer_Common.h since it is 
-   used in both the steerer-side and app-side libraries */
-
+/**
+   IOdef_table_type is declared in ReG_Steer_Common.h since it is 
+   used in both the steerer-side and app-side libraries 
+ */
 IOdef_table_type IOTypes_table;
 
-/* Table for registered checkpoint types */
+/** Table for registered checkpoint types */
 
 IOdef_table_type ChkTypes_table;
 
-/* Log of checkpoints taken */
+/** Log of checkpoints taken */
 
 Chk_log_type Chk_log;
 
-/* Log of values of parameters for which logging has 
+/** Log of values of parameters for which logging has 
    been requested */
 Chk_log_type Param_log;
 
-/* Log of steering commands received */
+/** Log of steering commands received */
 
 Steer_log_type Steer_log;
 
-/* Param_table_type is declared in ReG_Steer_Common.h since it is 
-   used in both the steerer-side and app-side libraries */
+/** Param_table_type is declared in ReG_Steer_Common.h since it is 
+    used in both the steerer-side and app-side libraries */
 
 Param_table_type Params_table;
 
-/* Whether steering is enabled (set by user) */
+/** Whether steering is enabled (set by user) */
 static int ReG_SteeringEnabled = REG_FALSE;
-/* Whether the set of registered params has changed */
+/** Whether the set of registered params has changed */
 static int ReG_ParamsChanged   = REG_FALSE;
-/* Whether the set of registered IO types has changed */
+/** Whether the set of registered IO types has changed */
 static int ReG_IOTypesChanged  = REG_FALSE;
-/* Whether the set of registered Chk types has changed */
+/** Whether the set of registered Chk types has changed */
 static int ReG_ChkTypesChanged = REG_FALSE;
-/* Whether app. is currently being steered */
+/** Whether app. is currently being steered */
        int ReG_SteeringActive  = REG_FALSE;
-/* Whether steering library has been initialised */
+/** Whether steering library has been initialised */
 static int ReG_SteeringInit    = REG_FALSE;
-/* Whether steering lib is being called from F90 */
+/** Whether steering lib is being called from F90 */
 static int ReG_CalledFromF90   = REG_FALSE;
-/* Absolute path of directory we are executing in */
+/** Internal monitored param to track current simulated time */
+static double ReG_TotalSimTimeSecs = 0.0;
+/** Internal param to hold current size of timestep of sim */
+static double ReG_SimTimeStepSecs = 0.0;
+/** Absolute path of directory we are executing in */
 char ReG_CurrentDir[REG_MAX_STRING_LENGTH];
-/* Hostname of machine we are executing on */
+/** Hostname of machine we are executing on */
 char ReG_Hostname[REG_MAX_STRING_LENGTH];
-/* Name (and version) of the application that has called us */
+/** Name (and version) of the application that has called us */
 char ReG_AppName[REG_MAX_STRING_LENGTH];
 
-/* Global variable used to store next valid handle value for both
+/** Global variable used to store next valid handle value for both
    IOTypes and ChkTypes - these MUST have unique handles because
    they are used as command IDs */
 static int Next_IO_Chk_handle = REG_MIN_IOTYPE_HANDLE;
 
-/* Linked list of arrays we've alloc'ed for the user */
+/** Linked list of arrays we've alloc'ed for the user */
 struct ReG_array_list {
 
   char **array;
@@ -131,6 +144,15 @@ struct ReG_array_list {
 };
 
 static struct ReG_array_list* ReG_list_head = NULL;
+
+struct ReG_ctrl_msg_store{
+
+    struct control_struct     *control;
+    struct ReG_ctrl_msg_store *next;
+};
+
+static struct ReG_ctrl_msg_store *ReG_ctrl_msg_first = NULL;
+static struct ReG_ctrl_msg_store *ReG_ctrl_msg_current = NULL;
 
 /*----------------------------------------------------------------*/
 
@@ -402,10 +424,6 @@ int Steering_initialize(char *AppName,
      Steering_control is called, 10 means once for every ten calls etc.) */
   Steerer_connection.steer_interval = 1;
 
-  /* By default, we pass any pause command that we receive up to the 
-     application (provided it supports it) */
-  Steerer_connection.handle_pause_cmd = REG_FALSE;
-
   i = Params_table.num_registered;
   Params_table.param[i].ptr       = (void *)(&(Steerer_connection.steer_interval));
   Params_table.param[i].type      = REG_INT;
@@ -421,6 +439,26 @@ int Steering_initialize(char *AppName,
   strcpy(Params_table.param[i].max_val, "");
   Params_table.param[i].max_val_valid = REG_FALSE;
   Increment_param_registered(&Params_table);
+
+  i = Params_table.num_registered;
+  Params_table.param[i].ptr       = (void *)(&(ReG_TotalSimTimeSecs));
+  Params_table.param[i].type      = REG_DBL;
+  Params_table.param[i].handle    = REG_TOT_SIM_TIME_HANDLE;
+  Params_table.param[i].steerable = REG_FALSE;
+  Params_table.param[i].modified  = REG_FALSE;
+  Params_table.param[i].is_internal=REG_FALSE;
+  Params_table.param[i].logging_on =REG_FALSE;
+  strcpy(Params_table.param[i].label, "REG_TOT_SIM_TIME_S");
+  strcpy(Params_table.param[i].value, "0.0");
+  strcpy(Params_table.param[i].min_val, "0.0");
+  Params_table.param[i].min_val_valid = REG_TRUE;
+  strcpy(Params_table.param[i].max_val, "");
+  Params_table.param[i].max_val_valid = REG_FALSE;
+  Increment_param_registered(&Params_table);
+
+  /* By default, we pass any pause command that we receive up to the 
+     application (provided it supports it) */
+  Steerer_connection.handle_pause_cmd = REG_FALSE;
 
   /* Set-up/prepare for connection to steering client */
   if(Initialize_steering_connection(NumSupportedCmds, 
@@ -594,6 +632,9 @@ int Steering_finalize()
 
   Params_table.num_registered = 0;
   Params_table.max_entries = REG_INITIAL_NUM_IOTYPES;
+
+  /* Free memory allocated for storing 'early' control messages */
+  Free_control_msg_store();
 
   /* Free memory allocated for string arrays for user */
   Free_string_arrays();
@@ -2567,8 +2608,7 @@ int Steering_control(int     SeqNum,
 		     int    *SteerCommands,
 		     char  **SteerCmdParams)
 {
-  int    i;
-  int    status;
+  int    i, status;
   int    do_steer;
   int    detached;
   int    cmd_count     = 0;
@@ -2580,8 +2620,10 @@ int Steering_control(int     SeqNum,
   int    num_param = 0;
 
   /* Indices to save having to keep looking-up handles */
-  static int     step_time_index = 0;
+  static int     step_time_index = -1;
   static int     seq_num_index   = -1;
+  static int     tot_time_index  = -1;
+  static int     time_step_index = -1;
 
   /* Variables for timing */
   float          time_per_step;
@@ -2634,6 +2676,49 @@ int Steering_control(int     SeqNum,
     if(seq_num_index != -1){
       sprintf(Params_table.param[seq_num_index].value, "%d", SeqNum);
       Params_table.param[seq_num_index].modified = REG_TRUE;
+    }
+  }
+
+  if(time_step_index != -1){
+    Get_ptr_value(&(Params_table.param[time_step_index]));
+    sscanf(Params_table.param[time_step_index].value, "%lf", 
+	   &ReG_SimTimeStepSecs);
+
+    ReG_TotalSimTimeSecs += ReG_SimTimeStepSecs;
+  }
+  else{
+    for(i=0; i<Params_table.max_entries; i++){
+
+      if(Params_table.param[i].handle != REG_PARAM_HANDLE_NOTSET &&
+	 /*!strcmp(Params_table.param[i].label, REG_TIMESTEP_LABEL)){*/
+	 strstr(Params_table.param[i].label, REG_TIMESTEP_LABEL)){
+
+	time_step_index = i;
+	break;
+      }
+    }
+    if(time_step_index != -1){
+      Get_ptr_value(&(Params_table.param[time_step_index]));
+      sscanf(Params_table.param[time_step_index].value, "%lf", 
+	     &ReG_SimTimeStepSecs);
+
+      ReG_TotalSimTimeSecs += ReG_SimTimeStepSecs;
+    }
+  }
+
+  if(tot_time_index != -1){
+    sprintf(Params_table.param[tot_time_index].value, "%lf", 
+	    ReG_TotalSimTimeSecs);
+    Params_table.param[tot_time_index].modified = REG_TRUE;
+  }
+  else{
+    tot_time_index = Param_index_from_handle(&(Params_table), 
+					    REG_TOT_SIM_TIME_HANDLE);
+    if(tot_time_index != -1){
+      sprintf(Params_table.param[tot_time_index].value, "%lf", 
+	      ReG_TotalSimTimeSecs);
+
+      Params_table.param[tot_time_index].modified = REG_TRUE;
     }
   }
 
@@ -3657,18 +3742,68 @@ int Consume_control(int    *NumCommands,
 		    char  **CommandParams,
 		    int    *NumSteerParams,
 		    int    *SteerParamHandles,
-		    char  **SteerParamLabels){
-
+		    char  **SteerParamLabels)
+{
   int                  j;
-  int                  count;
-  int                  log_count;
-  char                *ptr;
+  int                  cmd_count, param_count, log_count;
   struct msg_struct   *msg;
-  struct cmd_struct   *cmd;
-  struct param_struct *param;
-  int                  handle;
-  int                  return_status = REG_SUCCESS;
-  
+  int                  return_status = REG_SUCCESS;  
+  double               valid_time;
+
+  struct ReG_ctrl_msg_store *previous = NULL;
+  struct ReG_ctrl_msg_store *toDelete  = NULL;
+  struct ReG_ctrl_msg_store *storedMsg = NULL;
+
+  *NumSteerParams = 0;
+  *NumCommands    = 0;
+
+  cmd_count   = 0;
+  param_count = 0;
+  log_count   = 0;
+
+  if(ReG_ctrl_msg_first){
+    storedMsg = ReG_ctrl_msg_first;
+    while(storedMsg){
+      sscanf((char *)storedMsg->control->valid_after, "%lf", &valid_time);
+      printf("ARPDBG: total sim time = %.8lf\n", ReG_TotalSimTimeSecs);
+      printf("ARPDBG, stored msg has valid_time = %.8lf\n", valid_time);
+      printf("ARPDBG, sim timestep = %.8lf\n", ReG_SimTimeStepSecs);
+      if(valid_time < (ReG_TotalSimTimeSecs+0.1*ReG_SimTimeStepSecs)){
+	printf("...ARPDBG, stored msg is now valid\n");
+
+	Unpack_control_msg(storedMsg->control,
+			   NumCommands,
+			   Commands+cmd_count,
+			   CommandParams+cmd_count,
+			   NumSteerParams,
+			   SteerParamHandles+param_count,
+			   SteerParamLabels+param_count);
+
+	cmd_count += *NumCommands;
+	param_count += *NumSteerParams;
+
+	if(!previous){
+	  ReG_ctrl_msg_first = storedMsg->next;
+	}
+	else{
+	  previous->next = storedMsg->next;
+	}
+	Delete_control_struct(storedMsg->control);
+	storedMsg->control = NULL;
+	toDelete = storedMsg;
+      }
+
+      storedMsg = storedMsg->next;
+      if(toDelete){
+	free(toDelete);
+	toDelete = NULL;
+      }
+      else{
+	previous = storedMsg;
+      }
+    }
+  }
+
   /* Read any message sent by the steerer - may contain commands and/or
      new parameter values */
 
@@ -3676,163 +3811,39 @@ int Consume_control(int    *NumCommands,
 
     if(msg->control){
 
-      cmd   = msg->control->first_cmd;
-      count = 0;
+      if(msg->control->valid_after){
+	sscanf((char *)(msg->control->valid_after), "%lf", &(valid_time));
 
-      while(cmd){
-
-	if(cmd->id){
-	  sscanf((char *)(cmd->id), "%d", &(Commands[count]));
-	}
-	else if(cmd->name){
-
-	  if(!xmlStrcmp(cmd->name, (const xmlChar *)"STOP")){
-	    Commands[count] = REG_STR_STOP;
-	  }
-	  else if(!xmlStrcmp(cmd->name, (const xmlChar *)"PAUSE")){
-	    Commands[count] = REG_STR_PAUSE;
-	  }
-	  else if(!xmlStrcmp(cmd->name, (const xmlChar *)"DETACH")){
-	    Commands[count] = REG_STR_DETACH;
-	  }
-	  else if(!xmlStrcmp(cmd->name, (const xmlChar *)"RESUME")){
-	    Commands[count] = REG_STR_RESUME;
+	fprintf(stderr, "Consume_control, msg has valid_after = %lf\n", valid_time);
+	fprintf(stderr, "                 current sim time = %lf\n", ReG_TotalSimTimeSecs);
+	if(valid_time > ReG_TotalSimTimeSecs){
+	  /* Don't read this message yet - store it */
+	  if(!ReG_ctrl_msg_first){
+	    ReG_ctrl_msg_first = New_msg_store_struct();
+	    ReG_ctrl_msg_current = ReG_ctrl_msg_first;
+	    ReG_ctrl_msg_current->control = msg->control;
+	    ReG_ctrl_msg_current = ReG_ctrl_msg_current->next;
 	  }
 	  else{
-	    fprintf(stderr, "Consume_control: unrecognised cmd name: %s\n", 
-		    (char *)cmd->name);
-	    cmd = cmd->next;
-	    continue;
+	    ReG_ctrl_msg_current = New_msg_store_struct();
+	    ReG_ctrl_msg_current->control = msg->control;
+	    ReG_ctrl_msg_current = ReG_ctrl_msg_current->next;
 	  }
-
-	  /* Log this command */
-	  Steer_log.cmd[count].id = Commands[count];
+	  /* Don't delete msg as we are keeping a reference to it */
+	  return REG_SUCCESS;
 	}
-	else{
-	  fprintf(stderr, "Consume_control: error - skipping cmd because "
-		  "is missing both id and name\n");
-	  cmd = cmd->next;
-	  continue;
-	}
-
-	if(cmd->first_param){
-
-	  param = cmd->first_param;
-	  ptr   = CommandParams[count];
-	  
-	  while(param){
-
-	    if(param->value){
-	      sprintf(ptr, "%s ", (char *)(param->value));
-	      ptr += strlen((char *)param->value) + 1;
-	    }
-
-	    param = param->next;
-	  }
-	}
-	else{
-
-	  sprintf(CommandParams[count], " ");
-	}
-
-	/* Log this cmd parameter */
-	strcpy(Steer_log.cmd[count].params, CommandParams[count]);
-
-#if REG_DEBUG
-	fprintf(stderr, "Consume_control: cmd[%d] = %d\n", count,
-		Commands[count]);
-	fprintf(stderr, "                 params  = %s\n", 
-		CommandParams[count]);
-#endif
-	count++;
-
-	if(count >= REG_MAX_NUM_STR_CMDS){
-
-	  fprintf(stderr, 
-		  "Consume_control: WARNING: truncating list of commands\n");
-	  break;
-	}
-
-	cmd = cmd->next;
       }
 
-      /* Record how many cmds we've just received */
-      *NumCommands = count;
-      Steer_log.num_cmds = count;
-
-#if REG_DEBUG
-      fprintf(stderr, "Consume_control: received %d commands\n", 
-	      *NumCommands);
-#endif
-
-      param = msg->control->first_param;
-      count = 0;
-      log_count = 0;
-
-      while(param){
-
-	sscanf((char *)(param->handle), "%d", &handle);
-
-	for(j=0; j<Params_table.max_entries; j++){
-  
-	  if(Params_table.param[j].handle == handle){
-	  
-	    break;
-	  }
-	}
-
-	if(j == Params_table.max_entries){
-  
-	  fprintf(stderr, "Consume_control: failed to match param "
-		  "handles\n");
-	  return_status = REG_FAILURE;
-	}
-	else{
-
-	  /* Store char representation of new parameter value */
-	  if(param->value){
-
-	    strcpy(Params_table.param[j].value, (char *)(param->value));
-
-	    /* Update value associated with pointer */
-	    Update_ptr_value(&(Params_table.param[j]));
-
-	    if( !(Params_table.param[j].is_internal) ){
-
-	      SteerParamHandles[count] = handle;
-	      SteerParamLabels[count]  = Params_table.param[j].label;
-	      count++;
-	    }
-
-	    /* Log new parameter value */
-	    Steer_log.param[log_count].handle = handle;
-	    strcpy(Steer_log.param[log_count].value, 
-		   Params_table.param[j].value);
-	    log_count++;
-	  }
-	  else{
-	    fprintf(stderr, "Consume_control: empty parameter value "
-		    "field\n");
-	  }
-	}
-
-	param = param->next;
-      }
-
-      /* Record no. of param. changes in this log entry */
-      Steer_log.num_params = log_count;
-
-      /* Update the number of parameters received to allow for fact that
-	 some may be internal and are not passed up to the calling routine */
-      *NumSteerParams = count;
-
-#if REG_DEBUG
-      fprintf(stderr, "Consume_control: received %d params\n", 
-	      *NumSteerParams);
-#endif
+      Unpack_control_msg(msg->control,
+			 NumCommands,
+			 Commands+cmd_count,
+			 CommandParams+cmd_count,
+			 NumSteerParams,
+			 SteerParamHandles+param_count,
+			 SteerParamLabels+param_count);
     }
     else{
-      fprintf(stderr, "Consume_control: error, no control data\n");
+      fprintf(stderr, "Consume_control: error, no control data in msg\n");
       *NumSteerParams = 0;
       *NumCommands    = 0;
       return_status   = REG_FAILURE;
@@ -3843,20 +3854,189 @@ int Consume_control(int    *NumCommands,
     msg = NULL;
 
   }
-  else{
-
 #if REG_DEBUG
+  else{
     fprintf(stderr, "Consume_control: no message from steerer\n");
+  }
 #endif
 
-    /* No message found */
+  return return_status;
+}
 
-    *NumSteerParams = 0;
-    *NumCommands = 0;
+/*----------------------------------------------------------------*/
+
+int Unpack_control_msg(struct control_struct *ctrl,
+		       int    *NumCommands,
+		       int    *Commands,
+		       char  **CommandParams,
+		       int    *NumSteerParams,
+		       int    *SteerParamHandles,
+		       char  **SteerParamLabels)
+{
+  int                  j;
+  int                  count, log_count;
+  int                  handle;
+  struct cmd_struct   *cmd;
+  struct param_struct *param;
+  char                *ptr;
+  int                  return_status = REG_SUCCESS;  
+
+  if(!ctrl)return REG_FAILURE;
+
+  cmd   = ctrl->first_cmd;
+  count = 0;
+
+  while(cmd){
+
+    if(cmd->id){
+      sscanf((char *)(cmd->id), "%d", &(Commands[count]));
+    }
+    else if(cmd->name){
+
+      if(!xmlStrcmp(cmd->name, (const xmlChar *)"STOP")){
+	Commands[count] = REG_STR_STOP;
+      }
+      else if(!xmlStrcmp(cmd->name, (const xmlChar *)"PAUSE")){
+	Commands[count] = REG_STR_PAUSE;
+      }
+      else if(!xmlStrcmp(cmd->name, (const xmlChar *)"DETACH")){
+	Commands[count] = REG_STR_DETACH;
+      }
+      else if(!xmlStrcmp(cmd->name, (const xmlChar *)"RESUME")){
+	Commands[count] = REG_STR_RESUME;
+      }
+      else{
+	fprintf(stderr, "Unpack_control_msg: unrecognised cmd name: %s\n", 
+		(char *)cmd->name);
+	cmd = cmd->next;
+	continue;
+      }
+
+      /* Log this command */
+      Steer_log.cmd[count].id = Commands[count];
+    }
+    else{
+      fprintf(stderr, "Unpack_control_msg: error - skipping cmd because "
+	      "is missing both id and name\n");
+      cmd = cmd->next;
+      continue;
+    }
+
+    if(cmd->first_param){
+
+      param = cmd->first_param;
+      ptr   = CommandParams[count];
+	  
+      while(param){
+
+	if(param->value){
+	  sprintf(ptr, "%s ", (char *)(param->value));
+	  ptr += strlen((char *)param->value) + 1;
+	}
+
+	param = param->next;
+      }
+    }
+    else{
+
+      sprintf(CommandParams[count], " ");
+    }
+
+    /* Log this cmd parameter */
+    strcpy(Steer_log.cmd[count].params, CommandParams[count]);
+
+#if REG_DEBUG
+    fprintf(stderr, "Unpack_control_msg: cmd[%d] = %d\n", count,
+	    Commands[count]);
+    fprintf(stderr, "                    params  = %s\n", 
+	    CommandParams[count]);
+#endif
+    count++;
+
+    if(count >= REG_MAX_NUM_STR_CMDS){
+
+      fprintf(stderr, 
+	      "Unpack_control_msg: WARNING: truncating list of commands\n");
+      break;
+    }
+
+    cmd = cmd->next;
   }
 
+  /* Record how many cmds we've just received */
+  *NumCommands = count;
+  Steer_log.num_cmds = count;
 
-  return return_status;
+
+#if REG_DEBUG
+  fprintf(stderr, "Unpack_control_msg: received %d commands\n", 
+	  *NumCommands);
+#endif
+
+  param = ctrl->first_param;
+  count = 0;
+  log_count = 0;
+
+  while(param){
+
+    sscanf((char *)(param->handle), "%d", &handle);
+
+    for(j=0; j<Params_table.max_entries; j++){
+  
+      if (Params_table.param[j].handle == handle) break;
+    }
+
+    if(j == Params_table.max_entries){
+  
+      fprintf(stderr, "Unpack_control_msg: failed to match param "
+	      "handles\n");
+      return_status = REG_FAILURE;
+    }
+    else{
+
+      /* Store char representation of new parameter value */
+      if(param->value){
+
+	strcpy(Params_table.param[j].value, (char *)(param->value));
+
+	/* Update value associated with pointer */
+	Update_ptr_value(&(Params_table.param[j]));
+
+	if( !(Params_table.param[j].is_internal) ){
+
+	  SteerParamHandles[count] = handle;
+	  SteerParamLabels[count]  = Params_table.param[j].label;
+	  count++;
+	}
+
+	/* Log new parameter value */
+	Steer_log.param[log_count].handle = handle;
+	strcpy(Steer_log.param[log_count].value, 
+	       Params_table.param[j].value);
+	log_count++;
+      }
+      else{
+	fprintf(stderr, "Unpack_control_msg: empty parameter value "
+		"field\n");
+      }
+    }
+
+    param = param->next;
+  }
+
+  /* Record no. of param. changes in this log entry */
+  Steer_log.num_params = log_count;
+
+  /* Update the number of parameters received to allow for fact that
+     some may be internal and are not passed up to the calling routine */
+  *NumSteerParams = count;
+
+#if REG_DEBUG
+  fprintf(stderr, "Unpack_control_msg: received %d params\n", 
+	  *NumSteerParams);
+#endif
+
+  return REG_SUCCESS;
 }
 
 /*----------------------------------------------------------------*/
@@ -5412,4 +5592,45 @@ int Free_string_arrays()
   ReG_list_head = NULL;
 
   return REG_SUCCESS;
+}
+
+/*------------------------------------------------------------------*/
+
+int Free_control_msg_store()
+{
+  struct ReG_ctrl_msg_store *current, *tmp;
+
+  current = ReG_ctrl_msg_first;
+
+  while(current){
+    tmp = current->next;
+
+    if(current->control){
+      Delete_control_struct(tmp->control);
+      current->control = NULL;
+    }
+    free(current);
+
+    current = tmp;
+  }
+
+  ReG_ctrl_msg_first = NULL;
+
+  return REG_SUCCESS;
+}
+
+/*-----------------------------------------------------------------*/
+
+struct ReG_ctrl_msg_store *New_msg_store_struct()
+{
+  struct ReG_ctrl_msg_store *entry;
+
+  entry = (struct ReG_ctrl_msg_store *)malloc(sizeof(struct ReG_ctrl_msg_store));
+
+  if(entry){
+    entry->control  = NULL;
+    entry->next     = NULL;
+  }
+
+  return entry;
 }
