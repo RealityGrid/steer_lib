@@ -99,7 +99,7 @@
    and parameters */
 
 #define REG_INITIAL_NUM_IOTYPES 20
-#define REG_INITIAL_NUM_PARAMS  20
+#define REG_INITIAL_NUM_PARAMS  40
 
 /* Initial limit on no. of registered supported commands */
 
@@ -107,7 +107,7 @@
 
 /* Initial limit on no. of sims being steered at any one time */
 
-#define REG_MAX_NUM_STEERED_SIM 10
+#define REG_MAX_NUM_STEERED_SIM 5
 
 /* Limit on number of files used in communication - filenames
    wrap back on themselves once this limit reached */
