@@ -99,9 +99,10 @@ extern PREFIX int Steering_control(int     SeqNum,
 /* Open the specified IOType (as returned by a call to Register_IOTypes)
    ready for output. <SeqNum> provides a measure of the application's
    progress at this point. */
-extern PREFIX int Emit_start(int               IOType,
-			     int               SeqNum,
-			     int	       *IOTypeIndex);
+extern PREFIX int Emit_start(int  IOType,
+			     int  SeqNum,
+			     int  UseXDR,
+			     int *IOTypeIndex);
 
 /* Open the specified IOType (as returned by a call to Register_IOTypes)
    ready for input. */

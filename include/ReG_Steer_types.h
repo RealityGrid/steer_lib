@@ -143,10 +143,13 @@
 
 /* Coding scheme for data types */
 
-#define REG_INT   0
-#define REG_FLOAT 1
-#define REG_DBL   2
-#define REG_CHAR  3
+#define REG_INT       0
+#define REG_FLOAT     1
+#define REG_DBL       2
+#define REG_CHAR      3
+#define REG_XDR_INT   4
+#define REG_XDR_FLOAT 5
+#define REG_XDR_DBL   6
 
 /* Type definitions */
 

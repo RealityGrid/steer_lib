@@ -91,16 +91,16 @@ typedef struct {
 
 typedef struct {
 
-  char  label[REG_MAX_STRING_LENGTH];
-  char  filename[REG_MAX_STRING_LENGTH];
-  int   handle;
+  char                  label[REG_MAX_STRING_LENGTH];
+  char                  filename[REG_MAX_STRING_LENGTH];
+  int                   handle;
   /* Whether input, output or a checkpoint */
-  int   direction;
+  int                   direction;
   /* Whether this channel supports automatic emission/consumption
      every frequency steps */
-  int   auto_io_support;
+  int                   auto_io_support;
   /* Handle of the (steerable) frequency in the parameter table */
-  int   freq_param_handle;
+  int                   freq_param_handle;
 
   /* Pointer to buffer to hold data */
   void			*buffer;
@@ -112,6 +112,10 @@ typedef struct {
   /* status indicator for socket comms*/
   int			comms_status;
   int			index;
+
+  /* Whether or not to encode non-ASCII data as XDR (set in Emit_start) */
+  int                   use_xdr;
+
 } IOdef_entry;
 
 typedef struct {
