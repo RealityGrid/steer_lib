@@ -439,19 +439,21 @@ int Sim_attach(char *SimID,
 
     return_status = REG_FAILURE;
 
-    /* Try to use SOAP (and Steering Grid Service) - if this fails
-       then SimID isn't a valid GSH so we revert to file-based steering */
+    if(strstr(SimID, "http")){
+      /* Try to use SOAP (and Steering Grid Service) - if this fails
+	 then SimID isn't a valid GSH so we revert to file-based steering */
 #if REG_DEBUG
-    fprintf(stderr, "Sim_attach: calling Sim_attach_soap, "
-	    "current_sim = %d\n", current_sim);
+      fprintf(stderr, "Sim_attach: calling Sim_attach_soap, "
+	      "current_sim = %d\n", current_sim);
 #endif
-    return_status = Sim_attach_soap(&(Sim_table.sim[current_sim]), SimID);
+      return_status = Sim_attach_soap(&(Sim_table.sim[current_sim]), SimID);
 
-    if(return_status == REG_SUCCESS){
-      Sim_table.sim[current_sim].SGS_info.active = TRUE;
-    }
-    else{
-      Sim_table.sim[current_sim].SGS_info.active = FALSE;
+      if(return_status == REG_SUCCESS){
+	Sim_table.sim[current_sim].SGS_info.active = TRUE;
+      }
+      else{
+	Sim_table.sim[current_sim].SGS_info.active = FALSE;
+      }
     }
 
     if(return_status == REG_FAILURE){
@@ -2907,7 +2909,13 @@ int Sim_attach_local(Sim_entry_type *sim, char *SimID)
   char  sys_cmd[REG_MAX_STRING_LENGTH];
   int   return_status = REG_SUCCESS;
 
-  pchar = getenv("REG_STEER_DIRECTORY");
+  /* Unless SimID contains a string, get the directory to use for 
+     steering messages from the REG_STEER_DIRECTORY env. variable.  */
+  if(strlen(SimID) == 0){
+    pchar = getenv("REG_STEER_DIRECTORY");
+  } else {
+    pchar = SimID;
+  }
 
   if(pchar){
 
