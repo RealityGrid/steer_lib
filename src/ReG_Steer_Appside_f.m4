@@ -124,7 +124,7 @@ INT_KIND_1_DECL(Status);
   int    i;
   char **str_array;
 
-  str_array = (char**)malloc((*NumTypes)*sizeof(char));
+  str_array = (char**)malloc((*NumTypes)*sizeof(char*));
 
   if(str_array == NULL){
 
@@ -180,7 +180,7 @@ INT_KIND_1_DECL(Status);
   int    i;
   char **str_array;
 
-  str_array = (char**)malloc((*NumTypes)*sizeof(char));
+  str_array = (char**)malloc((*NumTypes)*sizeof(char*));
 
   if(str_array == NULL){
 
