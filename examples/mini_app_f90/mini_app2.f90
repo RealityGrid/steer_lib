@@ -157,7 +157,7 @@ PROGRAM mini_app
   ! Register a Checkpoint type
 
   CALL register_chktypes_f(num_chk_types, chk_labels, chk_dirn, &
-                           0, chk_handles(1), status)
+                           io_freqs, chk_handles, status)
 
   IF(status .ne. REG_SUCCESS)THEN
 
