@@ -809,7 +809,7 @@ int Consume_data_read_globus(const int		index,
 int Emit_header_globus(const int index)
 {
   char            buffer[REG_PACKET_SIZE];
-  globus_size_t   nbytes;
+  /*  globus_size_t   nbytes;*/
   globus_result_t result;
 
   /* check if socket connection has been made */
@@ -831,16 +831,20 @@ int Emit_header_globus(const int index)
 #if REG_DEBUG
     fprintf(stderr, "Emit_header_globus: Sending >>%s<<\n", buffer);
 #endif
-
+    /*
     result = globus_io_write(&(IOTypes_table.io_def[index].socket_info.conn_handle), 
 			     (globus_byte_t *)buffer, 
 			     REG_PACKET_SIZE,
 			     &nbytes);
+    */
+    if(Write_globus(&(IOTypes_table.io_def[index].socket_info.conn_handle),
+		    REG_PACKET_SIZE,
+		    (void *)buffer) == REG_SUCCESS){
 
-    if(result == GLOBUS_SUCCESS){
+    /*    if(result == GLOBUS_SUCCESS){*/
 
 #if REG_DEBUG
-      fprintf(stderr, "Emit_header_globus: Sent %d bytes\n", (int)nbytes);
+      fprintf(stderr, "Emit_header_globus: Sent %d bytes\n", REG_PACKET_SIZE);
 #endif
       return REG_SUCCESS;
     }
@@ -850,7 +854,7 @@ int Emit_header_globus(const int index)
       fprintf(stderr, "Emit_header_globus: globus_io_write failed - "
 	      "immediate retry connect\n");
 #endif
-      Globus_error_print(result);
+      /*Globus_error_print(result);*/
 
       Globus_retry_accept_connect(&(IOTypes_table.io_def[index].socket_info));
 
@@ -860,12 +864,17 @@ int Emit_header_globus(const int index)
 #if REG_DEBUG
 	fprintf(stderr, "Emit_header_globus: Sending >>%s<<\n", buffer);
 #endif    
+	/*
 	result = globus_io_write(&(IOTypes_table.io_def[index].socket_info.conn_handle), 
 				 (globus_byte_t *)buffer, 
 				 REG_PACKET_SIZE, 
 				 &nbytes);
-	
-	if(result == GLOBUS_SUCCESS){
+	*/
+	if(Write_globus(&(IOTypes_table.io_def[index].socket_info.conn_handle),
+			REG_PACKET_SIZE,
+			(void *)buffer) == REG_SUCCESS){
+
+	  /*if(result == GLOBUS_SUCCESS){*/
 
 	  return REG_SUCCESS;
 	}
@@ -873,7 +882,7 @@ int Emit_header_globus(const int index)
 #if REG_DEBUG
 	fprintf(stderr, "Emit_header_globus: globus_io_write failed\n");
 #endif
-	Globus_error_print(result);
+	/*Globus_error_print(result);*/
 
       }
 
@@ -903,17 +912,20 @@ int Emit_footer_globus(const int index,
 #if REG_DEBUG
   fprintf(stderr, "Emit_footer_globus: Sending >>%s<<\n", buffer);
 #endif
-
+  /*
   result = globus_io_write(&(IOTypes_table.io_def[index].socket_info.conn_handle), 
 			   (globus_byte_t *)buffer,
-			   /* strlen doesn't count '\0' */
+			   * strlen doesn't count '\0' *
 			   strlen(buffer)+1, 
 			   &nbytes);
-  
-  if(result != GLOBUS_SUCCESS){
+  */
+  if(Write_globus(&(IOTypes_table.io_def[index].socket_info.conn_handle),
+		  (void *)buffer,
+		  strlen(buffer)+1) != REG_SUCCESS){
+    /*if(result != GLOBUS_SUCCESS){*/
 
     fprintf(stderr, "Emit_footer_globus: call to globus_io_write failed\n");
-    Globus_error_print(result);
+    /*Globus_error_print(result);*/
     return REG_FAILURE;
   }
 
@@ -933,20 +945,29 @@ int Emit_data_globus(const int		index,
   globus_result_t  result;
   globus_size_t    nbytes;
 
+  /*
   result = globus_io_write(&(IOTypes_table.io_def[index].socket_info.conn_handle), 
 			   pData, 
 			   (globus_size_t) num_bytes_to_send, 
 			   &nbytes);
-
-#if REG_DEBUG
-  fprintf(stderr, "Emit_data_globus: sent %d bytes...\n", (int)nbytes);
-#endif
 
   if (result != GLOBUS_SUCCESS ) {
     fprintf(stderr, "Emit_data_globus: error globus_io_write\n");
     Globus_error_print(result);
     return REG_FAILURE;
   }
+  */
+  if(Write_globus(&(IOTypes_table.io_def[index].socket_info.conn_handle), 
+		  num_bytes_to_send,
+		  (void *)pData) != REG_SUCCESS){
+
+    fprintf(stderr, "Emit_data_globus: error globus_io_write\n");
+    return REG_FAILURE;
+  }
+
+#if REG_DEBUG
+  fprintf(stderr, "Emit_data_globus: sent %d bytes...\n", (int)nbytes);
+#endif
   
   return REG_SUCCESS;
 }

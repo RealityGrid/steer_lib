@@ -195,5 +195,9 @@ extern int Emit_msg_header_globus(socket_io_type *sock_info,
 				  int NumBytes,
 				  int IsFortranArray);
 
+extern int Write_globus(const globus_io_handle_t *handle,
+			const int n,
+			void *buffer);
+
 #endif /* REG_GLOBUS_STEERING || REG_GLOBUS_SAMPLES */
 #endif /* __REG_STEER_GLOBUS_IO_H__ */

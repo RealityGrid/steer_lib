@@ -1002,12 +1002,11 @@ int Emit_msg_header_globus(socket_io_type *sock_info,
   *(pchar-1) = '\0';
   pchar += sprintf(pchar, REG_PACKET_FORMAT, "</ReG_data_slice_header>");
   *(pchar-1) = '\0';
-
+  /*
   result = globus_io_write(&(sock_info->conn_handle), 
 			   (globus_byte_t *)buffer, 
-			   (int)(pchar-buffer), /* Can't use strlen 'cos of multiple '\0's */
+			   (int)(pchar-buffer), * Can't use strlen 'cos of multiple '\0's *
 			   &nbytes);
-
   if (result != GLOBUS_SUCCESS ) {
 
     fprintf(stderr, "Emit_msg_header_globus: failed to write slice header\n");
@@ -1016,6 +1015,49 @@ int Emit_msg_header_globus(socket_io_type *sock_info,
   }
 
   return REG_SUCCESS;
+*/
+ return Write_globus(&(sock_info->conn_handle), 
+		     (int)(pchar-buffer), 
+		     (void *)buffer);
 }
 
+/*----------------------------------------------------------------*/
+
+int Write_globus(const globus_io_handle_t *handle,
+		 const int n,
+		 void *buffer)
+{
+  globus_size_t   nbytes, bytes_left;
+  globus_result_t result;
+  char           *pchar;
+
+  if(n < 0){
+    fprintf(stderr, "Write_globus: requested to write < 0 bytes!\n");
+    return REG_FAILURE;
+  }
+
+  nbytes = (globus_size_t)n;
+  bytes_left = nbytes;
+  pchar = (char *)buffer;
+
+  while(bytes_left > 0){
+    result = globus_io_try_write(handle, 
+				 (globus_byte_t *)pchar, 
+				 bytes_left,
+				 &nbytes);
+
+    if(result != GLOBUS_SUCCESS){
+      fprintf(stderr, "Write_globus: call to globus_io_try_write failed\n");
+      Globus_error_print(result);
+      return REG_FAILURE;
+    }
+    else{
+      bytes_left -= nbytes;
+      pchar += nbytes;
+    }
+    printf("ARPDBG: Write_globus: bytes_left = %d\n", bytes_left);
+  }
+
+  return REG_SUCCESS;
+}
 #endif /* REG_GLOBUS_STEERING || REG_GLOBUS_SAMPLES */
