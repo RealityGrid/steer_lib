@@ -1,7 +1,7 @@
 # Edit the two following lines if 32-bit binaries are desired 
 # (NBIT = 32 and G=-n32).
-NBIT         = 64
-GLOBAL_FLAGS = G=-64 NBIT=$(NBIT)
+NBIT         = 32
+GLOBAL_FLAGS = G=-n32 NBIT=$(NBIT)
 
 all:
 	make app
@@ -38,9 +38,10 @@ expat/xmlparse/libexpat.a:
 clean:
 	cd expat; make ${GLOBAL_FLAGS} clean
 	cd src; make ${GLOBAL_FLAGS} clean 
-	cd mini_app; make ${GLOBAL_FLAGS} clean
-	cd mini_app_f90; make ${GLOBAL_FLAGS} clean
-	cd mini_steerer; make ${GLOBAL_FLAGS} clean
+	cd examples/mini_app; make ${GLOBAL_FLAGS} clean
+	cd examples/mini_app_f90; make ${GLOBAL_FLAGS} clean
+	cd examples/mini_app_f90_parallel; make ${GLOBAL_FLAGS} clean
+	cd examples/mini_steerer; make ${GLOBAL_FLAGS} clean
 
 tar:
 	make clean
