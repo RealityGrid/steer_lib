@@ -36,7 +36,7 @@
 
 #define __REG_TYPES_INCLUDED
 
-#define DEBUG 1
+#define DEBUG 0
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -49,7 +49,7 @@
    Only consequence is that the status files emitted by the application
    are all called 'steer_status' and not indexed - i.e. some output will 
    be lost if the status files are not consumed sufficiently rapidly */
-#define UNICORE_DEMO
+/*#define UNICORE_DEMO*/
 
 /* The namespace used for steering messages (which are in xml) */
 #define REG_STEER_NAMESPACE "http://www.realitygrid.org/xml/steering"
