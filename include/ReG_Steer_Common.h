@@ -236,7 +236,8 @@ extern PREFIX REG_MsgType Get_message_type(const char *name);
    buffer */
 extern PREFIX int  Write_xml_header(char **pchar);
 
-extern PREFIX int  Write_xml_footer(char **pchar);
+extern PREFIX int  Write_xml_footer(char **pchar,
+				    int bytes_free);
 
 /* Read ReG-specific header */
 extern PREFIX int Consume_msg_header(socket_type_steering *sock_info,

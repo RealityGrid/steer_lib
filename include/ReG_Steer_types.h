@@ -211,7 +211,7 @@ typedef int REG_IOHandleType;
 /* Definitions used in communicating with the java proxy */
 
 #define REG_MAX_LINE_LEN 256
-#define REG_MAX_MSG_SIZE BUFSIZ
+#define REG_MAX_MSG_SIZE 4096
 #define REG_PIPE_UNSET   -1
 
 /* Tolerance used to determine whether a floating point no. should
