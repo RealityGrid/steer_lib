@@ -240,6 +240,8 @@ typedef struct {
   int          enable_on_registration; /* Whether or not to create the socket
 					  (if using them) when an IOType
 					  is registered */
+  int          num_inputs; /* Count of input channels registered - used to
+			      map to details on data sources held by SGS */
   IOdef_entry *io_def;
 
 }IOdef_table_type;

@@ -574,8 +574,6 @@ int recv_non_block(socket_io_type  *sock_info, char *pbuf, int nbytes){
   return nbytes_read;
 }
 
-/*--------------------------------------------------------------------*/
-
 /*--------------------------------------------------------------------*
  *                         EXTERNAL METHODS                           *
  *--------------------------------------------------------------------*/
@@ -583,12 +581,13 @@ int recv_non_block(socket_io_type  *sock_info, char *pbuf, int nbytes){
 int Initialize_IOType_transport_sockets(const int direction, const int index) {
 
   int return_status = REG_SUCCESS;
-  static int call_count = 1;
+  /*static int call_count = 1;*/
 
   /* set up socket info stuff */
   if(socket_info_init(index) != REG_SUCCESS) {
 #if REG_DEBUG
-    fprintf(stderr, "Initialize_IOType_transport_sockets: failed to init socket info for IOType\n");
+    fprintf(stderr, "Initialize_IOType_transport_sockets: failed to init "
+	    "socket info for IOType\n");
 #endif
     return_status = REG_FAILURE;
   }
@@ -602,21 +601,29 @@ int Initialize_IOType_transport_sockets(const int direction, const int index) {
 	 accept connections */
       if(create_listener(index) != REG_SUCCESS) {
 #if REG_DEBUG
-	fprintf(stderr, "Initialize_IOType_transport_sockets: failed to create listener for IOType\n");
+	fprintf(stderr, "Initialize_IOType_transport_sockets: failed to "
+		"create listener for IOType\n");
 #endif
 	return_status = REG_FAILURE;
       }
       else {
-	fprintf(stderr, "Initialize_IOType_transport_sockets: Created listener on port %d, index %d, label %s\n", 
+	fprintf(stderr, "Initialize_IOType_transport_sockets: Created "
+		"listener on port %d, index %d, label %s\n", 
 		IOTypes_table.io_def[index].socket_info.listener_port, 
 		index, IOTypes_table.io_def[index].label );
       }
     }
     else if(direction == REG_IO_IN) {
 
+      /* Keep a count of how many input channels have been registered and
+	 where this channel is in that list - this is used to map to the
+	 list of data inputs held by our SGS (configured when it was 
+	 created) */
+      IOTypes_table.io_def[index].input_index = ++(IOTypes_table.num_inputs);
+      /*
       IOTypes_table.io_def[index].input_index = call_count;
       call_count++;
-	
+      */
       /* Don't create socket yet if this flag is set */
       if(IOTypes_table.enable_on_registration == REG_FALSE) {
 	return REG_SUCCESS;
@@ -624,7 +631,8 @@ int Initialize_IOType_transport_sockets(const int direction, const int index) {
 
       if(create_connector(index) != REG_SUCCESS) {
 #if REG_DEBUG
-	fprintf(stderr, "Initialize_IOType_transport_sockets: failed to register connector for IOType\n");
+	fprintf(stderr, "Initialize_IOType_transport_sockets: failed to "
+		"register connector for IOType\n");
 #endif
 	return_status = REG_FAILURE;
       }

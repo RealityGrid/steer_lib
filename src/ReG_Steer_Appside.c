@@ -237,6 +237,7 @@ int Steering_initialize(char *AppName,
   IOTypes_table.num_registered = 0;
   IOTypes_table.max_entries    = REG_INITIAL_NUM_IOTYPES;
   IOTypes_table.enable_on_registration = REG_TRUE;
+  IOTypes_table.num_inputs     = 0;
   IOTypes_table.io_def         = (IOdef_entry *)
                                  malloc(IOTypes_table.max_entries
 					*sizeof(IOdef_entry));
@@ -527,6 +528,7 @@ int Steering_finalize()
 
   IOTypes_table.num_registered = 0;
   IOTypes_table.max_entries = REG_INITIAL_NUM_IOTYPES;
+  IOTypes_table.num_inputs = 0;
 
   /* Clean-up ChkTypes table */
 
@@ -579,6 +581,12 @@ int Steering_finalize()
 
   /* Flag that library no-longer initialised */
   ReG_SteeringInit    = REG_FALSE;
+
+#if REG_DEBUG
+  /* Print out version information */
+  fprintf(stderr, "**** RealityGrid Computational Steering Library "
+	  "cleanup done ****\n\n");
+#endif
 
   return REG_SUCCESS;
 }
