@@ -46,6 +46,8 @@
 #define REG_DEBUG 0
 #endif
 
+#define REG_TOP_LEVEL_REGISTRY "http://yaffel.mvc.mcc.ac.uk:50000/Session/ServiceGroupRegistration/service?3893432997"
+
 /* MR: Temporary fix - forward declaration of the Consume_param_log */
 /*     function so it can be used throughout this implementation    */
 /*     file. Sticking it in the header causes problems due to       */
@@ -221,10 +223,10 @@ int Get_sim_list(int   *nSims,
   if(Proxy.available != REG_TRUE){
 
     /* Get address of top-level registry from env. variable if set */
-    if(ptr = getenv("REG_REGISTRY_ADDRESS")){
+    if( (ptr = getenv("REG_REGISTRY_ADDRESS")) ){
       strcpy(registry_address, ptr);
     } else{
-      sprintf(registry_address, "http://yaffel.mvc.mcc.ac.uk:50000/Session/ServiceGroupRegistration/service?3893432997");
+      sprintf(registry_address, REG_TOP_LEVEL_REGISTRY);
     }
 
     /* Contact a registry here
@@ -260,7 +262,7 @@ int Get_sim_list(int   *nSims,
       entries = NULL;
     }
     else {
-      if(ptr = getenv("REG_SGS_ADDRESS")){
+      if( (ptr = getenv("REG_SGS_ADDRESS")) ){
 
 	*nSims = 1;
 	sprintf(simName[0], "Simulation");
@@ -333,8 +335,6 @@ int Sim_attach(char *SimID,
 {
   int                  current_sim;
   int                  i, j;
-  int                  new_size;
-  void                *dum_ptr;
   int                  return_status = REG_SUCCESS;
   Sim_entry_type      *sim_ptr;
 
@@ -701,7 +701,7 @@ struct msg_struct *Get_status_msg_file(Sim_entry_type *sim)
 
   sprintf(filename, "%s%s", sim->file_root, APP_TO_STR_FILENAME);
 
-  if(fp = Open_next_file(filename)){
+  if( (fp = Open_next_file(filename)) ){
 	
     fclose(fp);
 
@@ -1114,7 +1114,6 @@ int Consume_ChkType_defs(int SimHandle)
 int Consume_log(int SimHandle)
 {
   int index;
-  int count;
   Sim_entry_type          *sim;
   struct log_entry_struct *entry_ptr;
 
@@ -1284,7 +1283,7 @@ int Consume_param_log(Sim_entry_type *sim,
         /* &( ((float *)(sim->Params_table.param[i].log))[index++]) );*/
 	break;
       case REG_DBL:
-	sscanf((char *)(param_ptr->value), "%f",
+	sscanf((char *)(param_ptr->value), "%lf",
 	       &(sim->Params_table.param[i].log[index++]) );
 	break;
       case REG_CHAR:
@@ -1347,7 +1346,7 @@ int Consume_status(int   SimHandle,
   int                  handle;
   int                  count;
   int                  return_status;
-  int                  k;
+  /* int                  k; For dbg output of Base64 */
 
   /* For XML parser */
 
@@ -2484,7 +2483,8 @@ static int Next_free_iodef_index(IOdef_table_type *table)
 
     new_size = table->max_entries + REG_INITIAL_NUM_IOTYPES;
     
-    if(dum_ptr = (void *)realloc(table->io_def, new_size*sizeof(param_entry))){
+    if( (dum_ptr = (void *)realloc(table->io_def, 
+				   new_size*sizeof(param_entry))) ){
 
       index = table->max_entries;
       table->io_def = (IOdef_entry *)dum_ptr;

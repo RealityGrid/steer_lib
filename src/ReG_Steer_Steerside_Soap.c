@@ -220,7 +220,8 @@ struct msg_struct *Get_status_msg_soap(Sim_entry_type *sim)
   if(getNotifications_response._GetNotificationsReturn &&
      !strstr(getNotifications_response._GetNotificationsReturn, REG_SGS_ERROR)){
 
-    if(ptr = strtok(getNotifications_response._GetNotificationsReturn, " ")){
+    if( (ptr = strtok(getNotifications_response._GetNotificationsReturn, 
+		      " ")) ){
 
       sim->SGS_info.sde_count = 0;
       while(ptr){
@@ -615,7 +616,7 @@ int Get_param_log_soap(Sim_entry_type *sim, int handle)
 
     while(1){
 
-      sscanf(ptr1, "%f", &(sim->Params_table.param[index].log[lindex++]) );
+      sscanf(ptr1, "%lf", &(sim->Params_table.param[index].log[lindex++]) );
 
       if(!(ptr1 = strstr(ptr1, " ")))break;
       if(*(++ptr1) == '\0')break;

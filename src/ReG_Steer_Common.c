@@ -173,7 +173,7 @@ FILE *Open_next_file(char* base_name)
 
     if(time2 < time1) strcpy(filename1, filename2);
 
-    if(fp = fopen(filename1, "r")){
+    if( (fp = fopen(filename1, "r")) ){
 
 #if REG_DEBUG
       fprintf(stderr, "Open_next_file: opening %s\n", filename1);
@@ -258,7 +258,7 @@ int Remove_files(char* base_name)
   fprintf(stderr, "Remove_files: looking for files beginning: %s\n", filename);
 #endif
 
-  while(fp = Open_next_file(filename)){
+  while( (fp = Open_next_file(filename)) ){
 
     fclose(fp);
 
@@ -358,7 +358,8 @@ int Next_free_param_index(Param_table_type *table)
 
     new_size = table->max_entries + REG_INITIAL_NUM_PARAMS;
     
-    if(dum_ptr = (void *)realloc(table->param, new_size*sizeof(param_entry))){
+    if( (dum_ptr = (void *)realloc(table->param, 
+				   new_size*sizeof(param_entry))) ){
 
       index = table->max_entries;
       table->param = (param_entry *)dum_ptr;
@@ -417,7 +418,8 @@ int Increment_param_registered(Param_table_type *table)
 
     new_size = table->max_entries + REG_INITIAL_NUM_PARAMS;
 
-    if(dum_ptr = (void*)realloc(table->param, new_size*sizeof(param_entry))){
+    if( (dum_ptr = (void*)realloc(table->param, 
+				  new_size*sizeof(param_entry))) ){
 
       table->param = (param_entry*)dum_ptr;
       table->max_entries = new_size;
@@ -456,7 +458,8 @@ int Increment_cmd_registered(Supp_cmd_table_type *table)
 
     new_size = table->max_entries + REG_INITIAL_NUM_CMDS;
 
-    if(dum_ptr = (void*)realloc(table->cmd, new_size*sizeof(supp_cmd_entry))){
+    if( (dum_ptr = (void*)realloc(table->cmd, 
+				  new_size*sizeof(supp_cmd_entry))) ){
 
       table->cmd = (supp_cmd_entry*)dum_ptr;
       table->max_entries = new_size;
@@ -489,7 +492,8 @@ int Increment_iodef_registered(IOdef_table_type *table)
 
     new_size = table->max_entries + REG_INITIAL_NUM_IOTYPES;
 
-    if(dum_ptr = (void*)realloc(table->io_def, new_size*sizeof(IOdef_entry))){
+    if( (dum_ptr = (void*)realloc(table->io_def, 
+				  new_size*sizeof(IOdef_entry))) ){
 
       table->io_def = (IOdef_entry*)dum_ptr;
       table->max_entries = new_size;
@@ -527,7 +531,8 @@ int Increment_log_entry(Chk_log_type *log)
 
     new_size = log->max_entries + REG_INITIAL_CHK_LOG_SIZE;
 
-    if(dum_ptr = realloc(log->entry, new_size*sizeof(Chk_log_entry_type))){
+    if( (dum_ptr = realloc(log->entry, 
+			   new_size*sizeof(Chk_log_entry_type))) ){
 
       log->entry = (Chk_log_entry_type *)dum_ptr;
       log->max_entries = new_size;
@@ -1090,7 +1095,7 @@ int Get_fully_qualified_hostname(char **hostname, char **ip_addr_ptr)
   static char     ip_addr[16];
 
   /* First check to see if we're using an interface other than the default */
-  if(pchar = getenv("REG_TCP_INTERFACE")){
+  if( (pchar = getenv("REG_TCP_INTERFACE")) ){
 
     host = gethostbyname(pchar);
   }

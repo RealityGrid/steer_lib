@@ -847,7 +847,7 @@ int Initialize_IOType_transport_file(int direction,
 
   /* This is only simple - we use the same directory for every
      IOType, irrespective of label or direction (input/output). */
-  if(pchar = getenv("REG_DATA_DIRECTORY")){
+  if( (pchar = getenv("REG_DATA_DIRECTORY")) ){
 
     len = strlen(pchar);
     if(len > REG_MAX_STRING_LENGTH){
@@ -900,7 +900,7 @@ int Consume_ack_file(const int index)
   sprintf(Global_scratch_buffer, "%s_ACK", 
 	  IOTypes_table.io_def[index].filename);
 
-  if(fp = fopen(Global_scratch_buffer, "r")){
+  if( (fp = fopen(Global_scratch_buffer, "r")) ){
 
     fclose(fp);
     remove(Global_scratch_buffer);
@@ -924,7 +924,7 @@ int Emit_ack_file(const int index)
   sprintf(Global_scratch_buffer, "%s_ACK", 
 	  IOTypes_table.io_def[index].filename);
   
-  if(fp = fopen(Global_scratch_buffer, "w")){
+  if( (fp = fopen(Global_scratch_buffer, "w")) ){
 
     fclose(fp);
     return REG_SUCCESS;

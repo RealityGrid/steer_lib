@@ -148,7 +148,7 @@ int Steering_initialize(char *AppName,
 			int   NumSupportedCmds,
 			int  *SupportedCmds)
 {
-  int   i, j;
+  int   i;
   char *pchar, *ip_addr;
 
   /* Actually defined in ReG_Steer_Common.c because both steerer
@@ -172,7 +172,7 @@ int Steering_initialize(char *AppName,
   /* Set the location of the file containing the schema describing all 
      steering communication */
 
-  if(pchar = getenv("REG_STEER_HOME")){
+  if( (pchar = getenv("REG_STEER_HOME")) ){
 
     /* Check that path ends in '/' - if not then add one */
 
@@ -351,12 +351,12 @@ int Steering_initialize(char *AppName,
   Params_table.param[0].steerable = REG_FALSE;
   Params_table.param[0].modified  = REG_FALSE;
   Params_table.param[0].is_internal=REG_FALSE;
-  sprintf(Params_table.param[0].label, "SEQUENCE_NUM");
-  sprintf(Params_table.param[0].value, "-1");
-  sprintf(Params_table.param[0].min_val, "-1");
+  strcpy(Params_table.param[0].label, "SEQUENCE_NUM");
+  strcpy(Params_table.param[0].value, "-1");
+  strcpy(Params_table.param[0].min_val, "-1");
   Params_table.param[0].min_val_valid = REG_TRUE;
   /* Max. value for sequence number is unlimited */
-  sprintf(Params_table.param[0].max_val, " ");
+  strcpy(Params_table.param[0].max_val, " ");
   Params_table.param[0].max_val_valid = REG_FALSE;
   Increment_param_registered(&Params_table);
 
@@ -368,11 +368,11 @@ int Steering_initialize(char *AppName,
   Params_table.param[i].steerable = REG_FALSE;
   Params_table.param[i].modified  = REG_FALSE;
   Params_table.param[i].is_internal=REG_FALSE;
-  sprintf(Params_table.param[i].label, "CPU_TIME_PER_STEP");
-  sprintf(Params_table.param[i].value, "0.0");
-  sprintf(Params_table.param[i].min_val, "");
+  strcpy(Params_table.param[i].label, "CPU_TIME_PER_STEP");
+  strcpy(Params_table.param[i].value, "0.0");
+  strcpy(Params_table.param[i].min_val, "");
   Params_table.param[i].min_val_valid = REG_FALSE;
-  sprintf(Params_table.param[i].max_val, "");
+  strcpy(Params_table.param[i].max_val, "");
   Params_table.param[i].max_val_valid = REG_FALSE;
   Increment_param_registered(&Params_table);
 
@@ -385,11 +385,11 @@ int Steering_initialize(char *AppName,
   Params_table.param[i].steerable = REG_FALSE;
   Params_table.param[i].modified  = REG_FALSE;
   Params_table.param[i].is_internal=REG_TRUE;
-  sprintf(Params_table.param[i].label, "TIMESTAMP");
-  sprintf(Params_table.param[i].value, "");
-  sprintf(Params_table.param[i].min_val, "");
+  strcpy(Params_table.param[i].label, "TIMESTAMP");
+  strcpy(Params_table.param[i].value, "");
+  strcpy(Params_table.param[i].min_val, "");
   Params_table.param[i].min_val_valid = REG_FALSE;
-  sprintf(Params_table.param[i].max_val, "");
+  strcpy(Params_table.param[i].max_val, "");
   Params_table.param[i].max_val_valid = REG_FALSE;
   Increment_param_registered(&Params_table);
 
@@ -409,11 +409,11 @@ int Steering_initialize(char *AppName,
   Params_table.param[i].steerable = REG_TRUE;
   Params_table.param[i].modified  = REG_FALSE;
   Params_table.param[i].is_internal=REG_FALSE;
-  sprintf(Params_table.param[i].label, "STEERING_INTERVAL");
-  sprintf(Params_table.param[i].value, "1");
-  sprintf(Params_table.param[i].min_val, "1");
+  strcpy(Params_table.param[i].label, "STEERING_INTERVAL");
+  strcpy(Params_table.param[i].value, "1");
+  strcpy(Params_table.param[i].min_val, "1");
   Params_table.param[i].min_val_valid = REG_TRUE;
-  sprintf(Params_table.param[i].max_val, "");
+  strcpy(Params_table.param[i].max_val, "");
   Params_table.param[i].max_val_valid = REG_FALSE;
   Increment_param_registered(&Params_table);
 
@@ -1225,7 +1225,7 @@ int Record_Chkpt(int   ChkType,
           Params_table.param[index].value[strlen(pchar)-1] = '\0';
 	}
 	else{
-	  sprintf(Params_table.param[index].value, "");
+	  strcpy(Params_table.param[index].value, "");
 	}
       }
     }
@@ -1359,7 +1359,7 @@ int Record_checkpoint_set(int   ChkType,
     pchar = (char *)ChkTypes_table.io_def[index].buffer;
 
     nfiles = 0;
-    while(pchar = strchr(++pchar, ' ')){
+    while( (pchar = strchr(++pchar, ' ')) ){
       nfiles++;
     }
     if(nfiles > 0){
@@ -1456,7 +1456,7 @@ int Record_checkpoint_set(int   ChkType,
 	Params_table.param[i].value[strlen(pchar)-1] = '\0';
       }
       else{
-	sprintf(Params_table.param[i].value, "");
+	strcpy(Params_table.param[i].value, "");
       }
     }
 
@@ -2418,10 +2418,6 @@ int Register_params(int    NumParams,
 		    char* *ParamMaxima)
 {
   int    i;
-  int    current;
-  int    dum_int;
-  float  dum_flt;
-  double dum_dbl;
 
   /* Check that steering is enabled */
 
@@ -2498,7 +2494,7 @@ int Steering_control(int     SeqNum,
 		     int    *SteerCommands,
 		     char  **SteerCmdParams)
 {
-  int    i, j;
+  int    i;
   int    status;
   int    do_steer;
   int    detached;
@@ -2508,8 +2504,6 @@ int Steering_control(int     SeqNum,
   int    commands[REG_MAX_NUM_STR_CMDS];
   int    param_handles[REG_MAX_NUM_STR_PARAMS];
   char*  param_labels[REG_MAX_NUM_STR_PARAMS];
-  static char** changed_param_labels = NULL;
-  int    param_count = 0;
   int    num_param = 0;
 
   /* Indices to save having to keep looking-up handles */
@@ -4027,8 +4021,6 @@ int Emit_status(int   SeqNum,
 
 int Update_ptr_value(param_entry *param)
 {
-  int len;
-
   if (!param->ptr) return REG_SUCCESS;
 
   switch(param->type){
@@ -4531,7 +4523,7 @@ int Initialize_steering_connection(int  NumSupportedCmds,
      whether a steerer has connected */
   Steerer_connection.polling_interval = REG_APP_POLL_INTERVAL_DEFAULT;
 
-  if(pchar = getenv("REG_APP_POLL_INTERVAL")){
+  if( (pchar = getenv("REG_APP_POLL_INTERVAL")) ){
 
     if(sscanf(pchar, "%d", &interval) == 1){
 

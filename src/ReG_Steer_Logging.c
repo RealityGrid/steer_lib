@@ -38,6 +38,9 @@
 #include "ReG_Steer_Common.h"
 #include "ReG_Steer_Logging.h"
 #include "ReG_Steer_Appside_internal.h"
+#if REG_SOAP_STEERING
+#include "ReG_Steer_Appside_Soap.h"
+#endif
 
 #ifndef WIN32
 #else
@@ -624,7 +627,6 @@ int Set_log_primary_key(Chk_log_type *log)
   char *pbuf = NULL;
   char *ptr = NULL;
   char *old_ptr = NULL;
-  char  filename[REG_MAX_STRING_LENGTH];
 
   Close_log_file(log);
 
@@ -652,7 +654,7 @@ int Set_log_primary_key(Chk_log_type *log)
   if(!strstr(pbuf, "<Key>")){
     /* We have columns of data, first column holds key values... */
 
-    while(ptr = strstr((ptr+1), "\n")){
+    while( (ptr = strstr((ptr+1), "\n")) ){
 
       if(*(ptr+1) == '\0')break;
       old_ptr = ptr;
@@ -674,8 +676,7 @@ int Set_log_primary_key(Chk_log_type *log)
   else{
     /* We have xml...*/
 
-    while(ptr = strstr((ptr+1), "<Key>")){
-
+    while( (ptr = strstr((ptr+1), "<Key>")) ){
       old_ptr = ptr;
     }
 
@@ -777,7 +778,6 @@ int Log_param_values()
 
 int Emit_log(Chk_log_type *log, int handle)
 {
-  char  filename[REG_MAX_STRING_LENGTH];
   int   size = 0;
   int   index = 0;
   int   return_status = REG_SUCCESS;
@@ -1016,7 +1016,7 @@ int Pack_send_log_entries(char **pBuf, int *msg_count)
   pbuf1 = strstr(*pBuf, "<Log_entry>");
   pbuf2 = pbuf1;
   if(pbuf2){
-    if(pbuf3 = strstr(pbuf2, "</Log_entry>")){
+    if( (pbuf3 = strstr(pbuf2, "</Log_entry>")) ){
       /* Increment ptr so as to include all of the "</Log_entry>" */
       pbuf3 += 12;
     }
@@ -1130,7 +1130,7 @@ int Pack_send_log_entries(char **pBuf, int *msg_count)
     if(*pbuf3 == '\n')pbuf3++;
     pbuf1 = pbuf2;
     pbuf2 = pbuf3;
-    if(pbuf3 = strstr(pbuf2, "</Log_entry>")){
+    if( (pbuf3 = strstr(pbuf2, "</Log_entry>")) ){
       /* Increment ptr so as to include all of the "</Log_entry>" */
       pbuf3 += 12;
     }
@@ -1182,7 +1182,7 @@ int Log_columns_to_xml(char **buf, char* out_buf, int out_buf_size,
   char *ptr2;
   char *ptr3;
   char *ptr4;
-  int   i, key, count;
+  int   i, count;
   int   nbytes = 0;
   int   bytes_left = out_buf_size;
   char  handle_str[16];
@@ -1203,7 +1203,7 @@ int Log_columns_to_xml(char **buf, char* out_buf, int out_buf_size,
   pbuf = out_buf;
 
   ptr1 = *buf;
-  while(ptr2 = strstr(ptr1, "\n")){
+  while( (ptr2 = strstr(ptr1, "\n")) ){
 
     ptr3 = ptr1;
     count = 0;

@@ -124,7 +124,7 @@ int Initialize_steering_connection_soap(int  NumSupportedCmds,
   /* Since we are using KEEPALIVE, we can also ask gSOAP to bind the 
      socket to a specific port on the local machine - only do this if 
      GLOBUS_TCP_PORT_RANGE is set. */
-  if( pchar = getenv("GLOBUS_TCP_PORT_RANGE") ){
+  if( (pchar = getenv("GLOBUS_TCP_PORT_RANGE")) ){
 
     if(sscanf(pchar, "%d,%d", &(soap.client_port_min), 
 	      &(soap.client_port_max)) != 2){
@@ -520,10 +520,10 @@ int Get_data_source_address_soap(int   index,
   if(getNthDataSource_response._GetNthDataSourceReturn && 
      !strstr(getNthDataSource_response._GetNthDataSourceReturn, REG_SGS_ERROR)){
 
-    if(pchar = strtok(getNthDataSource_response._GetNthDataSourceReturn, ":")){
+    if( (pchar = strtok(getNthDataSource_response._GetNthDataSourceReturn, ":")) ){
 
       strcpy(hostname, pchar);
-      if(pchar = strtok(NULL, ":")){
+      if( (pchar = strtok(NULL, ":")) ){
 
 	*port = (unsigned short int)atoi(pchar);
       }
