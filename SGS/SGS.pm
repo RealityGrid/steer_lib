@@ -44,6 +44,13 @@
 
 package SGS;
 
+use SOAP::Lite;
+use ILCT;
+use vars qw(@ISA);
+
+@ISA = qw(ILCT::GS);   #inherit GS functions
+
+
 $numStatusMsg = 20;
 $lastStatusMsg = -1;
 @statusMsgArray = ();
@@ -72,11 +79,12 @@ $ioDefsSDE = "IOType_defs";
 $chkDefsSDE = "ChkType_defs";
 $appStatusSDE = "Application_status";
 $steerStatusSDE = "Steerer_status";
+$dataSourceSDE = "Data_source_list";
 
 # The names of my service data elements
 @serviceDataElements = ($suppCmdsSDE, $paramDefsSDE, $ioDefsSDE, 
 			$chkDefsSDE, $steerStatusSDE, 
-			$appStatusSDE);
+			$appStatusSDE, $dataSourceSDE);
 
 # Create hash table to actually hold SDEs
 %serviceData = ("$serviceDataElements[0]", "", 
@@ -84,7 +92,8 @@ $steerStatusSDE = "Steerer_status";
 		"$serviceDataElements[2]", "",
 		"$serviceDataElements[3]", "",
 		"$serviceDataElements[4]", "",
-		"$serviceDataElements[5]", "");
+		"$serviceDataElements[5]", "",
+		"$serviceDataElements[6]", "");
 
 # Set initial states (no steering client attached & application not
 # running - i.e. it hasn't contacted us yet)
@@ -205,6 +214,10 @@ sub Detach {
 
 	    return "SGS_SUCCESS";
 	}
+#	elsif($SGS::serviceData{$appStatusSDE} eq "STOPPING"){
+#
+#
+#	}
     }
     return "SGS_ERROR";
 }
@@ -292,7 +305,7 @@ sub AppStop {
         # Steerer is in process of detaching but application has finished
         # - call AppDetach ourselves to complete the detach process
         # Set flag to say we are free to die after allowing some delay to 
-        # give steerer time to get confirmation of Detach.
+        # give steerer to get confirmation of Detach.
         $SGS::dieAfterDelay = 1;
 	AppDetach();
     }
@@ -483,21 +496,16 @@ sub SetServiceData {
   }
 
 #------------------------------
+# Modified by mmk - this function does not even need to exist 
+# since it is inherited from the SUPER class. This shows how
+# the app can customise the function by adding code before/after
+# the call to SUPER. 
 
 sub SetTerminationTime{
-     local($class,$NewTimeToDie) = @_;
-     $TimeLeft = alarm(100000000);
-     $ans="";
-     if ( $NewTimeToDie eq "" )
-     {
-        alarm($TimeLeft);
-	$ans=$TimeLeft;
-     }else{
-        alarm($NewTimeToDie);
-	$ans=$NewTimeToDie;
-     }	
+     local($class,@args) = @_;
+     my $ans= $class->SUPER::SetTerminationTime(@args);
      return $ans;
-  }
+ }
 
 #------------------------------
 
@@ -625,14 +633,74 @@ sub Stop{
 }
 
 #------------------------------
+# Modified by mmk - this function does not even need to exist
+# since it is inherited from the SUPER class. This shows how
+# the app can customise the function, ie the function could
+# do some clean up before invoking the SUPER Destroy.
 
 sub Destroy {
-
+    my($class, @blah) = @_;
 # Destroy does just that - I don't think it's supposed to be careful
 # about the consequences and thus it isn't...
     print "Destroy: about to trigger alarm\n";
-    alarm 1;
+    my $ans = $class->SUPER::Destroy(); 
     return;
+}
+
+#------------------------------
+
+sub GetNthDataSource {
+
+    my($class, $index) = @_;
+
+    # Translate to zero-based index
+    $index--;
+
+    my $sources = $SGS::serviceData{$SGS::dataSourceSDE};
+
+    my @arr = split("<SGS:Source_GSH>", $sources);
+    # Throw away stuff before first tag of interest
+    shift @arr;
+
+    if($index >= @{arr}){
+
+	print "Error: fewer data sources than index requested\n";
+	return "SGS_ERROR"
+    }
+
+    $sources = $arr[$index];
+    my $gsh = substr($sources, 0, index($sources, "<"));
+
+    @arr = split("<SGS:Source_label>", $sources);
+    $sources = $arr[1];
+
+    my $label = substr($sources, 0, index($sources, "<"));
+
+    # Now we get the IO Types of the SGS with the GSH we've just
+    # extracted
+    my $func = "FindServiceData";
+    my $iotypes = SOAP::Lite
+	        -> uri("SGS")
+                -> proxy("$gsh")
+                -> $func("IOType_defs")
+                -> result;
+ 
+    my $address = "UNSET";
+    my @typesArr = split("<IOType>",$iotypes);
+
+    for($i=0; $i<@{typesArr}; $i++){
+
+	if($typesArr[$i] =~ m/$label/){
+
+	    $iotypes = $typesArr[$i];
+	    @typesArr = split("<Address>", $iotypes);
+	    $address = substr($typesArr[1], 0, index($typesArr[1], "<"));
+	    return $address;
+	}
+    }
+
+    print "GetNthDataSource: failed to find IOType with matching label";
+    return "SGS_ERROR";
 }
 
 #------------------------------
