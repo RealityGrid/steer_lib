@@ -183,14 +183,11 @@ int Steering_initialize(char *AppName,
     return REG_FAILURE;
   }
 
-  /* Get our current working directory - ASSUMES 'pwd' is in our path */
+  /* Get our current working directory */
   memset(ReG_CurrentDir, '\0', REG_MAX_STRING_LENGTH);
-  if( (pchar = getenv("PWD")) ){
+  if( !(pchar = getcwd(ReG_CurrentDir, REG_MAX_STRING_LENGTH)) ){
 
-    strcpy(ReG_CurrentDir, pchar);
-  }
-  else{
-
+    ReG_CurrentDir[0] = '\0';
     fprintf(stderr, "Steering_initialize: failed to get working "
 	    "directory\n");
   } 
