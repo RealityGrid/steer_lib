@@ -4485,9 +4485,15 @@ int Parse_chunk_header(int IOTypeIndex, char* pData)
 {
   Array_type *ptr;
 
-  if(strstr(pData, "CHUNK_HDR")){
+  if(IOTypeIndex < 0){
 
-    ptr = &(IOTypes_table.io_def[IOTypeIndex].array);
+    fprintf(stderr, "Parse_chunk_header: IOType index is < 0\n");
+    return REG_FAILURE;
+  }
+
+  ptr = &(IOTypes_table.io_def[IOTypeIndex].array);
+
+  if(strstr(pData, "CHUNK_HDR")){
 
     /* ARPDBG - would be much better to use XML for this header */
     if( sscanf(pData, 
