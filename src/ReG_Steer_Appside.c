@@ -37,6 +37,8 @@
 
 #include "ReG_Steer_Appside.h"
 #include "ReG_Steer_Appside_internal.h"
+#include <signal.h>
+#include <unistd.h>
 
 /* Allow value of 'DEBUG' to propagate down from Reg_steer_types.h if
    it has been set there */
@@ -286,6 +288,17 @@ int Steering_initialize(int  NumSupportedCmds,
 
   fprintf(fp, "%s", buf);
   fclose(fp);
+
+  /* Set up signal handler so can clean up if application 
+     exits in a hurry */
+  /* ctrl-c */
+  signal(SIGINT, Steering_signal_handler);
+  /* kill (note cannot (and should not) catch kill -9) */
+  signal(SIGTERM, Steering_signal_handler);
+  signal(SIGSEGV, Steering_signal_handler);
+  signal(SIGILL, Steering_signal_handler);
+  signal(SIGABRT, Steering_signal_handler);
+  signal(SIGFPE, Steering_signal_handler);
 
   /* Flag that library has successfully been initialised */
 
@@ -834,7 +847,8 @@ int Steering_pause(int   *NumSteerParams,
 {
   int    paused        = TRUE;
   int    return_status = REG_SUCCESS;
-  int    i, j;
+  int    i, j, index;
+  int    seqnum;
   int    num_commands;
   int    commands[REG_MAX_NUM_STR_CMDS];
   int    param_handles[REG_MAX_NUM_STR_PARAMS];
@@ -851,7 +865,7 @@ int Steering_pause(int   *NumSteerParams,
 
   while(paused){
 
-    system("sleep 1");
+    sleep(1);
 
     /* Read anything that the steerer has sent to us */
 
@@ -916,12 +930,47 @@ int Steering_pause(int   *NumSteerParams,
 
 	  paused = FALSE;
 	  return_status = Detach_from_steerer();
+
+	  /* Confirm that we have received the detach command */
+
+	  index = Param_index_from_handle(&(Params_table), REG_SEQ_NUM_HANDLE);
+	  if(index != -1){
+	    sscanf(Params_table.param[index].value, "%d", &seqnum);
+	  }
+	  else{
+	    seqnum = -1;
+	  }
+
+	  commands[0] = REG_STR_DETACH;
+	  Emit_status(seqnum,
+		      0,   
+		      NULL,
+		      1,
+		      commands);
+
 	  *NumCommands  = 0;
 	  break;
 	}
 	else if(commands[i] == REG_STR_STOP){
 
 	  paused = FALSE;
+	  return_status = Detach_from_steerer();
+
+	  /* Confirm that we have received the stop command */
+
+	  index = Param_index_from_handle(&(Params_table), REG_SEQ_NUM_HANDLE);
+	  if(index != -1){
+	    sscanf(Params_table.param[index].value, "%d", &seqnum);
+	  }
+	  else{
+	    seqnum = -1;
+	  }
+	  commands[0] = REG_STR_STOP;
+          Emit_status(seqnum,
+		      0,   
+		      NULL,
+		      1,
+		      commands);
 
 	  /* Return the stop command so app can act on it */
 	  *NumCommands = 1;
@@ -1619,6 +1668,62 @@ int Get_ptr_value(param_entry *param)
   }
 
   return return_status;
+}
+
+/*----------------------------------------------------------------*/
+
+void Steering_signal_handler(int aSignal)
+{
+  
+  /* caught one signal - ignore all others now as going to quit and do not
+     want the quit process to be interrupted and restarted... */
+  signal(SIGINT, SIG_IGN); 
+  signal(SIGTERM, SIG_IGN);
+  signal(SIGSEGV, SIG_IGN);
+  signal(SIGILL, SIG_IGN);
+  signal(SIGABRT, SIG_IGN);
+  signal(SIGFPE, SIG_IGN);
+
+  switch(aSignal){
+
+    case SIGINT:
+      fprintf(stderr, "Interrupt signal received (signal %d)\n", aSignal);
+      break;
+      
+    case SIGTERM:
+      fprintf(stderr, "Kill signal received (signal %d)\n", aSignal);
+      break;
+      
+    case SIGSEGV:
+      fprintf(stderr, "Illegal Access caught (signal %d)\n", aSignal);
+      break;
+
+    case  SIGILL:
+      fprintf(stderr, "Illegal Exception caught (signal %d)\n", aSignal);
+      break;
+
+      /* note: abort called if exception not caught (and hence calls 
+	 terminate) */
+    case SIGABRT:
+      fprintf(stderr, "Abort signal caught (signal %d)\n", aSignal);
+      break;
+
+    case SIGFPE:
+      fprintf(stderr, "Arithmetic Exception caught (signal %d)\n", aSignal);
+      break;
+
+    default:
+      fprintf(stderr, "Signal caught (signal %d)\n", aSignal);
+
+  }
+
+  fprintf(stderr, "Steering library quitting...\n");
+
+  if (Steering_finalize() != REG_SUCCESS){
+    fprintf(stderr, "Steering_signal_handler: Steerer_finalize failed");
+  }
+
+  exit(0);
 }
 
 

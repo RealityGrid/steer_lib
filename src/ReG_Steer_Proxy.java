@@ -268,7 +268,7 @@ public class ReG_Steer_Proxy {
 	    // ARPDBG - ugly ugly. Give the app a chance to spot that steerer
 	    // has attached and thus write necessary files (otherwise getFile
 	    // will fail).
-	    Thread.sleep(2000);
+	    //Thread.sleep(2000);
 
 	    // Get the commands that the app. supports
 	    String supp_cmds = app.getFile(APP_STEERABLE_FILENAME, false);
