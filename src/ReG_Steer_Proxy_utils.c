@@ -193,7 +193,7 @@ int Send_proxy_message(int pipe_to_proxy, const char *buf)
   }
     
   foot_len = strlen(footer);
-  tot_len  = buf_len + foot_len;
+  tot_len  = buf_len + foot_len + 1;
 
   complete_msg = (char *)malloc(tot_len);
 
