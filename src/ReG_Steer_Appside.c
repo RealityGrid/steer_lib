@@ -4502,7 +4502,7 @@ int Parse_chunk_header(int IOTypeIndex, char* pData)
 	       "EXTENT %d %d %d\n"
 	       "END_CHUNK_HDR\n", 
 	       &(ptr->sx), &(ptr->sy), &(ptr->sz), 
-	       &(ptr->nx), &(ptr->ny), &(ptr->nz)) != 6){
+	       &(ptr->nx), &(ptr->ny), &(ptr->nz)) == 6){
 
       return REG_SUCCESS;
     }
@@ -4513,5 +4513,5 @@ int Parse_chunk_header(int IOTypeIndex, char* pData)
   ptr->ny = 0;
   ptr->nz = 0;
 
-  return REG_SUCCESS;
+  return REG_FAILURE;
 }
