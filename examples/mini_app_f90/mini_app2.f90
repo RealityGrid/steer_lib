@@ -56,6 +56,8 @@ PROGRAM mini_app
                            DIMENSION(REG_INITIAL_NUM_IOTYPES) :: iotype_handles
   INTEGER (KIND=REG_SP_KIND), &
                            DIMENSION(REG_INITIAL_NUM_IOTYPES) :: io_dirn
+  INTEGER (KIND=REG_SP_KIND), &
+                           DIMENSION(REG_INITIAL_NUM_IOTYPES) :: io_freqs
 
   INTEGER (KIND=REG_SP_KIND) :: num_chk_types
   CHARACTER(LEN=REG_MAX_STRING_LENGTH), &
@@ -131,12 +133,29 @@ PROGRAM mini_app
 
   ! Register the input IO channel
 
-  num_types = 1
   io_labels(1) = "VTK_STRUCTURED_POINTS_INPUT"//CHAR(0)
   io_dirn(1)   = REG_IO_IN
+  io_freqs(1)  = 0
+
+!!$  CALL register_iotypes_f(num_types, io_labels, io_dirn, &
+!!$                          input_freq, iotype_handles(1), status)
+!!$
+!!$  IF(status .ne. REG_SUCCESS)THEN
+!!$
+!!$    CALL steering_finalize_f(status)
+!!$    STOP 'Failed to register IO type'
+!!$  END IF
+!!$
+!!$  WRITE(*,*) 'Returned IOtype = ', iotype_handles(1)
+
+  io_labels(2) = "VTK_STRUCTURED_POINTS_OUTPUT"//CHAR(0)
+  io_dirn(2) = REG_IO_OUT
+  io_freqs(2)  = 2
   
+  num_types = 2
+
   CALL register_iotypes_f(num_types, io_labels, io_dirn, &
-                          input_freq, iotype_handles(1), status)
+                          io_freqs, iotype_handles, status)
 
   IF(status .ne. REG_SUCCESS)THEN
 
@@ -145,20 +164,6 @@ PROGRAM mini_app
   END IF
 
   WRITE(*,*) 'Returned IOtype = ', iotype_handles(1)
-
-  io_labels(1) = "VTK_STRUCTURED_POINTS_OUTPUT"//CHAR(0)
-  output_freq = 0
-  io_dirn(1) = REG_IO_OUT
-  
-  CALL register_iotypes_f(num_types, io_labels, io_dirn, &
-                          output_freq, iotype_handles(2), status)
-
-  IF(status .ne. REG_SUCCESS)THEN
-
-    CALL steering_finalize_f(status)
-    STOP 'Failed to register IO type'
-  END IF
-
   WRITE(*,*) 'Returned IOtype = ', iotype_handles(2)
 
   num_chk_types = 1
@@ -174,7 +179,7 @@ PROGRAM mini_app
     STOP 'Failed to register Chk type'
   END IF
 
-  WRITE(*,*) 'Returned Chktype = ', chk_handles(3)
+  WRITE(*,*) 'Returned Chktype = ', chk_handles(1)
 
   ! Register some parameters
 
@@ -271,6 +276,7 @@ PROGRAM mini_app
 
   WRITE(*,*) 'Entering main simulation loop...'
 
+  iloop = 1
   DO WHILE(iloop<num_sim_loops .AND. (finished .ne. 1))
 
 !!$    CALL consume_start_f(iotype_handles(1), iohandle, status)
