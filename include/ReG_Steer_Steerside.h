@@ -33,6 +33,10 @@
 
 ---------------------------------------------------------------------------*/
 
+/** @file ReG_Steer_Steerside.h 
+    @brief Header file for inclusion in steering-client code 
+  */
+
 #ifndef __REG_STEER_STEERSIDE_H__
 #define __REG_STEER_STEERSIDE_H__
 
@@ -44,7 +48,8 @@
   #define PREFIX 
 #endif
 
-/* Data structure used to return details of checkpoint log
+/**
+   Data structure used to return details of checkpoint log
    entries to steerer */
 
 typedef struct {
@@ -59,7 +64,8 @@ typedef struct {
 
 } Output_log_struct;
 
-/* Data structure used to return details of steerable/monitored
+/**
+   Data structure used to return details of steerable/monitored
    parameters */
 
 typedef struct {
@@ -76,7 +82,8 @@ typedef struct {
 
 /*-------------- Steerer-side function prototypes -------------*/
 
-/* Returns list of steerable applications returned by UNICORE 
+/**
+   Returns list of steerable applications returned by UNICORE 
    registry (contacted via GridService on the port given in the
    REGISTRY_GSH environment variable. If the steering proxy is not
    available this routine returns REG_FAILURE and nsims=0. The Grid
@@ -86,35 +93,42 @@ extern PREFIX int Get_sim_list(int   *nSims,
 			       char **simName,
 			       char **simGSH);
 
-/* Attempt to attach to the specified simulation - returns a 
+/**
+   Attempt to attach to the specified simulation - returns a 
    handle for this simulation if successful. */
 extern PREFIX int Sim_attach(char *SimID,
 			     int  *SimHandle);
 
-/* Detach from the specfied simulation.  Signals the simulation
+/**
+   Detach from the specfied simulation.  Signals the simulation
    that steerer has detached and then cleans-up associated
    files and table entries. */
 extern PREFIX int Sim_detach(int *SimHandle);
 
-/* Looks for the next message from any attached simulations. If
+/**
+   Looks for the next message from any attached simulations. If
    it finds one then it returns the handle of the originating
    simulation and the type of message. */
 extern PREFIX int Get_next_message(int   *SimHandle,
 				   int   *msg_type);
 
-/* Consume and store the parameter definitions that the 
+/**
+   Consume and store the parameter definitions that the 
    simulation referred to by SimHandle has emitted. */
 extern PREFIX int Consume_param_defs(int SimHandle);
 
-/* Consume and store the IO-type definitions that the 
+/**
+   Consume and store the IO-type definitions that the 
    simulation referred to by SimHandle has emitted. */
 extern PREFIX int Consume_IOType_defs(int SimHandle);
 
-/* Consume and store the Chk type definitions that the 
+/** 
+   Consume and store the Chk type definitions that the 
    simulation referred to by SimHandle has emitted. */
 extern PREFIX int Consume_ChkType_defs(int SimHandle);
 
-/* Consume a status message emitted by the simulation associated
+/** 
+   Consume a status message emitted by the simulation associated
    with SimHandle.  Returns that simulations current sequence no.
    and a list of any commands received (e.g. finish). */
 extern PREFIX int Consume_status(int   SimHandle,
@@ -122,12 +136,14 @@ extern PREFIX int Consume_status(int   SimHandle,
 				 int  *NumCmds,
 				 int  *Commands);
 
-/* Consume a logging message emitted by the simulation associated
+/** 
+   Consume a logging message emitted by the simulation associated
    with SimHandle.  Contents of the message are stored in the log
    for that simulation. */
 extern PREFIX int Consume_log(int   SimHandle);
 
-/* Emit a steering-control message to the simulation associated
+/** 
+   Emit a steering-control message to the simulation associated
    with SimHandle.  Emits the specified commands (if any) and
    automatically sends any (steerable) parameter values that have
    been edited since the last call to this routine. */
@@ -136,62 +152,63 @@ extern PREFIX int Emit_control(int    SimHandle,
 			       int   *SysCommands,
 			       char **SysCmdParams);
 
-/* Wrappers for generating common steering commands */
+/** Wrapper for generating common steering command */
 extern PREFIX int Emit_detach_cmd(int SimHandle);
+/** Wrapper for generating common steering command */
 extern PREFIX int Emit_stop_cmd(int SimHandle);
+/** Wrapper for generating common steering command */
 extern PREFIX int Emit_pause_cmd(int SimHandle);
+/** Wrapper for generating common steering command */
 extern PREFIX int Emit_resume_cmd(int SimHandle);
+/** Wrapper for generating common steering command */
 extern PREFIX int Emit_retrieve_param_log_cmd(int SimHandle, 
 					      int ParamHandle);
-/* This one is SGS-specific as it uses the Checkpoint Tree */
+/** This one is SGS-specific as it uses the Checkpoint Tree */
 extern PREFIX int Emit_restart_cmd(int SimHandle, char *chkGSH);
 
-/* Initialise the internal tables etc. used by the steering library
+/** 
+   Initialize the internal tables etc. used by the steering library
    on the steering application sied.  Must be called before all other
    steering-library routines. */
 extern PREFIX int Steerer_initialize();
 
-/* Cleans up the internal tables etc. Must be called after all steering
+/** 
+   Cleans up the internal tables etc. Must be called after all steering
    activity is complete. */
 extern PREFIX int Steerer_finalize();
 
-/* Deletes all data associated with the simulation with handle SimHandle.
+/** 
+   Deletes all data associated with the simulation with handle SimHandle.
    Used when a simulation detaches. */
 extern PREFIX int Delete_sim_table_entry(int *SimHandle);
 
-/* A debugging routine - writes the complete contents of the internal
+/**
+   A debugging routine - writes the complete contents of the internal
    table holding information on all connected simulations to 
    ./sim_table.txt */
 extern PREFIX int Dump_sim_table();
 
-/* Gets the number of <steerable> parameters associated with the simulation 
+/** 
+   Gets the number of <steerable> parameters associated with the simulation 
    with handle sim_handle.  i.e. if steerable==TRUE then this returns the
    number of steerable parameters that the simulation has. */
 extern PREFIX int Get_param_number(int  sim_handle,
 				   int  steerable,
 				   int *num_params);
 
-/* Gets the first <num_params> <steerable> parameters assocaited with the
-   simulation with handle sim_handle.  Returns the handles, labels and
-   values (as strings) of these parameters. handles, labels, vals, min_vals
-   and max_vals must all point to chunks of memory large enough to receive
-   num_params entries. */
-/*extern PREFIX int Get_param_values(int    sim_handle,
-				   int    steerable,
-				   int    num_params,
-				   int   *handles,
-				   char* *labels,
-				   char* *vals,
-				   int   *types,
-				   char* *min_vals,
-				   char* *max_vals);
+/**
+   Gets the first <num_params> <steerable> parameters assocaited with the
+   simulation with handle sim_handle.  
+   @return The handles, labels and values (as strings) of these parameters 
+   @see Param_details_struct
 */
 extern PREFIX int Get_param_values(int                   sim_handle,
 				   int                   steerable,
 				   int                   num_params,
 				   Param_details_struct *param_details);
 
-/* Sets the values of the parameters with the specified handles for the
+/** 
+   Sets the values of the parameters with the specified handles for the
    simulation with handle sim_handle. Causes internal flags to be set
    to indicate that these parameter values have changed. */
 extern PREFIX int Set_param_values(int    sim_handle,
@@ -199,7 +216,8 @@ extern PREFIX int Set_param_values(int    sim_handle,
 				   int   *handles,
 				   char* *vals);
 
-/* Retrieve pointer to internal buffer holding previous values of
+/**
+   Retrieve pointer to internal buffer holding previous values of
    the parameter with handle 'handle' belonging to 'sim_handle.'
    num_entries holds the no. of entries in the log. */
 extern PREFIX int Get_param_log(int      sim_handle,
@@ -207,17 +225,17 @@ extern PREFIX int Get_param_log(int      sim_handle,
 				double **buf, 
 				int     *num_entries);
 
-/* Gets the number of IO types associated with the simulation with
+/** 
+   Gets the number of IO types associated with the simulation with
    handle <sim_handle>. */
 extern PREFIX int Get_iotype_number(int sim_handle,
 				    int *num_iotypes);
 
-/* Gets the first <num_iotypes> IO types associated with the simulation
-   with hand <sim_handle>. Returns the handle and label associated with
-   each IO type. Also returns whether IO type is IN,OUT or CHKPT, whether
-   it supports automatic emission/consumption and, if so, with what
-   frequency (in no. of steps between emission/consumption) it is 
-   currently doing so. */
+/** 
+   Gets the first <num_iotypes> IO types associated with the simulation
+   with hand <sim_handle>. 
+   @return The handle and label associated with each IO type, whether IO type is IN,OUT or CHKPT, whether it supports automatic emission/consumption and, if so, with what frequency (in no. of steps between emission/consumption) it is currently doing so. 
+ */
 extern PREFIX int Get_iotypes(int    sim_handle,
 			      int    num_iotypes,
 			      int   *handles,
@@ -225,7 +243,8 @@ extern PREFIX int Get_iotypes(int    sim_handle,
 			      int   *types,
 			      int   *io_freqs);
 
-/* A utility function that allows the steerer to update the emit/consume
+/** 
+   A utility function that allows the steerer to update the emit/consume
    frequency associated with a given IOtype - the frequency itself is
    stored as a steerable parameter and therefore must be looked-up. */
 extern PREFIX int Set_iotype_freq(int  sim_handle,
@@ -233,12 +252,14 @@ extern PREFIX int Set_iotype_freq(int  sim_handle,
 				  int *iotype_handles,
 				  int *freqs);
 
-/* Gets the number of Chk types associated with the simulation with
+/**
+   Gets the number of Chk types associated with the simulation with
    handle <sim_handle>. */
 extern PREFIX int Get_chktype_number(int  sim_handle,
 				     int *num_chktypes);
 
-/* Gets the first <num_iotypes> Chk types associated with the simulation
+/** 
+   Gets the first <num_iotypes> Chk types associated with the simulation
    with hand <sim_handle>. Returns the handle and label associated with
    each Chk type. Also returns whether Chk type is IN or OUT and
    frequency (in no. of steps between each emission) of
@@ -250,7 +271,8 @@ extern PREFIX int Get_chktypes(int    sim_handle,
 			       int   *types,
 			       int   *chk_freqs);
 
-/* A utility function that allows the steerer to update the emit
+/** 
+   A utility function that allows the steerer to update the emit
    frequency associated with a given Chktype - the frequency itself is
    stored as a steerable parameter and therefore must be looked-up. */
 extern PREFIX int Set_chktype_freq(int  sim_handle,
@@ -258,33 +280,38 @@ extern PREFIX int Set_chktype_freq(int  sim_handle,
 				   int *chktype_handles,
 				   int *freqs);
 
-/* Gets the number of supported commands registered by the simulation
+/** 
+   Gets the number of supported commands registered by the simulation
    with handle <sim_handle>. */
 extern PREFIX int Get_supp_cmd_number(int  sim_handle,
 				      int *num_cmds);
 
-/* Get the first <num_cmds> supported commands registered for the
-   simulation with handle <sim_handle>.  Returns the id of each
-   command in the array pointed to by cmd_ids.  This array must be
-   large enough to hold <num_cmds> integers */
+/** 
+  Get the first <num_cmds> supported commands registered for the
+  simulation with handle <sim_handle>.  Returns the id of each
+  command in the array pointed to by cmd_ids.  This array must be
+  large enough to hold <num_cmds> integers */
 extern PREFIX int Get_supp_cmds(int  sim_handle,
 				int  num_cmds,
 				int *cmd_ids);
 
-/* Query functions for getting checkpoint information out of logging 
-   structure */
+/** 
+  Query functions for getting checkpoint information out of logging 
+  structure */
 extern PREFIX int Get_chk_log_number(int  sim_handle,
 				     int  chk_handle,
 				     int *num_entries);
 
-/* Returns the FIRST num_entries checkpoint entries from the logs */
+/** 
+  Returns the FIRST num_entries checkpoint entries from the logs */
 extern PREFIX int Get_chk_log_entries(int                sim_handle,
 				      int                chk_handle,
 			              int                num_entries,
 				      Output_log_struct *entries);
 
-/* Returns the LAST num_entries checkpoint entries in reverse
-   chronological order */
+/** 
+  Returns the LAST num_entries checkpoint entries in reverse
+  chronological order */
 extern PREFIX int Get_chk_log_entries_reverse(int                sim_handle,
 					      int                chk_handle,
 					      int                num_entries,

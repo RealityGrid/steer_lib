@@ -33,6 +33,10 @@
 
 ---------------------------------------------------------------------------*/
 
+/** @file ReG_Steer_Appside.h 
+    @brief Header file for inclusion in code to be steered 
+  */
+
 #include "ReG_Steer_types.h"
 
 #ifdef __cplusplus
@@ -44,18 +48,23 @@
 
 /*-------------- Application-side function prototypes -------------*/
 
-/* Set global flag to enable/disable steering.  This flag is checked
+/**
+   Set global flag to enable/disable steering.  This flag is checked
    at start of Steering_control and causes routine to simply return
-   if not enabled. */
+   if not enabled. 
+ */
 extern PREFIX void Steering_enable(const int EnableSteer);
 
-/* Initialise the internal library tables and advertise application
-   as being steerable. */
+/**
+   Initialise the internal library tables and advertise application
+   as being steerable. 
+ */
 extern PREFIX int Steering_initialize(char *AppName,
 				      int   NumSupportedCmds,
 				      int  *SupportedCmds);
 
-/* Register the specified IO types.  This routine performs some sort of
+/**
+   Register the specified IO types.  This routine performs some sort of
    mapping between the supplied label and a physical destination for
    data (e.g. a filename and location), possibly using the component
    framework. Returns an integer handle for each IO type. */
@@ -65,7 +74,8 @@ extern PREFIX int Register_IOTypes(int    NumTypes,
 				   int   *IOFrequency,
 				   int   *IOType);
 
-/* Register one IO type.  This routine performs some sort of
+/**
+   Register one IO type.  This routine performs some sort of
    mapping between the supplied label and a physical destination for
    data (e.g. a filename and location or IP and port), possibly using 
    the Grid service framework. Returns an integer handle for the IO type. */
@@ -80,28 +90,39 @@ extern PREFIX int Disable_IOType(int IOType);
 
 extern PREFIX int Enable_IOType(int IOType);
 
-/* Turn on use of acknowledgements for this IOType - this means
+/**
+   Turn on use of acknowledgements for this IOType - this means
    that an emitter won't attempt to send a sample until the consumer
    has acknowledged the previous one. 
-   Acknowledgements are ON by default. */
+   Acknowledgements are ON by default.
+   @see Disable_IOType_acks
+   @ see Enable_IOTypes_on_registration
+ */
 extern PREFIX int Enable_IOType_acks(int IOType);
 
-/* Turn off use of acknowledgements for this IOType - this means
+/**
+   Turn off use of acknowledgements for this IOType - this means
    that an emitter will keep (attempting to) send data samples,
    irrespective of whether the consumer has processed previous ones. 
-   Acknowledgements are ON by default. */
+   Acknowledgements are ON by default. 
+   @ see Enable_IOType_acks
+   @ see Enable_IOTypes_on_registration
+ */
 extern PREFIX int Disable_IOType_acks(int IOType);
 
-/* Register the listed Checkpoint types. This is for control and
+/**
+   Register the listed Checkpoint types. This is for control and
    monitoring purposes - no reference is made to the actual location
-   of the checkpoint data */
+   of the checkpoint data 
+ */
 extern PREFIX int Register_ChkTypes(int    NumTypes,
 				    char* *ChkLabel,
 				    int   *direction,
 				    int   *ChkFrequency,
 				    int   *ChkType);
 
-/* Register a Checkpoint type. This is for control and
+/**
+   Register a Checkpoint type. This is for control and
    monitoring purposes - no reference is made to the actual location
    of the checkpoint data */
 extern PREFIX int Register_ChkType(char* ChkLabel,
@@ -110,7 +131,8 @@ extern PREFIX int Register_ChkType(char* ChkLabel,
 				   int   *ChkType);
 
 
-/* Record that the application has just read/written a checkpoint
+/**
+   Record that the application has just read/written a checkpoint
    of type ChkType - the handle returned by Register_ChkTypes.  Whether
    it has been read or written is given by the 'direction' of this 
    registered type.  The caller must supply a string in ChkTag which
@@ -121,7 +143,8 @@ extern PREFIX int Register_ChkType(char* ChkLabel,
 extern PREFIX int Record_Chkpt(int   ChkType,
 			       char *ChkTag);
 
-/* Record that a file is a member of the checkpoint of
+/**
+   Record that a file is a member of the checkpoint of
    type ChkType (as returned by Register_ChkTypes).  Should
    be called for each file making up a checkpoint prior to a 
    final call to Record_checkpoint_set to actually record 
@@ -129,7 +152,8 @@ extern PREFIX int Record_Chkpt(int   ChkType,
 extern PREFIX int Add_checkpoint_file(int   ChkType,
 				      char *filename);
 
-/* Replacement for Record_Chkpt - to be called by the application once
+/**
+   Replacement for Record_Chkpt - to be called by the application once
    it has successfully taken a checkpoint of type ChkType - the handle 
    returned by Register_ChkTypes.  ChkTag should hold a unique
    identifier for the checkpoint set.  If Add_checkpoint_file has
@@ -145,7 +169,8 @@ extern PREFIX int Record_checkpoint_set(int   ChkType,
 					char *ChkTag,
 					char *Path);
 
-/* Register the specified parameters. Since labels are used to 
+/** 
+   Register the specified parameters. Since labels are used to 
    identify parameters, they must be unique and not contain
    any white space. */
 extern PREFIX int Register_params(int    NumParams,
@@ -156,7 +181,8 @@ extern PREFIX int Register_params(int    NumParams,
 				  char* *ParamMinima,
 				  char* *ParamMaxima);
 
-/* As above but for a single parameter to remove the need for
+/**
+   As above but for a single parameter to remove the need for
    arrays of parameter labels etc. */
 extern PREFIX int Register_param(char* ParamLabel,
                                  int   ParamSteerable,
@@ -165,7 +191,8 @@ extern PREFIX int Register_param(char* ParamLabel,
                                  char* ParamMinimum,
                                  char* ParamMaximum);
 
-/* A wrapper for Register_param for variables of type
+/**
+   A wrapper for Register_param for variables of type
    REG_BIN.  Calculates number of bytes that ParamPtr
    points at.  Mandates that REG_BIN variables are
    monitored only. */
@@ -174,21 +201,25 @@ extern PREFIX int Register_bin_param(char *ParamLabel,
 				     int ParamType, 
 				     int NumObjects);
 
-/* Un-register the parameters identified by the given labels. */
+/**
+   Un-register the parameters identified by the given labels. */
 extern PREFIX int Unregister_params(int    NumParams,
 				    char* *ParamLabels);
-/* Toggle whether (toggle=REG_TRUE) or not (toggle=REG_FALSE) to 
+/**
+   Toggle whether (toggle=REG_TRUE) or not (toggle=REG_FALSE) to 
    log values of all registered  parameters. Logging is on by
    default. */
 extern PREFIX int Enable_all_param_logging(int toggle);
 
-/* Toggle whether (toggle=REG_TRUE) or not (toggle=REG_FALSE) to log
+/** 
+   Toggle whether (toggle=REG_TRUE) or not (toggle=REG_FALSE) to log
    values of the parameter identified by the provided label. Logging
    is on by default. */
 extern PREFIX int Enable_param_logging(char *ParamLabel,
 				       int   toggle);
 
-/* Main steering routine to be called at application breakpoint.
+/**
+   Main steering routine to be called at application breakpoint.
    Takes <SeqNum> (an indication of application progress) as input
    and returns the labels of any parameters changed by the steerer
    as well as any commands that the app. must handle. This routine
@@ -201,49 +232,60 @@ extern PREFIX int Steering_control(int     SeqNum,
 				   int    *SteerCommands,
 				   char*  *SteerCmdParams);
 
-/* Open the specified IOType (as returned by a call to Register_IOTypes)
+/**
+   Open the specified IOType (as returned by a call to Register_IOTypes)
    ready for output. <SeqNum> provides a measure of the application's
-   progress at this point. */
+   progress at this point. 
+   @see Register_IOTypes
+ */
 extern PREFIX int Emit_start(int  IOType,
 			     int  SeqNum,
 			     int *IOTypeIndex);
 
-/* Blocking version of Emit_start.  Blocks until IOType is ready to
+/**
+   Blocking version of Emit_start.  Blocks until IOType is ready to
    send data OR the specified TimeOut (seconds) is exceeded. */
 extern PREFIX int Emit_start_blocking(int    IOType,
 				      int    SeqNum,
 				      int   *IOTypeIndex,
 				      float  TimeOut);
 
-/* Must be called following a call to Emit_start.  Emits <Count> items
+/** 
+   Must be called following a call to Emit_start.  Emits <Count> items
    of type <DataType> as pointed to by <pData>. */
 extern PREFIX int Emit_data_slice(int	            IOTypeIndex,
 				  int               DataType,
 				  int               Count,
 				  const void       *pData);
 
-/* Close the specified IOType and complete the emission process. */
+/** 
+   Close the specified IOType and complete the emission process. */
 extern PREFIX int Emit_stop(int	       *IOTypeIndex);
 
-/* Open the specified IOType (as returned by a call to Register_IOTypes)
-   ready for input. */
+/**
+   Open the specified IOType (as returned by a call to Register_IOTypes)
+   ready for input. 
+   @see Register_IOTypes */
 extern PREFIX int Consume_start(int               IOType,
 				int		  *IOTypeIndex);
 
-/* Blocking version of above routine.  Blocks until data is available to
+/**
+   Blocking version of above routine.  Blocks until data is available to
    read OR TimeOut (seconds) is exceeded */
 extern PREFIX int Consume_start_blocking(int   IOType,
 					 int  *IOTypeIndex,
 					 float TimeOut);
 
-/* Must be called following a call to Consume_start.  Use to get the type
+/**
+   Must be called following a call to Consume_start.  Use to get the type
    and number of data objects in the next 'slice' - allows user to allocate
    sufficient memory for call to Consume_data_slice */
 extern PREFIX int Consume_data_slice_header(int  IOTypeIndex,
 			                    int *DataType,
 			                    int *Count);
 
-/* Must be called following a call to Consume_data_slice_header. <pData> 
+/**
+   Must be called following a call to Consume_data_slice_header. <pData> 
    should point to a block of memory large enough to hold <Count> items
    of type <DataType>. */
 extern PREFIX int Consume_data_slice(int     IOTypeIndex,
@@ -251,16 +293,19 @@ extern PREFIX int Consume_data_slice(int     IOTypeIndex,
 		                     int     Count,
 		                     void   *pData);
 
-/* Close the specified IOType and complete the consumption process. 
+/**
+   Close the specified IOType and complete the consumption process. 
    Frees any memory used during the consumption. */
 extern PREFIX int Consume_stop(int	       *IOTypeIndex);
 
-/* Called once all steering activity is complete.  Disconnects from
+/**
+   Called once all steering activity is complete.  Disconnects from
    steerer (if any), removes the 'I am steerable' advertisement and 
    cleans up internal tables. */
 extern PREFIX int Steering_finalize();
 
-/* Intended to be called by the application in response to a 'pause'
+/** 
+   Intended to be called by the application in response to a 'pause'
    command from the steerer.  Blocks until a 'resume' or 'stop' 
    command received.  Returns all commands that immediately followed
    a 'resume' command as well as the labels of any parameters edited
@@ -273,7 +318,8 @@ extern PREFIX int Steering_pause(int   *NumSteerParams,
 				 int   *SteerCommands,
 				 char **SteerCmdParams);
 
-/* Two utility routines to allow the user to not have to worry about
+/**
+   Two utility routines to allow the user to not have to worry about
    allocating arrays of strings to be passed to Steering_control.  This
    routine allocates an array containing Array_len strings, each of
    length String_len.  Returns NULL if mallocs fail, otherwise pointer
@@ -281,11 +327,13 @@ extern PREFIX int Steering_pause(int   *NumSteerParams,
 extern PREFIX char **Alloc_string_array(int String_len,
 					int Array_len);
 
-/* This frees ALL of the string arrays allocated by (possibly several)
+/**
+   This frees ALL of the string arrays allocated by (possibly several)
    calls to Alloc_string_array.  Returns REG_SUCCESS. */
 extern PREFIX int Free_string_arrays();
 
-/* For testing only, generates a buffer containing vtk data plus a 
+/**
+   For testing only, generates a buffer containing vtk data plus a 
    suitable ASCII header.  Both header and array should point to 
    big enough chunks of memory (BUFSIZ for header and nx*ny*nz floats
    for array) */
@@ -298,7 +346,8 @@ extern PREFIX int Make_vtk_buffer(int    nx,
 				  double c,
 				  float *array);
 
-/* Create a vtk header for a structured points data set of nx*ny*nz
+/**
+   Create a vtk header for a structured points data set of nx*ny*nz
    points of type <type> (coded as REG_INT etc.) */
 extern PREFIX int Make_vtk_header(char  *header,
 				  char  *title,
@@ -308,7 +357,8 @@ extern PREFIX int Make_vtk_header(char  *header,
 				  int    veclen,
 				  int    type);
 
-/* Create a simple header for a data chunk - simply gives origin and
+/**
+   Create a simple header for a data chunk - simply gives origin and
    extent of a 3D chunk of a larger data set */
 extern PREFIX int Make_chunk_header(char *header,
 				    int   IOindex,
@@ -316,15 +366,18 @@ extern PREFIX int Make_chunk_header(char *header,
 				    int   sx,   int sy,   int sz,
 				    int   nx,   int ny,   int nz);
 
-/* Toggle whether or not (flag = 1 or 0) the data to be emitted on the 
+/**
+   Toggle whether or not (flag = 1 or 0) the data to be emitted on the 
    IOType with the given index is from Fortran */
 extern PREFIX int Set_f90_array_ordering(int IOTypeIndex,
 				         int flag);
 
-/* Flag that library (flag = REG_TRUE) is being called from F90 code. */
+/**
+   Flag that library (flag = REG_TRUE) is being called from F90 code. */
 extern PREFIX int Called_from_f90(int flag);
 
-/* Reorder array pointed to by pInData into array pointed to by
+/**
+   Reorder array pointed to by pInData into array pointed to by
    pOutData (must be of dimension tot_extent[0]*tot_extent[1]*tot_extent[2])
    If to_f90 == 1 then reorders from C to F90, otherwise, F90 to C */
 extern PREFIX int Reorder_array(int          ndims,

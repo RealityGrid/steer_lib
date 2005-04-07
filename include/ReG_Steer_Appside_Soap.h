@@ -35,28 +35,59 @@
 #ifndef __REG_STEER_APPSIDE_SOAP_H__
 #define __REG_STEER_APPSIDE_SOAP_H__
 
+/** @file ReG_Steer_Appside_Soap.h
+    @brief Header file for Soap-related Appside routines
+  */
+
 /*------------------------------------------------------------------*/
 
+/** Initialize the connection to a steering client.
+
+    */
 int Initialize_steering_connection_soap(int  NumSupportedCmds,
 					int *SupportedCmds);
 
+/** Check whether a steering client is connected.
+
+    */
 int Steerer_connected_soap();
 
+/** Send a status message to an attached client via Soap
+
+ */
 int Send_status_msg_soap(char* msg);
 
+/** Detach from a steering client
+
+*/
 int Detach_from_steerer_soap();
 
+/** Retrieve a control message from attached client
+
+*/
 struct msg_struct *Get_control_msg_soap();
 
+/** Tidy up and take down connection to steering client
+
+*/
 int Finalize_steering_connection_soap();
 
+/** Obtain endpoint for a socket connection from OGSI framework
+
+*/
 int Get_data_source_address_soap(int                 index, 
 				 char               *hostname,
 				 unsigned short int *port);
 
+/** Record that application has taken a checkpoint
+
+*/
 int Record_checkpoint_set_soap(char *chk_data,
 			       char *node_data);
 
+/** Caches specified log on associated SGS
+
+*/
 int Save_log_soap(char *log_data);
 
 #endif

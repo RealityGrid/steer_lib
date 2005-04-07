@@ -49,6 +49,8 @@
 #define usleep(microseconds) (Sleep(microseconds/1000))
 #endif
 
+/** @file ReG_Steer_Logging.c
+    @brief Implementation of logging functionality */
 
 /* Allow value of 'REG_DEBUG' to propagate down from Reg_steer_types.h if
    it has been set there */
@@ -56,20 +58,20 @@
 #define REG_DEBUG 1
 #endif
 
-/* Log of checkpoints taken - declared in ReG_Steer_Appside.c  */
+/** Log of checkpoints taken - declared in ReG_Steer_Appside.c  */
 extern Chk_log_type Chk_log;
 
-/* Log of values of parameters for which logging has 
-   been requested - declared in ReG_Steer_Appside.c */
+/** Log of values of parameters for which logging has 
+    been requested - declared in ReG_Steer_Appside.c */
 extern Chk_log_type Param_log;
 
-/* Global scratch buffer - declared in ReG_Steer_Appside.c */
+/** Global scratch buffer - declared in ReG_Steer_Appside.c */
 extern char Global_scratch_buffer[];
 
 extern Param_table_type Params_table;
 
-/* Whether or not a client is currently attached - declared in
-   ReG_Steer_Appside.c */
+/** Whether or not a client is currently attached - declared in
+    ReG_Steer_Appside.c */
 extern int ReG_SteeringActive;
 
 /*----------------------------------------------------------------*/

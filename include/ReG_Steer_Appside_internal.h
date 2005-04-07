@@ -39,9 +39,13 @@
 #include "ReG_Steer_Common.h"
 #include "ReG_Steer_XML.h"
 
+/** @file ReG_Steer_Appside_internal.h
+    @brief Source file for steering-client routines
+  */
+
 /*----------------------- Data structures -----------------------*/
 
-/* Table of open IO channels */
+/** Structure to hold details of open IO channels */
 typedef struct {
 
   /* Handle of associated IOType */
@@ -52,35 +56,36 @@ typedef struct {
 
 }IO_channel_table_type;
 
+/** Table holding details of open IO channels */
 static IO_channel_table_type IO_channel[REG_INITIAL_NUM_IOTYPES];
 
-/* Type definition for table used to hold details on the communication
-   channel between the application and the steerer */
+/** Type definition for table used to hold details on the communication
+    channel between the application and the steerer */
 typedef struct {
 
-  /* Interval in seconds between checks on whether steerer is
-     attached */
+  /** Interval in seconds between checks on whether steerer is
+      attached */
   double                polling_interval;
 
-  /* Steerable interval (in increments of Seq. no.) controlling how 
-     often we perform steering activity while steerer is connected */
+  /** Steerable interval (in increments of Seq. no.) controlling how 
+      often we perform steering activity while steerer is connected */
   int                   steer_interval;
 
-  /* Where to write files for file-based steering */
+  /** Where to write files for file-based steering */
   char			file_root[REG_MAX_STRING_LENGTH];
 
-  /* Address of the Steering Grid Service (for SOAP-based steering) */
+  /** Address of the Steering Grid Service (for SOAP-based steering) */
   char                  SGS_address[REG_MAX_STRING_LENGTH];
 
-  /* String to hold 'supported commands' message 'cos we can't 
-     actually send it until a steerer has connected in the case
-     where we're using SOAP */
+  /** String to hold 'supported commands' message 'cos we can't 
+      actually send it until a steerer has connected in the case
+      where we're using SOAP */
   char			supp_cmds[REG_MAX_MSG_SIZE];
 
-  /* Buffer to hold received messages */
+  /** Buffer to hold received messages */
   char			msg_buffer[REG_MAX_MSG_SIZE];
 
-  /* Flag indicating whether or not lib should handle pause cmd
+  /** Flag indicating whether or not lib should handle pause cmd
      internally (REG_TRUE) or pass it up to the app (REG_FALSE); */
   int                   handle_pause_cmd;
 
@@ -88,19 +93,20 @@ typedef struct {
 
 /*--------- Prototypes of internal library functions -------------*/
 
-/* Emit all of the parameters that have previously been registered 
-   (if any). */
+/** Emit all of the parameters that have previously been registered 
+    (if any). */
 static int Emit_param_defs();
 
-/* Emit all of the IO types that have previously been registered
-   (if any). */
+/** Emit all of the IO types that have previously been registered
+    (if any). */
 static int Emit_IOType_defs();
 
-/* Emit all of the Chk types that have previously been registered
-   (if any). */
+/** Emit all of the Chk types that have previously been registered
+    (if any). */
 static int Emit_ChkType_defs();
 
-/* Consume a control message (if any present) from the steerer. Returns
+/** 
+   Consume a control message (if any present) from the steerer. Returns
    any commands and associated parameters (the latter as a space-separated 
    list in a string) that the application must deal with.  CommandParams is an
    array of pointers to strings that must have already had memory allocated
@@ -114,7 +120,8 @@ static int Consume_control(int    *NumCommands,
 			   int    *SteerParamHandles,
 			   char  **SteerParamLabels);
 
-/* Emit a status report to be consumed by the steerer.  <NumParams>
+/** 
+   Emit a status report to be consumed by the steerer.  <NumParams>
    and <ParamHandles> are intended to allow us to tell the steerer
    what we just received from it but this is not currently 
    implemented.  <NumCommands> and <Commands> are intended for the
@@ -126,7 +133,8 @@ static int Emit_status(int   SeqNum,
 		       int   NumCommands,
 		       int  *Commands);
 
-/* Generate steering commands independently of the steerer. e.g. this
+/** 
+   Generate steering commands independently of the steerer. e.g. this
    implements the automatic emission/consumption of those IOTypes and
    ChkTypes with a non-zero auto. emit/consume frequency. *posn is 
    the point at which to start adding commands and associated parameters
@@ -136,120 +144,140 @@ static int Auto_generate_steer_cmds(int    SeqNum,
 				    int   *SteerCommands, 
 				    char **SteerCmdParams);
 
-/* Take down connection with steerer and clean-up table entries */
+/** Take down connection with steerer and clean-up table entries */
 static int Detach_from_steerer();
 
-/* Update the value of the variable pointed to by the pointer
-   associated with the supplied param_entry */
+/** Update the value of the variable pointed to by the pointer
+    associated with the supplied param_entry */
 static int Update_ptr_value(param_entry *param);
 
-/* Update the 'value' field of the param_entry by retrieving the
-   value of the variable pointed to by the pointer associated
-   with the entry */
+/** Update the 'value' field of the param_entry by retrieving the
+    value of the variable pointed to by the pointer associated
+    with the entry */
 int Get_ptr_value(param_entry *param);
 
-/* Catch any signals and thus allow the library to clean up if the
-   application crashes or is stopped abruptly */
+/** Catch any signals and thus allow the library to clean up if the
+    application crashes or is stopped abruptly */
 static void Steering_signal_handler(int aSignal);
 
-/* Send a status message to the steerer */
+/** Send a status message to attached steering client */
 int Send_status_msg(char *buf);
 
-/* Create the xml message to tell steerer what standard commands
-   the application supports (supplied in array SupportedCmds). */
+/** Create the xml message to tell steerer what standard commands
+    the application supports (supplied in array SupportedCmds). */
 int Make_supp_cmds_msg(int   NumSupportedCmds,
 		       int  *SupportedCmds, 
 		       char *msg,
 		       int   max_msg_size);
 
-/* Read the next control message from the steerer, if any.  Results
-   passed back in structure.  Returns NULL if no message. */
+/** Read the next control message from the steerer, if any.  Results
+    passed back in structure.  Returns NULL if no message. */
 static struct msg_struct *Get_control_msg();
 
-/* Set-up stuff to receive connection from steering client */
+/** Set-up stuff to receive connection from steering client */
 static int Initialize_steering_connection(int  NumSupportedCmds,
 					  int *SupportedCmds);
 
-/* Check for a connection from a steering client - return REG_SUCCESS
-   if a client is attempting to connect */
+/** Check for a connection from a steering client - return REG_SUCCESS
+    if a client is attempting to connect */
 static int Steerer_connected();
 
-/* Take down any connection to a steering client */
+/** Take down any connection to a steering client */
 static int Finalize_steering_connection();
 
 
-/* Initialize the transport mechanism for IOtypes */
+/** Initialize the transport mechanism for IOtypes */
 static int Initialize_IOType_transport(const int direction,
 				const int index);
 
 
-/* Finalize the transport mechanism for IOtypes */
+/** Finalize the transport mechanism for IOtypes */
 static void Finalize_IOType_transport();
 
-/* Check for an acknowledgement from the consumer for the last
-   data set emitted */
+/** Check for an acknowledgement from the consumer for the last
+    data set emitted */
 static int Consume_ack(const int index);
 
-/* Acknowledge the last data set sent to us and indicate we are
-   ready for the next */
+/** Acknowledge the last data set sent to us and indicate we are
+    ready for the next */
 static int Emit_ack(const int index);
 
-/* Check if any sample data needs to be consumed */
+/** Check if any sample data needs to be consumed */
 static int Consume_start_data_check(const int index);
 
 
-/* Read the sample data */
+/** Read the sample data */
 static int Consume_data_read(const int		index,  
 			     const int		datatype,
 			     const size_t	num_bytes_to_send, 
 			     void		*pData);
 
-/* Emit header for sample data */
+/** Emit header for sample data */
 static int Emit_header(const int index);
 
 
-/* Emit footer for sample data */
+/** Emit footer for sample data */
 static int Emit_footer(const int index,
  		       const char * const buffer);
 
-
+/** Emit the raw sample data
+  @param index Index of IOType
+*/
 static int Emit_data(const int		index,
 		     const int		datatype,
 		     const size_t	num_bytes_to_send,
 		     void		*pData);
 
-/* Is the communication connection up */
+/** Is the communication connection up? */
 static int Get_communication_status(const int		index);
 
-/* Read ReG-specific header for iotype */
+/** Read ReG-specific header for iotype */
 static int Consume_iotype_msg_header(int IOTypeIndex,
 				     int *DataType,
 				     int *Count,
 				     int *NumBytes,
 				     int *IsFortranArray);
 
-/* Construct and send ReG-specific header for iotype*/
+/** Construct and send ReG-specific header for iotype*/
 static int Emit_iotype_msg_header(int IOTypeIndex,
 				  int DataType,
 				  int Count,
 				  int NumBytes,
 				  int IsFortranArray);
 
-/* Wrapper for call to Realloc_IOdef_entry_buffer */
+/** Wrapper for call to Realloc_IOdef_entry_buffer */
 static int Realloc_iotype_buffer(int index,
 				 int num_bytes);
 
-/* Wrapper for call to Realloc_IOdef_entry_buffer */
+/** Wrapper for call to Realloc_IOdef_entry_buffer */
 static int Realloc_chktype_buffer(int index,
 				 int num_bytes);
 
-/* Attempt to realloc the buffer associated with the IOdef_entry to 
-   num_bytes.  If this fails, the buffer is 'freed' and
-   buffer_max_bytes is zeroed, otherwise buffer_max_bytes is set to
-   num_bytes. */
+/** Attempt to realloc the buffer associated with the IOdef_entry to 
+    num_bytes.  If this fails, the buffer is 'freed' and
+    buffer_max_bytes is zeroed, otherwise buffer_max_bytes is set to
+    num_bytes. */
 static int Realloc_IOdef_entry_buffer(IOdef_entry *iodef, 
 				      int num_bytes);
 
+/** Log the supplied control message */
 static int Log_control_msg(char *msg_txt);
+
+/** Create a new msg_store struct and pass back a pointer to it */
+struct ReG_ctrl_msg_store *New_msg_store_struct();
+
+/** Free up all msg_store structs in the linked list storing
+    not-yet actioned control messages */
+int Free_control_msg_store();
+
+/** Takes the supplied structure holding a control message
+    and returns its constituents */
+int Unpack_control_msg(struct control_struct *ctrl,
+		       int    *NumCommands,
+		       int    *Commands,
+		       char  **CommandParams,
+		       int    *NumSteerParams,
+		       int    *SteerParamHandles,
+		       char  **SteerParamLabels);
 
 #endif

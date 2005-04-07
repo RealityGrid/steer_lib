@@ -43,15 +43,19 @@
 #define REG_DEBUG 1
 #endif
 
-/* Some global variables for this interface layer - used in 
-   steering_control_f but initialised in steering_initialize_f */
+/** @file ReG_Steer_Appside_f.c
+    @brief Generated from ReG_Steer_Appside_f.m4 to produce platform-specific
+    f90 bindings for the application-side of the steering library */
+
+/** Some global variables for this interface layer - used in 
+    steering_control_f but initialised in steering_initialize_f */
 
 static char string_buf[(REG_MAX_NUM_STR_PARAMS+REG_MAX_NUM_STR_CMDS)
                        *REG_MAX_STRING_LENGTH];
 static char *str_array[REG_MAX_NUM_STR_PARAMS];
 static char *str_array_params[REG_MAX_NUM_STR_CMDS];
 
-/* Array to store size in bytes of each of ReG type */
+/** Array to store size in bytes of each of ReG type */
 static int sizeof_type[8] = {0,0,0,0,0,0,0,0};
 
 /*----------------------------------------------------------------

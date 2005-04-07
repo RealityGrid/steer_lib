@@ -35,6 +35,12 @@
 #ifndef __REG_STEER_BROWSER_H__
 #define __REG_STEER_BROWSER_H__
 
+/** @file ReG_Steer_Browser.h
+    @brief Header file for registry browsing functionality */
+
+/**
+  Holds details on a entry in the registry 
+*/
 struct registry_entry {
 
   char service_type[REG_MAX_STRING_LENGTH];
@@ -49,6 +55,10 @@ struct registry_entry {
 
 /*-------------------------------------------------------------------*/
 
+/** Queries specified registry
+    @return The number of entries in the registry
+    @return Details for each entry
+ */
 int Get_registry_entries(char *registryGSH, 
 			 int *num_entries,  
 			 struct registry_entry **entries);

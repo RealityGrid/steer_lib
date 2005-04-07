@@ -37,6 +37,8 @@
 #ifndef __REG_STEER_STEERSIDE_INTERNAL_H__
 #define __REG_STEER_STEERSIDE_INTERNAL_H__
 
+/** @file ReG_Steer_Steerside_internal.h
+    @brief Header for library-internal steering side routines */
 
 #include "ReG_Steer_Common.h"
 #include "ReG_Steer_XML.h"
@@ -45,69 +47,66 @@
 /*---------------- Data structure definitions -----------------*/
 
 
-/* Definition of entry in main table holding data for connected simulations.  
-   Contains five sub-tables - the first holding the commands that the 
-   simulation supports, the second its registered parameters (both 
-   steerable and monitored), the third its registered IO types, the fourth
-   its registered Chk types and the fifth a log of checkpoints taken. */
+/** Definition of entry in main table holding data for connected simulations.  
+    Contains five sub-tables - the first holding the commands that the 
+    simulation supports, the second its registered parameters (both 
+    steerable and monitored), the third its registered IO types, the fourth
+    its registered Chk types and the fifth a log of checkpoints taken. */
 
 typedef struct {
 
   int                  handle;
 
-  /* For connection to applications using local file system - contains
-     the location of the directory used to communicate with the sim. */
+  /** For connection to applications using local file system - contains
+      the location of the directory used to communicate with the sim. */
   char                 file_root[REG_MAX_STRING_LENGTH];
 
-  /* File descriptors used to talk to (java) proxy for
-     this simulation */
+  /** File descriptors used to talk to (java) proxy for
+      this simulation */
   int                  pipe_to_proxy;
   int                  pipe_from_proxy;
 
-  /* For steering via SOAP */
+  /** For steering via SOAP */
   struct {
-    /* whether we're steering via SOAP (1) or not (0) */
+    /** whether we're steering via SOAP (1) or not (0) */
     int  active;
     char address[REG_MAX_STRING_LENGTH];
-    /* Holds list of names of service data elements on the SGS for which
-       notifications are pending */
+    /** Holds list of names of service data elements on the SGS for which
+	notifications are pending */
     char notifications[REG_MAX_NUM_SGS_SDE][REG_MAX_STRING_LENGTH];
-    /* Used to keep track of notifications that we've yet to process */
+    /** Used to keep track of notifications that we've yet to process */
     int  sde_count;
     int  sde_index;
-    /* The stucture holding the gSOAP environment for this connection */
+    /** The stucture holding the gSOAP environment for this connection */
     struct soap *soap;
 
   } SGS_info;
 
-  /* Last status message received from this simulation - filled in
-     Get_next_message and used by whichever Consume_... routine
-     is called in response to the message type */
+  /** Last status message received from this simulation - filled in
+      Get_next_message and used by whichever Consume_... routine
+      is called in response to the message type */
   struct msg_struct   *msg;
 
-  /* Table of registered commands for this sim */
+  /** Table of registered commands for this sim */
   Supp_cmd_table_type  Cmds_table;
 
-  /* Table of registered params for this sim */
+  /** Table of registered params for this sim */
   Param_table_type     Params_table;
 
-  /* Table of registered IOTypes for this sim */
+  /** Table of registered IOTypes for this sim */
   IOdef_table_type     IOdef_table;
 
-  /* Table of registered ChkTypes for this sim */
+  /** Table of registered ChkTypes for this sim */
   IOdef_table_type     Chkdef_table;
 
-  /* Table for logging checkpoint activity */
+  /** Table for logging checkpoint activity */
   Chk_log_type         Chk_log;
-
-  /* Table for keeping parameter histories 
-     Param_log_type       Param_log;*/
 
 } Sim_entry_type;
 
 
-/* Type of main table used to record all simulations currently
-   being steered */
+/** Type of main table used to record all simulations currently
+    being steered */
 
 typedef struct {
 
@@ -117,9 +116,9 @@ typedef struct {
 
 } Sim_table_type;
 
-/* Typedef for structure holding details of the main (java) proxy
-   that is always associated with the steerer (if not steering
-   via files or SOAP over http) */
+/** Typedef for structure holding details of the main (java) proxy
+    that is always associated with the steerer (if not steering
+    via files or SOAP over http) */
 
 typedef struct {
 
@@ -133,76 +132,88 @@ typedef struct {
 
 /*--------- Prototypes of internal library functions -------------*/
 
-/* Generate a filename for sending steering commands to the application
-   referred to by SimHandle. */
+/** Generate a filename for sending steering commands to the application
+    referred to by SimHandle. */
 static int Generate_control_filename(int SimIndex, char* filename);
 
-/* A look-up function - return the index of the simulation with handle 
-   SimHandle in the main table.  Returns REG_SIM_HANDLE_NOTSET if no
-   matching handle found. */
+/** A look-up function - return the index of the simulation with handle 
+    SimHandle in the main table.  Returns REG_SIM_HANDLE_NOTSET if no
+    matching handle found. */
 static int Sim_index_from_handle(int SimHandle);
 
-/* Looks for the next free entry in the table pointed to by *table.  If
-   there are no free entries then more memory is allocated. Returns -1
-   on failure. */
+/** Looks for the next free entry in the table pointed to by *table.  If
+    there are no free entries then more memory is allocated. Returns -1
+    on failure. */
 static int Next_free_iodef_index(IOdef_table_type *table);
 
-/* Checks to see that the simulation of index sim_id supports the command
-   with handle cmd_id - returns REG_SUCCESS if it does and REG_FAILURE if
-   it doesn't */
+/** Checks to see that the simulation of index sim_id supports the command
+    with handle cmd_id - returns REG_SUCCESS if it does and REG_FAILURE if
+    it doesn't */
 static int Command_supported(int sim_id, int cmd_id);
 
-/* Attach to specified simulation using local file system */
+/** Attach to specified simulation using local file system */
 static int Sim_attach_local(Sim_entry_type *sim, char *SimID);
 
-/* Attach to specified simulation via (java) proxy.  SimID is GSH
-   of sim. to attach to. */
+/** Attach to specified simulation via (java) proxy.  SimID is GSH
+    of sim. to attach to. */
 static int Sim_attach_proxy(Sim_entry_type *sim, char *SimID);
 
+/** Read an applications supported commands from disk */
 static int Consume_supp_cmds_local(Sim_entry_type *sim);
 
+/** Send the supplied control message to the simulation with the
+    supplied index */
 static int Send_control_msg(int SimIndex, char* buf);
 
+/** Send the supplied control message to the simulation with the
+    supplied index via the java proxy */
 static int Send_control_msg_proxy(Sim_entry_type *sim, char* buf);
 
+/** Send the supplied control message to the simulation with the
+    supplied index via local disk */
 static int Send_control_msg_file(int SimIndex, char* buf);
 
+/** Get a status message back via the java proxy */
 static struct msg_struct *Get_status_msg_proxy(Sim_entry_type *sim);
 
+/** Get a status message back by reading from disk */
 static struct msg_struct *Get_status_msg_file(Sim_entry_type *sim);
 
+/** Take down the steering connection */
 static int Finalize_connection(Sim_entry_type *sim);
 
+/** Take down the proxy-based steering connection */
 static int Finalize_connection_proxy(Sim_entry_type *sim);
 
+/** Take down the file-based steering connection */
 static int Finalize_connection_file(Sim_entry_type *sim);
 
-/* free's any allocated memory held in the parameter table */
+/** free's any allocated memory held in the parameter table */
 int Delete_param_table(Param_table_type *param_table);
 
-/* Parses the last Checkpoint-log message read in for the 
-   specified simulation */
+/** Parses the last Checkpoint-log message read in for the 
+    specified simulation */
 int Consume_chk_log(Sim_entry_type *sim, 
 		    struct chk_log_entry_struct *entry);
 
-/* Parses the last parameter-log message read in for the 
-   specified simulation */
+/** Parses the last parameter-log message read in for the 
+    specified simulation */
 int Consume_param_log(Sim_entry_type *sim, 
 		      struct param_struct *param_ptr);
 
-/* Obtain details associated with the supplied Chk log entry (e.g. values
-   of steerable parameters at that point) */
+/** Obtain details associated with the supplied Chk log entry (e.g. values
+    of steerable parameters at that point) */
 int Get_log_entry_details(Param_table_type   *param_table,
 			  Chk_log_entry_type *in,
 			  Output_log_struct  *out);
 
-/* Returns the index of the next free entry in the table of simulations
-   being steered */
+/** Returns the index of the next free entry in the table of simulations
+    being steered */
 int Next_free_sim_index();
 
-/* Mallocs or reallocs the logging buffer associated with the
-   supplied parameter.  Updates the log_size member of
-   the parameter struct. */
+/** Mallocs or reallocs the logging buffer associated with the
+    supplied parameter.  Updates the log_size member of
+    the parameter struct. */
 int Realloc_param_log(param_entry *param);
 
 #endif

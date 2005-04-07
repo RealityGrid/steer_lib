@@ -33,6 +33,9 @@
 
 ---------------------------------------------------------------------------*/
 
+/** @file ReG_Steer_XML.h
+    @brief Header file defining methods and structures for handling XML */
+
 #ifndef __REG_STEER_XML_H__
 #define __REG_STEER_XML_H__
 
@@ -44,6 +47,7 @@
 
 /*-----------------------------------------------------------------*/
 
+/** Stucture for holding parsed elements of a parameter or param_def */
 struct param_struct{
 
   xmlChar             *handle;
@@ -57,6 +61,7 @@ struct param_struct{
   struct param_struct *next;
 };
 
+/** Structure for holding parsed elements of a command */
 struct cmd_struct{
 
   xmlChar             *id;
@@ -66,6 +71,7 @@ struct cmd_struct{
   struct cmd_struct   *next;
 };
 
+/** Structure for holding parsed elements of a status msg */
 struct status_struct{
 
   struct param_struct *first_param;
@@ -74,6 +80,7 @@ struct status_struct{
   struct cmd_struct   *cmd;
 };
 
+/** Structure for holding parsed elements of IO- or Chk-Type */
 struct io_struct{
 
   xmlChar  	   *label;
@@ -83,26 +90,31 @@ struct io_struct{
   struct io_struct *next;
 };
 
+/** Structure for holding parsed elements of a control msg */
 struct control_struct{
 
+  xmlChar             *valid_after;
   struct param_struct *first_param;
   struct param_struct *param;
   struct cmd_struct   *first_cmd;
   struct cmd_struct   *cmd;
 };
 
+/** Structure for holding supported commands */
 struct supp_cmd_struct{
 
   struct cmd_struct   *first_cmd;
   struct cmd_struct   *cmd;
 };
 
+/** Structure for holding IOType defs */
 struct io_def_struct{
   
   struct io_struct *first_io;
   struct io_struct *io;
 };
 
+/** Strucutre for holding a single checkpoint log entry */
 struct chk_log_entry_struct{
 
   xmlChar                 *chk_handle;
@@ -112,6 +124,7 @@ struct chk_log_entry_struct{
   struct chk_log_entry_struct *next;
 };
 
+/** Structure for single log entry */
 struct log_entry_struct{
 
   xmlChar                 *key;
@@ -122,12 +135,14 @@ struct log_entry_struct{
   struct log_entry_struct *next;
 };
 
+/** Structure for holding whole log */
 struct log_struct{
 
   struct log_entry_struct *first_entry;
   struct log_entry_struct *entry;
 };
 
+/** Structure for holding a steering message */
 struct msg_struct{
 
   int   	           msg_type;  
@@ -211,8 +226,8 @@ struct xtndString {
   char *str;
 };
 
-/* Enumeration of the various possible states of our parser
-   - corresponds to the elements of the doc we're interested in */
+/** Enumeration of the various possible states of our parser
+    - corresponds to the elements of the doc we're interested in */
 enum doc_state {UNKNOWN, STARTING, OGSI_ENTRY, MEMBER_SERVICE_LOCATOR, 
 		GS_HANDLE, CONTENT, SERVICE_TYPE, COMPONENT_CONTENT, 
 		COMPONENT_START_DATE_TIME,
@@ -223,33 +238,33 @@ enum doc_state {UNKNOWN, STARTING, OGSI_ENTRY, MEMBER_SERVICE_LOCATOR,
 struct ParserState {
 
   int return_val;
-  /* How many entries we currently have */
+  /** How many entries we currently have */
   int num_entries;
-  /* How many entries we can store */
+  /** How many entries we can store */
   int max_entries;
-  /* Where we are in the document tree */
+  /** Where we are in the document tree */
   enum doc_state depth;
-  /* Pointer to array of structs holding entry details */
+  /** Pointer to array of structs holding entry details */
   struct registry_entry *entries;
 };
 
-/* Uses SAX to parse the document returned by doing a findServiceData
- * on a serviceGroupRegistration service.
+/** Uses SAX to parse the document returned by doing a findServiceData
+ *  on a serviceGroupRegistration service.
  */
 int Parse_registry_entries(char* buf, int size, 
 			   int *num_entries, 
 			   struct registry_entry **entries);
 
-/* SAX event handler */
+/** SAX event handler */
 void Start_element_handler(void           *user_data,
 			   const xmlChar  *name,
 			   const xmlChar **attrs);
 
-/* SAX event handler */
+/** SAX event handler */
 void End_element_handler(void          *user_data,
 			 const xmlChar *name);
 
-/* SAX event handler */
+/** SAX event handler */
 void Characters_handler(void          *user_data,
 			const xmlChar *ch,
 			int  	       len);

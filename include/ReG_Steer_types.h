@@ -34,50 +34,52 @@
 ---------------------------------------------------------------------------*/
 
 #ifndef __REG_TYPES_INCLUDED
-
 #define __REG_TYPES_INCLUDED
 
+/** @file ReG_Steer_types.h
+    @brief Top-level header file
+ */
 
-/* Whether or not to use timing routines - these are not very portable 
+/** Whether or not to use timing routines - these are not very portable 
 #define USE_REG_TIMING */
 
 #include <stdio.h>
 #include <stdlib.h>
 
-/* Flag for debugging - set to one to retain all xml messages */
+/** Flag for debugging - set to one to retain all xml messages */
 #define NO_FILE_DELETE 0
 
-/* UNICORE_DEMO must be defined in order to produce a steering lib
-   compatible with the UNICORE steering demonstration framework.
-   Only consequence is that the status files emitted by the application
-   are all called 'steer_status' and not indexed - i.e. some output will 
-   be lost if the status files are not consumed sufficiently rapidly */
+/** UNICORE_DEMO must be defined in order to produce a steering lib
+    compatible with the UNICORE steering demonstration framework.
+    Only consequence is that the status files emitted by the application
+    are all called 'steer_status' and not indexed - i.e. some output will 
+    be lost if the status files are not consumed sufficiently rapidly */
 /*#define UNICORE_DEMO*/
 
-/* The namespace used for steering messages (which are in xml) */
+/** The namespace used for steering messages (which are in xml) */
 #define REG_STEER_NAMESPACE "http://www.realitygrid.org/xml/steering"
 
-/* Filename of lockfile indicating sim is steerable */
+/** Filename of lockfile indicating sim is steerable */
 #define APP_STEERABLE_FILENAME "app_steerable"
 
-/* Filename of lockfile to signify steerer has connected */
+/** Filename of lockfile to signify steerer has connected */
 #define STR_CONNECTED_FILENAME  "steering_active"
 
-/* Root of filename used by application to send data to steerer
-   Actual communication consists of two files: of the form 
-   APP_TO_STR_FILENAME_<n> and APP_TO_STR_FILENAME_<n>.lock.  The 
-   library looks for the presence of the (empty) .lock file before 
-   attempting to open the associated data file.  <n> is some integer, 
-   incremented each time a file is written and limited 
-   to 0 <= n <= REG_MAX_NUM_FILES-1 */
+/** Root of filename used by application to send data to steerer
+    Actual communication consists of two files: of the form 
+    APP_TO_STR_FILENAME_<n> and APP_TO_STR_FILENAME_<n>.lock.  The 
+    library looks for the presence of the (empty) .lock file before 
+    attempting to open the associated data file.  <n> is some integer, 
+    incremented each time a file is written and limited 
+    to 0 <= n <= REG_MAX_NUM_FILES-1 */
 #define APP_TO_STR_FILENAME "status_info"
 
-/* Root of filename used by steerer to send data to application.
-   Actual name will be of form STR_TO_APP_FILENAME_<n> and
-   STR_TO_APP_FILENAME_<n>.lock.  The library looks for the 
-   presence of the (empty) .lock file before attempting to open
-   the associated data file.  <n> is some integer, incremented each
-   time a file is written and limited to 0 <= n <= REG_MAX_NUM_FILES-1 */
+/** Root of filename used by steerer to send data to application.
+    Actual name will be of form STR_TO_APP_FILENAME_<n> and
+    STR_TO_APP_FILENAME_<n>.lock.  The library looks for the 
+    presence of the (empty) .lock file before attempting to open
+    the associated data file.  <n> is some integer, incremented each
+    time a file is written and limited to 0 <= n <= REG_MAX_NUM_FILES-1 */
 #define STR_TO_APP_FILENAME "control_info"
 
 /* Return values */
@@ -90,35 +92,31 @@
 #define REG_NOT_READY  5
 #define REG_UNFINISHED 6
 
-/* Limit on number of commands steerer can send at any one time */
+/** Limit on number of commands steerer can send at any one time */
 #define REG_MAX_NUM_STR_CMDS 20
 
-/* Limit on number of parameters steerer can modify at any one time */
+/** Limit on number of parameters steerer can modify at any one time */
 #define REG_MAX_NUM_STR_PARAMS 40
 
-/* Limit on number of log messages we can send in one go */
+/** Limit on number of log messages we can send in one go */
 #define REG_MAX_NUM_LOG_MSG 30
 
-/* Initial sizes for internal tables of registered IO types 
+/** Initial sizes for internal tables of registered IO types 
    and parameters */
-
 #define REG_INITIAL_NUM_IOTYPES 20
 #define REG_INITIAL_NUM_PARAMS  40
 
-/* Initial limit on no. of registered supported commands */
-
+/** Initial limit on no. of registered supported commands */
 #define REG_INITIAL_NUM_CMDS 20
 
-/* Initial limit on no. of sims being steered at any one time */
-
+/** Initial limit on no. of sims being steered at any one time */
 #define REG_MAX_NUM_STEERED_SIM 20
 
-/* Limit on number of files used in communication - filenames
-   wrap back on themselves once this limit reached */
+/** Limit on number of files used in communication - filenames
+    wrap back on themselves once this limit reached */
 #define REG_MAX_NUM_FILES 500
 
-/* Maximum length for any string */
-
+/** Maximum length for any string */
 #define REG_MAX_STRING_LENGTH 256
 
 /* Steering commands */
@@ -136,20 +134,17 @@
 
 #define REG_MIN_IOTYPE_HANDLE 1000
 
-/* The three different types that an IOtype can have - used only
+/** The three different types that an IOtype can have - used only
    by the steerer in the construction of a more intuitive gui */
-
 #define REG_IO_IN    0
 #define REG_IO_OUT   1
 #define REG_IO_INOUT 2
 
-/* Size (in bytes) of input buffer for each active IO channel */
-
+/** Size (in bytes) of input buffer for each active IO channel */
 #define REG_IO_BUFSIZE  1048576
 
-/* Max length of each ASCII packet to be sent down a socket.  This enables
+/** Max length of each ASCII packet to be sent down a socket.  This enables
    headers and footers to be sent. */
-
 #define REG_PACKET_SIZE 128
 #define REG_PACKET_FORMAT "%-128s"
 
@@ -175,30 +170,33 @@
 #define REG_SIZEOF_XDR_FLOAT  8
 #define REG_SIZEOF_XDR_DOUBLE 8
 
-/* Type definitions */
-
+/** Type definitions */
 #define REG_FALSE 0
 #define REG_TRUE  1
 #define reg_false 0
 #define reg_true  1
 
-/* Reserved handle values */
-
+/** Reserved handle values */
 #define REG_SIM_HANDLE_NOTSET   -1
 #define REG_IODEF_HANDLE_NOTSET -1
 #define REG_PARAM_HANDLE_NOTSET -1
-/* Handle for the sequence number parameter */
+/** Handle for the sequence number parameter */
 #define REG_SEQ_NUM_HANDLE      -100
-/* Handle for the time-per-step parameter */
+/** Handle for the time-per-step parameter */
 #define REG_STEP_TIME_HANDLE    -99
-/* Handle for parameter holding time-stamp */
+/** Handle for parameter holding time-stamp */
 #define REG_TIMESTAMP_HANDLE    -98
-/* Handle for the variable holding the interval between 
+/** Handle for the variable holding the interval between 
    steering activity */
 #define REG_STEER_INTERVAL_HANDLE -97
-/* Min value for an automatically generated parameter handle
+/** Handle for variable holding current simulated time of
+   simulation */
+#define REG_TOT_SIM_TIME_HANDLE -96
+/** Min value for an automatically generated parameter handle
    - must be > than all special handles defined above */
 #define REG_MIN_PARAM_HANDLE     0
+
+#define REG_TIMESTEP_LABEL "REG_TIME_STEP"
 
 /* Message tags */
 
@@ -212,32 +210,27 @@
 #define CHK_DEFS    6
 #define STEER_LOG   7
 
-/* Some type definitions - handles are simply integers for
+/** Some type definitions - handles are simply integers for
    the moment */
-
 typedef int REG_IOHandleType;
 
-/* Definitions used in communicating with the java proxy */
-
+/** Definitions used in communicating with the java proxy */
 #define REG_MAX_LINE_LEN 256
 #define REG_MAX_MSG_SIZE 131072 /* 262144 524288 1048576 16384 8192 */
 #define REG_PIPE_UNSET   -1
 
-/* Tolerance used to determine whether a floating point no. should
+/** Tolerance used to determine whether a floating point no. should
    be interpreted as zero */
-
 #define REG_TOL_ZERO 1.0e-6
 
-/* Parameters used to configure table for logging checkpoints */
-
+/** Parameters used to configure table for logging checkpoints */
 #define REG_INITIAL_CHK_LOG_SIZE 50
 #define REG_LOG_FILENAME         "ReG_checkpoint_log.xml"
 #define REG_PARAM_LOG_FILENAME   "ReG_params_log.dat"
 
 #define REG_LOG_STEERING 1
 
-/* Values for IOdef_entry.comms_status */
-
+/** Values for IOdef_entry.comms_status */
 #define REG_COMMS_STATUS_NULL			0
 #define REG_COMMS_STATUS_LISTENING		1
 #define REG_COMMS_STATUS_WAITING_FOR_ACCEPT	2
@@ -252,20 +245,20 @@ typedef int REG_IOHandleType;
 
 #define REG_PORT_NOTSET  -1
 
-/* Max no. of service-data elements on SGS */
+/** Max no. of service-data elements on SGS */
 #define REG_MAX_NUM_SGS_SDE 15
 
-/* Standard return values from the SGS */
+/** Standard return values from the SGS */
 #define REG_SGS_ERROR "SGS_ERROR"
 #define REG_SGS_SUCCESS "SGS_SUCCESS"
 #define REG_SGS_TIMEOUT "SGS_TIMEOUT"
 
-/* Default minimum interval (integer no. of seconds) at which 
+/** Default minimum interval (integer no. of seconds) at which 
    to poll for connection from steerer - overridden by 
    REG_APP_POLL_INTERVAL environment variable if set */ 
 #define REG_APP_POLL_INTERVAL_DEFAULT 5
 
-/* Size of buffer used for string handling etc - use 1MB for now */
+/** Size of buffer used for string handling etc - use 1MB for now */
 #define REG_SCRATCH_BUFFER_SIZE 1048576
 
 #endif /* __REG_TYPES_INCLUDED defined */
