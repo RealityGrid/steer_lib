@@ -165,10 +165,14 @@ public class ReG_SteerAppside implements ReG_SteerConstants {
     return iohandle.value();
   }
 
-  public void emitDataSlice(int ioth, Object data)
-    throws ReG_SteerException {
-    
-    status = ReG_Steer.Emit_data_slice(ioth, data);
+  public void emitDataSlice(int ioth, Object data) throws ReG_SteerException {
+    Object dataSlice;
+    if(data instanceof char[]) 
+      dataSlice = new String((char[]) data);
+    else
+      dataSlice = data;
+
+    status = ReG_Steer.Emit_data_slice(ioth, dataSlice);
 
     if(status != REG_SUCCESS) {
       throw new ReG_SteerException("Emit data slice failed.", status);
