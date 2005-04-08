@@ -354,6 +354,10 @@ extern PREFIX int Next_free_param_index(Param_table_type *table);
 extern PREFIX int Param_index_from_handle(Param_table_type *table, 
 				   int ParamHandle);
 
+/**
+   Initializes the supplied parameter entry. */
+extern PREFIX void Init_param_entry(param_entry *param);
+
 /** 
    A look-up function - return the index of the IOdef with handle 
    IOdefHandle in the table pointed to by *table.  Returns

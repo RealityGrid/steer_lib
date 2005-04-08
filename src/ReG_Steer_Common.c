@@ -372,14 +372,26 @@ int Next_free_param_index(Param_table_type *table)
 
       /* Initialise new entries */
       for(i=index; i<table->max_entries; i++){
-	table->param[i].handle = REG_PARAM_HANDLE_NOTSET;
- 	table->param[i].min_val_valid = REG_FALSE;
-	table->param[i].max_val_valid = REG_FALSE;
+	Init_param_entry(&(table->param[i]));
      }
     }
   }
 
   return index;
+}
+
+/*--------------------------------------------------------------------*/
+
+void Init_param_entry(param_entry *param)
+{
+    param->handle   = REG_PARAM_HANDLE_NOTSET;
+    param->modified = REG_FALSE;
+    param->log      = NULL;
+    param->log_index= 0;
+    param->log_size = 0;
+    param->ptr_raw  = NULL;
+    param->raw_buf_size = 0;
+    return;
 }
 
 /*--------------------------------------------------------------------*/

@@ -370,13 +370,7 @@ int Sim_attach(char *SimID,
 
   for(i=0; i<Sim_table.sim[current_sim].Params_table.max_entries; i++){
 
-    sim_ptr->Params_table.param[i].handle   = REG_PARAM_HANDLE_NOTSET;
-    sim_ptr->Params_table.param[i].modified = REG_FALSE;
-    sim_ptr->Params_table.param[i].log      = NULL;
-    sim_ptr->Params_table.param[i].log_index= 0;
-    sim_ptr->Params_table.param[i].log_size = 0;
-    sim_ptr->Params_table.param[i].ptr_raw  = NULL;
-    sim_ptr->Params_table.param[i].raw_buf_size = 0;
+    Init_param_entry(&(sim_ptr->Params_table.param[i]));
   }
 
   /* ...supported commands */
