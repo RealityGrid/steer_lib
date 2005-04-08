@@ -3,7 +3,7 @@ include ../../make/Makefile.${ARCH}
 include ../Makefile.wrap
 
 lib:	ReG_Steer_wrap.o
-	${CC} -shared -L${REG_STEER_HOME}/lib${NBIT} -lReG_Steer \
+	${CC} -shared ${REG_WRAP_LINK} \
 	ReG_Steer_wrap.o -o _ReG_Steer.so
 
 ReG_Steer_wrap.o: ReG_Steer_wrap.c

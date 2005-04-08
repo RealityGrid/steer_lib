@@ -1,11 +1,20 @@
 # Makefile includes for the SWIG wrappings
 
+#include ../../Makefile.include
+#include ../../make/Makefile.${ARCH}
+
 # Set REG_WRAP to be a space separated list of languages to wrap
 # or none for no wrapping.
 
 REG_WRAP=none
 #REG_WRAP=python java
 #REG_WRAP=python perl tcl java
+
+# Set REG_WRAP_LINK to be one of the following lines:
+# * For a static library (libReG_Steer.a)
+#REG_WRAP_LINK=-Wl,--whole-archive ${REG_STEER_HOME}/lib${NBIT}/libReG_Steer.a -Wl,--no-whole-archive -L/usr/lib -lxml2
+# * For a shared library (libReG_Steer.so)
+REG_WRAP_LINK=-L${REG_STEER_HOME}/lib${NBIT} -lReG_Steer
 
 # swig
 REG_SWIG=/usr/local/bin/swig

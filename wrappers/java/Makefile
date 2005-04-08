@@ -6,11 +6,11 @@ REG_PACKAGE=org.realitygrid.steering
 REG_PACKAGE_DIR=org/realitygrid/steering
 
 examples: libReG_SteerJava.so
-	${JAVAC} ${REG_PACKAGE_DIR}/*.java
-	${JAVAC} examples/*.java
+	${JAVAC} -classpath ${REG_STEER_HOME}/wrappers/java ${REG_PACKAGE_DIR}/*.java
+	${JAVAC} -classpath ${REG_STEER_HOME}/wrappers/java examples/*.java
 
 libReG_SteerJava.so: ReG_Steer_wrap.o
-	${CC} -shared -L${REG_STEER_HOME}/lib${NBIT} -lReG_Steer \
+	${CC} -shared ${REG_WRAP_LINK} \
 	ReG_Steer_wrap.o -o libReG_SteerJava.so
 
 ReG_Steer_wrap.o: ReG_Steer_wrap.c
