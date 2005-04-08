@@ -34,8 +34,8 @@
 %pointer_class(float, Floatp);
 %pointer_class(double, Doublep);
 
-/* The following two typemaps add the SWIG baseclass
- * to the SWIGTYPE classes that are auto-generated */
+/* The following two typemaps add the ReG_SWIG baseclass and
+ * getPointer to the SWIGTYPE classes that are auto-generated */
 %typemap(javabase) SWIGTYPE, SWIGTYPE *, SWIGTYPE &, SWIGTYPE [], 
                                                     SWIGTYPE (CLASS::*) "ReG_SWIG"
 
@@ -94,7 +94,56 @@
 %typemap(jstype) char **update "String[]"
 %typemap(javain) char **update "$javainput"
 
-/* Typemaps for the data consumer method */
+/* A set of typemaps for the data emitter method */
+%typemap(java, in, numinputs=0) (int type, int count) {
+  /* Just throw these away as we can work them out! */
+}
+%typemap(java, check) (int type, int count, void* indata) {
+  if((*jenv)->IsInstanceOf(jenv, jarg4, (*jenv)->FindClass(jenv, "[I")) == JNI_TRUE) {
+    $1 = REG_INT;
+    $2 = (*jenv)->GetArrayLength(jenv, jarg4);
+    $3 = (int*) malloc($2 * sizeof(int));
+    (*jenv)->GetIntArrayRegion(jenv, jarg4, 0, $2, $3);
+  }
+  else if((*jenv)->IsInstanceOf(jenv, jarg4, (*jenv)->FindClass(jenv, "[F")) == JNI_TRUE) {
+    $1 = REG_FLOAT;
+    $2 = (*jenv)->GetArrayLength(jenv, jarg4);
+    $3 = (float*) malloc($2 * sizeof(float));
+    (*jenv)->GetFloatArrayRegion(jenv, jarg4, 0, $2, $3);
+  }
+  else if((*jenv)->IsInstanceOf(jenv, jarg4, (*jenv)->FindClass(jenv, "[D")) == JNI_TRUE) {
+    $1 = REG_DBL;
+    $2 = (*jenv)->GetArrayLength(jenv, jarg4);
+    $3 = (double*) malloc($2 * sizeof(double));
+    (*jenv)->GetDoubleArrayRegion(jenv, jarg4, 0, $2, $3);
+  }
+  else if((*jenv)->IsInstanceOf(jenv, jarg4, (*jenv)->FindClass(jenv, "[B")) == JNI_TRUE) {
+    $1 = REG_CHAR;
+    $2 = (*jenv)->GetArrayLength(jenv, jarg4);
+    $3 = (char*) malloc($2 * sizeof(char));
+    (*jenv)->GetByteArrayRegion(jenv, jarg4, 0, $2, $3);
+  }
+  else if((*jenv)->IsInstanceOf(jenv, jarg4, (*jenv)->FindClass(jenv, "java/lang/String")) == JNI_TRUE) {
+    jboolean isCopy;
+
+    $1 = REG_CHAR;
+    $2 = (*jenv)->GetStringUTFLength(jenv, jarg4) + 1;
+    $3 = (char*) malloc($2 * sizeof(char));
+    const char* cArray = (*jenv)->GetStringUTFChars(jenv, jarg4, &isCopy);
+    strncpy($3, cArray, $2);
+    if(isCopy == JNI_TRUE)
+      (*jenv)->ReleaseStringUTFChars(jenv, jarg4, cArray);
+  }
+}
+%typemap(freearg) void* indata {
+  if($1) free($1);
+}
+%typemap(jni) void* indata "jobject"
+%typemap(jtype) void* indata "Object"
+%typemap(jstype) void* indata "Object"
+%typemap(javain) void* indata "$javainput"
+
+/* A set of typemaps for the data consumer method */
 %typemap(java, in, numinputs=0) void* outdata {
   /* Just throw outdata away from the inputs! */
 }
@@ -115,8 +164,8 @@
   }
 }
 %typemap(java, argout) (int type, int count, void* outdata) {
-  int i;
   jintArray iArray;
+  jbyteArray bArray;
   jstring cString;
   jfloatArray fArray;
   jdoubleArray dArray;
@@ -128,8 +177,15 @@
     $result = iArray;
     break;
   case REG_CHAR:
-    cString = (*jenv)->NewStringUTF(jenv, $3);
-    $result = cString;
+    if(((char*) $3)[$2 - 1] == '\0') {
+      cString = (*jenv)->NewStringUTF(jenv, $3);
+      $result = cString;
+    }
+    else {
+      bArray = (*jenv)->NewByteArray(jenv, $2);
+      (*jenv)->SetByteArrayRegion(jenv, bArray, 0, $2, $3);
+      $result = bArray;
+    }
     break;
   case REG_FLOAT:
     fArray = (*jenv)->NewFloatArray(jenv, $2);
@@ -174,11 +230,15 @@
 %apply (int type, int count, void* outdata) { (int DataType, int Count, void* pDataOUT) }
 %apply void* outdata { void* pDataOUT }
 
+%apply (int type, int count, void* indata) { (int DataTypeIN, int CountIN, void* pDataIN) }
+%apply (int type, int count) { (int DataTypeIN, int CountIN) }
+%apply void* indata { void* pDataIN }
+
 /* Pull in the common API definition file */
 %include "../ReG_Steer_API.i"
 
 /* Re-define the Consume_data_slice method to return an object
- * this is done by creating a new version of the method an
+ * this is done by creating a new version of the method and
  * calling that instead.: Consume_data_slice_j */
 %inline %{
   jobject Consume_data_slice_j(int IOTypeIndex, int DataType, int Count, void* pDataOUT) {
