@@ -9,7 +9,6 @@ public class Sink implements Runnable, ReG_SteerConstants {
   ReG_SteerAppside rsa;
 
   /* global variables */
-  int status;
   int nloops = 1000;
   int sleep_time = 1;
   boolean finished = false;
@@ -59,6 +58,7 @@ public class Sink implements Runnable, ReG_SteerConstants {
       System.exit(e.getErrorCode());
     }
 
+    /* Start the thread running */
     t = new Thread(this);
     t.start();
   }
