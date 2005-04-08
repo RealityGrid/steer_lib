@@ -54,7 +54,7 @@ public class ReG_SteerAppside implements ReG_SteerConstants {
 
     status = ReG_Steer.Register_IOType(name, dir, freq, iotype_handle.cast());
     if(status != REG_SUCCESS) {
-      throw new ReG_SteerException("Failed to register IO type", status);
+      throw new ReG_SteerException("Failed to register IO type: " + name, status);
     }
 
     return iotype_handle.value();
@@ -116,7 +116,7 @@ public class ReG_SteerAppside implements ReG_SteerConstants {
 				      param.getMaxLabel());
 
     if(status != REG_SUCCESS) {
-      throw new ReG_SteerException("Failed to register parameter.", status);
+      throw new ReG_SteerException("Failed to register parameter: " + param.getLabel(), status);
     }   
   }
 
@@ -141,6 +141,53 @@ public class ReG_SteerAppside implements ReG_SteerConstants {
     return result;
   }
 
+  public int emitStart(int ioth, int seq) throws ReG_SteerException {
+    Intp iohandle = new Intp();
+
+    status = ReG_Steer.Emit_start(ioth, seq, iohandle.cast());
+
+    if(status != REG_SUCCESS) {
+      throw new ReG_SteerException("Emit start failed.", status);
+    }
+
+    return iohandle.value();
+  }
+
+  public int emitStart(int ioth, int seq, float timeout) throws ReG_SteerException {
+    Intp iohandle = new Intp();
+
+    status = ReG_Steer.Emit_start_blocking(ioth, seq, iohandle.cast(), timeout);
+
+    if(status != REG_SUCCESS) {
+      throw new ReG_SteerException("Emit start failed.", status);
+    }
+
+    return iohandle.value();
+  }
+
+  public void emitDataSlice(int ioth, Object data)
+    throws ReG_SteerException {
+    
+    status = ReG_Steer.Emit_data_slice(ioth, data);
+
+    if(status != REG_SUCCESS) {
+      throw new ReG_SteerException("Emit data slice failed.", status);
+    }
+  }
+
+  public int emitStop(int ioh) throws ReG_SteerException {
+    Intp iohandle = new Intp();
+    iohandle.assign(ioh);
+
+    status = ReG_Steer.Emit_stop(iohandle.cast());
+
+    if(status != REG_SUCCESS) {
+      throw new ReG_SteerException("Emit stop failed.", status);
+    }
+
+    return iohandle.value();
+  }
+
   public int consumeStart(int ioth) throws ReG_SteerException {
     Intp iohandle = new Intp();
 
@@ -153,7 +200,7 @@ public class ReG_SteerAppside implements ReG_SteerConstants {
     return iohandle.value();
   }
 
-  public int consumeStartBlocking(int ioth, float timeout) throws ReG_SteerException {
+  public int consumeStart(int ioth, float timeout) throws ReG_SteerException {
     Intp iohandle = new Intp();
 
     status = ReG_Steer.Consume_start_blocking(ioth, iohandle.cast(), timeout);
