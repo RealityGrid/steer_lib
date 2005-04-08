@@ -52,22 +52,22 @@ extern int Steering_control(int     SeqNum,
 			    int    *SteerCommands,
 			    char*  *SteerCmdParams);
 
-#if 0
+#ifdef SWIGJAVA
 extern int Emit_start(int  IOType,
 		      int  SeqNum,
-		      int *IOTypeIndex);
+		      int *IOHandle);
 
 extern int Emit_start_blocking(int    IOType,
 			       int    SeqNum,
-			       int   *IOTypeIndex,
+			       int   *IOHandle,
 			       float  TimeOut);
 
-extern int Emit_data_slice(int	            IOTypeIndex,
-			   int             DataType,
-			   int             Count,
-			   const void     *pData);
+extern int Emit_data_slice(int	            IOHandle,
+			   int             DataTypeIN,
+			   int             CountIN,
+			   const void     *pDataIN);
 
-extern int Emit_stop(int *IOTypeIndexINOUT);
+extern int Emit_stop(int *IOHandleINOUT);
 #endif
 
 extern int Consume_start(int  IOType,
