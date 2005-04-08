@@ -17,7 +17,7 @@ ReG_Steer_wrap.o: ReG_Steer_wrap.c
 	${CC} -c ReG_Steer_wrap.c -fpic -I/usr/include \
 	${REG_JAVA_INC} -I${REG_STEER_HOME}/include
 
-ReG_Steer_wrap.c:
+ReG_Steer_wrap.c: ReG_Steer.i
 	${REG_SWIG} -java -package ${REG_PACKAGE} \
 	-outdir ${REG_PACKAGE_DIR} ReG_Steer.i
 
