@@ -40,6 +40,21 @@ public class ReG_SteerParameter implements ReG_SteerConstants {
     }
   }
 
+  public ReG_SteerParameter(String l, int v, boolean st, int t, String min, String max) {
+    this(l, st, t, min, max);
+    ((Intp) param).assign(v);
+  }
+
+  public ReG_SteerParameter(String l, float v, boolean st, int t, String min, String max) {
+    this(l, st, t, min, max);
+    ((Floatp) param).assign(v);
+  }
+
+  public ReG_SteerParameter(String l, double v, boolean st, int t, String min, String max) {
+    this(l, st, t, min, max);
+    ((Doublep) param).assign(v);
+  }
+
   public void register() throws ReG_SteerException {
     int steered = REG_FALSE;
     if(steerable)
@@ -72,6 +87,30 @@ public class ReG_SteerParameter implements ReG_SteerConstants {
       ((Doublep) param).assign(p);
     else
       ((Doublep) param).assign(0.0);
+  }
+
+  public int getIntValue() {
+    int result = 0;
+    if(type == REG_INT) 
+      result = ((Intp) param).value();
+
+    return result;
+  }
+
+  public float getFloatValue() {
+    float result = 0;
+    if(type == REG_FLOAT) 
+      result = ((Floatp) param).value();
+
+    return result;
+  }
+
+  public double getDoubleValue() {
+    double result = 0;
+    if(type == REG_DBL) 
+      result = ((Doublep) param).value();
+
+    return result;
   }
 
   public Object getValue() {
