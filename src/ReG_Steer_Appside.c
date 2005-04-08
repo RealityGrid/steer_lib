@@ -2267,14 +2267,6 @@ int Emit_data_slice(int		      IOTypeIndex,
   case REG_CHAR:
     datatype = DataType;
 
-    /* Ensure we send termination character */
-    pChar = (char *)pData;
-    if(pChar[actual_count-1] != '\0'){
-      /* This could lead to string truncation - should copy string
-         and add termination at end ARPDBG */ 
-      pChar[actual_count-1] = '\0';
-      /* actual_count++; */
-    }
     num_bytes_to_send = actual_count*sizeof(char);
     out_ptr = (void *)pData;
     break;
