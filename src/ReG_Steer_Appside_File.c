@@ -600,11 +600,6 @@ int Consume_data_read_file(const int	 index,
 #if REG_DEBUG
   fprintf(stderr, "Consume_data_read_file: read %d bytes\n",
 	  (int) nbytes);
-
-  if(datatype == REG_CHAR){
-    fprintf(stderr, "Consume_data_read_file: got char data:\n>>%s<<\n", 
-	    (char *)pData);
-  }
 #endif /* REG_DEBUG */
 
   if((int)nbytes != num_bytes_to_read){

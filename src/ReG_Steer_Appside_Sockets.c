@@ -1267,10 +1267,6 @@ int Consume_data_read_sockets(const int index, const int datatype, const int num
   Get_current_time_seconds(&time1);
   fprintf(stderr, "                          in %.3f seconds\n", (float) (time1-time0));
 #endif
-
-  if(datatype == REG_CHAR) {
-    fprintf(stderr, "Consume_data_read_sockets: got char data:\n>>%s<<\n", (char *) pData);
-  }
 #endif /* REG_DEBUG */
 
   if(nbytes <= 0) {
