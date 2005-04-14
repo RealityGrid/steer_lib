@@ -95,3 +95,9 @@ local machine).  Setting this variable only affects the _published_
 address - does not control which TCP interface the listener binds to
 (use REG_TCP_INTERFACE for that).  If this isn't set then the
 published address is the address to which the socket is bound.
+
+------------------------------
+<REG_REGISTRY_ADDRESS>
+Use to set the address of the top-level registry for use in the
+steering-client-side routines.  If this variable is unset then
+the default of http://yaffel.blah.blah:50000/blah is used.
