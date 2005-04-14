@@ -41,6 +41,8 @@
 %include "cpointer.i"
 
 %pointer_class(int, intp);
+%pointer_class(float, floatp);
+%pointer_class(double, doublep);
 
 /* Set up typemaps */
 %include "typemaps.i"
