@@ -38,7 +38,8 @@ lib:	ReG_Steer_wrap.o
 
 ReG_Steer_wrap.o: ReG_Steer_wrap.c
 	${CC} -c ReG_Steer_wrap.c -fpic -I/usr/include \
-	-I${REG_STEER_HOME}/include ${REG_PERL_INC}
+	-I${REG_STEER_HOME}/include ${REG_PERL_INC} \
+	${REG_PERL_CCFLAGS}
 
 ReG_Steer_wrap.c: ReG_Steer.i
 	${REG_SWIG} -perl -proxy -exportall ReG_Steer.i

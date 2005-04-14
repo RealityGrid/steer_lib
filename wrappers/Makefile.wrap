@@ -48,7 +48,9 @@ REG_SWIG=/usr/local/bin/swig
 REG_PYTHON_INC=-I/usr/include/python2.2 -I/usr/lib/python2.2/config/ -DHAVE_CONFIG_H
 
 # perl
-REG_PERL_INC=-I/usr/local/lib/perl5/5.6.1/i686-linux-ld/CORE -Dbool=char
+# this shouldn't need changing
+REG_PERL_INC=-I`perl -e 'use Config; print $$Config{archlib};'`/CORE
+REG_PERL_CCFLAGS=`perl -e 'use Config; print $$Config{ccflags};'`
 
 # java
 REG_JAVA_PATH=/usr/java/j2sdk1.4.2_01
