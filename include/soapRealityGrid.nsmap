@@ -12,7 +12,7 @@ SOAP_NMAC struct Namespace namespaces[] =
   {"sgr", "http://vermont.mvc.mcc.ac.uk/ServiceGroupRegistration"},
   {"rgtf", "http://www.RealityGrid.org/factory"},
   {"rgt", "http://www.RealityGrid.org/RealityGridTree/service"},
-  {"sgs", "http://vermont.mvc.mcc.ac.uk/MetaSGS"},
+  {"sgs", "http://vermont.mvc.mcc.ac.uk/SGS"},
   {NULL, NULL}
 };
 
