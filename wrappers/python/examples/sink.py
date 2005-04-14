@@ -60,13 +60,16 @@ if status != REG_SUCCESS:
 # Register param(s)
 
 bytes_read = intp()
+steer_test = floatp()
 status = Register_param("Bytes_read", REG_FALSE, bytes_read, REG_INT, "", "")
+status = Register_param("Bytes_read", REG_TRUE, steer_test, REG_FLOAT, "-10.0", "10.0")
+steer_test.assign(5.0)
 
 # main loop waiting for data
 i = 0
 while i < nloops:
     time.sleep(sleep_time)
-    print "\ni = %d" % i
+    print "\ni = %d\nTEST_STEER = %f" % (i, steer_test.value())
     status, changed_param_labels, recvd_cmds, recvd_cmd_params = Steering_control(i)
     num_params_changed = len(changed_param_labels)
     num_recvd_cmds = len(recvd_cmds)
