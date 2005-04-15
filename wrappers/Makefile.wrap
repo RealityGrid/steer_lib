@@ -31,15 +31,25 @@
 # Set REG_WRAP to be a space separated list of languages to wrap
 # or none for no wrapping.
 
-REG_WRAP=none
-#REG_WRAP=python perl java
+#REG_WRAP=none
+REG_WRAP=python perl java
 #REG_WRAP=python perl tcl java
 
-# Set REG_WRAP_LINK to be one of the following lines:
-# * For a static library (libReG_Steer.a)
-#REG_WRAP_LINK=-Wl,--whole-archive ${REG_STEER_HOME}/lib${NBIT}/libReG_Steer.a -Wl,--no-whole-archive -L/usr/lib -lxml2
-# * For a shared library (libReG_Steer.so)
-REG_WRAP_LINK=-L${REG_STEER_HOME}/lib${NBIT} -lReG_Steer
+# Set REG_WRAP_LINK.
+# This should just work (at least with bash). If not extract the relevent
+# line and set REG_WRAP_LINK manually.
+REG_WRAP_LINK=-L${REG_STEER_HOME}/lib${NBIT} \
+              `if [ ${ARCH:0:5} = LINUX ] ; then \
+                 if [ ${LIB_NAME} = libReG_Steer.a ] ; then \
+                   echo -Wl,--whole-archive ${REG_STEER_HOME}/lib${NBIT}/libReG_Steer.a -Wl,--no-whole-archive -L/usr/lib -lxml2; \
+                 else \
+                   echo -lReG_Steer; \
+                 fi \
+               elif [ ${LIB_NAME} = libReG_Steer.a ] ; then \
+                 echo -lReG_Steer -L/usr/lib -lxml2; \
+               else \
+                 echo -lReG_Steer; \
+               fi`
 
 # swig
 REG_SWIG=/usr/local/bin/swig
