@@ -110,8 +110,8 @@ int main(){
 
   /* Get list of steerable simulations */
 
-  pchar = (char *)malloc(REG_MAX_NUM_STEERED_SIM*REG_MAX_STRING_LENGTH*
-			  sizeof(char));
+  pchar = (char *)malloc(2*REG_MAX_NUM_STEERED_SIM*REG_MAX_STRING_LENGTH*
+			 sizeof(char));
   char_ptr = pchar;
   if(!char_ptr){
     fprintf(stderr, "malloc for application list failed\n");
