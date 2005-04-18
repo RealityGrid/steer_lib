@@ -33,6 +33,14 @@
 # Set root directory for library installation
 export REG_STEER_HOME=$HOME/RealityGrid/reg_steer_lib
 
+# Set various paths needed for the wrappers
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$REG_STEER_HOME/wrappers/python
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$REG_STEER_HOME/wrappers/perl
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$REG_STEER_HOME/wrappers/java
+export PYTHONPATH=$PYTHONPATH:$REG_STEER_HOME/wrappers/python
+export PERL5LIB=$PERL5LIB:$REG_STEER_HOME/wrappers/perl
+export CLASSPATH=$CLASSPATH:$REG_STEER_HOME/wrappers/java
+
 # Set directory location to use for steering communication
 export REG_STEER_DIRECTORY=/tmp
 
