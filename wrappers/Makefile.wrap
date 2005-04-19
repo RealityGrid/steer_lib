@@ -31,8 +31,8 @@
 # Set REG_WRAP to be a space separated list of languages to wrap
 # or none for no wrapping.
 
-#REG_WRAP=none
-REG_WRAP=python perl java
+REG_WRAP=none
+#REG_WRAP=python perl java
 #REG_WRAP=python perl tcl java
 
 # Set REG_WRAP_LINK.
