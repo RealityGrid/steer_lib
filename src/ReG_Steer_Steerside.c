@@ -389,12 +389,12 @@ int Sim_attach(char *SimID,
   sim_ptr->Cmds_table.num_registered = 0;
   sim_ptr->Cmds_table.max_entries    = REG_INITIAL_NUM_CMDS;
 
-  /* all simulations must support the 'detach' command
-
+  /* all simulations must support the 'detach' command */
   sim_ptr->Cmds_table.cmd[0].cmd_id = REG_STR_DETACH;
   Increment_cmd_registered(&(sim_ptr->Cmds_table));
-  The detach cmd is now automatically generated on the app side so
-  that clients binding to the SGS need not worry about it. */
+  /* The detach cmd is now automatically generated on the app side so
+     that clients binding to the SGS need not worry about it. However,
+     we keep the above to maintain backwards-compatibility */
 
   /* ...IO types */
 
@@ -525,6 +525,23 @@ int Sim_attach(char *SimID,
     sim_ptr->handle = current_sim;
     *SimHandle = current_sim;
     Sim_table.num_registered++;
+
+    /* If simulation supports the pause command then it must also
+       support the resume command so add this to the list.
+       Do this here in case application is using older version
+       of steering library which doesn't automatically add the
+       corresponding resume command to the list */
+
+    for(i=0; i<sim_ptr->Cmds_table.num_registered; i++){
+
+      if(sim_ptr->Cmds_table.cmd[i].cmd_id == REG_STR_PAUSE){
+	
+	j = sim_ptr->Cmds_table.num_registered;
+	sim_ptr->Cmds_table.cmd[j].cmd_id = REG_STR_RESUME;
+	Increment_cmd_registered(&(sim_ptr->Cmds_table));
+	break;
+      }
+    }
   }
   else{
 
@@ -1268,12 +1285,12 @@ int Consume_param_log(Sim_entry_type *sim,
 	sim->Params_table.param[i].log[index++] = (double)dum_int;
         break;
       case REG_FLOAT:
-	sscanf((char *)(param_ptr->value), "%f",
+	sscanf((char *)(param_ptr->value), "%lf",
 	       &dum_float);
 	sim->Params_table.param[i].log[index++] = (double)dum_float;
 	break;
       case REG_DBL:
-	sscanf((char *)(param_ptr->value), "%lf",
+	sscanf((char *)(param_ptr->value), "%lg",
 	       &(sim->Params_table.param[i].log[index++]) );
 	break;
       case REG_CHAR:
@@ -2317,14 +2334,14 @@ int Set_param_values(int    sim_handle,
 	  }
 
 	case REG_FLOAT:
-	  sscanf(vals[i], "%f", &fvalue);
+	  sscanf(vals[i], "%lf", &fvalue);
 	  if(Sim_table.sim[isim].Params_table.param[index].min_val_valid == REG_TRUE){
-	    sscanf(Sim_table.sim[isim].Params_table.param[index].min_val, "%f",
+	    sscanf(Sim_table.sim[isim].Params_table.param[index].min_val, "%lf",
 		   &fmin);
 	    if (fvalue < fmin) outside_range = REG_TRUE;
 	  }
 	  if(Sim_table.sim[isim].Params_table.param[index].max_val_valid == REG_TRUE){
-	    sscanf(Sim_table.sim[isim].Params_table.param[index].max_val, "%f",
+	    sscanf(Sim_table.sim[isim].Params_table.param[index].max_val, "%lf",
 		   &fmax);
 	    if (fvalue > fmax) outside_range = REG_TRUE;
 	  }
@@ -2341,15 +2358,15 @@ int Set_param_values(int    sim_handle,
 	  break;
 
 	case REG_DBL:
-	  sscanf(vals[i], "%lf", &dvalue);
+	  sscanf(vals[i], "%lg", &dvalue);
 	  if(Sim_table.sim[isim].Params_table.param[index].min_val_valid == REG_TRUE){
 	    sscanf(Sim_table.sim[isim].Params_table.param[index].min_val, 
-		   "%lf", &dmin);
+		   "%lg", &dmin);
 	    if(dvalue < dmin) outside_range = REG_TRUE;
 	  }
 	  if(Sim_table.sim[isim].Params_table.param[index].max_val_valid == REG_TRUE){
 	    sscanf(Sim_table.sim[isim].Params_table.param[index].max_val, 
-		   "%lf", &dmax);
+		   "%lg", &dmax);
 	    if(dvalue > dmax) outside_range = REG_TRUE;
 	  }
 
