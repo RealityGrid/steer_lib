@@ -1285,7 +1285,7 @@ int Consume_param_log(Sim_entry_type *sim,
 	sim->Params_table.param[i].log[index++] = (double)dum_int;
         break;
       case REG_FLOAT:
-	sscanf((char *)(param_ptr->value), "%lf",
+	sscanf((char *)(param_ptr->value), "%f",
 	       &dum_float);
 	sim->Params_table.param[i].log[index++] = (double)dum_float;
 	break;
@@ -2332,16 +2332,17 @@ int Set_param_values(int    sim_handle,
 		    Sim_table.sim[isim].Params_table.param[index].max_val);
 	    continue;
 	  }
+	  break;
 
 	case REG_FLOAT:
-	  sscanf(vals[i], "%lf", &fvalue);
+	  sscanf(vals[i], "%f", &fvalue);
 	  if(Sim_table.sim[isim].Params_table.param[index].min_val_valid == REG_TRUE){
-	    sscanf(Sim_table.sim[isim].Params_table.param[index].min_val, "%lf",
+	    sscanf(Sim_table.sim[isim].Params_table.param[index].min_val, "%f",
 		   &fmin);
 	    if (fvalue < fmin) outside_range = REG_TRUE;
 	  }
 	  if(Sim_table.sim[isim].Params_table.param[index].max_val_valid == REG_TRUE){
-	    sscanf(Sim_table.sim[isim].Params_table.param[index].max_val, "%lf",
+	    sscanf(Sim_table.sim[isim].Params_table.param[index].max_val, "%f",
 		   &fmax);
 	    if (fvalue > fmax) outside_range = REG_TRUE;
 	  }

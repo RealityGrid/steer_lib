@@ -2140,7 +2140,6 @@ int Emit_data_slice(int		      IOTypeIndex,
   int              actual_count;
   size_t	   num_bytes_to_send;
   XDR              xdrs;
-  char            *pChar;
   void            *out_ptr;
 
   /* Check that steering is enabled */
@@ -2381,10 +2380,10 @@ int Register_param(char* ParamLabel,
     break;
 
   case REG_FLOAT:
-    if(sscanf(ParamMinimum, "%lf", &dum_flt) == 1){
+    if(sscanf(ParamMinimum, "%f", &dum_flt) == 1){
       Params_table.param[current].min_val_valid = REG_TRUE;
     }
-    if(sscanf(ParamMaximum, "%lf", &dum_flt) == 1){
+    if(sscanf(ParamMaximum, "%f", &dum_flt) == 1){
       Params_table.param[current].max_val_valid = REG_TRUE;
     }
     break;
@@ -3040,7 +3039,7 @@ int Auto_generate_steer_cmds(int    SeqNum,
 {
   int    i;
   int    return_status = REG_SUCCESS;
-  int    cmd_count, param_count, log_count;
+  int    cmd_count, param_count;
   double valid_time;
 
   struct ReG_ctrl_msg_store *previous = NULL;
@@ -3115,7 +3114,6 @@ int Auto_generate_steer_cmds(int    SeqNum,
 
   cmd_count   = 0;
   param_count = 0;
-  log_count   = 0;
 
   if(ReG_ctrl_msg_first){
     storedMsg = ReG_ctrl_msg_first;
@@ -3802,7 +3800,6 @@ int Consume_control(int    *NumCommands,
 		    int    *SteerParamHandles,
 		    char  **SteerParamLabels)
 {
-  int                  j;
   int                  cmd_count = 0;
   int                  param_count = 0;
   struct msg_struct   *msg;
@@ -4048,7 +4045,7 @@ int Unpack_control_msg(struct control_struct *ctrl,
 	  *NumSteerParams);
 #endif
 
-  return REG_SUCCESS;
+  return return_status;
 }
 
 /*----------------------------------------------------------------*/
@@ -4292,7 +4289,7 @@ int Update_ptr_value(param_entry *param)
     break;
 
   case REG_FLOAT:
-    sscanf(param->value, "%lf", (float *)(param->ptr));
+    sscanf(param->value, "%f", (float *)(param->ptr));
     break;
 
   case REG_DBL:
