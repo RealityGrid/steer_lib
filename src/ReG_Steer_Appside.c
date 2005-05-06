@@ -1507,7 +1507,7 @@ int Record_checkpoint_set(int   ChkType,
     }
 
     /* Don't include raw binary parameters in the log */
-    if(Params_table.param[index].type == REG_BIN)continue;
+    if(Params_table.param[i].type == REG_BIN)continue;
 
     /* Update value associated with pointer */
     Get_ptr_value(&(Params_table.param[i]));
@@ -2381,19 +2381,19 @@ int Register_param(char* ParamLabel,
     break;
 
   case REG_FLOAT:
-    if(sscanf(ParamMinimum, "%f", &dum_flt) == 1){
+    if(sscanf(ParamMinimum, "%lf", &dum_flt) == 1){
       Params_table.param[current].min_val_valid = REG_TRUE;
     }
-    if(sscanf(ParamMaximum, "%f", &dum_flt) == 1){
+    if(sscanf(ParamMaximum, "%lf", &dum_flt) == 1){
       Params_table.param[current].max_val_valid = REG_TRUE;
     }
     break;
 
   case REG_DBL:
-    if(sscanf(ParamMinimum, "%lf", &dum_dbl) == 1){
+    if(sscanf(ParamMinimum, "%lg", &dum_dbl) == 1){
       Params_table.param[current].min_val_valid = REG_TRUE;
     }
-    if(sscanf(ParamMaximum, "%lf", &dum_dbl) == 1){
+    if(sscanf(ParamMaximum, "%lg", &dum_dbl) == 1){
       Params_table.param[current].max_val_valid = REG_TRUE;
     }
     break;
@@ -2604,13 +2604,14 @@ int Steering_control(int     SeqNum,
   int    do_steer;
   int    detached;
   int    cmd_count     = 0;
+  int    param_count   = 0;
   int    return_status = REG_SUCCESS;
-  int    num_commands;
+  int    num_commands  = 0;
+  int    num_param     = 0;
   int    commands[REG_MAX_NUM_STR_CMDS];
   int    param_handles[REG_MAX_NUM_STR_PARAMS];
   char*  param_labels[REG_MAX_NUM_STR_PARAMS];
-  int    num_param = 0;
-
+ 
   /* Indices to save having to keep looking-up handles */
   static int     step_time_index = -1;
   static int     seq_num_index   = -1;
@@ -2673,16 +2674,20 @@ int Steering_control(int     SeqNum,
 
   if(time_step_index != -1){
     Get_ptr_value(&(Params_table.param[time_step_index]));
-    sscanf(Params_table.param[time_step_index].value, "%lf", 
-	   &ReG_SimTimeStepSecs);
+    fprintf(stderr, "ARPDBG: dt = %s\n", Params_table.param[time_step_index].value);
+    if(sscanf(Params_table.param[time_step_index].value, "%lg", 
+	      &ReG_SimTimeStepSecs) != 1){
+      fprintf(stderr, "ARPDBG - sscanf failed!\n");
+    }
 
     ReG_TotalSimTimeSecs += ReG_SimTimeStepSecs;
+    fprintf(stderr, "ARPDBG: dt = %.20g\n", ReG_SimTimeStepSecs);
+    fprintf(stderr, "ARPDBG:  t = %.20g\n", ReG_TotalSimTimeSecs);
   }
   else{
     for(i=0; i<Params_table.max_entries; i++){
 
       if(Params_table.param[i].handle != REG_PARAM_HANDLE_NOTSET &&
-	 /*!strcmp(Params_table.param[i].label, REG_TIMESTEP_LABEL)){*/
 	 strstr(Params_table.param[i].label, REG_TIMESTEP_LABEL)){
 
 	time_step_index = i;
@@ -2691,7 +2696,7 @@ int Steering_control(int     SeqNum,
     }
     if(time_step_index != -1){
       Get_ptr_value(&(Params_table.param[time_step_index]));
-      sscanf(Params_table.param[time_step_index].value, "%lf", 
+      sscanf(Params_table.param[time_step_index].value, "%lg", 
 	     &ReG_SimTimeStepSecs);
 
       ReG_TotalSimTimeSecs += ReG_SimTimeStepSecs;
@@ -2699,7 +2704,7 @@ int Steering_control(int     SeqNum,
   }
 
   if(tot_time_index != -1){
-    sprintf(Params_table.param[tot_time_index].value, "%lf", 
+    sprintf(Params_table.param[tot_time_index].value, "%.20g", 
 	    ReG_TotalSimTimeSecs);
     Params_table.param[tot_time_index].modified = REG_TRUE;
   }
@@ -2707,7 +2712,7 @@ int Steering_control(int     SeqNum,
     tot_time_index = Param_index_from_handle(&(Params_table), 
 					    REG_TOT_SIM_TIME_HANDLE);
     if(tot_time_index != -1){
-      sprintf(Params_table.param[tot_time_index].value, "%lf", 
+      sprintf(Params_table.param[tot_time_index].value, "%.20g", 
 	      ReG_TotalSimTimeSecs);
 
       Params_table.param[tot_time_index].modified = REG_TRUE;
@@ -2773,6 +2778,14 @@ int Steering_control(int     SeqNum,
      use when a simulation step is v. short */
   do_steer = ((SeqNum % Steerer_connection.steer_interval) == 0);
 
+  /* Deal with automatic emission/consumption of data - this is done
+     whether or not a steering client is connected */
+  cmd_count = 0;
+  param_count = 0;
+  Auto_generate_steer_cmds(SeqNum, &cmd_count, commands, 
+			   SteerCmdParams, &param_count, 
+			   param_handles, param_labels);
+
   /* If we're not steering via SOAP (and a Steering Grid Service)
      then we can't emit our parameter definitions etc. until
      a steerer has connected */
@@ -2831,11 +2844,11 @@ int Steering_control(int     SeqNum,
 
     /* Read anything that the steerer has sent to us */
     if( Consume_control(&num_commands,
-			commands,
-			SteerCmdParams,
+			&(commands[cmd_count]),
+			&(SteerCmdParams[cmd_count]),
 			&num_param,
-			param_handles,
-			param_labels) != REG_SUCCESS ){
+			&(param_handles[param_count]),
+			&(param_labels[param_count])) != REG_SUCCESS ){
 
       return_status = REG_FAILURE;
 
@@ -2843,6 +2856,9 @@ int Steering_control(int     SeqNum,
       fprintf(stderr, "Steering_control: call to Consume_control failed\n");
 #endif
     }
+
+    num_commands += cmd_count;
+    num_param += param_count;
 
     /* Emit checkpoint logging info. (parameter logs are only sent
        on demand because they are large.) 'Handle' argument of Emit_log
@@ -2866,146 +2882,140 @@ int Steering_control(int     SeqNum,
 #if REG_DEBUG_FULL
     fprintf(stderr, "Steering_control: done Consume_control\n");
 #endif
+  }
+  else{
+    num_commands = cmd_count;
+    num_param = param_count;
+    
+  } /* End if steering active */
 
-    /* Parse list of commands for any that we can handle ourselves */
+  /* Parse list of commands for any that we can handle ourselves */
+  cmd_count = 0;
+  i         = 0;
+  detached  = REG_FALSE;
 
-    i        = 0;
-    detached = REG_FALSE;
+  while(i<num_commands){
 
-    while(i<num_commands){
+    switch(commands[i]){
 
-      switch(commands[i]){
-
-      case REG_STR_DETACH:
+    case REG_STR_DETACH:
 
 #if REG_DEBUG
-        fprintf(stderr, "Steering_control: got detach command\n");
+      fprintf(stderr, "Steering_control: got detach command\n");
 #endif
 
-	if( Detach_from_steerer() != REG_SUCCESS){
-
-	  return_status = REG_FAILURE;
-	}
+      if( Detach_from_steerer() != REG_SUCCESS){
+	return_status = REG_FAILURE;
+      }
 
 #if !REG_SOAP_STEERING
-	/* Confirm that we have received the detach command */
-	commands[0] = REG_STR_DETACH;
-	Emit_status(SeqNum,
-		    0,   
-		    NULL,
-		    1,
+      /* Confirm that we have received the detach command */
+      commands[0] = REG_STR_DETACH;
+      Emit_status(SeqNum, 0,   
+		  NULL, 1,
+		  commands);
+#endif
+
+      detached = REG_TRUE;
+      break;
+
+    case REG_STR_EMIT_PARAM_LOG:
+
+      /* Emit the requested parameter log */
+      if(sscanf(SteerCmdParams[i], "%d", &status) != 1)break;
+      if( Emit_log(&Param_log, status) != REG_SUCCESS ){
+	fprintf(stderr, "Steering_control: Emit param log failed\n");
+      }
+#if REG_DEBUG_FULL
+      else{
+	fprintf(stderr, "Steering_control: done Emit_log\n");
+      }
+#endif
+      break;
+
+    case REG_STR_PAUSE:
+      
+      if(Steerer_connection.handle_pause_cmd == REG_TRUE){
+	
+	Steering_pause(NumSteerParams,
+		       SteerParamLabels,
+		       &num_commands,
+		       commands,
+		       SteerCmdParams);
+
+	/* Throw away any commands received along with the original
+	   pause cmd and just process those received along with
+	   the resume cmd. */
+	i = -1;
+	break;
+      }
+      
+    default:
+
+#if REG_DEBUG
+      fprintf(stderr, "Steering_control: got command %d\n", commands[i]);
+#endif
+
+      SteerCommands[cmd_count] = commands[i];
+      if(cmd_count != i)strcpy(SteerCmdParams[cmd_count], SteerCmdParams[i]);
+      cmd_count++;
+
+      /* If we've received a stop command then do just that - don't
+	 mess about */
+
+      if(commands[i] == REG_STR_STOP){
+
+	/* If we are being steered using soap then don't emit
+	   a confirmation - Steering_finalize takes care of this */
+#if !REG_SOAP_STEERING
+	/* Confirm that we have received the stop command */
+	commands[0] = REG_STR_STOP;
+	Emit_status(SeqNum, 0,   
+		    NULL, 1,
 		    commands);
 #endif
 
-        detached = REG_TRUE;
-	break;
-
-      case REG_STR_EMIT_PARAM_LOG:
-
-	/* Emit the requested parameter log */
-	if(sscanf(SteerCmdParams[i], "%d", &status) != 1)break;
-	if( Emit_log(&Param_log, status) != REG_SUCCESS ){
-	  fprintf(stderr, "Steering_control: Emit param log failed\n");
-	}
-#if REG_DEBUG_FULL
-	else{
-	  fprintf(stderr, "Steering_control: done Emit_log\n");
-	}
-#endif
-	break;
-
-      case REG_STR_PAUSE:
-
-	if(Steerer_connection.handle_pause_cmd == REG_TRUE){
-
-	  Steering_pause(NumSteerParams,
-			 SteerParamLabels,
-			 &num_commands,
-			 commands,
-			 SteerCmdParams);
-
-	  /* Throw away any commands received along with the original
-	     pause cmd and just process those received along with
-	     the resume cmd. */
-	  i = -1;
-	  break;
-	}
-	
-      default:
-
-#if REG_DEBUG
-        fprintf(stderr, "Steering_control: got command %d\n", commands[i]);
-#endif
-
-        SteerCommands[cmd_count] = commands[i];
-	if(cmd_count != i)strcpy(SteerCmdParams[cmd_count], SteerCmdParams[i]);
-	cmd_count++;
-
-	/* If we've received a stop command then do just that - don't
-	   mess about */
-
-	if(commands[i] == REG_STR_STOP){
-
-	  /* If we are being steered using soap then don't emit
-	     a confirmation - Steering_finalize takes care of this */
-#if !REG_SOAP_STEERING
-	  /* Confirm that we have received the stop command */
-	  commands[0] = REG_STR_STOP;
-          Emit_status(SeqNum,
-		      0,   
-		      NULL,
-		      1,
-		      commands);
-#endif
-
-	  detached = REG_TRUE;
-	}
-
-	break;
+	detached = REG_TRUE;
       }
 
-      /* If we get a 'detach' command then don't process anything
-         else */
-      if(detached)break;
-
-      i++;
+      break;
     }
 
-    /* Append details of any parameters that were edited while we 
-       were paused to array holding labels of changed params - pass 
-       back strings rather than pointers to strings.   */
-    for(i=(*NumSteerParams); i<((*NumSteerParams)+num_param); i++){
-      if( i>= REG_MAX_NUM_STR_PARAMS)break;
-      strcpy(SteerParamLabels[i], param_labels[i]);
-    }
-    *NumSteerParams = i;
+    /* If we get a 'detach' command then don't process anything
+       else */
+    if(detached)break;
 
-    /* Tell the steerer what we've been doing */
-    if( !detached ){
+    i++;
+  }
 
-      /* Currently don't support returning a copy of the data just 
-	 received from the steerer - hence NULL's below */
-      status = Emit_status(SeqNum,
-			   0,    /* *NumSteerParams, */
-			   NULL, /* param_handles,   */
-			   *NumSteerCommands,
-			   commands);
-
-      if(status != REG_SUCCESS){
-
-	fprintf(stderr, "Steering_control: call to Emit_status failed\n");
-	return_status = REG_FAILURE;
-      }
-    }
-  } /* End if steering active */
-
-  /* Deal with automatic emission/consumption of data - this is done
-     whether or not a steering client is connected */
-  Auto_generate_steer_cmds(SeqNum, &cmd_count, SteerCommands, 
-			   SteerCmdParams);
-
+  /* Append details of any parameters that were edited while we 
+     were paused to array holding labels of changed params - pass 
+     back strings rather than pointers to strings.   */
+  for(i=(*NumSteerParams); i<((*NumSteerParams)+num_param); i++){
+    if( i>= REG_MAX_NUM_STR_PARAMS)break;
+    strcpy(SteerParamLabels[i], param_labels[i]);
+  }
+  *NumSteerParams = i;
   /* Record how many commands we're going to pass back to caller */
   *NumSteerCommands = cmd_count;
+
+  /* Tell the steerer what we've been doing */
+  if( do_steer && !detached ){
+
+    /* Currently don't support returning a copy of the data just 
+       received from the steerer - hence NULL's below */
+    status = Emit_status(SeqNum,
+			 0,    /* *NumSteerParams, */
+			 NULL, /* param_handles,   */
+			 *NumSteerCommands,
+			 commands);
+
+    if(status != REG_SUCCESS){
+
+      fprintf(stderr, "Steering_control: call to Emit_status failed\n");
+      return_status = REG_FAILURE;
+    }
+  }
 
 #ifdef USE_REG_TIMING
   Get_current_time_seconds(&time1);
@@ -3023,10 +3033,19 @@ int Steering_control(int     SeqNum,
 int Auto_generate_steer_cmds(int    SeqNum,
 			     int   *posn, 
 			     int   *SteerCommands, 
-			     char **SteerCmdParams)
+			     char **SteerCmdParams,
+			     int   *paramPosn,
+			     int   *SteerParamHandles,
+			     char **SteerParamLabels)
 {
-  int i;
-  int return_status = REG_SUCCESS;
+  int    i;
+  int    return_status = REG_SUCCESS;
+  int    cmd_count, param_count, log_count;
+  double valid_time;
+
+  struct ReG_ctrl_msg_store *previous = NULL;
+  struct ReG_ctrl_msg_store *toDelete  = NULL;
+  struct ReG_ctrl_msg_store *storedMsg = NULL;
 
   /* IOTypes cannot be deleted so the num_registered entries that
      we have will be contiguous within the table */
@@ -3092,6 +3111,53 @@ int Auto_generate_steer_cmds(int    SeqNum,
     sprintf(SteerCmdParams[*posn], "OUT");
 
     (*posn)++;
+  }
+
+  cmd_count   = 0;
+  param_count = 0;
+  log_count   = 0;
+
+  if(ReG_ctrl_msg_first){
+    storedMsg = ReG_ctrl_msg_first;
+    while(storedMsg){
+      sscanf((char *)storedMsg->control->valid_after, "%lg", &valid_time);
+      printf("ARPDBG: total sim time = %.20g\n", ReG_TotalSimTimeSecs);
+      printf("ARPDBG, stored msg has valid_time = %.20g\n", valid_time);
+      printf("ARPDBG, sim timestep = %.20g\n", ReG_SimTimeStepSecs);
+      if(valid_time < (ReG_TotalSimTimeSecs+0.1*ReG_SimTimeStepSecs)){
+	printf("...ARPDBG, stored msg is now valid\n");
+
+	Unpack_control_msg(storedMsg->control,
+			   &cmd_count,
+			   SteerCommands+(*posn),
+			   SteerCmdParams+(*posn),
+			   &param_count,
+			   SteerParamHandles+(*paramPosn),
+			   SteerParamLabels+(*paramPosn));
+
+	*posn += cmd_count;
+	*paramPosn += param_count;
+
+	if(!previous){
+	  ReG_ctrl_msg_first = storedMsg->next;
+	}
+	else{
+	  previous->next = storedMsg->next;
+	}
+	Delete_control_struct(storedMsg->control);
+	storedMsg->control = NULL;
+	toDelete = storedMsg;
+      }
+
+      storedMsg = storedMsg->next;
+      if(toDelete){
+	free(toDelete);
+	toDelete = NULL;
+      }
+      else{
+	previous = storedMsg;
+      }
+    }
   }
 
   return return_status;
@@ -3737,64 +3803,14 @@ int Consume_control(int    *NumCommands,
 		    char  **SteerParamLabels)
 {
   int                  j;
-  int                  cmd_count, param_count, log_count;
+  int                  cmd_count = 0;
+  int                  param_count = 0;
   struct msg_struct   *msg;
   int                  return_status = REG_SUCCESS;  
   double               valid_time;
 
-  struct ReG_ctrl_msg_store *previous = NULL;
-  struct ReG_ctrl_msg_store *toDelete  = NULL;
-  struct ReG_ctrl_msg_store *storedMsg = NULL;
-
   *NumSteerParams = 0;
   *NumCommands    = 0;
-
-  cmd_count   = 0;
-  param_count = 0;
-  log_count   = 0;
-
-  if(ReG_ctrl_msg_first){
-    storedMsg = ReG_ctrl_msg_first;
-    while(storedMsg){
-      sscanf((char *)storedMsg->control->valid_after, "%lf", &valid_time);
-      printf("ARPDBG: total sim time = %.8lf\n", ReG_TotalSimTimeSecs);
-      printf("ARPDBG, stored msg has valid_time = %.8lf\n", valid_time);
-      printf("ARPDBG, sim timestep = %.8lf\n", ReG_SimTimeStepSecs);
-      if(valid_time < (ReG_TotalSimTimeSecs+0.1*ReG_SimTimeStepSecs)){
-	printf("...ARPDBG, stored msg is now valid\n");
-
-	Unpack_control_msg(storedMsg->control,
-			   NumCommands,
-			   Commands+cmd_count,
-			   CommandParams+cmd_count,
-			   NumSteerParams,
-			   SteerParamHandles+param_count,
-			   SteerParamLabels+param_count);
-
-	cmd_count += *NumCommands;
-	param_count += *NumSteerParams;
-
-	if(!previous){
-	  ReG_ctrl_msg_first = storedMsg->next;
-	}
-	else{
-	  previous->next = storedMsg->next;
-	}
-	Delete_control_struct(storedMsg->control);
-	storedMsg->control = NULL;
-	toDelete = storedMsg;
-      }
-
-      storedMsg = storedMsg->next;
-      if(toDelete){
-	free(toDelete);
-	toDelete = NULL;
-      }
-      else{
-	previous = storedMsg;
-      }
-    }
-  }
 
   /* Read any message sent by the steerer - may contain commands and/or
      new parameter values */
@@ -3804,13 +3820,17 @@ int Consume_control(int    *NumCommands,
     if(msg->control){
 
       if(msg->control->valid_after){
-	sscanf((char *)(msg->control->valid_after), "%lf", &(valid_time));
+	sscanf((char *)(msg->control->valid_after), "%lg", &(valid_time));
 
-	fprintf(stderr, "Consume_control, msg has valid_after = %lf\n", valid_time);
-	fprintf(stderr, "                 current sim time = %lf\n", ReG_TotalSimTimeSecs);
+	fprintf(stderr, "ARPDBG Consume_control, msg has valid_after = %.20g\n", 
+		valid_time);
+	fprintf(stderr, "                 current sim time = %.20g\n", 
+		ReG_TotalSimTimeSecs);
+
 	if(valid_time > ReG_TotalSimTimeSecs){
 	  /* Don't read this message yet - store it */
 	  if(!ReG_ctrl_msg_first){
+	    /* ARPDBG - mem leak here - need to return a normal msg struct */
 	    ReG_ctrl_msg_first = New_msg_store_struct();
 	    ReG_ctrl_msg_current = ReG_ctrl_msg_first;
 	    ReG_ctrl_msg_current->control = msg->control;
@@ -4272,11 +4292,11 @@ int Update_ptr_value(param_entry *param)
     break;
 
   case REG_FLOAT:
-    sscanf(param->value, "%f", (float *)(param->ptr));
+    sscanf(param->value, "%lf", (float *)(param->ptr));
     break;
 
   case REG_DBL:
-    sscanf(param->value, "%lf", (double *)(param->ptr));
+    sscanf(param->value, "%lg", (double *)(param->ptr));
     break;
 
   case REG_CHAR:
@@ -4330,11 +4350,11 @@ int Get_ptr_value(param_entry *param)
     break;
   
   case REG_FLOAT:
-    sprintf(param->value,"%.8f", *((float *)(param->ptr)));
+    sprintf(param->value,"%.20g", *((float *)(param->ptr)));
     break;
   
   case REG_DBL:
-    sprintf(param->value,"%.8lf", *((double *)(param->ptr)));
+    sprintf(param->value,"%.20g", *((double *)(param->ptr)));
     break;
   
   case REG_CHAR:
