@@ -136,13 +136,16 @@ static int Emit_status(int   SeqNum,
 /** 
    Generate steering commands independently of the steerer. e.g. this
    implements the automatic emission/consumption of those IOTypes and
-   ChkTypes with a non-zero auto. emit/consume frequency. *posn is 
-   the point at which to start adding commands and associated parameters
-   to the SteerCommands and SteerCmdParams arrays. */
+   ChkTypes with a non-zero auto. emit/consume frequency. 
+   \param *posn the point at which to start adding commands and 
+   associated parameters to the SteerCommands and SteerCmdParams arrays. */
 static int Auto_generate_steer_cmds(int    SeqNum,
 				    int   *posn, 
 				    int   *SteerCommands, 
-				    char **SteerCmdParams);
+				    char **SteerCmdParams,
+				    int   *paramPosn,
+				    int   *SteerParamHandles,
+				    char **SteerParamLabels);
 
 /** Take down connection with steerer and clean-up table entries */
 static int Detach_from_steerer();
