@@ -2776,6 +2776,7 @@ int Steering_control(int     SeqNum,
   /* Throttle how often we perform steering-related activity - for
      use when a simulation step is v. short */
   do_steer = ((SeqNum % Steerer_connection.steer_interval) == 0);
+  do_steer = (do_steer && ReG_SteeringActive);
 
   /* Deal with automatic emission/consumption of data - this is done
      whether or not a steering client is connected */
@@ -2789,7 +2790,7 @@ int Steering_control(int     SeqNum,
      then we can't emit our parameter definitions etc. until
      a steerer has connected */
 #if !REG_SOAP_STEERING
-  if(ReG_SteeringActive && do_steer){
+  if(do_steer){
 #endif /* !REG_SOAP_STEERING */
 
     /* If registered params have changed since the last time then
@@ -2836,7 +2837,7 @@ int Steering_control(int     SeqNum,
        definitions etc., irrespective of whether a steerer is
        attached */
 #if REG_SOAP_STEERING
-  if(ReG_SteeringActive && do_steer){
+  if(do_steer){
 #endif
 
     /* If we're being steered (no matter how) then... */
@@ -3000,7 +3001,6 @@ int Steering_control(int     SeqNum,
 
   /* Tell the steerer what we've been doing */
   if( do_steer && !detached ){
-
     /* Currently don't support returning a copy of the data just 
        received from the steerer - hence NULL's below */
     status = Emit_status(SeqNum,
@@ -4271,7 +4271,7 @@ int Emit_status(int   SeqNum,
     else{
       fprintf(stderr, "Emit_status: failed to write footer\n");
     }
-  }
+  }  /* end of while(!paramdone || !cmddone){ */
 
   return REG_SUCCESS;
 }
