@@ -1763,7 +1763,7 @@ int Consume_data_slice_header(int  IOTypeIndex,
   int IsFortranArray;
 
   /* Check that steering is enabled */
-  if(!ReG_SteeringEnabled) return REG_SUCCESS;
+  if(!ReG_SteeringEnabled) return REG_FAILURE;
 
   /* Check that this IOType is enabled */
   if(IOTypes_table.io_def[IOTypeIndex].is_enabled == REG_FALSE){

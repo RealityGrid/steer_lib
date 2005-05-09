@@ -603,7 +603,7 @@ int Get_param_log_soap(Sim_entry_type *sim, int handle)
 
     while(1){
 
-      sscanf(ptr1, "%lf", &dum_float);
+      sscanf(ptr1, "%f", &dum_float);
       sim->Params_table.param[index].log[lindex++] = (double)dum_float;
 
       if(!(ptr1 = strstr(ptr1, " ")))break;
