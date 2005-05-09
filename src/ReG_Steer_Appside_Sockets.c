@@ -1374,7 +1374,7 @@ int Consume_ack_sockets(int index){
   }
 
 #if REG_DEBUG_FULL
-  printf("INFO: Consume_ack_sockets: no ack received\n", buf);
+  fprintf(stderr, "INFO: Consume_ack_sockets: no ack received\n");
 #endif
   return REG_FAILURE;
 }
