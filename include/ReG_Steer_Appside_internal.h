@@ -136,7 +136,8 @@ static int Emit_status(int   SeqNum,
 /** 
    Generate steering commands independently of the steerer. e.g. this
    implements the automatic emission/consumption of those IOTypes and
-   ChkTypes with a non-zero auto. emit/consume frequency. 
+   ChkTypes with a non-zero auto. emit/consume frequency.  Routine also 
+   checks for any messages received previously that might now be valid.
    \param *posn the point at which to start adding commands and 
    associated parameters to the SteerCommands and SteerCmdParams arrays. */
 static int Auto_generate_steer_cmds(int    SeqNum,
