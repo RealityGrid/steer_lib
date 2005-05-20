@@ -39,7 +39,7 @@ src/stdsoap2.c
 include/stdsoap2.h
 
 However, PLEASE NOTE that the version of gSOAP used by the library includes
-a bug fix that affects 64-bit builds (this patch in cluded in versions 2.3b
+a bug fix that affects 64-bit builds (this patch is included in versions 2.3b
 and later) plus an addition to allow the calling code to control which
 port the http connection uses on the local machine.  The latter is necessary
 to make use of the GLOBUS_TCP_PORT_RANGE holes in firewalls that restrict
@@ -53,7 +53,7 @@ src/soapC.c
 src/soapClient.c
 include/soapH.h
 include/soapStub.h
-include/soapSGS.nsmap
+include/soapRealityGrid.nsmap
 
 ----------------------------------------------------------------------------
 
@@ -139,7 +139,7 @@ are not currently platform independent and may require tweaking.
 Type 'make install' to install the example binaries in the directory
 specified in Makefile.include.
 
-Included in the distribution are 'mini_steerer', 'mini_app',
+Included in the distribution are 'mini_steerer', 'simple', 'mini_app',
 'mini_app2' and 'mini_app_para' (an MPI version) which are _very_
 simple applications designed to show how one might make an application
 steerable and how one might write a steerer with which to control it.
