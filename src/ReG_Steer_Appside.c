@@ -440,22 +440,6 @@ int Steering_initialize(char *AppName,
   Params_table.param[i].max_val_valid = REG_FALSE;
   Increment_param_registered(&Params_table);
 
-  i = Params_table.num_registered;
-  Params_table.param[i].ptr       = (void *)(&(ReG_TotalSimTimeSecs));
-  Params_table.param[i].type      = REG_DBL;
-  Params_table.param[i].handle    = REG_TOT_SIM_TIME_HANDLE;
-  Params_table.param[i].steerable = REG_FALSE;
-  Params_table.param[i].modified  = REG_FALSE;
-  Params_table.param[i].is_internal=REG_FALSE;
-  Params_table.param[i].logging_on =REG_FALSE;
-  strcpy(Params_table.param[i].label, "REG_TOT_SIM_TIME_S");
-  strcpy(Params_table.param[i].value, "0.0");
-  strcpy(Params_table.param[i].min_val, "0.0");
-  Params_table.param[i].min_val_valid = REG_TRUE;
-  strcpy(Params_table.param[i].max_val, "");
-  Params_table.param[i].max_val_valid = REG_FALSE;
-  Increment_param_registered(&Params_table);
-
   /* By default, we pass any pause command that we receive up to the 
      application (provided it supports it) */
   Steerer_connection.handle_pause_cmd = REG_FALSE;
@@ -2441,6 +2425,28 @@ int Register_param(char* ParamLabel,
 
   Params_table.num_registered++;
 
+  /* If this is the special time-step parameter then also register
+     the library-generated 'total simulation time' parameter */
+  if(strstr(Params_table.param[current].label, 
+	   "REG_TIME_STEP_S")){
+
+    current = Next_free_param_index(&Params_table);
+    Params_table.param[current].ptr       = (void *)(&(ReG_TotalSimTimeSecs));
+    Params_table.param[current].type      = REG_DBL;
+    Params_table.param[current].handle    = REG_TOT_SIM_TIME_HANDLE;
+    Params_table.param[current].steerable = REG_FALSE;
+    Params_table.param[current].modified  = REG_FALSE;
+    Params_table.param[current].is_internal=REG_FALSE;
+    Params_table.param[current].logging_on =REG_FALSE;
+    strcpy(Params_table.param[current].label, "REG_TOT_SIM_TIME_S");
+    strcpy(Params_table.param[current].value, "0.0");
+    strcpy(Params_table.param[current].min_val, "0.0");
+    Params_table.param[current].min_val_valid = REG_TRUE;
+    strcpy(Params_table.param[current].max_val, "");
+    Params_table.param[current].max_val_valid = REG_FALSE;
+    Increment_param_registered(&Params_table);
+  }
+
   /* Flag that the registered parameters have changed */
   ReG_ParamsChanged = REG_TRUE;
 
@@ -2611,11 +2617,14 @@ int Steering_control(int     SeqNum,
   int    param_handles[REG_MAX_NUM_STR_PARAMS];
   char*  param_labels[REG_MAX_NUM_STR_PARAMS];
  
+#define NOT_LOOKED  -1
+#define NOT_FOUND   -2
+
   /* Indices to save having to keep looking-up handles */
-  static int     step_time_index = -1;
-  static int     seq_num_index   = -1;
-  static int     tot_time_index  = -1;
-  static int     time_step_index = -1;
+  static int     step_time_index = NOT_LOOKED;
+  static int     seq_num_index   = NOT_LOOKED;
+  static int     tot_time_index  = NOT_LOOKED;
+  static int     time_step_index = NOT_LOOKED;
 
   /* Variables for timing */
   float          time_per_step;
@@ -2658,32 +2667,38 @@ int Steering_control(int     SeqNum,
   if (!ReG_SteeringInit) return REG_FAILURE;
 
   /* Update any library-controlled monitored variables */
-  if(seq_num_index != -1){
+  if(seq_num_index > -1){
     sprintf(Params_table.param[seq_num_index].value, "%d", SeqNum);
     Params_table.param[seq_num_index].modified = REG_TRUE;
   }
-  else{
+  else if(seq_num_index == NOT_LOOKED){
     seq_num_index = Param_index_from_handle(&(Params_table), 
 					    REG_SEQ_NUM_HANDLE);
     if(seq_num_index != -1){
       sprintf(Params_table.param[seq_num_index].value, "%d", SeqNum);
       Params_table.param[seq_num_index].modified = REG_TRUE;
     }
+    else{
+      seq_num_index = NOT_FOUND;
+    }
   }
 
-  if(time_step_index != -1){
+  if(time_step_index > -1){
     Get_ptr_value(&(Params_table.param[time_step_index]));
-    fprintf(stderr, "ARPDBG: dt = %s\n", Params_table.param[time_step_index].value);
+    /*fprintf(stderr, "ARPDBG: dt = %s\n", 
+              Params_table.param[time_step_index].value);*/
     if(sscanf(Params_table.param[time_step_index].value, "%lg", 
 	      &ReG_SimTimeStepSecs) != 1){
-      fprintf(stderr, "ARPDBG - sscanf failed!\n");
+      fprintf(stderr, "Steering_control - sscanf failed!\n");
     }
 
     ReG_TotalSimTimeSecs += ReG_SimTimeStepSecs;
+    /*
     fprintf(stderr, "ARPDBG: dt = %.20g\n", ReG_SimTimeStepSecs);
     fprintf(stderr, "ARPDBG:  t = %.20g\n", ReG_TotalSimTimeSecs);
+    */
   }
-  else{
+  else if(time_step_index == NOT_LOOKED){
     for(i=0; i<Params_table.max_entries; i++){
 
       if(Params_table.param[i].handle != REG_PARAM_HANDLE_NOTSET &&
@@ -2693,21 +2708,25 @@ int Steering_control(int     SeqNum,
 	break;
       }
     }
-    if(time_step_index != -1){
+
+    if(time_step_index != NOT_LOOKED){
       Get_ptr_value(&(Params_table.param[time_step_index]));
       sscanf(Params_table.param[time_step_index].value, "%lg", 
 	     &ReG_SimTimeStepSecs);
 
       ReG_TotalSimTimeSecs += ReG_SimTimeStepSecs;
     }
+    else{
+      time_step_index = NOT_FOUND;
+    }
   }
 
-  if(tot_time_index != -1){
+  if(tot_time_index > -1){
     sprintf(Params_table.param[tot_time_index].value, "%.20g", 
 	    ReG_TotalSimTimeSecs);
     Params_table.param[tot_time_index].modified = REG_TRUE;
   }
-  else{
+  else if(tot_time_index == NOT_LOOKED){
     tot_time_index = Param_index_from_handle(&(Params_table), 
 					    REG_TOT_SIM_TIME_HANDLE);
     if(tot_time_index != -1){
@@ -2716,28 +2735,32 @@ int Steering_control(int     SeqNum,
 
       Params_table.param[tot_time_index].modified = REG_TRUE;
     }
+    else{
+      tot_time_index = NOT_FOUND;
+    }
   }
 
   /* Calculate CPU time used since last call */
-  if(step_time_index != -1){
+  if(step_time_index > -1){
 
     new_time = clock();
     time_per_step = (float)(new_time - previous_time)*inv_clocks_per_sec;
     previous_time = new_time;
 
-    /* First value we get will be rubbish because need two passes 
-       through to get a valid difference... */
-    if(!first_time){
-      sprintf(Params_table.param[step_time_index].value, "%.3f", 
-	      time_per_step);
-      Params_table.param[step_time_index].modified = REG_TRUE;
-    }
-    else{
-      step_time_index = Param_index_from_handle(&(Params_table), 
-						REG_STEP_TIME_HANDLE);
-      first_time = REG_FALSE;
-      inv_clocks_per_sec = 1.0/(float)(CLOCKS_PER_SEC);
-    }    
+    sprintf(Params_table.param[step_time_index].value, "%.3f", 
+	    time_per_step);
+    Params_table.param[step_time_index].modified = REG_TRUE;
+  }
+  else if(step_time_index == NOT_LOOKED || first_time == REG_TRUE){
+    /* First time through - get and store index to monitored param
+       and set the 'previous_time' variable */
+    step_time_index = Param_index_from_handle(&(Params_table), 
+					      REG_STEP_TIME_HANDLE);
+    if(step_time_index == -1)step_time_index = NOT_FOUND;
+
+    inv_clocks_per_sec = 1.0/(float)(CLOCKS_PER_SEC);
+    previous_time = clock();
+    first_time = REG_FALSE;
   }
 
   /* Log current parameter values irrespective of whether a 
@@ -3119,11 +3142,13 @@ int Auto_generate_steer_cmds(int    SeqNum,
     storedMsg = ReG_ctrl_msg_first;
     while(storedMsg){
       sscanf((char *)storedMsg->control->valid_after, "%lg", &valid_time);
+      /*
       printf("ARPDBG: total sim time = %.20g\n", ReG_TotalSimTimeSecs);
       printf("ARPDBG, stored msg has valid_time = %.20g\n", valid_time);
       printf("ARPDBG, sim timestep = %.20g\n", ReG_SimTimeStepSecs);
+      */
       if(valid_time < (ReG_TotalSimTimeSecs+0.1*ReG_SimTimeStepSecs)){
-	printf("...ARPDBG, stored msg is now valid\n");
+	/*printf("...ARPDBG, stored msg is now valid\n");*/
 
 	Unpack_control_msg(storedMsg->control,
 			   &cmd_count,
@@ -3818,12 +3843,12 @@ int Consume_control(int    *NumCommands,
 
       if(msg->control->valid_after){
 	sscanf((char *)(msg->control->valid_after), "%lg", &(valid_time));
-
+	/*
 	fprintf(stderr, "ARPDBG Consume_control, msg has valid_after = %.20g\n", 
 		valid_time);
 	fprintf(stderr, "                 current sim time = %.20g\n", 
 		ReG_TotalSimTimeSecs);
-
+	*/
 	if(valid_time > ReG_TotalSimTimeSecs){
 	  /* Don't read this message yet - store it */
 	  if(!ReG_ctrl_msg_first){
