@@ -134,59 +134,59 @@ typedef struct {
 
 /** Generate a filename for sending steering commands to the application
     referred to by SimHandle. */
-static int Generate_control_filename(int SimIndex, char* filename);
+int Generate_control_filename(int SimIndex, char* filename);
 
 /** A look-up function - return the index of the simulation with handle 
     SimHandle in the main table.  Returns REG_SIM_HANDLE_NOTSET if no
     matching handle found. */
-static int Sim_index_from_handle(int SimHandle);
+int Sim_index_from_handle(int SimHandle);
 
 /** Looks for the next free entry in the table pointed to by *table.  If
     there are no free entries then more memory is allocated. Returns -1
     on failure. */
-static int Next_free_iodef_index(IOdef_table_type *table);
+int Next_free_iodef_index(IOdef_table_type *table);
 
 /** Checks to see that the simulation of index sim_id supports the command
     with handle cmd_id - returns REG_SUCCESS if it does and REG_FAILURE if
     it doesn't */
-static int Command_supported(int sim_id, int cmd_id);
+int Command_supported(int sim_id, int cmd_id);
 
 /** Attach to specified simulation using local file system */
-static int Sim_attach_local(Sim_entry_type *sim, char *SimID);
+int Sim_attach_local(Sim_entry_type *sim, char *SimID);
 
 /** Attach to specified simulation via (java) proxy.  SimID is GSH
     of sim. to attach to. */
-static int Sim_attach_proxy(Sim_entry_type *sim, char *SimID);
+int Sim_attach_proxy(Sim_entry_type *sim, char *SimID);
 
 /** Read an applications supported commands from disk */
-static int Consume_supp_cmds_local(Sim_entry_type *sim);
+int Consume_supp_cmds_local(Sim_entry_type *sim);
 
 /** Send the supplied control message to the simulation with the
     supplied index */
-static int Send_control_msg(int SimIndex, char* buf);
+int Send_control_msg(int SimIndex, char* buf);
 
 /** Send the supplied control message to the simulation with the
     supplied index via the java proxy */
-static int Send_control_msg_proxy(Sim_entry_type *sim, char* buf);
+int Send_control_msg_proxy(Sim_entry_type *sim, char* buf);
 
 /** Send the supplied control message to the simulation with the
     supplied index via local disk */
-static int Send_control_msg_file(int SimIndex, char* buf);
+int Send_control_msg_file(int SimIndex, char* buf);
 
 /** Get a status message back via the java proxy */
-static struct msg_struct *Get_status_msg_proxy(Sim_entry_type *sim);
+struct msg_struct *Get_status_msg_proxy(Sim_entry_type *sim);
 
 /** Get a status message back by reading from disk */
-static struct msg_struct *Get_status_msg_file(Sim_entry_type *sim);
+struct msg_struct *Get_status_msg_file(Sim_entry_type *sim);
 
 /** Take down the steering connection */
-static int Finalize_connection(Sim_entry_type *sim);
+int Finalize_connection(Sim_entry_type *sim);
 
 /** Take down the proxy-based steering connection */
-static int Finalize_connection_proxy(Sim_entry_type *sim);
+int Finalize_connection_proxy(Sim_entry_type *sim);
 
 /** Take down the file-based steering connection */
-static int Finalize_connection_file(Sim_entry_type *sim);
+int Finalize_connection_file(Sim_entry_type *sim);
 
 /** free's any allocated memory held in the parameter table */
 int Delete_param_table(Param_table_type *param_table);

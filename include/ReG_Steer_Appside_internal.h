@@ -57,7 +57,7 @@ typedef struct {
 }IO_channel_table_type;
 
 /** Table holding details of open IO channels */
-static IO_channel_table_type IO_channel[REG_INITIAL_NUM_IOTYPES];
+IO_channel_table_type IO_channel[REG_INITIAL_NUM_IOTYPES];
 
 /** Type definition for table used to hold details on the communication
     channel between the application and the steerer */
@@ -95,15 +95,15 @@ typedef struct {
 
 /** Emit all of the parameters that have previously been registered 
     (if any). */
-static int Emit_param_defs();
+int Emit_param_defs();
 
 /** Emit all of the IO types that have previously been registered
     (if any). */
-static int Emit_IOType_defs();
+int Emit_IOType_defs();
 
 /** Emit all of the Chk types that have previously been registered
     (if any). */
-static int Emit_ChkType_defs();
+int Emit_ChkType_defs();
 
 /** 
    Consume a control message (if any present) from the steerer. Returns
@@ -113,12 +113,12 @@ static int Emit_ChkType_defs();
    for them. Also returns 
    the handles and labels of any (steerable) parameters whose values have
    changed. (The values themselves are updated from within this routine.) */
-static int Consume_control(int    *NumCommands,
-			   int    *Commands,
-			   char  **CommandParams,
-			   int    *NumSteerParams,
-			   int    *SteerParamHandles,
-			   char  **SteerParamLabels);
+int Consume_control(int    *NumCommands,
+		    int    *Commands,
+		    char  **CommandParams,
+		    int    *NumSteerParams,
+		    int    *SteerParamHandles,
+		    char  **SteerParamLabels);
 
 /** 
    Emit a status report to be consumed by the steerer.  <NumParams>
@@ -127,11 +127,11 @@ static int Consume_control(int    *NumCommands,
    implemented.  <NumCommands> and <Commands> are intended for the
    same purpose but are also used to send commands such as 'finish'
    (when sim. has finished) back to the steerer. */
-static int Emit_status(int   SeqNum,
-		       int   NumParams,
-		       int  *ParamHandles,
-		       int   NumCommands,
-		       int  *Commands);
+int Emit_status(int   SeqNum,
+		int   NumParams,
+		int  *ParamHandles,
+		int   NumCommands,
+		int  *Commands);
 
 /** 
    Generate steering commands independently of the steerer. e.g. this
@@ -140,20 +140,20 @@ static int Emit_status(int   SeqNum,
    checks for any messages received previously that might now be valid.
    \param *posn the point at which to start adding commands and 
    associated parameters to the SteerCommands and SteerCmdParams arrays. */
-static int Auto_generate_steer_cmds(int    SeqNum,
-				    int   *posn, 
-				    int   *SteerCommands, 
-				    char **SteerCmdParams,
-				    int   *paramPosn,
-				    int   *SteerParamHandles,
-				    char **SteerParamLabels);
+int Auto_generate_steer_cmds(int    SeqNum,
+			     int   *posn, 
+			     int   *SteerCommands, 
+			     char **SteerCmdParams,
+			     int   *paramPosn,
+			     int   *SteerParamHandles,
+			     char **SteerParamLabels);
 
 /** Take down connection with steerer and clean-up table entries */
-static int Detach_from_steerer();
+int Detach_from_steerer();
 
 /** Update the value of the variable pointed to by the pointer
     associated with the supplied param_entry */
-static int Update_ptr_value(param_entry *param);
+int Update_ptr_value(param_entry *param);
 
 /** Update the 'value' field of the param_entry by retrieving the
     value of the variable pointed to by the pointer associated
@@ -162,7 +162,7 @@ int Get_ptr_value(param_entry *param);
 
 /** Catch any signals and thus allow the library to clean up if the
     application crashes or is stopped abruptly */
-static void Steering_signal_handler(int aSignal);
+void Steering_signal_handler(int aSignal);
 
 /** Send a status message to attached steering client */
 int Send_status_msg(char *buf);
@@ -176,96 +176,96 @@ int Make_supp_cmds_msg(int   NumSupportedCmds,
 
 /** Read the next control message from the steerer, if any.  Results
     passed back in structure.  Returns NULL if no message. */
-static struct msg_struct *Get_control_msg();
+struct msg_struct *Get_control_msg();
 
 /** Set-up stuff to receive connection from steering client */
-static int Initialize_steering_connection(int  NumSupportedCmds,
-					  int *SupportedCmds);
+int Initialize_steering_connection(int  NumSupportedCmds,
+				   int *SupportedCmds);
 
 /** Check for a connection from a steering client - return REG_SUCCESS
     if a client is attempting to connect */
-static int Steerer_connected();
+int Steerer_connected();
 
 /** Take down any connection to a steering client */
-static int Finalize_steering_connection();
+int Finalize_steering_connection();
 
 
 /** Initialize the transport mechanism for IOtypes */
-static int Initialize_IOType_transport(const int direction,
+int Initialize_IOType_transport(const int direction,
 				const int index);
 
 
 /** Finalize the transport mechanism for IOtypes */
-static void Finalize_IOType_transport();
+void Finalize_IOType_transport();
 
 /** Check for an acknowledgement from the consumer for the last
     data set emitted */
-static int Consume_ack(const int index);
+int Consume_ack(const int index);
 
 /** Acknowledge the last data set sent to us and indicate we are
     ready for the next */
-static int Emit_ack(const int index);
+int Emit_ack(const int index);
 
 /** Check if any sample data needs to be consumed */
-static int Consume_start_data_check(const int index);
+int Consume_start_data_check(const int index);
 
 
 /** Read the sample data */
-static int Consume_data_read(const int		index,  
-			     const int		datatype,
-			     const size_t	num_bytes_to_send, 
-			     void		*pData);
+int Consume_data_read(const int		index,  
+		      const int		datatype,
+		      const size_t	num_bytes_to_send, 
+		      void		*pData);
 
 /** Emit header for sample data */
-static int Emit_header(const int index);
+int Emit_header(const int index);
 
 
 /** Emit footer for sample data */
-static int Emit_footer(const int index,
- 		       const char * const buffer);
+int Emit_footer(const int index,
+		const char * const buffer);
 
 /** Emit the raw sample data
   @param index Index of IOType
 */
-static int Emit_data(const int		index,
-		     const int		datatype,
-		     const size_t	num_bytes_to_send,
-		     void		*pData);
+int Emit_data(const int		index,
+	      const int		datatype,
+	      const size_t	num_bytes_to_send,
+	      void	       *pData);
 
 /** Is the communication connection up? */
-static int Get_communication_status(const int		index);
+int Get_communication_status(const int index);
 
 /** Read ReG-specific header for iotype */
-static int Consume_iotype_msg_header(int IOTypeIndex,
-				     int *DataType,
-				     int *Count,
-				     int *NumBytes,
-				     int *IsFortranArray);
+int Consume_iotype_msg_header(int IOTypeIndex,
+			      int *DataType,
+			      int *Count,
+			      int *NumBytes,
+			      int *IsFortranArray);
 
 /** Construct and send ReG-specific header for iotype*/
-static int Emit_iotype_msg_header(int IOTypeIndex,
-				  int DataType,
-				  int Count,
-				  int NumBytes,
-				  int IsFortranArray);
+int Emit_iotype_msg_header(int IOTypeIndex,
+			   int DataType,
+			   int Count,
+			   int NumBytes,
+			   int IsFortranArray);
 
 /** Wrapper for call to Realloc_IOdef_entry_buffer */
-static int Realloc_iotype_buffer(int index,
-				 int num_bytes);
+int Realloc_iotype_buffer(int index,
+			  int num_bytes);
 
 /** Wrapper for call to Realloc_IOdef_entry_buffer */
-static int Realloc_chktype_buffer(int index,
-				 int num_bytes);
+int Realloc_chktype_buffer(int index,
+			   int num_bytes);
 
 /** Attempt to realloc the buffer associated with the IOdef_entry to 
     num_bytes.  If this fails, the buffer is 'freed' and
     buffer_max_bytes is zeroed, otherwise buffer_max_bytes is set to
     num_bytes. */
-static int Realloc_IOdef_entry_buffer(IOdef_entry *iodef, 
-				      int num_bytes);
+int Realloc_IOdef_entry_buffer(IOdef_entry *iodef, 
+			       int num_bytes);
 
 /** Log the supplied control message */
-static int Log_control_msg(char *msg_txt);
+int Log_control_msg(char *msg_txt);
 
 /** Create a new msg_store struct and pass back a pointer to it */
 struct ReG_ctrl_msg_store *New_msg_store_struct();
