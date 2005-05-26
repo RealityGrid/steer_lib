@@ -2452,7 +2452,7 @@ int Get_param_log(int      sim_handle,
 
 /*----------------------------------------------------------------*/
 
-static int Next_free_iodef_index(IOdef_table_type *table)
+int Next_free_iodef_index(IOdef_table_type *table)
 {
   int   i;
   int   index = -1;
