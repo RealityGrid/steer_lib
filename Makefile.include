@@ -64,11 +64,12 @@ REG_DEBUG_FLAG = 0
 # Set flag to 1 to get additional debug output, 0 otherwise.
 REG_DEBUG_FULL_FLAG = 0
 
+#------------------------------------
+# Create a static or shared library?
+LIB_NAME=libReG_Steer.a
+
 #--------------------------------------------------------------------
 # Don't edit anything below this line
 
 # Pass version information to compile
-REG_STEER_LIB_VERSION = 1.2a
-
-# Static or Shared?
-LIB_NAME=libReG_Steer.so
+REG_STEER_LIB_VERSION = 1.2b
