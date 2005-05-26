@@ -37,9 +37,9 @@ setenv REG_STEER_HOME ${HOME}/RealityGrid/reg_steer_lib
 setenv LD_LIBRARY_PATH ${LD_LIBRARY_PATH}:${REG_STEER_HOME}/wrappers/python
 setenv LD_LIBRARY_PATH ${LD_LIBRARY_PATH}:${REG_STEER_HOME}/wrappers/perl
 setenv LD_LIBRARY_PATH ${LD_LIBRARY_PATH}:${REG_STEER_HOME}/wrappers/java
-setenv PYTHONPATH ${PYTHONPATH}:${REG_STEER_HOME}/wrappers/python
-setenv PERL5LIB ${PERL5LIB}:${REG_STEER_HOME}/wrappers/perl
-setenv CLASSPATH ${CLASSPATH}:${REG_STEER_HOME}/wrappers/java
+#setenv PYTHONPATH ${PYTHONPATH}:${REG_STEER_HOME}/wrappers/python
+#setenv PERL5LIB ${PERL5LIB}:${REG_STEER_HOME}/wrappers/perl
+#setenv CLASSPATH ${CLASSPATH}:${REG_STEER_HOME}/wrappers/java
 
 # Set directory location to use for steering communication
 setenv REG_STEER_DIRECTORY /tmp
