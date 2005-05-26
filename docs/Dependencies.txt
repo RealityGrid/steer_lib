@@ -3,13 +3,14 @@ and steering client.
 
 A R Porter
 5th September 2003.
+Updated 26th May 2003.
 -----------------------------------------------------------------------------------------------------------------------
 
-Steering library  1.0
+Steering library  1.2
  
                    libxml2                              gSOAP                                 OGSI-Lite
 Source    http://xmlsoft.org/downloads.html   www.cs.fsu.edu/~engelen/soap.html    www.sve.man.ac.uk/Research/AtoZ/ILCT
-Version   2.4.24 (later versions OK but                2.2.3(*)                                  0.2
+Version   2.4.24 (later versions OK but                2.2.3(*)                                  >0.2
           don't build on hpcx etc.)
 
 * - All necessary gSOAP files are included with the steering library distribution

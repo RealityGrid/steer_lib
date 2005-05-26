@@ -28,21 +28,22 @@ then a default value (set in ReG_Steer_types.h) is used.
 -------------------------------
 <REG_CONNECTOR_HOSTNAME>
 
-Hostname of machine to connect to (using globus_io)
+Hostname of machine to connect to (using sockets) to get data
+from.
 Note that this is published in the SGS if steering via SOAP &
 thus this variable need not be set.
 
 -------------------------------
 <REG_CONNECTOR_PORT> 
 
-Port on machine REG_CONNECTOR_HOSTNAME to connect to (using globus_io)
+Port on machine REG_CONNECTOR_HOSTNAME to connect to (using sockets)
 Note that this is published in the SGS if steering via SOAP & thus
 this variable need not be set.
 
 -------------------------------
-<GLOBUS_TCP_PORT_RANGE   2566,2586>
+<GLOBUS_TCP_PORT_RANGE   2566,2686>
 
-Used by both globus_io, sockets and gSOAP - specifies a range of ports
+Used by both sockets and gSOAP - specifies a range of ports
 that may be opened on the client machine.  Port chosen at random if
 not set.
 
@@ -50,9 +51,8 @@ not set.
 <REG_DATA_DIRECTORY>
 
 Directory to write data files to/read data files from when doing
-file-based IO (as opposed to globus_io or sockets).  Uses current
-working directory if not set.  Applies to all IOTypes registered
-by a program.
+file-based IO (as opposed to sockets).  Uses current working directory
+if not set.  Applies to all IOTypes registered by a program.
 
 -------------------------------
 REG_SGS_ADDRESS
@@ -73,7 +73,7 @@ globus_io/sockets.  Uses default if not set (i.e. probably INADDR_ANY).
 <REG_MACHINE_NAME>
 
 The address of a publicly-accessible node on the machine we're
-executing on.  On many machines we may be running on a node that
+executing on.  On many machines, we may be running on a node that
 cannot be seen by the outside world and therefore globus connections
 for file transfer etc. will need the address of a publicly-accessible
 node.
