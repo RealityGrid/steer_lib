@@ -43,6 +43,7 @@
 #endif
 
 #ifndef WIN32
+#include <unistd.h>
 #else
 #include <windows.h>
 #define snprintf _snprintf
