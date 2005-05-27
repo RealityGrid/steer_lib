@@ -1116,15 +1116,12 @@ INT_KIND_1_DECL(Status);
 SUBROUTINE enable_param_logging_f(ParamLabel, Toggle, Status)
 
   CHARACTER (LEN=REG_MAX_STRING_LENGTH), INTENT(in) :: ParamLabel
-  INTEGER (KIND=REG_SP_KIND), INTENT(in)            :: Toggle
   INTEGER (KIND=REG_SP_KIND), INTENT(out)           :: Status
 ----------------------------------------------------------------*/
 
 void FUNCTION(enable_param_logging_f) ARGS(`STRING_ARG(ParamLabel),
-                                            Toggle,
 		        	            Status')
 STRING_ARG_DECL(ParamLabel);
-INT_KIND_1_DECL(Toggle);
 INT_KIND_1_DECL(Status);
 {
   char  buf[REG_MAX_STRING_LENGTH];
@@ -1156,22 +1153,79 @@ INT_KIND_1_DECL(Status);
     }
     if(!found){
 
-      fprintf(stderr, "Enable_param_logging_f: ERROR - length of label "
-                "is REG_MAX_STRING_LENGTH (%d) chars long\nbut contains "
-                "no termination character - shorten label (or its len "
-                "declaration)\n", 
-                REG_MAX_STRING_LENGTH);
+      fprintf(stderr, "enable_param_logging_f: ERROR - length of label "
+              "is REG_MAX_STRING_LENGTH (%d) chars long\nbut contains "
+              "no termination character - shorten label (or its len "
+              "declaration)\n", REG_MAX_STRING_LENGTH);
       *Status = INT_KIND_1_CAST(REG_FAILURE);
       return;
     }
   }
   else{
-
     /* Terminate string */
     buf[len] = '\0';
   }
 
-  *Status = INT_KIND_1_CAST( Enable_param_logging(buf, (int)*Toggle) );
+  *Status = INT_KIND_1_CAST( Enable_param_logging(buf) );
+  return;
+}
+
+/*----------------------------------------------------------------
+
+SUBROUTINE disable_param_logging_f(ParamLabel, Toggle, Status)
+
+  CHARACTER (LEN=REG_MAX_STRING_LENGTH), INTENT(in) :: ParamLabel
+  INTEGER (KIND=REG_SP_KIND), INTENT(out)           :: Status
+----------------------------------------------------------------*/
+
+void FUNCTION(disable_param_logging_f) ARGS(`STRING_ARG(ParamLabel),
+		        	             Status')
+STRING_ARG_DECL(ParamLabel);
+INT_KIND_1_DECL(Status);
+{
+  char  buf[REG_MAX_STRING_LENGTH];
+  char *pchar;
+  int   len, i, found;
+
+  len = STRING_LEN(ParamLabel);
+  if(len > REG_MAX_STRING_LENGTH){
+
+    fprintf(stderr, "disable_param_logging_f: ERROR - length of param "
+            "label exceeds REG_MAX_STRING_LENGTH (%d) chars\n", 
+            REG_MAX_STRING_LENGTH);
+
+    *Status = INT_KIND_1_CAST(REG_FAILURE);
+    return;
+  }
+
+  memcpy(buf, STRING_PTR(ParamLabel), len);
+
+  if(len == REG_MAX_STRING_LENGTH){
+
+    found = 0;
+    pchar = STRING_PTR(ParamLabel);
+    for(i = (REG_MAX_STRING_LENGTH-1); i == 0; i--){
+      if(pchar[i] == '\0'){
+        found = 1;
+	break;
+      }
+    }
+    if(!found){
+
+      fprintf(stderr, "disable_param_logging_f: ERROR - length of label "
+              "is REG_MAX_STRING_LENGTH (%d) chars long\nbut contains "
+              "no termination character - shorten label (or its len "
+              "declaration)\n", REG_MAX_STRING_LENGTH);
+      *Status = INT_KIND_1_CAST(REG_FAILURE);
+      return;
+    }
+  }
+  else{
+    /* Terminate string */
+    buf[len] = '\0';
+  }
+
+  *Status = INT_KIND_1_CAST( Disable_param_logging(buf) );
   return;
 }
 
@@ -1194,6 +1248,38 @@ INT_KIND_1_DECL(Status);
 
   *Status = INT_KIND_1_CAST( Consume_start((int)*IOType,
 	                                   (int *)IOHandle) );
+
+  if(*Status == REG_SUCCESS){
+    Set_f90_array_ordering((int)*IOHandle, REG_TRUE);
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------
+
+SUBROUTINE consume_start_blocking_f(IOType, IOHandle, TimeOut, &
+                                    Status)
+
+  INTEGER (KIND=REG_SP_KIND), INTENT(in)  :: IOType
+  INTEGER (KIND=REG_SP_KIND), INTENT(out) :: IOHandle
+  REAL    (KIND=REG_SP_KIND), INTENT(in)  :: TimeOut
+  INTEGER (KIND=REG_SP_KIND), INTENT(out) :: Status
+----------------------------------------------------------------*/
+
+void FUNCTION(consume_start_blocking_f) ARGS(`IOType,
+		                              IOHandle,
+                                              TimeOut,
+			                      Status')
+INT_KIND_1_DECL(IOType);
+INT_KIND_1_DECL(IOHandle);
+float *TimeOut;
+INT_KIND_1_DECL(Status);
+{
+
+  *Status = INT_KIND_1_CAST( Consume_start_blocking((int)*IOType,
+	                                            (int *)IOHandle,
+                                                    *TimeOut) );
 
   if(*Status == REG_SUCCESS){
     Set_f90_array_ordering((int)*IOHandle, REG_TRUE);
@@ -1299,6 +1385,42 @@ INT_KIND_1_DECL(Status);
   *Status = INT_KIND_1_CAST( Emit_start((int)*IOType, 
                                         (int)*SeqNum, 
                                         (int *)IOHandle) );
+
+  if(*Status == REG_SUCCESS){
+    Set_f90_array_ordering((int)*IOHandle, REG_TRUE);
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------
+
+SUBROUTINE emit_start_blocking_f(IOType, SeqNum, IOHandle, &
+                                 TimeOut, Status)
+
+  INTEGER(KIND=REG_SP_KIND), INTENT(in)  :: IOType
+  INTEGER(KIND=REG_SP_KIND), INTENT(in)  :: SeqNum
+  INTEGER(KIND=REG_SP_KIND), INTENT(out) :: IOHandle
+  REAL(KIND=REG_SP_KIND),    INTENT(in)  :: TimeOut
+  INTEGER(KIND=REG_SP_KIND), INTENT(out) :: Status
+
+----------------------------------------------------------------*/
+
+void FUNCTION(emit_start_blocking_f) ARGS(`IOType, 
+                                           SeqNum, 
+                                           IOHandle,
+                                           TimeOut,
+                                           Status')
+INT_KIND_1_DECL(IOType);
+INT_KIND_1_DECL(SeqNum);
+INT_KIND_1_DECL(IOHandle);
+float *TimeOut;
+INT_KIND_1_DECL(Status);
+{
+  *Status = INT_KIND_1_CAST( Emit_start_blocking((int)*IOType, 
+                                                 (int)*SeqNum, 
+                                                 (int *)IOHandle,
+                                                 *TimeOut) );
 
   if(*Status == REG_SUCCESS){
     Set_f90_array_ordering((int)*IOHandle, REG_TRUE);
