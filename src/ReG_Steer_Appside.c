@@ -2050,6 +2050,7 @@ int Emit_start_blocking(int    IOType,
 #if REG_DEBUG
       fprintf(stderr, "Emit_start_blocking: timed out\n");
 #endif
+      status = REG_TIMED_OUT;
       break;
     }
   } 
@@ -2527,7 +2528,7 @@ int Register_bin_param(char *ParamLabel, void *ParamPtr,
 
 /*----------------------------------------------------------------
    Toggle whether (toggle=REG_TRUE) or not (toggle=REG_FALSE) to 
-   log values of all registered  parameters. Logging is on by
+   log values of _all_ registered  parameters. Logging is on by
    default. */
 int Enable_all_param_logging(int toggle)
 {
@@ -2543,16 +2544,31 @@ int Enable_all_param_logging(int toggle)
 }
 
 /*----------------------------------------------------------------
+   Enable logging of values of the parameter identified by the
+   provided label. Logging is on by default. */
+int Enable_param_logging(char *ParamLabel)
+{
+  return Toggle_param_logging(ParamLabel, REG_TRUE);
+}
+
+/*----------------------------------------------------------------
+   Disable logging of values of the parameter identified by the
+   provided label. Logging is on by default. */
+int Disable_param_logging(char *ParamLabel)
+{
+  return Toggle_param_logging(ParamLabel, REG_FALSE);
+}
+
+/*----------------------------------------------------------------
    Toggle whether (toggle=REG_TRUE) or not (toggle=REG_FALSE) to log
    values of the parameter identified by the provided label. Logging
    is on by default. */
-int Enable_param_logging(char *ParamLabel,
+int Toggle_param_logging(char *ParamLabel,
 			 int   toggle)
 {
   int i, j, len1, len2;
   int found = 0;
   int lToggle = REG_FALSE;
-
   if(toggle == REG_TRUE){
     lToggle = REG_TRUE;
   }
