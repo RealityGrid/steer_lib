@@ -267,6 +267,12 @@ int Realloc_IOdef_entry_buffer(IOdef_entry *iodef,
 /** Log the supplied control message */
 int Log_control_msg(char *msg_txt);
 
+/** Toggle whether (toggle=REG_TRUE) or not (toggle=REG_FALSE) to log
+    values of the parameter identified by the provided label. Logging
+    is on by default. */
+int Toggle_param_logging(char *ParamLabel,
+			 int   toggle);
+
 /** Create a new msg_store struct and pass back a pointer to it */
 struct ReG_ctrl_msg_store *New_msg_store_struct();
 
