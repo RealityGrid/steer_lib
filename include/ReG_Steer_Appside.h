@@ -212,11 +212,14 @@ extern PREFIX int Unregister_params(int    NumParams,
 extern PREFIX int Enable_all_param_logging(int toggle);
 
 /** 
-   Toggle whether (toggle=REG_TRUE) or not (toggle=REG_FALSE) to log
-   values of the parameter identified by the provided label. Logging
-   is on by default. */
-extern PREFIX int Enable_param_logging(char *ParamLabel,
-				       int   toggle);
+   Enable logging of values of the parameter identified by the
+   provided label. Logging is on by default. */
+extern PREFIX int Enable_param_logging(char *ParamLabel);
+
+/** 
+   Disable logging of values of the parameter identified by the
+   provided label. Logging is on by default. */
+extern PREFIX int Disable_param_logging(char *ParamLabel);
 
 /**
    Main steering routine to be called at application breakpoint.
