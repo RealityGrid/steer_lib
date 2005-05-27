@@ -1679,6 +1679,7 @@ int Consume_start_blocking(int   IOType,
 #if REG_DEBUG
       fprintf(stderr, "Consume_start_blocking: timed out\n");
 #endif
+      status = REG_TIMED_OUT;
       break;
     }
   } 
