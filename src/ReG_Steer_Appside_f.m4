@@ -1113,7 +1113,7 @@ INT_KIND_1_DECL(Status);
 
 /*----------------------------------------------------------------
 
-SUBROUTINE enable_param_logging_f(ParamLabel, Toggle, Status)
+SUBROUTINE enable_param_logging_f(ParamLabel, Status)
 
   CHARACTER (LEN=REG_MAX_STRING_LENGTH), INTENT(in) :: ParamLabel
   INTEGER (KIND=REG_SP_KIND), INTENT(out)           :: Status
@@ -1172,7 +1172,7 @@ INT_KIND_1_DECL(Status);
 
 /*----------------------------------------------------------------
 
-SUBROUTINE disable_param_logging_f(ParamLabel, Toggle, Status)
+SUBROUTINE disable_param_logging_f(ParamLabel, Status)
 
   CHARACTER (LEN=REG_MAX_STRING_LENGTH), INTENT(in) :: ParamLabel
   INTEGER (KIND=REG_SP_KIND), INTENT(out)           :: Status
