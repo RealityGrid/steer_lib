@@ -56,9 +56,6 @@ typedef struct {
 
 }IO_channel_table_type;
 
-/** Table holding details of open IO channels */
-IO_channel_table_type IO_channel[REG_INITIAL_NUM_IOTYPES];
-
 /** Type definition for table used to hold details on the communication
     channel between the application and the steerer */
 typedef struct {

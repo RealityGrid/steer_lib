@@ -106,6 +106,9 @@ Steer_log_type Steer_log;
 
 Param_table_type Params_table;
 
+/** Table holding details of open IO channels */
+IO_channel_table_type IO_channel[REG_INITIAL_NUM_IOTYPES];
+
 /** Whether steering is enabled (set by user) */
 static int ReG_SteeringEnabled = REG_FALSE;
 /** Whether the set of registered params has changed */
@@ -2608,7 +2611,7 @@ int Toggle_param_logging(char *ParamLabel,
 
   if (found) return REG_SUCCESS;
 
-  fprintf(stderr, "Enable_param_logging: param with label %s not "
+  fprintf(stderr, "Toggle_param_logging: param with label %s not "
 	  "found.\n", ParamLabel);
   return REG_FAILURE;
 }
