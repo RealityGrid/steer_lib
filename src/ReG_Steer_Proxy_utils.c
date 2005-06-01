@@ -350,14 +350,14 @@ int Get_proxy_message(int pipe_from_proxy, char *buf, int *nbytes)
 
 /*-------------------------------------------------------------*/
 
-/* Routine taken from Kernighan and Ritchie, slightly tweaked */
+/** @internal
+    @brief Routine taken from Kernighan and Ritchie, slightly tweaked */
 
 int getline(char s[], int lim, int fd)
 {
-  int n, i;
+  int n=0;
+  int i=0;
   char c;
-
-  i = 0;
 
   while(--lim > 0 && (n=read(fd, &c, 1)) == 1 && c != '\n')
     s[i++] = c;

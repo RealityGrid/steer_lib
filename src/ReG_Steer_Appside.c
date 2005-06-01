@@ -5574,7 +5574,7 @@ char **Alloc_string_array(int String_len,
 {
   int                    i;
   struct ReG_array_list* current;
-  struct ReG_array_list* new;
+  struct ReG_array_list* new_array;
 
   if(ReG_list_head){
     current = ReG_list_head;
@@ -5584,41 +5584,41 @@ char **Alloc_string_array(int String_len,
     }
   }
 
-  new = (struct ReG_array_list*)malloc(sizeof(struct ReG_array_list));
-  if(!new){
+  new_array = (struct ReG_array_list*)malloc(sizeof(struct ReG_array_list));
+  if(!new_array){
     return NULL;
   }
 
-  new->next = NULL;
+  new_array->next = NULL;
 
-  new->array = (char **)malloc(Array_len*sizeof(char*));
-  if(!(new->array)){
-    free(new);
+  new_array->array = (char **)malloc(Array_len*sizeof(char*));
+  if(!(new_array->array)){
+    free(new_array);
     return NULL;
   }
-  new->array[0] = (char *)malloc(Array_len*String_len*sizeof(char));
+  new_array->array[0] = (char *)malloc(Array_len*String_len*sizeof(char));
 
-  if(!(new->array)){
+  if(!(new_array->array)){
 
     fprintf(stderr, "Alloc_string_array: array malloc failed\n");
-    free(new->array);
-    free(new);
+    free(new_array->array);
+    free(new_array);
     return NULL;
   }
 
   for(i=1; i<Array_len; i++){
 
-    new->array[i]=new->array[i-1] + String_len;
+    new_array->array[i]=new_array->array[i-1] + String_len;
   }
 
   if(ReG_list_head){
-    current->next = new;
+    current->next = new_array;
   }
   else{
-    ReG_list_head = new;
+    ReG_list_head = new_array;
   }
 
-  return new->array;
+  return new_array->array;
 }
 
 /*------------------------------------------------------------------*/

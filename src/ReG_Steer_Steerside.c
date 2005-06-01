@@ -972,6 +972,7 @@ int Consume_IOType_defs(int SimHandle)
 
   for(i=0; i<Sim_table.sim[index].IOdef_table.max_entries; i++){
 
+    found = REG_FALSE;
     ptr = Sim_table.sim[index].msg->io_def->first_io;
 
     while(ptr){
@@ -1085,6 +1086,7 @@ int Consume_ChkType_defs(int SimHandle)
 
   for(i=0; i<Sim_table.sim[index].Chkdef_table.max_entries; i++){
 
+    found = REG_FALSE;
     ptr = Sim_table.sim[index].msg->chk_def->first_io;
 
     while(ptr){
@@ -1181,7 +1183,7 @@ int Consume_chk_log(Sim_entry_type *sim,
 		    struct chk_log_entry_struct *entry)
 {
   int                  index, count;
-  int                  return_status;
+  int                  return_status = REG_SUCCESS;
   struct param_struct *param_ptr;
 
   index = sim->Chk_log.num_entries;

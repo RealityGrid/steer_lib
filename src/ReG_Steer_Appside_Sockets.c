@@ -64,7 +64,7 @@ extern Steerer_connection_table_type Steerer_connection;
 
 /*--------------------------------------------------------------------*/
 
-static int socket_info_init(const int index) {
+int socket_info_init(const int index) {
 
   char* pchar;
   char* ip_addr;
@@ -110,13 +110,13 @@ static int socket_info_init(const int index) {
 
 /*--------------------------------------------------------------------*/
 
-static void socket_info_cleanup(const int index) {
+void socket_info_cleanup(const int index) {
 
 }
 
 /*--------------------------------------------------------------------*/
 
-static int create_listener(const int index) {
+int create_listener(const int index) {
 
   char* pchar;
   char* ip_addr;
@@ -200,7 +200,7 @@ static int create_listener(const int index) {
 
 /*--------------------------------------------------------------------*/
 
-static int create_connector(const int index) {
+int create_connector(const int index) {
 
   int i;
   int yes = 1;
@@ -258,7 +258,7 @@ static int create_connector(const int index) {
 
 /*--------------------------------------------------------------------*/
 
-static int connect_connector(const int index) {
+int connect_connector(const int index) {
 
   struct sockaddr_in theirAddr;
   int connector = IOTypes_table.io_def[index].socket_info.connector_handle;
@@ -312,7 +312,7 @@ static int connect_connector(const int index) {
 
 /*--------------------------------------------------------------------*/
 
-static void cleanup_listener_connection(const int index) {
+void cleanup_listener_connection(const int index) {
   if(IOTypes_table.io_def[index].socket_info.listener_status == REG_COMMS_STATUS_LISTENING) {
     close_listener_handle(index);
   }
@@ -328,7 +328,7 @@ static void cleanup_listener_connection(const int index) {
 
 /*--------------------------------------------------------------------*/
 
-static void cleanup_connector_connection(const int index) {
+void cleanup_connector_connection(const int index) {
   if (IOTypes_table.io_def[index].socket_info.comms_status == REG_COMMS_STATUS_CONNECTED ||
       IOTypes_table.io_def[index].socket_info.comms_status == REG_COMMS_STATUS_WAITING_TO_CONNECT ){
     close_connector_handle(index);
@@ -337,7 +337,7 @@ static void cleanup_connector_connection(const int index) {
 
 /*--------------------------------------------------------------------*/
 
-static void close_listener_handle(const int index) {
+void close_listener_handle(const int index) {
   if(close(IOTypes_table.io_def[index].socket_info.listener_handle) == REG_SOCKETS_ERROR) {
     perror("close");
     IOTypes_table.io_def[index].socket_info.listener_status = REG_COMMS_STATUS_FAILURE;
@@ -352,7 +352,7 @@ static void close_listener_handle(const int index) {
 
 /*--------------------------------------------------------------------*/
 
-static void close_connector_handle(const int index) {
+void close_connector_handle(const int index) {
   if(close(IOTypes_table.io_def[index].socket_info.connector_handle) == REG_SOCKETS_ERROR) {
     perror("close");
     IOTypes_table.io_def[index].socket_info.comms_status = REG_COMMS_STATUS_FAILURE;
@@ -367,7 +367,7 @@ static void close_connector_handle(const int index) {
 
 /*--------------------------------------------------------------------*/
 
-static void attempt_listener_connect(const int index) {
+void attempt_listener_connect(const int index) {
   socket_io_type *socket_info;
   socket_info = &(IOTypes_table.io_def[index].socket_info);
 
@@ -404,7 +404,7 @@ static void attempt_listener_connect(const int index) {
 
 /*--------------------------------------------------------------------*/
 
-static void retry_accept_connect(const int index) {
+void retry_accept_connect(const int index) {
   socket_io_type *socket_info;
   socket_info = &(IOTypes_table.io_def[index].socket_info);
 
@@ -421,7 +421,7 @@ static void retry_accept_connect(const int index) {
 
 /*--------------------------------------------------------------------*/
 
-static void attempt_connector_connect(const int index) {
+void attempt_connector_connect(const int index) {
   socket_io_type *socket_info;
   socket_info = &(IOTypes_table.io_def[index].socket_info);
 
@@ -444,7 +444,7 @@ static void attempt_connector_connect(const int index) {
 
 /*--------------------------------------------------------------------*/
 
-static void retry_connect(const int index) {
+void retry_connect(const int index) {
   socket_io_type *socket_info;
   socket_info = &(IOTypes_table.io_def[index].socket_info);
 
@@ -467,7 +467,7 @@ static void retry_connect(const int index) {
 
 /*--------------------------------------------------------------------*/
 
-static void poll_socket(const int index) {
+void poll_socket(const int index) {
 
   struct timeval timeout;
   fd_set sockets;	/* the set of sockets to check */
@@ -531,7 +531,7 @@ static void poll_socket(const int index) {
 
 /*--------------------------------------------------------------------*/
 
-static int dns_lookup(char* hostname) {
+int dns_lookup(char* hostname) {
   struct hostent* host;
 
   if((host = gethostbyname(hostname)) == NULL) {
@@ -552,8 +552,8 @@ static int dns_lookup(char* hostname) {
 
 /*--------------------------------------------------------------------*/
 
-static int recv_non_block(socket_io_type  *sock_info,
-			  char *pbuf, int nbytes){
+int recv_non_block(socket_io_type  *sock_info,
+		   char *pbuf, int nbytes){
 
   int nbytes_read = 0;
 
@@ -1090,7 +1090,8 @@ int Consume_msg_header_sockets(int index, int* datatype, int* count,
 int Consume_start_data_check_sockets(const int index) {  
   char buffer[REG_PACKET_SIZE];
   char* pstart;
-  int nbytes, nbytes1;
+  int nbytes = 0;
+  int nbytes1 = 0;
   int attempt_reconnect;
 
   socket_io_type  *sock_info;

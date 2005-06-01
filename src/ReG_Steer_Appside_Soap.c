@@ -365,6 +365,11 @@ int Send_status_msg_soap(char* msg)
 
       sde_name = CHKTYPE_DEFS_SDE;
     }
+    else{
+      fprintf(stderr, "Send_status_msg_soap: not a status or log msg and"
+	      "no matching SDE name found either\n");
+      return REG_FAILURE;
+    }
 
     setSDE_response._setServiceDataReturn = NULL;
     nbytes = snprintf(query_buf, REG_MAX_MSG_SIZE, 
