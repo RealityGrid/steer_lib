@@ -2,13 +2,12 @@ c---------------------------------------------------------------------
 c  F77 include file intended to give F77 applications access to 
 c  the RealityGrid computational-steering API.
 c
-c  (C) Copyright 2002, 2004, University of Manchester, United Kingdom,
+c  (C) Copyright 2005, University of Manchester, United Kingdom,
 c  all rights reserved.
 c
-c  This software is produced by the Supercomputing, Visualization and
-c  e-Science Group, Manchester Computing, University of Manchester
-c  as part of the RealityGrid project (http://www.realitygrid.org),
-c  funded by the EPSRC under grants GR/R67699/01 and GR/R67699/02.
+c  This software was developed by the RealityGrid project
+c  (http://www.realitygrid.org), funded by the EPSRC under grants
+c  GR/R67699/01 and GR/R67699/02.
 c
 c  LICENCE TERMS
 c
@@ -27,7 +26,7 @@ c  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
 c  A PARTICULAR PURPOSE ARE DISCLAIMED. THE ENTIRE RISK AS TO THE QUALITY
 c  AND PERFORMANCE OF THE PROGRAM IS WITH YOU.  SHOULD THE PROGRAM PROVE
 c  DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR
-c  CORRECTION.
+c  CORRECTION.  
 c
 c  Authors........: Andrew Porter, Robert Haines
 c---------------------------------------------------------------------

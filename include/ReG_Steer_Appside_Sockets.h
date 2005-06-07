@@ -2,13 +2,12 @@
   This header file contains routines and data structures for
   communication using Sockets.
 
-  (C) Copyright 2002, 2004, University of Manchester, United Kingdom,
+  (C) Copyright 2005, University of Manchester, United Kingdom,
   all rights reserved.
 
-  This software is produced by the Supercomputing, Visualization and
-  e-Science Group, Manchester Computing, University of Manchester
-  as part of the RealityGrid project (http://www.realitygrid.org),
-  funded by the EPSRC under grants GR/R67699/01 and GR/R67699/02.
+  This software was developed by the RealityGrid project
+  (http://www.realitygrid.org), funded by the EPSRC under grants
+  GR/R67699/01 and GR/R67699/02.
 
   LICENCE TERMS
 
@@ -101,9 +100,9 @@ void Finalize_IOType_transport_sockets();
 
 /** @brief Creates a socket for the IOType with the supplied index. 
 
-    Only necessary if the IOType has been disabled or Enable_IOTypes_on_registration
-    has been called such that the associated socket was not
-    created when the IOType was registered.
+    Only necessary if the IOType has been disabled or 
+    Enable_IOTypes_on_registration has been called such that the 
+    associated socket was not created when the IOType was registered.
     @see Enable_IOTypes_on_registration
     */
 int Enable_IOType_sockets(const int index);
@@ -117,8 +116,8 @@ int Disable_IOType_sockets(const int index);
     @return REG_SUCCESS if socket is connected. */
 int Get_communication_status_sockets(const int index);
 
-/** @brief Writes the specified no. of bytes to the socket for the IOType with the 
-    supplied index.*/
+/** @brief Writes the specified no. of bytes to the socket for the 
+    IOType with the supplied index.*/
 int Write_sockets(const int index, const int size, void* buffer);
 
 /** @brief A non-blocking version of Write_sockets.
@@ -133,7 +132,8 @@ int Write_non_blocking_sockets(const int index, const int size, void* buffer);
 int Emit_header_sockets(const int index);
 
 /** @brief Wraps Write_sockets.  Is required?? */
-int Emit_data_sockets(const int index, const size_t num_bytes_to_send, void* pData);
+int Emit_data_sockets(const int index, const size_t num_bytes_to_send, 
+		      void* pData);
 
 /** @brief Reads a message header from the socket for the 
     IOType with the supplied index. 
@@ -177,55 +177,72 @@ int Consume_ack_sockets(int index);
  * of ReG_Steer_Appside_Sockets.h
  ************************************/
 
-/** @brief Initialise socket_io_type structure */
-static int socket_info_init(const int index);
+/** @internal
+    @brief Initialise socket_io_type structure 
+    */
+int socket_info_init(const int index);
 
-/** @brief Clean up members of socket_io_type structure */
-static void socket_info_cleanup(const int index);
+/** @internal
+    @brief Clean up members of socket_io_type structure */
+void socket_info_cleanup(const int index);
 
-/** @brief Create a listener */
-static int create_listener(const int index);
+/** @internal
+    @brief Create a listener */
+int create_listener(const int index);
 
-/** @brief Create a connector */
-static int create_connector(const int index);
+/** @internal
+    @brief Create a connector */
+int create_connector(const int index);
 
-/** @brief Sets up and then attempts to connect a connector */
-static int connect_connector(const int index);
+/** @internal
+    @brief Sets up and then attempts to connect a connector */
+int connect_connector(const int index);
 
-/** @brief Take down a listener */
-static void cleanup_listener_connection(const int index);
+/** @internal
+    @brief Take down a listener */
+void cleanup_listener_connection(const int index);
 
-/** @brief Take down a connector */
-static void cleanup_connector_connection(const int index);
+/** @internal
+    @brief Take down a connector */
+void cleanup_connector_connection(const int index);
 
-/** @brief Calls close on the listener handle */
-static void close_listener_handle(const int index);
+/** @internal
+    @brief Calls close on the listener handle */
+void close_listener_handle(const int index);
 
-/** @brief Calls close on the connector handle */
-static void close_connector_handle(const int index);
+/** @internal
+    @brief Calls close on the connector handle */
+void close_connector_handle(const int index);
 
-/** @brief Checks to see if anyone is trying to connect */
-static void attempt_listener_connect(const int index);
+/** @internal
+    @brief Checks to see if anyone is trying to connect */
+void attempt_listener_connect(const int index);
 
-/** @brief Cleans-up a broken socket and tries to reconnect */
-static void retry_accept_connect(const int index);
+/** @internal
+    @brief Cleans-up a broken socket and tries to reconnect */
+void retry_accept_connect(const int index);
 
-/** @brief Attempts to reconnect a connector */
-static void attempt_connector_connect(const int index);
+/** @internal
+    @brief Attempts to reconnect a connector */
+void attempt_connector_connect(const int index);
 
-/** @brief Takes down a failed connector and tries again */
-static void retry_connect(const int index);
+/** @internal
+    @brief Takes down a failed connector and tries again */
+void retry_connect(const int index);
 
-/** @brief Checks socket connection and tries to establish
+/** @internal
+    @brief Checks socket connection and tries to establish
     connection if none (whether listener or connector) */
-static void poll_socket(const int index);
+void poll_socket(const int index);
 
-/** @brief Looks up the IP of the specified hostname */
-static int dns_lookup(char* hostname);
+/** @internal
+    @brief Looks up the IP of the specified hostname */
+int dns_lookup(char* hostname);
 
-/** @brief Does a non-blocking receive.  Mainly used to work
+/** @internal
+    @brief Does a non-blocking receive.  Mainly used to work
     around the fact that AIX and TRU64 recv's seem to block by default. */
-static int recv_non_block(socket_io_type  *sock_info, 
+int recv_non_block(socket_io_type  *sock_info, 
 			  char *pbuf, int nbytes);
 
 #endif /* REG_SOCKET_SAMPLES */
