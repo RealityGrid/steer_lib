@@ -3,13 +3,12 @@
   of an interface to a steering component (from an application
   component).
 
-  (C) Copyright 2002, 2004, University of Manchester, United Kingdom,
+  (C) Copyright 2005, University of Manchester, United Kingdom,
   all rights reserved.
 
-  This software is produced by the Supercomputing, Visualization and
-  e-Science Group, Manchester Computing, University of Manchester
-  as part of the RealityGrid project (http://www.realitygrid.org),
-  funded by the EPSRC under grants GR/R67699/01 and GR/R67699/02.
+  This software was developed by the RealityGrid project
+  (http://www.realitygrid.org), funded by the EPSRC under grants
+  GR/R67699/01 and GR/R67699/02.
 
   LICENCE TERMS
 
