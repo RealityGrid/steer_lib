@@ -49,7 +49,7 @@ MPI_FLAGS = -lmpi
 
 # Set-up access to M4 scripts for production of F90 wrappers, this is
 # taken from the PVM project.
-M4FILE = conf/ALTIX.m4
+M4FILE = ${REG_STEER_HOME}/src/conf/ALTIX.m4
 
 # Location of java compiler - used to produce proxy binary
 JAVAC = /usr/java/j2sdk1.4.2_03/bin/javac
