@@ -1,12 +1,11 @@
 #  Include file for Linux specific configuration.
 #
-#  (C) Copyright 2002, 2004, University of Manchester, United Kingdom,
+#  (C) Copyright 2005, University of Manchester, United Kingdom,
 #  all rights reserved.
 #
-#  This software is produced by the Supercomputing, Visualization and
-#  e-Science Group, Manchester Computing, University of Manchester
-#  as part of the RealityGrid project (http://www.realitygrid.org),
-#  funded by the EPSRC under grants GR/R67699/01 and GR/R67699/02.
+#  This software was developed by the RealityGrid project
+#  (http://www.realitygrid.org), funded by the EPSRC under grants
+#  GR/R67699/01 and GR/R67699/02.
 #
 #  LICENCE TERMS
 #
@@ -21,7 +20,7 @@
 #
 #  THIS MATERIAL IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 #  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-#  LIMITED  TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+#  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
 #  A PARTICULAR PURPOSE ARE DISCLAIMED. THE ENTIRE RISK AS TO THE QUALITY
 #  AND PERFORMANCE OF THE PROGRAM IS WITH YOU.  SHOULD THE PROGRAM PROVE
 #  DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR
@@ -36,7 +35,7 @@ NBIT = 32
 
 # Location of C compiler and flags to use
 CC = gcc
-C_FLAGS = -O2
+C_FLAGS = -O2 
 LIB_C_FLAGS = ${C_FLAGS} -fPIC -I../include
 
 # Linker flags to use
@@ -44,13 +43,13 @@ LD_FLAGS = -shared -soname=libReG_Steer.so -L${REG_XML_LIBDIR} -lm -lz -lxml2
 
 # Location of F90 compiler (if any) and flags to use
 F90 = g95
-F90_MPI = 
+F90_MPI = g95
 F90_FLAGS = 
 MPI_FLAGS = 
 
 # Set-up access to M4 scripts for production of F90 wrappers, this is
 # taken from the PVM project.
-M4FILE = conf/LINUX-g95.m4
+M4FILE = ${REG_STEER_HOME}/src/conf/LINUX-g95.m4
 
 # Location of java compiler - used to produce proxy binary
 JAVAC          = /usr/bin/javac
