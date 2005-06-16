@@ -2,13 +2,12 @@
   This file contains a very simple example of a steering-enabled 
   application.
 
-  (C) Copyright 2002, 2004, University of Manchester, United Kingdom,
+  (C) Copyright 2005, University of Manchester, United Kingdom,
   all rights reserved.
 
-  This software is produced by the Supercomputing, Visualization and
-  e-Science Group, Manchester Computing, University of Manchester
-  as part of the RealityGrid project (http://www.realitygrid.org),
-  funded by the EPSRC under grants GR/R67699/01 and GR/R67699/02.
+  This software was developed by the RealityGrid project
+  (http://www.realitygrid.org), funded by the EPSRC under grants
+  GR/R67699/01 and GR/R67699/02.
 
   LICENCE TERMS
 
@@ -53,7 +52,8 @@ int main(){
   float temp     = 55.6;
   int   finished = REG_FALSE;
   int   i, icmd;
-  
+  float float_array[50];
+
   /*---------- End of declarations ------------*/
 
   /* Initialise & enable the steering library */
@@ -84,6 +84,14 @@ int main(){
   /* Register a steerable parameter */
   status = Register_param("TEMP", REG_TRUE, (void *)(&temp),
 			  REG_FLOAT, "", "");
+  if(status != REG_SUCCESS){
+    printf("Failed to register parameter\n");
+  }
+
+  /* Register a binary blob */
+  for(i=0;i<50;i++){float_array[i] = i;}
+  status = Register_bin_param("blob", (void *)(&float_array),
+			      REG_FLOAT, 50);
   if(status != REG_SUCCESS){
     printf("Failed to register parameter\n");
   }

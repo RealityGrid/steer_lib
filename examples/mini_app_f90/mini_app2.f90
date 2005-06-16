@@ -1,36 +1,35 @@
-!!$----------------------------------------------------------------------
-!!$  Example of a basic steerable serial F90 application that uses the 
-!!$  RealityGrid steering library.
-!!$
-!!$  (C) Copyright 2002, 2004, University of Manchester, United Kingdom,
-!!$  all rights reserved.
-!!$
-!!$  This software is produced by the Supercomputing, Visualization and
-!!$  e-Science Group, Manchester Computing, University of Manchester
-!!$  as part of the RealityGrid project (http://www.realitygrid.org),
-!!$  funded by the EPSRC under grants GR/R67699/01 and GR/R67699/02.
-!!$
-!!$  LICENCE TERMS
-!!$
-!!$  Redistribution and use in source and binary forms, with or without
-!!$  modification, are permitted provided that the following conditions
-!!$  are met:
-!!$  1. Redistributions of source code must retain the above copyright
-!!$     notice, this list of conditions and the following disclaimer.
-!!$  2. Redistributions in binary form must reproduce the above copyright
-!!$     notice, this list of conditions and the following disclaimer in the
-!!$     documentation and/or other materials provided with the distribution.
-!!$
-!!$  THIS MATERIAL IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-!!$  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-!!$  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-!!$  A PARTICULAR PURPOSE ARE DISCLAIMED. THE ENTIRE RISK AS TO THE QUALITY
-!!$  AND PERFORMANCE OF THE PROGRAM IS WITH YOU.  SHOULD THE PROGRAM PROVE
-!!$  DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR
-!!$  CORRECTION.
-!!$
-!!$  Authors........: Andrew Porter, Robert Haines
-!!$----------------------------------------------------------------------
+!----------------------------------------------------------------------
+!  Example of a basic steerable serial F90 application that uses the 
+!  RealityGrid steering library.
+!
+!  (C) Copyright 2005, University of Manchester, United Kingdom,
+!  all rights reserved.
+!
+!  This software was developed by the RealityGrid project
+!  (http://www.realitygrid.org), funded by the EPSRC under grants
+!  GR/R67699/01 and GR/R67699/02.
+!
+!  LICENCE TERMS
+!
+!  Redistribution and use in source and binary forms, with or without
+!  modification, are permitted provided that the following conditions
+!  are met:
+!  1. Redistributions of source code must retain the above copyright
+!     notice, this list of conditions and the following disclaimer.
+!  2. Redistributions in binary form must reproduce the above copyright
+!     notice, this list of conditions and the following disclaimer in the
+!     documentation and/or other materials provided with the distribution.
+!
+!  THIS MATERIAL IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+!  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+!  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+!  A PARTICULAR PURPOSE ARE DISCLAIMED. THE ENTIRE RISK AS TO THE QUALITY
+!  AND PERFORMANCE OF THE PROGRAM IS WITH YOU.  SHOULD THE PROGRAM PROVE
+!  DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR
+!  CORRECTION.  
+!
+!  Authors........: Andrew Porter, Robert Haines
+!----------------------------------------------------------------------
 
 PROGRAM mini_app
   IMPLICIT none
@@ -90,6 +89,8 @@ PROGRAM mini_app
   REAL (KIND=REG_DP_KIND) :: aaxis=1.5
   REAL (KIND=REG_DP_KIND) :: baxis=1.5
   REAL (KIND=REG_DP_KIND) :: caxis=1.5
+  INTEGER (KIND=REG_SP_KIND), DIMENSION(56) :: ibin_blob_array;
+  INTEGER (KIND=REG_SP_KIND) :: ilength
 
   ! Enable steering
   CALL steering_enable_f(reg_true)
@@ -146,10 +147,19 @@ PROGRAM mini_app
   CALL register_param_f(param_label, param_strbl, dum_int, &
                         param_type, "0", "256", status)
 
+! Test REG_BIN type in F90
+  param_label = "test_bin_blob"
+  param_type  = REG_INT
+  ilength = 56
+  ibin_blob_array = 10
+  CALL register_bin_param_f(param_label, ibin_blob_array, &
+                            param_type, ilength, status)
+
   ! Registration uses ADDRESS of variable so use second 'dum_int' here
   ! rather than simply changing value of first one
   dum_int2 = 123
-  param_label = "2nd_test_integer"
+  param_label = "test_integer_2nd"
+  param_type  = REG_INT
   param_strbl = reg_false
 
   CALL register_param_f(param_label, param_strbl, dum_int2, &
@@ -262,6 +272,12 @@ PROGRAM mini_app
   iloop = 1
   DO WHILE(iloop<num_sim_loops .AND. (finished .ne. 1))
 
+    IF(iloop .eq. 5)THEN
+      CALL enable_param_logging_f("test_integer_2nd", REG_FALSE, status)
+    END IF
+    IF(iloop .eq. 10)THEN
+      CALL enable_param_logging_f("test_integer_2nd", REG_TRUE, status)
+    END IF
     CALL steering_control_f(iloop, num_params_changed, changed_param_labels, &
                             num_recvd_cmds, recvd_cmds, recvd_cmd_params, &
                             status)
