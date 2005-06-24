@@ -1,0 +1,27 @@
+#!/bin/sh
+
+#
+# Generate the documentation for the RealityGrid classes...
+# 
+# Robert Haines, 2004.
+#
+
+SRCPATH="."
+OVERVIEW="org/realitygrid/overview.html"
+WINDOWTITLE="RealityGrid Java API"
+DOCTITLE="RealityGrid Java API"
+HEADER="<strong>RealityGrid<br>Java API</strong>"
+BOTTOM="(C) Copyright 2004, 2005 The University of Manchester,\
+        Manchester, United Kingdom. All rights reserved.<br> \
+        <a href=\"http://www.realitygrid.org\">RealityGrid</a>"
+JAVADOC="http://java.sun.com/j2se/1.4.2/docs/api"
+COREPACK="org.realitygrid.steering"
+EXTPACK=""
+
+echo "Installing Java documentation..."
+mkdir -p doc
+javadoc -d doc -windowtitle "$WINDOWTITLE" -doctitle "$DOCTITLE" \
+        -header "$HEADER" -bottom "$BOTTOM" -link $JAVADOC \
+        -overview $SRCPATH/$OVERVIEW -breakiterator -author -version \
+        -sourcepath $SRCPATH -group "Core RealityGrid Packages" "$COREPACK" \
+        -group "RealityGrid Extension Packages" "$EXTPACK" -subpackages org
