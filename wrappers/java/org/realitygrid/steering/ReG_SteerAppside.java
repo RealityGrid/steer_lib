@@ -39,7 +39,8 @@ package org.realitygrid.steering;
  * @author Robert Haines
  * @author Andrew Porter (RealityGrid API)
  * @see <a href="http://www.realitygrid.org/">The RealityGrid Website</a>
- * @see <a href="http://www.sve.man.ac.uk/Research/AtoZ/RealityGrid/Steering/ReG Steering API v1.2b">RealityGrid API Documentation v1.2b (PDF file)</a>
+ * @see <a href="http://www.sve.man.ac.uk/Research/AtoZ/RealityGrid">the RealityGrid pages at Manchester Computing</a>
+ * @see <a href="http://www.sve.man.ac.uk/Research/AtoZ/RealityGrid/Steering/ReG_Steering_API_v1.2b.pdf">RealityGrid API Documentation v1.2b (PDF file)</a>
  */
 public class ReG_SteerAppside implements ReG_SteerConstants {
 
@@ -129,7 +130,7 @@ public class ReG_SteerAppside implements ReG_SteerConstants {
   }
 
   /**
-   * Initialise the steering library. A text short description of the
+   * Initialise the steering library. A short text description of the
    * application should be provided along with an array of commands that
    * the application will respond to. These commands are specified with
    * constants such as <code>REG_STR_STOP</code>, <code>REG_STR_PAUSE</code>,
@@ -242,7 +243,7 @@ public class ReG_SteerAppside implements ReG_SteerConstants {
    * Switches on the use of acknowledgements for the specified IOType. When
    * acknowledgements are enabled, call to <code>emitStart</code> will fail
    * with an exception (error code <code>REG_NOT_READY</code>) until an
-   * acknowledgement of the last data sent emitted has been received from the
+   * acknowledgement of the last data set emitted has been received from the
    * consumer.
    *
    * @param iot the IOType to enable acknowledgements for.
@@ -338,7 +339,7 @@ public class ReG_SteerAppside implements ReG_SteerConstants {
    * @see #getChangedParamLabels()
    * @see #getReceivedCommands()
    * @see #getReceivedCommandParams()
-   * @see <a href="http://www.sve.man.ac.uk/Research/AtoZ/RealityGrid/Steering/ReG Steering API v1.2b">RealityGrid API Documentation v1.2b (PDF file)</a>
+   * @see <a href="http://www.sve.man.ac.uk/Research/AtoZ/RealityGrid/Steering/ReG_Steering_API_v1.2b.pdf">RealityGrid API Documentation v1.2b (PDF file)</a>
    */
   public int[] steeringControl(int step) throws ReG_SteerException {
     int[] result = new int[2];
@@ -451,7 +452,7 @@ public class ReG_SteerAppside implements ReG_SteerConstants {
    *
    * @see #emitStart(int, int)
    * @see #emitStart(int, int, float)
-   * @see <a href="http://www.sve.man.ac.uk/Research/AtoZ/RealityGrid/Steering/ReG Steering API v1.2b">RealityGrid API Documentation v1.2b (PDF file)</a>
+   * @see <a href="http://www.sve.man.ac.uk/Research/AtoZ/RealityGrid/Steering/ReG_Steering_API_v1.2b.pdf">RealityGrid API Documentation v1.2b (PDF file)</a>
    */
   public void emitDataSlice(int ioh, Object data) throws ReG_SteerException {
     Object dataSlice;
@@ -574,7 +575,7 @@ public class ReG_SteerAppside implements ReG_SteerConstants {
    * @see java.lang.Object
    * @see #consumeStart(int)
    * @see #consumeStart(int, float)
-   * @see <a href="http://www.sve.man.ac.uk/Research/AtoZ/RealityGrid/Steering/ReG Steering API v1.2b">RealityGrid API Documentation v1.2b (PDF file)</a>
+   * @see <a href="http://www.sve.man.ac.uk/Research/AtoZ/RealityGrid/Steering/ReG_Steering_API_v1.2b.pdf">RealityGrid API Documentation v1.2b (PDF file)</a>
    */
   public Object consumeDataSlice(int ioh) {
     Intp dataType = new Intp();
