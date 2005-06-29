@@ -356,7 +356,7 @@ int main(){
 
 	      if(recvd_cmds[icmd] == chktype_handle[j]){
 
-		printf("Got checkpoint command, parameters: %s\n", 
+		printf("Got checkpoint command, parameters >>%s<<\n", 
 		       recvd_cmd_params[icmd]);
 
 		if(strstr(recvd_cmd_params[icmd], "OUT")){
