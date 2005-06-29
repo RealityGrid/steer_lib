@@ -32,9 +32,21 @@
 
 package org.realitygrid.steering;
 
+/**
+ * This abstract class provides a superclass for the internal SWIG generated
+ * classes such as SWIGTYPE_p_int and so on.
+ *
+ * @version 1.2b
+ * @author Robert Haines
+ */
 public abstract class ReG_SWIG {
-  protected abstract long getPointer();
 
+  /**
+   * Compares two objects of type ReG_SWIG to see if they are the same object
+   * (their pointers are the same).
+   *
+   * @return true if the two objects are the same object, false otherwise.
+   */
   public boolean equals(Object obj) {
     boolean equal = false;
     if (obj instanceof ReG_SWIG)
@@ -42,6 +54,20 @@ public abstract class ReG_SWIG {
     return equal;
   }
   
+  /**
+   * Provides a numerical representation of the internal SWIG pointer
+   * to this object. Used in comparison routines and so on.
+   *
+   * @return the pointer to this object.
+   * @see #equals(Object)
+   */
+  protected abstract long getPointer();
+
+  /**
+   * Provides a C/C++ style void pointer to this object.
+   *
+   * @return the void pointer to this object.
+   */
   public SWIGTYPE_p_void getVoidPointer() {
     return new SWIGTYPE_p_void(getPointer(), false);
   }
