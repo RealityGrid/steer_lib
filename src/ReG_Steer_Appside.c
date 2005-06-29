@@ -3989,6 +3989,7 @@ int Unpack_control_msg(struct control_struct *ctrl,
 
 	param = param->next;
       }
+      *(ptr-1) = '\0'; /* Remove trailing white space */
     }
     else{
 
