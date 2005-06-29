@@ -93,15 +93,15 @@ public class MiniApp implements Runnable, ReG_SteerConstants {
     numIOTypes = 2;
 
     /* Register the parameters */
-    sleepTime = new ReG_SteerParameter("time_to_sleep", 1, true, REG_INT, "0", "100");
-    opacityStepStop = new ReG_SteerParameter("OPACITY_STEP_STOP", 130, true, REG_INT, "0", "256");
-    temp = new ReG_SteerParameter("TEMP", 55.6f, false, REG_FLOAT, "", "");
-    aAxis = new ReG_SteerParameter("a_axis", 1.5, true, REG_DBL, "0.01", "10.0");
-    bAxis = new ReG_SteerParameter("b_axis", 1.5, true, REG_DBL, "0.01", "10.0");
-    cAxis = new ReG_SteerParameter("c_axis", 1.5, true, REG_DBL, "0.01", "10.0");
-    nx = new ReG_SteerParameter("nx", 16, true, REG_INT, "1", "");
-    ny = new ReG_SteerParameter("ny", 16, true, REG_INT, "1", "");
-    nz = new ReG_SteerParameter("nz", 16, true, REG_INT, "1", "");
+    sleepTime = new ReG_SteerParameter("time_to_sleep", 1, true, "0", "100");
+    opacityStepStop = new ReG_SteerParameter("OPACITY_STEP_STOP", 130, true, "0", "256");
+    temp = new ReG_SteerParameter("TEMP", 55.6f, false, "", "");
+    aAxis = new ReG_SteerParameter("a_axis", 1.5, true, "0.01", "10.0");
+    bAxis = new ReG_SteerParameter("b_axis", 1.5, true, "0.01", "10.0");
+    cAxis = new ReG_SteerParameter("c_axis", 1.5, true, "0.01", "10.0");
+    nx = new ReG_SteerParameter("nx", 16, true, "1", "");
+    ny = new ReG_SteerParameter("ny", 16, true, "1", "");
+    nz = new ReG_SteerParameter("nz", 16, true, "1", "");
     try {
       sleepTime.register();
       opacityStepStop.register();
