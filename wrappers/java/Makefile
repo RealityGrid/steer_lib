@@ -35,6 +35,9 @@ include ../Makefile.wrap
 REG_PACKAGE=org.realitygrid.steering
 REG_PACKAGE_DIR=org/realitygrid/steering
 
+doc: examples
+	./gendoc
+
 examples: libReG_SteerJava.so
 	${JAVAC} -classpath ${REG_STEER_HOME}/wrappers/java ${REG_PACKAGE_DIR}/*.java
 	${JAVAC} -classpath ${REG_STEER_HOME}/wrappers/java examples/*.java
@@ -62,3 +65,4 @@ clean:
 	rm -rf ${REG_PACKAGE_DIR}/*~
 	rm -rf examples/*.class
 	rm -rf examples/*~
+	rm -rf doc
