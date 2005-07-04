@@ -57,6 +57,8 @@
 		    		    minOccurs="1" maxOccurs="unbounded" />
 			</xs:element>
 	        </xs:choice>
+                <!-- The UID for this message -->
+                <xs:attribute name="UID" type="xs:integer" minOccurs="0"/>
 	</xs:complexType>
 </xs:element>
 
