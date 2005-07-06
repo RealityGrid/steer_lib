@@ -45,7 +45,7 @@ static int Choose_parameter(int sim_handle, int steerable);
 
 /*-------------------------------------------------------------------------*/
 
-int main(){
+int main(int argc, char **argv){
 
   int    sim_handle;
   int    msg_type;
@@ -126,55 +126,61 @@ int main(){
   }
   char_ptr = NULL;
 
-  printf("Do (l)ocal or (r)emote attach: ");
-  while(REG_TRUE){
-    scanf("%c", user_char);
-    if(user_char[0] != '\n' && user_char[0] != ' ')break;
-  }
-
-  if(user_char[0] == 'l' || user_char[0] == 'L'){
-
-    status = Sim_attach("", &sim_handle);
+  /* Take GSH/EPR off command line if supplied */
+  if(argc == 2 && strstr(argv[1], "http://")){
+    status = Sim_attach(argv[1], &sim_handle);
   }
   else{
+    printf("Do (l)ocal or (r)emote attach: ");
+    while(REG_TRUE){
+      scanf("%c", user_char);
+      if(user_char[0] != '\n' && user_char[0] != ' ')break;
+    }
 
-    Get_sim_list(&nsims, sim_name, sim_gsh);
+    if(user_char[0] == 'l' || user_char[0] == 'L'){
 
-    /* Attempt to attach to (just one) simulation - this blocks */
+      status = Sim_attach("", &sim_handle);
+    }
+    else{
 
-    status = REG_FAILURE;
+      Get_sim_list(&nsims, sim_name, sim_gsh);
 
-    while(status != REG_SUCCESS){
+      /* Attempt to attach to (just one) simulation - this blocks */
 
-      sleep(2);
+      status = REG_FAILURE;
 
-      /* If we got one from the framework then attempt to talk to that,
-	 otherwise default to old behaviour */
-      if(nsims > 0){
+      while(status != REG_SUCCESS){
 
-	printf("\n%d steerable applications available:\n", nsims);
-	for(i=0; i<nsims; i++){
+	sleep(2);
 
-	  printf("    %d: %s, gsh = %s\n", i, sim_name[i], sim_gsh[i]);
-	}
+	/* If we got one from the framework then attempt to talk to that,
+	   otherwise default to old behaviour */
+	if(nsims > 0){
 
-	i = -1;
-	while(i<0 || i>(nsims-1)){
-	  printf("\nWhich one to attach to (0 - %d): ", nsims-1);
-	  while(REG_TRUE){
-	    if(scanf("%d", &i) == 1)break;
+	  printf("\n%d steerable applications available:\n", nsims);
+	  for(i=0; i<nsims; i++){
+
+	    printf("    %d: %s, gsh = %s\n", i, sim_name[i], sim_gsh[i]);
 	  }
-	  printf("\n");
+
+	  i = -1;
+	  while(i<0 || i>(nsims-1)){
+	    printf("\nWhich one to attach to (0 - %d): ", nsims-1);
+	    while(REG_TRUE){
+	      if(scanf("%d", &i) == 1)break;
+	    }
+	    printf("\n");
+	  }
+
+	  status = Sim_attach(sim_gsh[i], &sim_handle);
+	}
+	else{
+	  status = Sim_attach("", &sim_handle);
 	}
 
-	status = Sim_attach(sim_gsh[i], &sim_handle);
-      }
-      else{
-	status = Sim_attach("", &sim_handle);
-      }
-
-      if(status != REG_SUCCESS){
-	fprintf(stderr, "Attach failed :-(\n");
+	if(status != REG_SUCCESS){
+	  fprintf(stderr, "Attach failed :-(\n");
+	}
       }
     }
   }
@@ -588,7 +594,12 @@ int main(){
       case STEER_LOG:
 	fprintf(stderr, "Got log message\n");
 	Consume_log(sim_handle);
+	break;
 
+      case MSG_ERROR:
+	fprintf(stderr, "Error getting message - assume app finished\n");
+	Delete_sim_table_entry(&sim_handle);
+	done = REG_TRUE;
 	break;
 
       default:
