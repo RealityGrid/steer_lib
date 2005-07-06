@@ -42,6 +42,7 @@
 #include "ReG_Steer_Steerside_internal.h"
 #include "ReG_Steer_Proxy_utils.h"
 #include "ReG_Steer_Steerside_Soap.h"
+#include "ReG_Steer_Steerside_WSRF.h"
 #include "ReG_Steer_Browser.h"
 #include "Base64.h"
 
@@ -138,6 +139,8 @@ int Steerer_initialize()
     Sim_table.sim[i].msg       = NULL;
     Sim_table.sim[i].pipe_to_proxy   = REG_PIPE_UNSET;
     Sim_table.sim[i].pipe_from_proxy = REG_PIPE_UNSET;
+    Sim_table.sim[i].Msg_store.msg   = NULL;
+    Sim_table.sim[i].Msg_store.next  = NULL;
   }
 
   /* Create the main proxy - we use this one to query the 'grid' about
@@ -351,6 +354,15 @@ int Sim_attach(char *SimID,
   sim_ptr->pipe_from_proxy = REG_PIPE_UNSET;
   sim_ptr->msg             = NULL;
 
+  /* Initialise the table for keeping track of msg uid's that we've
+     seen before */
+  for(i=0; i<REG_UID_HISTORY_BUFFER_SIZE; i++){
+    sim_ptr->Msg_uid_store.uidStore[i] = 2*REG_UID_HISTORY_BUFFER_SIZE;
+  }
+  sim_ptr->Msg_uid_store.uidStorePtr = sim_ptr->Msg_uid_store.uidStore;
+  sim_ptr->Msg_uid_store.maxPtr = 
+    &(sim_ptr->Msg_uid_store.uidStore[REG_UID_HISTORY_BUFFER_SIZE - 1]);
+
   /* ...registered parameters */
 
   sim_ptr->Params_table.param = 
@@ -497,8 +509,12 @@ int Sim_attach(char *SimID,
       fprintf(stderr, "Sim_attach: calling Sim_attach_soap, "
 	      "current_sim = %d\n", current_sim);
 #endif
-      return_status = Sim_attach_soap(&(Sim_table.sim[current_sim]), SimID);
 
+#if REG_OGSI
+      return_status = Sim_attach_soap(&(Sim_table.sim[current_sim]), SimID);
+#else
+      return_status = Sim_attach_wsrf(&(Sim_table.sim[current_sim]), SimID);
+#endif
       if(return_status == REG_SUCCESS){
 	Sim_table.sim[current_sim].SGS_info.active = REG_TRUE;
       }
@@ -609,8 +625,7 @@ int Get_next_message(int   *SimHandle,
   
       /* Just to make sure we don't leak - wipe any existing msg */
       if(Sim_table.sim[isim].msg){
-	Delete_msg_struct(Sim_table.sim[isim].msg);
-	Sim_table.sim[isim].msg = NULL;
+	Delete_msg_struct(&(Sim_table.sim[isim].msg));
       }
 
       if(Sim_table.sim[isim].pipe_to_proxy != REG_PIPE_UNSET){
@@ -622,7 +637,11 @@ int Get_next_message(int   *SimHandle,
 
         if(Sim_table.sim[isim].SGS_info.active){
 
+#if REG_OGSI
   	  Sim_table.sim[isim].msg = Get_status_msg_soap(&(Sim_table.sim[isim]));
+#else
+  	  Sim_table.sim[isim].msg = Get_status_msg_wsrf(&(Sim_table.sim[isim]));
+#endif
 	}
 	else{
 
@@ -648,8 +667,7 @@ int Get_next_message(int   *SimHandle,
 	break;
       }
       else{
-        Delete_msg_struct(Sim_table.sim[isim].msg);
-        Sim_table.sim[isim].msg = NULL;
+        Delete_msg_struct(&(Sim_table.sim[isim].msg));
       }
 
       /* Count no. of active sim.'s we've checked so that we can
@@ -688,10 +706,9 @@ struct msg_struct *Get_status_msg_proxy(Sim_entry_type *sim)
 
     msg = New_msg_struct();
 
-    if(Parse_xml_buf(buf, nbytes, msg) != REG_SUCCESS){
+    if(Parse_xml_buf(buf, nbytes, msg, sim) != REG_SUCCESS){
 
-      Delete_msg_struct(msg);
-      msg = NULL;
+      Delete_msg_struct(&msg);
     }
   }
 
@@ -717,12 +734,11 @@ struct msg_struct *Get_status_msg_file(Sim_entry_type *sim)
 
     msg = New_msg_struct();
 
-    return_status = Parse_xml_file(filename, msg);
+    return_status = Parse_xml_file(filename, msg, sim);
 
     if(return_status != REG_SUCCESS){
 
-      Delete_msg_struct(msg);
-      msg = NULL;
+      Delete_msg_struct(&msg);
     }
 
     /* Consume the file now that we've read it */
@@ -888,8 +904,7 @@ int Consume_param_defs(int SimHandle)
 
   /* Clean up */
 
-  Delete_msg_struct(Sim_table.sim[index].msg);
-  Sim_table.sim[index].msg = NULL;
+  Delete_msg_struct(&(Sim_table.sim[index].msg));
 
   return return_status;
 }
@@ -999,8 +1014,7 @@ int Consume_IOType_defs(int SimHandle)
 
   /* Clean up */
 
-  Delete_msg_struct(Sim_table.sim[index].msg);
-  Sim_table.sim[index].msg = NULL;
+  Delete_msg_struct(&(Sim_table.sim[index].msg));
 
   return return_status;
 }
@@ -1113,8 +1127,7 @@ int Consume_ChkType_defs(int SimHandle)
 
   /* Clean up */
 
-  Delete_msg_struct(Sim_table.sim[index].msg);
-  Sim_table.sim[index].msg = NULL;
+  Delete_msg_struct(&(Sim_table.sim[index].msg));
 
   return return_status;
 }
@@ -1170,8 +1183,7 @@ int Consume_log(int SimHandle)
 
   /* Clean up */
 
-  Delete_msg_struct(sim->msg);
-  sim->msg = NULL;
+  Delete_msg_struct(&(sim->msg));
 
   return return_status;
 }
@@ -1486,8 +1498,7 @@ int Consume_status(int   SimHandle,
 
   /* Clean up */
 
-  Delete_msg_struct(Sim_table.sim[index].msg);
-  Sim_table.sim[index].msg = NULL;
+  Delete_msg_struct(&(Sim_table.sim[index].msg));
 
   return return_status;
 }
@@ -1508,7 +1519,11 @@ int Emit_detach_cmd(int SimHandle)
   }
 
   if(Sim_table.sim[index].SGS_info.active){
+#if REG_OGSI
     return Send_detach_msg_soap(&(Sim_table.sim[index]));
+#else
+    return Send_detach_msg_wsrf(&(Sim_table.sim[index]));
+#endif
   }
   else{
     SysCommands[0] = REG_STR_DETACH;
@@ -1535,17 +1550,18 @@ int Emit_stop_cmd(int SimHandle)
     return REG_FAILURE;
   }
 
+#if REG_OGSI
   if(Sim_table.sim[index].SGS_info.active){
     return Send_stop_msg_soap(&(Sim_table.sim[index]));
   }
-  else{
-    SysCommands[0] = REG_STR_STOP;
+#endif
 
-    return Emit_control(SimHandle,
-			1,
-			SysCommands,
-			NULL);
-  }
+  SysCommands[0] = REG_STR_STOP;
+
+  return Emit_control(SimHandle,
+		      1,
+		      SysCommands,
+		      NULL);
 }
 
 /*----------------------------------------------------------*/
@@ -1563,17 +1579,16 @@ int Emit_pause_cmd(int SimHandle)
     return REG_FAILURE;
   }
 
+#if REG_OGSI
   if(Sim_table.sim[index].SGS_info.active){
     return Send_pause_msg_soap(&(Sim_table.sim[index]));
   }
-  else{
-    SysCommands[0] = REG_STR_PAUSE;
+#endif
 
-    return Emit_control(SimHandle,
-			1,
-			SysCommands,
-			NULL);
-  }
+  SysCommands[0] = REG_STR_PAUSE;
+
+  return Emit_control(SimHandle, 1,
+		      SysCommands, NULL);
 }
 
 /*----------------------------------------------------------*/
@@ -1591,17 +1606,16 @@ int Emit_resume_cmd(int SimHandle)
     return REG_FAILURE;
   }
 
+#if REG_OGSI
   if(Sim_table.sim[index].SGS_info.active){
     return Send_resume_msg_soap(&(Sim_table.sim[index]));
   }
-  else{
-    SysCommands[0] = REG_STR_RESUME;
+#endif
 
-    return Emit_control(SimHandle,
-			1,
-			SysCommands,
-			NULL);
-  }
+  SysCommands[0] = REG_STR_RESUME;
+
+  return Emit_control(SimHandle, 1,
+		      SysCommands, NULL);
 }
 
 /*----------------------------------------------------------*/
@@ -1622,8 +1636,12 @@ int Emit_retrieve_param_log_cmd(int SimHandle, int ParamHandle)
 
   if(Sim_table.sim[index].SGS_info.active){
 
+#if REG_OGSI
     /* Get all of the log entries cached on the SGS */
     return Get_param_log_soap(&(Sim_table.sim[index]), ParamHandle);
+#else
+    return Get_param_log_wsrf(&(Sim_table.sim[index]), ParamHandle);
+#endif
   }
   else{
     /* Alternatively, send command to app to emit all of them since
@@ -1656,7 +1674,11 @@ int Emit_restart_cmd(int SimHandle, char *chkGSH)
   }
 
   if(Sim_table.sim[index].SGS_info.active){
+#if REG_OGSI
     return Send_restart_msg_soap(&(Sim_table.sim[index]), chkGSH);
+#else
+    return Send_restart_msg_wsrf(&(Sim_table.sim[index]), chkGSH);
+#endif
   }
   else{
     return REG_FAILURE;
@@ -1802,7 +1824,11 @@ int Send_control_msg(int SimIndex, char* buf)
 
     if(sim->SGS_info.active){
 
+#if REG_OGSI
       return Send_control_msg_soap(sim, buf);
+#else
+      return Send_control_msg_wsrf(sim, buf);
+#endif
     }
     else{
 
@@ -3366,7 +3392,7 @@ int Sim_attach_proxy(Sim_entry_type *sim, char *SimID)
   }
 
   /* Parse the returned string */
-  if(Parse_xml_buf(buf, nbytes, msg) == REG_SUCCESS){
+  if(Parse_xml_buf(buf, nbytes, msg, sim) == REG_SUCCESS){
 
     cmd = msg->supp_cmd->first_cmd;
 
@@ -3396,7 +3422,7 @@ int Sim_attach_proxy(Sim_entry_type *sim, char *SimID)
 
   /* Clean up */
 
-  Delete_msg_struct(msg);
+  Delete_msg_struct(&msg);
   msg = NULL;
 
   return return_status;
@@ -3431,7 +3457,7 @@ int Consume_supp_cmds_local(Sim_entry_type *sim)
 
     msg = New_msg_struct();
 
-    return_status = Parse_xml_file(filename, msg);
+    return_status = Parse_xml_file(filename, msg, sim);
 
     if(return_status == REG_SUCCESS){
 
@@ -3455,8 +3481,7 @@ int Consume_supp_cmds_local(Sim_entry_type *sim)
 	      filename);
     }
 
-    Delete_msg_struct(msg);
-    msg = NULL;
+    Delete_msg_struct(&msg);
   }
   else{
 
@@ -3481,10 +3506,14 @@ int Finalize_connection(Sim_entry_type *sim)
 
     if(sim->SGS_info.active){
 
-      /* Detaching from the SGS and then clean up */
+#if REG_OGSI
+      /* Detach from the SGS and then clean up */
       Send_detach_msg_soap(sim);
-
       return Finalize_connection_soap(sim);
+#else
+      Send_detach_msg_wsrf(sim);
+      return Finalize_connection_wsrf(sim);
+#endif
     }
 
     return Finalize_connection_file(sim);
