@@ -69,8 +69,8 @@ extern char Global_scratch_buffer[];
 
 /* Soap-specific declarations */
 
-/** The gSoap environment structure */
-static struct soap soap;
+/** The gSoap environment structure
+    static struct soap soap;*/
 
 /** Names of the SGS' service data elements - MUST match those
     used in SGS.pm (as launched by container) */
@@ -100,6 +100,16 @@ int Initialize_steering_connection_soap(int  NumSupportedCmds,
   char                              *pchar;
   char                               query_buf[REG_MAX_MSG_SIZE];
 
+  /* malloc memory for soap struct for this connection and then
+     initialise it */
+  if(!(Steerer_connection.SGS_info.soap = 
+                (struct soap*)malloc(sizeof(struct soap)))){
+
+    fprintf(stderr, "Initialize_steering_connection_soap: failed to "
+	    "malloc memory for soap struct\n");
+    return REG_FAILURE;
+  }
+
   /* Set location of steering scratch directory */
   if(Set_steering_directory() != REG_SUCCESS){
 
@@ -114,11 +124,11 @@ int Initialize_steering_connection_soap(int  NumSupportedCmds,
 
   if(pchar){
 
-    snprintf(Steerer_connection.SGS_address, REG_MAX_STRING_LENGTH, 
+    snprintf(Steerer_connection.SGS_info.address, REG_MAX_STRING_LENGTH, 
 	     "%s", pchar);
 #if REG_DEBUG
     fprintf(stderr, "Initialize_steering_connection_soap: SGS address = %s\n",
-	    Steerer_connection.SGS_address);
+	    Steerer_connection.SGS_info.address);
 #endif
   }
   else{
@@ -132,33 +142,38 @@ int Initialize_steering_connection_soap(int  NumSupportedCmds,
   /* soap_init(&soap); */
   /* Use this form to turn-on keep-alive for both incoming and outgoing
      http connections */
-  soap_init2(&soap, SOAP_IO_KEEPALIVE, SOAP_IO_KEEPALIVE);
+  soap_init2(Steerer_connection.SGS_info.soap, SOAP_IO_KEEPALIVE, 
+	     SOAP_IO_KEEPALIVE);
 
   /* Since we are using KEEPALIVE, we can also ask gSOAP to bind the 
      socket to a specific port on the local machine - only do this if 
      GLOBUS_TCP_PORT_RANGE is set. */
   if( (pchar = getenv("GLOBUS_TCP_PORT_RANGE")) ){
 
-    if(sscanf(pchar, "%d,%d", &(soap.client_port_min), 
-	      &(soap.client_port_max)) != 2){
-      soap.client_port_min = 0;
-      soap.client_port_max = 0;
+    if(sscanf(pchar, "%d,%d", 
+	      &(Steerer_connection.SGS_info.soap->client_port_min), 
+	      &(Steerer_connection.SGS_info.soap->client_port_max)) != 2){
+      Steerer_connection.SGS_info.soap->client_port_min = 0;
+      Steerer_connection.SGS_info.soap->client_port_max = 0;
     }
   }
 
   appStart_response._AppStartReturn = NULL;
-  if (soap_call_sgs__AppStart(&soap, Steerer_connection.SGS_address, "", 
+  if (soap_call_sgs__AppStart(Steerer_connection.SGS_info.soap, 
+			      Steerer_connection.SGS_info.address, "", 
 			      &appStart_response)){
 
     fprintf(stderr, "Initialize_steering_connection_soap: failed to "
-	    "attach to SGS: %s\n", Steerer_connection.SGS_address);
-    soap_print_fault(&soap, stderr);
+	    "attach to SGS: %s\n", Steerer_connection.SGS_info.address);
+    soap_print_fault(Steerer_connection.SGS_info.soap, stderr);
     return REG_FAILURE;
   }
 
-  if(!appStart_response._AppStartReturn || strstr(appStart_response._AppStartReturn, REG_SGS_ERROR)){
+  if(!appStart_response._AppStartReturn || 
+           strstr(appStart_response._AppStartReturn, REG_SGS_ERROR)){
 
-    fprintf(stderr, "Initialize_steering_connection_soap: AppStart returned error\n");
+    fprintf(stderr, "Initialize_steering_connection_soap: AppStart "
+	    "returned error\n");
     return REG_FAILURE;
   }
   
@@ -175,13 +190,13 @@ int Initialize_steering_connection_soap(int  NumSupportedCmds,
 	   "<ogsi:setByServiceDataNames><%s>%s</%s></ogsi:setByServiceDataNames>", 
 	  SUPPORTED_CMDS_SDE, pchar, SUPPORTED_CMDS_SDE);
 
-  if (soap_call_sgs__setServiceData(&soap, 
-				    Steerer_connection.SGS_address, "", 
+  if (soap_call_sgs__setServiceData(Steerer_connection.SGS_info.soap, 
+				    Steerer_connection.SGS_info.address, "", 
 				    query_buf, 
 				    &setSDE_response)){
 
     fprintf(stderr, "Initialize_steering_connection_soap: failure\n");
-    soap_print_fault(&soap, stderr);
+    soap_print_fault(Steerer_connection.SGS_info.soap, stderr);
     return REG_FAILURE;
   }
 
@@ -205,13 +220,13 @@ int Initialize_steering_connection_soap(int  NumSupportedCmds,
 	   MACHINE_ADDRESS_SDE, ReG_Hostname, MACHINE_ADDRESS_SDE,
 	   APP_NAME_SDE, ReG_AppName, APP_NAME_SDE);
 
-  if (soap_call_sgs__setServiceData(&soap, 
-				    Steerer_connection.SGS_address, "", 
+  if (soap_call_sgs__setServiceData(Steerer_connection.SGS_info.soap, 
+				    Steerer_connection.SGS_info.address, "", 
 				    query_buf, 
 				    &setSDE_response)){
 
     fprintf(stderr, "Initialize_steering_connection_soap: failure\n");
-    soap_print_fault(&soap, stderr);
+    soap_print_fault(Steerer_connection.SGS_info.soap, stderr);
     return REG_FAILURE;
   }
 
@@ -236,11 +251,12 @@ int Detach_from_steerer_soap()
   struct sgs__AppDetachResponse appDetach_response;
 
   appDetach_response._AppDetachReturn = NULL;
-  if(soap_call_sgs__AppDetach(&soap, Steerer_connection.SGS_address, 
+  if(soap_call_sgs__AppDetach(Steerer_connection.SGS_info.soap, 
+			      Steerer_connection.SGS_info.address, 
 			      "", &appDetach_response )){
 
     fprintf(stderr, "Detach_from_steerer_soap: AppDetach failed:\n");
-    soap_print_fault(&soap, stderr);
+    soap_print_fault(Steerer_connection.SGS_info.soap, stderr);
 
     return REG_FAILURE;
   }
@@ -265,12 +281,13 @@ int Steerer_connected_soap()
   snprintf(query_buf, REG_MAX_STRING_LENGTH, 
 	   "<ogsi:queryByServiceDataNames names=\"%s\"/>", 
 	   STEER_STATUS_SDE );
-  if(soap_call_sgs__findServiceData(&soap, Steerer_connection.SGS_address, 
+  if(soap_call_sgs__findServiceData(Steerer_connection.SGS_info.soap, 
+				    Steerer_connection.SGS_info.address, 
 				    "", query_buf, 
 				    &findServiceData_response )){
 
     fprintf(stderr, "Steerer_connected_soap: findServiceData failed:\n");
-    soap_print_fault(&soap, stderr);
+    soap_print_fault(Steerer_connection.SGS_info.soap, stderr);
 
     return REG_FAILURE;
   }
@@ -321,9 +338,10 @@ int Send_status_msg_soap(char* msg)
        if we have a deadlock we fall back to here and try again */
     while(1){
       putStatus_response._PutStatusReturn = NULL;
-      if(soap_call_sgs__PutStatus(&soap, Steerer_connection.SGS_address, 
+      if(soap_call_sgs__PutStatus(Steerer_connection.SGS_info.soap, 
+				  Steerer_connection.SGS_info.address, 
 				  "", msg, &putStatus_response )){
-	soap_print_fault(&soap, stderr);
+	soap_print_fault(Steerer_connection.SGS_info.soap, stderr);
 	
 	return REG_FAILURE;
       }
@@ -399,23 +417,23 @@ int Send_status_msg_soap(char* msg)
 	fprintf(stderr, "Send_status_msg_soap: ERROR - msg truncated\n");
 	return REG_FAILURE;
       }
-      status = soap_call_sgs__setServiceData(&soap, 
-					     Steerer_connection.SGS_address, 
+      status = soap_call_sgs__setServiceData(Steerer_connection.SGS_info.soap, 
+					     Steerer_connection.SGS_info.address,
 					     "", pbuf,  
 					     &setSDE_response);
       free(pbuf);
       pbuf = NULL;
     }
     else {
-      status = soap_call_sgs__setServiceData(&soap, 
-					     Steerer_connection.SGS_address,
+      status = soap_call_sgs__setServiceData(Steerer_connection.SGS_info.soap, 
+					     Steerer_connection.SGS_info.address,
 					     "", query_buf,  
 					     &setSDE_response);
     }
 
     if(status){
       fprintf(stderr, "Send_status_msg_soap: setServiceData failed:\n");
-      soap_print_fault(&soap,stderr);
+      soap_print_fault(Steerer_connection.SGS_info.soap,stderr);
       return REG_FAILURE;
     }
 
@@ -437,12 +455,13 @@ struct msg_struct *Get_control_msg_soap()
 
 #if REG_DEBUG
     fprintf(stderr, "Get_control_msg_soap: address = %s\n", 
-	    Steerer_connection.SGS_address);
+	    Steerer_connection.SGS_info.address);
 #endif
     getControl_response._GetControlReturn = NULL;
-  if(soap_call_sgs__GetControl(&soap, Steerer_connection.SGS_address, 
+  if(soap_call_sgs__GetControl(Steerer_connection.SGS_info.soap, 
+			       Steerer_connection.SGS_info.address, 
 			       "",  &getControl_response)){
-    soap_print_fault(&soap, stderr);
+    soap_print_fault(Steerer_connection.SGS_info.soap, stderr);
     return NULL;
   }
 
@@ -460,11 +479,13 @@ struct msg_struct *Get_control_msg_soap()
      !strstr(getControl_response._GetControlReturn, REG_SGS_ERROR)){
     msg = New_msg_struct();
 
+    /* Parse NULL down here because this is app side so have no ptr
+       to a Sim_entry struct */
     if(Parse_xml_buf(getControl_response._GetControlReturn, 
-		     strlen(getControl_response._GetControlReturn), msg) != REG_SUCCESS){
+		     strlen(getControl_response._GetControlReturn), 
+		     msg, NULL) != REG_SUCCESS){
 
-      Delete_msg_struct(msg);
-      msg = NULL;
+      Delete_msg_struct(&msg);
     }
 #if REG_LOG_STEERING
     else{
@@ -481,26 +502,28 @@ struct msg_struct *Get_control_msg_soap()
 int Finalize_steering_connection_soap()
 {
   struct sgs__AppStopResponse appStop_response;
+  int    return_status = REG_SUCCESS;
 
   /* Tell the SGS to die - could use Destroy here but that doesn't 
      provide any opportunites for clean-up */
   appStop_response._AppStopReturn = NULL;
-  if(soap_call_sgs__AppStop(&soap, Steerer_connection.SGS_address, 
+  if(soap_call_sgs__AppStop(Steerer_connection.SGS_info.soap, 
+			    Steerer_connection.SGS_info.address, 
 			    "",  &appStop_response)){
-    soap_print_fault(&soap, stderr);
+    soap_print_fault(Steerer_connection.SGS_info.soap, stderr);
     return REG_FAILURE;
   }
 
-  if(appStop_response._AppStopReturn && 
-     !strstr(appStop_response._AppStopReturn, REG_SGS_ERROR)){
-
-    soap_end(&soap);
-    return REG_SUCCESS;
+  if(!(appStop_response._AppStopReturn && 
+     !strstr(appStop_response._AppStopReturn, REG_SGS_ERROR))){
+    return_status = REG_FAILURE;
   }
 
-  soap_end(&soap);
+  soap_end(Steerer_connection.SGS_info.soap);
+  free(Steerer_connection.SGS_info.soap);
+  Steerer_connection.SGS_info.soap = NULL;
 
-  return REG_FAILURE;
+  return return_status;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -516,11 +539,12 @@ int Get_data_source_address_soap(int   index,
   *port = 0;
 
   getNthDataSource_response._GetNthDataSourceReturn = NULL;
-  if(soap_call_sgs__GetNthDataSource(&soap, Steerer_connection.SGS_address, 
+  if(soap_call_sgs__GetNthDataSource(Steerer_connection.SGS_info.soap, 
+				     Steerer_connection.SGS_info.address, 
 				     "", (xsd__int)index,
 				     &getNthDataSource_response)){
     fprintf(stderr, "Get_data_source_address_soap: soap call failed:\n");
-    soap_print_fault(&soap, stderr);
+    soap_print_fault(Steerer_connection.SGS_info.soap, stderr);
     return REG_FAILURE;
   }
 
@@ -653,12 +677,12 @@ int Record_checkpoint_set_soap(char *chk_data,
   struct sgs__AppRecordChkpointResponse AppRecordChkpoint_response;
 
   AppRecordChkpoint_response._AppRecordChkpointReturn = NULL;
-  if(soap_call_sgs__AppRecordChkpoint(&soap, 
-					Steerer_connection.SGS_address, 
-					"", chk_data, node_data,  
-					&AppRecordChkpoint_response)){
+  if(soap_call_sgs__AppRecordChkpoint(Steerer_connection.SGS_info.soap, 
+				      Steerer_connection.SGS_info.address, 
+				      "", chk_data, node_data,  
+				      &AppRecordChkpoint_response)){
     fprintf(stderr, "Record_checkpoint_set_soap: soap call failed:\n");
-    soap_print_fault(&soap, stderr);
+    soap_print_fault(Steerer_connection.SGS_info.soap, stderr);
     return REG_FAILURE;
   }
 
@@ -709,12 +733,12 @@ int Save_log_soap(char *log_data)
   pmsg_buf += strlen(log_data);
   pmsg_buf += sprintf(pmsg_buf, "]]></Raw_param_log></Steer_log>");
 
-  if(soap_call_sgs__AppPutLog(&soap, 
-			      Steerer_connection.SGS_address, 
+  if(soap_call_sgs__AppPutLog(Steerer_connection.SGS_info.soap, 
+			      Steerer_connection.SGS_info.address, 
 			      "", Global_scratch_buffer,  
 			      &AppPutLog_response)){
     fprintf(stderr, "Save_log_soap: soap call failed:\n");
-    soap_print_fault(&soap, stderr);
+    soap_print_fault(Steerer_connection.SGS_info.soap, stderr);
     return REG_FAILURE;
   }
 
