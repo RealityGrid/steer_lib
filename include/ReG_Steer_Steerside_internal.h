@@ -41,68 +41,8 @@
 
 #include "ReG_Steer_Common.h"
 #include "ReG_Steer_XML.h"
-#include "soapH.h"
 
 /*---------------- Data structure definitions -----------------*/
-
-
-/** Definition of entry in main table holding data for connected simulations.  
-    Contains five sub-tables - the first holding the commands that the 
-    simulation supports, the second its registered parameters (both 
-    steerable and monitored), the third its registered IO types, the fourth
-    its registered Chk types and the fifth a log of checkpoints taken. */
-
-typedef struct {
-
-  int                  handle;
-
-  /** For connection to applications using local file system - contains
-      the location of the directory used to communicate with the sim. */
-  char                 file_root[REG_MAX_STRING_LENGTH];
-
-  /** File descriptors used to talk to (java) proxy for
-      this simulation */
-  int                  pipe_to_proxy;
-  int                  pipe_from_proxy;
-
-  /** For steering via SOAP */
-  struct {
-    /** whether we're steering via SOAP (1) or not (0) */
-    int  active;
-    char address[REG_MAX_STRING_LENGTH];
-    /** Holds list of names of service data elements on the SGS for which
-	notifications are pending */
-    char notifications[REG_MAX_NUM_SGS_SDE][REG_MAX_STRING_LENGTH];
-    /** Used to keep track of notifications that we've yet to process */
-    int  sde_count;
-    int  sde_index;
-    /** The stucture holding the gSOAP environment for this connection */
-    struct soap *soap;
-
-  } SGS_info;
-
-  /** Last status message received from this simulation - filled in
-      Get_next_message and used by whichever Consume_... routine
-      is called in response to the message type */
-  struct msg_struct   *msg;
-
-  /** Table of registered commands for this sim */
-  Supp_cmd_table_type  Cmds_table;
-
-  /** Table of registered params for this sim */
-  Param_table_type     Params_table;
-
-  /** Table of registered IOTypes for this sim */
-  IOdef_table_type     IOdef_table;
-
-  /** Table of registered ChkTypes for this sim */
-  IOdef_table_type     Chkdef_table;
-
-  /** Table for logging checkpoint activity */
-  Chk_log_type         Chk_log;
-
-} Sim_entry_type;
-
 
 /** Type of main table used to record all simulations currently
     being steered */
