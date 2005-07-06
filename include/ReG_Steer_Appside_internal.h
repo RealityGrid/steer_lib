@@ -37,6 +37,7 @@
 
 #include "ReG_Steer_Common.h"
 #include "ReG_Steer_XML.h"
+#include "soapH.h"
 
 /** @file ReG_Steer_Appside_internal.h
     @brief Source file for steering-client routines
@@ -70,8 +71,9 @@ typedef struct {
   /** Where to write files for file-based steering */
   char			file_root[REG_MAX_STRING_LENGTH];
 
-  /** Address of the Steering Grid Service (for SOAP-based steering) */
-  char                  SGS_address[REG_MAX_STRING_LENGTH];
+  /** Address of the Steering Grid Service (for SOAP-based steering)
+  char                  SGS_address[REG_MAX_STRING_LENGTH];*/
+  SGS_info_type SGS_info;
 
   /** String to hold 'supported commands' message 'cos we can't 
       actually send it until a steerer has connected in the case
@@ -270,7 +272,7 @@ int Toggle_param_logging(char *ParamLabel,
 			 int   toggle);
 
 /** Create a new msg_store struct and pass back a pointer to it */
-struct ReG_ctrl_msg_store *New_msg_store_struct();
+struct ReG_ctrl_msg_store *New_ctrl_msg_store_struct();
 
 /** Free up all msg_store structs in the linked list storing
     not-yet actioned control messages */
