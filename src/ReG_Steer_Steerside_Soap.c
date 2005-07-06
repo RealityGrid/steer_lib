@@ -120,7 +120,7 @@ int Sim_attach_soap(Sim_entry_type *sim, char *SimID)
     }
 
     /* strlen("</ReG_steer_message>") == 20 */
-    return_status = Parse_xml_buf(pchar, 20 + (int)(pchar1 - pchar), msg);
+    return_status = Parse_xml_buf(pchar, 20 + (int)(pchar1 - pchar), msg, sim);
 
     if(return_status == REG_SUCCESS && msg->supp_cmd){
 
@@ -143,7 +143,7 @@ int Sim_attach_soap(Sim_entry_type *sim, char *SimID)
       fprintf(stderr, "Sim_attach_soap: error parsing supported cmds\n");
     }
 
-    Delete_msg_struct(msg);
+    Delete_msg_struct(&msg);
 
     return return_status;
   }
@@ -281,10 +281,10 @@ struct msg_struct *Get_status_msg_soap(Sim_entry_type *sim)
     msg = New_msg_struct();
 
     if(Parse_xml_buf(getStatus_response._GetStatusReturn, 
-		     strlen(getStatus_response._GetStatusReturn), msg) != REG_SUCCESS){
+		     strlen(getStatus_response._GetStatusReturn), 
+		     msg, sim) != REG_SUCCESS){
 
-      Delete_msg_struct(msg);
-      msg = NULL;
+      Delete_msg_struct(&msg);
     }
   }
   return msg;
@@ -373,10 +373,10 @@ struct msg_struct *Get_service_data(Sim_entry_type *sim, char *sde_name)
       msg = New_msg_struct();
 
       /* strlen("</ReG_steer_message>") == 20 */
-      if(Parse_xml_buf(pchar,20+(int)(pchar1 - pchar), msg) != REG_SUCCESS){
+      if(Parse_xml_buf(pchar,20+(int)(pchar1 - pchar), msg, sim) 
+	 != REG_SUCCESS){
 
-	Delete_msg_struct(msg);
-	msg = NULL;
+	Delete_msg_struct(&msg);
       }
     }
   }
@@ -516,7 +516,7 @@ int Send_restart_msg_soap(Sim_entry_type *sim, char *chkGSH)
 }
 
 /*-------------------------------------------------------------------------*/
-
+/** Clean up a SOAP-based steering connection */
 int Finalize_connection_soap(Sim_entry_type *sim)
 {
   /* Release memory */
