@@ -223,7 +223,6 @@ int Save_log(Chk_log_type *log)
 
   if(log->num_entries > 0){
     if(log->log_type == PARAM){
-      /*   if( strstr(log->entry[0].chk_tag, "REG_PARAM_LOG") ){*/
 
       status = Log_to_columns(log, &buf, &len, REG_FALSE);
     }
@@ -239,7 +238,11 @@ int Save_log(Chk_log_type *log)
       fprintf(log->file_ptr, "%s", buf);
     }
 #if REG_SOAP_STEERING
+#if REG_OGSI
     Save_log_soap(buf);
+#else
+    Save_log_wsrf(buf);
+#endif
 #endif
   }
 
