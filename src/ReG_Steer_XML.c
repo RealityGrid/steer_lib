@@ -34,8 +34,9 @@
 
 #include "ReG_Steer_types.h"
 #include "ReG_Steer_Common.h"
-#include "ReG_Steer_Browser.h"
 #include "ReG_Steer_XML.h"
+#include "ReG_Steer_Browser.h"
+#include "ReG_Steer_Steerside.h"
 
 #include <string.h>
 
@@ -47,9 +48,16 @@
  *  @author Andrew Porter
  *  @brief Code for parsing xml documents */
 
+/** Declared in ReG_Steer_Appside.c */
+extern struct msg_store_struct Msg_store;
+
+/** Declared in ReG_Steer_Appside.c */
+extern struct msg_uid_history_struct Msg_uid_store;
+
 /*-----------------------------------------------------------------*/
 
-int Parse_xml_file(char* filename, struct msg_struct *msg)
+int Parse_xml_file(char* filename, struct msg_struct *msg,
+		   Sim_entry_type *sim)
 { 
   xmlDocPtr doc;
 
@@ -60,12 +68,13 @@ int Parse_xml_file(char* filename, struct msg_struct *msg)
     return REG_FAILURE;
   }
 
-  return Parse_xml(doc, msg);
+  return Parse_xml(doc, msg, sim);
 }
 
 /*-----------------------------------------------------------------*/
 
-int Parse_xml_buf(char* buf, int size, struct msg_struct *msg)
+int Parse_xml_buf(char* buf, int size, struct msg_struct *msg,
+		  Sim_entry_type *sim)
 { 
   xmlDocPtr doc;
 
@@ -82,15 +91,17 @@ int Parse_xml_buf(char* buf, int size, struct msg_struct *msg)
     return REG_FAILURE;
   }
 
-  return Parse_xml(doc, msg);
+  return Parse_xml(doc, msg, sim);
 }
 
 /*-----------------------------------------------------------------*/
 
-int Parse_xml(xmlDocPtr doc, struct msg_struct *msg)
+int Parse_xml(xmlDocPtr doc, struct msg_struct *msg,  
+	      Sim_entry_type *sim)
 {
   xmlNsPtr   ns;
   xmlNodePtr cur;
+  struct msg_store_struct *cur_msg;
 
   cur = xmlDocGetRootElement(doc);
   if (cur == NULL) {
@@ -98,129 +109,240 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg)
       xmlFreeDoc(doc);
       return REG_FAILURE;
   }
-  
+
   ns = xmlSearchNsByHref(doc, cur,
             (const xmlChar *) "http://www.realitygrid.org/xml/steering");
+  /* Relax our conditions to generalize this parser------------
   if (ns == NULL) {
       fprintf(stderr,
               "Parse_xml: document of the wrong type, ReG namespace not found\n");
       xmlFreeDoc(doc);
       return REG_FAILURE;
   }
+  -----------------------*/
 
-  if (xmlStrcmp(cur->name, (const xmlChar *) "ReG_steer_message")) {
-      fprintf(stderr,"Parse_xml: document of the wrong type, root node != "
-	      "ReG_steer_message");
-      xmlFreeDoc(doc);
-      return REG_FAILURE;
+  if (!xmlStrcmp(cur->name, (const xmlChar *) "ReG_steer_message")) {
+    fprintf(stderr,"Parse_xml: Have ReG_steer_message doc\n");
+    parseSteerMessage(doc, ns, cur, msg, sim);
+
+    /* Print out what we've got */
+
+#if REG_DEBUG_FULL
+    fprintf(stderr, "Parse_xml: Calling Print_msg...\n");
+    Print_msg(msg);
+#endif
+  }
+  else if (!xmlStrcmp(cur->name, (const xmlChar *) "ResourceProperties")) {
+    fprintf(stderr,"Parse_xml: Have ResourceProperties doc\n");
+    parseResourceProperties(doc, ns, cur, sim);
+
+    /* Print out what we've got */
+
+#if REG_DEBUG_FULL
+    if(sim){
+      cur_msg = &(sim->Msg_store);
+      while(cur_msg->msg){
+	fprintf(stderr, "Parse_xml: Calling Print_msg...\n");
+	Print_msg(cur_msg->msg);
+	cur_msg = cur_msg->next;
+      }
+    }
+#endif
+  }
+  else{
+    fprintf(stderr,"Parse_xml: document of the wrong type, root node != "
+	    "ReG_steer_message");
+    xmlFreeDoc(doc);
+    return REG_FAILURE;
   }
 
+  /* Clean up everything else before quitting. */
+  xmlFreeDoc(doc);
+  xmlCleanupParser();
 
-  /* Now, walk the tree */
+  return REG_SUCCESS;
+}
+
+/*-----------------------------------------------------------------*/
+
+int parseResourceProperties(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
+			    Sim_entry_type *sim)
+{
+  xmlNodePtr child;
+  xmlChar   *uidChar;
+  struct msg_store_struct *curMsg;
+  struct msg_uid_history_struct *uidStorePtr;
+
+  /* If we've been called by a steering client then must store
+     any messages in a structure associated with the simulation being
+     steered as may be one of many */
+  if(sim){
+    curMsg = &(sim->Msg_store);
+    uidStorePtr = &(sim->Msg_uid_store);
+  }
+  else{
+    curMsg = &Msg_store;
+    uidStorePtr = &Msg_uid_store;
+  }
+
+  /* Walk the tree - search for first non-blank node */
+  cur = cur->xmlChildrenNode;
+  while ( cur ){
+    if(xmlIsBlankNode ( cur ) ){
+      cur = cur -> next;
+      continue;
+    }
+
+    if( !xmlStrcmp(cur->name, (const xmlChar *) "supportedCommands") ||
+	!xmlStrcmp(cur->name, (const xmlChar *) "paramDefinitions") ||
+	!xmlStrcmp(cur->name, (const xmlChar *) "ioTypeDefinitions") ||
+	!xmlStrcmp(cur->name, (const xmlChar *) "chkTypeDefinitions") ||
+	!xmlStrcmp(cur->name, (const xmlChar *) "controlMsg") ||
+	!xmlStrcmp(cur->name, (const xmlChar *) "statusMsg") ){
+      child = cur->xmlChildrenNode;
+      while ( child && xmlIsBlankNode ( child ) ){ child = child -> next; }
+
+      if (child && !xmlStrcmp(child->name, 
+			      (const xmlChar *) "ReG_steer_message")) {
+#if REG_DEBUG_FULL
+	fprintf(stderr, "parseResourceProperties: Calling parseSteerMessage...\n");
+#endif
+	/* Get the msg UID if present */
+	if(uidChar = xmlGetProp(child, "Msg_UID")){
+#if REG_DEBUG_FULL
+	  if(uidChar)fprintf(stderr, "parseSteerMessage: msg UID = %s\n",
+			     (char*)(uidChar));
+#endif
+	  /* Check that we haven't already seen this message 
+	     before we bother to store it */
+	  if( Msg_already_received((char*)(uidChar), uidStorePtr) ){
+#if REG_DEBUG_FULL
+	    fprintf(stderr, "STEER: INFO: parseResourceProperties: msg"
+		    " with UID %s has been seen before\n", 
+		    uidChar);
+#endif
+	    /* We have - skip this one */
+	    cur = cur->next;
+	    continue;
+	  }
+	}
+
+	curMsg->msg = New_msg_struct();
+	parseSteerMessage(doc, ns, child, curMsg->msg, sim);
+	curMsg->next = New_msg_store_struct();
+	curMsg = curMsg->next;
+      }
+      else{
+	return REG_FAILURE;
+      }
+    }
+    else{
+      fprintf(stderr, "parseResourceProperties: ignoring node: %s\n", 
+	      (char *)(cur->name));
+    }
+
+    cur = cur -> next;
+  }
+
+  return REG_SUCCESS;
+}
+
+/*-----------------------------------------------------------------*/
+
+int parseSteerMessage(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
+		      struct msg_struct *msg, Sim_entry_type *sim)
+{
+  struct msg_uid_history_struct *uidStorePtr = &Msg_uid_store;
+
+  /* If we've been called by a steering client then must store
+     any messages in a structure associated with the simulation being
+     steered as may be one of many */
+  if(sim){
+    uidStorePtr = &(sim->Msg_uid_store);
+  }
+
+  /* Get the msg UID if present */
+  msg->msg_uid = xmlGetProp(cur, "Msg_UID");
+#if REG_DEBUG_FULL
+  if(msg->msg_uid)fprintf(stderr, "parseSteerMessage: msg UID = %s\n",
+			  (char*)(msg->msg_uid));
+#endif
+  if( Msg_already_received((char *)(msg->msg_uid), 
+		 	   uidStorePtr) )return REG_SUCCESS;
+
+ /* Walk the tree */
   cur = cur->xmlChildrenNode;
   while ( cur && xmlIsBlankNode ( cur ) ){
 
         cur = cur -> next;
   }
-
   if ( cur == 0 ){
     xmlFreeDoc(doc);
+    xmlCleanupParser();
     return REG_FAILURE;
   }
 
-  /* ARPDBG - Why don't I just call Get_message_type and use the
-     result to decide which parsing routine to call?? */
+  /* Get the type of the message and record it */
+  msg->msg_type = Get_message_type((const char *)(cur->name));
 
-  if( !xmlStrcmp(cur->name, (const xmlChar *) "App_status") ){
+  switch(msg->msg_type){
 
-    /* Record the message type */
-    msg->msg_type = Get_message_type((const char *)(cur->name));
-
+  case STATUS:
 #if REG_DEBUG_FULL
-    fprintf(stderr, "Parse_xml: Calling parseStatus...\n");
+    fprintf(stderr, "parseSteerMessage: Calling parseStatus...\n");
 #endif
     msg->status = New_status_struct();
     parseStatus(doc, ns, cur, msg->status);
-  }
-  else if( !xmlStrcmp(cur->name, (const xmlChar *) "Steer_control") ){
+    break;
 
-    /* Record the message type */
-    msg->msg_type = Get_message_type((const char *)(cur->name));
-
+  case CONTROL:
 #if REG_DEBUG_FULL
-    fprintf(stderr, "Parse_xml: Calling parseControl...\n");
+    fprintf(stderr, "parseSteerMessage: Calling parseControl...\n");
 #endif
     msg->control = New_control_struct();
     parseControl(doc, ns, cur, msg->control);
-  }
-  else if( !xmlStrcmp(cur->name, (const xmlChar *) "Supported_commands") ){
+    break;
 
-    /* Record the message type */
-    msg->msg_type = Get_message_type((const char *)(cur->name));
-
+  case SUPP_CMDS:
 #if REG_DEBUG_FULL
-    fprintf(stderr, "Parse_xml: Calling parseSuppCmd...\n");
+    fprintf(stderr, "parseSteerMessage: Calling parseSuppCmd...\n");
 #endif
     msg->supp_cmd = New_supp_cmd_struct();
     parseSuppCmd(doc, ns, cur, msg->supp_cmd);
-  }
-  else if( !xmlStrcmp(cur->name, (const xmlChar *) "Param_defs") ){
+    break;
 
-    /* Record the message type */
-    msg->msg_type = Get_message_type((const char *)(cur->name));
-
+  case PARAM_DEFS:
 #if REG_DEBUG_FULL
-    fprintf(stderr, "Parse_xml: Calling parseStatus...\n");
+    fprintf(stderr, "parseSteerMessage: Calling parseStatus...\n");
 #endif
     /* Use code for 'status' messages because one 
        encapsulates the other */
     msg->status = New_status_struct();
     parseStatus(doc, ns, cur, msg->status);
-  }
-  else if( !xmlStrcmp(cur->name, (const xmlChar *) "IOType_defs") ){
+    break;
 
-    /* Record the message type */
-    msg->msg_type = Get_message_type((const char *)(cur->name));
-
+  case IO_DEFS:
 #if REG_DEBUG_FULL
-    fprintf(stderr, "Parse_xml: Calling parseIOTypeDef...\n");
+    fprintf(stderr, "parseSteerMessage: Calling parseIOTypeDef...\n");
 #endif
     msg->io_def = New_io_def_struct();
     parseIOTypeDef(doc, ns, cur, msg->io_def);
-  }
-  else if( !xmlStrcmp(cur->name, (const xmlChar *) "ChkType_defs") ){
 
-    /* Record the message type */
-    msg->msg_type = Get_message_type((const char *)(cur->name));
-
+  case CHK_DEFS:
 #if REG_DEBUG_FULL
     fprintf(stderr, "Parse_xml: Calling parseChkTypeDef...\n");
 #endif
     msg->chk_def = New_io_def_struct();
     parseChkTypeDef(doc, ns, cur, msg->chk_def);
-  }
-  else if( !xmlStrcmp(cur->name, (const xmlChar *) "Steer_log") ){
 
-    /* Record the message type */
-    msg->msg_type = Get_message_type((const char *)(cur->name));
-
+  case STEER_LOG:
 #if REG_DEBUG_FULL
     fprintf(stderr, "Parse_xml: Calling parseLog...\n");
 #endif
     msg->log = New_log_struct();
     parseLog(doc, ns, cur, msg->log);
+    break;
   }
-
-  /* Print out what we've got */
-
-#if REG_DEBUG_FULL
-  fprintf(stderr, "Parse_xml: Calling Print_msg...\n");
-  Print_msg(msg);
-#endif
-
-  /* Clean up everything else before quitting. */
-  xmlFreeDoc(doc);
-  xmlCleanupParser();
 
   return REG_SUCCESS;
 }
@@ -457,14 +579,14 @@ int parseSuppCmd(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 		 struct supp_cmd_struct *supp_cmd)
 {
   if(supp_cmd == NULL){
-
     return REG_FAILURE;
   }
 
   cur = cur->xmlChildrenNode;
   while(cur != NULL){
 
-    if( !xmlStrcmp(cur->name, (const xmlChar *) "Command") && (cur->ns == ns)) {
+    if( !xmlStrcmp(cur->name, (const xmlChar *) "Command") ){
+      /*&& (cur->ns == ns)) {*/
 
       if( !supp_cmd->first_cmd ){
 
@@ -476,8 +598,16 @@ int parseSuppCmd(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 	supp_cmd->cmd = supp_cmd->cmd->next;
       }
 
+#if REG_DEBUG_FULL
+      fprintf(stderr, "parseSuppCmd: Calling parseCmd...\n");
+#endif
       parseCmd(doc, ns, cur, supp_cmd->cmd);
     }
+#if REG_DEBUG
+    else{
+      fprintf(stderr, "parseSuppCmd: name = %s <> Command\n", cur->name);
+    }
+#endif
 
     cur = cur->next;
   }
@@ -495,7 +625,8 @@ int parseLog(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
   cur = cur->xmlChildrenNode;
   while (cur != NULL) {
 
-    if( !xmlStrcmp(cur->name, (const xmlChar *)"Log_entry") && (cur->ns==ns)){
+    if( !xmlStrcmp(cur->name, (const xmlChar *)"Log_entry") ){
+      /*&& (cur->ns==ns)){*/
 
       if(!log->first_entry){
 
@@ -531,13 +662,14 @@ int parseLogEntry(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
   cur = cur->xmlChildrenNode;
   while (cur != NULL) {
   
-    if( !xmlStrcmp(cur->name, (const xmlChar *)"Key") && (cur->ns==ns)){
+    if( !xmlStrcmp(cur->name, (const xmlChar *)"Key") ){
+      /*&& (cur->ns==ns)){*/
 
       log->key = xmlNodeListGetString(doc, 
 				      cur->xmlChildrenNode, 1);
     }
-    else if( !xmlStrcmp(cur->name, (const xmlChar *)"Chk_log_entry") 
-	     && (cur->ns==ns)){
+    else if( !xmlStrcmp(cur->name, (const xmlChar *)"Chk_log_entry") ){
+      /*	     && (cur->ns==ns)){*/
       if(!log->first_chk_log){
 	
 	log->first_chk_log = New_chk_log_entry_struct();
@@ -552,8 +684,8 @@ int parseLogEntry(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 #endif
       return_status = parseChkLogEntry(doc, ns, cur, log->chk_log);
     }
-    else if( !xmlStrcmp(cur->name, (const xmlChar *)"Param") 
-	     && (cur->ns==ns)){
+    else if( !xmlStrcmp(cur->name, (const xmlChar *)"Param") ){
+      /*	     && (cur->ns==ns)){*/
       if(!log->first_param_log){
 
 	log->first_param_log = New_param_struct();
@@ -587,7 +719,8 @@ int parseChkLogEntry(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
   cur = cur->xmlChildrenNode;
   while (cur != NULL) {
 
-    if(!xmlStrcmp(cur->name, (const xmlChar *)"Chk_handle") && (cur->ns==ns)){
+    if(!xmlStrcmp(cur->name, (const xmlChar *)"Chk_handle") ){
+      /*&& (cur->ns==ns)){*/
 
       log_entry->chk_handle = xmlNodeListGetString(doc, 
 					    cur->xmlChildrenNode, 1);
@@ -631,7 +764,8 @@ int parseParam(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
   cur = cur->xmlChildrenNode;
   while (cur != NULL) {
 
-    if( !xmlStrcmp(cur->name, (const xmlChar *)"Handle") && (cur->ns==ns)) {
+    if( !xmlStrcmp(cur->name, (const xmlChar *)"Handle") ){
+      /*&& (cur->ns==ns)) {*/
 
       param->handle = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
     }
@@ -711,6 +845,22 @@ int parseCmd(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 
   return REG_SUCCESS;
  
+}
+
+/*-----------------------------------------------------------------*/
+
+struct msg_store_struct *New_msg_store_struct()
+{
+  struct msg_store_struct *store;
+
+  store = (struct msg_store_struct *)malloc(sizeof(struct msg_store_struct));
+
+  if(store){
+    store->msg = NULL;
+    store->next = NULL;
+  }
+
+  return store;
 }
 
 /*-----------------------------------------------------------------*/
@@ -935,9 +1085,9 @@ struct chk_log_entry_struct *New_chk_log_entry_struct()
 
 /*-----------------------------------------------------------------*/
 
-void Delete_msg_struct(struct msg_struct *msg)
+void Delete_msg_struct(struct msg_struct **msgIn)
 {
-
+  struct msg_struct *msg = *msgIn;
   if (!msg) return;
 
   if(msg->status){
@@ -976,7 +1126,8 @@ void Delete_msg_struct(struct msg_struct *msg)
     msg->log = NULL;
   }
 
-  free(msg);
+  free(*msgIn);
+  *msgIn = NULL;
 }
 
 /*-----------------------------------------------------------------*/
@@ -1669,4 +1820,80 @@ void Characters_handler(void          *user_data,
     strncpy(state->entries[state->num_entries].job_description, (char *)ch, len);
     state->entries[state->num_entries].job_description[len] = '\0';
   }
+}
+
+/*------------------------------------------------------------------*/
+/** Check to see whether or not this message has been seen within the 
+    last storeSize messages received 
+    @internal */
+int Msg_already_received(char *msg_uid, 
+			 struct msg_uid_history_struct *hist)
+{
+  int                  i;
+  unsigned int         uid;
+
+  if(msg_uid){
+ 
+    if(!(hist->uidStorePtr)){
+      for(i=0; i<REG_UID_HISTORY_BUFFER_SIZE; i++){
+	/* Initialize array with a value greater than any that will 
+	   be used as a msg UID until all the elements of the array
+	   have been used at least once */
+	hist->uidStore[i] = 2*REG_UID_HISTORY_BUFFER_SIZE;
+      }
+      hist->uidStorePtr = hist->uidStore;
+      hist->maxPtr = &(hist->uidStore[REG_UID_HISTORY_BUFFER_SIZE-1]);
+    }
+    
+    if(sscanf(msg_uid, "%u", &uid) != 1){
+      fprintf(stderr, "STEER ERROR: Msg_already_received: failed to "
+	      "read msg UID\n");
+      return REG_FALSE;
+    }
+
+    for(i=0; i<REG_UID_HISTORY_BUFFER_SIZE; i++){
+      if(hist->uidStore[i] == uid)return REG_TRUE;
+    }
+    *(hist->uidStorePtr) = uid;
+    if(hist->uidStorePtr == hist->maxPtr){
+      /* Wrap ptr back to beginning of array */
+      hist->uidStorePtr = hist->uidStore;
+    }
+    else{
+      hist->uidStorePtr++;
+    }
+
+  }
+  return REG_FALSE;
+}
+
+/*------------------------------------------------------------------*/
+
+int Delete_msg_store(struct msg_store_struct *msgStore)
+{
+  struct msg_store_struct *curEntry;
+  struct msg_store_struct *tmp;
+
+  if(!msgStore)return REG_FAILURE;
+
+  Delete_msg_struct(&(msgStore->msg));
+  tmp = msgStore->next;
+  while(curEntry = tmp){
+    Delete_msg_struct(&(curEntry->msg));
+    tmp = curEntry->next;
+    free(curEntry);
+  }
+  return REG_SUCCESS;
+}
+
+/*------------------------------------------------------------------*/
+
+int Delete_msg_uid_store(struct msg_uid_history_struct *uidHist)
+{
+  if(!uidHist)return REG_FAILURE;
+
+  /* No actual free'ing to do - just reset pointers */
+  uidHist->uidStorePtr = NULL;
+  uidHist->maxPtr = NULL;
+  return REG_SUCCESS;
 }
