@@ -298,30 +298,51 @@ int Get_message_type(const char *name)
 
   if(strcmp(name, "Param_defs") == 0){
   
+#if REG_DEBUG_FULL
+    fprintf(stderr, "Setting msg type to PARAM_DEFS\n");
+#endif
     return PARAM_DEFS;
   }
   else if(strcmp(name, "IOType_defs") == 0){
   
+#if REG_DEBUG_FULL
+    fprintf(stderr, "Setting msg type to IO_DEFS\n");
+#endif
     return IO_DEFS;
   }
   else if(strcmp(name, "ChkType_defs") == 0){
   
+#if REG_DEBUG_FULL
+    fprintf(stderr, "Setting msg type to CHK_DEFS\n");
+#endif
     return CHK_DEFS;
   }
   else if(strcmp(name, "Supported_commands") == 0){
     
+#if REG_DEBUG_FULL
+    fprintf(stderr, "Setting msg type to SUPP_CMDS\n");
+#endif
     return SUPP_CMDS;
   }
   else if(strcmp(name, "Steer_control") == 0){
   
+#if REG_DEBUG_FULL
+    fprintf(stderr, "Setting msg type to CONTROL\n");
+#endif
     return CONTROL;
   }
   else if(strcmp(name, "App_status") == 0){
   
+#if REG_DEBUG_FULL
+    fprintf(stderr, "Setting msg type to STATUS\n");
+#endif
     return STATUS;
   }
   else if(strcmp(name, "Steer_log") == 0){
 
+#if REG_DEBUG_FULL
+    fprintf(stderr, "Setting msg type to STEER_LOG\n");
+#endif
     return STEER_LOG;
   }
   else{
@@ -572,7 +593,7 @@ int Increment_log_entry(Chk_log_type *log)
   return return_status;
 }
 
-/*----------------------------------------------------------*/
+/*------------------------------------------------------------------*/
 
 int IOdef_index_from_handle(IOdef_table_type *table, int IOdefHandle)
 {
@@ -594,24 +615,26 @@ int IOdef_index_from_handle(IOdef_table_type *table, int IOdefHandle)
   return index;
 }
 
-
 /*--------------------------------------------------------------------*/
-
+/** Write the header of a new steering message into the supplied buffer 
+    @param buf Pointer to array of char to write into
+    @internal */
 int Write_xml_header(char **buf)
 {
   int  return_status = REG_SUCCESS;
+  /** Count of messages created - used to provide a UID for each msg */
+  static unsigned int ReG_Msg_Count = 0;
 
   /* Write header for a ReG steering message */
 
   if(buf){
     *buf += sprintf(*buf, "<ReG_steer_message xmlns:xsi=\""
-	        "http://www.w3.org/2001/XMLSchema-instance\"\n");
-
-    *buf += sprintf(*buf, "xmlns=\"%s\"\n", REG_STEER_NAMESPACE);
-
-    *buf += sprintf(*buf, "       xsi:SchemaLocation=\"%s %s\">\n", 
-	    REG_STEER_NAMESPACE,
-	    ReG_Steer_Schema_Locn);
+		    "http://www.w3.org/2001/XMLSchema-instance\"\n"
+		    "xmlns=\"%s\"\n       xsi:SchemaLocation=\"%s %s\"\n"
+		    "Msg_UID=\"%u\">\n", 
+		    REG_STEER_NAMESPACE,
+		    REG_STEER_NAMESPACE,
+		    ReG_Steer_Schema_Locn, ReG_Msg_Count++);
   }
   else{
     return_status = REG_FAILURE;
