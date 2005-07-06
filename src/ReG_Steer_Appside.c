@@ -35,11 +35,11 @@
 /** @file ReG_Steer_Appside.c 
     @brief File containing main application-side routines
   */
-
 #include "ReG_Steer_Appside.h"
 #include "ReG_Steer_Appside_internal.h"
 #include "ReG_Steer_Appside_Sockets.h"
 #include "ReG_Steer_Appside_Soap.h"
+#include "ReG_Steer_Appside_WSRF.h"
 #include "ReG_Steer_Appside_File.h"
 #include "ReG_Steer_Logging.h"
 #include "Base64.h"
@@ -132,29 +132,51 @@ char ReG_CurrentDir[REG_MAX_STRING_LENGTH];
 char ReG_Hostname[REG_MAX_STRING_LENGTH];
 /** Name (and version) of the application that has called us */
 char ReG_AppName[REG_MAX_STRING_LENGTH];
+#ifdef USE_REG_TIMING
+/** For monitoring wall-clock time per step */
+static float ReG_WallClockPerStep = 0.0;
+#endif
 
 /** Global variable used to store next valid handle value for both
    IOTypes and ChkTypes - these MUST have unique handles because
    they are used as command IDs */
 static int Next_IO_Chk_handle = REG_MIN_IOTYPE_HANDLE;
 
-/** Linked list of arrays we've alloc'ed for the user */
+/** Linked list of arrays we've alloc'ed for the user when
+    Alloc_string_array was called */
 struct ReG_array_list {
 
   char **array;
   struct ReG_array_list* next;
 };
 
+/** Head of linked list of arrays we've alloc'ed for the user when
+    Alloc_string_array was called */
 static struct ReG_array_list* ReG_list_head = NULL;
 
+/** Struct for storing control messages that are not yet valid
+    (i.e. valid_time < current simulated time) */
 struct ReG_ctrl_msg_store{
 
     struct control_struct     *control;
     struct ReG_ctrl_msg_store *next;
 };
 
+/** Head of linked list holding control messages that are not
+    yet valid */
 static struct ReG_ctrl_msg_store *ReG_ctrl_msg_first = NULL;
+/** Ptr to tail of linked list for appending new control messages
+    that are not yet valid */
 static struct ReG_ctrl_msg_store *ReG_ctrl_msg_current = NULL;
+
+/** Structure for holding multiple messages obtained by parsing
+    SWS' ResourceProperties document - used by application-side
+    of library */
+struct msg_store_struct Msg_store;
+
+/** Structure for storing the UIDs of messages we have previously
+    handled -  used by application-side of library */
+struct msg_uid_history_struct Msg_uid_store;
 
 /*----------------------------------------------------------------*/
 
@@ -278,6 +300,12 @@ int Steering_initialize(char *AppName,
   fprintf(stderr, "Steering_initialize: machine name = %s\n", 
 	  ReG_Hostname);
 #endif
+
+  /* Initialize storage for messages received */
+  Msg_store.msg = NULL;
+  Msg_store.next = NULL;
+  Msg_uid_store.uidStorePtr = NULL;
+  Msg_uid_store.maxPtr = NULL;
 
   /* Allocate memory and initialise tables of IO types and 
      parameters */
@@ -527,8 +555,17 @@ int Steering_initialize(char *AppName,
 #endif
 #endif
 
-  /* Flag that library has been successfully initialised */
+  /* Flag that library has been successfully initialized */
   ReG_SteeringInit = REG_TRUE;
+
+  /* Only once lib is flagged as initialized can we call this
+     routine...*/
+#ifdef USE_REG_TIMING
+  Register_param("WALL CLOCK PER STEP (S)", REG_FALSE,
+		 (void*)(&ReG_WallClockPerStep),
+		 REG_FLOAT,
+		 "", "");
+#endif
 
   return REG_SUCCESS;
 }
@@ -618,6 +655,11 @@ int Steering_finalize()
 
   Params_table.num_registered = 0;
   Params_table.max_entries = REG_INITIAL_NUM_IOTYPES;
+
+  /* Clean up memory allocated to deal with receiving multiple
+     msg's in one go and keeping track of UIDs seen */
+  Delete_msg_store(&Msg_store);
+  Delete_msg_uid_store(&Msg_uid_store);
 
   /* Free memory allocated for storing 'early' control messages */
   Free_control_msg_store();
@@ -2658,19 +2700,21 @@ int Steering_control(int     SeqNum,
 #ifdef USE_REG_TIMING
   /* More accurate timing but less portable so only used
      for analysis */
-  static float  sim_time, steer_time;
+  static float  steer_time;
   static double time0 = -1.0, time1 = -1.0;
 
   Get_current_time_seconds(&time0);
 
   if(time1 > -1.0){
-    sim_time = (float)(time0 - time1);
+    ReG_WallClockPerStep = (float)(time0 - time1);
+#if REG_DEBUG
     fprintf(stderr, "TIMING: Spent %.5f seconds working\n",
-	    sim_time);
-    if(sim_time > REG_TOL_ZERO){
+	    ReG_WallClockPerStep);
+    if(ReG_WallClockPerStep > REG_TOL_ZERO){
       fprintf(stderr, "TIMING: Steering overhead = %.3f%%\n", 
-	      100.0*(steer_time/sim_time));
+	      100.0*(steer_time/ReG_WallClockPerStep));
     }
+#endif
   }
 #endif /* USE_REG_TIMING */
 
@@ -3872,13 +3916,13 @@ int Consume_control(int    *NumCommands,
 	  /* Don't read this message yet - store it */
 	  if(!ReG_ctrl_msg_first){
 	    /* ARPDBG - mem leak here - need to return a normal msg struct */
-	    ReG_ctrl_msg_first = New_msg_store_struct();
+	    ReG_ctrl_msg_first = New_ctrl_msg_store_struct();
 	    ReG_ctrl_msg_current = ReG_ctrl_msg_first;
 	    ReG_ctrl_msg_current->control = msg->control;
 	    ReG_ctrl_msg_current = ReG_ctrl_msg_current->next;
 	  }
 	  else{
-	    ReG_ctrl_msg_current = New_msg_store_struct();
+	    ReG_ctrl_msg_current = New_ctrl_msg_store_struct();
 	    ReG_ctrl_msg_current->control = msg->control;
 	    ReG_ctrl_msg_current = ReG_ctrl_msg_current->next;
 	  }
@@ -3903,9 +3947,7 @@ int Consume_control(int    *NumCommands,
     }
 
     /* free up msg memory */
-    Delete_msg_struct(msg);
-    msg = NULL;
-
+    Delete_msg_struct(&msg);
   }
 #if REG_DEBUG
   else{
@@ -4100,7 +4142,11 @@ int Detach_from_steerer()
   int i;
 #if REG_SOAP_STEERING
 
+#if REG_OGSI
   Detach_from_steerer_soap();
+#else
+  Detach_from_steerer_wsrf();
+#endif
 
 #else /* File-based steering */
 
@@ -4771,9 +4817,11 @@ int Steerer_connected()
 {
 
 #if REG_SOAP_STEERING
-
+#if REG_OGSI
   return Steerer_connected_soap();
-
+#else
+  return Steerer_connected_wsrf();
+#endif
 #else
 
   return Steerer_connected_file();
@@ -4790,8 +4838,11 @@ int Send_status_msg(char *buf)
 
 #if REG_SOAP_STEERING
 
+#if REG_OGSI
   return Send_status_msg_soap(buf);
-
+#else
+  return Send_status_msg_wsrf(buf);
+#endif
 #else
 
   return Send_status_msg_file(buf);
@@ -4804,9 +4855,11 @@ struct msg_struct *Get_control_msg()
 {
 
 #if REG_SOAP_STEERING
-
+#if REG_OGSI
   return Get_control_msg_soap();
-
+#else
+  return Get_control_msg_wsrf();
+#endif
 #else
 
   return Get_control_msg_file();
@@ -4853,9 +4906,13 @@ int Initialize_steering_connection(int  NumSupportedCmds,
 
 #if REG_SOAP_STEERING
 
+#if REG_OGSI
   return Initialize_steering_connection_soap(NumSupportedCmds,
 					     SupportedCmds);
-
+#else
+  return Initialize_steering_connection_wsrf(NumSupportedCmds,
+					     SupportedCmds);
+#endif
 #else
 
   return Initialize_steering_connection_file(NumSupportedCmds,
@@ -4942,7 +4999,11 @@ int Finalize_steering_connection()
 
 #if REG_SOAP_STEERING
 
+#if REG_OGSI
   return Finalize_steering_connection_soap();
+#else
+  return Finalize_steering_connection_wsrf();
+#endif
 
 #else
   int  commands[1];
@@ -5675,7 +5736,7 @@ int Free_control_msg_store()
 
 /*-----------------------------------------------------------------*/
 
-struct ReG_ctrl_msg_store *New_msg_store_struct()
+struct ReG_ctrl_msg_store *New_ctrl_msg_store_struct()
 {
   struct ReG_ctrl_msg_store *entry;
 
