@@ -41,6 +41,7 @@
 #define __REG_STEER_COMMON_H__
 
 #include "ReG_Steer_Appside_Sockets.h"
+#include "soapH.h"
 
 /* Following two includes are for use of stat system call 
    in Open_next_file */
@@ -308,6 +309,23 @@ typedef struct {
   IOdef_entry *io_def;
 
 }IOdef_table_type;
+
+/** For steering via SOAP - holds info on the Grid service */
+typedef struct {
+    /** whether we're steering via SOAP (1) or not (0) */
+    int  active;
+    /** Location of the Grid service */
+    char address[REG_MAX_STRING_LENGTH];
+    /** Holds list of names of service data elements on the SGS for which
+	notifications are pending */
+    char notifications[REG_MAX_NUM_SGS_SDE][REG_MAX_STRING_LENGTH];
+    /** Used to keep track of notifications that we've yet to process */
+    int  sde_count;
+    int  sde_index;
+    /** The stucture holding the gSOAP environment for this connection */
+    struct soap *soap;
+
+  } SGS_info_type;
 
 /*-------- Function prototypes --------*/
 
