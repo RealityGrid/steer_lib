@@ -145,6 +145,7 @@ struct log_struct{
 struct msg_struct{
 
   int   	           msg_type;  
+  xmlChar                 *msg_uid;
   struct status_struct    *status;
   struct control_struct   *control;
   struct supp_cmd_struct  *supp_cmd;
@@ -153,35 +154,151 @@ struct msg_struct{
   struct log_struct       *log;
 };
 
+/** Structure for storing multiple steering messages generated
+    by parsing e.g. a ResourceProperties document */
+struct msg_store_struct {
+  struct msg_struct *msg;
+  struct msg_store_struct *next;
+};
+
+/** Structure for storing the UIDs of previous
+    messages so we don't act upon them again */
+struct msg_uid_history_struct {
+  unsigned int  uidStore[REG_UID_HISTORY_BUFFER_SIZE];
+  unsigned int *uidStorePtr;
+  unsigned int *maxPtr;
+};
+
+
+/** Definition of entry in main table holding data for connected simulations.  
+    Contains five sub-tables - the first holding the commands that the 
+    simulation supports, the second its registered parameters (both 
+    steerable and monitored), the third its registered IO types, the fourth
+    its registered Chk types and the fifth a log of checkpoints taken. */
+
+typedef struct {
+
+  int                  handle;
+
+  /** For connection to applications using local file system - contains
+      the location of the directory used to communicate with the sim. */
+  char                 file_root[REG_MAX_STRING_LENGTH];
+
+  /** File descriptors used to talk to (java) proxy for
+      this simulation */
+  int                  pipe_to_proxy;
+  int                  pipe_from_proxy;
+
+  /** Info on associated Grid service - for steering via SOAP */
+  SGS_info_type SGS_info;
+
+  /** Last status message received from this simulation - filled in
+      Get_next_message and used by whichever Consume_... routine
+      is called in response to the message type */
+  struct msg_struct   *msg;
+
+  /** Structure for holding multiple messages obtained by parsing
+      SWS' ResourceProperties document */
+  struct msg_store_struct Msg_store;
+
+  /** Structure for holding the uid's of messages that we have
+      previously consumed */
+  struct msg_uid_history_struct Msg_uid_store;
+
+  /** Table of registered commands for this sim */
+  Supp_cmd_table_type  Cmds_table;
+
+  /** Table of registered params for this sim */
+  Param_table_type     Params_table;
+
+  /** Table of registered IOTypes for this sim */
+  IOdef_table_type     IOdef_table;
+
+  /** Table of registered ChkTypes for this sim */
+  IOdef_table_type     Chkdef_table;
+
+  /** Table for logging checkpoint activity */
+  Chk_log_type         Chk_log;
+
+} Sim_entry_type;
+
 /*-----------------------------------------------------------------*/
 
-int Parse_xml(xmlDocPtr doc, struct msg_struct *msg);
-int Parse_xml_file(char* filename, struct msg_struct *msg);
-int Parse_xml_buf(char* buf, int size, struct msg_struct *msg);
-
+/** Parse the xml in the specified file
+    @param filename name of the file to read and parse
+    @param msg Pointer to message struct to hold results
+    @param sim Pointer to Sim_entry struct or NULL
+    @internal */
+int Parse_xml_file(char* filename, struct msg_struct *msg,
+		   Sim_entry_type *sim);
+/** Parse the xml in the supplied buffer
+    @param buf Pointer to buffer to parse
+    @param size Size of the buffer to parse
+    @param msg  Pointer to message struct to hold results
+    @param sim Pointer to Sim_entry struct or NULL
+    @internal */
+int Parse_xml_buf(char* buf, int size, struct msg_struct *msg,
+		  Sim_entry_type *sim);
+/** Parse the DOM document and put the results in msg_struct
+    @param sim Pointer to Sim_entry struct or NULL
+    @internal */
+int Parse_xml(xmlDocPtr doc, struct msg_struct *msg,
+	      Sim_entry_type *sim);
+/** Parse a steering message (ReG_steer_message) 
+    @internal */
+int parseSteerMessage(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
+		      struct msg_struct *msg,
+		      Sim_entry_type *sim);
+/** Parse a Resource Properties document from a WSRF service
+    @internal */
+int parseResourceProperties(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
+			    Sim_entry_type *sim);
+/** Parse a Status message 
+    @internal */
 int parseStatus(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 	        struct status_struct *status);
+/** Parse a Control message 
+    @internal */
 int parseControl(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 	         struct control_struct *ctrl);
+/** Parse a Supported Commands message 
+    @internal */
 int parseSuppCmd(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 		 struct supp_cmd_struct *supp_cmd);
+/** Parse a Parameter element
+    @internal */
 int parseParam(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 	       struct param_struct *param);
+/** Parse a Command element
+    @internal */
 int parseCmd(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 	     struct cmd_struct *cmd);
+/** Parse a Checkpoint Type definition element
+    @internal */
 int parseChkTypeDef(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 		    struct io_def_struct *chk_def);
+/** Parse an IOType definition element
+    @internal */
 int parseIOTypeDef(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 		   struct io_def_struct *io_def);
+/** Parse an IOType/ChkType element
+    @internal */
 int parseIOType(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
                  struct io_struct *io);
+/** Parse a Logging message
+    @internal */
 int parseLog(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 	     struct log_struct *log);
+/** Parse a Logging entry
+    @internal */
 int parseLogEntry(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 		  struct log_entry_struct *log_entry);
+/** Parse a Checkpoint Log entry
+    @internal */
 int parseChkLogEntry(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 		     struct chk_log_entry_struct *log_entry);
 
+struct msg_store_struct     *New_msg_store_struct();
 struct msg_struct           *New_msg_struct();
 struct status_struct        *New_status_struct();
 struct control_struct       *New_control_struct();
@@ -194,7 +311,7 @@ struct chk_log_entry_struct *New_chk_log_entry_struct();
 struct log_entry_struct     *New_log_entry_struct();
 struct log_struct           *New_log_struct();
 
-void Delete_msg_struct(struct msg_struct *msg);
+void Delete_msg_struct(struct msg_struct **msgIn);
 void Delete_status_struct(struct status_struct *status);
 void Delete_control_struct(struct control_struct *ctrl);
 void Delete_supp_cmd_struct(struct supp_cmd_struct *supp_cmd);
@@ -267,5 +384,14 @@ void End_element_handler(void          *user_data,
 void Characters_handler(void          *user_data,
 			const xmlChar *ch,
 			int  	       len);
+
+/** Check to see whether or not this message has been seen within the 
+    last storeSize messages received 
+    @internal */
+int Msg_already_received(char *msg_uid,
+			 struct msg_uid_history_struct *hist);
+
+int Delete_msg_store(struct msg_store_struct *msgStore);
+int Delete_msg_uid_store(struct msg_uid_history_struct *uidHist);
 
 #endif
