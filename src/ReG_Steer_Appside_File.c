@@ -35,6 +35,7 @@
 
 #include "ReG_Steer_Appside_File.h"
 #include "ReG_Steer_types.h"
+#include "ReG_Steer_Common.h"
 #include "ReG_Steer_Appside_internal.h"
 
 /** @file ReG_Steer_Appside_File.c
@@ -215,11 +216,12 @@ struct msg_struct *Get_control_msg_file()
 
     msg = New_msg_struct();
 
-    if(Parse_xml_file(filename, msg) != REG_SUCCESS){
+    /* Pass NULL down here as this is app-side and we have no ptr to
+       a Sim_entry struct */
+    if(Parse_xml_file(filename, msg, NULL) != REG_SUCCESS){
 
       fprintf(stderr, "Get_control_msg_file: failed to parse <%s>\n", filename);
-      Delete_msg_struct(msg);
-      msg = NULL;
+      Delete_msg_struct(&msg);
     }
 
     /* Delete the file once we've read it */
