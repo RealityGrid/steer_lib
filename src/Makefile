@@ -53,7 +53,9 @@ REG_LIB_OBJECTS=ReG_Steer_Appside_f.o \
  ReG_Steer_Logging.o \
  stdsoap2.o soapC.o soapClient.o \
  Base64.o \
- ReG_Steering_Initialize.o
+ ReG_Steering_Initialize.o \
+ ReG_Steer_Steerside_WSRF.o \
+ ReG_Steer_Appside_WSRF.o
 
 .c.o:
 	${CC} ${C_FLAGS} \
@@ -101,6 +103,8 @@ ${LIB_PATH}/libReG_Steer.a: ${REG_LIB_OBJECTS}
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a soapC.o
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a soapClient.o
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a Base64.o
+	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Steerside_WSRF.o
+	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Appside_WSRF.o
 # '-' is to allow for failure in case we don't have an F90 compiler
 	-${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steering_Initialize.o
 
