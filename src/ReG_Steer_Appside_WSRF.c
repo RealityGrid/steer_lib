@@ -48,7 +48,7 @@ extern char *Get_resource_property (SGS_info_type *sgs_info,
 				    char           *name);
 extern char *Get_resource_property_doc(SGS_info_type *sgs_info);
 
-extern struct msg_struct *Get_next_stored_msg();
+extern struct msg_struct *Get_next_stored_msg(Sim_entry_type *sim);
 
 #ifndef WIN32
 #else
@@ -377,10 +377,10 @@ struct msg_struct *Get_control_msg_wsrf ()
   /* The results of parsing the ResourcePropertyDocument are stored
      as a series of messages - go through these until we find a 
      control message (if any) */
-  msg = Get_next_stored_msg();
+  msg = Get_next_stored_msg(NULL);
   while (msg && !(msg->control)){
     Delete_msg_struct(&msg);
-    msg = Get_next_stored_msg();
+    msg = Get_next_stored_msg(NULL);
   }
   return msg;
 }
