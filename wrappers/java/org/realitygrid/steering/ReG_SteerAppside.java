@@ -639,28 +639,4 @@ public class ReG_SteerAppside implements ReG_SteerConstants {
     }
   }
 
-  /**
-   * A utility method to return the sizes of common datatypes used by
-   * the RealityGrid Steering library. Datatypes should be passed in by their
-   * RealityGrid names, for example: <code>REG_INT</code>,
-   * <code>REG_CHAR</code> and <code>REG_XDR_INT</code>. Note that the sizes
-   * that are returned correspond to those of the underlying C implementation
-   * of the steering library, and not those of the Java virtual machine in
-   * which this method is run.
-   *
-   * @param type the datatype whose size is required.
-   *
-   * @throws ReG_SteerException If an invalid type is supplied.
-   *
-   * @see ReG_SteerConstants
-   */
-  public static int sizeof(int type) throws ReG_SteerException {
-    int size = ReG_Steer.Sizeof(type);
-    if(size == 0) {
-      throw new ReG_SteerException("Invalid type supplied to sizeof.");
-    }
-
-    return size;
-  }
-
 }
