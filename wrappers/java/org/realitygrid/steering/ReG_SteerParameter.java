@@ -42,6 +42,7 @@ package org.realitygrid.steering;
  */
 public class ReG_SteerParameter implements ReG_SteerConstants {
 
+  private int handle;
   private String label;
   private int type;
   private boolean steerable;
@@ -50,33 +51,37 @@ public class ReG_SteerParameter implements ReG_SteerConstants {
 
   private Object param;
 
+  private boolean registered;
+
   /**
    * Constructs a RealityGrid Steered Parameter of the requested type
    * but does not set its value.
    *
-   * @param l a descriptive label for the parameter.
-   * @param st set the parameter to be steerable (if true) or just
+   * @param label a descriptive label for the parameter.
+   * @param steer set the parameter to be steerable (if true) or just
    * monitored (if false).
-   * @param t the type of the parameter. (REG_INT, REG_FLOAT or REG_DBL).
+   * @param type the type of the parameter. (<code>REG_INT</code>,
+   * <code>REG_FLOAT</code> or <code>REG_DBL</code>).
    * @param min the minimum value that a parameter can be steered to (can
    * be empty but not null).
    * @param max the maximum value that a parameter can be steered to (can
    * be empty but not null).
    */
-  public ReG_SteerParameter(String l, boolean st, int t, String min, String max) {
-    label = l;
-    steerable = st;
-    type = t;
+  public ReG_SteerParameter(String label, boolean steer, int type, String min, String max) {
+    handle = REG_PARAM_HANDLE_NOTSET;
+    this.label = label;
+    steerable = steer;
+    this.type = type;
     minLabel = min;
     maxLabel = max;
+    registered = false;
 
     switch(type) {
     case REG_INT:
       param = new Intp();
       break;
     case REG_CHAR:
-      System.out.println("Parameters of type REG_CHAR, not supported in java. Sorry.");
-      System.exit(REG_FAILURE);
+      param = new Intp();
       break;
     case REG_FLOAT:
       param = new Floatp();
@@ -91,67 +96,122 @@ public class ReG_SteerParameter implements ReG_SteerConstants {
   }
 
   /**
-   * Constructs a RealityGrid Steered Parameter of the requested type
+   * Constructs a RealityGrid Steered Parameter of type <code>REG_INT</code>
    * and sets its value.
    *
-   * @param l a descriptive label for the parameter.
-   * @param v the value of the parameter.
-   * @param st set the parameter to be steerable (if true) or just
+   * @param label a descriptive label for the parameter.
+   * @param value the value of the parameter.
+   * @param steer set the parameter to be steerable (if true) or just
    * monitored (if false).
    * @param min the minimum value that a parameter can be steered to (can
    * be empty but not null).
    * @param max the maximum value that a parameter can be steered to (can
    * be empty but not null).
    */
-  public ReG_SteerParameter(String l, int v, boolean st, String min, String max) {
-    this(l, st, REG_INT, min, max);
-    ((Intp) param).assign(v);
+  public ReG_SteerParameter(String label, int value, boolean steer, String min, String max) {
+    this(label, steer, REG_INT, min, max);
+    ((Intp) param).assign(value);
   }
 
   /**
-   * Constructs a RealityGrid Steered Parameter of the requested type
+   * Constructs a RealityGrid Steered Parameter of type <code>REG_FLOAT</code>
    * and sets its value.
    *
-   * @param l a descriptive label for the parameter.
-   * @param v the value of the parameter.
-   * @param st set the parameter to be steerable (if true) or just
+   * @param label a descriptive label for the parameter.
+   * @param value the value of the parameter.
+   * @param steer set the parameter to be steerable (if true) or just
    * monitored (if false).
    * @param min the minimum value that a parameter can be steered to (can
    * be empty but not null).
    * @param max the maximum value that a parameter can be steered to (can
    * be empty but not null).
    */
-  public ReG_SteerParameter(String l, float v, boolean st, String min, String max) {
-    this(l, st, REG_FLOAT, min, max);
-    ((Floatp) param).assign(v);
+  public ReG_SteerParameter(String label, float value, boolean steer, String min, String max) {
+    this(label, steer, REG_FLOAT, min, max);
+    ((Floatp) param).assign(value);
   }
 
   /**
-   * Constructs a RealityGrid Steered Parameter of the requested type
+   * Constructs a RealityGrid Steered Parameter of type <code>REG_DBL</code>
    * and sets its value.
    *
-   * @param l a descriptive label for the parameter.
-   * @param v the value of the parameter.
-   * @param st set the parameter to be steerable (if true) or just
+   * @param label a descriptive label for the parameter.
+   * @param value the value of the parameter.
+   * @param steer set the parameter to be steerable (if true) or just
    * monitored (if false).
    * @param min the minimum value that a parameter can be steered to (can
    * be empty but not null).
    * @param max the maximum value that a parameter can be steered to (can
    * be empty but not null).
    */
-  public ReG_SteerParameter(String l, double v, boolean st, String min, String max) {
-    this(l, st, REG_DBL, min, max);
-    ((Doublep) param).assign(v);
+  public ReG_SteerParameter(String label, double value, boolean steer, String min, String max) {
+    this(label, steer, REG_DBL, min, max);
+    ((Doublep) param).assign(value);
+  }
+
+  /**
+   * Constructs a RealityGrid Steered Parameter from the data provided by
+   * the steering library when <code>getParamValues()</code> is invoked. This
+   * constructor sets this parameter's state as registered if the provided
+   * handle is not equal to <code>REG_PARAM_HANDLE_NOTSET</code>.
+   *
+   * @param label a descriptive label for the parameter.
+   * @param value the value of the parameter as a <code>String</code>. This is
+   * parsed into a numeric value internally.
+   * @param steer set the parameter to be steerable (if true) or just
+   * monitored (if false).
+   * @param type the type of the parameter. (<code>REG_INT</code>,
+   * <code>REG_FLOAT</code> or <code>REG_DBL</code>).
+   * @param min the minimum value that a parameter can be steered to (can
+   * be empty but not null).
+   * @param max the maximum value that a parameter can be steered to (can
+   * be empty but not null).
+   * @param handle the internal handle of the parameter allocated by the
+   * steering library.
+   *
+   * @see #setRegistered(boolean)
+   * @see ReG_SteerSteerside#getParamValues(int, boolean, int)
+   */
+  public ReG_SteerParameter(String label, String value, boolean steer, int type, String min, String max, int handle) {
+    this(label, steer, type, min, max);
+
+    switch(type) {
+    case REG_INT:
+      Integer i = new Integer(value);
+      ((Intp) param).assign(i.intValue());
+      break;
+    case REG_CHAR:
+      ((Intp) param).assign(-1);
+      break;
+    case REG_FLOAT:
+      Float f = new Float(value);
+      ((Floatp) param).assign(f.floatValue());
+      break;
+    case REG_DBL:
+      Double d = new Double(value);
+      ((Doublep) param).assign(d.doubleValue());
+      break;
+    }
+
+    if(handle != REG_PARAM_HANDLE_NOTSET) {
+      this.handle = handle;
+      registered = true;
+    }
   }
 
   /**
    * Register this parameter with the steering library.
    *
    * @throws ReG_SteerException If registering the parameter with the
-   * steering library failed for some reason.
+   * steering library fails, or if the parameter is already registered with the
+   * steering library, the error code will be <code>REG_FAILURE</code>.
    * @see ReG_SteerAppside#registerParam(ReG_SteerParameter)
    */
   public void register() throws ReG_SteerException {
+    if(registered) {
+      throw new ReG_SteerException("This parameter (" + label + ") is already registered.", REG_FAILURE);
+    }
+
     int steered = REG_FALSE;
     if(steerable)
       steered = REG_TRUE;
@@ -162,6 +222,8 @@ public class ReG_SteerParameter implements ReG_SteerConstants {
     if(status != REG_SUCCESS) {
       throw new ReG_SteerException("Failed to register parameter.", status);
     }
+
+    registered = true;
   }
 
   /**
@@ -375,6 +437,16 @@ public class ReG_SteerParameter implements ReG_SteerConstants {
   }
 
   /**
+   * Get the handle of this parameter. This will only have been set if the
+   * parameter has been returned by the steering library.
+   *
+   * @return handle;
+   */
+  public int getHandle() {
+    return handle;
+  }
+
+  /**
    * Get the text label of this parameter.
    *
    * @return the text label of this parameter.
@@ -421,4 +493,59 @@ public class ReG_SteerParameter implements ReG_SteerConstants {
     return maxLabel;
   }
 
+  /**
+   * Determine whether this parameter has been registered with the steering
+   * library or not.
+   *
+   * @return true if the parameter has been registered with the steering
+   * library, false otherwise.
+   */
+  public boolean isRegistered() {
+    return registered;
+  }
+
+  /**
+   * Set the registered state of this parameter. This method is
+   * <code>protected</code> as it should be used with care and it should only
+   * be subclasses or objects in the same package that need to do this.
+   *
+   * @param toggle whether this parameter is to be treated as having been
+   * registered with the steering library or not.
+   */
+  protected void setRegistered(boolean toggle) {
+    registered = toggle;
+  }
+
+  /**
+   * Format this instance of ReG_SteerParameter in a manner suitable for
+   * printing to a terminal window.
+   *
+   * @return a string representation of this object.
+   */
+  public String toString() {
+    String result = "";
+
+    if(handle != REG_PARAM_HANDLE_NOTSET) {
+      result += "Handle: " + handle + ", ";
+    }
+    result += "Label: " + label;
+    result += ", Type: " + ReG_SteerUtilities.typeLookup(type);
+
+    switch(type) {
+    case REG_INT:
+      result += ", Value: " + getIntValue();
+      break;
+    case REG_CHAR:
+      result += ", Value: " + getIntValue() + " - UNSUPPORTED";
+      break;
+    case REG_FLOAT:
+      result += ", Value: " + getFloatValue();
+      break;
+    case REG_DBL:
+      result += ", Value: " + getDoubleValue();
+      break;
+    }
+
+    return result;
+  }
 }
