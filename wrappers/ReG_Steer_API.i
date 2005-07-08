@@ -30,6 +30,11 @@
   Author........: Robert Haines
 ---------------------------------------------------------------------------- */
 
+/* If debugging is not required, this ensures REG_DEBUG is still valid */
+#ifndef REG_DEBUG
+#define REG_DEBUG 0
+#endif // REG_DEBUG
+
 /*-------------- Application-side function prototypes -------------*/
 
 extern void Steering_enable(const int EnableSteer);
@@ -209,3 +214,48 @@ extern int Reorder_array(int          ndims,
   }
 %}
 int Sizeof(int type);
+
+/*-------------- Steering-side function prototypes -------------*/
+
+#ifdef SWIGJAVA
+
+extern int Steerer_initialize();
+
+extern int Steerer_finalize();
+
+extern int Get_sim_list(int* nSims,
+			char** simName,
+			char** simGSH);
+
+extern int Sim_attach(char *SimID,
+		      int  *SimHandle);
+
+extern int Sim_detach(int *SimHandle);
+
+extern int Get_param_number(int  sim_handle,
+			    int  steerable,
+			    int *num_params);
+
+extern int Get_supp_cmd_number(int  sim_handle,
+			       int *num_cmds);
+
+extern int Get_supp_cmds(int  sim_handle,
+			 int  num_cmds,
+			 int *cmd_ids);
+
+extern int Emit_stop_cmd(int SimHandle);
+
+extern int Emit_pause_cmd(int SimHandle);
+
+extern int Emit_resume_cmd(int SimHandle);
+
+extern int Get_next_message(int   *SimHandle,
+			    int   *msg_type);
+
+extern int Consume_param_defs(int SimHandle);
+
+extern int Consume_IOType_defs(int SimHandle);
+
+extern int Consume_ChkType_defs(int SimHandle);
+
+#endif // SWIGJAVA
