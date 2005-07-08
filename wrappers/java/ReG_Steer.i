@@ -33,6 +33,7 @@
 %module ReG_Steer
 %{
 #include "../../include/ReG_Steer_Appside.h"
+#include "../../include/ReG_Steer_Steerside.h"
 %}
 
 /* Ensure that all #defined constants are wrapped in a sensible
@@ -64,6 +65,7 @@
 %pointer_class(char, Charp);
 %pointer_class(float, Floatp);
 %pointer_class(double, Doublep);
+//%pointer_class(byte, Bytep);
 
 /* The following two typemaps add the ReG_SWIG baseclass and
  * getPointer to the SWIGTYPE classes that are auto-generated */
@@ -245,6 +247,58 @@
   return $jnicall;
 }
 
+/* A set of typemaps for the get_param_details method */
+%typemap(java, in, numinputs=0) Param_details_struct* outdetails {
+  /* Just throw outdata away from the inputs! */
+}
+%typemap(java, check) (int count, Param_details_struct* outdetails) {
+  $2 = (Param_details_struct*) malloc($1 * sizeof(Param_details_struct));
+}
+%typemap(java, argout) (int steer, int count, Param_details_struct* outdetails) {
+
+  if($2 > 0) {
+    int i;
+    jclass regParam;
+    jobjectArray paramArray;
+    jmethodID regParamInit;
+    jvalue args[7];
+    jobject newObject;
+
+    /* Set up access to the java classes and methods */
+    regParam = (*jenv)->FindClass(jenv, "org/realitygrid/steering/ReG_SteerParameter");
+    paramArray = (*jenv)->NewObjectArray(jenv, $2, regParam, NULL);
+    regParamInit = (*jenv)->GetMethodID(jenv, regParam, "<init>", "(Ljava/lang/String;Ljava/lang/String;ZILjava/lang/String;Ljava/lang/String;I)V");
+
+    for(i = 0; i < $2; i++) {
+      args[0].l = (*jenv)->NewStringUTF(jenv, $3[i].label);
+      args[1].l = (*jenv)->NewStringUTF(jenv, $3[i].value);
+      args[2].z = ($1 == REG_TRUE) ? JNI_TRUE : JNI_FALSE;
+      args[3].i = $3[i].type;
+      args[4].l = (*jenv)->NewStringUTF(jenv, $3[i].min_val);
+      args[5].l = (*jenv)->NewStringUTF(jenv, $3[i].max_val);
+      args[6].i = $3[i].handle;
+
+      newObject = (*jenv)->NewObjectA(jenv, regParam, regParamInit, args);
+      (*jenv)->SetObjectArrayElement(jenv, paramArray, i, newObject);
+    }
+
+    $result = paramArray;
+  }
+  else {
+    $result = NULL;
+  }
+}
+%typemap(freearg) Param_details_struct* outdetails {
+  if($1) free($1);
+}
+%typemap(jni) Param_details_struct* outdetails "jobjectArray"
+%typemap(jtype) Param_details_struct* outdetails "Object[]"
+%typemap(jstype) Param_details_struct* outdetails "Object[]"
+%typemap(javain) Param_details_struct* outdetails "$javainput"
+%typemap(javaout) Param_details_struct* outdetails {
+  return $jnicall;
+}
+
 /* Strings and arrays stuff */
 %include "arrays_java.i"
 
@@ -253,17 +307,34 @@
 
 %apply char **update {
   char** SteerParamLabels,
-  char** SteerCmdParams
+  char** SteerCmdParams,
+  char** simName,
+  char** simGSH
 }
 
-%apply int[] {int *SteerCommands};
+%apply int[] {
+  int *SteerCommands,
+  int *cmd_ids
+};
 
-%apply (int type, int count, void* outdata) { (int DataType, int Count, void* pDataOUT) }
+%apply (int type, int count, void* outdata) {
+  (int DataType, int Count, void* pDataOUT)
+}
 %apply void* outdata { void* pDataOUT }
 
-%apply (int type, int count, void* indata) { (int DataTypeIN, int CountIN, void* pDataIN) }
+%apply (int type, int count, void* indata) {
+  (int DataTypeIN, int CountIN, void* pDataIN)
+}
 %apply (int type, int count) { (int DataTypeIN, int CountIN) }
 %apply void* indata { void* pDataIN }
+
+%apply (int steer, int count, Param_details_struct* outdetails) {
+  (int steerable, int num_params, Param_details_struct* param_details)
+}
+%apply (int count, Param_details_struct* outdetails) {
+  (int num_params, Param_details_struct* param_details)
+}
+%apply Param_details_struct* outdetails { Param_details_struct* param_details }
 
 /* Pull in the common API definition file */
 %include "../ReG_Steer_API.i"
@@ -279,3 +350,13 @@
 %}
 jobject Consume_data_slice_j(int IOTypeIndex, int DataType, int Count, void* pDataOUT);
 
+/* Re-define the Get_param_values method to return an objectArray
+ * this is done by creating a new version of the method and
+ * calling that instead.: Get_param_values_j */
+%inline %{
+  jobjectArray Get_param_values_j(int sim_handle, int steerable, int num_params, Param_details_struct *param_details) {
+    Get_param_values(sim_handle, steerable, num_params, param_details);
+    return 0;
+  }
+%}
+jobjectArray Get_param_values_j(int sim_handle, int steerable, int num_params, Param_details_struct *param_details);
