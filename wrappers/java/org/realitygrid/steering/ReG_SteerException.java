@@ -40,7 +40,7 @@ package org.realitygrid.steering;
  * @version 1.2b
  * @author Robert Haines
  */
-public class ReG_SteerException extends Exception {
+public class ReG_SteerException extends RuntimeException {
 
   private int errorCode;
 
@@ -92,6 +92,16 @@ public class ReG_SteerException extends Exception {
    */
   public int getErrorCode() {
     return errorCode;
+  }
+
+  /**
+   *
+   */
+  public String toString() {
+    String errorMessage = super.toString();
+    errorMessage += " ReG Error code: ";
+    errorMessage += ReG_SteerUtilities.errorLookup(errorCode);
+    return errorMessage;
   }
 
 }
