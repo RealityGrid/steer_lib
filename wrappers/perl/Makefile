@@ -42,7 +42,7 @@ ReG_Steer_wrap.o: ReG_Steer_wrap.c
 	${REG_PERL_CCFLAGS}
 
 ReG_Steer_wrap.c: ReG_Steer.i
-	${REG_SWIG} -perl -proxy -exportall ReG_Steer.i
+	${REG_SWIG} ${REG_WRAP_FLAGS} -perl -proxy -exportall ReG_Steer.i
 
 clean:
 	rm -rf *.so *_wrap.* ReG_Steer.pm *~ core

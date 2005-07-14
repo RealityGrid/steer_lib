@@ -34,13 +34,17 @@ include ../Makefile.wrap
 
 REG_PACKAGE=org.realitygrid.steering
 REG_PACKAGE_DIR=org/realitygrid/steering
+REG_UTILS_DIR=org/realitygrid/utilities
 
 doc: examples
 	./gendoc
 
-examples: libReG_SteerJava.so
-	${JAVAC} -classpath ${REG_STEER_HOME}/wrappers/java ${REG_PACKAGE_DIR}/*.java
+examples: coreclasses
 	${JAVAC} -classpath ${REG_STEER_HOME}/wrappers/java examples/*.java
+
+coreclasses: libReG_SteerJava.so
+	${JAVAC} -classpath ${REG_STEER_HOME}/wrappers/java ${REG_UTILS_DIR}/*.java
+	${JAVAC} -classpath ${REG_STEER_HOME}/wrappers/java ${REG_PACKAGE_DIR}/*.java
 
 libReG_SteerJava.so: ReG_Steer_wrap.o
 	${CC} -shared ${REG_WRAP_LINK} \
@@ -51,7 +55,7 @@ ReG_Steer_wrap.o: ReG_Steer_wrap.c
 	${REG_JAVA_INC} -I${REG_STEER_HOME}/include
 
 ReG_Steer_wrap.c: ReG_Steer.i ../ReG_Steer_API.i
-	${REG_SWIG} -java -package ${REG_PACKAGE} \
+	${REG_SWIG} ${REG_WRAP_FLAGS} -java -package ${REG_PACKAGE} \
 	-outdir ${REG_PACKAGE_DIR} ReG_Steer.i
 
 clean:
@@ -63,6 +67,8 @@ clean:
 	rm -rf ${REG_PACKAGE_DIR}/ReG_SteerConstants.java
 	rm -rf ${REG_PACKAGE_DIR}/*.class
 	rm -rf ${REG_PACKAGE_DIR}/*~
+	rm -rf ${REG_UTILS_DIR}/*.class
+	rm -rf ${REG_UTILS_DIR}/*~
 	rm -rf examples/*.class
 	rm -rf examples/*~
 	rm -rf doc

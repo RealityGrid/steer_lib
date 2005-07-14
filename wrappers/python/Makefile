@@ -41,7 +41,7 @@ ReG_Steer_wrap.o: ReG_Steer_wrap.c
 	-I${REG_STEER_HOME}/include ${REG_PYTHON_INC} 
 
 ReG_Steer_wrap.c: ReG_Steer.i
-	${REG_SWIG} -python -shadow ReG_Steer.i
+	${REG_SWIG} ${REG_WRAP_FLAGS} -python -shadow ReG_Steer.i
 
 clean:
 	rm -rf *.pyc *.so ReG_Steer.py *_wrap.* *~ core
