@@ -35,6 +35,9 @@ REG_WRAP=none
 #REG_WRAP=python perl java
 #REG_WRAP=python perl tcl java
 
+# Flags for all wrappers
+REG_WRAP_FLAGS=-DREG_DEBUG=${REG_DEBUG_FLAG}
+
 # Set REG_WRAP_LINK.
 # This should just work (at least with bash). If not extract the relevent
 # line and set REG_WRAP_LINK manually.
@@ -55,7 +58,7 @@ REG_WRAP_LINK=-L${REG_STEER_HOME}/lib${NBIT} \
 REG_SWIG=/usr/local/bin/swig
 
 # python
-REG_PYTHON_INC=-I/usr/include/python2.2 -I/usr/lib/python2.2/config/ -DHAVE_CONFIG_H
+REG_PYTHON_INC=-I/usr/include/python2.3 -I/usr/lib/python2.3/config/ -DHAVE_CONFIG_H
 
 # perl
 # this shouldn't need changing
@@ -63,6 +66,6 @@ REG_PERL_INC=-I`perl -e 'use Config; print $$Config{archlib};'`/CORE
 REG_PERL_CCFLAGS=`perl -e 'use Config; print $$Config{ccflags};'`
 
 # java
-REG_JAVA_PATH=/usr/java/j2sdk1.4.2_01
+REG_JAVA_PATH=/opt/software/java
 REG_JAVA_INC=-I${REG_JAVA_PATH}/include -I${REG_JAVA_PATH}/include/linux
 JAVAC=${REG_JAVA_PATH}/bin/javac
