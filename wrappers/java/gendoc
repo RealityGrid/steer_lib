@@ -16,7 +16,7 @@ BOTTOM="(C) Copyright 2004, 2005 The University of Manchester,\
         <a href=\"http://www.realitygrid.org\">RealityGrid</a>"
 JAVADOC="http://java.sun.com/j2se/1.4.2/docs/api"
 COREPACK="org.realitygrid.steering"
-EXTPACK=""
+EXTPACK="org.realitygrid.utilities"
 
 echo "Installing Java documentation..."
 mkdir -p doc
