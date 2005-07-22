@@ -158,6 +158,18 @@ public class ReG_SteerSteerside implements ReG_SteerConstants {
   /**
    *
    */
+  public int deleteSimTableEntry(int simHandle) {
+    Intp sh = new Intp();
+    sh.assign(simHandle);
+
+    status = ReG_Steer.Delete_sim_table_entry(sh.cast());
+
+    return sh.value();
+  }
+
+  /**
+   *
+   */
   public int getParamNumber(int simHandle, boolean steerable) 
     throws ReG_SteerException {
     
@@ -196,6 +208,17 @@ public class ReG_SteerSteerside implements ReG_SteerConstants {
     values = (ReG_SteerParameter[]) ReG_Steer.Get_param_values_j(simHandle, steer, numParams);
 
     return values;
+  }
+
+  /**
+   *
+   */
+  public void setParamValues(int simHandle, int[] handles, String[] values) throws ReG_SteerException {
+    status = ReG_Steer.Set_param_values(simHandle, handles.length, handles, values);
+
+    if(status != REG_SUCCESS) {
+      throw new ReG_SteerException("Failed to set new param values.", status);
+    }
   }
 
   /**
@@ -349,6 +372,106 @@ public class ReG_SteerSteerside implements ReG_SteerConstants {
 
     if(status != REG_SUCCESS) {
       throw new ReG_SteerException("Could not consume checkpoint type definitions.", status);
+    }
+  }
+
+  /**
+   *
+   */
+  public void emitControl(int simHandle, int[] sysCmds, String[] sysCmdParams) throws ReG_SteerException {
+    int numCmds = 0;
+    if(sysCmds != null) {
+      numCmds = sysCmds.length;
+    }
+
+    status = ReG_Steer.Emit_control(simHandle, numCmds, sysCmds, sysCmdParams);
+
+    if(status != REG_SUCCESS) {
+      throw new ReG_SteerException("Emit control failed.", status);
+    }
+  }
+
+  /**
+   *
+   */
+  public int getIOTypeNumber(int simHandle) throws ReG_SteerException {
+    Intp numIOTypes = new Intp();
+
+    status = ReG_Steer.Get_iotype_number(simHandle, numIOTypes.cast());
+
+    if(status != REG_SUCCESS) {
+      throw new ReG_SteerException("Could not get number of IO types.", status);
+    }
+
+    return numIOTypes.value();
+  }
+
+  /**
+   *
+   */
+  public void getIOTypes(int simHandle, int[] ioHandles, String[] ioLabels, int[] ioTypes, int[] ioFreqs) throws ReG_SteerException {
+    int numIOs = ioHandles.length;
+
+    status = ReG_Steer.Get_iotypes(simHandle, numIOs, ioHandles, ioLabels, ioTypes, ioFreqs);
+
+    if(status != REG_SUCCESS) {
+      throw new ReG_SteerException("NO!", status);
+    }
+  }
+
+  /**
+   *
+   */
+  public int getChkTypeNumber(int simHandle) throws ReG_SteerException {
+    Intp numChkTypes = new Intp();
+
+    status = ReG_Steer.Get_chktype_number(simHandle, numChkTypes.cast());
+
+    if(status != REG_SUCCESS) {
+      throw new ReG_SteerException("Could not get number of checkpoint types.", status);
+    }
+
+    return numChkTypes.value();
+  }
+
+  /**
+   *
+   */
+  public void getChkTypes(int simHandle, int[] chkHandles, String[] chkLabels, int[] chkTypes, int[] chkFreqs) throws ReG_SteerException {
+    int numChks = chkHandles.length;
+
+    status = ReG_Steer.Get_chktypes(simHandle, numChks, chkHandles, chkLabels, chkTypes, chkFreqs);
+
+    if(status != REG_SUCCESS) {
+      throw new ReG_SteerException("NO!", status);
+    }
+  }
+
+  /**
+   *
+   */
+  public int consumeStatus(int simHandle, int[] commands) throws ReG_SteerException {
+    Intp seqNum = new Intp();
+    Intp numCmds = new Intp();
+
+    status = ReG_Steer.Consume_status(simHandle, seqNum.cast(), numCmds.cast(), commands);
+
+    if(status != REG_SUCCESS) {
+      throw new ReG_SteerException("NO, no, no!", status);
+    }
+
+    return seqNum.value();
+  }
+
+  /**
+   *
+   */
+  public void emitRetrieveParamLogCmd(int simHandle, int paramHandle) throws ReG_SteerException {
+    
+    status = ReG_Steer.Emit_retrieve_param_log_cmd(simHandle, paramHandle);
+
+    if(status != REG_SUCCESS) {
+      throw new ReG_SteerException("Could not emit param log command.", status);
     }
   }
 

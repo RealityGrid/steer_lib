@@ -30,16 +30,10 @@
   Author........: Robert Haines
 ---------------------------------------------------------------------------- */
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.IOException;
-
 import org.realitygrid.steering.*;
+import org.realitygrid.utilities.IO;
 
-public class MiniSteerer implements Runnable, ReG_SteerConstants {
-
-  /* The Thread */
-  private Thread t;
+public class MiniSteerer implements ReG_SteerConstants {
 
   /* The Steering Library */
   private ReG_SteerSteerside rss;
@@ -48,7 +42,8 @@ public class MiniSteerer implements Runnable, ReG_SteerConstants {
   private int simHandle;
 
   public static void main(String[] argv) {
-    new MiniSteerer();
+    MiniSteerer ms = new MiniSteerer();
+    ms.run();
   }
 
   public MiniSteerer() {
@@ -65,12 +60,8 @@ public class MiniSteerer implements Runnable, ReG_SteerConstants {
     }
 
     /* ask the user which sim to attach to */
-    char userChar = '\0';
     System.out.print("Do (l)ocal or (r)emote attach [r]: ");
-    try {
-      userChar = readLine().charAt(0);
-    }
-    catch(IndexOutOfBoundsException e) {}
+    char userChar = IO.readChar();
 
     if(userChar == 'l' || userChar == 'L') {
       try {
@@ -90,7 +81,7 @@ public class MiniSteerer implements Runnable, ReG_SteerConstants {
 	}
 
 	System.out.print("\nWhich one to attach to (0 - " + (list[0].length - 1) + "): ");
-	int userInt = readInt();
+	int userInt = IO.readInt();
 	  
 	simHandle = rss.simAttach(list[1][userInt]);
       }
@@ -101,13 +92,9 @@ public class MiniSteerer implements Runnable, ReG_SteerConstants {
     }
 
     System.out.println("Attached to sim, simHandle = " + simHandle);
-
-    /* Start the thread running */
-    t = new Thread(this);
-    t.start();
   }
 
-  public void run() {
+  private void run() {
 
     boolean done = false;
     char userChar = '\0';
@@ -115,13 +102,6 @@ public class MiniSteerer implements Runnable, ReG_SteerConstants {
     /* enter steering loop */
     while(!done) {
 
-      try {
-	Thread.sleep(1000);
-      }
-      catch(InterruptedException e) {
-	System.err.println("Interrupted!");
-	//continue;
-      }
       try {
 	int numParams = rss.getParamNumber(simHandle, false);
 	System.out.println("\nHave " + numParams + " monitored parameters:");
@@ -140,15 +120,14 @@ public class MiniSteerer implements Runnable, ReG_SteerConstants {
       }
       catch(ReG_SteerException e) {
 	System.err.println(e);
+	rss.simDetach(simHandle);
 	System.exit(e.getErrorCode());
       }
 
       /* Wait for a command from the user */
       System.out.print("\nCommand: ");
-      try {
-	userChar = readLine().charAt(0);
-      }
-      catch(IndexOutOfBoundsException e) {
+      userChar = IO.readChar();
+      if(userChar == '\0') {
 	userChar = 'h';
       }
 
@@ -161,8 +140,17 @@ public class MiniSteerer implements Runnable, ReG_SteerConstants {
 	  int[] commands = rss.getSuppCmds(simHandle, numCmds);
 	  for(int i = 0; i < numCmds; i++) {
 	    System.out.print("Supported command " + i + " = ");
-	    System.out.println(ReG_SteerUtilities.commandLookup(commands[i]));
+	    System.out.println(ReG_SteerUtilities.lookupCommand(commands[i]));
 	  }
+	  break;
+
+	case 'e':
+	  int[] h = new int[1];
+	  h[0] = 5;
+	  String[] st = new String[1];
+	  st[0] = "111";
+	  rss.setParamValues(simHandle, h, st);
+	  rss.emitControl(simHandle, null, null);
 	  break;
 
 	case 'g':
@@ -170,21 +158,48 @@ public class MiniSteerer implements Runnable, ReG_SteerConstants {
 
 	  switch(message[1]) {
 	  case SUPP_CMDS:
+	    // supported commands should only be output once as part
+	    // of handshaking process!
+	    if(REG_DEBUG == 1) {
+	      System.out.println("ERROR: Got supported commands message\n");
+	    }
+	    break;
 	  case MSG_NOTSET:
 	    if(REG_DEBUG == 1) {
 	      System.out.println("No message received");
 	    }
 	    break;
 	  case IO_DEFS:
-	    //rss.consumeIOTypeDefs(message[0]);
+	    System.out.println("Got IO definitions");
+	    rss.consumeIOTypeDefs(message[0]);
 	    break;
 	  case CHK_DEFS:
+	    System.out.println("Got checkpoint definitions");
 	    rss.consumeChkTypeDefs(message[0]);
 	    break;
 	  case PARAM_DEFS:
+	    System.out.println("Got parameter definitions");
 	    rss.consumeParamDefs(message[0]);
 	    break;
 	  case STATUS:
+	    System.out.println("Got status message");
+	    int[] cmds = new int[REG_MAX_NUM_STR_CMDS];
+	    int seqNum = rss.consumeStatus(simHandle, cmds);
+
+	    for(int i = 0; i < cmds.length; i++) {
+	      switch(cmds[i]) {
+	      case REG_STR_STOP:
+	      case REG_STR_DETACH:
+		simHandle = rss.deleteSimTableEntry(simHandle);
+		done = true;
+		break;
+	      default:
+		break;
+	      }
+	      if(done) break;
+	    }
+	    System.out.println("Application seqNum: " + seqNum);
+	    
 	    break;
 	  case CONTROL:
 	    System.out.println("Got control message");
@@ -193,7 +208,7 @@ public class MiniSteerer implements Runnable, ReG_SteerConstants {
 	    System.out.println("Got log message");
 	    break;
 	  default:
-	    System.out.println("Unrecognised msg returned by getNextMessage");
+	    System.out.println("Unrecognised msg returned by getNextMessage.");
 	    break;
 	  }
 
@@ -202,12 +217,61 @@ public class MiniSteerer implements Runnable, ReG_SteerConstants {
 	case 'h':
 	  System.out.println("Possible commands are:");
 	  System.out.println("  d - Display supported commands");
+	  System.out.println("  e - Edit steerable parameter");
 	  System.out.println("  g - Get next message from application");
-	  System.out.println("  h - display this help message");
-	  System.out.println("  p - send Pause signal to application");
+	  System.out.println("  h - Display this help message");
+	  System.out.println("  l - Display list of IO and checkpoint types");
+	  System.out.println("  o - retrieve param hist. log from application");
+	  System.out.println("  p - Send Pause signal to application");
 	  System.out.println("  q - Quit steerer - detaches from application");
-	  System.out.println("  r - send Resume signal to application");
-	  System.out.println("  s - send Stop signal to application");
+	  System.out.println("  r - Send Resume signal to application");
+	  System.out.println("  s - Send Stop signal to application");
+	  break;
+
+	case 'l':
+	  // get io types
+	  int numIOs = rss.getIOTypeNumber(simHandle);
+
+	  if(numIOs > 0) {
+	    int[] ioHandles = new int[numIOs];
+	    String[] ioLabels = new String[numIOs];
+	    int[] ioDirs = new int[numIOs];
+	    int[] ioFreqs = new int[numIOs];
+
+	    rss.getIOTypes(simHandle, ioHandles, ioLabels, ioDirs, ioFreqs);
+
+	    System.out.println("\nIO Types: " + numIOs);
+	    for(int i = 0; i < numIOs; i++) {
+	      System.out.println("IOType #" + i + "\n  freq: " + ioFreqs[i]);
+	      System.out.println("  label: " + ioLabels[i]);
+	      System.out.println("  direction: " + ReG_SteerUtilities.lookupDirection(ioDirs[i]));
+	    }
+	  }
+
+	  // get checkpoint types
+	  int numChks = rss.getChkTypeNumber(simHandle);
+
+	  if(numChks > 0) {
+	    int[] chkHandles = new int[numChks];
+	    String[] chkLabels = new String[numChks];
+	    int[] chkDirs = new int[numChks];
+	    int[] chkFreqs = new int[numChks];
+
+	    rss.getChkTypes(simHandle, chkHandles, chkLabels, chkDirs, chkFreqs);
+
+	    System.out.println("\nCheckpoint Types: " + numChks);
+	    for(int i = 0; i < numChks; i++) {
+	      System.out.println("ChkType #" + i + "\n  freq: " + chkFreqs[i]);
+	      System.out.println("  label: " + chkLabels[i]);
+	      System.out.println("  direction: " + ReG_SteerUtilities.lookupDirection(chkDirs[i]));
+	    }
+	  }
+	  break;
+
+	case 'o':
+	  int pHandle = chooseParam(simHandle, false);
+	  if(pHandle != REG_PARAM_HANDLE_NOTSET) 
+	    rss.emitRetrieveParamLogCmd(simHandle, pHandle);
 	  break;
 
 	case 'p':
@@ -235,8 +299,10 @@ public class MiniSteerer implements Runnable, ReG_SteerConstants {
       } // try
       catch(ReG_SteerException e) {
 	System.err.println(e);
-	rss.simDetach(simHandle);
-	System.exit(e.getErrorCode());
+	if(e.isFatal()) {
+	  rss.simDetach(simHandle);
+	  System.exit(e.getErrorCode());
+	}
       }
 
     } // while(!done)
@@ -248,35 +314,39 @@ public class MiniSteerer implements Runnable, ReG_SteerConstants {
     rss.steererFinalize();
   }
 
-  private String readLine() {
-    String input = null;
+  private int chooseParam(int simHandle, boolean steer) {
+    
+    int numParams = rss.getParamNumber(simHandle, steer);
+    ReG_SteerParameter[] params = rss.getParamValues(simHandle, steer, numParams);
 
-    try {
-      BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in));
-      input = stdin.readLine();
-    }
-    catch(IOException e) {
-      System.err.println("IOException: " + e);
-      System.exit(1);
+    System.out.println("Which parameter to select?\n");
+    for(int i = 0; i < numParams; i++) {
+      System.out.println(i + ": " + params[i]);
     }
 
-    return input;
-  }
+    System.out.print("Enter choice or 'c' to cancel: ");
+    String userInput = IO.readLine();
+    int sel;
+    try{
+      if(userInput.charAt(0) == 'c')
+	return REG_PARAM_HANDLE_NOTSET;
 
-  private int readInt() {
-    int result = Integer.MAX_VALUE;
-    String input = null;
-
-    try {
-      input = readLine();
-      result = Integer.parseInt(input);
+      sel = Integer.parseInt(userInput);
     }
-    catch(NumberFormatException n) {
-      System.err.println("Not a valid number: " + input);
-      System.exit(1);
+    catch(IndexOutOfBoundsException ie) {
+      return REG_PARAM_HANDLE_NOTSET;
+    }
+    catch(NumberFormatException ne) {
+      System.out.println("Not a number: " + userInput);
+      return REG_PARAM_HANDLE_NOTSET;      
     }
 
-    return result;
+    if(sel < 0 || sel >= numParams) {
+      System.out.println("Not a valid selection: " + sel);
+      return REG_PARAM_HANDLE_NOTSET;
+    }
+
+    return params[sel].getHandle();
   }
 
 }
