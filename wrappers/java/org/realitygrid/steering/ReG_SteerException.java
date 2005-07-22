@@ -43,6 +43,7 @@ package org.realitygrid.steering;
 public class ReG_SteerException extends RuntimeException {
 
   private int errorCode;
+  private boolean fatal;
 
   /**
    * Constructs a RealityGrid exception with no error code or
@@ -50,6 +51,12 @@ public class ReG_SteerException extends RuntimeException {
    */
   public ReG_SteerException() {
     super();
+    fatal = false;
+  }
+
+  public ReG_SteerException(boolean f) {
+    super();
+    fatal = f;
   }
 
   /**
@@ -60,6 +67,12 @@ public class ReG_SteerException extends RuntimeException {
    */
   public ReG_SteerException(String s) {
     super(s);
+    fatal = false;
+  }
+
+  public ReG_SteerException(String s, boolean f) {
+    super(s);
+    fatal = f;
   }
 
   /**
@@ -71,6 +84,13 @@ public class ReG_SteerException extends RuntimeException {
   public ReG_SteerException(int ec) {
     super();
     errorCode = ec;
+    fatal = false;
+  }
+
+  public ReG_SteerException(int ec, boolean f) {
+    super();
+    errorCode = ec;
+    fatal = f;
   }
 
   /**
@@ -83,6 +103,13 @@ public class ReG_SteerException extends RuntimeException {
   public ReG_SteerException(String s, int ec) {
     super(s);
     errorCode = ec;
+    fatal = false;
+  }
+
+  public ReG_SteerException(String s, int ec, boolean f) {
+    super(s);
+    errorCode = ec;
+    fatal = f;
   }
 
   /**
@@ -95,12 +122,22 @@ public class ReG_SteerException extends RuntimeException {
   }
 
   /**
+   * Return the fatal status of this exception.
+   *
+   * @return true if this exception should be treated as a fatal error,
+   * false otherwise.
+   */
+  public boolean isFatal() {
+    return fatal;
+  }
+
+  /**
    *
    */
   public String toString() {
     String errorMessage = super.toString();
     errorMessage += " ReG Error code: ";
-    errorMessage += ReG_SteerUtilities.errorLookup(errorCode);
+    errorMessage += ReG_SteerUtilities.lookupReturn(errorCode);
     return errorMessage;
   }
 
