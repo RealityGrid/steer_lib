@@ -44,19 +44,19 @@ package org.realitygrid.steering;
 public class ReG_SteerUtilities implements ReG_SteerConstants {
 
   /**
-   * Convert an error code to a string representation, <em>e.g.</em>
+   * Convert a return code to a string representation, <em>e.g.</em>
    * <code>REG_FAILURE</code>.
    *
-   * @param errorCode the error code to lookup.
+   * @param returnCode the error code to lookup.
    *
    * @throws ReG_SteerException If an invalid error code is given.
    *
    * @see ReG_SteerConstants
    */
-  public static String errorLookup(int errorCode) throws ReG_SteerException {
+  public static String lookupReturn(int returnCode) throws ReG_SteerException {
     String result;
 
-    switch(errorCode) {
+    switch(returnCode) {
     case REG_SUCCESS:
       result = "REG_SUCCESS";
       break;
@@ -95,7 +95,7 @@ public class ReG_SteerUtilities implements ReG_SteerConstants {
    *
    * @see ReG_SteerConstants
    */
-  public static String commandLookup(int command) throws ReG_SteerException {
+  public static String lookupCommand(int command) throws ReG_SteerException {
     String result;
 
     switch(command) {
@@ -125,7 +125,7 @@ public class ReG_SteerUtilities implements ReG_SteerConstants {
   }
 
   /**
-   * Convert an type code to a string representation, <em>e.g.</em>
+   * Convert a type code to a string representation, <em>e.g.</em>
    * <code>REG_CHAR</code>.
    *
    * @param type the type code to lookup.
@@ -134,7 +134,7 @@ public class ReG_SteerUtilities implements ReG_SteerConstants {
    *
    * @see ReG_SteerConstants
    */
-  public static String typeLookup(int type) throws ReG_SteerException {
+  public static String lookupType(int type) throws ReG_SteerException {
     String result;
 
     switch(type) {
@@ -164,6 +164,36 @@ public class ReG_SteerUtilities implements ReG_SteerConstants {
       break;
    default:
       throw new ReG_SteerException("Unknown type.", REG_FAILURE);
+    }
+
+    return result;
+  }
+
+  /**
+   * Convert a direction code to a string representation, <em>e.g.</em>
+   * <code>REG_IO_IN</code>.
+   *
+   * @param dir the direction code to lookup.
+   *
+   * @throws ReG_SteerException If an invalid direction code is given.
+   *
+   * @see ReG_SteerConstants
+   */
+  public static String lookupDirection(int dir) throws ReG_SteerException {
+    String result;
+
+    switch(dir) {
+    case REG_IO_IN:
+      result = "REG_IO_IN";
+      break;
+    case REG_IO_OUT:
+      result = "REG_IO_OUT";
+      break;
+    case REG_IO_INOUT:
+      result = "REG_IO_INOUT";
+      break;
+    default:
+      throw new ReG_SteerException("Unknown direction.", REG_FAILURE);
     }
 
     return result;
