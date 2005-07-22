@@ -296,6 +296,10 @@ public class ReG_SteerAppside implements ReG_SteerConstants {
    * @see ReG_SteerParameter#register()
    */
   public void registerParam(ReG_SteerParameter param) throws ReG_SteerException {
+    if(param.isRegistered()) {
+      throw new ReG_SteerException("This parameter (" + param.getLabel() + ") is already registered.", REG_FAILURE);
+    }
+
     int steered = REG_FALSE;
     if(param.isSteerable())
       steered = REG_TRUE;
