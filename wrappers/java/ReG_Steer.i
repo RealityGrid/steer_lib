@@ -67,8 +67,10 @@
 %pointer_class(double, Doublep);
 //%pointer_class(byte, Bytep);
 
-/* The following two typemaps add the ReG_SWIG baseclass and
- * getPointer to the SWIGTYPE classes that are auto-generated */
+/*
+ * The following two typemaps add the ReG_SWIG baseclass and
+ * getPointer to the SWIGTYPE classes that are auto-generated
+ */
 %typemap(javabase) SWIGTYPE, SWIGTYPE *, SWIGTYPE &, SWIGTYPE [], 
                                                     SWIGTYPE (CLASS::*) "ReG_SWIG"
 
@@ -79,8 +81,10 @@
   }
 %}
 
-/* A set of typemaps to convert a java array of ints into a
- * C array of ints and a length variable */
+/* 
+ * A set of typemaps to convert a java array of ints into a
+ * C array of ints and a length variable
+ */
 %typemap(java, in) (int length, int *array) {
   $1 = (int) (*jenv)->GetArrayLength(jenv, $input);
   $2 = (int*) (*jenv)->GetIntArrayElements(jenv, $input, 0);
@@ -93,7 +97,9 @@
 %typemap(jstype) (int length, int *array) "int[]"
 %typemap(javain) (int length, int *array) "$javainput"
 
-/* A set of typemaps to update the contents of arrays of strings */
+/*
+ * A set of typemaps to update the contents of arrays of strings
+ */
 %typemap(java, in) char **update (jint len) {
   int i;
   if(!$input) {
@@ -127,7 +133,9 @@
 %typemap(jstype) char **update "String[]"
 %typemap(javain) char **update "$javainput"
 
-/* A set of typemaps for the data emitter method */
+/*
+ * A set of typemaps for the data emitter method
+ */
 %typemap(java, in, numinputs=0) (int type, int count) {
   /* Just throw these away as we can work them out! */
 }
@@ -176,7 +184,9 @@
 %typemap(jstype) void* indata "Object"
 %typemap(javain) void* indata "$javainput"
 
-/* A set of typemaps for the data consumer method */
+/*
+ * A set of typemaps for the data consumer method
+ */
 %typemap(java, in, numinputs=0) void* outdata {
   /* Just throw outdata away from the inputs! */
 }
@@ -247,7 +257,9 @@
   return $jnicall;
 }
 
-/* A set of typemaps for the get_param_details method */
+/*
+ * A set of typemaps for the get_param_details method
+ */
 %typemap(java, in, numinputs=0) Param_details_struct* outdetails {
   /* Just throw outdata away from the inputs! */
 }
@@ -299,6 +311,64 @@
   return $jnicall;
 }
 
+/*
+ * A set of typemaps to accept arrays of Strings as arrays of char*
+ */
+%typemap(java, in) char **inStrings(jint len) {
+  int i;
+  if(!$input) {
+    $1 = NULL;
+    len = 0;
+  }
+  else {
+    len = (*jenv)->GetArrayLength(jenv, $input);
+    $1 = (char**) malloc((len + 1) * sizeof(char*));
+    /* make a copy of each string */
+    for(i = 0; i < len; i++) {
+      jstring jString = (jstring)(*jenv)->GetObjectArrayElement(jenv, $input, i);
+      const char* cString = (*jenv)->GetStringUTFChars(jenv, jString, 0);
+      $1[i] = malloc(strlen((cString) + 1) * sizeof(const char*));
+      strcpy($1[i], cString);
+      (*jenv)->ReleaseStringUTFChars(jenv, jString, cString);
+      (*jenv)->DeleteLocalRef(jenv, jString);
+    }
+    $1[i] = 0;
+  }
+}
+%typemap(freearg) char **inStrings {
+  int i;
+  for(i = 0; i < len$argnum-1; i++)
+    if($1[i]) free($1[i]);
+  if($1) free($1);
+}
+%typemap(jni) char **inStrings "jobjectArray"
+%typemap(jtype) char **inStrings "String[]"
+%typemap(jstype) char **inStrings "String[]"
+%typemap(javain) char **inStrings "$javainput"
+
+/*
+ * A set of typemaps to accept arrays of ints as int* (and handle NULL!)
+ */
+%typemap(java, in) int *inInts(jint len) {
+  if(!$input) {
+    $1 = NULL;
+    len = 0;
+  }
+  else {
+    len = (*jenv)->GetArrayLength(jenv, $input);
+    $1 = (int*) malloc(len * sizeof(int));
+    (*jenv)->GetIntArrayRegion(jenv, $input, 0, (len - 1), $1);
+  }
+}
+%typemap(freearg) int *inInts {
+  if($1) free($1);
+}
+%typemap(jni) int *inInts "jobjectArray"
+%typemap(jtype) int *inInts "int[]"
+%typemap(jstype) int *inInts "int[]"
+%typemap(javain) int *inInts "$javainput"
+
+
 /* Strings and arrays stuff */
 %include "arrays_java.i"
 
@@ -309,12 +379,22 @@
   char** SteerParamLabels,
   char** SteerCmdParams,
   char** simName,
-  char** simGSH
+  char** simGSH,
+  char** chk_labels,
+  char** io_labels
 }
 
 %apply int[] {
   int *SteerCommands,
-  int *cmd_ids
+  int *cmd_ids,
+  int *handles,
+  int *chk_handles,
+  int *chk_types,
+  int *chk_freqs,
+  int *io_handles,
+  int *io_types,
+  int *io_freqs,
+  int *Commands
 };
 
 %apply (int type, int count, void* outdata) {
@@ -335,6 +415,12 @@
   (int num_params, Param_details_struct* param_details)
 }
 %apply Param_details_struct* outdetails { Param_details_struct* param_details }
+
+%apply char **inStrings {
+  char **SysCmdParams,
+  char* *vals
+}
+%apply int *inInts { int *SysCommands }
 
 /* Pull in the common API definition file */
 %include "../ReG_Steer_API.i"
