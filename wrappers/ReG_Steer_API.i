@@ -30,9 +30,11 @@
   Author........: Robert Haines
 ---------------------------------------------------------------------------- */
 
-/* If debugging is not required, this ensures REG_DEBUG is still valid */
-#ifndef REG_DEBUG
+/* This ensures REG_DEBUG is passed through to the wrappers */
+#if (REG_DEBUG == 0)
 #define REG_DEBUG 0
+#else
+#define REG_DEBUG 1
 #endif // REG_DEBUG
 
 /*-------------- Application-side function prototypes -------------*/
@@ -232,9 +234,47 @@ extern int Sim_attach(char *SimID,
 
 extern int Sim_detach(int *SimHandle);
 
+extern int Delete_sim_table_entry(int *SimHandle);
+
+extern int Consume_param_defs(int SimHandle);
+
 extern int Get_param_number(int  sim_handle,
 			    int  steerable,
 			    int *num_params);
+
+extern int Set_param_values(int    sim_handle,
+			    int    num_params,
+			    int   *handles,
+			    char* *vals);
+
+//extern int Get_param_log(int      sim_handle,
+//			 int      handle,
+//			 double **buf, 
+//			 int     *num_entries);
+
+extern int Consume_IOType_defs(int SimHandle);
+
+extern int Get_iotype_number(int sim_handle,
+			     int *num_iotypes);
+
+extern int Get_iotypes(int    sim_handle,
+		       int    num_iotypes,
+		       int   *io_handles,
+		       char* *io_labels,
+		       int   *io_types,
+		       int   *io_freqs);
+
+extern int Consume_ChkType_defs(int SimHandle);
+
+extern int Get_chktype_number(int  sim_handle,
+			      int *num_chktypes);
+
+extern int Get_chktypes(int    sim_handle,
+			int    num_chktypes,
+			int   *chk_handles,
+			char* *chk_labels,
+			int   *chk_types,
+			int   *chk_freqs);
 
 extern int Get_supp_cmd_number(int  sim_handle,
 			       int *num_cmds);
@@ -249,13 +289,20 @@ extern int Emit_pause_cmd(int SimHandle);
 
 extern int Emit_resume_cmd(int SimHandle);
 
+extern int Emit_retrieve_param_log_cmd(int SimHandle, 
+				       int ParamHandle);
+
 extern int Get_next_message(int   *SimHandle,
 			    int   *msg_type);
 
-extern int Consume_param_defs(int SimHandle);
+extern int Emit_control(int    SimHandle,
+			int    NumCommands,
+			int   *SysCommands,
+			char **SysCmdParams);
 
-extern int Consume_IOType_defs(int SimHandle);
-
-extern int Consume_ChkType_defs(int SimHandle);
+extern int Consume_status(int   SimHandle,
+			  int  *SeqNum,
+			  int  *NumCmds,
+			  int  *Commands);
 
 #endif // SWIGJAVA
