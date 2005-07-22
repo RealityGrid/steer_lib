@@ -529,7 +529,7 @@ public class ReG_SteerParameter implements ReG_SteerConstants {
       result += "Handle: " + handle + ", ";
     }
     result += "Label: " + label;
-    result += ", Type: " + ReG_SteerUtilities.typeLookup(type);
+    result += ", Type: " + ReG_SteerUtilities.lookupType(type);
 
     switch(type) {
     case REG_INT:
@@ -545,6 +545,8 @@ public class ReG_SteerParameter implements ReG_SteerConstants {
       result += ", Value: " + getDoubleValue();
       break;
     }
+
+    result += " (" + minLabel + ", " + maxLabel + ")";
 
     return result;
   }
