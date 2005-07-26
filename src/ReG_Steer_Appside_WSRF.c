@@ -115,8 +115,8 @@ int Initialize_steering_connection_wsrf(int  NumSupportedCmds,
   if(!(Steerer_connection.SGS_info.soap = 
                 (struct soap*)malloc(sizeof(struct soap)))){
 
-    fprintf(stderr, "Sim_attach_soap: failed to malloc memory for "
-	    "soap struct\n");
+    fprintf(stderr, "Initialize_steering_connection_wsrf: failed to malloc "
+	    "memory for soap struct\n");
     return REG_FAILURE;
   }
 
