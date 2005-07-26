@@ -122,7 +122,9 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg,
   -----------------------*/
 
   if (!xmlStrcmp(cur->name, (const xmlChar *) "ReG_steer_message")) {
+#if REG_DEBUG_FULL
     fprintf(stderr,"Parse_xml: Have ReG_steer_message doc\n");
+#endif
     parseSteerMessage(doc, ns, cur, msg, sim);
 
     /* Print out what we've got */
@@ -133,7 +135,9 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg,
 #endif
   }
   else if (!xmlStrcmp(cur->name, (const xmlChar *) "ResourceProperties")) {
+#if REG_DEBUG_FULL
     fprintf(stderr,"Parse_xml: Have ResourceProperties doc\n");
+#endif
     parseResourceProperties(doc, ns, cur, sim);
 
     /* Print out what we've got */
