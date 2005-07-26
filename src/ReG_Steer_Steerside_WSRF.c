@@ -72,7 +72,7 @@ int Sim_attach_wsrf (Sim_entry_type *sim, char *SimID){
   sim->SGS_info.soap = (struct soap*)malloc(sizeof(struct soap));
   if(!(sim->SGS_info.soap)){
 
-    fprintf(stderr, "Sim_attach_soap: failed to malloc memory for "
+    fprintf(stderr, "Sim_attach_wsrf: failed to malloc memory for "
 	    "soap struct\n");
     return REG_FAILURE;
   }
@@ -80,8 +80,10 @@ int Sim_attach_wsrf (Sim_entry_type *sim, char *SimID){
      http connections */
   soap_init2(sim->SGS_info.soap, SOAP_IO_KEEPALIVE, SOAP_IO_KEEPALIVE);
 
+#if REG_DEBUG
   /* ARPDBG Ptr to a handler so we can see which tags we're ignoring */
   sim->SGS_info.soap->fignore = soapMismatchHandler;
+#endif
 
   printf("Calling Attach...\n");
   if(soap_call_sws__Attach((sim->SGS_info.soap), SimID, "", NULL, 
@@ -93,6 +95,12 @@ int Sim_attach_wsrf (Sim_entry_type *sim, char *SimID){
   printf("...done Attach\n");
   /*printf("Attach returned: %s\n", response._AttachReturn);*/
   printf("Attach returned: %s\n", response);
+
+  if(strstr(response, "<faultcode>")){
+    fprintf(stderr, "Attach returned fault: %s\n", response);
+    Finalize_connection_wsrf(sim);
+    return REG_FAILURE;
+  }
 
   /* That worked OK so store address of SWS */
   sprintf(sim->SGS_info.address, SimID);
@@ -185,7 +193,7 @@ struct msg_struct *Get_status_msg_wsrf(Sim_entry_type *sim)
   }
 
   modTime = atoi(pBuf);
-  fprintf(stderr, "Get_status_msg_wsrf: modified time = %d\n", modTime);
+  /*fprintf(stderr, "Get_status_msg_wsrf: modified time = %d\n", modTime);*/
   if(modTime != ReG_lastModTime){
     ReG_lastModTime=modTime;
     fprintf(stderr, 
@@ -276,7 +284,9 @@ char *Get_resource_property (SGS_info_type *sgs_info,
     return NULL;
   }
 
+#if REG_DEBUG_FULL
   printf("Get_resource_property for %s: %s\n", name, out);
+#endif
   free(in.__ptr[0].ResourceProperty);
   return out;
 }
@@ -294,9 +304,9 @@ char *Get_resource_property_doc(SGS_info_type *sgs_info)
     soap_print_fault(sgs_info->soap, stderr);
     return NULL;
   }
-  /*#if REG_DEBUG_FULL*/
+#if REG_DEBUG_FULL
   printf("GetResourcePropertyDocument returned: %s\n", out);
-  /*#endif*/
+#endif
   return out;
 }
 
