@@ -168,6 +168,53 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg,
 }
 
 /*-----------------------------------------------------------------*/
+/** Parse the supplied resource property document and pull out the
+    value of the specified resource property */
+int Extract_resource_property(char *pRPDoc, 
+			      int   size,
+			      char *name,
+			      char *resultBuf,
+			      int   resultBufLen)
+{
+  char *pStart, *pStop;
+  int   len;
+
+  if(!pRPDoc){
+
+    fprintf(stderr, "Extract_resource_property: ptr to RP document is NULL\n");
+    return REG_FAILURE;
+  }
+
+  if( !(pStart = strstr(pRPDoc, name)) ){
+    fprintf(stderr, "Extract_resource_property: RP %s not found\n",
+	    name);
+    return REG_FAILURE;
+  }
+  /* Move ptr forwards to point to beginning of content - allow for closing
+     angle bracket */
+  pStart = strchr(pStart, '>');
+  pStart++;
+
+  if(!(pStop = strstr(pStart, name))){
+    fprintf(stderr, "Extract_resource_property: closing tag for RP %s "
+	    "not found\n", name);
+    return REG_FAILURE;
+  }
+
+  /* Copy the contents into our result buffer - -2 is to allow for '</' of
+     closing element tag */
+  len = (int)(pStop - 2 - pStart);
+  strncpy(resultBuf, pStart, len);
+  resultBuf[len] = '\0';
+
+#if REG_DEBUG_FULL
+  fprintf(stderr, "Extract_resource_property: Value of RP "
+	  "%s = >>%s<<\n", name, resultBuf);
+#endif
+  return REG_SUCCESS;
+}
+
+/*-----------------------------------------------------------------*/
 
 int parseResourceProperties(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 			    Sim_entry_type *sim)

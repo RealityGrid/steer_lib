@@ -342,7 +342,8 @@ struct xtndString {
   char *str;
 };
 
-/** Enumeration of the various possible states of our parser
+/** Enumeration of the various possible states of our SAX parser
+    for the results of an OGSI findServiceData
     - corresponds to the elements of the doc we're interested in */
 enum doc_state {UNKNOWN, STARTING, OGSI_ENTRY, MEMBER_SERVICE_LOCATOR, 
 		GS_HANDLE, CONTENT, SERVICE_TYPE, COMPONENT_CONTENT, 
@@ -351,6 +352,8 @@ enum doc_state {UNKNOWN, STARTING, OGSI_ENTRY, MEMBER_SERVICE_LOCATOR,
 		COMPONENT_SOFTWARE_PACKAGE, COMPONENT_TASK_DESCRIPTION, 
 		FINISHING};
 
+/** Holds the state for the SAX parser for the results of
+    an OGSI findServiceData */
 struct ParserState {
 
   int return_val;
@@ -371,19 +374,27 @@ int Parse_registry_entries(char* buf, int size,
 			   int *num_entries, 
 			   struct registry_entry **entries);
 
-/** SAX event handler */
+/** SAX event handler for OGSI findServiceData results */
 void Start_element_handler(void           *user_data,
 			   const xmlChar  *name,
 			   const xmlChar **attrs);
 
-/** SAX event handler */
+/** SAX event handler for OGSI findServiceData results */
 void End_element_handler(void          *user_data,
 			 const xmlChar *name);
 
-/** SAX event handler */
+/** SAX event handler for OGSI findServiceData results */
 void Characters_handler(void          *user_data,
 			const xmlChar *ch,
 			int  	       len);
+
+/** Parse the supplied resource property document and pull out the
+    value of the specified resource property */
+int Extract_resource_property(char *pRPDoc, 
+			      int   size,
+			      char *name,
+			      char *resultBuf,
+			      int   resultBufLen);
 
 /** Check to see whether or not this message has been seen within the 
     last storeSize messages received 
