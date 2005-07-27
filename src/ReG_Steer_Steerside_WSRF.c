@@ -171,7 +171,9 @@ int Send_control_msg_wsrf (Sim_entry_type *sim, char *buf){
 /** Get the latest status msg from the simulation */
 struct msg_struct *Get_status_msg_wsrf(Sim_entry_type *sim)
 {
+  char *pRPDoc;
   char *pBuf;
+  char buf[REG_MAX_MSG_SIZE];
   long int modTime;
   struct msg_struct *msg = NULL;
 
@@ -179,10 +181,13 @@ struct msg_struct *Get_status_msg_wsrf(Sim_entry_type *sim)
   msg = Get_next_stored_msg(sim);
   if(msg)return msg;
 
+  pRPDoc = Get_resource_property_doc(&(sim->SGS_info));
+
   /* Check for changes to RP first (a.k.a. notifications) */
-  pBuf = Get_resource_property(&(sim->SGS_info), 
-			       "lastModifiedTime");
-  if(!pBuf){
+  if(Extract_resource_property(pRPDoc, strlen(pRPDoc),
+			       "sws:lastModifiedTime", 
+			       buf, REG_MAX_MSG_SIZE) != REG_SUCCESS){
+
     /* lastModifiedTime is an intrinsic ResourceProperty that all
        SWSs have - therefore failure to get it is serious...
        ...flag that we hit an error as opposed to just failed to 
@@ -192,28 +197,28 @@ struct msg_struct *Get_status_msg_wsrf(Sim_entry_type *sim)
     return msg;
   }
 
-  modTime = atoi(pBuf);
+  modTime = atoi(buf);
+
   /*fprintf(stderr, "Get_status_msg_wsrf: modified time = %d\n", modTime);*/
   if(modTime != ReG_lastModTime){
     ReG_lastModTime=modTime;
-    fprintf(stderr, 
-	    "ARPDBG: Get_status_msg_wsrf: calling Get_resource_property_doc\n");
-    pBuf = Get_resource_property_doc(&(sim->SGS_info));
 
-    /* Parse the doc; messages are stored in the Msg_store struct
+    /* Parse the whole doc; messages are stored in the Msg_store struct
        associated with the sim entry */
-    if(Parse_xml_buf(pBuf, strlen(pBuf), NULL, sim) != REG_SUCCESS){
+    if(Parse_xml_buf(pRPDoc, strlen(pRPDoc), NULL, sim) != REG_SUCCESS){
 
       Delete_msg_struct(&msg);
     }
     return Get_next_stored_msg(sim);
   }
   else{
-    if(pBuf = Get_resource_property (&(sim->SGS_info),
-				     "latestStatusMsg")){
+    /* Just get the latest status message from the app */
+    if(Extract_resource_property(pRPDoc, strlen(pRPDoc),
+				 "sws:latestStatusMsg", 
+				 buf, REG_MAX_MSG_SIZE) == REG_SUCCESS){
 
       msg = New_msg_struct();
-      if(Parse_xml_buf(pBuf, strlen(pBuf), msg, sim) != REG_SUCCESS){
+      if(Parse_xml_buf(buf, strlen(buf), msg, sim) != REG_SUCCESS){
 
 	Delete_msg_struct(&msg);
       }
@@ -264,7 +269,9 @@ char *Get_resource_property (SGS_info_type *sgs_info,
   struct wsrp__GetMultipleResourcePropertiesRequest in;
   char *out;
   int   i;
-
+#ifdef USE_REG_TIMING
+  double time0, time1;
+#endif
   in.__size = 1;
   in.__ptr = (struct wsrp__ResourcePropertyStruct *)malloc(in.__size*
 							  sizeof(struct wsrp__ResourcePropertyStruct));
@@ -274,6 +281,9 @@ char *Get_resource_property (SGS_info_type *sgs_info,
   }
   strcpy(in.__ptr[0].ResourceProperty, name);
 
+#ifdef USE_REG_TIMING
+  Get_current_time_seconds(&time0);
+#endif
   /* This works for a SINGLE RP (out = char*)*/
   if(soap_call_wsrp__GetMultipleResourceProperties(sgs_info->soap, 
 						   sgs_info->address, 
@@ -283,6 +293,11 @@ char *Get_resource_property (SGS_info_type *sgs_info,
     free(in.__ptr[0].ResourceProperty);
     return NULL;
   }
+#ifdef USE_REG_TIMING
+  Get_current_time_seconds(&time1);
+  fprintf(stderr, "TIMING: soap_call_wsrp__GetMultipleResourceProperties "
+	  "took %f seconds\n", (time1-time0));
+#endif
 
 #if REG_DEBUG_FULL
   printf("Get_resource_property for %s: %s\n", name, out);
@@ -296,7 +311,13 @@ char *Get_resource_property (SGS_info_type *sgs_info,
 char *Get_resource_property_doc(SGS_info_type *sgs_info)
 {
   char *out;
+#ifdef USE_REG_TIMING
+  double time0, time1;
+#endif
 
+#ifdef USE_REG_TIMING
+  Get_current_time_seconds(&time0);
+#endif
   if(soap_call_wsrp__GetResourcePropertyDocument((sgs_info->soap), 
 						 sgs_info->address, 
 						 "", NULL,
@@ -304,6 +325,12 @@ char *Get_resource_property_doc(SGS_info_type *sgs_info)
     soap_print_fault(sgs_info->soap, stderr);
     return NULL;
   }
+#ifdef USE_REG_TIMING
+  Get_current_time_seconds(&time1);
+  fprintf(stderr, "TIMING: soap_call_wsrp__GetResourcePropertyDocument "
+	  "took %f seconds\n", (time1-time0));
+#endif
+
 #if REG_DEBUG_FULL
   printf("GetResourcePropertyDocument returned: %s\n", out);
 #endif
