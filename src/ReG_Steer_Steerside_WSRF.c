@@ -284,7 +284,7 @@ char *Get_resource_property (SGS_info_type *sgs_info,
 #ifdef USE_REG_TIMING
   Get_current_time_seconds(&time0);
 #endif
-  /* This works for a SINGLE RP (out = char*)*/
+
   if(soap_call_wsrp__GetMultipleResourceProperties(sgs_info->soap, 
 						   sgs_info->address, 
 						   "", in,
