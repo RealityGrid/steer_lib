@@ -93,12 +93,6 @@ struct sws__DestroyResponse
 	void *_rubbish;	/* RPC return element */	/* transient */
 };
 
-/* sws:ClearStatusMsgQueueResponse: */
-struct sws__ClearStatusMsgQueueResponse
-{
-	char *_ClearStatusMsgQueueReturn;	/* RPC return element */	/* optional element of type xsd:string */
-};
-
 /* sws:PutParamLogResponse: */
 struct sws__PutParamLogResponse
 {
@@ -152,7 +146,7 @@ struct GetResourcePropertyRequest
 /* wsrp:GetResourcePropertyResponse: */
 struct wsrp__GetResourcePropertyResponse
 {
-	char *ResourceProperty;	/* RPC return element */	/* optional element of type xsd:string */
+	char *ResourceProperty;	/* optional element of type xsd:string */
 };
 
 /* wsrp:ResourcePropertyStruct: */
@@ -165,13 +159,6 @@ struct wsrp__ResourcePropertyStruct
 struct wsrp__GetMultipleResourcePropertiesRequest
 {
 	struct wsrp__ResourcePropertyStruct *__ptr;
-	int __size;
-};
-
-/* SOAP encoded array of xsd:string schema type: */
-struct GetMultipleResourcePropertiesResponse
-{
-	char **__ptr;
 	int __size;
 };
 
@@ -201,13 +188,7 @@ struct sws__GetLatestStatus
 /* wsrp:GetResourceProperty: */
 struct wsrp__GetResourceProperty
 {
-	char *name;	/* optional element of type xsd:string */
-};
-
-/* wsrp:GetMultipleResourcePropertiesResponse: */
-struct wsrp__GetMultipleResourcePropertiesResponse
-{
-	char **_out;	/* RPC return element */	/* optional element of type xsd:string */
+	char *_;	/* optional element of type xsd:string */
 };
 
 /* wsrp:GetMultipleResourceProperties: */
@@ -232,11 +213,6 @@ struct wsrp__GetResourcePropertyDocument
 struct sws__Attach
 {
 	void *_;	/* transient */
-};
-
-/* sws:ClearStatusMsgQueue: */
-struct sws__ClearStatusMsgQueue
-{
 };
 
 /* sws:Detach: */
@@ -900,7 +876,7 @@ typedef char *XML;
 
 SOAP_FMAC5 int SOAP_FMAC6 sws__GetLatestStatus(struct soap*, struct sws__GetLatestStatusResponse *out);
 
-SOAP_FMAC5 int SOAP_FMAC6 wsrp__GetResourceProperty(struct soap*, char *name, struct wsrp__GetResourcePropertyResponse *out);
+SOAP_FMAC5 int SOAP_FMAC6 wsrp__GetResourceProperty(struct soap*, char *_, char **out_);
 
 SOAP_FMAC5 int SOAP_FMAC6 wsrp__GetMultipleResourceProperties(struct soap*, struct wsrp__GetMultipleResourcePropertiesRequest in, char **_out);
 
@@ -909,8 +885,6 @@ SOAP_FMAC5 int SOAP_FMAC6 wsrp__SetResourceProperties(struct soap*, char *wsrp__
 SOAP_FMAC5 int SOAP_FMAC6 wsrp__GetResourcePropertyDocument(struct soap*, void *_, char **out_);
 
 SOAP_FMAC5 int SOAP_FMAC6 sws__Attach(struct soap*, void *_, char **out_);
-
-SOAP_FMAC5 int SOAP_FMAC6 sws__ClearStatusMsgQueue(struct soap*, struct sws__ClearStatusMsgQueueResponse *out);
 
 SOAP_FMAC5 int SOAP_FMAC6 sws__Detach(struct soap*, void *param_1, struct sws__DetachResponse *out);
 
@@ -1029,7 +1003,7 @@ SOAP_FMAC5 int SOAP_FMAC6 rgt__addNode(struct soap*, char *in0, char *in1, char 
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_call_sws__GetLatestStatus(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct sws__GetLatestStatusResponse *out);
 
-SOAP_FMAC5 int SOAP_FMAC6 soap_call_wsrp__GetResourceProperty(struct soap *soap, const char *soap_endpoint, const char *soap_action, char *name, struct wsrp__GetResourcePropertyResponse *out);
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_wsrp__GetResourceProperty(struct soap *soap, const char *soap_endpoint, const char *soap_action, char *_, char **out_);
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_call_wsrp__GetMultipleResourceProperties(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct wsrp__GetMultipleResourcePropertiesRequest in, char **_out);
 
@@ -1038,8 +1012,6 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call_wsrp__SetResourceProperties(struct soap *soa
 SOAP_FMAC5 int SOAP_FMAC6 soap_call_wsrp__GetResourcePropertyDocument(struct soap *soap, const char *soap_endpoint, const char *soap_action, void *_, char **out_);
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_call_sws__Attach(struct soap *soap, const char *soap_endpoint, const char *soap_action, void *_, char **out_);
-
-SOAP_FMAC5 int SOAP_FMAC6 soap_call_sws__ClearStatusMsgQueue(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct sws__ClearStatusMsgQueueResponse *out);
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_call_sws__Detach(struct soap *soap, const char *soap_endpoint, const char *soap_action, void *param_1, struct sws__DetachResponse *out);
 
@@ -1170,8 +1142,6 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_serve_wsrp__SetResourceProperties(struct soap*);
 SOAP_FMAC5 int SOAP_FMAC6 soap_serve_wsrp__GetResourcePropertyDocument(struct soap*);
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_serve_sws__Attach(struct soap*);
-
-SOAP_FMAC5 int SOAP_FMAC6 soap_serve_sws__ClearStatusMsgQueue(struct soap*);
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_serve_sws__Detach(struct soap*);
 

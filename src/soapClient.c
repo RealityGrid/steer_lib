@@ -11,7 +11,7 @@ extern "C" {
 
 SOAP_BEGIN_NAMESPACE(soap)
 
-SOAP_SOURCE_STAMP("@(#) soapClient.c ver 2.7.2 2005-06-29 12:19:29 GMT")
+SOAP_SOURCE_STAMP("@(#) soapClient.c ver 2.7.2 2005-07-28 16:09:05 GMT")
 
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_call_sws__GetLatestStatus(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct sws__GetLatestStatusResponse *out)
@@ -64,12 +64,12 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call_sws__GetLatestStatus(struct soap *soap, cons
 	return soap_closesock(soap);
 }
 
-SOAP_FMAC5 int SOAP_FMAC6 soap_call_wsrp__GetResourceProperty(struct soap *soap, const char *soap_endpoint, const char *soap_action, char *name, struct wsrp__GetResourcePropertyResponse *out)
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_wsrp__GetResourceProperty(struct soap *soap, const char *soap_endpoint, const char *soap_action, char *_, char **out_)
 {	struct wsrp__GetResourceProperty soap_tmp_wsrp__GetResourceProperty;
 	if (!soap_action)
 		soap_action = "";
 	soap->encodingStyle = NULL;
-	soap_tmp_wsrp__GetResourceProperty.name = name;
+	soap_tmp_wsrp__GetResourceProperty._ = _;
 	soap_begin(soap);
 	soap_serializeheader(soap);
 	soap_serialize_wsrp__GetResourceProperty(soap, &soap_tmp_wsrp__GetResourceProperty);
@@ -91,13 +91,13 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call_wsrp__GetResourceProperty(struct soap *soap,
 	 || soap_envelope_end_out(soap)
 	 || soap_end_send(soap))
 		return soap_closesock(soap);
-	soap_default_wsrp__GetResourcePropertyResponse(soap, out);
+	*out_ = NULL;
 	if (soap_begin_recv(soap)
 	 || soap_envelope_begin_in(soap)
 	 || soap_recv_header(soap)
 	 || soap_body_begin_in(soap))
 		return soap_closesock(soap);
-	soap_get_wsrp__GetResourcePropertyResponse(soap, out, "wsrp:GetResourcePropertyResponse", "");
+	soap_inliteral(soap, NULL, out_);
 	if (soap->error)
 	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
 			return soap_recv_fault(soap);
@@ -115,7 +115,6 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call_wsrp__GetResourceProperty(struct soap *soap,
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_call_wsrp__GetMultipleResourceProperties(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct wsrp__GetMultipleResourcePropertiesRequest in, char **_out)
 {	struct wsrp__GetMultipleResourceProperties soap_tmp_wsrp__GetMultipleResourceProperties;
-	struct wsrp__GetMultipleResourcePropertiesResponse *soap_tmp_wsrp__GetMultipleResourcePropertiesResponse;
 	if (!soap_action)
 		soap_action = "";
 	soap->encodingStyle = NULL;
@@ -147,7 +146,7 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call_wsrp__GetMultipleResourceProperties(struct s
 	 || soap_recv_header(soap)
 	 || soap_body_begin_in(soap))
 		return soap_closesock(soap);
-	soap_tmp_wsrp__GetMultipleResourcePropertiesResponse = soap_get_wsrp__GetMultipleResourcePropertiesResponse(soap, NULL, "wsrp:GetMultipleResourcePropertiesResponse", "");
+	soap_inliteral(soap, NULL, _out);
 	if (soap->error)
 	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
 			return soap_recv_fault(soap);
@@ -160,8 +159,6 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call_wsrp__GetMultipleResourceProperties(struct s
 #endif
 	 || soap_end_recv(soap))
 		return soap_closesock(soap);
-	if (_out && soap_tmp_wsrp__GetMultipleResourcePropertiesResponse->_out)
-		*_out = *soap_tmp_wsrp__GetMultipleResourcePropertiesResponse->_out;
 	return soap_closesock(soap);
 }
 
@@ -299,56 +296,6 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call_sws__Attach(struct soap *soap, const char *s
 	 || soap_body_begin_in(soap))
 		return soap_closesock(soap);
 	soap_inliteral(soap, NULL, out_);
-	if (soap->error)
-	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
-			return soap_recv_fault(soap);
-		return soap_closesock(soap);
-	}
-	if (soap_body_end_in(soap)
-	 || soap_envelope_end_in(soap)
-#ifndef WITH_LEANER
-	 || soap_resolve_attachments(soap)
-#endif
-	 || soap_end_recv(soap))
-		return soap_closesock(soap);
-	return soap_closesock(soap);
-}
-
-SOAP_FMAC5 int SOAP_FMAC6 soap_call_sws__ClearStatusMsgQueue(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct sws__ClearStatusMsgQueueResponse *out)
-{	struct sws__ClearStatusMsgQueue soap_tmp_sws__ClearStatusMsgQueue;
-	if (!soap_endpoint)
-		soap_endpoint = "http://foo.bar/";
-	if (!soap_action)
-		soap_action = "";
-	soap->encodingStyle = NULL;
-	soap_begin(soap);
-	soap_serializeheader(soap);
-	soap_serialize_sws__ClearStatusMsgQueue(soap, &soap_tmp_sws__ClearStatusMsgQueue);
-	soap_begin_count(soap);
-	if (soap->mode & SOAP_IO_LENGTH)
-	{	soap_envelope_begin_out(soap);
-		soap_putheader(soap);
-		soap_body_begin_out(soap);
-		soap_put_sws__ClearStatusMsgQueue(soap, &soap_tmp_sws__ClearStatusMsgQueue, "sws:ClearStatusMsgQueue", "");
-		soap_body_end_out(soap);
-		soap_envelope_end_out(soap);
-	}
-	if (soap_connect(soap, soap_endpoint, soap_action)
-	 || soap_envelope_begin_out(soap)
-	 || soap_putheader(soap)
-	 || soap_body_begin_out(soap)
-	 || soap_put_sws__ClearStatusMsgQueue(soap, &soap_tmp_sws__ClearStatusMsgQueue, "sws:ClearStatusMsgQueue", "")
-	 || soap_body_end_out(soap)
-	 || soap_envelope_end_out(soap)
-	 || soap_end_send(soap))
-		return soap_closesock(soap);
-	soap_default_sws__ClearStatusMsgQueueResponse(soap, out);
-	if (soap_begin_recv(soap)
-	 || soap_envelope_begin_in(soap)
-	 || soap_recv_header(soap)
-	 || soap_body_begin_in(soap))
-		return soap_closesock(soap);
-	soap_get_sws__ClearStatusMsgQueueResponse(soap, out, "sws:ClearStatusMsgQueueResponse", "");
 	if (soap->error)
 	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
 			return soap_recv_fault(soap);
