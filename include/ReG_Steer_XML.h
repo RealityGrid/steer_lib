@@ -345,11 +345,14 @@ struct xtndString {
 /** Enumeration of the various possible states of our SAX parser
     for the results of an OGSI findServiceData
     - corresponds to the elements of the doc we're interested in */
-enum doc_state {UNKNOWN, STARTING, OGSI_ENTRY, MEMBER_SERVICE_LOCATOR, 
+enum doc_state {UNKNOWN, STARTING, 
+		OGSI_ENTRY, MEMBER_SERVICE_LOCATOR, 
 		GS_HANDLE, CONTENT, SERVICE_TYPE, COMPONENT_CONTENT, 
 		COMPONENT_START_DATE_TIME,
 		COMPONENT_CREATOR_NAME, COMPONENT_CREATOR_GROUP, 
 		COMPONENT_SOFTWARE_PACKAGE, COMPONENT_TASK_DESCRIPTION, 
+		/* The next line has those that are WSRF-specifc states */
+		WSRF_ENTRY, MEMBER_SERVICE_EPR, EPR, WSADDRESS,
 		FINISHING};
 
 /** Holds the state for the SAX parser for the results of

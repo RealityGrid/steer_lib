@@ -1695,11 +1695,38 @@ void Start_element_handler(void * 	user_data,
 
   /* Check that we haven't previously hit an error */
   if(state->return_val != REG_SUCCESS) return;
-
+  /*
+wssg:Entry
+wssg:MemberServiceEPR
+<EndpointReference>
+<Address></Address>
+</EndpointReference>
+/wssg:MemberServiceEPR
+...
+wssg:Content
+<registryEntry>
+...
+</registryEntry>
+/wssg:Content
+  */
   if( !xmlStrcmp(name, (const xmlChar *) "ogsi:entry") ){
 
     if (state->depth == STARTING){
       state->depth = OGSI_ENTRY;
+      /* Initialise table to hold this content */
+      state->entries[state->num_entries].service_type[0] = '\0';
+      state->entries[state->num_entries].gsh[0] = '\0';
+      state->entries[state->num_entries].application[0] = '\0';
+      state->entries[state->num_entries].start_date_time[0] = '\0';
+      state->entries[state->num_entries].user[0] = '\0';
+      state->entries[state->num_entries].group[0] = '\0';
+      state->entries[state->num_entries].job_description[0] = '\0';
+    }
+  }
+  else if( !xmlStrcmp(name, (const xmlChar *) "wssg:Entry") ){
+
+    if (state->depth == STARTING){
+      state->depth = WSRF_ENTRY;
       /* Initialise table to hold this content */
       state->entries[state->num_entries].service_type[0] = '\0';
       state->entries[state->num_entries].gsh[0] = '\0';
@@ -1749,6 +1776,19 @@ void Start_element_handler(void * 	user_data,
   else if( !xmlStrcmp(name, (const xmlChar *) "componentTaskDescription") ){
 
     if(state->depth == COMPONENT_CONTENT) state->depth = COMPONENT_TASK_DESCRIPTION;
+  }
+  /* WSRF section */
+  else if( !xmlStrcmp(name, (const xmlChar *) "wssg:MemberServiceEPR") ){
+    if(state->depth == WSRF_ENTRY) state->depth = MEMBER_SERVICE_EPR;
+  }
+  else if( !xmlStrcmp(name, (const xmlChar *) "EndpointReference") ){
+    if(state->depth == MEMBER_SERVICE_EPR) state->depth = EPR;
+  }
+  else if( !xmlStrcmp(name, (const xmlChar *) "Address") ){
+    if(state->depth == EPR) state->depth = WSADDRESS;
+  }
+  else if( !xmlStrcmp(name, (const xmlChar *) "wssg:Content") ){
+    if(state->depth == WSRF_ENTRY) state->depth = CONTENT;
   }
 }
 
@@ -1829,6 +1869,19 @@ void End_element_handler(void          *user_data,
 
     if(state->depth == COMPONENT_TASK_DESCRIPTION) state->depth = COMPONENT_CONTENT;
   }
+  /* WSRF section */
+  else if( !xmlStrcmp(name, (const xmlChar *) "wssg:MemberServiceEPR") ){
+    if(state->depth == MEMBER_SERVICE_EPR) state->depth = WSRF_ENTRY;
+  }
+  else if( !xmlStrcmp(name, (const xmlChar *) "EndpointReference") ){
+    if(state->depth == EPR) state->depth = MEMBER_SERVICE_EPR;
+  }
+  else if( !xmlStrcmp(name, (const xmlChar *) "Address") ){
+    if(state->depth == WSADDRESS) state->depth = EPR;
+  }
+  else if( !xmlStrcmp(name, (const xmlChar *) "wssg:Content") ){
+    if(state->depth == CONTENT) state->depth = WSRF_ENTRY;
+  }
 }
 
 /*-----------------------------------------------------------------*/
@@ -1843,7 +1896,7 @@ void Characters_handler(void          *user_data,
   /* Check that we haven't previously hit an error */
   if(state->return_val != REG_SUCCESS) return;
 
-  if(state->depth == GS_HANDLE){
+  if(state->depth == GS_HANDLE || state->depth == WSADDRESS){
     strncpy(state->entries[state->num_entries].gsh, (char *)ch, len);
     state->entries[state->num_entries].gsh[len] = '\0';
   } 
