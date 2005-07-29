@@ -192,8 +192,12 @@ struct msg_struct *Get_status_msg_wsrf(Sim_entry_type *sim)
        SWSs have - therefore failure to get it is serious...
        ...flag that we hit an error as opposed to just failed to 
        get a msg */
+
+    /* Actually, it will not be returned if it is empty
     msg = New_msg_struct();
     msg->msg_type = MSG_ERROR;
+    */
+    msg = NULL;
     return msg;
   }
 
@@ -300,7 +304,7 @@ char *Get_resource_property (SGS_info_type *sgs_info,
 #endif
 
 #if REG_DEBUG_FULL
-  printf("Get_resource_property for %s: %s\n", name, out);
+  printf("Get_resource_property for %s returned >>%s<<\n", name, out);
 #endif
   free(in.__ptr[0].ResourceProperty);
   return out;
