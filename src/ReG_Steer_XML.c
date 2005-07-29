@@ -134,7 +134,8 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg,
     Print_msg(msg);
 #endif
   }
-  else if (!xmlStrcmp(cur->name, (const xmlChar *) "ResourceProperties")) {
+  else if (!xmlStrcmp(cur->name, (const xmlChar *) "ResourceProperties") ||
+	   !xmlStrcmp(cur->name, (const xmlChar *) "controlMsg")) {
 #if REG_DEBUG_FULL
     fprintf(stderr,"Parse_xml: Have ResourceProperties doc\n");
 #endif
@@ -236,8 +237,14 @@ int parseResourceProperties(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
     uidStorePtr = &Msg_uid_store;
   }
 
+  /* Check where we are in tree; we might have been given the root node
+     of a ResourceProperties document or we might have been given the
+     root node of a ResourceProperty directly */
+  if( !xmlStrcmp(cur->name, (const xmlChar *) "ResourceProperties") ){
+    cur = cur->xmlChildrenNode;
+  }
+
   /* Walk the tree - search for first non-blank node */
-  cur = cur->xmlChildrenNode;
   while ( cur ){
     if(xmlIsBlankNode ( cur ) ){
       cur = cur -> next;
@@ -255,13 +262,10 @@ int parseResourceProperties(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 
       if (child && !xmlStrcmp(child->name, 
 			      (const xmlChar *) "ReG_steer_message")) {
-#if REG_DEBUG_FULL
-	fprintf(stderr, "parseResourceProperties: Calling parseSteerMessage...\n");
-#endif
 	/* Get the msg UID if present */
 	if(uidChar = xmlGetProp(child, "Msg_UID")){
 #if REG_DEBUG_FULL
-	  if(uidChar)fprintf(stderr, "parseSteerMessage: msg UID = %s\n",
+	  if(uidChar)fprintf(stderr, "parseResourceProperties: msg UID = %s\n",
 			     (char*)(uidChar));
 #endif
 	  /* Check that we haven't already seen this message 
@@ -278,6 +282,9 @@ int parseResourceProperties(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 	  }
 	}
 
+#if REG_DEBUG_FULL
+	fprintf(stderr, "parseResourceProperties: Calling parseSteerMessage...\n");
+#endif
 	curMsg->msg = New_msg_struct();
 	parseSteerMessage(doc, ns, child, curMsg->msg, sim);
 	curMsg->next = New_msg_store_struct();
@@ -318,8 +325,6 @@ int parseSteerMessage(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
   if(msg->msg_uid)fprintf(stderr, "parseSteerMessage: msg UID = %s\n",
 			  (char*)(msg->msg_uid));
 #endif
-  if( Msg_already_received((char *)(msg->msg_uid), 
-		 	   uidStorePtr) )return REG_SUCCESS;
 
  /* Walk the tree */
   cur = cur->xmlChildrenNode;
@@ -392,6 +397,12 @@ int parseSteerMessage(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 #endif
     msg->log = New_log_struct();
     parseLog(doc, ns, cur, msg->log);
+    break;
+
+  default:
+    fprintf(stderr, "Parse_xml: Unrecognised message type %d for "
+	    "message name >>%s<<\n",
+	    msg->msg_type, (const char *)(cur->name));
     break;
   }
 
@@ -1378,6 +1389,34 @@ void Print_msg(struct msg_struct *msg)
 
     fprintf(stderr, "Print_msg: ptr to msg struct is null\n");
     return;
+  }
+
+  if(msg->msg_type == MSG_ERROR){
+    fprintf(stderr, "Print_msg: msg is ERROR message\n");    
+  }
+  else if(msg->msg_type == MSG_NOTSET){
+    fprintf(stderr, "Print_msg: msg type is unset\n");
+  }
+  else if(msg->msg_type == SUPP_CMDS){
+    fprintf(stderr, "Print_msg: msg type is SUPP_CMDS\n");
+  }
+  else if(msg->msg_type == IO_DEFS){
+    fprintf(stderr, "Print_msg: msg type is IO_DEFS\n");
+  }
+  else if(msg->msg_type == PARAM_DEFS){
+    fprintf(stderr, "Print_msg: msg type is PARAM_DEFS\n");
+  }
+  else if(msg->msg_type == STATUS){
+    fprintf(stderr, "Print_msg: msg type is STATUS\n");
+  }
+  else if(msg->msg_type == CONTROL){
+    fprintf(stderr, "Print_msg: msg type is CONTROL\n");
+  }
+  else if(msg->msg_type == CHK_DEFS){
+    fprintf(stderr, "Print_msg: msg type is CHK_DEFS\n");
+  }
+  else if(msg->msg_type == STEER_LOG){
+    fprintf(stderr, "Print_msg: msg type is STEER_LOG\n");
   }
 
   if(msg->status){
