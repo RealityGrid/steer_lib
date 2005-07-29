@@ -4985,7 +4985,8 @@ int Set_steering_directory()
   }
   else{
     fprintf(stderr, "Set_steering_directory: failed to get "
-	    "scratch directory\n");
+	    "scratch directory - using ./\n");
+    sprintf(Steerer_connection.file_root, "./");
     return REG_FAILURE;
   }
 
