@@ -347,7 +347,7 @@ int Send_status_msg_wsrf (char *msg)
 struct msg_struct *Get_control_msg_wsrf ()
 {
   struct msg_struct *msg = NULL;
-  char *pBuf;
+  char *pBuf, *pLast, *pLastBut1;
 
   /* If we have a backlog of messages then return the next one 
      - we are only interested in control messages */
@@ -359,19 +359,32 @@ struct msg_struct *Get_control_msg_wsrf ()
     Delete_msg_struct(&msg);
   }
 
-  if(!(pBuf = Get_resource_property_doc(&(Steerer_connection.SGS_info))) ){
-    /* ResourcePropertyDocument should never be empty - therefore
-       failure to get it is serious...  ...flag that we hit an error as
-       opposed to just failed to get a msg */
-    msg = New_msg_struct();
-    msg->msg_type = MSG_ERROR;
-    return msg;
+  if(!(pBuf = Get_resource_property(&(Steerer_connection.SGS_info),
+				    "controlMsg")) ){
+    return NULL;
   }
 
-  /* Parse the doc - pass NULLs in as this is appside so have no
-     Sim_entry struct and results will be put in Msg_store struct */
-  if(Parse_xml_buf(pBuf, strlen(pBuf), NULL, NULL) != REG_SUCCESS){
-    return NULL;
+  pLastBut1 = NULL;
+  while(pLastBut1 != pBuf){
+
+    if( !(pLast = strstr(pBuf, "<sws:controlMsg")) ){
+      /* No control message found */
+      return NULL;
+    }
+    pLastBut1 = pLast;
+    while(pLast){
+      pLastBut1 = pLast;
+      pLast = strstr(pLast+1, "<sws:controlMsg");
+    }
+
+    fprintf(stderr, "ARPDBG, parsing >>%s<<\n", pLastBut1);
+    /* Parse the doc - pass NULLs in as this is appside so have no
+       Sim_entry struct and results will be put in Msg_store struct */
+    if(Parse_xml_buf(pLastBut1, strlen(pLastBut1), NULL, NULL) != REG_SUCCESS){
+      return NULL;
+    }
+
+    *pLastBut1 = '\0';
   }
 
   /* The results of parsing the ResourcePropertyDocument are stored
@@ -477,4 +490,12 @@ int Finalize_steering_connection_wsrf ()
   Steerer_connection.SGS_info.soap = NULL;
 
   return return_status;
+}
+
+/*-------------------------------------------------------------------------*/
+
+int Get_data_source_address_wsrf(int   index, 
+				 char *hostname,
+				 unsigned short int  *port)
+{
 }
