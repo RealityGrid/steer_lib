@@ -63,12 +63,21 @@ struct msg_struct *Get_status_msg_wsrf(Sim_entry_type *sim);
     @internal */
 struct msg_struct *Get_next_stored_msg(Sim_entry_type *sim);
 /** Get the value of the specified resource property 
-    @internal */
-char *Get_resource_property (SGS_info_type *sgs_info, 
-			     char           *name);
+    @internal 
+    @param sgs_info Pointer to struct holding info on SWS
+    @param name     Name of the resource property to get
+    @param pRP      If successful, ptr to array of char 
+                    holding value of RP */
+int Get_resource_property (SGS_info_type *sgs_info, 
+			   char          *name,
+			   char         **pRP);
 /** Get the whole resource property document 
-    @internal */
-char *Get_resource_property_doc(SGS_info_type *sgs_info);
+    @internal 
+    @param sgs_info Pointer to struct holding info on SWS
+    @param pRPDoc   If successful, ptr to array of char holding 
+    contents of the ResourceProperty document */
+int Get_resource_property_doc(SGS_info_type *sgs_info,
+			      char         **pRPDoc);
 /** Clean up a WSRF-based steering connection 
     @internal */
 int Finalize_connection_wsrf (Sim_entry_type *sim);
