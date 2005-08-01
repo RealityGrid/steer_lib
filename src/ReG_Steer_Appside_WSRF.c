@@ -44,10 +44,11 @@
 #include "soapH.h"
 
 /* These three functions are defined in the steerside_WSRF code */
-extern char *Get_resource_property (SGS_info_type *sgs_info, 
-				    char           *name);
-extern char *Get_resource_property_doc(SGS_info_type *sgs_info);
-
+extern int Get_resource_property (SGS_info_type *sgs_info, 
+				  char          *name,
+				  char         **pRP);
+extern int Get_resource_property_doc(SGS_info_type *sgs_info,
+				     char         **pDoc);
 extern struct msg_struct *Get_next_stored_msg(Sim_entry_type *sim);
 
 #ifndef WIN32
@@ -218,18 +219,18 @@ int Steerer_connected_wsrf ()
 {
   char  query_buf[REG_MAX_STRING_LENGTH];
   char *steer_status;
-
-  steer_status = Get_resource_property(&(Steerer_connection.SGS_info),
-				       STEER_STATUS_RP);
-  if(!steer_status){
-    fprintf(stderr, "Steerer_connected_wsrf: Get_resource_property failed:\n");
-    soap_print_fault(Steerer_connection.SGS_info.soap, stderr);
-
+  int   status;
+  
+  status = Get_resource_property(&(Steerer_connection.SGS_info),
+				 STEER_STATUS_RP,
+				 &steer_status);
+  if(status != REG_SUCCESS){
+    fprintf(stderr, "Steerer_connected_wsrf: Get_resource_property failed\n");
     return REG_FAILURE;
   }
 #if REG_DEBUG
   else{
-    fprintf(stderr, "Steerer_connected_soap: Get_resource_property returned: %s\n", 
+    fprintf(stderr, "Steerer_connected_wsrf: Get_resource_property returned: %s\n", 
 	    steer_status);
   }
 #endif
@@ -352,16 +353,19 @@ struct msg_struct *Get_control_msg_wsrf ()
   /* If we have a backlog of messages then return the next one 
      - we are only interested in control messages */
   msg = Get_next_stored_msg(NULL);
-  if(msg){
+  while(msg){
     if(msg->control){
       return msg;
     }
     Delete_msg_struct(&msg);
+    msg = Get_next_stored_msg(NULL);
   }
 
-  if(!(pBuf = Get_resource_property(&(Steerer_connection.SGS_info),
-				    "controlMsg")) ){
-    return NULL;
+  if(Get_resource_property(&(Steerer_connection.SGS_info),
+			   "controlMsg", &pBuf) != REG_SUCCESS){
+    msg = New_msg_struct();
+    msg->msg_type = MSG_ERROR;
+    return msg;
   }
 
   pLastBut1 = NULL;
@@ -404,6 +408,9 @@ int Save_log_wsrf (char *log_data)
 {
   struct sws__PutParamLogResponse out;
   char *pmsg_buf;
+#ifdef USE_REG_TIMING
+  double time0, time1;
+#endif
 
   if(strlen(log_data) > REG_SCRATCH_BUFFER_SIZE){
 
@@ -422,14 +429,22 @@ int Save_log_wsrf (char *log_data)
   pmsg_buf += strlen(log_data);
   pmsg_buf += sprintf(pmsg_buf, "]]></Raw_param_log></Steer_log>");
 
+#ifdef USE_REG_TIMING
+  Get_current_time_seconds(&time0);
+#endif
   if(soap_call_sws__PutParamLog(Steerer_connection.SGS_info.soap, 
 				Steerer_connection.SGS_info.address, 
 				"", Global_scratch_buffer,  
 				&out)){
-    fprintf(stderr, "Save_log_soap: soap call failed:\n");
+    fprintf(stderr, "Save_log_wsrf: soap call failed:\n");
     soap_print_fault(Steerer_connection.SGS_info.soap, stderr);
     return REG_FAILURE;
   }
+#ifdef USE_REG_TIMING
+  Get_current_time_seconds(&time1);
+  fprintf(stderr, "TIMING: soap_call_sws__PutParamLog "
+	  "took %f seconds\n", (time1-time0));
+#endif
 
   return REG_SUCCESS;
 }
