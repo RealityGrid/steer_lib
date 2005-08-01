@@ -4975,7 +4975,9 @@ int Set_steering_directory()
     if(Directory_valid(Steerer_connection.file_root) != REG_SUCCESS){
 
       fprintf(stderr, "Set_steering_directory: invalid scratch dir for "
-	      "steering: %s\n", Steerer_connection.file_root);
+	      "steering: %s\n                        Using ./ instead\n", 
+	      Steerer_connection.file_root);
+      sprintf(Steerer_connection.file_root, "./");
       return REG_FAILURE;
     }
     else{
