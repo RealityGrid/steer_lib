@@ -175,28 +175,25 @@ struct msg_struct *Get_status_msg_wsrf(Sim_entry_type *sim)
   char *pBuf;
   char buf[REG_MAX_MSG_SIZE];
   long int modTime;
+  int      status;
   struct msg_struct *msg = NULL;
 
   /* If we have a backlog of messages then return the next one */
   msg = Get_next_stored_msg(sim);
   if(msg)return msg;
 
-  pRPDoc = Get_resource_property_doc(&(sim->SGS_info));
+  if( Get_resource_property_doc(&(sim->SGS_info), &pRPDoc) != REG_SUCCESS){
+
+    msg = New_msg_struct();
+    msg->msg_type = MSG_ERROR;
+    return msg;
+  }
+
 
   /* Check for changes to RP first (a.k.a. notifications) */
   if(Extract_resource_property(pRPDoc, strlen(pRPDoc),
 			       "sws:lastModifiedTime", 
 			       buf, REG_MAX_MSG_SIZE) != REG_SUCCESS){
-
-    /* lastModifiedTime is an intrinsic ResourceProperty that all
-       SWSs have - therefore failure to get it is serious...
-       ...flag that we hit an error as opposed to just failed to 
-       get a msg */
-
-    /* Actually, it will not be returned if it is empty
-    msg = New_msg_struct();
-    msg->msg_type = MSG_ERROR;
-    */
     msg = NULL;
     return msg;
   }
@@ -267,22 +264,23 @@ struct msg_struct *Get_next_stored_msg(Sim_entry_type *sim)
 
 /*------------------------------------------------------------------*/
 /** Get the value of the specified resource property */
-char *Get_resource_property (SGS_info_type *sgs_info,
-			     char *name)
+int Get_resource_property (SGS_info_type *sgs_info,
+			   char *name,
+			   char **pRP)
 {
   struct wsrp__GetMultipleResourcePropertiesRequest in;
-  char *out;
-  int   i;
+  char  *out;
+  int    i;
 #ifdef USE_REG_TIMING
   double time0, time1;
 #endif
+  *pRP = NULL;
   in.__size = 1;
   in.__ptr = (struct wsrp__ResourcePropertyStruct *)malloc(in.__size*
 							  sizeof(struct wsrp__ResourcePropertyStruct));
 
-  for(i=0; i<in.__size;i++){
-    in.__ptr[i].ResourceProperty = (char *)malloc(128*sizeof(char));
-  }
+  
+  in.__ptr[0].ResourceProperty = (char *)malloc(128*sizeof(char));
   strcpy(in.__ptr[0].ResourceProperty, name);
 
 #ifdef USE_REG_TIMING
@@ -295,7 +293,7 @@ char *Get_resource_property (SGS_info_type *sgs_info,
 						   &out) != SOAP_OK){
     soap_print_fault(sgs_info->soap, stderr);
     free(in.__ptr[0].ResourceProperty);
-    return NULL;
+    return REG_FAILURE;
   }
 #ifdef USE_REG_TIMING
   Get_current_time_seconds(&time1);
@@ -307,17 +305,21 @@ char *Get_resource_property (SGS_info_type *sgs_info,
   printf("Get_resource_property for %s returned >>%s<<\n", name, out);
 #endif
   free(in.__ptr[0].ResourceProperty);
-  return out;
+  *pRP = out;
+  return REG_SUCCESS;
 }
 
 /*------------------------------------------------------------------*/
 /** Get the whole resource property document */
-char *Get_resource_property_doc(SGS_info_type *sgs_info)
+int Get_resource_property_doc(SGS_info_type *sgs_info,
+				char **pDoc)
 {
   char *out;
 #ifdef USE_REG_TIMING
   double time0, time1;
 #endif
+
+  *pDoc = NULL;
 
 #ifdef USE_REG_TIMING
   Get_current_time_seconds(&time0);
@@ -327,7 +329,7 @@ char *Get_resource_property_doc(SGS_info_type *sgs_info)
 						 "", NULL,
 						 &out) != SOAP_OK){
     soap_print_fault(sgs_info->soap, stderr);
-    return NULL;
+    return REG_FAILURE;
   }
 #ifdef USE_REG_TIMING
   Get_current_time_seconds(&time1);
@@ -338,7 +340,8 @@ char *Get_resource_property_doc(SGS_info_type *sgs_info)
 #if REG_DEBUG_FULL
   printf("GetResourcePropertyDocument returned: %s\n", out);
 #endif
-  return out;
+  *pDoc = out;
+  return REG_SUCCESS;
 }
 
 /*------------------------------------------------------------------*/
@@ -378,8 +381,128 @@ int Finalize_connection_wsrf (Sim_entry_type *sim)
 int Get_param_log_wsrf(Sim_entry_type *sim,
 		       int             handle)
 {
-  fprintf(stderr, "Get_param_log_wsrf: IMPLEMENT ME\n");
-  return REG_FAILURE;
+  struct sws__GetParamLogResponse response;
+  int    index, lindex;
+  char  *ptr1;
+  int    dum_int;
+  float  dum_float;
+#ifdef USE_REG_TIMING
+  double time0, time1;
+#endif
+  response._GetParamLogReturn = NULL;
+
+  if( (index=Param_index_from_handle(&(sim->Params_table),
+				     handle)) == -1){
+
+      fprintf(stderr, "Get_param_log_wsrf: failed to match param handle\n");
+      fprintf(stderr, "                    handle = %d\n", handle);
+
+      return REG_FAILURE;
+  }
+
+  if(!sim->Params_table.param[index].log){
+    
+    if(Realloc_param_log(&(sim->Params_table.param[index])) !=
+       REG_SUCCESS){
+
+      return REG_MEM_FAIL;
+    }
+  }
+
+#ifdef USE_REG_TIMING
+  Get_current_time_seconds(&time0);
+#endif
+  if(soap_call_sws__GetParamLog(sim->SGS_info.soap, sim->SGS_info.address, 
+				"", (xsd__int)handle, &response )){
+#ifdef USE_REG_TIMING
+  Get_current_time_seconds(&time1);
+  fprintf(stderr, "TIMING: soap_call_sws__GetParamLog "
+	  "took %f seconds\n", (time1-time0));
+#endif
+
+    fprintf(stderr, "Get_param_log_wsrf: failed for handle %d:\n",
+	    handle);
+    soap_print_fault(sim->SGS_info.soap, stderr);
+
+    return REG_FAILURE;
+  }
+
+  if( !(response._GetParamLogReturn) ){
+    fprintf(stderr, "Get_param_log_wsrf: no log entries returned\n");
+    return REG_FAILURE;
+  }
+
+  /*fprintf(stderr, "ARPDBG, got log from SWS>>%s<<",
+    (char*)response._GetParamLogReturn);*/
+  ptr1 = (char*)response._GetParamLogReturn;
+  lindex = sim->Params_table.param[index].log_index;
+
+  switch(sim->Params_table.param[index].type){
+
+  case REG_INT:
+
+    while(1){
+
+      /* Parse space-delimited list of parameter values */
+      sscanf(ptr1, "%d ", &dum_int);
+      sim->Params_table.param[index].log[lindex++] = (double)dum_int;
+
+      if(!(ptr1 = strchr(ptr1, ' ')))break;
+      if(*(++ptr1) == '\0')break;
+
+      if(lindex >= sim->Params_table.param[index].log_size){
+	Realloc_param_log(&(sim->Params_table.param[index]));
+      }
+    }
+    sim->Params_table.param[index].log_index = lindex;
+    break;
+
+  case REG_FLOAT:
+
+    while(1){
+
+      sscanf(ptr1, "%f", &dum_float);
+      sim->Params_table.param[index].log[lindex++] = (double)dum_float;
+
+      if(!(ptr1 = strchr(ptr1, ' ')))break;
+      if(*(++ptr1) == '\0')break;
+
+      if(lindex >= sim->Params_table.param[index].log_size){
+	Realloc_param_log(&(sim->Params_table.param[index]));
+      }
+    }
+    sim->Params_table.param[index].log_index = lindex;
+    break;
+
+  case REG_DBL:
+
+    while(1){
+
+      sscanf(ptr1, "%lg", &(sim->Params_table.param[index].log[lindex++]) );
+
+      if(!(ptr1 = strchr(ptr1, ' ')))break;
+      if(*(++ptr1) == '\0')break;
+
+      if(lindex >= sim->Params_table.param[index].log_size){
+	Realloc_param_log(&(sim->Params_table.param[index]));
+      }
+    }
+    sim->Params_table.param[index].log_index = lindex;
+    break;
+
+  case REG_CHAR:
+    /* This not implemented yet */
+#if REG_DEBUG
+    fprintf(stderr, "Get_param_log_wsrf: logging of char params not "
+	    "implemented!\n");
+#endif
+    break;
+
+  default:
+    break;
+  }
+
+  return REG_SUCCESS;
 }
 
 /*------------------------------------------------------------------*/
