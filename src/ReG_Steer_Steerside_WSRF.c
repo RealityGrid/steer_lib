@@ -172,10 +172,8 @@ int Send_control_msg_wsrf (Sim_entry_type *sim, char *buf){
 struct msg_struct *Get_status_msg_wsrf(Sim_entry_type *sim)
 {
   char *pRPDoc;
-  char *pBuf;
   char buf[REG_MAX_MSG_SIZE];
   long int modTime;
-  int      status;
   struct msg_struct *msg = NULL;
 
   /* If we have a backlog of messages then return the next one */
@@ -249,8 +247,8 @@ struct msg_struct *Get_next_stored_msg(Sim_entry_type *sim)
     /* Then shift pointers to point at the next one, if any */
     if(msgStorePtr->next){
       tmp = msgStorePtr->next;
-      msgStorePtr->msg = msgStorePtr->next->msg;
-      msgStorePtr->next = msgStorePtr->next->next;
+      msgStorePtr->msg = tmp->msg;
+      msgStorePtr->next = tmp->next;
       /* Delete the struct we've just copied ptrs from */
       free(tmp);
     }
@@ -270,7 +268,6 @@ int Get_resource_property (SGS_info_type *sgs_info,
 {
   struct wsrp__GetMultipleResourcePropertiesRequest in;
   char  *out;
-  int    i;
 #ifdef USE_REG_TIMING
   double time0, time1;
 #endif
