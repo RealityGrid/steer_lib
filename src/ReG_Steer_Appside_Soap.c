@@ -39,6 +39,7 @@
 #include "ReG_Steer_types.h"
 #include "ReG_Steer_Appside_internal.h"
 #include "ReG_Steer_Appside_Soap.h"
+#include "ReG_Steer_Logging.h"
 #include "soapRealityGrid.nsmap"
 
 #ifndef WIN32
@@ -479,7 +480,7 @@ struct msg_struct *Get_control_msg_soap()
      !strstr(getControl_response._GetControlReturn, REG_SGS_ERROR)){
     msg = New_msg_struct();
 
-    /* Parse NULL down here because this is app side so have no ptr
+    /* Pass NULL down here because this is app side so have no ptr
        to a Sim_entry struct */
     if(Parse_xml_buf(getControl_response._GetControlReturn, 
 		     strlen(getControl_response._GetControlReturn), 
@@ -487,11 +488,6 @@ struct msg_struct *Get_control_msg_soap()
 
       Delete_msg_struct(&msg);
     }
-#if REG_LOG_STEERING
-    else{
-      Log_control_msg(getControl_response._GetControlReturn);
-    }
-#endif
   }
 
   return msg;
@@ -578,95 +574,6 @@ int Get_data_source_address_soap(int   index,
      polling a GS for valid address - success is indicated by non-zero
      port no. */
   return REG_SUCCESS;
-}
-
-/*----------------------------------------------------------------------*/
-
-int Log_control_msg(char *msg_txt)
-{
-  char      *pbuf, *pstart, *pstop;
-  static int seq_num_index   = -1;
-  int        len;
-  int        nbytes;
-  int        bytes_free;
-  void      *pdum;
-
-  /*fprintf(stderr, "Log_control_msg: got >>%s<<\n", msg_txt);*/
-
-  /* If this is the first time we've been called then calculate
-     the index of the Sequence No. in the table of parameters */
-  if(seq_num_index == -1){
-    seq_num_index = Param_index_from_handle(&(Params_table), 
-					    REG_SEQ_NUM_HANDLE);
-    if(seq_num_index == -1){
-      fprintf(stderr, "Log_control_msg: failed to find "
-	      "index of sequence no.\n");
-      return REG_FAILURE;
-    }
-  }
-
-  pbuf = Chk_log.pSteer_cmds_slot;
-  bytes_free = Chk_log.steer_cmds_bytes - (int)(pbuf - Chk_log.pSteer_cmds);
-
-  if(  !(pstart = strstr(msg_txt, "<Steer_control>")) ){
-
-    fprintf(stderr, "Log_control_msg: failed to find <Steer_control>\n");
-    pbuf[0] = '\0';
-    return REG_FAILURE;
-  }
-
-  /* 15 = strlen("<Steer_control>") */
-  pstart += 15;
-  if(*pstart == '\n')pstart++;
-
-  pstop   = strstr(msg_txt, "</Steer_control>");
-  len     = (int)(pstop - pstart);
-
-  nbytes = snprintf(pbuf, bytes_free, "<Log_entry>\n"
-		  "<Seq_num>%s</Seq_num>\n"
-		  "<Steer_log_entry>\n",
-		  Params_table.param[seq_num_index].value);
-
-  if(nbytes >= (REG_MAX_STRING_LENGTH-1) || (nbytes < 1)){
-
-    if(!(pdum = realloc(Chk_log.pSteer_cmds, 2*Chk_log.steer_cmds_bytes))){
-
-      fprintf(stderr, "Log_control_msg: failed to realloc log buffer\n");
-      /* Terminate buffer at end of last complete entry */
-      *(Chk_log.pSteer_cmds_slot) = '\0';
-      return REG_FAILURE;
-    }
-    else{
-
-      Chk_log.steer_cmds_bytes *= 2;
-      bytes_free += Chk_log.steer_cmds_bytes;
-      Chk_log.pSteer_cmds = (char *)pdum;
-      pbuf = Chk_log.pSteer_cmds_slot;
-
-      nbytes = snprintf(pbuf, bytes_free, "<Log_entry>\n"
-			"<Seq_num>%s</Seq_num>\n"
-			"<Steer_log_entry>\n",
-			Params_table.param[seq_num_index].value);
-    }
-  }
-  pbuf += nbytes;
-  bytes_free -= nbytes;
-
-  /* 30 = strlen("</SteerLogEntry>\n</Log_entry>\n") */
-  if(bytes_free > (len + 30)){
-    strncpy(pbuf, pstart, len);
-    pbuf += len;
-
-    pbuf += sprintf(pbuf, "</Steer_log_entry>\n"
-		    "</Log_entry>\n");
-
-    /* Point to next free space in buffer */
-    Chk_log.pSteer_cmds_slot = pbuf;
-    
-    return REG_SUCCESS;
-  }
-
-  return REG_FAILURE;
 }
 
 /*----------------------------------------------------------------------*/
