@@ -247,8 +247,7 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg,
 /** Parse a steering message (ReG_steer_message) 
     @internal */
 int parseSteerMessage(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
-		      struct msg_struct *msg,
-		      Sim_entry_type *sim);
+		      struct msg_struct *msg);
 /** Parse a Resource Properties document from a WSRF service
     @internal */
 int parseResourceProperties(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,

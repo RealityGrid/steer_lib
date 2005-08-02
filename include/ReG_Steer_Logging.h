@@ -36,6 +36,7 @@
 
 /** @file ReG_Steer_Logging.h
     @brief Header file for logging functionality */
+#include "ReG_Steer_XML.h"
 
 /** Emit any log entries that steerer doesn't know about.  The handle
     argument is used to identify which parameter log to emit if the
@@ -109,5 +110,10 @@ int Log_columns_to_xml(char **buf, char* out_buf, int out_buf_size,
 /** Takes the xml document describing a log and splits it into separate
     entries which are packed into messages and sent to client */
 int Pack_send_log_entries(char **pBuf, int *msg_count);
+
+/** Log the supplied control message - is stored in the Chk_log
+    structure */
+int Log_control_msg(struct control_struct *control);
+     /*int Log_control_msg(char *msg_txt);*/
 
 #endif
