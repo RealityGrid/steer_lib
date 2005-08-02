@@ -125,7 +125,7 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg,
 #if REG_DEBUG_FULL
     fprintf(stderr,"Parse_xml: Have ReG_steer_message doc\n");
 #endif
-    parseSteerMessage(doc, ns, cur, msg, sim);
+    parseSteerMessage(doc, ns, cur, msg);
 
     /* Print out what we've got */
 
@@ -137,7 +137,8 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg,
   else if (!xmlStrcmp(cur->name, (const xmlChar *) "ResourceProperties") ||
 	   !xmlStrcmp(cur->name, (const xmlChar *) "controlMsg")) {
 #if REG_DEBUG_FULL
-    fprintf(stderr,"Parse_xml: Have ResourceProperties doc\n");
+    fprintf(stderr,"Parse_xml: passing %s to parseResourceProperties...\n",
+	    (char *)(cur->name));
 #endif
     parseResourceProperties(doc, ns, cur, sim);
 
@@ -233,6 +234,8 @@ int parseResourceProperties(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
     uidStorePtr = &(sim->Msg_uid_store);
   }
   else{
+    /* Otherwise, we store the messages we receive in a global structure
+       from which they are extracted in order */
     curMsg = &Msg_store;
     uidStorePtr = &Msg_uid_store;
   }
@@ -263,10 +266,10 @@ int parseResourceProperties(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
       if (child && !xmlStrcmp(child->name, 
 			      (const xmlChar *) "ReG_steer_message")) {
 	/* Get the msg UID if present */
-	if(uidChar = xmlGetProp(child, "Msg_UID")){
+	if( (uidChar = xmlGetProp(child, "Msg_UID")) ){
 #if REG_DEBUG_FULL
-	  if(uidChar)fprintf(stderr, "parseResourceProperties: msg UID = %s\n",
-			     (char*)(uidChar));
+	  fprintf(stderr, "parseResourceProperties: msg UID = %s\n",
+		  (char*)(uidChar));
 #endif
 	  /* Check that we haven't already seen this message 
 	     before we bother to store it */
@@ -286,7 +289,7 @@ int parseResourceProperties(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 	fprintf(stderr, "parseResourceProperties: Calling parseSteerMessage...\n");
 #endif
 	curMsg->msg = New_msg_struct();
-	parseSteerMessage(doc, ns, child, curMsg->msg, sim);
+	parseSteerMessage(doc, ns, child, curMsg->msg);
 	curMsg->next = New_msg_store_struct();
 	curMsg = curMsg->next;
       }
@@ -308,17 +311,8 @@ int parseResourceProperties(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 /*-----------------------------------------------------------------*/
 
 int parseSteerMessage(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
-		      struct msg_struct *msg, Sim_entry_type *sim)
+		      struct msg_struct *msg)
 {
-  struct msg_uid_history_struct *uidStorePtr = &Msg_uid_store;
-
-  /* If we've been called by a steering client then must store
-     any messages in a structure associated with the simulation being
-     steered as may be one of many */
-  if(sim){
-    uidStorePtr = &(sim->Msg_uid_store);
-  }
-
   /* Get the msg UID if present */
   msg->msg_uid = xmlGetProp(cur, "Msg_UID");
 #if REG_DEBUG_FULL
@@ -380,9 +374,11 @@ int parseSteerMessage(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
   case IO_DEFS:
 #if REG_DEBUG_FULL
     fprintf(stderr, "parseSteerMessage: Calling parseIOTypeDef...\n");
+    fprintf(stderr, "parseSteerMessage: ARPDBG, msg ptr = %p\n", msg);
 #endif
     msg->io_def = New_io_def_struct();
     parseIOTypeDef(doc, ns, cur, msg->io_def);
+    break;
 
   case CHK_DEFS:
 #if REG_DEBUG_FULL
@@ -390,6 +386,7 @@ int parseSteerMessage(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 #endif
     msg->chk_def = New_io_def_struct();
     parseChkTypeDef(doc, ns, cur, msg->chk_def);
+    break;
 
   case STEER_LOG:
 #if REG_DEBUG_FULL
@@ -609,22 +606,21 @@ int parseIOType(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
   }
 
   cur = cur->xmlChildrenNode;
-
   while (cur != NULL) {
 
-    if( !xmlStrcmp(cur->name, (const xmlChar *) "Handle") && (cur->ns == ns)) {
+    if( !xmlStrcmp(cur->name, (const xmlChar *) "Handle") ) {
 
       io->handle = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
     }
-    else if( !xmlStrcmp(cur->name, (const xmlChar *) "Label") && (cur->ns == ns)){
+    else if( !xmlStrcmp(cur->name, (const xmlChar *) "Label") ){
 
       io->label = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
     }
-    else if( !xmlStrcmp(cur->name, (const xmlChar *) "Direction") && (cur->ns == ns)){
+    else if( !xmlStrcmp(cur->name, (const xmlChar *) "Direction") ){
 
       io->direction = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
     }
-    else if( !xmlStrcmp(cur->name, (const xmlChar *) "Freq_handle") && (cur->ns == ns)){
+    else if( !xmlStrcmp(cur->name, (const xmlChar *) "Freq_handle") ){
 
       io->freq_handle = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
     }
@@ -1572,6 +1568,7 @@ void Print_io_struct(struct io_struct   *io)
   while(ptr){
 
     fprintf(stderr, "IO def. no.: %d\n", count++);
+    fprintf(stderr, "ARPDBG, ptr to io struct = %p\n", ptr);
 
     if(ptr->label)fprintf(stderr, "Label = %s\n", 
 			  (char *)(ptr->label));
@@ -2021,7 +2018,7 @@ int Delete_msg_store(struct msg_store_struct *msgStore)
 
   Delete_msg_struct(&(msgStore->msg));
   tmp = msgStore->next;
-  while(curEntry = tmp){
+  while( (curEntry = tmp) ){
     Delete_msg_struct(&(curEntry->msg));
     tmp = curEntry->next;
     free(curEntry);
