@@ -66,10 +66,20 @@ struct msg_struct *Get_control_msg_wsrf ();
 /** Save a log (parameter or checkpoint) to the SWS 
     @internal */
 int Save_log_wsrf (char *log_data);
-/*
-int 	Get_data_source_address_wsrf (int index, char *hostname, 
-				      unsigned short int *port);
-int 	Record_checkpoint_set_wsrf (char *chk_data, char *node_data);
-*/
+
+/** Query the SWS for the address to connect to for the
+    specified IO channel
+    @param index Index (generated from order registered) of channel for which to get address
+
+    @param hostname The full-qualified hostname of machine to connect to
+    @param port     The port on that machine to connect to
+    @internal */
+int Get_data_source_address_wsrf (int index, char *hostname, 
+				  unsigned short int *port);
+
+/** Notify the SWS that the application has created a checkpoint
+    @internal */
+int Record_checkpoint_set_wsrf (char *chk_data, 
+				char *node_data);
 
 #endif
