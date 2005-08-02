@@ -74,6 +74,9 @@ extern Param_table_type Params_table;
     ReG_Steer_Appside.c */
 extern int ReG_SteeringActive;
 
+/** Declared in ReG_Steer_Appside_WSRF.h */
+extern int Save_log_wsrf (char *log_data);
+
 /*----------------------------------------------------------------*/
 
 int Initialize_log(Chk_log_type *log, log_type_type log_type)
@@ -233,7 +236,6 @@ int Save_log(Chk_log_type *log)
           argument isn't used for checkpoint logs */
       status = Log_to_xml(log, 0, &buf, &len, REG_FALSE);
     }
-
     if(status == REG_SUCCESS){
       fprintf(log->file_ptr, "%s", buf);
     }
@@ -1261,3 +1263,206 @@ int Log_columns_to_xml(char **buf, char* out_buf, int out_buf_size,
 
   return REG_EOD;
 }
+
+/*----------------------------------------------------------------------*/
+
+int Log_control_msg(struct control_struct *control)
+{
+  char      *pbuf;
+  static int seq_num_index   = -1;
+  int        nbytes;
+  int        bytes_free;
+  void      *pdum;
+  struct cmd_struct   *ctrl;
+  struct param_struct *param;
+
+  /* If this is the first time we've been called then calculate
+     the index of the Sequence No. in the table of parameters */
+  if(seq_num_index == -1){
+    seq_num_index = Param_index_from_handle(&(Params_table), 
+					    REG_SEQ_NUM_HANDLE);
+    if(seq_num_index == -1){
+      fprintf(stderr, "Log_control_msg: failed to find "
+	      "index of sequence no.\n");
+      return REG_FAILURE;
+    }
+  }
+
+  pbuf = Chk_log.pSteer_cmds_slot;
+  bytes_free = Chk_log.steer_cmds_bytes - (int)(pbuf - Chk_log.pSteer_cmds);
+
+  nbytes = snprintf(pbuf, bytes_free, "<Log_entry>\n"
+		    "<Seq_num>%s</Seq_num>\n"
+		    "<Steer_log_entry>\n",
+		    Params_table.param[seq_num_index].value);
+
+  if(nbytes >= (REG_MAX_STRING_LENGTH-1) || (nbytes < 1)){
+
+    if(!(pdum = realloc(Chk_log.pSteer_cmds, 2*Chk_log.steer_cmds_bytes))){
+
+      fprintf(stderr, "Log_control_msg: failed to realloc log buffer\n");
+      /* Terminate buffer at end of last complete entry */
+      *(Chk_log.pSteer_cmds_slot) = '\0';
+      return REG_FAILURE;
+    }
+    else{
+
+      Chk_log.steer_cmds_bytes *= 2;
+      bytes_free += Chk_log.steer_cmds_bytes;
+      Chk_log.pSteer_cmds = (char *)pdum;
+      pbuf = Chk_log.pSteer_cmds_slot;
+
+      nbytes = snprintf(pbuf, bytes_free, "<Log_entry>\n"
+			"<Seq_num>%s</Seq_num>\n"
+			"<Steer_log_entry>\n",
+			Params_table.param[seq_num_index].value);
+    }
+  }
+  pbuf += nbytes;
+  bytes_free -= nbytes;
+
+  if(control->first_cmd){
+    ctrl = control->first_cmd;
+    while(ctrl){
+      if(ctrl->id){
+	nbytes = snprintf(pbuf, bytes_free, "<Command><Cmd_id>%s</Cmd_id>",
+			  (char*)(ctrl->id));
+	pbuf += nbytes;
+	bytes_free -= nbytes;
+      }
+      else if(ctrl->name){
+	nbytes = snprintf(pbuf, bytes_free, "<Command><Cmd_name>%s</Cmd_name>",
+			  (char*)(ctrl->name));
+	pbuf += nbytes;
+	bytes_free -= nbytes;
+      }
+      if(ctrl->first_param){
+	param = ctrl->first_param;
+        while(param){
+	   nbytes = snprintf(pbuf, bytes_free, "<Cmd_param><Handle>"
+			     "%s</Handle><Value>%s</Value></Cmd_param>",
+			     (char*)(param->handle), 
+			     (char*)(param->value));
+	   pbuf += nbytes;
+	   bytes_free -= nbytes;
+	   /* ARPDBG - check for buffer overrun */
+	   param = param->next;
+	}
+      }
+      nbytes = snprintf(pbuf, bytes_free, "</Command>");
+      pbuf += nbytes;
+      bytes_free -= nbytes;
+      ctrl = ctrl->next;
+    }
+  }
+
+  if(control->first_param){
+    param = control->first_param;
+    while(param){
+      nbytes = snprintf(pbuf, bytes_free, "<Param><Handle>"
+			"%s</Handle><Value>%s</Value></Param>",
+			(char*)(param->handle), (char*)(param->value));
+      bytes_free -= nbytes;
+      pbuf += nbytes;
+      param = param->next;
+    }
+  }
+
+  pbuf += sprintf(pbuf, "</Steer_log_entry>\n"
+		  "</Log_entry>\n");
+
+  /* Point to next free space in buffer */
+  Chk_log.pSteer_cmds_slot = pbuf;
+
+  return REG_SUCCESS;
+}
+
+/*----------------------------------------------------------------------*
+
+int Log_control_msg(char *msg_txt)
+{
+  char      *pbuf, *pstart, *pstop;
+  static int seq_num_index   = -1;
+  int        len;
+  int        nbytes;
+  int        bytes_free;
+  void      *pdum;
+
+  *fprintf(stderr, "Log_control_msg: got >>%s<<\n", msg_txt);*
+
+  * If this is the first time we've been called then calculate
+     the index of the Sequence No. in the table of parameters *
+  if(seq_num_index == -1){
+    seq_num_index = Param_index_from_handle(&(Params_table), 
+					    REG_SEQ_NUM_HANDLE);
+    if(seq_num_index == -1){
+      fprintf(stderr, "Log_control_msg: failed to find "
+	      "index of sequence no.\n");
+      return REG_FAILURE;
+    }
+  }
+
+  pbuf = Chk_log.pSteer_cmds_slot;
+  bytes_free = Chk_log.steer_cmds_bytes - (int)(pbuf - Chk_log.pSteer_cmds);
+
+  if(  !(pstart = strstr(msg_txt, "<Steer_control>")) ){
+
+    fprintf(stderr, "Log_control_msg: failed to find <Steer_control>\n");
+    pbuf[0] = '\0';
+    return REG_FAILURE;
+  }
+
+  * 15 = strlen("<Steer_control>") *
+  pstart += 15;
+  if(*pstart == '\n')pstart++;
+
+  pstop   = strstr(msg_txt, "</Steer_control>");
+  len     = (int)(pstop - pstart);
+
+  nbytes = snprintf(pbuf, bytes_free, "<Log_entry>\n"
+		  "<Seq_num>%s</Seq_num>\n"
+		  "<Steer_log_entry>\n",
+		  Params_table.param[seq_num_index].value);
+
+  if(nbytes >= (REG_MAX_STRING_LENGTH-1) || (nbytes < 1)){
+
+    if(!(pdum = realloc(Chk_log.pSteer_cmds, 2*Chk_log.steer_cmds_bytes))){
+
+      fprintf(stderr, "Log_control_msg: failed to realloc log buffer\n");
+      * Terminate buffer at end of last complete entry *
+      *(Chk_log.pSteer_cmds_slot) = '\0';
+      return REG_FAILURE;
+    }
+    else{
+
+      Chk_log.steer_cmds_bytes *= 2;
+      bytes_free += Chk_log.steer_cmds_bytes;
+      Chk_log.pSteer_cmds = (char *)pdum;
+      pbuf = Chk_log.pSteer_cmds_slot;
+
+      nbytes = snprintf(pbuf, bytes_free, "<Log_entry>\n"
+			"<Seq_num>%s</Seq_num>\n"
+			"<Steer_log_entry>\n",
+			Params_table.param[seq_num_index].value);
+    }
+  }
+  pbuf += nbytes;
+  bytes_free -= nbytes;
+
+  * 30 = strlen("</SteerLogEntry>\n</Log_entry>\n") *
+  if(bytes_free > (len + 30)){
+    strncpy(pbuf, pstart, len);
+    pbuf += len;
+
+    pbuf += sprintf(pbuf, "</Steer_log_entry>\n"
+		    "</Log_entry>\n");
+
+    * Point to next free space in buffer *
+    Chk_log.pSteer_cmds_slot = pbuf;
+    
+    return REG_SUCCESS;
+  }
+
+  return REG_FAILURE;
+}
+*/
