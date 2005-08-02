@@ -155,19 +155,19 @@ struct ReG_array_list {
 static struct ReG_array_list* ReG_list_head = NULL;
 
 /** Struct for storing control messages that are not yet valid
-    (i.e. valid_time < current simulated time) */
+    (i.e. valid_time < current simulated time)
 struct ReG_ctrl_msg_store{
 
     struct control_struct     *control;
     struct ReG_ctrl_msg_store *next;
 };
-
+*/
 /** Head of linked list holding control messages that are not
-    yet valid */
-static struct ReG_ctrl_msg_store *ReG_ctrl_msg_first = NULL;
+    yet valid (i.e. valid_time < current simulated time) */
+static struct msg_store_struct *ReG_ctrl_msg_first = NULL;
 /** Ptr to tail of linked list for appending new control messages
     that are not yet valid */
-static struct ReG_ctrl_msg_store *ReG_ctrl_msg_current = NULL;
+static struct msg_store_struct *ReG_ctrl_msg_current = NULL;
 
 /** Structure for holding multiple messages obtained by parsing
     SWS' ResourceProperties document - used by application-side
@@ -662,7 +662,7 @@ int Steering_finalize()
   Delete_msg_uid_store(&Msg_uid_store);
 
   /* Free memory allocated for storing 'early' control messages */
-  Free_control_msg_store();
+  Delete_msg_store(ReG_ctrl_msg_first);
 
   /* Free memory allocated for string arrays for user */
   Free_string_arrays();
@@ -1575,7 +1575,11 @@ int Record_checkpoint_set(int   ChkType,
 #endif
 
   /* Record checkpoint */
+#if REG_OGSI
   Record_checkpoint_set_soap(cp_data, node_data);
+#else
+  Record_checkpoint_set_wsrf(cp_data, node_data);
+#endif
 
   return REG_SUCCESS;
 
@@ -2746,6 +2750,7 @@ int Steering_control(int     SeqNum,
     }
   }
 
+  /* Time-step related values (for coupled models) */
   if(time_step_index > -1){
     Get_ptr_value(&(Params_table.param[time_step_index]));
     /*fprintf(stderr, "ARPDBG: dt = %s\n", 
@@ -2784,6 +2789,7 @@ int Steering_control(int     SeqNum,
     }
   }
 
+  /* Total-simulated time-related values (for coupled models) */
   if(tot_time_index > -1){
     sprintf(Params_table.param[tot_time_index].value, "%.20g", 
 	    ReG_TotalSimTimeSecs);
@@ -2956,7 +2962,7 @@ int Steering_control(int     SeqNum,
     }
 #if REG_DEBUG_FULL
     else{
-      fprintf(stderr, "Steering_control: done Emit_log\n");
+      fprintf(stderr, "Steering_control: done Emit_log for chk log\n");
     }
 #endif
     /*
@@ -3128,9 +3134,9 @@ int Auto_generate_steer_cmds(int    SeqNum,
   int    cmd_count, param_count;
   double valid_time;
 
-  struct ReG_ctrl_msg_store *previous = NULL;
-  struct ReG_ctrl_msg_store *toDelete  = NULL;
-  struct ReG_ctrl_msg_store *storedMsg = NULL;
+  struct msg_store_struct *previous = NULL;
+  struct msg_store_struct *toDelete  = NULL;
+  struct msg_store_struct *storedMsg = NULL;
 
   /* IOTypes cannot be deleted so the num_registered entries that
      we have will be contiguous within the table */
@@ -3201,10 +3207,11 @@ int Auto_generate_steer_cmds(int    SeqNum,
   cmd_count   = 0;
   param_count = 0;
 
+  /* Check for stored messages that haven't yet become valid */
   if(ReG_ctrl_msg_first){
     storedMsg = ReG_ctrl_msg_first;
     while(storedMsg){
-      sscanf((char *)storedMsg->control->valid_after, "%lg", &valid_time);
+      sscanf((char *)storedMsg->msg->control->valid_after, "%lg", &valid_time);
       /*
       printf("ARPDBG: total sim time = %.20g\n", ReG_TotalSimTimeSecs);
       printf("ARPDBG, stored msg has valid_time = %.20g\n", valid_time);
@@ -3213,7 +3220,10 @@ int Auto_generate_steer_cmds(int    SeqNum,
       if(valid_time < (ReG_TotalSimTimeSecs+0.1*ReG_SimTimeStepSecs)){
 	/*printf("...ARPDBG, stored msg is now valid\n");*/
 
-	Unpack_control_msg(storedMsg->control,
+#if REG_LOG_STEERING
+	Log_control_msg(storedMsg->msg->control);
+#endif
+	Unpack_control_msg(storedMsg->msg->control,
 			   &cmd_count,
 			   SteerCommands+(*posn),
 			   SteerCmdParams+(*posn),
@@ -3230,8 +3240,8 @@ int Auto_generate_steer_cmds(int    SeqNum,
 	else{
 	  previous->next = storedMsg->next;
 	}
-	Delete_control_struct(storedMsg->control);
-	storedMsg->control = NULL;
+	Delete_msg_struct(&(storedMsg->msg));
+	storedMsg->msg = NULL;
 	toDelete = storedMsg;
       }
 
@@ -3915,15 +3925,14 @@ int Consume_control(int    *NumCommands,
 	if(valid_time > ReG_TotalSimTimeSecs){
 	  /* Don't read this message yet - store it */
 	  if(!ReG_ctrl_msg_first){
-	    /* ARPDBG - mem leak here - need to return a normal msg struct */
-	    ReG_ctrl_msg_first = New_ctrl_msg_store_struct();
+	    ReG_ctrl_msg_first = New_msg_store_struct();
 	    ReG_ctrl_msg_current = ReG_ctrl_msg_first;
-	    ReG_ctrl_msg_current->control = msg->control;
+	    ReG_ctrl_msg_current->msg = msg;
 	    ReG_ctrl_msg_current = ReG_ctrl_msg_current->next;
 	  }
 	  else{
-	    ReG_ctrl_msg_current = New_ctrl_msg_store_struct();
-	    ReG_ctrl_msg_current->control = msg->control;
+	    ReG_ctrl_msg_current = New_msg_store_struct();
+	    ReG_ctrl_msg_current->msg = msg;
 	    ReG_ctrl_msg_current = ReG_ctrl_msg_current->next;
 	  }
 	  /* Don't delete msg as we are keeping a reference to it */
@@ -3931,6 +3940,9 @@ int Consume_control(int    *NumCommands,
 	}
       }
 
+#if REG_LOG_STEERING
+      Log_control_msg(msg->control);
+#endif
       Unpack_control_msg(msg->control,
 			 NumCommands,
 			 Commands+cmd_count,
@@ -5710,45 +5722,4 @@ int Free_string_arrays()
   ReG_list_head = NULL;
 
   return REG_SUCCESS;
-}
-
-/*------------------------------------------------------------------*/
-
-int Free_control_msg_store()
-{
-  struct ReG_ctrl_msg_store *current, *tmp;
-
-  current = ReG_ctrl_msg_first;
-
-  while(current){
-    tmp = current->next;
-
-    if(current->control){
-      Delete_control_struct(tmp->control);
-      current->control = NULL;
-    }
-    free(current);
-
-    current = tmp;
-  }
-
-  ReG_ctrl_msg_first = NULL;
-
-  return REG_SUCCESS;
-}
-
-/*-----------------------------------------------------------------*/
-
-struct ReG_ctrl_msg_store *New_ctrl_msg_store_struct()
-{
-  struct ReG_ctrl_msg_store *entry;
-
-  entry = (struct ReG_ctrl_msg_store *)malloc(sizeof(struct ReG_ctrl_msg_store));
-
-  if(entry){
-    entry->control  = NULL;
-    entry->next     = NULL;
-  }
-
-  return entry;
 }
