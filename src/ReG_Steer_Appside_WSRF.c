@@ -41,6 +41,7 @@
 #include "ReG_Steer_types.h"
 #include "ReG_Steer_Appside_internal.h"
 #include "ReG_Steer_Appside_WSRF.h"
+#include "ReG_Steer_Logging.h"
 #include "soapH.h"
 
 /* These three functions are defined in the steerside_WSRF code */
@@ -217,7 +218,6 @@ int Initialize_steering_connection_wsrf(int  NumSupportedCmds,
 
 int Steerer_connected_wsrf ()
 {
-  char  query_buf[REG_MAX_STRING_LENGTH];
   char *steer_status;
   int   status;
   
@@ -256,7 +256,6 @@ int Send_status_msg_wsrf (char *msg)
   char   query_buf[REG_MAX_MSG_SIZE];
   int    nbytes;
   int    new_size;
-  int    status;
   struct wsrp__SetResourcePropertiesResponse out;
   char  *pTmpBuf = NULL;
   char  *pbuf = NULL;
@@ -384,8 +383,14 @@ struct msg_struct *Get_control_msg_wsrf ()
     fprintf(stderr, "ARPDBG, parsing >>%s<<\n", pLastBut1);
     /* Parse the doc - pass NULLs in as this is appside so have no
        Sim_entry struct and results will be put in Msg_store struct */
-    if(Parse_xml_buf(pLastBut1, strlen(pLastBut1), NULL, NULL) != REG_SUCCESS){
-      return NULL;
+    if(Parse_xml_buf(pLastBut1, strlen(pLastBut1), NULL, NULL) == REG_SUCCESS){
+      /* We only want to do this if we haven't seen the message before.
+         We also need to log it when we act on it, not just when we
+         receive it ARPDBG... 
+#if REG_LOG_STEERING
+      Log_control_msg(pLastBut1);
+#endif
+      ...ARPDBG END */
     }
 
     *pLastBut1 = '\0';
@@ -513,4 +518,44 @@ int Get_data_source_address_wsrf(int   index,
 				 char *hostname,
 				 unsigned short int  *port)
 {
+  fprintf(stderr, "IMPLEMENT ME - ARPDBG!\n");
+  return REG_FAILURE;
+}
+
+/*----------------------------------------------------------------------*/
+
+int Record_checkpoint_set_wsrf(char *chk_data,
+			       char *node_data)
+{
+  struct sws__RecordCheckpointResponse response;
+
+  response._RecordCheckpointReturn = NULL;
+  if(soap_call_sws__RecordCheckpoint(Steerer_connection.SGS_info.soap, 
+				      Steerer_connection.SGS_info.address, 
+				      "", chk_data, node_data,  
+				      &response)){
+    fprintf(stderr, "Record_checkpoint_set_wsrf: soap call failed:\n");
+    soap_print_fault(Steerer_connection.SGS_info.soap, stderr);
+    return REG_FAILURE;
+  }
+
+#if REG_DEBUG
+  if(response._RecordCheckpointReturn){
+    fprintf(stderr, "Record_checkpoint_set_wsrf: "
+	    "RecordCheckpoint returned: >>%s<<\n", 
+	    response._RecordCheckpointReturn);
+  }
+  else{
+    fprintf(stderr, "Record_checkpoint_set_wsrf: RecordCheckpoint "
+	    "returned null\n");
+  }
+#endif
+
+  if(response._RecordCheckpointReturn && 
+     strstr(response._RecordCheckpointReturn, REG_SGS_SUCCESS)){
+
+    return REG_SUCCESS;
+  }
+
+  return REG_FAILURE;
 }
