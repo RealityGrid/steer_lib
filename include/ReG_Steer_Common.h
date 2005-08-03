@@ -419,8 +419,12 @@ extern PREFIX int Get_message_type(const char *name);
 
 /** 
   Write ReG-specific XML header information into supplied message
-  buffer */
-extern PREFIX int Write_xml_header(char **pchar);
+  buffer 
+  @param pchar Pointer to buffer in which to put header
+  @param isAppSide Whether called from application side
+  @internal */
+extern PREFIX int Write_xml_header(char **pchar, 
+				   int isAppSide);
 
 /** 
   Write ReG-specific XML footer information into supplied message
