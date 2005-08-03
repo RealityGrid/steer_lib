@@ -43,6 +43,7 @@
 #include "ReG_Steer_Appside_Sockets.h"
 #include "ReG_Steer_Appside_File.h"
 #include "ReG_Steer_Appside_Soap.h"
+#include "ReG_Steer_Appside_WSRF.h"
 #include <string.h>
 #include <signal.h>
 #include <sys/time.h>
@@ -268,10 +269,17 @@ int connect_connector(const int index) {
   if(IOTypes_table.io_def[index].socket_info.connector_port == 0) {
 #if REG_SOAP_STEERING	  
     /* Go out into the world of grid services... */
+#if REG_OGSI
     return_status = Get_data_source_address_soap(IOTypes_table.io_def[index].input_index, 
 						 IOTypes_table.io_def[index].socket_info.connector_hostname,
 						 &(IOTypes_table.io_def[index].socket_info.connector_port));
-#else
+#else /* use WSRF */
+    return_status = Get_data_source_address_wsrf(IOTypes_table.io_def[index].input_index, 
+						 IOTypes_table.io_def[index].socket_info.connector_hostname,
+						 &(IOTypes_table.io_def[index].socket_info.connector_port));
+#endif /* REG_OGSI */
+
+#else /* File-based steering */
     /* get hostname and port from environment variables */
     return_status = Get_data_source_address_file(IOTypes_table.io_def[index].input_index, 
 						 IOTypes_table.io_def[index].socket_info.connector_hostname,
