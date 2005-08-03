@@ -223,6 +223,7 @@ int parseResourceProperties(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 {
   xmlNodePtr child;
   xmlChar   *uidChar;
+  xmlChar   *steerStatus;
   struct msg_store_struct *curMsg;
   struct msg_uid_history_struct *uidStorePtr;
 
@@ -295,6 +296,24 @@ int parseResourceProperties(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
       }
       else{
 	return REG_FAILURE;
+      }
+    }
+    else if(!sim && !xmlStrcmp(cur->name, (const xmlChar *) "steererStatus")){
+
+      steerStatus = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
+      if(!xmlStrcmp(steerStatus, (const xmlChar *)"DETACHED")){
+
+	/* Pretend we've received a detach command - aids compatibility
+	   with higher levels of library */
+	curMsg->msg = New_msg_struct();
+	curMsg->msg->control = New_control_struct();
+	curMsg->msg->control->first_cmd = New_cmd_struct();
+	curMsg->msg->control->cmd = curMsg->msg->control->first_cmd;
+	curMsg->msg->control->cmd->name = (xmlChar *)xmlMalloc(16);
+	sprintf((char *)curMsg->msg->control->first_cmd->name, "DETACH");
+
+	curMsg->next = New_msg_store_struct();
+	curMsg = curMsg->next;
       }
     }
     else{
