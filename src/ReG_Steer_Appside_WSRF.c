@@ -238,12 +238,14 @@ int Steerer_connected_wsrf ()
   if(strstr(steer_status, "ATTACHED")){
     return REG_SUCCESS;
   }
+  /* Not used in WSRF implementation - ARPDBG
   else if(strstr(steer_status, "DETACHING")){
-    /* Steerer has attached and detached without us noticing and thus SGS
-       is in 'detaching' state.  We have to 'detach' properly now to reset.*/
+    * Steerer has attached and detached without us noticing and thus SGS
+       is in 'detaching' state.  We have to 'detach' properly now to reset.*
     Detach_from_steerer_wsrf();
-    /* But we still return 'failure' because no steerer is attached */
+    * But we still return 'failure' because no steerer is attached *
   }
+*/
 
   return REG_FAILURE;
 }
@@ -360,6 +362,9 @@ struct msg_struct *Get_control_msg_wsrf ()
     msg = Get_next_stored_msg(NULL);
   }
 
+  /* Check for 'notifications' first */
+
+  /* Now get any new control messages */
   if(Get_resource_property(&(Steerer_connection.SGS_info),
 			   "controlMsg", &pBuf) != REG_SUCCESS){
     msg = New_msg_struct();
@@ -383,15 +388,7 @@ struct msg_struct *Get_control_msg_wsrf ()
     fprintf(stderr, "ARPDBG, parsing >>%s<<\n", pLastBut1);
     /* Parse the doc - pass NULLs in as this is appside so have no
        Sim_entry struct and results will be put in Msg_store struct */
-    if(Parse_xml_buf(pLastBut1, strlen(pLastBut1), NULL, NULL) == REG_SUCCESS){
-      /* We only want to do this if we haven't seen the message before.
-         We also need to log it when we act on it, not just when we
-         receive it ARPDBG... 
-#if REG_LOG_STEERING
-      Log_control_msg(pLastBut1);
-#endif
-      ...ARPDBG END */
-    }
+    Parse_xml_buf(pLastBut1, strlen(pLastBut1), NULL, NULL);
 
     *pLastBut1 = '\0';
   }
@@ -458,9 +455,9 @@ int Save_log_wsrf (char *log_data)
 
 int Detach_from_steerer_wsrf()
 {
+  /* ARPDBG - I don't think we need this function anymore
   struct sws__DestroyResponse out;
 
-  /* ARPDBG - I don't think we need this function anymore */
   if(soap_call_sws__Destroy(Steerer_connection.SGS_info.soap, 
 			    Steerer_connection.SGS_info.address, 
 			    "", &out)){
@@ -468,7 +465,7 @@ int Detach_from_steerer_wsrf()
     soap_print_fault(Steerer_connection.SGS_info.soap, stderr);
     return REG_FAILURE;
   }
-
+  */
   return REG_SUCCESS;
 }
 
