@@ -189,6 +189,10 @@ typedef struct {
   int                  pipe_to_proxy;
   int                  pipe_from_proxy;
 
+  /** Set to REG_TRUE once detach has been called - prevents us
+      calling detach more than once on the SWS */
+  int                  detached;
+
   /** Info on associated Grid service - for steering via SOAP */
   SGS_info_type SGS_info;
 
