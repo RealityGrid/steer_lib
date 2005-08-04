@@ -353,6 +353,7 @@ int Sim_attach(char *SimID,
   sim_ptr->pipe_to_proxy   = REG_PIPE_UNSET;
   sim_ptr->pipe_from_proxy = REG_PIPE_UNSET;
   sim_ptr->msg             = NULL;
+  sim_ptr->detached        = REG_TRUE;
 
   /* Initialise the table for keeping track of msg uid's that we've
      seen before */
@@ -540,6 +541,9 @@ int Sim_attach(char *SimID,
     sim_ptr->handle = current_sim;
     *SimHandle = current_sim;
     Sim_table.num_registered++;
+
+    /* Flag that we are now attached */
+    sim_ptr->detached = REG_FALSE;
 
     /* If simulation supports the pause command then it must also
        support the resume command so add this to the list.
@@ -758,7 +762,7 @@ int Consume_param_defs(int SimHandle)
   int                  found;
   */
   int                  j;
-  struct param_struct *ptr;
+  struct param_struct *ptr = NULL;
   int                  handle;
   int                  return_status = REG_SUCCESS;
 
@@ -774,7 +778,14 @@ int Consume_param_defs(int SimHandle)
   /* Must now check the param definitions we've received and update the
      parameters part of the Sim_table appropriately */
 
-  ptr = Sim_table.sim[index].msg->status->first_param;
+  if(Sim_table.sim[index].msg->status){
+    ptr = Sim_table.sim[index].msg->status->first_param;
+  }
+  else{
+    fprintf(stderr, "Consume_param_defs: ERROR: msg is not of "
+	    "param_defs type\n");
+    return REG_FAILURE;
+  }
 
   while(ptr){
 
@@ -918,7 +929,7 @@ int Consume_IOType_defs(int SimHandle)
   int               return_status = REG_SUCCESS;
   int               handle;
   int               found;
-  struct io_struct *ptr;
+  struct io_struct *ptr = NULL;
 
   if( (index = Sim_index_from_handle(SimHandle)) == REG_SIM_HANDLE_NOTSET){
 
@@ -928,7 +939,14 @@ int Consume_IOType_defs(int SimHandle)
 
   /* Compare new IOdefs with those currently stored in table */
 
-  ptr = Sim_table.sim[index].msg->io_def->first_io;
+  if(Sim_table.sim[index].msg->io_def){
+    ptr = Sim_table.sim[index].msg->io_def->first_io;
+  }
+  else{
+    fprintf(stderr, "Consume_IOType_defs: ERROR: msg is not of "
+	    "IOType_defs type\n");
+    return REG_FAILURE;
+  }
 
   while(ptr){
 
@@ -1028,13 +1046,23 @@ int Consume_ChkType_defs(int SimHandle)
   int               return_status = REG_SUCCESS;
   int               handle;
   int               found;
-  struct io_struct *ptr;
+  struct io_struct *ptr = NULL;
 
   if( (index = Sim_index_from_handle(SimHandle)) == REG_SIM_HANDLE_NOTSET){
 
     fprintf(stderr, "Consume_ChkType_defs: failed to find sim table entry\n");
     return REG_FAILURE;
   }
+
+  if(Sim_table.sim[index].msg->chk_def){
+    ptr = Sim_table.sim[index].msg->chk_def;
+  }
+  else{
+    fprintf(stderr, "Consume_ChkType_defs: ERROR: msg is not of "
+	    "ChkType_defs type\n");
+    return REG_FAILURE;
+  }
+
   /* Compare new Chkdefs with those currently stored in table */
 
   ptr = Sim_table.sim[index].msg->chk_def->first_io;
@@ -1138,7 +1166,7 @@ int Consume_log(int SimHandle)
 {
   int index;
   Sim_entry_type          *sim;
-  struct log_entry_struct *entry_ptr;
+  struct log_entry_struct *entry_ptr = NULL;
 
   int return_status = REG_SUCCESS;
 
@@ -1155,7 +1183,8 @@ int Consume_log(int SimHandle)
      it in the structure pointed to by sim->msg */
 
   if(!sim->msg || !sim->msg->log){
-
+    fprintf(stderr, "Consume_log: ERROR: message is not of "
+	    "log type\n");
     return REG_FAILURE;
   }
   if(!(entry_ptr = sim->msg->log->first_entry)){
@@ -1195,7 +1224,7 @@ int Consume_chk_log(Sim_entry_type *sim,
 {
   int                  index, count;
   int                  return_status = REG_SUCCESS;
-  struct param_struct *param_ptr;
+  struct param_struct *param_ptr = NULL;
 
   index = sim->Chk_log.num_entries;
 
@@ -1358,8 +1387,8 @@ int Consume_status(int   SimHandle,
 
   /* For XML parser */
 
-  struct param_struct *param_ptr;
-  struct   cmd_struct *cmd_ptr;
+  struct param_struct *param_ptr = NULL;
+  struct   cmd_struct *cmd_ptr = NULL;
 
   return_status = REG_SUCCESS;
   *NumCmds = 0;
@@ -1376,8 +1405,13 @@ int Consume_status(int   SimHandle,
      in the structure pointed to by Sim_table.sim[index].msg */
 
   /* Copy data out of structures - commands first... */
-
-  cmd_ptr = Sim_table.sim[index].msg->status->first_cmd;
+  if(Sim_table.sim[index].msg->status){
+    cmd_ptr = Sim_table.sim[index].msg->status->first_cmd;
+  }
+  else{
+    fprintf(stderr, "Consume_status: ERROR: msg is not of status type\n");
+    return REG_FAILURE;
+  }
 
   count = 0;
   while(cmd_ptr){
@@ -1509,30 +1543,36 @@ int Emit_detach_cmd(int SimHandle)
 {
   int index;
   int SysCommands[1];
+  int status;
 
   /* Check that handle is valid */
   if(SimHandle == REG_SIM_HANDLE_NOTSET) return REG_SUCCESS;
 
   if( (index = Sim_index_from_handle(SimHandle)) == -1){
-
     return REG_FAILURE;
   }
 
+  /* Don't call detach again if we're already detached */
+  if(Sim_table.sim[index].detached == REG_TRUE) return REG_SUCCESS;
+
   if(Sim_table.sim[index].SGS_info.active){
 #if REG_OGSI
-    return Send_detach_msg_soap(&(Sim_table.sim[index]));
+    status = Send_detach_msg_soap(&(Sim_table.sim[index]));
 #else
-    return Send_detach_msg_wsrf(&(Sim_table.sim[index]));
+    status = Send_detach_msg_wsrf(&(Sim_table.sim[index]));
 #endif
   }
   else{
     SysCommands[0] = REG_STR_DETACH;
 
-    return Emit_control(SimHandle,
-			1,
-			SysCommands,
-			NULL);
+    status = Emit_control(SimHandle, 1, SysCommands, NULL);
   }
+
+  if(status == REG_SUCCESS){
+    /* Flag that we're now detached */
+    Sim_table.sim[index].detached = REG_TRUE;
+  }
+  return status;
 }
 
 /*----------------------------------------------------------*/
@@ -3508,10 +3548,18 @@ int Finalize_connection(Sim_entry_type *sim)
 
 #if REG_OGSI
       /* Detach from the SGS and then clean up */
-      Send_detach_msg_soap(sim);
+      if(sim->detached = REG_FALSE){
+	if(Send_detach_msg_soap(sim) == REG_SUCCESS){
+	  sim->detached = REG_TRUE;
+	}
+      }
       return Finalize_connection_soap(sim);
 #else
-      Send_detach_msg_wsrf(sim);
+      if(sim->detached = REG_FALSE){
+	if(Send_detach_msg_wsrf(sim) == REG_SUCCESS){
+	  sim->detached = REG_TRUE;
+	}
+      }
       return Finalize_connection_wsrf(sim);
 #endif
     }
