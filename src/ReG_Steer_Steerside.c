@@ -778,7 +778,7 @@ int Consume_param_defs(int SimHandle)
   /* Must now check the param definitions we've received and update the
      parameters part of the Sim_table appropriately */
 
-  if(Sim_table.sim[index].msg->status){
+  if(Sim_table.sim[index].msg && Sim_table.sim[index].msg->status){
     ptr = Sim_table.sim[index].msg->status->first_param;
   }
   else{
@@ -939,7 +939,7 @@ int Consume_IOType_defs(int SimHandle)
 
   /* Compare new IOdefs with those currently stored in table */
 
-  if(Sim_table.sim[index].msg->io_def){
+  if(Sim_table.sim[index].msg && Sim_table.sim[index].msg->io_def){
     ptr = Sim_table.sim[index].msg->io_def->first_io;
   }
   else{
@@ -1054,10 +1054,7 @@ int Consume_ChkType_defs(int SimHandle)
     return REG_FAILURE;
   }
 
-  if(Sim_table.sim[index].msg->chk_def){
-    ptr = Sim_table.sim[index].msg->chk_def;
-  }
-  else{
+  if(!(Sim_table.sim[index].msg) || !Sim_table.sim[index].msg->chk_def){
     fprintf(stderr, "Consume_ChkType_defs: ERROR: msg is not of "
 	    "ChkType_defs type\n");
     return REG_FAILURE;
@@ -3548,14 +3545,14 @@ int Finalize_connection(Sim_entry_type *sim)
 
 #if REG_OGSI
       /* Detach from the SGS and then clean up */
-      if(sim->detached = REG_FALSE){
+      if(sim->detached == REG_FALSE){
 	if(Send_detach_msg_soap(sim) == REG_SUCCESS){
 	  sim->detached = REG_TRUE;
 	}
       }
       return Finalize_connection_soap(sim);
 #else
-      if(sim->detached = REG_FALSE){
+      if(sim->detached == REG_FALSE){
 	if(Send_detach_msg_wsrf(sim) == REG_SUCCESS){
 	  sim->detached = REG_TRUE;
 	}
