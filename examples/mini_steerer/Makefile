@@ -37,6 +37,7 @@ include ${REG_STEER_HOME}/make/Makefile.${ARCH}
 TARGET   = mini_steerer
 
 ${TARGET}: ${REG_STEER_HOME}/lib$(NBIT)/$(LIB_NAME) \
+           ${REG_STEER_HOME}/lib$(NBIT)/$(LIB_UTILS_NAME) \
            ${TARGET}.c
 
 .c.o:
@@ -44,7 +45,7 @@ ${TARGET}: ${REG_STEER_HOME}/lib$(NBIT)/$(LIB_NAME) \
 
 ${TARGET}: ${TARGET}.o
 	${CC} ${C_FLAGS} ${TARGET}.o -o $@ ${STEER_LIBS} ${GLOBUS_LDFLAGS} \
-	-lReG_Steer ${STEER_LDFLAGS} ${GLOBUS_PKG_LIBS}
+	-lReG_Steer -lReG_Steer_Utils ${STEER_LDFLAGS} ${GLOBUS_PKG_LIBS}
 
 install:
 	-mv -f ${TARGET} ${LOCAL_BIN_DIR}/.
