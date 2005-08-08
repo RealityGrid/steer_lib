@@ -30,13 +30,13 @@ SOAP_BEGIN_NAMESPACE(soap)
 /* sws:GetParamLogResponse: */
 struct sws__GetParamLogResponse
 {
-	char *_GetParamLogReturn;	/* RPC return element */	/* optional element of type xsd:string */
+	char *LogValues;	/* RPC return element */	/* optional element of type xsd:string */
 };
 
-/* sws:AppRecordChkpointResponse: */
-struct sws__AppRecordChkpointResponse
+/* sws:RecordCheckpointResponse: */
+struct sws__RecordCheckpointResponse
 {
-	char *_AppRecordChkpointReturn;	/* RPC return element */	/* optional element of type xsd:string */
+	char *_RecordCheckpointReturn;	/* RPC return element */	/* optional element of type xsd:string */
 };
 
 /* sws:setServiceDataResponse: */
@@ -63,12 +63,6 @@ struct sws__RestartResponse
 	char *_RestartReturn;	/* optional element of type xsd:string */
 };
 
-/* sws:PutControlResponse: */
-struct sws__PutControlResponse
-{
-	char *_PutControlReturn;	/* RPC return element */	/* optional element of type xsd:string */
-};
-
 /* sws:ResumeResponse: */
 struct sws__ResumeResponse
 {
@@ -79,12 +73,6 @@ struct sws__ResumeResponse
 struct sws__AttachResponse
 {
 	char *_AttachReturn;	/* optional element of type xsd:string */
-};
-
-/* sws:GetControlResponse: */
-struct sws__GetControlResponse
-{
-	char *_GetControlReturn;	/* RPC return element */	/* optional element of type xsd:string */
 };
 
 /* sws:DestroyResponse: */
@@ -140,7 +128,6 @@ struct sws__GetLatestStatusResponse
 /* GetResourcePropertyRequest: */
 struct GetResourcePropertyRequest
 {
-	char *_name;	/* optional element of type xsd:string */
 };
 
 /* wsrp:GetResourcePropertyResponse: */
@@ -188,7 +175,7 @@ struct sws__GetLatestStatus
 /* wsrp:GetResourceProperty: */
 struct wsrp__GetResourceProperty
 {
-	char *_;	/* optional element of type xsd:string */
+	struct GetResourcePropertyRequest *in_;	/* optional element of type GetResourcePropertyRequest */
 };
 
 /* wsrp:GetMultipleResourceProperties: */
@@ -221,8 +208,8 @@ struct sws__Detach
 	void *param_1;	/* transient */
 };
 
-/* sws:AppRecordChkpoint: */
-struct sws__AppRecordChkpoint
+/* sws:RecordCheckpoint: */
+struct sws__RecordCheckpoint
 {
 	char *in0;	/* optional element of type xsd:string */
 	char *in1;	/* optional element of type xsd:string */
@@ -240,12 +227,6 @@ struct sws__PutParamLog
 	char *in0;	/* optional element of type xsd:string */
 };
 
-/* sws:PutControl: */
-struct sws__PutControl
-{
-	char *in0;	/* optional element of type xsd:string */
-};
-
 /* sws:GetNthDataSource: */
 struct sws__GetNthDataSource
 {
@@ -254,11 +235,6 @@ struct sws__GetNthDataSource
 
 /* sws:Destroy: */
 struct sws__Destroy
-{
-};
-
-/* sws:GetControl: */
-struct sws__GetControl
 {
 };
 
@@ -876,7 +852,7 @@ typedef char *XML;
 
 SOAP_FMAC5 int SOAP_FMAC6 sws__GetLatestStatus(struct soap*, struct sws__GetLatestStatusResponse *out);
 
-SOAP_FMAC5 int SOAP_FMAC6 wsrp__GetResourceProperty(struct soap*, char *_, char **out_);
+SOAP_FMAC5 int SOAP_FMAC6 wsrp__GetResourceProperty(struct soap*, struct GetResourcePropertyRequest *in_, char **out_);
 
 SOAP_FMAC5 int SOAP_FMAC6 wsrp__GetMultipleResourceProperties(struct soap*, struct wsrp__GetMultipleResourcePropertiesRequest in, char **_out);
 
@@ -888,19 +864,15 @@ SOAP_FMAC5 int SOAP_FMAC6 sws__Attach(struct soap*, void *_, char **out_);
 
 SOAP_FMAC5 int SOAP_FMAC6 sws__Detach(struct soap*, void *param_1, struct sws__DetachResponse *out);
 
-SOAP_FMAC5 int SOAP_FMAC6 sws__AppRecordChkpoint(struct soap*, char *in0, char *in1, struct sws__AppRecordChkpointResponse *out);
+SOAP_FMAC5 int SOAP_FMAC6 sws__RecordCheckpoint(struct soap*, char *in0, char *in1, struct sws__RecordCheckpointResponse *out);
 
-SOAP_FMAC5 int SOAP_FMAC6 sws__GetParamLog(struct soap*, int in0, struct sws__GetParamLogResponse *out);
+SOAP_FMAC5 int SOAP_FMAC6 sws__GetParamLog(struct soap*, int in0, struct sws__GetParamLogResponse *out_);
 
 SOAP_FMAC5 int SOAP_FMAC6 sws__PutParamLog(struct soap*, char *in0, struct sws__PutParamLogResponse *out);
-
-SOAP_FMAC5 int SOAP_FMAC6 sws__PutControl(struct soap*, char *in0, struct sws__PutControlResponse *out);
 
 SOAP_FMAC5 int SOAP_FMAC6 sws__GetNthDataSource(struct soap*, int in0, struct sws__GetNthDataSourceResponse *out);
 
 SOAP_FMAC5 int SOAP_FMAC6 sws__Destroy(struct soap*, struct sws__DestroyResponse *out);
-
-SOAP_FMAC5 int SOAP_FMAC6 sws__GetControl(struct soap*, struct sws__GetControlResponse *out);
 
 SOAP_FMAC5 int SOAP_FMAC6 sgs__Attach(struct soap*, struct sgs__AttachResponse *out);
 
@@ -1003,7 +975,7 @@ SOAP_FMAC5 int SOAP_FMAC6 rgt__addNode(struct soap*, char *in0, char *in1, char 
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_call_sws__GetLatestStatus(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct sws__GetLatestStatusResponse *out);
 
-SOAP_FMAC5 int SOAP_FMAC6 soap_call_wsrp__GetResourceProperty(struct soap *soap, const char *soap_endpoint, const char *soap_action, char *_, char **out_);
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_wsrp__GetResourceProperty(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct GetResourcePropertyRequest *in_, char **out_);
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_call_wsrp__GetMultipleResourceProperties(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct wsrp__GetMultipleResourcePropertiesRequest in, char **_out);
 
@@ -1015,19 +987,15 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call_sws__Attach(struct soap *soap, const char *s
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_call_sws__Detach(struct soap *soap, const char *soap_endpoint, const char *soap_action, void *param_1, struct sws__DetachResponse *out);
 
-SOAP_FMAC5 int SOAP_FMAC6 soap_call_sws__AppRecordChkpoint(struct soap *soap, const char *soap_endpoint, const char *soap_action, char *in0, char *in1, struct sws__AppRecordChkpointResponse *out);
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_sws__RecordCheckpoint(struct soap *soap, const char *soap_endpoint, const char *soap_action, char *in0, char *in1, struct sws__RecordCheckpointResponse *out);
 
-SOAP_FMAC5 int SOAP_FMAC6 soap_call_sws__GetParamLog(struct soap *soap, const char *soap_endpoint, const char *soap_action, int in0, struct sws__GetParamLogResponse *out);
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_sws__GetParamLog(struct soap *soap, const char *soap_endpoint, const char *soap_action, int in0, struct sws__GetParamLogResponse *out_);
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_call_sws__PutParamLog(struct soap *soap, const char *soap_endpoint, const char *soap_action, char *in0, struct sws__PutParamLogResponse *out);
-
-SOAP_FMAC5 int SOAP_FMAC6 soap_call_sws__PutControl(struct soap *soap, const char *soap_endpoint, const char *soap_action, char *in0, struct sws__PutControlResponse *out);
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_call_sws__GetNthDataSource(struct soap *soap, const char *soap_endpoint, const char *soap_action, int in0, struct sws__GetNthDataSourceResponse *out);
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_call_sws__Destroy(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct sws__DestroyResponse *out);
-
-SOAP_FMAC5 int SOAP_FMAC6 soap_call_sws__GetControl(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct sws__GetControlResponse *out);
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_call_sgs__Attach(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct sgs__AttachResponse *out);
 
@@ -1145,19 +1113,15 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_serve_sws__Attach(struct soap*);
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_serve_sws__Detach(struct soap*);
 
-SOAP_FMAC5 int SOAP_FMAC6 soap_serve_sws__AppRecordChkpoint(struct soap*);
+SOAP_FMAC5 int SOAP_FMAC6 soap_serve_sws__RecordCheckpoint(struct soap*);
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_serve_sws__GetParamLog(struct soap*);
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_serve_sws__PutParamLog(struct soap*);
 
-SOAP_FMAC5 int SOAP_FMAC6 soap_serve_sws__PutControl(struct soap*);
-
 SOAP_FMAC5 int SOAP_FMAC6 soap_serve_sws__GetNthDataSource(struct soap*);
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_serve_sws__Destroy(struct soap*);
-
-SOAP_FMAC5 int SOAP_FMAC6 soap_serve_sws__GetControl(struct soap*);
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_serve_sgs__Attach(struct soap*);
 
