@@ -97,6 +97,8 @@ int Get_registry_entries_wsrf(char *registryEPR, int *num_entries,
 				  num_entries, entries);
 
   free(in.__ptr[0].ResourceProperty);
+
+  soap_destroy(&soap);
   soap_end(&soap);
 
   return status;
