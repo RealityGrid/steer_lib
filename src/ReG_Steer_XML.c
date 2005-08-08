@@ -101,7 +101,9 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg,
 {
   xmlNsPtr   ns;
   xmlNodePtr cur;
+#if REG_DEBUG_FULL
   struct msg_store_struct *cur_msg;
+#endif
 
   cur = xmlDocGetRootElement(doc);
   if (cur == NULL) {
@@ -280,10 +282,12 @@ int parseResourceProperties(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 		    " with UID %s has been seen before\n", 
 		    uidChar);
 #endif
+	    xmlFree(uidChar);
 	    /* We have - skip this one */
 	    cur = cur->next;
 	    continue;
 	  }
+	  xmlFree(uidChar);
 	}
 
 #if REG_DEBUG_FULL
@@ -952,6 +956,7 @@ struct msg_struct *New_msg_struct()
   if(msg){
 
     msg->msg_type = MSG_NOTSET;
+    msg->msg_uid  = NULL;
     msg->status   = NULL;
     msg->control  = NULL;
     msg->supp_cmd = NULL;
@@ -1166,6 +1171,11 @@ void Delete_msg_struct(struct msg_struct **msgIn)
 {
   struct msg_struct *msg = *msgIn;
   if (!msg) return;
+
+  if(msg->msg_uid){
+    xmlFree(msg->msg_uid);
+    msg->msg_uid = NULL;
+  }
 
   if(msg->status){
 
@@ -1751,19 +1761,21 @@ void Start_element_handler(void * 	user_data,
   /* Check that we haven't previously hit an error */
   if(state->return_val != REG_SUCCESS) return;
   /*
-wssg:Entry
-wssg:MemberServiceEPR
-<EndpointReference>
-<Address></Address>
-</EndpointReference>
-/wssg:MemberServiceEPR
-...
-wssg:Content
-<registryEntry>
-...
-</registryEntry>
-/wssg:Content
+  wssg:Entry
+  wssg:MemberServiceEPR
+  <EndpointReference>
+  <Address></Address>
+  </EndpointReference>
+  /wssg:MemberServiceEPR
+  ...
+  wssg:Content
+  <registryEntry>
+  ...
+  </registryEntry>
+  /wssg:Content
   */
+  fprintf(stderr, "Start_element_handler: name = %s\n", (char *)name);
+
   if( !xmlStrcmp(name, (const xmlChar *) "ogsi:entry") ){
 
     if (state->depth == STARTING){
@@ -1782,6 +1794,7 @@ wssg:Content
 
     if (state->depth == STARTING){
       state->depth = WSRF_ENTRY;
+      fprintf(stderr, "ARPDBG depth = WSRF_ENTRY\n");
       /* Initialise table to hold this content */
       state->entries[state->num_entries].service_type[0] = '\0';
       state->entries[state->num_entries].gsh[0] = '\0';
@@ -1834,16 +1847,28 @@ wssg:Content
   }
   /* WSRF section */
   else if( !xmlStrcmp(name, (const xmlChar *) "wssg:MemberServiceEPR") ){
-    if(state->depth == WSRF_ENTRY) state->depth = MEMBER_SERVICE_EPR;
+    if(state->depth == WSRF_ENTRY){
+      state->depth = MEMBER_SERVICE_EPR;
+      fprintf(stderr, "ARPDBG depth = MEMBER_SERVICE_EPR\n");
+    }
   }
   else if( !xmlStrcmp(name, (const xmlChar *) "EndpointReference") ){
-    if(state->depth == MEMBER_SERVICE_EPR) state->depth = EPR;
+    if(state->depth == MEMBER_SERVICE_EPR){
+      state->depth = EPR;
+      fprintf(stderr, "ARPDBG depth = EPR\n");
+    }
   }
   else if( !xmlStrcmp(name, (const xmlChar *) "Address") ){
-    if(state->depth == EPR) state->depth = WSADDRESS;
+    if(state->depth == EPR){
+      state->depth = WSADDRESS;
+       fprintf(stderr, "ARPDBG depth = WSADDRESS\n");
+   }
   }
   else if( !xmlStrcmp(name, (const xmlChar *) "wssg:Content") ){
-    if(state->depth == WSRF_ENTRY) state->depth = CONTENT;
+    if(state->depth == WSRF_ENTRY){
+      state->depth = CONTENT;
+      fprintf(stderr, "ARPDBG depth = CONTENT\n");
+    }
   }
 }
 
@@ -1925,6 +1950,30 @@ void End_element_handler(void          *user_data,
     if(state->depth == COMPONENT_TASK_DESCRIPTION) state->depth = COMPONENT_CONTENT;
   }
   /* WSRF section */
+  else if( !xmlStrcmp(name, (const xmlChar *) "wssg:Entry") ){
+
+    if(state->depth == WSRF_ENTRY){
+      state->depth = STARTING;
+
+      /* malloc more memory if required */  
+      if(++(state->num_entries) >= state->max_entries){
+
+	tmp = realloc(state->entries,
+		      2*(state->max_entries)*sizeof(struct registry_entry));
+	if(tmp){
+	  state->entries = tmp;
+	  state->max_entries *= 2;
+#if REG_DEBUG_FULL
+	  fprintf(stderr, "INFO: End_element_handler: done malloc for "
+		  "%d entries\n", state->max_entries);
+#endif
+	}
+	else{
+	  state->return_val = REG_FAILURE;
+	}
+      }
+    }
+  }
   else if( !xmlStrcmp(name, (const xmlChar *) "wssg:MemberServiceEPR") ){
     if(state->depth == MEMBER_SERVICE_EPR) state->depth = WSRF_ENTRY;
   }

@@ -92,9 +92,7 @@ int Sim_attach_wsrf (Sim_entry_type *sim, char *SimID){
     Finalize_connection_wsrf(sim);
     return REG_FAILURE;
   }
-  printf("...done Attach\n");
-  /*printf("Attach returned: %s\n", response._AttachReturn);*/
-  printf("Attach returned: %s\n", response);
+  printf("...Attach returned: %s\n", response);
 
   if(strstr(response, "<faultcode>")){
     fprintf(stderr, "Attach returned fault: %s\n", response);
@@ -309,7 +307,7 @@ int Get_resource_property (SGS_info_type *sgs_info,
 /*------------------------------------------------------------------*/
 /** Get the whole resource property document */
 int Get_resource_property_doc(SGS_info_type *sgs_info,
-				char **pDoc)
+			      char **pDoc)
 {
   char *out;
 #ifdef USE_REG_TIMING
@@ -362,13 +360,23 @@ int Send_detach_msg_wsrf (Sim_entry_type *sim){
 }
 
 /*------------------------------------------------------------------*/
-/** Clean up a WSRF-based steering connection */
+/** Clean up a WSRF-based steering connection - free memory */
 int Finalize_connection_wsrf (Sim_entry_type *sim)
 {
-  /* Release memory */
+  fprintf(stderr, "ARPDBG - this IS Finalize_connection_wsrf\n");
+  /* Reset: close master/slave sockets and remove callbacks
+     soap_done(sim->SGS_info.soap);*/
+  /* Remove all dynamically allocated class instances.
+     Need to be called before soap_end()*/
+  soap_destroy(sim->SGS_info.soap);
+  /* Remove temporary data and deserialized data except
+     class instances*/
   soap_end(sim->SGS_info.soap);
+
   free(sim->SGS_info.soap);
   sim->SGS_info.soap = NULL;
+
+  Delete_msg_store(&(sim->Msg_store));
 
   return REG_SUCCESS;  
 }
@@ -386,7 +394,7 @@ int Get_param_log_wsrf(Sim_entry_type *sim,
 #ifdef USE_REG_TIMING
   double time0, time1;
 #endif
-  response._GetParamLogReturn = NULL;
+  response.LogValues = NULL;
 
   if( (index=Param_index_from_handle(&(sim->Params_table),
 				     handle)) == -1){
@@ -424,14 +432,14 @@ int Get_param_log_wsrf(Sim_entry_type *sim,
     return REG_FAILURE;
   }
 
-  if( !(response._GetParamLogReturn) ){
+  if( !(response.LogValues) ){
     fprintf(stderr, "Get_param_log_wsrf: no log entries returned\n");
     return REG_FAILURE;
   }
 
-  /*fprintf(stderr, "ARPDBG, got log from SWS>>%s<<",
-    (char*)response._GetParamLogReturn);*/
-  ptr1 = (char*)response._GetParamLogReturn;
+  fprintf(stderr, "ARPDBG, got log from SWS>>%s<<",
+    (char*)response.LogValues);
+  ptr1 = (char*)response.LogValues;
   lindex = sim->Params_table.param[index].log_index;
 
   switch(sim->Params_table.param[index].type){
