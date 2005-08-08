@@ -38,6 +38,7 @@ LIB_PATH       = ${REG_STEER_HOME}/lib$(NBIT)
 
 all:
 	$(MAKE) lib
+	$(MAKE) lib_utils
 	$(MAKE) c_examples
 	$(MAKE) f90_examples
 	$(MAKE) wrappers
@@ -61,6 +62,9 @@ lib:
 	rm -f $(LIB_PATH)/$(LIB_NAME)
 	cd src; $(MAKE) lib
 
+lib_utils:
+	rm -f $(LIB_PATH)/$(LIB_UTILS_NAME)
+	cd src; $(MAKE) libutils
 libss:
 	cd src; $(MAKE) -f Makefile.ss all
 	rm -f $(LIB_PATH)/libReG_Steer.so

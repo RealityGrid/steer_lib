@@ -49,13 +49,15 @@ REG_LIB_OBJECTS=ReG_Steer_Appside_f.o \
  ReG_Steer_Steerside_Soap.o \
  ReG_Steer_Appside_Soap.o \
  ReG_Steer_Appside_File.o \
- ReG_Steer_Browser.o \
  ReG_Steer_Logging.o \
  stdsoap2.o soapC.o soapClient.o \
  Base64.o \
  ReG_Steering_Initialize.o \
  ReG_Steer_Steerside_WSRF.o \
  ReG_Steer_Appside_WSRF.o
+
+REG_LIB_UTILS_OBJECTS=ReG_Steer_Utils_WSRF.o \
+ ReG_Steer_Browser.o
 
 .c.o:
 	${CC} ${C_FLAGS} \
@@ -67,14 +69,17 @@ REG_LIB_OBJECTS=ReG_Steer_Appside_f.o \
         ${INCLUDE_PATH} -c $< -o $@
 
 all:
+	$(MAKE) ${LIB_PATH}/$(LIB_NAME)
+	$(MAKE) ${LIB_PATH}/libReG_Steer_Utils.a
+
+libutils:
+	$(MAKE) ${LIB_PATH}/$(LIB_UTILS_NAME)
+
+lib:
 	echo $(MAKE) ${LIB_PATH}/$(LIB_NAME)
 	$(MAKE) ${LIB_PATH}/$(LIB_NAME)
 
-lib:
-	$(MAKE) ${LIB_PATH}/$(LIB_NAME)
-
 ${LIB_PATH}/libReG_Steer.so: ${REG_LIB_OBJECTS}
-	echo EXECUTING THIS RULE
 	$(MAKE) -f Makefile.ss all
 	$(MAKE) -f Makefile.ssd all
 	$(MAKE) -f Makefile.sf all
@@ -97,7 +102,6 @@ ${LIB_PATH}/libReG_Steer.a: ${REG_LIB_OBJECTS}
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Appside_Soap.o
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Appside_File.o
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Steerside_Soap.o
-	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Browser.o
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Logging.o
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a stdsoap2.o
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a soapC.o
@@ -107,6 +111,9 @@ ${LIB_PATH}/libReG_Steer.a: ${REG_LIB_OBJECTS}
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Appside_WSRF.o
 # '-' is to allow for failure in case we don't have an F90 compiler
 	-${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steering_Initialize.o
+
+${LIB_PATH}/libReG_Steer_Utils.a: ${REG_LIB_UTILS_OBJECTS}
+	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer_Utils.a ${REG_LIB_UTILS_OBJECTS}
 
 #---------------------------------------------------------------
 
@@ -181,9 +188,18 @@ ReG_Steer_Steerside_Soap.o: ReG_Steer_Steerside_Soap.c \
         ../include/soapH.h \
 	stdsoap2.c soapC.c soapClient.c 
 
+ReG_Steer_Steerside_WSRF.o: ReG_Steer_Steerside_WSRF.c \
+        ../include/ReG_Steer_XML.h \
+        ../include/ReG_Steer_Steerside_internal.h \
+        ../include/ReG_Steer_Steerside.h \
+        ../include/soapRealityGrid.nsmap \
+        ../include/soapH.h \
+	stdsoap2.c soapC.c soapClient.c 
+
 ReG_Steer_Browser.o: ReG_Steer_Browser.c \
         ../include/ReG_Steer_Browser.h \
 	../include/ReG_Steer_types.h \
+        ../include/ReG_Steer_XML.h \
         ../include/soapRealityGrid.nsmap \
         ../include/soapH.h \
         ../include/soapStub.h \
@@ -209,6 +225,13 @@ ReG_Steering_Initialize.o: ReG_Steering_Initialize.f90 \
         -DREG_STEER_LIB_VERSION=\"${REG_STEER_LIB_VERSION}\" \
         ${INCLUDE_PATH} -c $< -o $@
 
+ReG_Steer_Utils_WSRF.o: ReG_Steer_Utils_WSRF.c \
+           ../include/ReG_Steer_types.h \
+           ../include/ReG_Steer_Utils_WSRF.h \
+           ../include/ReG_Steer_Common.h \
+           ../include/ReG_Steer_XML.h \
+           ../include/soapH.h
+
 #---------------------------------------------------------------
 
 clean:
@@ -217,6 +240,7 @@ clean:
 	rm -f ../include/*~
 	rm -f ${LIB_PATH}/libReG_Steer.a
 	rm -f ${LIB_PATH}/libReG_Steer*.so
+	rm -f ${LIB_PATH}/libReG_Steer_Utils.a
 
 tidy:
 	rm -f ReG_Steer_Steerside.o ReG_Steer_Appside.o \
