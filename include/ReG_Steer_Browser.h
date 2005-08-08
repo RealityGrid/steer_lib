@@ -54,9 +54,21 @@ struct registry_entry {
 
 /*-------------------------------------------------------------------*/
 
+/**
+   Returns list of steerable applications returned by UNICORE 
+   registry (contacted via GridService on the port given in the
+   REGISTRY_GSH environment variable. If the steering proxy is not
+   available this routine returns REG_FAILURE and nsims=0. The Grid
+   Service Handle returned in simGSH must be supplied as the SimID
+   to Sim_attach. */
+int Get_sim_list(int   *nSims,
+		 char **simName,
+		 char **simGSH);
+
 /** Queries specified registry
     @return The number of entries in the registry
     @return Details for each entry
+    @internal
  */
 int Get_registry_entries(char *registryGSH, 
 			 int *num_entries,  
