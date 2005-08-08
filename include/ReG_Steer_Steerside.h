@@ -82,17 +82,6 @@ typedef struct {
 /*-------------- Steerer-side function prototypes -------------*/
 
 /**
-   Returns list of steerable applications returned by UNICORE 
-   registry (contacted via GridService on the port given in the
-   REGISTRY_GSH environment variable. If the steering proxy is not
-   available this routine returns REG_FAILURE and nsims=0. The Grid
-   Service Handle returned in simGSH must be supplied as the SimID
-   to Sim_attach. */
-extern PREFIX int Get_sim_list(int   *nSims,
-			       char **simName,
-			       char **simGSH);
-
-/**
    Attempt to attach to the specified simulation - returns a 
    handle for this simulation if successful. */
 extern PREFIX int Sim_attach(char *SimID,
