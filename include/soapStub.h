@@ -90,7 +90,8 @@ struct sws__PutParamLogResponse
 /* sws:GetNthDataSourceResponse: */
 struct sws__GetNthDataSourceResponse
 {
-	char *_GetNthDataSourceReturn;	/* RPC return element */	/* optional element of type xsd:string */
+	char *host;	/* RPC return element */	/* optional element of type xsd:string */
+	int port;	/* required element of type xsd:int */
 };
 
 /* paramStruct: */
@@ -230,7 +231,7 @@ struct sws__PutParamLog
 /* sws:GetNthDataSource: */
 struct sws__GetNthDataSource
 {
-	int in0;	/* required element of type xsd:int */
+	int index;	/* required element of type xsd:int */
 };
 
 /* sws:Destroy: */
@@ -870,7 +871,7 @@ SOAP_FMAC5 int SOAP_FMAC6 sws__GetParamLog(struct soap*, int in0, struct sws__Ge
 
 SOAP_FMAC5 int SOAP_FMAC6 sws__PutParamLog(struct soap*, char *in0, struct sws__PutParamLogResponse *out);
 
-SOAP_FMAC5 int SOAP_FMAC6 sws__GetNthDataSource(struct soap*, int in0, struct sws__GetNthDataSourceResponse *out);
+SOAP_FMAC5 int SOAP_FMAC6 sws__GetNthDataSource(struct soap*, int index, struct sws__GetNthDataSourceResponse *out);
 
 SOAP_FMAC5 int SOAP_FMAC6 sws__Destroy(struct soap*, struct sws__DestroyResponse *out);
 
@@ -993,7 +994,7 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call_sws__GetParamLog(struct soap *soap, const ch
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_call_sws__PutParamLog(struct soap *soap, const char *soap_endpoint, const char *soap_action, char *in0, struct sws__PutParamLogResponse *out);
 
-SOAP_FMAC5 int SOAP_FMAC6 soap_call_sws__GetNthDataSource(struct soap *soap, const char *soap_endpoint, const char *soap_action, int in0, struct sws__GetNthDataSourceResponse *out);
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_sws__GetNthDataSource(struct soap *soap, const char *soap_endpoint, const char *soap_action, int index, struct sws__GetNthDataSourceResponse *out);
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_call_sws__Destroy(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct sws__DestroyResponse *out);
 

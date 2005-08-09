@@ -11,7 +11,7 @@ extern "C" {
 
 SOAP_BEGIN_NAMESPACE(soap)
 
-SOAP_SOURCE_STAMP("@(#) soapC.c ver 2.7.2 2005-08-05 11:02:36 GMT")
+SOAP_SOURCE_STAMP("@(#) soapC.c ver 2.7.2 2005-08-09 12:42:32 GMT")
 
 
 #ifndef WITH_NOGLOBAL
@@ -9705,13 +9705,13 @@ SOAP_FMAC3 struct sws__Destroy * SOAP_FMAC4 soap_in_sws__Destroy(struct soap *so
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_sws__GetNthDataSource(struct soap *soap, const struct sws__GetNthDataSource *a)
 {
 	(void)soap; (void)a; /* appease -Wall -Werror */
-	soap_embedded(soap, &a->in0, SOAP_TYPE_xsd__int);
+	soap_embedded(soap, &a->index, SOAP_TYPE_xsd__int);
 }
 
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_sws__GetNthDataSource(struct soap *soap, struct sws__GetNthDataSource *a)
 {
 	(void)soap; (void)a; /* appease -Wall -Werror */
-	soap_default_xsd__int(soap, &a->in0);
+	soap_default_xsd__int(soap, &a->index);
 }
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_sws__GetNthDataSource(struct soap *soap, const struct sws__GetNthDataSource *a, const char *tag, const char *type)
@@ -9725,7 +9725,7 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_put_sws__GetNthDataSource(struct soap *soap, cons
 SOAP_FMAC3 int SOAP_FMAC4 soap_out_sws__GetNthDataSource(struct soap *soap, const char *tag, int id, const struct sws__GetNthDataSource *a, const char *type)
 {
 	soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_sws__GetNthDataSource), type);
-	soap_out_xsd__int(soap, "in0", -1, &a->in0, "");
+	soap_out_xsd__int(soap, "index", -1, &a->index, "");
 	soap_element_end_out(soap, tag);
 	return SOAP_OK;
 }
@@ -9739,7 +9739,7 @@ SOAP_FMAC3 struct sws__GetNthDataSource * SOAP_FMAC4 soap_get_sws__GetNthDataSou
 
 SOAP_FMAC3 struct sws__GetNthDataSource * SOAP_FMAC4 soap_in_sws__GetNthDataSource(struct soap *soap, const char *tag, struct sws__GetNthDataSource *a, const char *type)
 {
-	short soap_flag_in0 = 1;
+	short soap_flag_index = 1;
 	if (soap_element_begin_in(soap, tag, 0))
 		return NULL;
 	if (*soap->type && soap_match_tag(soap, soap->type, type))
@@ -9754,9 +9754,9 @@ SOAP_FMAC3 struct sws__GetNthDataSource * SOAP_FMAC4 soap_in_sws__GetNthDataSour
 	if (soap->body && !*soap->href)
 	{	for (;;)
 		{	soap->error = SOAP_TAG_MISMATCH;
-			if (soap_flag_in0 && soap->error == SOAP_TAG_MISMATCH)
-				if (soap_in_xsd__int(soap, "in0", &a->in0, "xsd:int"))
-				{	soap_flag_in0 = 0;
+			if (soap_flag_index && soap->error == SOAP_TAG_MISMATCH)
+				if (soap_in_xsd__int(soap, "index", &a->index, "xsd:int"))
+				{	soap_flag_index = 0;
 					continue;
 				}
 			if (soap->error == SOAP_TAG_MISMATCH)
@@ -9766,7 +9766,7 @@ SOAP_FMAC3 struct sws__GetNthDataSource * SOAP_FMAC4 soap_in_sws__GetNthDataSour
 			if (soap->error)
 				return NULL;
 		}
-		if ((soap->mode & SOAP_XML_STRICT) && (soap_flag_in0))
+		if ((soap->mode & SOAP_XML_STRICT) && (soap_flag_index))
 		{	soap->error = SOAP_OCCURS;
 			return NULL;
 		}
@@ -11500,14 +11500,16 @@ SOAP_FMAC3 struct paramStruct * SOAP_FMAC4 soap_in_paramStruct(struct soap *soap
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_sws__GetNthDataSourceResponse(struct soap *soap, const struct sws__GetNthDataSourceResponse *a)
 {
 	(void)soap; (void)a; /* appease -Wall -Werror */
-	soap_embedded(soap, &a->_GetNthDataSourceReturn, SOAP_TYPE_xsd__string);
-	soap_serialize_xsd__string(soap, &a->_GetNthDataSourceReturn);
+	soap_embedded(soap, &a->host, SOAP_TYPE_xsd__string);
+	soap_serialize_xsd__string(soap, &a->host);
+	soap_embedded(soap, &a->port, SOAP_TYPE_xsd__int);
 }
 
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_sws__GetNthDataSourceResponse(struct soap *soap, struct sws__GetNthDataSourceResponse *a)
 {
 	(void)soap; (void)a; /* appease -Wall -Werror */
-	soap_default_xsd__string(soap, &a->_GetNthDataSourceReturn);
+	soap_default_xsd__string(soap, &a->host);
+	soap_default_xsd__int(soap, &a->port);
 }
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_sws__GetNthDataSourceResponse(struct soap *soap, const struct sws__GetNthDataSourceResponse *a, const char *tag, const char *type)
@@ -11521,9 +11523,10 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_put_sws__GetNthDataSourceResponse(struct soap *so
 SOAP_FMAC3 int SOAP_FMAC4 soap_out_sws__GetNthDataSourceResponse(struct soap *soap, const char *tag, int id, const struct sws__GetNthDataSourceResponse *a, const char *type)
 {
 	soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_sws__GetNthDataSourceResponse), type);
-	if (a->_GetNthDataSourceReturn)
-		soap_element_result(soap, "GetNthDataSourceReturn");
-	soap_out_xsd__string(soap, "GetNthDataSourceReturn", -1, &a->_GetNthDataSourceReturn, "");
+	if (a->host)
+		soap_element_result(soap, "host");
+	soap_out_xsd__string(soap, "host", -1, &a->host, "");
+	soap_out_xsd__int(soap, "port", -1, &a->port, "");
 	soap_element_end_out(soap, tag);
 	return SOAP_OK;
 }
@@ -11537,7 +11540,7 @@ SOAP_FMAC3 struct sws__GetNthDataSourceResponse * SOAP_FMAC4 soap_get_sws__GetNt
 
 SOAP_FMAC3 struct sws__GetNthDataSourceResponse * SOAP_FMAC4 soap_in_sws__GetNthDataSourceResponse(struct soap *soap, const char *tag, struct sws__GetNthDataSourceResponse *a, const char *type)
 {
-	short soap_flag__GetNthDataSourceReturn = 1;
+	short soap_flag_host = 1, soap_flag_port = 1;
 	if (soap_element_begin_in(soap, tag, 0))
 		return NULL;
 	if (*soap->type && soap_match_tag(soap, soap->type, type))
@@ -11552,9 +11555,14 @@ SOAP_FMAC3 struct sws__GetNthDataSourceResponse * SOAP_FMAC4 soap_in_sws__GetNth
 	if (soap->body && !*soap->href)
 	{	for (;;)
 		{	soap->error = SOAP_TAG_MISMATCH;
-			if (soap_flag__GetNthDataSourceReturn && (soap->error == SOAP_TAG_MISMATCH || soap->error == SOAP_NO_TAG))
-				if (soap_in_xsd__string(soap, NULL, &a->_GetNthDataSourceReturn, "xsd:string"))
-				{	soap_flag__GetNthDataSourceReturn = 0;
+			if (soap_flag_host && (soap->error == SOAP_TAG_MISMATCH || soap->error == SOAP_NO_TAG))
+				if (soap_in_xsd__string(soap, "host", &a->host, "xsd:string"))
+				{	soap_flag_host = 0;
+					continue;
+				}
+			if (soap_flag_port && soap->error == SOAP_TAG_MISMATCH)
+				if (soap_in_xsd__int(soap, "port", &a->port, "xsd:int"))
+				{	soap_flag_port = 0;
 					continue;
 				}
 			if (soap->error == SOAP_TAG_MISMATCH)
@@ -11563,6 +11571,10 @@ SOAP_FMAC3 struct sws__GetNthDataSourceResponse * SOAP_FMAC4 soap_in_sws__GetNth
 				break;
 			if (soap->error)
 				return NULL;
+		}
+		if ((soap->mode & SOAP_XML_STRICT) && (soap_flag_port))
+		{	soap->error = SOAP_OCCURS;
+			return NULL;
 		}
 		if (soap_element_end_in(soap, tag))
 			return NULL;
