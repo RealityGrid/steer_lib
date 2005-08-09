@@ -98,6 +98,7 @@ public class MiniSteerer implements ReG_SteerConstants {
 
     boolean done = false;
     char userChar = '\0';
+    int pHandle = REG_PARAM_HANDLE_NOTSET;
 
     /* enter steering loop */
     while(!done) {
@@ -146,7 +147,7 @@ public class MiniSteerer implements ReG_SteerConstants {
 
 	case 'e':
 	  int[] h = new int[1];
-	  h[0] = 5;
+	  h[0] = 6;
 	  String[] st = new String[1];
 	  st[0] = "111";
 	  rss.setParamValues(simHandle, h, st);
@@ -226,6 +227,7 @@ public class MiniSteerer implements ReG_SteerConstants {
 	  System.out.println("  q - Quit steerer - detaches from application");
 	  System.out.println("  r - Send Resume signal to application");
 	  System.out.println("  s - Send Stop signal to application");
+	  System.out.println("  V - View logged parameters - SOON");
 	  break;
 
 	case 'l':
@@ -242,7 +244,7 @@ public class MiniSteerer implements ReG_SteerConstants {
 
 	    System.out.println("\nIO Types: " + numIOs);
 	    for(int i = 0; i < numIOs; i++) {
-	      System.out.println("IOType #" + i + "\n  freq: " + ioFreqs[i]);
+	      System.out.println("IOType# " + i + "\n  freq: " + ioFreqs[i]);
 	      System.out.println("  label: " + ioLabels[i]);
 	      System.out.println("  direction: " + ReG_SteerUtilities.lookupDirection(ioDirs[i]));
 	    }
@@ -261,7 +263,7 @@ public class MiniSteerer implements ReG_SteerConstants {
 
 	    System.out.println("\nCheckpoint Types: " + numChks);
 	    for(int i = 0; i < numChks; i++) {
-	      System.out.println("ChkType #" + i + "\n  freq: " + chkFreqs[i]);
+	      System.out.println("ChkType# " + i + "\n  freq: " + chkFreqs[i]);
 	      System.out.println("  label: " + chkLabels[i]);
 	      System.out.println("  direction: " + ReG_SteerUtilities.lookupDirection(chkDirs[i]));
 	    }
@@ -269,7 +271,7 @@ public class MiniSteerer implements ReG_SteerConstants {
 	  break;
 
 	case 'o':
-	  int pHandle = chooseParam(simHandle, false);
+	  pHandle = chooseParam(simHandle, false);
 	  if(pHandle != REG_PARAM_HANDLE_NOTSET) 
 	    rss.emitRetrieveParamLogCmd(simHandle, pHandle);
 	  break;
@@ -292,6 +294,12 @@ public class MiniSteerer implements ReG_SteerConstants {
 	  System.out.println("Sending Stop signal...");
 	  rss.emitStopCmd(simHandle);
 	  break;
+
+	case 'V':
+	  //pHandle = chooseParam(simHandle, false);
+	  //if(pHandle == REG_PARAM_HANDLE_NOTSET) break;
+	  break;
+
 	default:
 	  System.out.println("Unrecognised command...");
 	  break;
