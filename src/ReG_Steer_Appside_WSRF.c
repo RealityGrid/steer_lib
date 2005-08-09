@@ -80,9 +80,6 @@ extern char Global_scratch_buffer[];
 
 /* Soap-specific declarations */
 
-/** The gSoap environment structure */
-static struct soap wsSoap;
-
 /** Names of the SWS' ResourceProperties - MUST match those
     used in SWS.pm (as launched by container) */
 char *SUPPORTED_CMDS_RP = "sws:supportedCommands";
@@ -161,10 +158,10 @@ int Initialize_steering_connection_wsrf(int  NumSupportedCmds,
      GLOBUS_TCP_PORT_RANGE is set. */
   if( (pchar = getenv("GLOBUS_TCP_PORT_RANGE")) ){
 
-    if(sscanf(pchar, "%d,%d", &(wsSoap.client_port_min), 
-	      &(wsSoap.client_port_max)) != 2){
-      wsSoap.client_port_min = 0;
-      wsSoap.client_port_max = 0;
+    if(sscanf(pchar, "%d,%d", &(Steerer_connection.SGS_info.soap->client_port_min), 
+	      &(Steerer_connection.SGS_info.soap->client_port_max)) != 2){
+      Steerer_connection.SGS_info.soap->client_port_min = 0;
+      Steerer_connection.SGS_info.soap->client_port_max = 0;
     }
   }
 
@@ -501,8 +498,123 @@ int Get_data_source_address_wsrf(int   index,
 				 char *hostname,
 				 unsigned short int  *port)
 {
-  fprintf(stderr, "IMPLEMENT ME - ARPDBG!\n");
-  return REG_FAILURE;
+  char  *pBuf;
+  char  *pchar;
+  char  *pLast;
+  int    count;
+  char   epr[REG_MAX_STRING_LENGTH];
+  char   label[REG_MAX_STRING_LENGTH];
+  SGS_info_type sgs_info;
+
+  struct sws__GetNthDataSourceResponse response;
+
+  /* Port returned as zero on failure */
+  *port = 0;
+
+  if(Get_resource_property(&(Steerer_connection.SGS_info),
+			   "dataSource", &pBuf) != REG_SUCCESS){
+    return REG_FAILURE;
+  }
+
+  epr[0]='\0';
+  label[0]='\0';
+  count = 1;
+  pLast = pBuf;
+  while( (pLast = strstr(pLast, "<sws:dataSource")) ){
+    if(count == index){
+      /* Pull out the EPR of the service that will provide
+	 our data */
+      pchar = strstr(pLast, "<sourceEPR>");
+      pchar += strlen("<sourceEPR>");
+      pLast = strchr(pchar, '<');
+      count = pLast - pchar;
+      strncpy(epr, pchar, count);
+      epr[count]='\0';
+      /* Pull out the label of the IOType of that SWS that
+	 will provide our data */
+      pchar = strstr(pLast, "<sourceLabel>");
+      pchar += strlen("<sourceLabel>");
+      pLast = strchr(pchar, '<');
+      count = pLast - pchar;
+      strncpy(label, pchar, count);
+      label[count]='\0';
+      break;
+    }
+    pLast++;
+  }
+
+  if(strlen(epr)==0 || strlen(label)==0){
+    return REG_FAILURE;
+  }
+
+#if REG_DEBUG
+  fprintf(stderr, "Get_data_source_address_wsrf: Got EPR = %s\n"
+	  "                                label = %s\n",
+	  epr, label);
+#endif
+
+  /* Set-up soap environment for call to a SWS other than our own */
+  sgs_info.soap = (struct soap*)malloc(sizeof(struct soap));
+  /* Initialise the soap run-time environment:
+     Use this form to turn-on keep-alive for both incoming and outgoing
+     http connections */
+  soap_init2(sgs_info.soap, SOAP_IO_KEEPALIVE, 
+	     SOAP_IO_KEEPALIVE);
+  /* Set the endpoint address */
+  snprintf(sgs_info.address, REG_MAX_STRING_LENGTH, 
+	   "%s", epr);
+  /* Since we are using KEEPALIVE, we can also ask gSOAP to bind the 
+     socket to a specific port on the local machine - only do this if 
+     GLOBUS_TCP_PORT_RANGE is set. */
+  sgs_info.soap->client_port_min = Steerer_connection.SGS_info.soap->client_port_min;
+  sgs_info.soap->client_port_max = Steerer_connection.SGS_info.soap->client_port_max;
+
+  if(Get_resource_property(&(sgs_info),
+			   "ioTypeDefinitions", &pBuf) != REG_SUCCESS){
+    return REG_FAILURE;
+  }
+
+  soap_end(sgs_info.soap);
+  /* Reset: close master/slave sockets and remove callbacks */
+  soap_done(sgs_info.soap);
+  free(sgs_info.soap);
+  sgs_info.soap = NULL;
+
+  return REG_FAILURE; /* ARPDBG - while developing above code */
+  response.host = NULL;
+  response.port = 0;
+  if(soap_call_sws__GetNthDataSource(Steerer_connection.SGS_info.soap, 
+				     Steerer_connection.SGS_info.address, 
+				     "", (xsd__int)index,
+				     &response)){
+    fprintf(stderr, "Get_data_source_address_wsrf: soap call failed:\n");
+    soap_print_fault(Steerer_connection.SGS_info.soap, stderr);
+    return REG_FAILURE;
+  }
+
+#if REG_DEBUG
+  if(response.host){
+    fprintf(stderr, "Get_data_source_address_soap: GetNthDataSource "
+	    "(for n=%d) returned: host = %s, port = %d\n", 
+	    index, response.host, response.port);
+  }
+  else{
+    fprintf(stderr, "Get_data_source_address_soap: GetNthDataSource "
+	    "(for n=%d)\nreturned null\n", index);
+  }
+#endif
+
+  if(response.host){
+
+    strcpy(hostname, response.host);
+    *port = (unsigned short int)response.port;
+  }
+
+  /* So long as soap call did return something we return success - even
+     if we didn't actually get a valid address.  This consistent with
+     polling a GS for valid address - success is indicated by non-zero
+     port no. */
+  return REG_SUCCESS;
 }
 
 /*----------------------------------------------------------------------*/
