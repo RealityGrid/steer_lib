@@ -1733,6 +1733,8 @@ int Parse_registry_entries(char* buf, int size, int *num_entries,
     my_state.entries = NULL;
     return REG_FAILURE;
   } 
+  /* Clean-up */
+  xmlCleanupParser();
 
   *num_entries = my_state.num_entries;
   *entries = my_state.entries;

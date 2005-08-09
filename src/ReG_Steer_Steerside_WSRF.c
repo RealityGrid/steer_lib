@@ -271,12 +271,10 @@ int Get_resource_property (SGS_info_type *sgs_info,
 #endif
   *pRP = NULL;
   in.__size = 1;
-  in.__ptr = (struct wsrp__ResourcePropertyStruct *)malloc(in.__size*
-							  sizeof(struct wsrp__ResourcePropertyStruct));
+  in.__ptr = (struct wsrp__ResourcePropertyStruct *)malloc(sizeof(struct wsrp__ResourcePropertyStruct));
 
-  
-  in.__ptr[0].ResourceProperty = (char *)malloc(128*sizeof(char));
-  strcpy(in.__ptr[0].ResourceProperty, name);
+  in.__ptr[0].ResourceProperty = (char *)malloc(REG_MAX_STRING_LENGTH*sizeof(char));
+  strncpy(in.__ptr[0].ResourceProperty, name, REG_MAX_STRING_LENGTH);
 
 #ifdef USE_REG_TIMING
   Get_current_time_seconds(&time0);
@@ -300,6 +298,8 @@ int Get_resource_property (SGS_info_type *sgs_info,
   printf("Get_resource_property for %s returned >>%s<<\n", name, out);
 #endif
   free(in.__ptr[0].ResourceProperty);
+  free(in.__ptr);
+
   *pRP = out;
   return REG_SUCCESS;
 }
@@ -364,14 +364,12 @@ int Send_detach_msg_wsrf (Sim_entry_type *sim){
 int Finalize_connection_wsrf (Sim_entry_type *sim)
 {
   fprintf(stderr, "ARPDBG - this IS Finalize_connection_wsrf\n");
-  /* Reset: close master/slave sockets and remove callbacks
-     soap_done(sim->SGS_info.soap);*/
-  /* Remove all dynamically allocated class instances.
-     Need to be called before soap_end()*/
-  soap_destroy(sim->SGS_info.soap);
+
   /* Remove temporary data and deserialized data except
      class instances*/
   soap_end(sim->SGS_info.soap);
+  /* Reset: close master/slave sockets and remove callbacks */
+  soap_done(sim->SGS_info.soap);
 
   free(sim->SGS_info.soap);
   sim->SGS_info.soap = NULL;

@@ -475,23 +475,7 @@ int Finalize_steering_connection_wsrf ()
 {
   int return_status = REG_SUCCESS;
   struct sws__DestroyResponse out;
-  /* Tell the SGS to die - could use Destroy here but that doesn't 
-     provide any opportunites for clean-up
-  appStop_response._AppStopReturn = NULL;
-  if(soap_call_sgs__AppStop(Steerer_connection.SGS_info.soap, 
-			    Steerer_connection.SGS_info.address, 
-			    "",  &appStop_response)){
-    soap_print_fault(Steerer_connection.SGS_info.soap, stderr);
-    return REG_FAILURE;
-  }
 
-  if(appStop_response._AppStopReturn && 
-     !strstr(appStop_response._AppStopReturn, REG_SGS_ERROR)){
-
-    soap_end(Steerer_connection.SGS_info.soap);
-    return REG_SUCCESS;
-  }
-  */
   fprintf(stderr, "ARPDBG: Finalize_steering_connection_wsrf: calling "
 	  "Destroy\n");
   if(soap_call_sws__Destroy(Steerer_connection.SGS_info.soap, 
@@ -502,6 +486,8 @@ int Finalize_steering_connection_wsrf ()
   }
 
   soap_end(Steerer_connection.SGS_info.soap);
+  /* Reset: close master/slave sockets and remove callbacks */
+  soap_done(Steerer_connection.SGS_info.soap);
 
   free(Steerer_connection.SGS_info.soap);
   Steerer_connection.SGS_info.soap = NULL;
