@@ -71,7 +71,7 @@ int main(){
   int   numCommands;
   int   commands[REG_INITIAL_NUM_CMDS];
   int   sleep_time         = 1;
-  int   i;
+  int   i, j;
   /* Monitored parameter */
   int   bytes_read = 0;
 
@@ -191,7 +191,14 @@ int main(){
 		    status = Consume_data_slice(iohandle, data_type, 
 						data_count, c_array);
 
-		    printf("Got char data:\n>>%s<<\n", c_array);
+		    /* Print data but allow for fact that this is just an
+		       array of characters and may not have a terminating
+		       '\0' character */
+		    printf("Got char data:\n>>");
+		    for(j=0; j<data_count; j++){
+		      printf("%c", c_array[j]);
+		    }
+		    printf("<<\n");
 
 		    bytes_read += data_count*sizeof(char);
 		    free(c_array);
