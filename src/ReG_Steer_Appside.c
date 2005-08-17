@@ -154,14 +154,6 @@ struct ReG_array_list {
     Alloc_string_array was called */
 static struct ReG_array_list* ReG_list_head = NULL;
 
-/** Struct for storing control messages that are not yet valid
-    (i.e. valid_time < current simulated time)
-struct ReG_ctrl_msg_store{
-
-    struct control_struct     *control;
-    struct ReG_ctrl_msg_store *next;
-};
-*/
 /** Head of linked list holding control messages that are not
     yet valid (i.e. valid_time < current simulated time) */
 static struct msg_store_struct *ReG_ctrl_msg_first = NULL;
