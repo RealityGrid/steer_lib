@@ -11,58 +11,8 @@ extern "C" {
 
 SOAP_BEGIN_NAMESPACE(soap)
 
-SOAP_SOURCE_STAMP("@(#) soapClient.c ver 2.7.2 2005-08-09 12:42:32 GMT")
+SOAP_SOURCE_STAMP("@(#) soapClient.c ver 2.7.2 2005-08-17 14:21:05 GMT")
 
-
-SOAP_FMAC5 int SOAP_FMAC6 soap_call_sws__GetLatestStatus(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct sws__GetLatestStatusResponse *out)
-{	struct sws__GetLatestStatus soap_tmp_sws__GetLatestStatus;
-	if (!soap_endpoint)
-		soap_endpoint = "http://foo.bar/";
-	if (!soap_action)
-		soap_action = "";
-	soap->encodingStyle = NULL;
-	soap_begin(soap);
-	soap_serializeheader(soap);
-	soap_serialize_sws__GetLatestStatus(soap, &soap_tmp_sws__GetLatestStatus);
-	soap_begin_count(soap);
-	if (soap->mode & SOAP_IO_LENGTH)
-	{	soap_envelope_begin_out(soap);
-		soap_putheader(soap);
-		soap_body_begin_out(soap);
-		soap_put_sws__GetLatestStatus(soap, &soap_tmp_sws__GetLatestStatus, "sws:GetLatestStatus", "");
-		soap_body_end_out(soap);
-		soap_envelope_end_out(soap);
-	}
-	if (soap_connect(soap, soap_endpoint, soap_action)
-	 || soap_envelope_begin_out(soap)
-	 || soap_putheader(soap)
-	 || soap_body_begin_out(soap)
-	 || soap_put_sws__GetLatestStatus(soap, &soap_tmp_sws__GetLatestStatus, "sws:GetLatestStatus", "")
-	 || soap_body_end_out(soap)
-	 || soap_envelope_end_out(soap)
-	 || soap_end_send(soap))
-		return soap_closesock(soap);
-	soap_default_sws__GetLatestStatusResponse(soap, out);
-	if (soap_begin_recv(soap)
-	 || soap_envelope_begin_in(soap)
-	 || soap_recv_header(soap)
-	 || soap_body_begin_in(soap))
-		return soap_closesock(soap);
-	soap_get_sws__GetLatestStatusResponse(soap, out, "sws:GetLatestStatusResponse", "");
-	if (soap->error)
-	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
-			return soap_recv_fault(soap);
-		return soap_closesock(soap);
-	}
-	if (soap_body_end_in(soap)
-	 || soap_envelope_end_in(soap)
-#ifndef WITH_LEANER
-	 || soap_resolve_attachments(soap)
-#endif
-	 || soap_end_recv(soap))
-		return soap_closesock(soap);
-	return soap_closesock(soap);
-}
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_call_wsrp__GetResourceProperty(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct GetResourcePropertyRequest *in_, char **out_)
 {	struct wsrp__GetResourceProperty soap_tmp_wsrp__GetResourceProperty;
@@ -501,57 +451,6 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call_sws__PutParamLog(struct soap *soap, const ch
 	 || soap_body_begin_in(soap))
 		return soap_closesock(soap);
 	soap_get_sws__PutParamLogResponse(soap, out, "sws:PutParamLogResponse", "");
-	if (soap->error)
-	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
-			return soap_recv_fault(soap);
-		return soap_closesock(soap);
-	}
-	if (soap_body_end_in(soap)
-	 || soap_envelope_end_in(soap)
-#ifndef WITH_LEANER
-	 || soap_resolve_attachments(soap)
-#endif
-	 || soap_end_recv(soap))
-		return soap_closesock(soap);
-	return soap_closesock(soap);
-}
-
-SOAP_FMAC5 int SOAP_FMAC6 soap_call_sws__GetNthDataSource(struct soap *soap, const char *soap_endpoint, const char *soap_action, int index, struct sws__GetNthDataSourceResponse *out)
-{	struct sws__GetNthDataSource soap_tmp_sws__GetNthDataSource;
-	if (!soap_endpoint)
-		soap_endpoint = "http://foo.bar/";
-	if (!soap_action)
-		soap_action = "";
-	soap->encodingStyle = NULL;
-	soap_tmp_sws__GetNthDataSource.index = index;
-	soap_begin(soap);
-	soap_serializeheader(soap);
-	soap_serialize_sws__GetNthDataSource(soap, &soap_tmp_sws__GetNthDataSource);
-	soap_begin_count(soap);
-	if (soap->mode & SOAP_IO_LENGTH)
-	{	soap_envelope_begin_out(soap);
-		soap_putheader(soap);
-		soap_body_begin_out(soap);
-		soap_put_sws__GetNthDataSource(soap, &soap_tmp_sws__GetNthDataSource, "sws:GetNthDataSource", "");
-		soap_body_end_out(soap);
-		soap_envelope_end_out(soap);
-	}
-	if (soap_connect(soap, soap_endpoint, soap_action)
-	 || soap_envelope_begin_out(soap)
-	 || soap_putheader(soap)
-	 || soap_body_begin_out(soap)
-	 || soap_put_sws__GetNthDataSource(soap, &soap_tmp_sws__GetNthDataSource, "sws:GetNthDataSource", "")
-	 || soap_body_end_out(soap)
-	 || soap_envelope_end_out(soap)
-	 || soap_end_send(soap))
-		return soap_closesock(soap);
-	soap_default_sws__GetNthDataSourceResponse(soap, out);
-	if (soap_begin_recv(soap)
-	 || soap_envelope_begin_in(soap)
-	 || soap_recv_header(soap)
-	 || soap_body_begin_in(soap))
-		return soap_closesock(soap);
-	soap_get_sws__GetNthDataSourceResponse(soap, out, "sws:GetNthDataSourceResponse", "");
 	if (soap->error)
 	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
 			return soap_recv_fault(soap);
