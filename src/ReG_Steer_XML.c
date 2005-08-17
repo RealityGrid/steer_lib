@@ -158,8 +158,9 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg,
 #endif
   }
   else{
-    fprintf(stderr,"Parse_xml: document of the wrong type, root node != "
-	    "ReG_steer_message");
+    fprintf(stderr,"Parse_xml: document of the wrong type, root node "
+	    "= >%s< != ReG_steer_message or ResourceProperties or "
+	    "controlMsg\n", (char *)(cur->name));
     xmlFreeDoc(doc);
     return REG_FAILURE;
   }
