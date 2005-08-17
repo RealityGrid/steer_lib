@@ -183,6 +183,8 @@ int Initialize_steering_connection_wsrf(int  NumSupportedCmds,
   if(soap_call_wsrp__SetResourceProperties(Steerer_connection.SGS_info.soap,
 					   Steerer_connection.SGS_info.address,
 					   "", query_buf, &out) != SOAP_OK){
+    fprintf(stderr, "Initialize_steering_connection_wsrf: failed to set "
+	    "supportedCommands ResourceProperty:\n");
     soap_print_fault(Steerer_connection.SGS_info.soap, stderr);
     return REG_FAILURE;
   }
@@ -202,7 +204,8 @@ int Initialize_steering_connection_wsrf(int  NumSupportedCmds,
   if(soap_call_wsrp__SetResourceProperties(Steerer_connection.SGS_info.soap, 
 					   Steerer_connection.SGS_info.address,
 					   "", query_buf, &out) != SOAP_OK){
-    fprintf(stderr, "Initialize_steering_connection_wsrf: failure\n");
+    fprintf(stderr, "Initialize_steering_connection_wsrf: failed to set "
+	    "machine address and working directory ResourceProperties:\n");
     soap_print_fault(Steerer_connection.SGS_info.soap, stderr);
     return REG_FAILURE;
   }
@@ -321,6 +324,8 @@ int Send_status_msg_wsrf (char *msg)
     if(soap_call_wsrp__SetResourceProperties(Steerer_connection.SGS_info.soap, 
 					     Steerer_connection.SGS_info.address,
 					     "", pTmpBuf, &out) != SOAP_OK){
+      fprintf(stderr, "Send_status_msg_wsrf: call to SetResourceProperties "
+	      "for >>%s<< failed:\n", pTmpBuf);
       soap_print_fault(Steerer_connection.SGS_info.soap, stderr);
       return REG_FAILURE;
     }
@@ -478,6 +483,8 @@ int Finalize_steering_connection_wsrf ()
   if(soap_call_sws__Destroy(Steerer_connection.SGS_info.soap, 
 			    Steerer_connection.SGS_info.address, 
 			    "",  &out)){
+    fprintf(stderr, "Finalize_steering_connection_wsrf: call to Destroy"
+	    " failed:\n");
     soap_print_fault(Steerer_connection.SGS_info.soap, stderr);
     return_status = REG_FAILURE;
   }
@@ -501,12 +508,11 @@ int Get_data_source_address_wsrf(int   index,
   char  *pBuf;
   char  *pchar;
   char  *pLast;
+  char  *pIOType;
   int    count;
   char   epr[REG_MAX_STRING_LENGTH];
   char   label[REG_MAX_STRING_LENGTH];
   SGS_info_type sgs_info;
-
-  struct sws__GetNthDataSourceResponse response;
 
   /* Port returned as zero on failure */
   *port = 0;
@@ -573,6 +579,32 @@ int Get_data_source_address_wsrf(int   index,
 			   "ioTypeDefinitions", &pBuf) != REG_SUCCESS){
     return REG_FAILURE;
   }
+  printf("ARPDBG, pBuf contains >>%s<<\n", pBuf);
+
+  /* Parse the IOtypes */
+
+  pIOType = pBuf;
+  while( (pIOType = strstr(pIOType, "<IOType>")) ){
+    /* According to schema, Label must occur before Address */
+    pLast = strstr(pIOType, "<Label>");
+    pLast += 7; /* strlen("<Label>") = 7 */
+    pchar = strstr(pLast, "</Label>");
+    *pchar = '\0';
+    if(!strncmp(pLast, label, count)){
+      /* This is the one we want */
+      *pchar = '<';
+      pLast = strstr(pIOType, "<Address>");
+      pLast += 9; /* strlen("<Address>") = 9 */
+      pchar = strstr(pLast, "</Address>");
+      count = pchar - pLast;
+      strncpy(label, pLast, count);
+      label[count]='\0';
+      break;
+    }
+    *pchar = '<';
+    pIOType++;
+    printf("ARPDBG, Label didn't match, looping...\n");
+  }
 
   soap_end(sgs_info.soap);
   /* Reset: close master/slave sockets and remove callbacks */
@@ -580,35 +612,22 @@ int Get_data_source_address_wsrf(int   index,
   free(sgs_info.soap);
   sgs_info.soap = NULL;
 
-  return REG_FAILURE; /* ARPDBG - while developing above code */
-  response.host = NULL;
-  response.port = 0;
-  if(soap_call_sws__GetNthDataSource(Steerer_connection.SGS_info.soap, 
-				     Steerer_connection.SGS_info.address, 
-				     "", (xsd__int)index,
-				     &response)){
-    fprintf(stderr, "Get_data_source_address_wsrf: soap call failed:\n");
-    soap_print_fault(Steerer_connection.SGS_info.soap, stderr);
-    return REG_FAILURE;
-  }
-
+  /* Parse the Address field to pull out port and host */
+  if( (pchar = strchr(label, ':')) ){
+    strncpy(hostname, label, (pchar - label));
+    hostname[(pchar - label)] = '\0';
+    pchar++;
+    *port = (unsigned short int)atoi(pchar);
 #if REG_DEBUG
-  if(response.host){
-    fprintf(stderr, "Get_data_source_address_soap: GetNthDataSource "
-	    "(for n=%d) returned: host = %s, port = %d\n", 
-	    index, response.host, response.port);
-  }
-  else{
-    fprintf(stderr, "Get_data_source_address_soap: GetNthDataSource "
-	    "(for n=%d)\nreturned null\n", index);
-  }
+    fprintf(stderr, "Get_data_source_address_wsrf: host = %s\n"
+	    "                              port = %d\n",
+	    hostname, *port);
 #endif
-
-  if(response.host){
-
-    strcpy(hostname, response.host);
-    *port = (unsigned short int)response.port;
+    return REG_SUCCESS;
   }
+
+  fprintf(stderr, "Get_data_source_address_wsrf: failed to match "
+	  "IOType label\n");  
 
   /* So long as soap call did return something we return success - even
      if we didn't actually get a valid address.  This consistent with
