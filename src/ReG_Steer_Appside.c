@@ -3103,9 +3103,10 @@ int Steering_control(int     SeqNum,
 #ifdef USE_REG_TIMING
   Get_current_time_seconds(&time1);
   steer_time = (float)(time1 - time0);
-
+#if REG_DEBUG
   fprintf(stderr, "TIMING: Spent %.5f seconds in Steering_control\n",
 	  steer_time);
+#endif
 #endif
 
   return return_status;
