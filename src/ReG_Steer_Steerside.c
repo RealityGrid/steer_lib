@@ -138,6 +138,7 @@ int Steerer_initialize()
     Sim_table.sim[i].pipe_to_proxy   = REG_PIPE_UNSET;
     Sim_table.sim[i].pipe_from_proxy = REG_PIPE_UNSET;
     Sim_table.sim[i].Msg_store.msg   = NULL;
+    Sim_table.sim[i].Msg_store_tail  = &(Sim_table.sim[i].Msg_store);
     Sim_table.sim[i].Msg_store.next  = NULL;
   }
 
@@ -227,7 +228,7 @@ int Sim_attach(char *SimID,
   /* Initialise the table for keeping track of msg uid's that we've
      seen before */
   for(i=0; i<REG_UID_HISTORY_BUFFER_SIZE; i++){
-    sim_ptr->Msg_uid_store.uidStore[i] = 2*REG_UID_HISTORY_BUFFER_SIZE;
+    sim_ptr->Msg_uid_store.uidStore[i] = -1;
   }
   sim_ptr->Msg_uid_store.uidStorePtr = sim_ptr->Msg_uid_store.uidStore;
   sim_ptr->Msg_uid_store.maxPtr = 
