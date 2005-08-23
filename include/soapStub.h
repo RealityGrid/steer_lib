@@ -87,12 +87,6 @@ struct wsrp__SetResourcePropertiesResponse
 	void *rubbish;	/* RPC return element */	/* transient */
 };
 
-/* GetResourcePropertyDocumentResponse: */
-struct GetResourcePropertyDocumentResponse
-{
-	char *_result;	/* optional element of type xsd:string */
-};
-
 /* sws:DetachResponse: */
 struct sws__DetachResponse
 {
