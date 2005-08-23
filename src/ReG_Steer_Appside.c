@@ -164,7 +164,8 @@ static struct msg_store_struct *ReG_ctrl_msg_current = NULL;
 /** Structure for holding multiple messages obtained by parsing
     SWS' ResourceProperties document - used by application-side
     of library */
-struct msg_store_struct Msg_store;
+struct msg_store_struct  Msg_store;
+struct msg_store_struct *Msg_store_tail;
 
 /** Structure for storing the UIDs of messages we have previously
     handled -  used by application-side of library */
@@ -296,6 +297,7 @@ int Steering_initialize(char *AppName,
   /* Initialize storage for messages received */
   Msg_store.msg = NULL;
   Msg_store.next = NULL;
+  Msg_store_tail = &(Msg_store);
   Msg_uid_store.uidStorePtr = NULL;
   Msg_uid_store.maxPtr = NULL;
 
