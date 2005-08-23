@@ -203,7 +203,8 @@ typedef struct {
 
   /** Structure for holding multiple messages obtained by parsing
       SWS' ResourceProperties document */
-  struct msg_store_struct Msg_store;
+  struct msg_store_struct  Msg_store;
+  struct msg_store_struct *Msg_store_tail;
 
   /** Structure for holding the uid's of messages that we have
       previously consumed */
@@ -251,7 +252,7 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg,
 /** Parse a steering message (ReG_steer_message) 
     @internal */
 int parseSteerMessage(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
-		      struct msg_struct *msg);
+		      struct msg_struct *msg, Sim_entry_type *sim);
 /** Parse a Resource Properties document from a WSRF service
     @internal */
 int parseResourceProperties(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
