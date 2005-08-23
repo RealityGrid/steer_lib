@@ -44,7 +44,8 @@
 long int ReG_lastModTime = 0;
 
 /* Actual declaration is in ReG_Steer_Appside.c */
-extern struct msg_store_struct Msg_store;
+extern struct msg_store_struct  Msg_store;
+extern struct msg_store_struct *Msg_store_tail;
 
 /*------------------------------------------------------------------*/
 /* Handler for unrecognised tags in gSoap */
@@ -173,10 +174,11 @@ struct msg_struct *Get_status_msg_wsrf(Sim_entry_type *sim)
   char buf[REG_MAX_MSG_SIZE];
   long int modTime;
   struct msg_struct *msg = NULL;
+  fprintf(stderr, "CALLTREE: Get_status_msg_wsrf\n");
 
   /* If we have a backlog of messages then return the next one */
-  msg = Get_next_stored_msg(sim);
-  if(msg)return msg;
+  if( (msg = Get_next_stored_msg(sim)) ) return msg;
+
 
   if( Get_resource_property_doc(&(sim->SGS_info), &pRPDoc) != REG_SUCCESS){
 
@@ -185,27 +187,24 @@ struct msg_struct *Get_status_msg_wsrf(Sim_entry_type *sim)
     return msg;
   }
 
-
   /* Check for changes to RP first (a.k.a. notifications) */
   if(Extract_resource_property(pRPDoc, strlen(pRPDoc),
 			       "sws:lastModifiedTime", 
 			       buf, REG_MAX_MSG_SIZE) != REG_SUCCESS){
-    msg = NULL;
-    return msg;
+    fprintf(stderr, "STEER: Get_status_msg_wsrf: failed to get "
+	    "lastModifiedTime from ResourceProperty document\n");
+    return NULL;
   }
 
   modTime = atoi(buf);
 
-  /*fprintf(stderr, "Get_status_msg_wsrf: modified time = %d\n", modTime);*/
   if(modTime != ReG_lastModTime){
     ReG_lastModTime=modTime;
 
     /* Parse the whole doc; messages are stored in the Msg_store struct
        associated with the sim entry */
-    if(Parse_xml_buf(pRPDoc, strlen(pRPDoc), NULL, sim) != REG_SUCCESS){
-
-      Delete_msg_struct(&msg);
-    }
+    fprintf(stderr, "Get_status_msg_wsrf: ARPDBG, parsing whole RPDoc...\n");
+    Parse_xml_buf(pRPDoc, strlen(pRPDoc), NULL, sim);
     return Get_next_stored_msg(sim);
   }
   else{
@@ -231,29 +230,56 @@ struct msg_struct *Get_next_stored_msg(Sim_entry_type *sim)
 {
   struct msg_struct *msg = NULL;
   struct msg_store_struct *msgStorePtr = &Msg_store;
+  struct msg_store_struct *msgStoreTailPtr = Msg_store_tail;
   struct msg_store_struct *tmp;
+
+  fprintf(stderr, "CALLTREE: Get_next_stored_msg\n");
 
   if(sim){
     msgStorePtr = &(sim->Msg_store);
+    msgStoreTailPtr = sim->Msg_store_tail;
   }
 
   if(msgStorePtr->msg){
-    fprintf(stderr, "Get_next_stored_msg: ARPDBG: retrieving a stored msg\n");
+    fprintf(stderr, "STEER: Get_next_stored_msg: ARPDBG: retrieving "
+	    "a stored msg\n");
 
     /* Take a copy of the pointer to the oldest stored message */
     msg = msgStorePtr->msg;
+
     /* Then shift pointers to point at the next one, if any */
-    if(msgStorePtr->next){
-      tmp = msgStorePtr->next;
+    if( (tmp = msgStorePtr->next) ){
       msgStorePtr->msg = tmp->msg;
       msgStorePtr->next = tmp->next;
+      if(tmp == msgStoreTailPtr){
+	msgStoreTailPtr = msgStorePtr;
+      }
       /* Delete the struct we've just copied ptrs from */
       free(tmp);
+      tmp = NULL;
     }
     else{
+#if REG_DEBUG
+      fprintf(stderr, "STEER: Get_next_stored_msg: hit end of msg store\n");
+#endif
       msgStorePtr->msg = NULL;
       msgStorePtr->next = NULL;
+      /* Make sure the ptr to the tail of the list is
+	 reset too */
+      msgStoreTailPtr = msgStorePtr;
     }
+  }
+#if REG_DEBUG
+  else{
+    fprintf(stderr, "STEER: Get_next_stored_msg: no msg to retrieve\n");
+  }
+#endif
+
+  if(sim){
+    sim->Msg_store_tail = msgStoreTailPtr;
+  }
+  else{
+    Msg_store_tail = msgStoreTailPtr;
   }
   return msg;
 }
@@ -269,6 +295,8 @@ int Get_resource_property (SGS_info_type *sgs_info,
 #ifdef USE_REG_TIMING
   double time0, time1;
 #endif
+  fprintf(stderr, "CALLTREE: Get_resource_property for %s\n", name);
+
   *pRP = NULL;
   in.__size = 1;
   in.__ptr = (struct wsrp__ResourcePropertyStruct *)malloc(sizeof(struct wsrp__ResourcePropertyStruct));
@@ -290,13 +318,17 @@ int Get_resource_property (SGS_info_type *sgs_info,
   }
 #ifdef USE_REG_TIMING
   Get_current_time_seconds(&time1);
-  fprintf(stderr, "TIMING: soap_call_wsrp__GetMultipleResourceProperties "
-	  "took %f seconds\n", (time1-time0));
+#if REG_DEBUG
+  fprintf(stderr, "STEER: TIMING: soap_call_wsrp__GetMultipleResourceProperties"
+	  " took %f seconds\n", (time1-time0));
 #endif
-
+#endif
+  /*
 #if REG_DEBUG_FULL
-  printf("Get_resource_property for %s returned >>%s<<\n", name, out);
+  fprintf(stderr, "STEER: Get_resource_property for %s returned >>%s<<\n", 
+  name, out);
 #endif
+  */
   free(in.__ptr[0].ResourceProperty);
   free(in.__ptr);
 
@@ -314,11 +346,17 @@ int Get_resource_property_doc(SGS_info_type *sgs_info,
   double time0, time1;
 #endif
 
+  fprintf(stderr, "CALLTREE: Get_resource_property_doc\n");
+ /* Free-up dynamically-allocated memory regularly because the RP
+    doc can be big */
+  soap_end(sgs_info->soap);
+
   *pDoc = NULL;
 
 #ifdef USE_REG_TIMING
   Get_current_time_seconds(&time0);
 #endif
+
   if(soap_call_wsrp__GetResourcePropertyDocument((sgs_info->soap), 
 						 sgs_info->address, 
 						 "", NULL,
@@ -326,16 +364,20 @@ int Get_resource_property_doc(SGS_info_type *sgs_info,
     soap_print_fault(sgs_info->soap, stderr);
     return REG_FAILURE;
   }
+
 #ifdef USE_REG_TIMING
   Get_current_time_seconds(&time1);
-  fprintf(stderr, "TIMING: soap_call_wsrp__GetResourcePropertyDocument "
+#if REG_DEBUG
+  fprintf(stderr, "STEER: TIMING: soap_call_wsrp__GetResourcePropertyDocument "
 	  "took %f seconds\n", (time1-time0));
 #endif
-
-#if REG_DEBUG_FULL
-  printf("GetResourcePropertyDocument returned: %s\n", out);
 #endif
+
+  /*
+  printf("STEER: GetResourcePropertyDocument returned: %s\n", out);
+  */
   *pDoc = out;
+
   return REG_SUCCESS;
 }
 
@@ -344,13 +386,13 @@ int Get_resource_property_doc(SGS_info_type *sgs_info,
 int Send_detach_msg_wsrf (Sim_entry_type *sim){
 
 #if REG_DEBUG
-  fprintf(stderr, "Send_detach_msg_wsrf: calling Detach...\n");
+  fprintf(stderr, "STEER: Send_detach_msg_wsrf: calling Detach...\n");
 #endif
 
   if(soap_call_sws__Detach(sim->SGS_info.soap, sim->SGS_info.address, 
 			   "", NULL, NULL )){
 
-    fprintf(stderr, "Send_detach_msg_wsrf: Detach failed:\n");
+    fprintf(stderr, "STEER: Send_detach_msg_wsrf: Detach failed:\n");
     soap_print_fault(sim->SGS_info.soap, stderr);
 
     return REG_FAILURE;
@@ -363,8 +405,6 @@ int Send_detach_msg_wsrf (Sim_entry_type *sim){
 /** Clean up a WSRF-based steering connection - free memory */
 int Finalize_connection_wsrf (Sim_entry_type *sim)
 {
-  fprintf(stderr, "ARPDBG - this IS Finalize_connection_wsrf\n");
-
   /* Remove temporary data and deserialized data except
      class instances*/
   soap_end(sim->SGS_info.soap);
@@ -397,8 +437,8 @@ int Get_param_log_wsrf(Sim_entry_type *sim,
   if( (index=Param_index_from_handle(&(sim->Params_table),
 				     handle)) == -1){
 
-      fprintf(stderr, "Get_param_log_wsrf: failed to match param handle\n");
-      fprintf(stderr, "                    handle = %d\n", handle);
+      fprintf(stderr, "STEER: Get_param_log_wsrf: failed to match param handle\n");
+      fprintf(stderr, "                           handle = %d\n", handle);
 
       return REG_FAILURE;
   }
@@ -419,11 +459,11 @@ int Get_param_log_wsrf(Sim_entry_type *sim,
 				"", (xsd__int)handle, &response )){
 #ifdef USE_REG_TIMING
   Get_current_time_seconds(&time1);
-  fprintf(stderr, "TIMING: soap_call_sws__GetParamLog "
+  fprintf(stderr, "STEER: TIMING: soap_call_sws__GetParamLog "
 	  "took %f seconds\n", (time1-time0));
 #endif
 
-    fprintf(stderr, "Get_param_log_wsrf: failed for handle %d:\n",
+    fprintf(stderr, "STEER: Get_param_log_wsrf: failed for handle %d:\n",
 	    handle);
     soap_print_fault(sim->SGS_info.soap, stderr);
 
@@ -431,11 +471,11 @@ int Get_param_log_wsrf(Sim_entry_type *sim,
   }
 
   if( !(response.LogValues) ){
-    fprintf(stderr, "Get_param_log_wsrf: no log entries returned\n");
+    fprintf(stderr, "STEER: Get_param_log_wsrf: no log entries returned\n");
     return REG_FAILURE;
   }
 
-  fprintf(stderr, "ARPDBG, got log from SWS>>%s<<",
+  fprintf(stderr, "STEER: ARPDBG, got log from SWS>>%s<<",
     (char*)response.LogValues);
   ptr1 = (char*)response.LogValues;
   lindex = sim->Params_table.param[index].log_index;
@@ -496,7 +536,7 @@ int Get_param_log_wsrf(Sim_entry_type *sim,
   case REG_CHAR:
     /* This not implemented yet */
 #if REG_DEBUG
-    fprintf(stderr, "Get_param_log_wsrf: logging of char params not "
+    fprintf(stderr, "STEER: Get_param_log_wsrf: logging of char params not "
 	    "implemented!\n");
 #endif
     break;
@@ -513,6 +553,6 @@ int Get_param_log_wsrf(Sim_entry_type *sim,
     of a checkpoint tree */
 int Send_restart_msg_wsrf(Sim_entry_type *sim, char *chkGSH)
 {
-  fprintf(stderr, "Send_restart_msg_wsrf: IMPLEMENT ME\n");
+  fprintf(stderr, "STEER: Send_restart_msg_wsrf: IMPLEMENT ME\n");
   return REG_FAILURE;
 }
