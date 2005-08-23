@@ -238,14 +238,6 @@ int Steerer_connected_wsrf ()
   if(strstr(steer_status, "ATTACHED")){
     return REG_SUCCESS;
   }
-  /* Not used in WSRF implementation - ARPDBG
-  else if(strstr(steer_status, "DETACHING")){
-    * Steerer has attached and detached without us noticing and thus SGS
-       is in 'detaching' state.  We have to 'detach' properly now to reset.*
-    Detach_from_steerer_wsrf();
-    * But we still return 'failure' because no steerer is attached *
-  }
-*/
 
   return REG_FAILURE;
 }
@@ -355,18 +347,14 @@ struct msg_struct *Get_control_msg_wsrf ()
 
   /* If we have a backlog of messages then return the next one 
      - we are only interested in control messages */
-  msg = Get_next_stored_msg(NULL);
-  while(msg){
+  while( (msg = Get_next_stored_msg(NULL)) ){
     if(msg->control){
       return msg;
     }
     Delete_msg_struct(&msg);
-    msg = Get_next_stored_msg(NULL);
   }
 
-  /* Check for 'notifications' first */
-
-  /* Now get any new control messages */
+  /* Get any new control messages */
   if(Get_resource_property(&(Steerer_connection.SGS_info),
 			   "controlMsg", &pBuf) != REG_SUCCESS){
     msg = New_msg_struct();
