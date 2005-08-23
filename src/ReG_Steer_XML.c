@@ -49,7 +49,8 @@
  *  @brief Code for parsing xml documents */
 
 /** Declared in ReG_Steer_Appside.c */
-extern struct msg_store_struct Msg_store;
+extern struct msg_store_struct  Msg_store;
+extern struct msg_store_struct *Msg_store_tail;
 
 /** Declared in ReG_Steer_Appside.c */
 extern struct msg_uid_history_struct Msg_uid_store;
@@ -78,6 +79,7 @@ int Parse_xml_buf(char* buf, int size, struct msg_struct *msg,
 { 
   xmlDocPtr doc;
 
+  fprintf(stderr, "CALLTREE: Parse_xml_buf\n");
   if(!buf){
 
     fprintf(stderr, "Parse_xml_buf: ptr to buffer is NULL\n");
@@ -104,11 +106,13 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg,
 #if REG_DEBUG_FULL
   struct msg_store_struct *cur_msg;
 #endif
+  fprintf(stderr, "CALLTREE: Parse_xml\n");
 
   cur = xmlDocGetRootElement(doc);
   if (cur == NULL) {
       fprintf(stderr,"Parse_xml: empty document\n");
       xmlFreeDoc(doc);
+      xmlCleanupParser();
       return REG_FAILURE;
   }
 
@@ -127,13 +131,19 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg,
 #if REG_DEBUG_FULL
     fprintf(stderr,"Parse_xml: Have ReG_steer_message doc\n");
 #endif
-    parseSteerMessage(doc, ns, cur, msg);
+
+    if(parseSteerMessage(doc, ns, cur, msg, sim) != REG_SUCCESS){
+      xmlFreeDoc(doc);
+      xmlCleanupParser();
+      return REG_FAILURE;
+    }
 
     /* Print out what we've got */
-
 #if REG_DEBUG_FULL
-    fprintf(stderr, "Parse_xml: Calling Print_msg...\n");
-    Print_msg(msg);
+    if(msg && msg->msg_type != MSG_NOTSET){
+      fprintf(stderr, "Parse_xml: Calling Print_msg...\n");
+      Print_msg(msg);
+    }
 #endif
   }
   else if (!xmlStrcmp(cur->name, (const xmlChar *) "ResourceProperties") ||
@@ -145,13 +155,12 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg,
     parseResourceProperties(doc, ns, cur, sim);
 
     /* Print out what we've got */
-
 #if REG_DEBUG_FULL
     if(sim){
       cur_msg = &(sim->Msg_store);
-      while(cur_msg->msg){
+      while(cur_msg){
 	fprintf(stderr, "Parse_xml: Calling Print_msg...\n");
-	Print_msg(cur_msg->msg);
+	if(cur_msg->msg)Print_msg(cur_msg->msg);
 	cur_msg = cur_msg->next;
       }
     }
@@ -162,6 +171,7 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg,
 	    "= >%s< != ReG_steer_message or ResourceProperties or "
 	    "controlMsg\n", (char *)(cur->name));
     xmlFreeDoc(doc);
+    xmlCleanupParser();
     return REG_FAILURE;
   }
 
@@ -184,14 +194,18 @@ int Extract_resource_property(char *pRPDoc,
   char *pStart, *pStop;
   int   len;
 
+  fprintf(stderr, "CALLTREE: Extract_resource_property for %s\n",
+	  name);
+
   if(!pRPDoc){
 
-    fprintf(stderr, "Extract_resource_property: ptr to RP document is NULL\n");
+    fprintf(stderr, "STEER: Extract_resource_property: ptr to RP "
+	    "document is NULL\n");
     return REG_FAILURE;
   }
 
   if( !(pStart = strstr(pRPDoc, name)) ){
-    fprintf(stderr, "Extract_resource_property: RP %s not found\n",
+    fprintf(stderr, "STEER: Extract_resource_property: RP %s not found\n",
 	    name);
     return REG_FAILURE;
   }
@@ -201,8 +215,8 @@ int Extract_resource_property(char *pRPDoc,
   pStart++;
 
   if(!(pStop = strstr(pStart, name))){
-    fprintf(stderr, "Extract_resource_property: closing tag for RP %s "
-	    "not found\n", name);
+    fprintf(stderr, "STEER: Extract_resource_property: closing tag for "
+	    "RP %s not found\n", name);
     return REG_FAILURE;
   }
 
@@ -213,8 +227,10 @@ int Extract_resource_property(char *pRPDoc,
   resultBuf[len] = '\0';
 
 #if REG_DEBUG_FULL
-  fprintf(stderr, "Extract_resource_property: Value of RP "
+  /*
+  fprintf(stderr, "STEER: Extract_resource_property: Value of RP "
 	  "%s = >>%s<<\n", name, resultBuf);
+  */
 #endif
   return REG_SUCCESS;
 }
@@ -225,23 +241,21 @@ int parseResourceProperties(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 			    Sim_entry_type *sim)
 {
   xmlNodePtr child;
-  xmlChar   *uidChar;
   xmlChar   *steerStatus;
   struct msg_store_struct *curMsg;
-  struct msg_uid_history_struct *uidStorePtr;
+
+  fprintf(stderr, "CALLTREE: parseResourceProperties\n");
 
   /* If we've been called by a steering client then must store
      any messages in a structure associated with the simulation being
      steered as may be one of many */
   if(sim){
-    curMsg = &(sim->Msg_store);
-    uidStorePtr = &(sim->Msg_uid_store);
+    curMsg = sim->Msg_store_tail;
   }
   else{
     /* Otherwise, we store the messages we receive in a global structure
        from which they are extracted in order */
-    curMsg = &Msg_store;
-    uidStorePtr = &Msg_uid_store;
+    curMsg = Msg_store_tail;
   }
 
   /* Check where we are in tree; we might have been given the root node
@@ -269,37 +283,26 @@ int parseResourceProperties(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 
       if (child && !xmlStrcmp(child->name, 
 			      (const xmlChar *) "ReG_steer_message")) {
-	/* Get the msg UID if present */
-	if( (uidChar = xmlGetProp(child, "Msg_UID")) ){
 #if REG_DEBUG_FULL
-	  fprintf(stderr, "parseResourceProperties: msg UID = %s\n",
-		  (char*)(uidChar));
-#endif
-	  /* Check that we haven't already seen this message 
-	     before we bother to store it */
-	  if( Msg_already_received((char*)(uidChar), uidStorePtr) ){
-#if REG_DEBUG_FULL
-	    fprintf(stderr, "STEER: INFO: parseResourceProperties: msg"
-		    " with UID %s has been seen before\n", 
-		    uidChar);
-#endif
-	    xmlFree(uidChar);
-	    /* We have - skip this one */
-	    cur = cur->next;
-	    continue;
-	  }
-	  xmlFree(uidChar);
-	}
-
-#if REG_DEBUG_FULL
-	fprintf(stderr, "parseResourceProperties: Calling parseSteerMessage...\n");
+	fprintf(stderr, "STEER: parseResourceProperties: Calling "
+		"parseSteerMessage...\n");
 #endif
 	curMsg->msg = New_msg_struct();
-	parseSteerMessage(doc, ns, child, curMsg->msg);
-	curMsg->next = New_msg_store_struct();
-	curMsg = curMsg->next;
+
+	if(parseSteerMessage(doc, ns, child, curMsg->msg, sim) !=
+	   REG_SUCCESS){
+	  Delete_msg_struct(&(curMsg->msg));
+	}
+	else{
+	  fprintf(stderr, "ARPDBG STORING msg with UID %s\n", 
+		  curMsg->msg->msg_uid);
+	  curMsg->next = New_msg_store_struct();
+	  curMsg = curMsg->next;
+	}
       }
       else{
+	fprintf(stderr, "STEER: parseResourceProperties: ERROR: have not"
+		" got a ReG_steer_message\n");
 	return REG_FAILURE;
       }
     }
@@ -322,11 +325,18 @@ int parseResourceProperties(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
       }
     }
     else{
-      fprintf(stderr, "parseResourceProperties: ignoring node: %s\n", 
+      fprintf(stderr, "STEER: parseResourceProperties: ignoring node: %s\n", 
 	      (char *)(cur->name));
     }
 
     cur = cur -> next;
+  }
+
+  if(sim){
+    sim->Msg_store_tail = curMsg;
+  }
+  else{
+    Msg_store_tail = curMsg;
   }
 
   return REG_SUCCESS;
@@ -335,14 +345,43 @@ int parseResourceProperties(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 /*-----------------------------------------------------------------*/
 
 int parseSteerMessage(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
-		      struct msg_struct *msg)
+		      struct msg_struct *msg, Sim_entry_type *sim)
 {
+  struct msg_uid_history_struct *uidStorePtr;
+
+  fprintf(stderr, "CALLTREE: parseSteerMessage\n");
+
+  /* If we've been called by a steering client then must store
+     any messages in a structure associated with the simulation being
+     steered as may be one of many */
+  if(sim){
+    uidStorePtr = &(sim->Msg_uid_store);
+  }
+  else{
+    /* Otherwise, we store the messages we receive in a global structure
+       from which they are extracted in order */
+    uidStorePtr = &Msg_uid_store;
+  }
+
   /* Get the msg UID if present */
-  msg->msg_uid = xmlGetProp(cur, "Msg_UID");
+  if( (msg->msg_uid = xmlGetProp(cur, "Msg_UID")) ){
 #if REG_DEBUG_FULL
-  if(msg->msg_uid)fprintf(stderr, "parseSteerMessage: msg UID = %s\n",
-			  (char*)(msg->msg_uid));
+    fprintf(stderr, "parseSteerMessage: msg UID = %s\n",
+	    (char*)(msg->msg_uid));
 #endif
+    /* Check that we haven't already seen this message 
+       before we bother to store it */
+    if( Msg_already_received((char*)(msg->msg_uid), uidStorePtr) ){
+#if REG_DEBUG
+      fprintf(stderr, "STEER: INFO: parseSteerMessage: msg"
+	      " with UID %s has been seen before\n", 
+	      msg->msg_uid);
+#endif
+      /* We have - skip this one */
+      msg->msg_type = MSG_NOTSET;
+      return REG_FAILURE;
+    }
+  }
 
  /* Walk the tree */
   cur = cur->xmlChildrenNode;
@@ -2047,10 +2086,8 @@ int Msg_already_received(char *msg_uid,
  
     if(!(hist->uidStorePtr)){
       for(i=0; i<REG_UID_HISTORY_BUFFER_SIZE; i++){
-	/* Initialize array with a value greater than any that will 
-	   be used as a msg UID until all the elements of the array
-	   have been used at least once */
-	hist->uidStore[i] = 2*REG_UID_HISTORY_BUFFER_SIZE;
+	/* Initialize array with a value not used as a msg UID */
+	hist->uidStore[i] = -1;
       }
       hist->uidStorePtr = hist->uidStore;
       hist->maxPtr = &(hist->uidStore[REG_UID_HISTORY_BUFFER_SIZE-1]);
