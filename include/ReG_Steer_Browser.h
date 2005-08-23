@@ -37,6 +37,12 @@
 /** @file ReG_Steer_Browser.h
     @brief Header file for registry browsing functionality */
 
+#ifdef __cplusplus
+  #define PREFIX "C"
+#else
+  #define PREFIX 
+#endif
+
 /**
   Holds details on a entry in the registry 
 */
@@ -61,17 +67,17 @@ struct registry_entry {
    available this routine returns REG_FAILURE and nsims=0. The Grid
    Service Handle returned in simGSH must be supplied as the SimID
    to Sim_attach. */
-int Get_sim_list(int   *nSims,
-		 char **simName,
-		 char **simGSH);
+extern PREFIX int Get_sim_list(int   *nSims,
+			       char **simName,
+			       char **simGSH);
 
 /** Queries specified registry
     @return The number of entries in the registry
     @return Details for each entry
     @internal
  */
-int Get_registry_entries(char *registryGSH, 
-			 int *num_entries,  
-			 struct registry_entry **entries);
+extern PREFIX int Get_registry_entries(char *registryGSH, 
+				       int *num_entries,  
+				       struct registry_entry **entries);
 
 #endif
