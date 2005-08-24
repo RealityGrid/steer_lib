@@ -174,7 +174,6 @@ struct msg_struct *Get_status_msg_wsrf(Sim_entry_type *sim)
   char buf[REG_MAX_MSG_SIZE];
   long int modTime;
   struct msg_struct *msg = NULL;
-  fprintf(stderr, "CALLTREE: Get_status_msg_wsrf\n");
 
   /* If we have a backlog of messages then return the next one */
   if( (msg = Get_next_stored_msg(sim)) ) return msg;
@@ -232,8 +231,6 @@ struct msg_struct *Get_next_stored_msg(Sim_entry_type *sim)
   struct msg_store_struct *msgStorePtr = &Msg_store;
   struct msg_store_struct *msgStoreTailPtr = Msg_store_tail;
   struct msg_store_struct *tmp;
-
-  fprintf(stderr, "CALLTREE: Get_next_stored_msg\n");
 
   if(sim){
     msgStorePtr = &(sim->Msg_store);
@@ -295,7 +292,6 @@ int Get_resource_property (SGS_info_type *sgs_info,
 #ifdef USE_REG_TIMING
   double time0, time1;
 #endif
-  fprintf(stderr, "CALLTREE: Get_resource_property for %s\n", name);
 
   *pRP = NULL;
   in.__size = 1;
@@ -346,7 +342,6 @@ int Get_resource_property_doc(SGS_info_type *sgs_info,
   double time0, time1;
 #endif
 
-  fprintf(stderr, "CALLTREE: Get_resource_property_doc\n");
  /* Free-up dynamically-allocated memory regularly because the RP
     doc can be big */
   soap_end(sgs_info->soap);

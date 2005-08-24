@@ -79,7 +79,6 @@ int Parse_xml_buf(char* buf, int size, struct msg_struct *msg,
 { 
   xmlDocPtr doc;
 
-  fprintf(stderr, "CALLTREE: Parse_xml_buf\n");
   if(!buf){
 
     fprintf(stderr, "Parse_xml_buf: ptr to buffer is NULL\n");
@@ -106,7 +105,6 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg,
 #if REG_DEBUG_FULL
   struct msg_store_struct *cur_msg;
 #endif
-  fprintf(stderr, "CALLTREE: Parse_xml\n");
 
   cur = xmlDocGetRootElement(doc);
   if (cur == NULL) {
@@ -194,9 +192,6 @@ int Extract_resource_property(char *pRPDoc,
   char *pStart, *pStop;
   int   len;
 
-  fprintf(stderr, "CALLTREE: Extract_resource_property for %s\n",
-	  name);
-
   if(!pRPDoc){
 
     fprintf(stderr, "STEER: Extract_resource_property: ptr to RP "
@@ -243,8 +238,6 @@ int parseResourceProperties(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
   xmlNodePtr child;
   xmlChar   *steerStatus;
   struct msg_store_struct *curMsg;
-
-  fprintf(stderr, "CALLTREE: parseResourceProperties\n");
 
   /* If we've been called by a steering client then must store
      any messages in a structure associated with the simulation being
@@ -348,8 +341,6 @@ int parseSteerMessage(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 		      struct msg_struct *msg, Sim_entry_type *sim)
 {
   struct msg_uid_history_struct *uidStorePtr;
-
-  fprintf(stderr, "CALLTREE: parseSteerMessage\n");
 
   /* If we've been called by a steering client then must store
      any messages in a structure associated with the simulation being
