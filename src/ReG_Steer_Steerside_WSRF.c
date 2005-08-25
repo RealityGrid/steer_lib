@@ -61,19 +61,21 @@ int soapMismatchHandler(struct soap *soap,
 /** Attach to a simulation */
 int Sim_attach_wsrf (Sim_entry_type *sim, char *SimID){
 
-  /*  struct sws__AttachResponse response;*/
-  char              *response;
+  struct sws__AttachResponse response;
+  /*
   struct msg_struct *msg;
   struct cmd_struct *cmd;
   int                return_status;
   int                len;
+  */
+  int                i;
 
   /* malloc memory for soap struct for this connection and then
      initialise it */
   sim->SGS_info.soap = (struct soap*)malloc(sizeof(struct soap));
   if(!(sim->SGS_info.soap)){
 
-    fprintf(stderr, "Sim_attach_wsrf: failed to malloc memory for "
+    fprintf(stderr, "STEER: Sim_attach_wsrf: failed to malloc memory for "
 	    "soap struct\n");
     return REG_FAILURE;
   }
@@ -86,17 +88,10 @@ int Sim_attach_wsrf (Sim_entry_type *sim, char *SimID){
   sim->SGS_info.soap->fignore = soapMismatchHandler;
 #endif
 
-  printf("Calling Attach...\n");
+  printf("STEER: Calling Attach...\n");
   if(soap_call_sws__Attach((sim->SGS_info.soap), SimID, "", NULL, 
 			   &response) != SOAP_OK){
     soap_print_fault((sim->SGS_info.soap), stderr);
-    Finalize_connection_wsrf(sim);
-    return REG_FAILURE;
-  }
-  printf("...Attach returned: %s\n", response);
-
-  if(strstr(response, "<faultcode>")){
-    fprintf(stderr, "Attach returned fault: %s\n", response);
     Finalize_connection_wsrf(sim);
     return REG_FAILURE;
   }
@@ -104,8 +99,27 @@ int Sim_attach_wsrf (Sim_entry_type *sim, char *SimID){
   /* That worked OK so store address of SWS */
   sprintf(sim->SGS_info.address, SimID);
 
-  /* Parse the supported commands */
-  len = strlen(response);
+  for(i=0; i<response.ReG_USCOREsteer_USCOREmessage.Supported_USCOREcommands.__size; i++){
+    printf("STEER: Attach, cmd %d = %d\n", i, 
+	   response.ReG_USCOREsteer_USCOREmessage.Supported_USCOREcommands.__ptr[i].Cmd_USCOREid);
+
+    sim->Cmds_table.cmd[sim->Cmds_table.num_registered].cmd_id = 
+      response.ReG_USCOREsteer_USCOREmessage.Supported_USCOREcommands.__ptr[i].Cmd_USCOREid;
+
+    /* ARPDBG - may need to add cmd parameters here too */
+    Increment_cmd_registered(&(sim->Cmds_table));
+  }
+
+  if( !(response.ReG_USCOREsteer_USCOREmessage.Supported_USCOREcommands.__size) ){
+    /* Cannot have no supported commands - detach must be supported so this
+       is an error */
+    fprintf(stderr, "STEER: ERROR: Attach: no supported commands returned\n");
+    Finalize_connection_wsrf(sim);
+    return REG_FAILURE;
+  }
+
+  /* Parse the supported commands *
+  len = strlen(response.__return);
   if(len){
     if(!(msg = New_msg_struct())){
 
@@ -114,7 +128,7 @@ int Sim_attach_wsrf (Sim_entry_type *sim, char *SimID){
       return REG_FAILURE;
     }
 
-    return_status = Parse_xml_buf(response, len, msg, sim);
+    return_status = Parse_xml_buf(response.__return, len, msg, sim);
 
     if(return_status == REG_SUCCESS && msg->supp_cmd){
 
@@ -125,7 +139,7 @@ int Sim_attach_wsrf (Sim_entry_type *sim, char *SimID){
 	sscanf((char *)(cmd->id), "%d", 
 	       &(sim->Cmds_table.cmd[sim->Cmds_table.num_registered].cmd_id));
 
-	/* ARPDBG - may need to add cmd parameters here too */
+	* ARPDBG - may need to add cmd parameters here too *
 	Increment_cmd_registered(&(sim->Cmds_table));
 	cmd = cmd->next;
       }
@@ -142,6 +156,7 @@ int Sim_attach_wsrf (Sim_entry_type *sim, char *SimID){
     Finalize_connection_wsrf(sim);
     return REG_FAILURE;
   }
+  */
 
   return REG_SUCCESS;
 }
@@ -321,9 +336,12 @@ int Get_resource_property (SGS_info_type *sgs_info,
 #endif
   /*
 #if REG_DEBUG_FULL
-  fprintf(stderr, "STEER: Get_resource_property for %s returned >>%s<<\n", 
-  name, out);
-#endif
+  */
+  fprintf(stderr, "-------------\n"
+	  "STEER: Get_resource_property for %s returned >>%s<<\n"
+	  "-------------\n", 
+	  name, out);
+  /*#endif
   */
   free(in.__ptr[0].ResourceProperty);
   free(in.__ptr);
