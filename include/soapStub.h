@@ -39,10 +39,30 @@ struct sws__RecordCheckpointResponse
 	char *_RecordCheckpointReturn;	/* RPC return element */	/* optional element of type xsd:string */
 };
 
+/* Command: */
+struct Command
+{
+	int Cmd_USCOREid;	/* required element of type xsd:int */
+	char *Cmd_USCOREname;	/* optional element of type xsd:string */
+};
+
+/* SOAP encoded array of Command schema type: */
+struct supp_cmds
+{
+	struct Command *__ptr;
+	int __size;
+};
+
+/* steerMessage: */
+struct steerMessage
+{
+	struct supp_cmds Supported_USCOREcommands;	/* required element of type ArrayOfCommand */
+};
+
 /* sws:AttachResponse: */
 struct sws__AttachResponse
 {
-	char *_AttachReturn;	/* optional element of type xsd:string */
+	struct steerMessage ReG_USCOREsteer_USCOREmessage;	/* RPC return element */	/* required element of type steerMessage */
 };
 
 /* sws:DestroyResponse: */
@@ -773,7 +793,7 @@ SOAP_FMAC5 int SOAP_FMAC6 wsrp__SetResourceProperties(struct soap*, char *wsrp__
 
 SOAP_FMAC5 int SOAP_FMAC6 wsrp__GetResourcePropertyDocument(struct soap*, void *_, char **out_);
 
-SOAP_FMAC5 int SOAP_FMAC6 sws__Attach(struct soap*, void *_, char **out_);
+SOAP_FMAC5 int SOAP_FMAC6 sws__Attach(struct soap*, void *_, struct sws__AttachResponse *out_);
 
 SOAP_FMAC5 int SOAP_FMAC6 sws__Detach(struct soap*, void *param_1, struct sws__DetachResponse *out);
 
@@ -892,7 +912,7 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call_wsrp__SetResourceProperties(struct soap *soa
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_call_wsrp__GetResourcePropertyDocument(struct soap *soap, const char *soap_endpoint, const char *soap_action, void *_, char **out_);
 
-SOAP_FMAC5 int SOAP_FMAC6 soap_call_sws__Attach(struct soap *soap, const char *soap_endpoint, const char *soap_action, void *_, char **out_);
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_sws__Attach(struct soap *soap, const char *soap_endpoint, const char *soap_action, void *_, struct sws__AttachResponse *out_);
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_call_sws__Detach(struct soap *soap, const char *soap_endpoint, const char *soap_action, void *param_1, struct sws__DetachResponse *out);
 

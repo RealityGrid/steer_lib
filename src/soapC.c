@@ -11,7 +11,7 @@ extern "C" {
 
 SOAP_BEGIN_NAMESPACE(soap)
 
-SOAP_SOURCE_STAMP("@(#) soapC.c ver 2.7.2 2005-08-22 13:38:37 GMT")
+SOAP_SOURCE_STAMP("@(#) soapC.c ver 2.7.2 2005-08-25 13:48:02 GMT")
 
 
 #ifndef WITH_NOGLOBAL
@@ -358,6 +358,12 @@ SOAP_FMAC3 void * SOAP_FMAC4 soap_getelement(struct soap *soap, int *type)
 		return soap_in_sws__DestroyResponse(soap, NULL, NULL, "sws:DestroyResponse");
 	case SOAP_TYPE_sws__AttachResponse:
 		return soap_in_sws__AttachResponse(soap, NULL, NULL, "sws:AttachResponse");
+	case SOAP_TYPE_steerMessage:
+		return soap_in_steerMessage(soap, NULL, NULL, "steerMessage");
+	case SOAP_TYPE_supp_cmds:
+		return soap_in_supp_cmds(soap, NULL, NULL, "Command");
+	case SOAP_TYPE_Command:
+		return soap_in_Command(soap, NULL, NULL, "Command");
 	case SOAP_TYPE_sws__RecordCheckpointResponse:
 		return soap_in_sws__RecordCheckpointResponse(soap, NULL, NULL, "sws:RecordCheckpointResponse");
 	case SOAP_TYPE_sws__GetParamLogResponse:
@@ -468,12 +474,16 @@ SOAP_FMAC3 void * SOAP_FMAC4 soap_getelement(struct soap *soap, int *type)
 		return soap_in_PointerTosws__RecordCheckpointResponse(soap, NULL, NULL, "sws:RecordCheckpointResponse");
 	case SOAP_TYPE_PointerTosws__DetachResponse:
 		return soap_in_PointerTosws__DetachResponse(soap, NULL, NULL, "sws:DetachResponse");
+	case SOAP_TYPE_PointerTosws__AttachResponse:
+		return soap_in_PointerTosws__AttachResponse(soap, NULL, NULL, "sws:AttachResponse");
 	case SOAP_TYPE_PointerTowsrp__SetResourcePropertiesResponse:
 		return soap_in_PointerTowsrp__SetResourcePropertiesResponse(soap, NULL, NULL, "wsrp:SetResourcePropertiesResponse");
 	case SOAP_TYPE_PointerToGetResourcePropertyRequest:
 		return soap_in_PointerToGetResourcePropertyRequest(soap, NULL, NULL, "GetResourcePropertyRequest");
 	case SOAP_TYPE_PointerTowsrp__ResourcePropertyStruct:
 		return soap_in_PointerTowsrp__ResourcePropertyStruct(soap, NULL, NULL, "wsrp:ResourcePropertyStruct");
+	case SOAP_TYPE_PointerToCommand:
+		return soap_in_PointerToCommand(soap, NULL, NULL, "Command");
 	case SOAP_TYPE_xsd__string:
 	{	char **s;
 		s = soap_in_xsd__string(soap, NULL, NULL, "xsd:string");
@@ -953,6 +963,18 @@ SOAP_FMAC3 void * SOAP_FMAC4 soap_getelement(struct soap *soap, int *type)
 		{	*type = SOAP_TYPE_sws__AttachResponse;
 			return soap_in_sws__AttachResponse(soap, NULL, NULL, NULL);
 		}
+		if (!soap_match_tag(soap, t, "steerMessage"))
+		{	*type = SOAP_TYPE_steerMessage;
+			return soap_in_steerMessage(soap, NULL, NULL, NULL);
+		}
+		if (*soap->arrayType && !soap_match_array(soap, "Command"))
+		{	*type = SOAP_TYPE_supp_cmds;
+			return soap_in_supp_cmds(soap, NULL, NULL, NULL);
+		}
+		if (!soap_match_tag(soap, t, "Command"))
+		{	*type = SOAP_TYPE_Command;
+			return soap_in_Command(soap, NULL, NULL, NULL);
+		}
 		if (!soap_match_tag(soap, t, "sws:RecordCheckpointResponse"))
 		{	*type = SOAP_TYPE_sws__RecordCheckpointResponse;
 			return soap_in_sws__RecordCheckpointResponse(soap, NULL, NULL, NULL);
@@ -1263,6 +1285,12 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_putelement(struct soap *soap, const void *ptr, co
 		return soap_out_sws__DestroyResponse(soap, tag, id, (const struct sws__DestroyResponse *)ptr, "sws:DestroyResponse");
 	case SOAP_TYPE_sws__AttachResponse:
 		return soap_out_sws__AttachResponse(soap, tag, id, (const struct sws__AttachResponse *)ptr, "sws:AttachResponse");
+	case SOAP_TYPE_steerMessage:
+		return soap_out_steerMessage(soap, tag, id, (const struct steerMessage *)ptr, "steerMessage");
+	case SOAP_TYPE_supp_cmds:
+		return soap_out_supp_cmds(soap, tag, id, (const struct supp_cmds *)ptr, "Command");
+	case SOAP_TYPE_Command:
+		return soap_out_Command(soap, tag, id, (const struct Command *)ptr, "Command");
 	case SOAP_TYPE_sws__RecordCheckpointResponse:
 		return soap_out_sws__RecordCheckpointResponse(soap, tag, id, (const struct sws__RecordCheckpointResponse *)ptr, "sws:RecordCheckpointResponse");
 	case SOAP_TYPE_sws__GetParamLogResponse:
@@ -1373,12 +1401,16 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_putelement(struct soap *soap, const void *ptr, co
 		return soap_out_PointerTosws__RecordCheckpointResponse(soap, tag, id, (struct sws__RecordCheckpointResponse *const*)ptr, "sws:RecordCheckpointResponse");
 	case SOAP_TYPE_PointerTosws__DetachResponse:
 		return soap_out_PointerTosws__DetachResponse(soap, tag, id, (struct sws__DetachResponse *const*)ptr, "sws:DetachResponse");
+	case SOAP_TYPE_PointerTosws__AttachResponse:
+		return soap_out_PointerTosws__AttachResponse(soap, tag, id, (struct sws__AttachResponse *const*)ptr, "sws:AttachResponse");
 	case SOAP_TYPE_PointerTowsrp__SetResourcePropertiesResponse:
 		return soap_out_PointerTowsrp__SetResourcePropertiesResponse(soap, tag, id, (struct wsrp__SetResourcePropertiesResponse *const*)ptr, "wsrp:SetResourcePropertiesResponse");
 	case SOAP_TYPE_PointerToGetResourcePropertyRequest:
 		return soap_out_PointerToGetResourcePropertyRequest(soap, tag, id, (struct GetResourcePropertyRequest *const*)ptr, "GetResourcePropertyRequest");
 	case SOAP_TYPE_PointerTowsrp__ResourcePropertyStruct:
 		return soap_out_PointerTowsrp__ResourcePropertyStruct(soap, tag, id, (struct wsrp__ResourcePropertyStruct *const*)ptr, "wsrp:ResourcePropertyStruct");
+	case SOAP_TYPE_PointerToCommand:
+		return soap_out_PointerToCommand(soap, tag, id, (struct Command *const*)ptr, "Command");
 	case SOAP_TYPE_xsd__string:
 		return soap_out_string(soap, tag, id, (char**)&ptr, "xsd:string");
 	case SOAP_TYPE__QName:
@@ -1732,6 +1764,15 @@ SOAP_FMAC3 void SOAP_FMAC4 soap_markelement(struct soap *soap, const void *ptr, 
 	case SOAP_TYPE_sws__AttachResponse:
 		soap_serialize_sws__AttachResponse(soap, (const struct sws__AttachResponse *)ptr);
 		break;
+	case SOAP_TYPE_steerMessage:
+		soap_serialize_steerMessage(soap, (const struct steerMessage *)ptr);
+		break;
+	case SOAP_TYPE_supp_cmds:
+		soap_serialize_supp_cmds(soap, (const struct supp_cmds *)ptr);
+		break;
+	case SOAP_TYPE_Command:
+		soap_serialize_Command(soap, (const struct Command *)ptr);
+		break;
 	case SOAP_TYPE_sws__RecordCheckpointResponse:
 		soap_serialize_sws__RecordCheckpointResponse(soap, (const struct sws__RecordCheckpointResponse *)ptr);
 		break;
@@ -1897,6 +1938,9 @@ SOAP_FMAC3 void SOAP_FMAC4 soap_markelement(struct soap *soap, const void *ptr, 
 	case SOAP_TYPE_PointerTosws__DetachResponse:
 		soap_serialize_PointerTosws__DetachResponse(soap, (struct sws__DetachResponse *const*)ptr);
 		break;
+	case SOAP_TYPE_PointerTosws__AttachResponse:
+		soap_serialize_PointerTosws__AttachResponse(soap, (struct sws__AttachResponse *const*)ptr);
+		break;
 	case SOAP_TYPE_PointerTowsrp__SetResourcePropertiesResponse:
 		soap_serialize_PointerTowsrp__SetResourcePropertiesResponse(soap, (struct wsrp__SetResourcePropertiesResponse *const*)ptr);
 		break;
@@ -1905,6 +1949,9 @@ SOAP_FMAC3 void SOAP_FMAC4 soap_markelement(struct soap *soap, const void *ptr, 
 		break;
 	case SOAP_TYPE_PointerTowsrp__ResourcePropertyStruct:
 		soap_serialize_PointerTowsrp__ResourcePropertyStruct(soap, (struct wsrp__ResourcePropertyStruct *const*)ptr);
+		break;
+	case SOAP_TYPE_PointerToCommand:
+		soap_serialize_PointerToCommand(soap, (struct Command *const*)ptr);
 		break;
 	case SOAP_TYPE_xsd__string:
 		soap_serialize_string(soap, (char**)&ptr);
@@ -10840,14 +10887,14 @@ SOAP_FMAC3 struct sws__DestroyResponse * SOAP_FMAC4 soap_in_sws__DestroyResponse
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_sws__AttachResponse(struct soap *soap, const struct sws__AttachResponse *a)
 {
 	(void)soap; (void)a; /* appease -Wall -Werror */
-	soap_embedded(soap, &a->_AttachReturn, SOAP_TYPE_xsd__string);
-	soap_serialize_xsd__string(soap, &a->_AttachReturn);
+	soap_embedded(soap, &a->ReG_USCOREsteer_USCOREmessage, SOAP_TYPE_steerMessage);
+	soap_serialize_steerMessage(soap, &a->ReG_USCOREsteer_USCOREmessage);
 }
 
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_sws__AttachResponse(struct soap *soap, struct sws__AttachResponse *a)
 {
 	(void)soap; (void)a; /* appease -Wall -Werror */
-	soap_default_xsd__string(soap, &a->_AttachReturn);
+	soap_default_steerMessage(soap, &a->ReG_USCOREsteer_USCOREmessage);
 }
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_sws__AttachResponse(struct soap *soap, const struct sws__AttachResponse *a, const char *tag, const char *type)
@@ -10861,7 +10908,8 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_put_sws__AttachResponse(struct soap *soap, const 
 SOAP_FMAC3 int SOAP_FMAC4 soap_out_sws__AttachResponse(struct soap *soap, const char *tag, int id, const struct sws__AttachResponse *a, const char *type)
 {
 	soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_sws__AttachResponse), type);
-	soap_out_xsd__string(soap, "AttachReturn", -1, &a->_AttachReturn, "");
+	soap_element_result(soap, "ReG_steer_message");
+	soap_out_steerMessage(soap, "ReG_steer_message", -1, &a->ReG_USCOREsteer_USCOREmessage, "");
 	soap_element_end_out(soap, tag);
 	return SOAP_OK;
 }
@@ -10875,7 +10923,7 @@ SOAP_FMAC3 struct sws__AttachResponse * SOAP_FMAC4 soap_get_sws__AttachResponse(
 
 SOAP_FMAC3 struct sws__AttachResponse * SOAP_FMAC4 soap_in_sws__AttachResponse(struct soap *soap, const char *tag, struct sws__AttachResponse *a, const char *type)
 {
-	short soap_flag__AttachReturn = 1;
+	short soap_flag_ReG_USCOREsteer_USCOREmessage = 1;
 	if (soap_element_begin_in(soap, tag, 0))
 		return NULL;
 	if (*soap->type && soap_match_tag(soap, soap->type, type))
@@ -10890,9 +10938,9 @@ SOAP_FMAC3 struct sws__AttachResponse * SOAP_FMAC4 soap_in_sws__AttachResponse(s
 	if (soap->body && !*soap->href)
 	{	for (;;)
 		{	soap->error = SOAP_TAG_MISMATCH;
-			if (soap_flag__AttachReturn && (soap->error == SOAP_TAG_MISMATCH || soap->error == SOAP_NO_TAG))
-				if (soap_in_xsd__string(soap, NULL, &a->_AttachReturn, "xsd:string"))
-				{	soap_flag__AttachReturn = 0;
+			if (soap_flag_ReG_USCOREsteer_USCOREmessage && soap->error == SOAP_TAG_MISMATCH)
+				if (soap_in_steerMessage(soap, "ReG_steer_message", &a->ReG_USCOREsteer_USCOREmessage, "steerMessage"))
+				{	soap_flag_ReG_USCOREsteer_USCOREmessage = 0;
 					continue;
 				}
 			if (soap->error == SOAP_TAG_MISMATCH)
@@ -10902,11 +10950,300 @@ SOAP_FMAC3 struct sws__AttachResponse * SOAP_FMAC4 soap_in_sws__AttachResponse(s
 			if (soap->error)
 				return NULL;
 		}
+		if ((soap->mode & SOAP_XML_STRICT) && (soap_flag_ReG_USCOREsteer_USCOREmessage))
+		{	soap->error = SOAP_OCCURS;
+			return NULL;
+		}
 		if (soap_element_end_in(soap, tag))
 			return NULL;
 	}
 	else
 	{	a = (struct sws__AttachResponse *)soap_id_forward(soap, soap->href, (void**)a, SOAP_TYPE_sws__AttachResponse, 0, sizeof(struct sws__AttachResponse), 0, NULL);
+		if (soap->body && soap_element_end_in(soap, tag))
+			return NULL;
+	}
+	return a;
+}
+
+SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_steerMessage(struct soap *soap, const struct steerMessage *a)
+{
+	(void)soap; (void)a; /* appease -Wall -Werror */
+	soap_embedded(soap, &a->Supported_USCOREcommands, SOAP_TYPE_supp_cmds);
+	soap_serialize_supp_cmds(soap, &a->Supported_USCOREcommands);
+}
+
+SOAP_FMAC3 void SOAP_FMAC4 soap_default_steerMessage(struct soap *soap, struct steerMessage *a)
+{
+	(void)soap; (void)a; /* appease -Wall -Werror */
+	soap_default_supp_cmds(soap, &a->Supported_USCOREcommands);
+}
+
+SOAP_FMAC3 int SOAP_FMAC4 soap_put_steerMessage(struct soap *soap, const struct steerMessage *a, const char *tag, const char *type)
+{
+	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_steerMessage);
+	if (soap_out_steerMessage(soap, tag, id, a, type))
+		return soap->error;
+	return soap_putindependent(soap);
+}
+
+SOAP_FMAC3 int SOAP_FMAC4 soap_out_steerMessage(struct soap *soap, const char *tag, int id, const struct steerMessage *a, const char *type)
+{
+	soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_steerMessage), type);
+	soap_out_supp_cmds(soap, "Supported_commands", -1, &a->Supported_USCOREcommands, "");
+	soap_element_end_out(soap, tag);
+	return SOAP_OK;
+}
+
+SOAP_FMAC3 struct steerMessage * SOAP_FMAC4 soap_get_steerMessage(struct soap *soap, struct steerMessage *p, const char *tag, const char *type)
+{
+	if ((p = soap_in_steerMessage(soap, tag, p, type)))
+		soap_getindependent(soap);
+	return p;
+}
+
+SOAP_FMAC3 struct steerMessage * SOAP_FMAC4 soap_in_steerMessage(struct soap *soap, const char *tag, struct steerMessage *a, const char *type)
+{
+	short soap_flag_Supported_USCOREcommands = 1;
+	if (soap_element_begin_in(soap, tag, 0))
+		return NULL;
+	if (*soap->type && soap_match_tag(soap, soap->type, type))
+	{	soap->error = SOAP_TYPE;
+		return NULL;
+	}
+	a = (struct steerMessage *)soap_id_enter(soap, soap->id, a, SOAP_TYPE_steerMessage, sizeof(struct steerMessage), 0, NULL, NULL, NULL);
+	if (!a)
+		return NULL;
+	if (soap->alloced)
+		soap_default_steerMessage(soap, a);
+	if (soap->body && !*soap->href)
+	{	for (;;)
+		{	soap->error = SOAP_TAG_MISMATCH;
+			if (soap_flag_Supported_USCOREcommands && soap->error == SOAP_TAG_MISMATCH)
+				if (soap_in_supp_cmds(soap, "Supported_commands", &a->Supported_USCOREcommands, "Command"))
+				{	soap_flag_Supported_USCOREcommands = 0;
+					continue;
+				}
+			if (soap->error == SOAP_TAG_MISMATCH)
+				soap->error = soap_ignore_element(soap);
+			if (soap->error == SOAP_NO_TAG)
+				break;
+			if (soap->error)
+				return NULL;
+		}
+		if ((soap->mode & SOAP_XML_STRICT) && (soap_flag_Supported_USCOREcommands))
+		{	soap->error = SOAP_OCCURS;
+			return NULL;
+		}
+		if (soap_element_end_in(soap, tag))
+			return NULL;
+	}
+	else
+	{	a = (struct steerMessage *)soap_id_forward(soap, soap->href, (void**)a, SOAP_TYPE_steerMessage, 0, sizeof(struct steerMessage), 0, NULL);
+		if (soap->body && soap_element_end_in(soap, tag))
+			return NULL;
+	}
+	return a;
+}
+
+SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_supp_cmds(struct soap *soap, struct supp_cmds const*a)
+{
+	int i;
+	if (a->__ptr && !soap_array_reference(soap, a, (struct soap_array*)&a->__ptr, 1, SOAP_TYPE_supp_cmds))
+		for (i = 0; i < a->__size; i++)
+		{	soap_embedded(soap, a->__ptr + i, SOAP_TYPE_Command);
+			soap_serialize_Command(soap, a->__ptr + i);
+		}
+}
+
+SOAP_FMAC3 void SOAP_FMAC4 soap_default_supp_cmds(struct soap *soap, struct supp_cmds *a)
+{
+	a->__size = 0;
+	a->__ptr = NULL;
+}
+
+SOAP_FMAC3 int SOAP_FMAC4 soap_put_supp_cmds(struct soap *soap, const struct supp_cmds *a, const char *tag, const char *type)
+{
+	register int id = soap_embed(soap, (void*)a, (struct soap_array*)&a->__ptr, 1, tag, SOAP_TYPE_supp_cmds);
+	if (soap_out_supp_cmds(soap, tag, id, a, type))
+		return soap->error;
+	return soap_putindependent(soap);
+}
+
+SOAP_FMAC3 int SOAP_FMAC4 soap_out_supp_cmds(struct soap *soap, const char *tag, int id, const struct supp_cmds *a, const char *type)
+{
+	int i, n = a->__size;
+	char *t = soap_putsize(soap, "Command", a->__size);
+	id = soap_element_id(soap, tag, id, a, (struct soap_array*)&a->__ptr, 1, type, SOAP_TYPE_supp_cmds);
+	if (id < 0)
+		return soap->error;
+	soap_array_begin_out(soap, tag, id, t, NULL);
+	for (i = 0; i < n; i++)
+	{
+		soap->position = 1;
+		soap->positions[0] = i;
+		soap_out_Command(soap, "item", -1, &a->__ptr[i], "");
+	}
+	soap->position = 0;
+	soap_element_end_out(soap, tag);
+	return SOAP_OK;
+}
+
+SOAP_FMAC3 struct supp_cmds * SOAP_FMAC4 soap_get_supp_cmds(struct soap *soap, struct supp_cmds *p, const char *tag, const char *type)
+{
+	if ((p = soap_in_supp_cmds(soap, tag, p, type)))
+		soap_getindependent(soap);
+	return p;
+}
+
+SOAP_FMAC3 struct supp_cmds * SOAP_FMAC4 soap_in_supp_cmds(struct soap *soap, const char *tag, struct supp_cmds *a, const char *type)
+{	int i, j;
+	struct Command *p;
+	if (soap_element_begin_in(soap, tag, 1))
+		return NULL;
+	if (soap_match_array(soap, type))
+	{	soap->error = SOAP_TYPE;
+		return NULL;
+	}
+	a = (struct supp_cmds *)soap_id_enter(soap, soap->id, a, SOAP_TYPE_supp_cmds, sizeof(struct supp_cmds), 0, NULL, NULL, NULL);
+	if (!a)
+		return NULL;
+	if (soap->alloced)
+		soap_default_supp_cmds(soap, a);
+	if (soap->body && !*soap->href)
+	{
+		a->__size = soap_getsize(soap->arraySize, soap->arrayOffset, &j);
+		if (a->__size >= 0)
+		{	a->__ptr = (struct Command *)soap_malloc(soap, sizeof(struct Command) * a->__size);
+			for (i = 0; i < a->__size; i++)
+				soap_default_Command(soap, a->__ptr+i);
+			for (i = 0; i < a->__size; i++)
+			{	soap_peek_element(soap);
+				if (soap->position)
+				{	i = soap->positions[0]-j;
+					if (i < 0 || i >= a->__size)
+					{	soap->error = SOAP_IOB;
+						return NULL;
+					}
+				}
+				if (!soap_in_Command(soap, NULL, a->__ptr + i, "Command"))
+				{	if (soap->error != SOAP_NO_TAG)
+						return NULL;
+					soap->error = SOAP_OK;
+					break;
+				}
+			}
+		}
+		else
+		{	soap_new_block(soap);
+			for (a->__size = 0; ; a->__size++)
+			{	p = (struct Command *)soap_push_block(soap, sizeof(struct Command));
+				if (!p)
+					return NULL;
+				soap_default_Command(soap, p);
+				if (!soap_in_Command(soap, NULL, p, "Command"))
+				{	if (soap->error != SOAP_NO_TAG)
+						return NULL;
+					soap->error = SOAP_OK;
+					break;
+				}
+			}
+			soap_pop_block(soap);
+			a->__ptr = (struct Command *)soap_malloc(soap, soap->blist->size);
+			soap_save_block(soap, (char*)a->__ptr, 1);
+		}
+		if (soap_element_end_in(soap, tag))
+			return NULL;
+	}
+	else
+	{	a = (struct supp_cmds *)soap_id_forward(soap, soap->href, (void**)a, SOAP_TYPE_supp_cmds, 0, sizeof(struct supp_cmds), 0, NULL);
+		if (soap->body && soap_element_end_in(soap, tag))
+			return NULL;
+	}
+	return a;
+}
+
+SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_Command(struct soap *soap, const struct Command *a)
+{
+	(void)soap; (void)a; /* appease -Wall -Werror */
+	soap_embedded(soap, &a->Cmd_USCOREid, SOAP_TYPE_xsd__int);
+	soap_embedded(soap, &a->Cmd_USCOREname, SOAP_TYPE_xsd__string);
+	soap_serialize_xsd__string(soap, &a->Cmd_USCOREname);
+}
+
+SOAP_FMAC3 void SOAP_FMAC4 soap_default_Command(struct soap *soap, struct Command *a)
+{
+	(void)soap; (void)a; /* appease -Wall -Werror */
+	soap_default_xsd__int(soap, &a->Cmd_USCOREid);
+	soap_default_xsd__string(soap, &a->Cmd_USCOREname);
+}
+
+SOAP_FMAC3 int SOAP_FMAC4 soap_put_Command(struct soap *soap, const struct Command *a, const char *tag, const char *type)
+{
+	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_Command);
+	if (soap_out_Command(soap, tag, id, a, type))
+		return soap->error;
+	return soap_putindependent(soap);
+}
+
+SOAP_FMAC3 int SOAP_FMAC4 soap_out_Command(struct soap *soap, const char *tag, int id, const struct Command *a, const char *type)
+{
+	soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_Command), type);
+	soap_out_xsd__int(soap, "Cmd_id", -1, &a->Cmd_USCOREid, "");
+	soap_out_xsd__string(soap, "Cmd_name", -1, &a->Cmd_USCOREname, "");
+	soap_element_end_out(soap, tag);
+	return SOAP_OK;
+}
+
+SOAP_FMAC3 struct Command * SOAP_FMAC4 soap_get_Command(struct soap *soap, struct Command *p, const char *tag, const char *type)
+{
+	if ((p = soap_in_Command(soap, tag, p, type)))
+		soap_getindependent(soap);
+	return p;
+}
+
+SOAP_FMAC3 struct Command * SOAP_FMAC4 soap_in_Command(struct soap *soap, const char *tag, struct Command *a, const char *type)
+{
+	short soap_flag_Cmd_USCOREid = 1, soap_flag_Cmd_USCOREname = 1;
+	if (soap_element_begin_in(soap, tag, 0))
+		return NULL;
+	if (*soap->type && soap_match_tag(soap, soap->type, type))
+	{	soap->error = SOAP_TYPE;
+		return NULL;
+	}
+	a = (struct Command *)soap_id_enter(soap, soap->id, a, SOAP_TYPE_Command, sizeof(struct Command), 0, NULL, NULL, NULL);
+	if (!a)
+		return NULL;
+	if (soap->alloced)
+		soap_default_Command(soap, a);
+	if (soap->body && !*soap->href)
+	{	for (;;)
+		{	soap->error = SOAP_TAG_MISMATCH;
+			if (soap_flag_Cmd_USCOREid && soap->error == SOAP_TAG_MISMATCH)
+				if (soap_in_xsd__int(soap, "Cmd_id", &a->Cmd_USCOREid, "xsd:int"))
+				{	soap_flag_Cmd_USCOREid = 0;
+					continue;
+				}
+			if (soap_flag_Cmd_USCOREname && (soap->error == SOAP_TAG_MISMATCH || soap->error == SOAP_NO_TAG))
+				if (soap_in_xsd__string(soap, "Cmd_name", &a->Cmd_USCOREname, "xsd:string"))
+				{	soap_flag_Cmd_USCOREname = 0;
+					continue;
+				}
+			if (soap->error == SOAP_TAG_MISMATCH)
+				soap->error = soap_ignore_element(soap);
+			if (soap->error == SOAP_NO_TAG)
+				break;
+			if (soap->error)
+				return NULL;
+		}
+		if ((soap->mode & SOAP_XML_STRICT) && (soap_flag_Cmd_USCOREid))
+		{	soap->error = SOAP_OCCURS;
+			return NULL;
+		}
+		if (soap_element_end_in(soap, tag))
+			return NULL;
+	}
+	else
+	{	a = (struct Command *)soap_id_forward(soap, soap->href, (void**)a, SOAP_TYPE_Command, 0, sizeof(struct Command), 0, NULL);
 		if (soap->body && soap_element_end_in(soap, tag))
 			return NULL;
 	}
@@ -13827,6 +14164,56 @@ SOAP_FMAC3 struct sws__DetachResponse ** SOAP_FMAC4 soap_in_PointerTosws__Detach
 	return a;
 }
 
+SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_PointerTosws__AttachResponse(struct soap *soap, struct sws__AttachResponse *const*a)
+{
+	if (!soap_reference(soap, *a, SOAP_TYPE_sws__AttachResponse))
+		soap_serialize_sws__AttachResponse(soap, *a);
+}
+
+SOAP_FMAC3 int SOAP_FMAC4 soap_put_PointerTosws__AttachResponse(struct soap *soap, struct sws__AttachResponse *const*a, const char *tag, const char *type)
+{
+	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_PointerTosws__AttachResponse);
+	if (soap_out_PointerTosws__AttachResponse(soap, tag, id, a, type))
+		return soap->error;
+	return soap_putindependent(soap);
+}
+
+SOAP_FMAC3 int SOAP_FMAC4 soap_out_PointerTosws__AttachResponse(struct soap *soap, const char *tag, int id, struct sws__AttachResponse *const*a, const char *type)
+{
+	id = soap_element_id(soap, tag, id, *a, NULL, 0, type, SOAP_TYPE_sws__AttachResponse);
+	if (id < 0)
+		return soap->error;
+	return soap_out_sws__AttachResponse(soap, tag, id, *a, type);
+}
+
+SOAP_FMAC3 struct sws__AttachResponse ** SOAP_FMAC4 soap_get_PointerTosws__AttachResponse(struct soap *soap, struct sws__AttachResponse **p, const char *tag, const char *type)
+{
+	if ((p = soap_in_PointerTosws__AttachResponse(soap, tag, p, type)))
+		soap_getindependent(soap);
+	return p;
+}
+
+SOAP_FMAC3 struct sws__AttachResponse ** SOAP_FMAC4 soap_in_PointerTosws__AttachResponse(struct soap *soap, const char *tag, struct sws__AttachResponse **a, const char *type)
+{
+	if (soap_element_begin_in(soap, tag, 1))
+		return NULL;
+	if (!a)
+		if (!(a = (struct sws__AttachResponse **)soap_malloc(soap, sizeof(struct sws__AttachResponse *))))
+			return NULL;
+	*a = NULL;
+	if (!soap->null && *soap->href != '#')
+	{	soap_revert(soap);
+		if (!(*a = soap_in_sws__AttachResponse(soap, tag, *a, type)))
+			return NULL;
+	}
+	else
+	{	a = (struct sws__AttachResponse **)soap_id_lookup(soap, soap->href, (void**)a, SOAP_TYPE_sws__AttachResponse, sizeof(struct sws__AttachResponse), 0);
+		if (soap->body && soap_element_end_in(soap, tag))
+			return NULL;
+	}
+	return a;
+}
+
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_PointerTowsrp__SetResourcePropertiesResponse(struct soap *soap, struct wsrp__SetResourcePropertiesResponse *const*a)
 {
 	if (!soap_reference(soap, *a, SOAP_TYPE_wsrp__SetResourcePropertiesResponse))
@@ -13971,6 +14358,56 @@ SOAP_FMAC3 struct wsrp__ResourcePropertyStruct ** SOAP_FMAC4 soap_in_PointerTows
 	}
 	else
 	{	a = (struct wsrp__ResourcePropertyStruct **)soap_id_lookup(soap, soap->href, (void**)a, SOAP_TYPE_wsrp__ResourcePropertyStruct, sizeof(struct wsrp__ResourcePropertyStruct), 0);
+		if (soap->body && soap_element_end_in(soap, tag))
+			return NULL;
+	}
+	return a;
+}
+
+SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_PointerToCommand(struct soap *soap, struct Command *const*a)
+{
+	if (!soap_reference(soap, *a, SOAP_TYPE_Command))
+		soap_serialize_Command(soap, *a);
+}
+
+SOAP_FMAC3 int SOAP_FMAC4 soap_put_PointerToCommand(struct soap *soap, struct Command *const*a, const char *tag, const char *type)
+{
+	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_PointerToCommand);
+	if (soap_out_PointerToCommand(soap, tag, id, a, type))
+		return soap->error;
+	return soap_putindependent(soap);
+}
+
+SOAP_FMAC3 int SOAP_FMAC4 soap_out_PointerToCommand(struct soap *soap, const char *tag, int id, struct Command *const*a, const char *type)
+{
+	id = soap_element_id(soap, tag, id, *a, NULL, 0, type, SOAP_TYPE_Command);
+	if (id < 0)
+		return soap->error;
+	return soap_out_Command(soap, tag, id, *a, type);
+}
+
+SOAP_FMAC3 struct Command ** SOAP_FMAC4 soap_get_PointerToCommand(struct soap *soap, struct Command **p, const char *tag, const char *type)
+{
+	if ((p = soap_in_PointerToCommand(soap, tag, p, type)))
+		soap_getindependent(soap);
+	return p;
+}
+
+SOAP_FMAC3 struct Command ** SOAP_FMAC4 soap_in_PointerToCommand(struct soap *soap, const char *tag, struct Command **a, const char *type)
+{
+	if (soap_element_begin_in(soap, tag, 1))
+		return NULL;
+	if (!a)
+		if (!(a = (struct Command **)soap_malloc(soap, sizeof(struct Command *))))
+			return NULL;
+	*a = NULL;
+	if (!soap->null && *soap->href != '#')
+	{	soap_revert(soap);
+		if (!(*a = soap_in_Command(soap, tag, *a, type)))
+			return NULL;
+	}
+	else
+	{	a = (struct Command **)soap_id_lookup(soap, soap->href, (void**)a, SOAP_TYPE_Command, sizeof(struct Command), 0);
 		if (soap->body && soap_element_end_in(soap, tag))
 			return NULL;
 	}

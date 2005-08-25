@@ -11,7 +11,7 @@ extern "C" {
 
 SOAP_BEGIN_NAMESPACE(soap)
 
-SOAP_SOURCE_STAMP("@(#) soapClient.c ver 2.7.2 2005-08-22 13:38:37 GMT")
+SOAP_SOURCE_STAMP("@(#) soapClient.c ver 2.7.2 2005-08-25 13:48:02 GMT")
 
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_call_wsrp__GetResourceProperty(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct GetResourcePropertyRequest *in_, char **out_)
@@ -210,7 +210,7 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call_wsrp__GetResourcePropertyDocument(struct soa
 	return soap_closesock(soap);
 }
 
-SOAP_FMAC5 int SOAP_FMAC6 soap_call_sws__Attach(struct soap *soap, const char *soap_endpoint, const char *soap_action, void *_, char **out_)
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_sws__Attach(struct soap *soap, const char *soap_endpoint, const char *soap_action, void *_, struct sws__AttachResponse *out_)
 {	struct sws__Attach soap_tmp_sws__Attach;
 	if (!soap_endpoint)
 		soap_endpoint = "http://foo.bar/";
@@ -239,13 +239,13 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call_sws__Attach(struct soap *soap, const char *s
 	 || soap_envelope_end_out(soap)
 	 || soap_end_send(soap))
 		return soap_closesock(soap);
-	*out_ = NULL;
+	soap_default_sws__AttachResponse(soap, out_);
 	if (soap_begin_recv(soap)
 	 || soap_envelope_begin_in(soap)
 	 || soap_recv_header(soap)
 	 || soap_body_begin_in(soap))
 		return soap_closesock(soap);
-	soap_inliteral(soap, NULL, out_);
+	soap_get_sws__AttachResponse(soap, out_, "sws:AttachResponse", "");
 	if (soap->error)
 	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
 			return soap_recv_fault(soap);

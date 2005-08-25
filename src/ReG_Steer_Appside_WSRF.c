@@ -276,7 +276,7 @@ int Send_status_msg_wsrf (char *msg)
     sde_name = CHKTYPE_DEFS_RP;
   }
   else{
-    fprintf(stderr, "Send_status_msg_wsrf: not a status or log msg and"
+    fprintf(stderr, "STEER: Send_status_msg_wsrf: not a status or log msg and"
 	    "no matching SDE name found either\n");
     return REG_FAILURE;
   }
@@ -292,7 +292,7 @@ int Send_status_msg_wsrf (char *msg)
     new_size = strlen(msg) + 512;
     if(!(pbuf = (char *)malloc(new_size)) ){
 
-      fprintf(stderr, "Send_status_msg_wsrf: malloc failed\n");
+      fprintf(stderr, "STEER: Send_status_msg_wsrf: malloc failed\n");
       return REG_FAILURE;
     }
 
@@ -303,7 +303,7 @@ int Send_status_msg_wsrf (char *msg)
       
       free(pbuf);
       pbuf = NULL;
-      fprintf(stderr, "Send_status_msg_wsrf: ERROR - msg truncated\n");
+      fprintf(stderr, "STEER: ERROR: Send_status_msg_wsrf: msg truncated\n");
       return REG_FAILURE;
     }
     pTmpBuf = pbuf;
@@ -316,16 +316,26 @@ int Send_status_msg_wsrf (char *msg)
     if(soap_call_wsrp__SetResourceProperties(Steerer_connection.SGS_info.soap, 
 					     Steerer_connection.SGS_info.address,
 					     "", pTmpBuf, &out) != SOAP_OK){
-      fprintf(stderr, "Send_status_msg_wsrf: call to SetResourceProperties "
+      fprintf(stderr, "STEER: Send_status_msg_wsrf: call to SetResourceProperties "
 	      "for >>%s<< failed:\n", pTmpBuf);
       soap_print_fault(Steerer_connection.SGS_info.soap, stderr);
+
+      if(Steerer_connection.SGS_info.soap->fault && 
+	 Steerer_connection.SGS_info.soap->fault->detail){
+	printf("STEER: Send_status_msg_wsrf: Soap error detail any = %s\n", 
+	       Steerer_connection.SGS_info.soap->fault->detail->__any);
+	if(strstr(Steerer_connection.SGS_info.soap->fault->detail->__any,
+		  "deadlock")){
+	  /* If we timed-out because of a deadlock situation (possible in
+	     coupled models) then try again */
+	  fprintf(stderr, "STEER: Send_status_msg_wsrf: deadlock - RETRYING\n");
+	  continue;
+	}
+      }
+
       return REG_FAILURE;
     }
     /* ARPDBG - maybe need to pass a fault back from SWS...
-    if(strstr(out, REG_SGS_ERROR)){
-      return REG_FAILURE;
-    }
-    if(!strstr(out, REG_SGS_TIMEOUT))break;
     */
     break;
   }
@@ -375,7 +385,8 @@ struct msg_struct *Get_control_msg_wsrf ()
       pLast = strstr(pLast+1, "<sws:controlMsg");
     }
 
-    fprintf(stderr, "ARPDBG, parsing >>%s<<\n", pLastBut1);
+    fprintf(stderr, "ARPDBG, Get_control_msg_wsrf parsing >>%s<<\n", pLastBut1);
+
     /* Parse the doc - pass NULLs in as this is appside so have no
        Sim_entry struct and results will be put in Msg_store struct */
     Parse_xml_buf(pLastBut1, strlen(pLastBut1), NULL, NULL);
