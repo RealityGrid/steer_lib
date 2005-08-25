@@ -768,10 +768,10 @@ int Read_file(char *filename, char **buf, int *size, int retain_newlines)
 
 /*----------------------------------------------------------------*/
 
-#ifdef USE_REG_TIMING
 
 int Get_current_time_seconds(double *now)
 {
+#ifdef USE_REG_TIMING
   struct timeval tv;
   struct timezone tz;
 
@@ -780,11 +780,13 @@ int Get_current_time_seconds(double *now)
   }
 
   *now = (double)(tv.tv_sec) + 1.0e-6*(double)(tv.tv_usec);
+#else
+  *now = 0.0;
+#endif /* defined USE_REG_TIMING */
 
   return REG_SUCCESS;
 }
 
-#endif /* defined USE_REG_TIMING */
 
 /*----------------------------------------------------------------*/
 
