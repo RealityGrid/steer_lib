@@ -145,6 +145,9 @@ clean:
 	cd examples/sink; $(MAKE) clean
 	cd wrappers; $(MAKE) clean
 
+doc:
+	doxygen docs/Doxyfile
+
 tar:
 	$(MAKE) clean
 	cd ..; tar -cf reg_steer_backup.tar reg_steer_lib/*
