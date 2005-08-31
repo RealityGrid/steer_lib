@@ -70,6 +70,7 @@ int main(int argc, char **argv){
   char  *io_labels[REG_INITIAL_NUM_IOTYPES];
   int    io_types[REG_INITIAL_NUM_IOTYPES];
   int    io_freqs[REG_INITIAL_NUM_IOTYPES];
+  int    ioTypeSel;
   int    new_freq;
 
   int    nsims;
@@ -371,31 +372,41 @@ int main(int argc, char **argv){
 		    io_types,
 		    io_freqs);
 
+	/* Print list of available IOTypes */
 	for(i=0; i<num_types; i++){
-
-	  /* Just edit the first one we find... */
 	  fprintf(stderr, 
-	  	    "Freq. of iotype %s = %d\n", io_labels[i], io_freqs[i]);
-	  fprintf(stderr, "Enter new value: ");
-
-	  while(REG_TRUE){
-	    scanf("%s", user_str);
-	    if(user_str[0] != '\n' && user_str[0] != ' ')break;
-	  }
-
-	  sscanf(user_str, "%d", &new_freq);
-
-	  fprintf(stderr, "\nSetting frequency to %d\n", new_freq);
-
-	  Set_iotype_freq(sim_handle, 1, &(io_handles[i]), &new_freq);
-
-	  Emit_control(sim_handle,
-	  		 0,
-	  		 NULL,
-	  		 NULL);
-
-	  break;
+		  "Freq. of iotype %d, %s = %d\n", i, 
+		  io_labels[i], io_freqs[i]);
 	}
+
+	/* Allow user to choose which to edit */
+	fprintf(stderr, "Enter no. of IOType to edit: ");
+	while(REG_TRUE){
+	  scanf("%s", user_str);
+	  if(user_str[0] != '\n' && user_str[0] != ' '){
+	    if(sscanf(user_str, "%d", &ioTypeSel) == 1){
+	      break;
+	    }
+	    else{
+	      fprintf(stderr, "\nError in selection, please try again: ");
+	    }
+	  }
+	}
+
+	/* Get new frequency value from user */
+	fprintf(stderr, "\nEnter new frequency value: ");
+	while(REG_TRUE){
+	  scanf("%s", user_str);
+	  if(user_str[0] != '\n' && user_str[0] != ' ')break;
+	}
+
+	sscanf(user_str, "%d", &new_freq);
+	fprintf(stderr, "\nSetting frequency to %d\n", new_freq);
+
+	Set_iotype_freq(sim_handle, 1, &(io_handles[ioTypeSel]), 
+			&new_freq);
+
+	Emit_control(sim_handle, 0, NULL, NULL);
       }
       break;
 
