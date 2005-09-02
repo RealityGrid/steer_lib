@@ -44,6 +44,8 @@ OBJECTS=ReG_Steer_Appside_f.o \
  ReG_Steer_Logging.o \
  ReG_Steering_Initialize.o \
  Base64.o \
+ ReG_Steer_Steerside_WSRF.o \
+ ReG_Steer_Appside_WSRF.o \
  stdsoap2.o soapC.o soapClient.o
 
 DEL_OBJS=ReG_Steer_Appside_f.o \
@@ -57,4 +59,6 @@ DEL_OBJS=ReG_Steer_Appside_f.o \
  ReG_Steer_Appside_Soap.o \
  ReG_Steer_Appside_File.o \
  ReG_Steer_Browser.o \
- ReG_Steer_Logging.o
+ ReG_Steer_Logging.o \
+ ReG_Steer_Steerside_WSRF.o \
+ ReG_Steer_Appside_WSRF.o
