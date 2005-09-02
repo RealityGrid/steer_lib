@@ -32,11 +32,25 @@
 
 ---------------------------------------------------------------------------*/
 
-#include "ReG_Steer_Browser.h"
-
 /** @file ReG_Steer_Utils_WSRF.h
     @brief Header file for routines to do registry look-up
   */
 
+/** Get the entries from a WSRF-based registry */
 int Get_registry_entries_wsrf(char *registryEPR, int *num_entries,  
 			      struct registry_entry **entries);
+
+/** Create a Steering Web Service and return its address */
+char *Create_SWS(int lifetimeMinutes,
+		 char *containerAddress,
+		 char *registryAddress,
+		 char *userName,
+		 char *group,
+		 char *software,
+		 char *purpose,
+		 char *checkpointAddress);
+
+/** Calls the Destroy method on the service at the supplied Endpoint.
+    Note that an SWS is derived from a WSRP so this method applies
+    to SWSs.*/
+int Destroy_WSRP(char *epr);
