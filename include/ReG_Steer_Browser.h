@@ -72,6 +72,8 @@ extern PREFIX int Get_sim_list(int   *nSims,
 			       char **simGSH);
 
 /** Queries specified registry
+    The pointer held in *entries must be free'd once the data
+    has been used.
     @return The number of entries in the registry
     @return Details for each entry
     @internal
