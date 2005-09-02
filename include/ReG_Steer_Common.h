@@ -441,10 +441,8 @@ extern PREFIX int Write_xml_footer(char **pchar,
 extern PREFIX int Read_file(char *filename, char **buf, int *size, 
 			    int retain_newlines);
 
-#ifdef USE_REG_TIMING
 /** Return the time since the epoch in seconds */
 extern PREFIX int Get_current_time_seconds(double *now);
-#endif
 
 /**
   Intended to take array of data and re-order (from F90 to C or
