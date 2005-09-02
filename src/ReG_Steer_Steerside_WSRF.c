@@ -194,7 +194,9 @@ struct msg_struct *Get_status_msg_wsrf(Sim_entry_type *sim)
   if( (msg = Get_next_stored_msg(sim)) ) return msg;
 
 
-  if( Get_resource_property_doc(&(sim->SGS_info), &pRPDoc) != REG_SUCCESS){
+  if( Get_resource_property_doc(sim->SGS_info.soap, 
+				sim->SGS_info.address,
+				&pRPDoc) != REG_SUCCESS){
 
     msg = New_msg_struct();
     msg->msg_type = MSG_ERROR;
@@ -298,7 +300,8 @@ struct msg_struct *Get_next_stored_msg(Sim_entry_type *sim)
 
 /*------------------------------------------------------------------*/
 /** Get the value of the specified resource property */
-int Get_resource_property (SGS_info_type *sgs_info,
+int Get_resource_property (struct soap *soapStruct,
+                           char *epr,
 			   char *name,
 			   char **pRP)
 {
@@ -319,11 +322,10 @@ int Get_resource_property (SGS_info_type *sgs_info,
   Get_current_time_seconds(&time0);
 #endif
 
-  if(soap_call_wsrp__GetMultipleResourceProperties(sgs_info->soap, 
-						   sgs_info->address, 
+  if(soap_call_wsrp__GetMultipleResourceProperties(soapStruct, epr, 
 						   "", in,
 						   &out) != SOAP_OK){
-    soap_print_fault(sgs_info->soap, stderr);
+    soap_print_fault(soapStruct, stderr);
     free(in.__ptr[0].ResourceProperty);
     return REG_FAILURE;
   }
@@ -334,15 +336,10 @@ int Get_resource_property (SGS_info_type *sgs_info,
 	  " took %f seconds\n", (time1-time0));
 #endif
 #endif
-  /*
 #if REG_DEBUG_FULL
-  */
-  fprintf(stderr, "-------------\n"
-	  "STEER: Get_resource_property for %s returned >>%s<<\n"
-	  "-------------\n", 
+  fprintf(stderr, "STEER: Get_resource_property for %s returned >>%s<<\n", 
 	  name, out);
-  /*#endif
-  */
+#endif
   free(in.__ptr[0].ResourceProperty);
   free(in.__ptr);
 
@@ -352,7 +349,8 @@ int Get_resource_property (SGS_info_type *sgs_info,
 
 /*------------------------------------------------------------------*/
 /** Get the whole resource property document */
-int Get_resource_property_doc(SGS_info_type *sgs_info,
+int Get_resource_property_doc(struct soap *soapStruct,
+			      char  *epr,
 			      char **pDoc)
 {
   char *out;
@@ -362,7 +360,7 @@ int Get_resource_property_doc(SGS_info_type *sgs_info,
 
  /* Free-up dynamically-allocated memory regularly because the RP
     doc can be big */
-  soap_end(sgs_info->soap);
+  soap_end(soapStruct);
 
   *pDoc = NULL;
 
@@ -370,11 +368,11 @@ int Get_resource_property_doc(SGS_info_type *sgs_info,
   Get_current_time_seconds(&time0);
 #endif
 
-  if(soap_call_wsrp__GetResourcePropertyDocument((sgs_info->soap), 
-						 sgs_info->address, 
+  if(soap_call_wsrp__GetResourcePropertyDocument(soapStruct, 
+						 epr, 
 						 "", NULL,
 						 &out) != SOAP_OK){
-    soap_print_fault(sgs_info->soap, stderr);
+    soap_print_fault(soapStruct, stderr);
     return REG_FAILURE;
   }
 
