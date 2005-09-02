@@ -68,15 +68,22 @@ struct msg_struct *Get_next_stored_msg(Sim_entry_type *sim);
     @param name     Name of the resource property to get
     @param pRP      If successful, ptr to array of char 
                     holding value of RP */
+int Get_resource_property (struct soap *soapStruct,
+			   char        *epr,
+			   char        *name,
+			   char       **pRP);
+/*
 int Get_resource_property (SGS_info_type *sgs_info, 
 			   char          *name,
 			   char         **pRP);
+*/
 /** Get the whole resource property document 
     @internal 
     @param sgs_info Pointer to struct holding info on SWS
     @param pRPDoc   If successful, ptr to array of char holding 
     contents of the ResourceProperty document */
-int Get_resource_property_doc(SGS_info_type *sgs_info,
+int Get_resource_property_doc(struct soap *soapStruct,
+			      char        *epr,
 			      char         **pRPDoc);
 /** Clean up a WSRF-based steering connection 
     @internal */
