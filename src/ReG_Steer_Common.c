@@ -787,7 +787,6 @@ int Get_current_time_seconds(double *now)
   return REG_SUCCESS;
 }
 
-
 /*----------------------------------------------------------------*/
 
 int Reorder_decode_array(IOdef_entry *io,
