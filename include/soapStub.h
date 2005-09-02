@@ -65,8 +65,8 @@ struct sws__AttachResponse
 	struct steerMessage ReG_USCOREsteer_USCOREmessage;	/* RPC return element */	/* required element of type steerMessage */
 };
 
-/* sws:DestroyResponse: */
-struct sws__DestroyResponse
+/* wsrp:DestroyResponse: */
+struct wsrp__DestroyResponse
 {
 	void *_rubbish;	/* RPC return element */	/* transient */
 };
@@ -107,6 +107,18 @@ struct wsrp__SetResourcePropertiesResponse
 	void *rubbish;	/* RPC return element */	/* transient */
 };
 
+/* sws:AddChildRequest: */
+struct sws__AddChildRequest
+{
+	char *__epr;
+};
+
+/* sws:AddChildResponse: */
+struct sws__AddChildResponse
+{
+	void *rubbish;	/* RPC return element */	/* transient */
+};
+
 /* sws:DetachResponse: */
 struct sws__DetachResponse
 {
@@ -135,6 +147,12 @@ struct wsrp__SetResourceProperties
 struct wsrp__GetResourcePropertyDocument
 {
 	void *_;	/* transient */
+};
+
+/* sws:AddChild: */
+struct sws__AddChild
+{
+	struct sws__AddChildRequest in;	/* required element of type sws:AddChildRequest */
 };
 
 /* sws:Attach: */
@@ -168,8 +186,8 @@ struct sws__PutParamLog
 	char *in0;	/* optional element of type xsd:string */
 };
 
-/* sws:Destroy: */
-struct sws__Destroy
+/* wsrp:Destroy: */
+struct wsrp__Destroy
 {
 };
 
@@ -458,6 +476,27 @@ struct sgsf__createService
 {
 	char *in0;	/* optional element of type xsd:string */
 	char *in1;	/* optional element of type xsd:string */
+};
+
+/* epr: */
+struct epr
+{
+	char *wsa__Address;	/* optional element of type xsd:string */
+};
+
+/* swsf:createSWSResourceResponse: */
+struct swsf__createSWSResourceResponse
+{
+	struct epr wsa__EndpointReference;	/* RPC return element */	/* required element of type epr */
+};
+
+/* swsf:createSWSResource: */
+struct swsf__createSWSResource
+{
+	char *timeToLive;	/* optional element of type xsd:string */
+	char *registryEPR;	/* optional element of type xsd:string */
+	char *jobDescription;	/* optional element of type xsd:string */
+	char *chkpointEPR;	/* optional element of type xsd:string */
 };
 
 /* sgr:findServiceDataResponse: */
@@ -793,6 +832,8 @@ SOAP_FMAC5 int SOAP_FMAC6 wsrp__SetResourceProperties(struct soap*, char *wsrp__
 
 SOAP_FMAC5 int SOAP_FMAC6 wsrp__GetResourcePropertyDocument(struct soap*, void *_, char **out_);
 
+SOAP_FMAC5 int SOAP_FMAC6 sws__AddChild(struct soap*, struct sws__AddChildRequest in, struct sws__AddChildResponse *out_);
+
 SOAP_FMAC5 int SOAP_FMAC6 sws__Attach(struct soap*, void *_, struct sws__AttachResponse *out_);
 
 SOAP_FMAC5 int SOAP_FMAC6 sws__Detach(struct soap*, void *param_1, struct sws__DetachResponse *out);
@@ -803,7 +844,7 @@ SOAP_FMAC5 int SOAP_FMAC6 sws__GetParamLog(struct soap*, int in0, struct sws__Ge
 
 SOAP_FMAC5 int SOAP_FMAC6 sws__PutParamLog(struct soap*, char *in0, struct sws__PutParamLogResponse *out);
 
-SOAP_FMAC5 int SOAP_FMAC6 sws__Destroy(struct soap*, struct sws__DestroyResponse *out);
+SOAP_FMAC5 int SOAP_FMAC6 wsrp__Destroy(struct soap*, struct wsrp__DestroyResponse *out);
 
 SOAP_FMAC5 int SOAP_FMAC6 sgs__Attach(struct soap*, struct sgs__AttachResponse *out);
 
@@ -854,6 +895,8 @@ SOAP_FMAC5 int SOAP_FMAC6 sgsf__registerSelf(struct soap*, char *in0, char *in1,
 SOAP_FMAC5 int SOAP_FMAC6 sgsf__destroy(struct soap*, struct sgsf__destroyResponse *out);
 
 SOAP_FMAC5 int SOAP_FMAC6 sgsf__createService(struct soap*, char *in0, char *in1, struct sgsf__createServiceResponse *out);
+
+SOAP_FMAC5 int SOAP_FMAC6 swsf__createSWSResource(struct soap*, char *timeToLive, char *registryEPR, char *jobDescription, char *chkpointEPR, struct swsf__createSWSResourceResponse *out);
 
 SOAP_FMAC5 int SOAP_FMAC6 sgr__remove(struct soap*, char *in0, struct sgr__removeResponse *out);
 
@@ -912,6 +955,8 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call_wsrp__SetResourceProperties(struct soap *soa
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_call_wsrp__GetResourcePropertyDocument(struct soap *soap, const char *soap_endpoint, const char *soap_action, void *_, char **out_);
 
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_sws__AddChild(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct sws__AddChildRequest in, struct sws__AddChildResponse *out_);
+
 SOAP_FMAC5 int SOAP_FMAC6 soap_call_sws__Attach(struct soap *soap, const char *soap_endpoint, const char *soap_action, void *_, struct sws__AttachResponse *out_);
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_call_sws__Detach(struct soap *soap, const char *soap_endpoint, const char *soap_action, void *param_1, struct sws__DetachResponse *out);
@@ -922,7 +967,7 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call_sws__GetParamLog(struct soap *soap, const ch
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_call_sws__PutParamLog(struct soap *soap, const char *soap_endpoint, const char *soap_action, char *in0, struct sws__PutParamLogResponse *out);
 
-SOAP_FMAC5 int SOAP_FMAC6 soap_call_sws__Destroy(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct sws__DestroyResponse *out);
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_wsrp__Destroy(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct wsrp__DestroyResponse *out);
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_call_sgs__Attach(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct sgs__AttachResponse *out);
 
@@ -973,6 +1018,8 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call_sgsf__registerSelf(struct soap *soap, const 
 SOAP_FMAC5 int SOAP_FMAC6 soap_call_sgsf__destroy(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct sgsf__destroyResponse *out);
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_call_sgsf__createService(struct soap *soap, const char *soap_endpoint, const char *soap_action, char *in0, char *in1, struct sgsf__createServiceResponse *out);
+
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_swsf__createSWSResource(struct soap *soap, const char *soap_endpoint, const char *soap_action, char *timeToLive, char *registryEPR, char *jobDescription, char *chkpointEPR, struct swsf__createSWSResourceResponse *out);
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_call_sgr__remove(struct soap *soap, const char *soap_endpoint, const char *soap_action, char *in0, struct sgr__removeResponse *out);
 
@@ -1034,6 +1081,8 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_serve_wsrp__SetResourceProperties(struct soap*);
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_serve_wsrp__GetResourcePropertyDocument(struct soap*);
 
+SOAP_FMAC5 int SOAP_FMAC6 soap_serve_sws__AddChild(struct soap*);
+
 SOAP_FMAC5 int SOAP_FMAC6 soap_serve_sws__Attach(struct soap*);
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_serve_sws__Detach(struct soap*);
@@ -1044,7 +1093,7 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_serve_sws__GetParamLog(struct soap*);
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_serve_sws__PutParamLog(struct soap*);
 
-SOAP_FMAC5 int SOAP_FMAC6 soap_serve_sws__Destroy(struct soap*);
+SOAP_FMAC5 int SOAP_FMAC6 soap_serve_wsrp__Destroy(struct soap*);
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_serve_sgs__Attach(struct soap*);
 
@@ -1095,6 +1144,8 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_serve_sgsf__registerSelf(struct soap*);
 SOAP_FMAC5 int SOAP_FMAC6 soap_serve_sgsf__destroy(struct soap*);
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_serve_sgsf__createService(struct soap*);
+
+SOAP_FMAC5 int SOAP_FMAC6 soap_serve_swsf__createSWSResource(struct soap*);
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_serve_sgr__remove(struct soap*);
 
