@@ -57,6 +57,7 @@ REG_LIB_OBJECTS=ReG_Steer_Appside_f.o \
  ReG_Steer_Appside_WSRF.o
 
 REG_LIB_UTILS_OBJECTS=ReG_Steer_Utils_WSRF.o \
+ ReG_Steer_Utils.o \
  ReG_Steer_Browser.o
 
 .c.o:
@@ -196,15 +197,6 @@ ReG_Steer_Steerside_WSRF.o: ReG_Steer_Steerside_WSRF.c \
         ../include/soapH.h \
 	stdsoap2.c soapC.c soapClient.c 
 
-ReG_Steer_Browser.o: ReG_Steer_Browser.c \
-        ../include/ReG_Steer_Browser.h \
-	../include/ReG_Steer_types.h \
-        ../include/ReG_Steer_XML.h \
-        ../include/soapRealityGrid.nsmap \
-        ../include/soapH.h \
-        ../include/soapStub.h \
-	stdsoap2.c soapC.c soapClient.c
-
 ReG_Steer_Logging.o: ReG_Steer_Logging.c \
         ../include/ReG_Steer_Logging.h \
         ../include/ReG_Steer_types.h \
@@ -225,11 +217,25 @@ ReG_Steering_Initialize.o: ReG_Steering_Initialize.f90 \
         -DREG_STEER_LIB_VERSION=\"${REG_STEER_LIB_VERSION}\" \
         ${INCLUDE_PATH} -c $< -o $@
 
+ReG_Steer_Browser.o: ReG_Steer_Browser.c \
+        ../include/ReG_Steer_Browser.h \
+	../include/ReG_Steer_types.h \
+        ../include/ReG_Steer_XML.h \
+        ../include/soapRealityGrid.nsmap \
+        ../include/soapH.h \
+        ../include/soapStub.h \
+	stdsoap2.c soapC.c soapClient.c
+
 ReG_Steer_Utils_WSRF.o: ReG_Steer_Utils_WSRF.c \
            ../include/ReG_Steer_types.h \
            ../include/ReG_Steer_Utils_WSRF.h \
            ../include/ReG_Steer_Common.h \
            ../include/ReG_Steer_XML.h \
+           ../include/soapH.h
+
+ReG_Steer_Utils.o: ReG_Steer_Utils.c \
+           ../include/ReG_Steer_types.h \
+           ../include/ReG_Steer_Utils.h \
            ../include/soapH.h
 
 #---------------------------------------------------------------
