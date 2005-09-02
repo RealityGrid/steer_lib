@@ -1771,9 +1771,9 @@ int Parse_registry_entries(char* buf, int size, int *num_entries,
   *entries = my_state.entries;
 
 #if REG_DEBUG
-  fprintf(stderr, "Got %d entries from registry:\n", my_state.num_entries);
+  fprintf(stderr, "Parse_registry_entries: got %d entries from registry:\n", 
+	  my_state.num_entries);
   for(i=0; i<my_state.num_entries;i++){
-
     printf("GSH  %d: %s\n", i, my_state.entries[i].gsh);
     printf("app   : %s\n", my_state.entries[i].application);
   }
