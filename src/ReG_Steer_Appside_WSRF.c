@@ -45,11 +45,13 @@
 #include "soapH.h"
 
 /* These three functions are defined in the steerside_WSRF code */
-extern int Get_resource_property (SGS_info_type *sgs_info, 
-				  char          *name,
-				  char         **pRP);
-extern int Get_resource_property_doc(SGS_info_type *sgs_info,
-				     char         **pDoc);
+extern int Get_resource_property (struct soap *soapStruct,
+				  char        *epr,
+				  char        *name,
+				  char       **pRP);
+extern int Get_resource_property_doc(struct soap *soapStruct,
+				     char        *epr,
+				     char       **pDoc);
 extern struct msg_struct *Get_next_stored_msg(Sim_entry_type *sim);
 
 #ifndef WIN32
@@ -221,7 +223,8 @@ int Steerer_connected_wsrf ()
   char *steer_status;
   int   status;
   
-  status = Get_resource_property(&(Steerer_connection.SGS_info),
+  status = Get_resource_property(Steerer_connection.SGS_info.soap,
+				 Steerer_connection.SGS_info.address,
 				 STEER_STATUS_RP,
 				 &steer_status);
   if(status != REG_SUCCESS){
@@ -365,7 +368,8 @@ struct msg_struct *Get_control_msg_wsrf ()
   }
 
   /* Get any new control messages */
-  if(Get_resource_property(&(Steerer_connection.SGS_info),
+  if(Get_resource_property(Steerer_connection.SGS_info.soap,
+			   Steerer_connection.SGS_info.address,
 			   "controlMsg", &pBuf) != REG_SUCCESS){
     msg = New_msg_struct();
     msg->msg_type = MSG_ERROR;
@@ -457,9 +461,9 @@ int Save_log_wsrf (char *log_data)
 int Detach_from_steerer_wsrf()
 {
   /* ARPDBG - I don't think we need this function anymore
-  struct sws__DestroyResponse out;
+  struct wsrp__DestroyResponse out;
 
-  if(soap_call_sws__Destroy(Steerer_connection.SGS_info.soap, 
+  if(soap_call_wsrp__Destroy(Steerer_connection.SGS_info.soap, 
 			    Steerer_connection.SGS_info.address, 
 			    "", &out)){
     fprintf(stderr, "Detach_from_steerer_wsrf: Destroy call failed:\n");
@@ -475,11 +479,11 @@ int Detach_from_steerer_wsrf()
 int Finalize_steering_connection_wsrf ()
 {
   int return_status = REG_SUCCESS;
-  struct sws__DestroyResponse out;
+  struct wsrp__DestroyResponse out;
 
   fprintf(stderr, "ARPDBG: Finalize_steering_connection_wsrf: calling "
 	  "Destroy\n");
-  if(soap_call_sws__Destroy(Steerer_connection.SGS_info.soap, 
+  if(soap_call_wsrp__Destroy(Steerer_connection.SGS_info.soap, 
 			    Steerer_connection.SGS_info.address, 
 			    "",  &out)){
     fprintf(stderr, "Finalize_steering_connection_wsrf: call to Destroy"
@@ -511,12 +515,14 @@ int Get_data_source_address_wsrf(int   index,
   int    count;
   char   epr[REG_MAX_STRING_LENGTH];
   char   label[REG_MAX_STRING_LENGTH];
-  SGS_info_type sgs_info;
+  char   address[REG_MAX_STRING_LENGTH];
+  struct soap mySoap;
 
   /* Port returned as zero on failure */
   *port = 0;
 
-  if(Get_resource_property(&(Steerer_connection.SGS_info),
+  if(Get_resource_property(Steerer_connection.SGS_info.soap,
+			   Steerer_connection.SGS_info.address,
 			   "dataSource", &pBuf) != REG_SUCCESS){
     return REG_FAILURE;
   }
@@ -559,22 +565,21 @@ int Get_data_source_address_wsrf(int   index,
 #endif
 
   /* Set-up soap environment for call to a SWS other than our own */
-  sgs_info.soap = (struct soap*)malloc(sizeof(struct soap));
   /* Initialise the soap run-time environment:
      Use this form to turn-on keep-alive for both incoming and outgoing
      http connections */
-  soap_init2(sgs_info.soap, SOAP_IO_KEEPALIVE, 
+  soap_init2(&mySoap, SOAP_IO_KEEPALIVE, 
 	     SOAP_IO_KEEPALIVE);
   /* Set the endpoint address */
-  snprintf(sgs_info.address, REG_MAX_STRING_LENGTH, 
+  snprintf(address, REG_MAX_STRING_LENGTH, 
 	   "%s", epr);
   /* Since we are using KEEPALIVE, we can also ask gSOAP to bind the 
      socket to a specific port on the local machine - only do this if 
      GLOBUS_TCP_PORT_RANGE is set. */
-  sgs_info.soap->client_port_min = Steerer_connection.SGS_info.soap->client_port_min;
-  sgs_info.soap->client_port_max = Steerer_connection.SGS_info.soap->client_port_max;
+  mySoap.client_port_min = Steerer_connection.SGS_info.soap->client_port_min;
+  mySoap.client_port_max = Steerer_connection.SGS_info.soap->client_port_max;
 
-  if(Get_resource_property(&(sgs_info),
+  if(Get_resource_property(&mySoap, address,
 			   "ioTypeDefinitions", &pBuf) != REG_SUCCESS){
     return REG_FAILURE;
   }
@@ -605,11 +610,9 @@ int Get_data_source_address_wsrf(int   index,
     printf("ARPDBG, Label didn't match, looping...\n");
   }
 
-  soap_end(sgs_info.soap);
+  soap_end(&mySoap);
   /* Reset: close master/slave sockets and remove callbacks */
-  soap_done(sgs_info.soap);
-  free(sgs_info.soap);
-  sgs_info.soap = NULL;
+  soap_done(&mySoap);
 
   /* Parse the Address field to pull out port and host */
   if( (pchar = strchr(label, ':')) ){
