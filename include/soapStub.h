@@ -493,7 +493,7 @@ struct swsf__createSWSResourceResponse
 /* swsf:createSWSResource: */
 struct swsf__createSWSResource
 {
-	char *timeToLive;	/* optional element of type xsd:string */
+	int timeToLive;	/* required element of type xsd:int */
 	char *registryEPR;	/* optional element of type xsd:string */
 	char *jobDescription;	/* optional element of type xsd:string */
 	char *chkpointEPR;	/* optional element of type xsd:string */
@@ -896,7 +896,7 @@ SOAP_FMAC5 int SOAP_FMAC6 sgsf__destroy(struct soap*, struct sgsf__destroyRespon
 
 SOAP_FMAC5 int SOAP_FMAC6 sgsf__createService(struct soap*, char *in0, char *in1, struct sgsf__createServiceResponse *out);
 
-SOAP_FMAC5 int SOAP_FMAC6 swsf__createSWSResource(struct soap*, char *timeToLive, char *registryEPR, char *jobDescription, char *chkpointEPR, struct swsf__createSWSResourceResponse *out);
+SOAP_FMAC5 int SOAP_FMAC6 swsf__createSWSResource(struct soap*, int timeToLive, char *registryEPR, char *jobDescription, char *chkpointEPR, struct swsf__createSWSResourceResponse *out);
 
 SOAP_FMAC5 int SOAP_FMAC6 sgr__remove(struct soap*, char *in0, struct sgr__removeResponse *out);
 
@@ -1019,7 +1019,7 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call_sgsf__destroy(struct soap *soap, const char 
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_call_sgsf__createService(struct soap *soap, const char *soap_endpoint, const char *soap_action, char *in0, char *in1, struct sgsf__createServiceResponse *out);
 
-SOAP_FMAC5 int SOAP_FMAC6 soap_call_swsf__createSWSResource(struct soap *soap, const char *soap_endpoint, const char *soap_action, char *timeToLive, char *registryEPR, char *jobDescription, char *chkpointEPR, struct swsf__createSWSResourceResponse *out);
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_swsf__createSWSResource(struct soap *soap, const char *soap_endpoint, const char *soap_action, int timeToLive, char *registryEPR, char *jobDescription, char *chkpointEPR, struct swsf__createSWSResourceResponse *out);
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_call_sgr__remove(struct soap *soap, const char *soap_endpoint, const char *soap_action, char *in0, struct sgr__removeResponse *out);
 

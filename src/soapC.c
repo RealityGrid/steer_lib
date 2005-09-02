@@ -11,7 +11,7 @@ extern "C" {
 
 SOAP_BEGIN_NAMESPACE(soap)
 
-SOAP_SOURCE_STAMP("@(#) soapC.c ver 2.7.2 2005-09-01 16:41:17 GMT")
+SOAP_SOURCE_STAMP("@(#) soapC.c ver 2.7.2 2005-09-02 08:59:28 GMT")
 
 
 #ifndef WITH_NOGLOBAL
@@ -5883,8 +5883,7 @@ SOAP_FMAC3 struct sgr__findServiceDataResponse * SOAP_FMAC4 soap_in_sgr__findSer
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_swsf__createSWSResource(struct soap *soap, const struct swsf__createSWSResource *a)
 {
 	(void)soap; (void)a; /* appease -Wall -Werror */
-	soap_embedded(soap, &a->timeToLive, SOAP_TYPE_xsd__string);
-	soap_serialize_xsd__string(soap, &a->timeToLive);
+	soap_embedded(soap, &a->timeToLive, SOAP_TYPE_xsd__int);
 	soap_embedded(soap, &a->registryEPR, SOAP_TYPE_xsd__string);
 	soap_serialize_xsd__string(soap, &a->registryEPR);
 	soap_embedded(soap, &a->jobDescription, SOAP_TYPE_xsd__string);
@@ -5896,7 +5895,7 @@ SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_swsf__createSWSResource(struct soap *s
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_swsf__createSWSResource(struct soap *soap, struct swsf__createSWSResource *a)
 {
 	(void)soap; (void)a; /* appease -Wall -Werror */
-	soap_default_xsd__string(soap, &a->timeToLive);
+	soap_default_xsd__int(soap, &a->timeToLive);
 	soap_default_xsd__string(soap, &a->registryEPR);
 	soap_default_xsd__string(soap, &a->jobDescription);
 	soap_default_xsd__string(soap, &a->chkpointEPR);
@@ -5913,7 +5912,7 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_put_swsf__createSWSResource(struct soap *soap, co
 SOAP_FMAC3 int SOAP_FMAC4 soap_out_swsf__createSWSResource(struct soap *soap, const char *tag, int id, const struct swsf__createSWSResource *a, const char *type)
 {
 	soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_swsf__createSWSResource), type);
-	soap_out_xsd__string(soap, "timeToLive", -1, &a->timeToLive, "");
+	soap_out_xsd__int(soap, "timeToLive", -1, &a->timeToLive, "");
 	soap_out_xsd__string(soap, "registryEPR", -1, &a->registryEPR, "");
 	soap_out_xsd__string(soap, "jobDescription", -1, &a->jobDescription, "");
 	soap_out_xsd__string(soap, "chkpointEPR", -1, &a->chkpointEPR, "");
@@ -5945,8 +5944,8 @@ SOAP_FMAC3 struct swsf__createSWSResource * SOAP_FMAC4 soap_in_swsf__createSWSRe
 	if (soap->body && !*soap->href)
 	{	for (;;)
 		{	soap->error = SOAP_TAG_MISMATCH;
-			if (soap_flag_timeToLive && (soap->error == SOAP_TAG_MISMATCH || soap->error == SOAP_NO_TAG))
-				if (soap_in_xsd__string(soap, "timeToLive", &a->timeToLive, "xsd:string"))
+			if (soap_flag_timeToLive && soap->error == SOAP_TAG_MISMATCH)
+				if (soap_in_xsd__int(soap, "timeToLive", &a->timeToLive, "xsd:int"))
 				{	soap_flag_timeToLive = 0;
 					continue;
 				}
@@ -5971,6 +5970,10 @@ SOAP_FMAC3 struct swsf__createSWSResource * SOAP_FMAC4 soap_in_swsf__createSWSRe
 				break;
 			if (soap->error)
 				return NULL;
+		}
+		if ((soap->mode & SOAP_XML_STRICT) && (soap_flag_timeToLive))
+		{	soap->error = SOAP_OCCURS;
+			return NULL;
 		}
 		if (soap_element_end_in(soap, tag))
 			return NULL;
