@@ -37,6 +37,8 @@
   */
 
 #include "ReG_Steer_types.h"
+#include "ReG_Steer_Browser.h"
+#include "ReG_Steer_Utils.h"
 #include "ReG_Steer_Utils_WSRF.h"
 #include "ReG_Steer_Common.h"
 #include "ReG_Steer_XML.h"
@@ -49,9 +51,9 @@ int Get_registry_entries_wsrf(char *registryEPR, int *num_entries,
 
   struct wsrp__GetMultipleResourcePropertiesRequest in;
   struct soap soap;
-  int    status;
-  char *out;
-  int   i;
+  int    status = REG_SUCCESS;
+  char  *out;
+  int    i;
 #ifdef USE_REG_TIMING
   double time0, time1;
 #endif
@@ -79,8 +81,13 @@ int Get_registry_entries_wsrf(char *registryEPR, int *num_entries,
 						   &out) != SOAP_OK){
     soap_print_fault(&soap, stderr);
     free(in.__ptr[0].ResourceProperty);
+    soap_end(&soap);
+    soap_done(&soap);
     return REG_FAILURE;
   }
+
+  free(in.__ptr[0].ResourceProperty);
+  free(in.__ptr);
 
 #ifdef USE_REG_TIMING
   Get_current_time_seconds(&time1);
@@ -88,20 +95,126 @@ int Get_registry_entries_wsrf(char *registryEPR, int *num_entries,
 	  "took %f seconds\n", (time1-time0));
 #endif
 
-
+#if REG_DEBUG
   printf("Get_resource_property for Entry: %s\n", out);
+#endif
+  if(strlen(out) > 0){
+    status = Parse_registry_entries(out, 
+				    strlen(out),
+				    num_entries, entries);
+  }
 
-
-  status = Parse_registry_entries(out, 
-				  strlen(out),
-				  num_entries, entries);
-
-  free(in.__ptr[0].ResourceProperty);
-  free(in.__ptr);
-
-  /*soap_destroy(&soap); - only needed when using classes */
   soap_end(&soap);
   soap_done(&soap);
 
   return status;
+}
+
+/*-----------------------------------------------------------------*/
+
+char *Create_SWS(int lifetimeMinutes,
+		 char *containerAddress,
+		 char *registryAddress,
+		 char *userName,
+		 char *group,
+		 char *software,
+		 char *purpose,
+		 char *checkpointAddress){
+
+  struct swsf__createSWSResourceResponse response;
+  struct wsrp__SetResourcePropertiesResponse setRPresponse;
+  char   factoryAddr[256];
+  char   jobDescription[1024];
+  static char epr[256];
+  struct soap soap;
+
+  snprintf(jobDescription, 1024, "<registryEntry>\n"
+	   "<serviceType>SWS</serviceType>\n"
+	   "<componentContent>\n"
+	   "<componentStartDateTime>%s</componentStartDateTime>\n"
+	   "<componentCreatorName>%s</componentCreatorName>\n"
+	   "<componentCreatorGroup>%s</componentCreatorGroup>\n"
+	   "<componentSoftwarePackage>%s</componentSoftwarePackage>\n"
+	   "<componentTaskDescription>%s</componentTaskDescription>\n"
+	   "</componentContent>"
+	   "</registryEntry>",
+	   Get_current_time_string(), userName, group, software, purpose);
+
+  sprintf(factoryAddr, "%sSession/SWSFactory/SWSFactory", 
+	  containerAddress);
+
+  soap_init(&soap);
+  /* Something to do with the XML type */
+  soap.encodingStyle = NULL;
+
+  /*
+  printf("factoryAddr       >>%s<<\n", factoryAddr);
+  printf("timeToLive        >>%s<<\n", timeToLive);
+  printf("registryAddress   >>%s<<\n", registryAddress);
+  printf("jobDescription    >>%s<<\n", jobDescription);
+  printf("checkpointAddress >>%s<<\n", checkpointAddress);
+  */
+
+  /* 1440 = 24hrs in minutes.  Is the default lifetime of the service
+     until its associated job starts up and then the TerminationTime
+     is reset using the maxRunTime RP */
+  if(soap_call_swsf__createSWSResource(&soap, factoryAddr, NULL, 
+				       1440, 
+				       registryAddress, 
+				       jobDescription, checkpointAddress, 
+				       &response) != SOAP_OK){
+    if(soap.fault && soap.fault->detail){
+
+      printf("Soap error detail any = %s\n", 
+	     soap.fault->detail->__any);
+    }
+    soap_print_fault(&soap, stderr);
+    return NULL;
+  }
+
+  strncpy(epr, response.wsa__EndpointReference.wsa__Address, 256);
+
+  /* Finally, set it up with information on  its
+     maximum run-time */
+
+  snprintf(jobDescription, 1024, "<maxRunTime>%d</maxRunTime>",
+	   lifetimeMinutes);
+
+  printf("Calling SetResourceProperties with >>%s<<\n",
+	 jobDescription);
+  if(soap_call_wsrp__SetResourceProperties(&soap, epr, "", jobDescription,
+					   &setRPresponse) != SOAP_OK){
+    soap_print_fault(&soap, stderr);
+    return NULL;
+  }
+
+  soap_end(&soap); /* dealloc deserialized data */
+  soap_done(&soap); /* cleanup and detach soap struct */
+
+  return epr;
+}
+
+/*-----------------------------------------------------------------*/
+
+int Destroy_WSRP(char *epr)
+{
+  struct wsrp__DestroyResponse out;
+  struct soap soap;
+  int    return_status = REG_SUCCESS;
+  if(epr){
+    soap_init(&soap);
+    /* Something to do with the XML type */
+    soap.encodingStyle = NULL;
+
+    if(soap_call_wsrp__Destroy(&soap, epr, NULL, &out) != SOAP_OK){
+      fprintf(stderr, "Destroy_WSRP: call to Destroy on %s failed:\n   ",
+	      epr);
+      soap_print_fault(&soap, stderr);
+      return_status = REG_FAILURE;
+    }
+
+    soap_end(&soap); /* dealloc deserialized data */
+    soap_done(&soap); /* cleanup and detach soap struct */
+  }
+  return return_status;
 }
