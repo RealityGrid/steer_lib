@@ -1734,6 +1734,9 @@ int Parse_registry_entries(char* buf, int size, int *num_entries,
 { 
   static xmlSAXHandler my_handler;
   struct ParserState my_state;
+  char              *pChar;
+  char              *pNext;
+  char               entryDelimiter[16];
 #if REG_DEBUG
   int i;
 #endif
@@ -1757,13 +1760,35 @@ int Parse_registry_entries(char* buf, int size, int *num_entries,
     return REG_FAILURE;
   }
 
-  /* parse the document */
-  if (xmlSAXUserParseMemory(&my_handler, &my_state, buf, size) < 0) {
+  /* The document we are passed may not have a root element.  Therefore,
+     we manually move through the buffer and parse each entry
+     separately. */
+  pChar = strstr(buf, "<ogsi:entry");
+  if(pChar){
+    sprintf(entryDelimiter, "<ogsi:entry");
+  }
+  else{
+    pChar = strstr(buf, "<wssg:Entry");
+    sprintf(entryDelimiter, "<wssg:Entry");
+  }
 
-    free(my_state.entries);
-    my_state.entries = NULL;
-    return REG_FAILURE;
-  } 
+  /* parse the document */
+  while(pChar){
+    pNext = strstr(pChar+1, entryDelimiter);
+    if(pNext){
+      size = (int)(pNext - pChar);
+    }
+    else{
+      size = strlen(pChar);
+    }
+    if (xmlSAXUserParseMemory(&my_handler, &my_state, pChar, size) < 0) {
+      
+      free(my_state.entries);
+      my_state.entries = NULL;
+      return REG_FAILURE;
+    } 
+    pChar = pNext;
+  }
   /* Clean-up */
   xmlCleanupParser();
 
@@ -1790,7 +1815,7 @@ void Start_element_handler(void * 	user_data,
 
   struct ParserState *state;
   state = (struct ParserState *)user_data;
-
+  fprintf(stderr, "ARPDBG Start_element_handler...\n");
   /* Check that we haven't previously hit an error */
   if(state->return_val != REG_SUCCESS) return;
   /*
@@ -1807,7 +1832,8 @@ void Start_element_handler(void * 	user_data,
   </registryEntry>
   /wssg:Content
   */
-  fprintf(stderr, "Start_element_handler: name = %s\n", (char *)name);
+  fprintf(stderr, "ARPDBG Start_element_handler: name = %s\n", 
+	  (char *)name);
 
   if( !xmlStrcmp(name, (const xmlChar *) "ogsi:entry") ){
 
@@ -1914,6 +1940,7 @@ void End_element_handler(void          *user_data,
   struct registry_entry *tmp;
 
   state = (struct ParserState *)user_data;
+  printf("ARPDBG End_element_handler for >>%s<<\n", (char *)name);
 
   /* Check that we haven't previously hit an error */
   if(state->return_val != REG_SUCCESS) return;
@@ -2002,6 +2029,9 @@ void End_element_handler(void          *user_data,
 #endif
 	}
 	else{
+#if REG_DEBUG
+	  fprintf(stderr,"End_element_handler: malloc failed\n");
+#endif
 	  state->return_val = REG_FAILURE;
 	}
       }
