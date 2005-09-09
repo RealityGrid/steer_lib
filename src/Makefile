@@ -46,6 +46,7 @@ REG_LIB_OBJECTS=ReG_Steer_Appside_f.o \
  ReG_Steer_Proxy_utils.o \
  ReG_Steer_XML.o \
  ReG_Steer_Appside_Sockets.o \
+ ReG_Steer_Appside_IOProxy.o \
  ReG_Steer_Steerside_Soap.o \
  ReG_Steer_Appside_Soap.o \
  ReG_Steer_Appside_File.o \
@@ -216,6 +217,11 @@ ReG_Steering_Initialize.o: ReG_Steering_Initialize.f90 \
         -DREG_DEBUG_FULL=${REG_DEBUG_FULL_FLAG} \
         -DREG_STEER_LIB_VERSION=\"${REG_STEER_LIB_VERSION}\" \
         ${INCLUDE_PATH} -c $< -o $@
+
+ReG_Steer_Appside_IOProxy.o: ReG_Steer_Appside_IOProxy.c \
+        ../include/ReG_Steer_Appside_IOProxy.h \
+        ../include/ReG_Steer_types.h \
+        ../include/ReG_Steer_Appside_Sockets.h
 
 ReG_Steer_Browser.o: ReG_Steer_Browser.c \
         ../include/ReG_Steer_Browser.h \
