@@ -1,6 +1,6 @@
 /*-----------------------------------------------------------------------
   This file contains routines and data structures for socket
-  communication.
+  communication with a proxy or 'switch'.
 
   (C) Copyright 2005, University of Manchester, United Kingdom,
   all rights reserved.
@@ -187,7 +187,8 @@ int Enable_IOType_proxy(int index) {
 /*---------------------------------------------------*/
 
 int Get_communication_status_proxy(const int index) {
-  if(IOTypes_table.io_def[index].socket_info.comms_status != REG_COMMS_STATUS_CONNECTED)
+  if(IOTypes_table.io_def[index].socket_info.comms_status != 
+     REG_COMMS_STATUS_CONNECTED)
     return REG_FAILURE;
   
   return REG_SUCCESS;
@@ -300,13 +301,17 @@ int Write_non_blocking_proxy(const int index, const int size, void* buffer) {
 
 /*---------------------------------------------------*/
 
-int Read_proxy(const int index, int *size, void* buffer){
+int Read_proxy(const int index, int *size, void** buffer){
 
+  char             tmpBuf[16];
+  char             readBuf[REG_PACKET_SIZE];
+  char            *pchar;
+  char            *pnext;
   socket_io_type  *sock_info;
   sock_info = &(IOTypes_table.io_def[index].socket_info);
 
   /* Blocks until REG_PACKET_SIZE bytes received */
-  if((nbytes = recv(sock_info->connector_handle, buffer, REG_PACKET_SIZE, 
+  if((nbytes = recv(sock_info->connector_handle, readBuf, REG_PACKET_SIZE, 
 		    MSG_WAITALL)) <= 0) {
     if(nbytes < 0) {
       /* error */
@@ -318,8 +323,57 @@ int Read_proxy(const int index, int *size, void* buffer){
       fprintf(stderr, "Read_proxy: hung up!\n");
     }
 #endif
+    return REG_FAILURE;
+  }
 
+  /* if we're here, we've got data */
+#if REG_DEBUG_FULL
+  fprintf(stderr, "Read_proxy: read <%s> from socket\n", 
+	  readBuf);
+#endif
+  /*
+		while(in!='#') {
+			in =fgetc( con->fd );
+			
+		}
 
+		fscanf(con->fd, "%s", msg->dest );
+		fscanf(con->fd, "%d", &(msg->code) );
+		fscanf(con->fd, "%d", &(msg->length) );
+
+		fgetc( con->fd );
+*/
+  pchar = strstr(readBuf, "#");
+  pchar = strchr(++pchar, '\n');/* End of destination label */
+  pchar = strchr(++pchar, '\n');/* End of msg code */
+  pnext = strchr(++pchar, '\n');/* End of msg length */
+  memcpy(tmpBuf, ++pchar, (pnext-pchar));
+  tmpBuf[(pnext-pchar)] = '\0';
+  *size = atoi(tmpBuf);
+  pchar++; /* Allow one more character (following hybrid_comms.c) */
+
+  /* ARPDBG - optimise; use scratch instead of malloc?? */
+  if( !(buffer = malloc(*size)) ){
+    fprintf("Read_proxy: ERROR: malloc of %d bytes failed\n", *size);
+  }
+
+  /* Blocks until *size bytes received */
+  if((nbytes = recv(sock_info->connector_handle, buffer, *size, 
+		    MSG_WAITALL)) <= 0) {
+    if(nbytes < 0) {
+      /* error */
+      perror("recv");
+    }
+#if REG_DEBUG
+    else {
+      /* closed connection */
+      fprintf(stderr, "Read_proxy: hung up!\n");
+    }
+#endif
+    return REG_FAILURE;
+  }
+
+  return REG_SUCCESS;
 }
 
 /*---------------------------------------------------*/
@@ -412,163 +466,68 @@ int Emit_data_proxy(const int index, const size_t num_bytes_to_send,
 int Consume_msg_header_proxy(int index, int* datatype, int* count, 
 			     int* num_bytes, int* is_fortran_array) {
 
-  int nbytes;
-  char buffer[REG_PACKET_SIZE];
+  char            *inBuffer;
+  int              inBytes;
+  char            *pchar;
   socket_io_type  *sock_info;
   sock_info = &(IOTypes_table.io_def[index].socket_info);
 
   /* check socket connection has been made */
-  if (sock_info->comms_status != REG_COMMS_STATUS_CONNECTED) return REG_FAILURE;
+  if (sock_info->comms_status != 
+      REG_COMMS_STATUS_CONNECTED) return REG_FAILURE;
 
   /* Read header */
 #if REG_DEBUG_FULL
   fprintf(stderr, "Consume_msg_header_proxy: calling recv...\n");
 #endif
 
-  /* Blocks until REG_PACKET_SIZE bytes received */
-  if((nbytes = recv(sock_info->connector_handle, buffer, REG_PACKET_SIZE, 
-		    MSG_WAITALL)) <= 0) {
-    if(nbytes < 0) {
-      /* error */
-      perror("recv");
-    }
-#if REG_DEBUG
-    else {
-      /* closed connection */
-      fprintf(stderr, "Consume_msg_header_proxy: hung up!\n");
-    }
-#endif
-
+  if(Read_proxy(index, &inBytes, (void *)&inBuffer) != REG_SUCCESS){
     return REG_FAILURE;
   }
 
   /* if we're here, we've got data */
 #if REG_DEBUG_FULL
   fprintf(stderr, "Consume_msg_header_proxy: read <%s> from socket\n", 
-	  buffer);
+	  inBuffer);
 #endif
 
   /* Check for end of data */
-  if(!strncmp(buffer, REG_DATA_FOOTER, strlen(REG_DATA_FOOTER))) {
+  if(!strncmp(inBuffer, REG_DATA_FOOTER, strlen(REG_DATA_FOOTER))) {
     return REG_EOD;
   }
-  else if(strncmp(buffer, BEGIN_SLICE_HEADER, strlen(BEGIN_SLICE_HEADER))) {
+  else if(strncmp(inBuffer, BEGIN_SLICE_HEADER, strlen(BEGIN_SLICE_HEADER))) {
     fprintf(stderr, "ERROR: Consume_msg_header_proxy: incorrect "
 	    "header on slice\n");
     return REG_FAILURE;
   }
 
-  /*--- Type of objects in message ---*/
-  if((nbytes = recv(sock_info->connector_handle, buffer, REG_PACKET_SIZE, 
-		    MSG_WAITALL)) <= 0) {
-    if(nbytes == 0) {
-      /* closed connection */
-      fprintf(stderr, "Consume_msg_header_proxy: hung up!\n");
-    }
-    else {
-      /* error */
-      perror("recv");
-    }
-
+  if(!(pchar = strstr(inBuffer, "<Data_type>")) ){
     return REG_FAILURE;
   }
+  sscanf(pchar, "<Data_type>%d</Data_type>", datatype);
 
-#if REG_DEBUG_FULL
-  fprintf(stderr, "Consume_msg_header_sockets: read <%s> from socket\n", 
-	  buffer);
-#endif
-
-  if(!strstr(buffer, "<Data_type>")) {
+  if( !(pchar = strstr(buffer, "<Num_objects>")) ){
     return REG_FAILURE;
   }
-
-  sscanf(buffer, "<Data_type>%d</Data_type>", datatype);
-
-  /*--- No. of objects in message ---*/
-  if((nbytes = recv(sock_info->connector_handle, buffer, REG_PACKET_SIZE, 
-		    MSG_WAITALL)) <= 0) {
-    if(nbytes == 0) {
-      /* closed connection */
-      fprintf(stderr, "Consume_msg_header_sockets: hung up!\n");
-    }
-    else {
-      /* error */
-      perror("recv");
-    }
-
-    return REG_FAILURE;
-  }
-
-#if REG_DEBUG_FULL
-  fprintf(stderr, "Consume_msg_header_sockets: read <%s> from socket\n", 
-	  buffer);
-#endif
-
-  if(!strstr(buffer, "<Num_objects>")) {
-    return REG_FAILURE;
-  }
-
-  if(sscanf(buffer, "<Num_objects>%d</Num_objects>", count) != 1){
+  if(sscanf(pchar, "<Num_objects>%d</Num_objects>", count) != 1){
     fprintf(stderr, "ERROR: Consume_msg_header_sockets: failed to "
 	    "read Num_objects\n");
     return REG_FAILURE;
   }
 
-  /*--- No. of bytes in message ---*/
-  if((nbytes = recv(sock_info->connector_handle, buffer, REG_PACKET_SIZE, 
-		    MSG_WAITALL)) <= 0) {
-    if(nbytes == 0) {
-      /* closed connection */
-      fprintf(stderr, "Consume_msg_header_sockets: hung up!\n");
-    }
-    else {
-      /* error */
-      perror("recv");
-    }
-
+  if( !(pchar = strstr(buffer, "<Num_bytes>")) ){
     return REG_FAILURE;
   }
-
-#if REG_DEBUG_FULL
-  fprintf(stderr, "Consume_msg_header_sockets: read >%s< from socket\n", 
-	  buffer);
-#endif
-
-  if(!strstr(buffer, "<Num_bytes>")) {
-    return REG_FAILURE;
-  }
-
-  if(sscanf(buffer, "<Num_bytes>%d</Num_bytes>", num_bytes) != 1) {
+  if(sscanf(pchar, "<Num_bytes>%d</Num_bytes>", num_bytes) != 1) {
     fprintf(stderr, "ERROR: Consume_msg_header_sockets: failed to read "
 	    "Num_bytes\n");
     return REG_FAILURE;
   }
 
-  /*--- Array ordering in message ---*/
-  if((nbytes = recv(sock_info->connector_handle, buffer, REG_PACKET_SIZE, 
-		    MSG_WAITALL)) <= 0) {
-    if(nbytes == 0) {
-      /* closed connection */
-      fprintf(stderr, "Consume_msg_header_sockets: hung up!\n");
-    }
-    else {
-      /* error */
-      perror("recv");
-    }
-
+  if( !(pchar = strstr(buffer, "<Array_order>")) ){
     return REG_FAILURE;
   }
-
-#if REG_DEBUG_FULL
-  fprintf(stderr, "Consume_msg_header_socket: read >%s< from socket\n", 
-	  buffer);
-#endif
-
-  if(!strstr(buffer, "<Array_order>")) {
-    return REG_FAILURE;
-  }
-
-  if(strstr(buffer, "FORTRAN")){
+  if(strstr(pchar, "FORTRAN")){
     /* Array data is from Fortran */
     *is_fortran_array = REG_TRUE;
   }
@@ -578,25 +537,6 @@ int Consume_msg_header_proxy(int index, int* datatype, int* count,
   }
 
   /*--- End of header ---*/
-  if((nbytes = recv(sock_info->connector_handle, buffer, REG_PACKET_SIZE, 
-		    MSG_WAITALL)) <= 0) {
-    if(nbytes == 0) {
-      /* closed connection */
-      fprintf(stderr, "Consume_msg_header_sockets: hung up!\n");
-    }
-    else {
-      /* error */
-      perror("recv");
-    }
-
-    return REG_FAILURE;
-  }
-
-#if REG_DEBUG_FULL
-  fprintf(stderr, "Consume_msg_header_sockets: read <%s> from socket\n", 
-	  buffer);
-#endif
-
   if(strncmp(buffer, END_SLICE_HEADER, strlen(END_SLICE_HEADER))) {
     fprintf(stderr, "ERROR: Consume_msg_header_sockets: failed to find "
 	    "end of header\n");
