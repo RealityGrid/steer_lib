@@ -37,6 +37,7 @@
   */
 
 #include "ReG_Steer_types.h"
+#include "ReG_Steer_Utils_WSRF.h"
 
 #ifndef WIN32
 #include <time.h>
@@ -67,4 +68,79 @@ char *Get_current_time_string()
 	  now_details->tm_sec);
 
   return date_string;
+}
+
+/*----------------------------------------------------------------*/
+
+char* Create_steering_service(const int   lifetimeMinutes,
+			      const char *containerAddress,
+			      const char *registryAddress,
+			      const char *userName,
+			      const char *group,
+			      const char *software,
+			      const char *purpose,
+			      const char *inputFilename,
+			      const char *checkpointAddress)
+{
+#if REG_OGSI
+  fprintf(stderr, "Create_steering_service: NOT IMPLEMENTED for OGSI\n");
+#else
+
+  return Create_SWS(lifetimeMinutes,
+		    containerAddress,
+		    registryAddress,
+		    userName,
+		    group,
+		    software,
+		    purpose,
+		    inputFilename,
+		    checkpointAddress);
+#endif /* REG_OGSI */
+}
+
+/*----------------------------------------------------------------*/
+
+char *Create_checkpoint_tree(const char *factory, 
+			     const char *metadata)
+{
+  struct rgtf__createNewTreeResponse out;
+  char                              *pchar;
+  char                              *pend;
+  static char                        epr[256];
+  struct soap                        soap;
+
+  soap_init(&soap);
+  /* Something to do with the XML type */
+  soap.encodingStyle = NULL;
+
+  if(soap_call_rgtf__createNewTree(&soap, 
+				   factory, 
+				   "", /* soap Action */
+				   "<ogsi:terminationTime />", "", "", 
+				   metadata, 
+				   &out) != SOAP_OK){
+    fprintf(stderr, "Create_checkpoint_tree: soap call failed:\n");
+    soap_print_fault(&soap, stderr);
+    soap_end(&soap); /* dealloc deserialized data */
+    soap_done(&soap); /* cleanup and detach soap struct */
+    return NULL;
+  }
+
+  if( !(pchar = strstr(out._createNewTreeReturn, "<ogsi:handle>")) ){
+    fprintf(stderr, "Create_checkpoint_tree: failed to find "
+	    "<ogsi:handle> in >>%s<< returned by createNewTree on %s\n", 
+	    out._createNewTreeReturn, factory);
+    soap_end(&soap); /* dealloc deserialized data */
+    soap_done(&soap); /* cleanup and detach soap struct */
+    return NULL;
+  }
+
+  pchar += 13; /* 13 = strlen("<ogsi:handle>") */
+  pend = strchr(pchar, '<');
+  strncpy(epr, pchar, (int)(pend-pchar));
+
+  soap_end(&soap); /* dealloc deserialized data */
+  soap_done(&soap); /* cleanup and detach soap struct */
+
+  return epr;
 }
