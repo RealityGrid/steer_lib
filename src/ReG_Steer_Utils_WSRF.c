@@ -44,6 +44,9 @@
 #include "ReG_Steer_XML.h"
 #include "soapH.h"
 
+/** Global scratch buffer - declared in ReG_Steer_Appside.c */
+extern char Global_scratch_buffer[];
+
 /*-------------------------------------------------------------------------*/
 
 int Get_registry_entries_wsrf(char *registryEPR, int *num_entries,  
@@ -57,12 +60,17 @@ int Get_registry_entries_wsrf(char *registryEPR, int *num_entries,
 #ifdef USE_REG_TIMING
   double time0, time1;
 #endif
+  *num_entries = 0;
 
   soap_init(&soap);
   in.__size = 1;
   in.__ptr = (struct wsrp__ResourcePropertyStruct *)malloc(in.__size*
 							  sizeof(struct wsrp__ResourcePropertyStruct));
-  if(!in.__ptr)return REG_MEM_FAIL;
+  if(!in.__ptr){
+    fprintf(stderr, "STEER: Get_registry_entries_wsrf: ERROR: "
+	    "malloc failed\n");
+    return REG_MEM_FAIL;
+  }
 
   for(i=0; i<in.__size;i++){
     in.__ptr[i].ResourceProperty = (char *)malloc(16*sizeof(char));
@@ -112,21 +120,25 @@ int Get_registry_entries_wsrf(char *registryEPR, int *num_entries,
 
 /*-----------------------------------------------------------------*/
 
-char *Create_SWS(int lifetimeMinutes,
-		 char *containerAddress,
-		 char *registryAddress,
-		 char *userName,
-		 char *group,
-		 char *software,
-		 char *purpose,
-		 char *checkpointAddress){
+char *Create_SWS(const int   lifetimeMinutes,
+		 const char *containerAddress,
+		 const char *registryAddress,
+		 const char *userName,
+		 const char *group,
+		 const char *software,
+		 const char *purpose,
+		 const char *inputFilename,
+		 const char *checkpointAddress){
 
-  struct swsf__createSWSResourceResponse response;
+  struct swsf__createSWSResourceResponse     response;
   struct wsrp__SetResourcePropertiesResponse setRPresponse;
-  char   factoryAddr[256];
-  char   jobDescription[1024];
-  static char epr[256];
-  struct soap soap;
+  char                                       factoryAddr[256];
+  char                                       jobDescription[1024];
+  static char                                epr[256];
+  struct soap                                soap;
+  char                                      *contents;
+  char                                      *pchar;
+  int                                        numBytes;
 
   snprintf(jobDescription, 1024, "<registryEntry>\n"
 	   "<serviceType>SWS</serviceType>\n"
@@ -143,25 +155,23 @@ char *Create_SWS(int lifetimeMinutes,
   sprintf(factoryAddr, "%sSession/SWSFactory/SWSFactory", 
 	  containerAddress);
 
+#if REG_DEBUG
+  fprintf(stderr, "Create_SWS: using factory >>%s<<\n",
+	  factoryAddr);
+#endif
+
   soap_init(&soap);
   /* Something to do with the XML type */
   soap.encodingStyle = NULL;
-
-  /*
-  printf("factoryAddr       >>%s<<\n", factoryAddr);
-  printf("timeToLive        >>%s<<\n", timeToLive);
-  printf("registryAddress   >>%s<<\n", registryAddress);
-  printf("jobDescription    >>%s<<\n", jobDescription);
-  printf("checkpointAddress >>%s<<\n", checkpointAddress);
-  */
 
   /* 1440 = 24hrs in minutes.  Is the default lifetime of the service
      until its associated job starts up and then the TerminationTime
      is reset using the maxRunTime RP */
   if(soap_call_swsf__createSWSResource(&soap, factoryAddr, NULL, 
 				       1440, 
-				       registryAddress, 
-				       jobDescription, checkpointAddress, 
+				       (char *)registryAddress, 
+				       (char *)jobDescription, 
+				       (char *)checkpointAddress, 
 				       &response) != SOAP_OK){
     if(soap.fault && soap.fault->detail){
 
@@ -174,18 +184,50 @@ char *Create_SWS(int lifetimeMinutes,
 
   strncpy(epr, response.wsa__EndpointReference.wsa__Address, 256);
 
-  /* Finally, set it up with information on  its
+  /* Finally, set it up with information on its
      maximum run-time */
 
   snprintf(jobDescription, 1024, "<maxRunTime>%d</maxRunTime>",
 	   lifetimeMinutes);
 
-  printf("Calling SetResourceProperties with >>%s<<\n",
-	 jobDescription);
+#if REG_DEBUG
+  fprintf(stderr, "Calling SetResourceProperties with >>%s<<\n",
+	  jobDescription);
+#endif
   if(soap_call_wsrp__SetResourceProperties(&soap, epr, "", jobDescription,
 					   &setRPresponse) != SOAP_OK){
     soap_print_fault(&soap, stderr);
     return NULL;
+  }
+
+  /* If an input deck has been specified, grab it and store on the
+     steering service */
+  if(strlen(inputFilename) &&
+     (Read_file(inputFilename, &contents, &numBytes, REG_TRUE) 
+      == REG_SUCCESS) ){
+    /* 49 = 12 + 37 = strlen("<![CDATA[]]>") + 
+       2*strlen("<inputFileContent>") + 1 */
+    if((strlen(contents) + 49)< REG_SCRATCH_BUFFER_SIZE){
+      pchar = Global_scratch_buffer;
+      /* Protect the file content from any XML parsing by wrapping
+	 in CDATA tags */
+      pchar += sprintf(pchar, "<inputFileContent><![CDATA[");
+      pchar += sprintf(pchar, "%s", contents);
+      sprintf(pchar, "]]></inputFileContent>");
+    }
+    else{
+      
+    }
+#if REG_DEBUG
+    fprintf(stderr, "Calling SetResourceProperties with >>%s<<\n",
+	    Global_scratch_buffer);
+#endif
+    if(soap_call_wsrp__SetResourceProperties(&soap, epr, "", 
+					     Global_scratch_buffer,
+					     &setRPresponse) != SOAP_OK){
+      soap_print_fault(&soap, stderr);
+      return NULL;
+    }
   }
 
   soap_end(&soap); /* dealloc deserialized data */
