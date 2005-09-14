@@ -38,9 +38,32 @@
 #ifndef __REG_STEER_UTILS_H__
 #define __REG_STEER_UTILS_H__
 
+#ifdef __cplusplus
+  #define PREFIX "C"
+#else
+  #define PREFIX 
+#endif
+
 /** Return the current (GMT) date and time as a string in the format
     YYYY-MM-DDTHH:MM:SSZ suitable for inclusion in XML documents */
-char *Get_current_time_string();
+extern PREFIX char *Get_current_time_string();
+
+/** Creates either an SGS or SWS */
+extern PREFIX char* Create_steering_service(const int   lifetimeMinutes,
+					    const char *containerAddress,
+					    const char *registryAddress,
+					    const char *userName,
+					    const char *group,
+					    const char *software,
+					    const char *purpose,
+					    const char *inputFilename,
+					    const char *checkpointAddress);
+
+/** Creates a new checkpoint tree and returns its GSH 
+    @param factory The address of the factory to use
+    @param metadata Text describing the experiment that the tree will record */
+extern PREFIX char *Create_checkpoint_tree(const char *factory, 
+					   const char *metadata);
 
 #endif
 
