@@ -41,6 +41,12 @@
 #include "libxml/xmlmemory.h"
 #include "libxml/parser.h"
 
+#ifdef __cplusplus
+  #define PREFIX "C"
+#else
+  #define PREFIX 
+#endif
+
 #define REG_SUCCESS 0
 #define REG_FAILURE 1
 
@@ -283,8 +289,9 @@ int parseChkTypeDef(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 		    struct io_def_struct *chk_def);
 /** Parse an IOType definition element
     @internal */
-int parseIOTypeDef(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
-		   struct io_def_struct *io_def);
+extern PREFIX int parseIOTypeDef(xmlDocPtr doc, xmlNsPtr ns, 
+				 xmlNodePtr cur,
+				 struct io_def_struct *io_def);
 /** Parse an IOType/ChkType element
     @internal */
 int parseIOType(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
@@ -303,11 +310,11 @@ int parseChkLogEntry(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 		     struct chk_log_entry_struct *log_entry);
 
 struct msg_store_struct     *New_msg_store_struct();
-struct msg_struct           *New_msg_struct();
+extern PREFIX struct msg_struct           *New_msg_struct();
 struct status_struct        *New_status_struct();
 struct control_struct       *New_control_struct();
 struct supp_cmd_struct      *New_supp_cmd_struct();
-struct io_def_struct        *New_io_def_struct();
+extern PREFIX struct io_def_struct        *New_io_def_struct();
 struct io_struct            *New_io_struct();
 struct param_struct         *New_param_struct();
 struct cmd_struct           *New_cmd_struct();
@@ -315,7 +322,7 @@ struct chk_log_entry_struct *New_chk_log_entry_struct();
 struct log_entry_struct     *New_log_entry_struct();
 struct log_struct           *New_log_struct();
 
-void Delete_msg_struct(struct msg_struct **msgIn);
+extern PREFIX void Delete_msg_struct(struct msg_struct **msgIn);
 void Delete_status_struct(struct status_struct *status);
 void Delete_control_struct(struct control_struct *ctrl);
 void Delete_supp_cmd_struct(struct supp_cmd_struct *supp_cmd);
@@ -327,7 +334,7 @@ void Delete_chk_log_entry_struct(struct chk_log_entry_struct *log);
 void Delete_log_entry_struct(struct log_entry_struct *log);
 void Delete_log_struct(struct log_struct *log);
 
-void Print_msg(struct msg_struct *msg);
+extern PREFIX void Print_msg(struct msg_struct *msg);
 void Print_status_struct(struct status_struct *status);
 void Print_control_struct(struct control_struct *ctrl);
 void Print_param_struct(struct param_struct *param);
@@ -356,7 +363,8 @@ enum doc_state {UNKNOWN, STARTING,
 		COMPONENT_CREATOR_NAME, COMPONENT_CREATOR_GROUP, 
 		COMPONENT_SOFTWARE_PACKAGE, COMPONENT_TASK_DESCRIPTION, 
 		/* The next line has those that are WSRF-specifc states */
-		WSRF_ENTRY, MEMBER_SERVICE_EPR, EPR, WSADDRESS,
+		WSRF_ENTRY, MEMBER_SERVICE_EPR, SERVICEGROUP_ENTRY_EPR,
+		EPR, WSADDRESS, SERVICEGROUP_EPR, SERVICEGROUP_WSADDRESS,
 		FINISHING};
 
 /** Holds the state for the SAX parser for the results of
