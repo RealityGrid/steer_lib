@@ -179,7 +179,8 @@ int Get_sim_list(int   *nSims,
 
 /*-------------------------------------------------------------------------*/
 
-int Get_registry_entries(char *registryGSH, int *num_entries,  
+int Get_registry_entries(const char *registryGSH, 
+			 int *num_entries,  
 			 struct registry_entry **entries){
   int    status;
 
