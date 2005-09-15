@@ -38,6 +38,12 @@
     @brief Header file for WSRF over SOAP communications for the steering client.
   */
 
+#ifdef __cplusplus
+  #define PREFIX "C"
+#else
+  #define PREFIX 
+#endif
+
 /*-------------------------------------------------------------------*/
 
 /** (For debugging.) Handler passed to gsoap to be called when get 
@@ -68,15 +74,11 @@ struct msg_struct *Get_next_stored_msg(Sim_entry_type *sim);
     @param name     Name of the resource property to get
     @param pRP      If successful, ptr to array of char 
                     holding value of RP */
-int Get_resource_property (struct soap *soapStruct,
-			   char        *epr,
-			   char        *name,
-			   char       **pRP);
-/*
-int Get_resource_property (SGS_info_type *sgs_info, 
-			   char          *name,
-			   char         **pRP);
-*/
+extern PREFIX int Get_resource_property (struct soap *soapStruct,
+					 const char  *epr,
+					 const char  *name,
+					 char       **pRP);
+
 /** Get the whole resource property document 
     @internal 
     @param sgs_info Pointer to struct holding info on SWS
