@@ -436,10 +436,11 @@ extern PREFIX int Write_xml_footer(char **pchar,
    Read the specified ASCII file and return the contents in the buffer
    pointed to by *buf, the size of which is returned in *size.  It is
    the caller's responsibility to free() the memory pointed to by buf. 
-   If retain_newlines then the routine retains any newline '\n' 
+   @param retain_newlines if REG_TRUE then routine retains any newline '\n' 
    characters. */
-extern PREFIX int Read_file(char *filename, char **buf, int *size, 
-			    int retain_newlines);
+extern PREFIX int Read_file(const char *filename, 
+			    char **buf, int *size, 
+			    const int retain_newlines);
 
 /** Return the time since the epoch in seconds */
 extern PREFIX int Get_current_time_seconds(double *now);
