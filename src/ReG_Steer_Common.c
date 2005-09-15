@@ -710,7 +710,9 @@ int Directory_valid(char *directory)
 
 /*----------------------------------------------------------------*/
 
-int Read_file(char *filename, char **buf, int *size, int retain_newlines)
+int Read_file(const char *filename, 
+	      char **buf, int *size, 
+	      const int retain_newlines)
 { 
   FILE *fp;
   const int maxlen = 80;
