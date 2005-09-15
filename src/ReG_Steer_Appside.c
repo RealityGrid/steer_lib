@@ -2755,10 +2755,9 @@ int Steering_control(int     SeqNum,
     }
 
     ReG_TotalSimTimeSecs += ReG_SimTimeStepSecs;
-    /*
-    fprintf(stderr, "ARPDBG: dt = %.20g\n", ReG_SimTimeStepSecs);
-    fprintf(stderr, "ARPDBG:  t = %.20g\n", ReG_TotalSimTimeSecs);
-    */
+    
+    fprintf(stderr, "ARPDBG: Steering_control t = %.20g\n", 
+	    ReG_TotalSimTimeSecs);
   }
   else if(time_step_index == NOT_LOOKED){
     for(i=0; i<Params_table.max_entries; i++){
@@ -3207,13 +3206,13 @@ int Auto_generate_steer_cmds(int    SeqNum,
     storedMsg = ReG_ctrl_msg_first;
     while(storedMsg){
       sscanf((char *)storedMsg->msg->control->valid_after, "%lg", &valid_time);
-      /*
+
       printf("ARPDBG: total sim time = %.20g\n", ReG_TotalSimTimeSecs);
       printf("ARPDBG, stored msg has valid_time = %.20g\n", valid_time);
       printf("ARPDBG, sim timestep = %.20g\n", ReG_SimTimeStepSecs);
-      */
+
       if(valid_time < (ReG_TotalSimTimeSecs+0.1*ReG_SimTimeStepSecs)){
-	/*printf("...ARPDBG, stored msg is now valid\n");*/
+	printf("...ARPDBG, stored msg is now valid\n");
 
 #if REG_LOG_STEERING
 	Log_control_msg(storedMsg->msg->control);
