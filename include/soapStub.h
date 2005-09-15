@@ -111,6 +111,7 @@ struct wsrp__SetResourcePropertiesResponse
 struct sws__AddChildRequest
 {
 	char *__epr;
+	char *__name;
 };
 
 /* sws:AddChildResponse: */

@@ -14,6 +14,6 @@ SOAP_NMAC struct Namespace namespaces[] =
 	{"swsf", "http://www.sve.mvc.mcc.ac.uk/SWSFactory", NULL, NULL},
 	{"sgr", "http://vermont.mvc.mcc.ac.uk/ServiceGroupRegistration", NULL, NULL},
 	{"rgtf", "http://www.RealityGrid.org/factory", NULL, NULL},
-	{"rgt", "http://www.RealityGrid.org/RealityGridTree/service", NULL, NULL},
+	{"rgt", "http://www.RealityGrid.org/RealityGridTree", NULL, NULL},
 	{NULL, NULL, NULL, NULL}
 };
