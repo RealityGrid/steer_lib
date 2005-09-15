@@ -1905,6 +1905,12 @@ void Start_element_handler(void * 	user_data,
     if(state->depth == COMPONENT_CONTENT) state->depth = COMPONENT_TASK_DESCRIPTION;
   }
   /* WSRF section */
+  else if( !xmlStrcmp(name, (const xmlChar *) "wssg:ServiceGroupEntryEPR") ){
+    if(state->depth == WSRF_ENTRY){
+      state->depth = SERVICEGROUP_ENTRY_EPR;
+      fprintf(stderr, "ARPDBG depth = SERVICEGROUP_ENTRY_EPR\n");
+    }
+  }
   else if( !xmlStrcmp(name, (const xmlChar *) "wssg:MemberServiceEPR") ){
     if(state->depth == WSRF_ENTRY){
       state->depth = MEMBER_SERVICE_EPR;
@@ -1916,12 +1922,20 @@ void Start_element_handler(void * 	user_data,
       state->depth = EPR;
       fprintf(stderr, "ARPDBG depth = EPR\n");
     }
+    else if(state->depth == SERVICEGROUP_ENTRY_EPR){
+      state->depth = SERVICEGROUP_EPR;
+      fprintf(stderr, "ARPDBG depth = SERVICEGROUP_EPR\n");
+    }
   }
   else if( !xmlStrcmp(name, (const xmlChar *) "Address") ){
     if(state->depth == EPR){
       state->depth = WSADDRESS;
-       fprintf(stderr, "ARPDBG depth = WSADDRESS\n");
-   }
+      fprintf(stderr, "ARPDBG depth = WSADDRESS\n");
+    }
+    else if(state->depth == SERVICEGROUP_EPR){
+      state->depth = SERVICEGROUP_WSADDRESS;
+      fprintf(stderr, "ARPDBG depth = SERVICEGROUP_WSADDRESS\n");
+    }
   }
   else if( !xmlStrcmp(name, (const xmlChar *) "wssg:Content") ){
     if(state->depth == WSRF_ENTRY){
@@ -2040,11 +2054,32 @@ void End_element_handler(void          *user_data,
   else if( !xmlStrcmp(name, (const xmlChar *) "wssg:MemberServiceEPR") ){
     if(state->depth == MEMBER_SERVICE_EPR) state->depth = WSRF_ENTRY;
   }
+  else if( !xmlStrcmp(name, (const xmlChar *) "wssg:ServiceGroupEntryEPR") ){
+    if(state->depth == SERVICEGROUP_ENTRY_EPR) state->depth = WSRF_ENTRY;
+  }
   else if( !xmlStrcmp(name, (const xmlChar *) "EndpointReference") ){
-    if(state->depth == EPR) state->depth = MEMBER_SERVICE_EPR;
+    if(state->depth == EPR){
+      state->depth = MEMBER_SERVICE_EPR;
+    }
+    else if(state->depth == SERVICEGROUP_EPR){
+      state->depth = SERVICEGROUP_ENTRY_EPR;
+    }
   }
   else if( !xmlStrcmp(name, (const xmlChar *) "Address") ){
-    if(state->depth == WSADDRESS) state->depth = EPR;
+    if(state->depth == WSADDRESS){
+      state->depth = EPR;
+    }
+    else if(state->depth == SERVICEGROUP_WSADDRESS){
+      state->depth = SERVICEGROUP_EPR;
+    }
+  }
+  else if( !xmlStrcmp(name, (const xmlChar *) "EndpointReference") ){
+    if(state->depth == EPR){
+      state->depth = MEMBER_SERVICE_EPR;
+    }
+    else if(state->depth == SERVICEGROUP_EPR){
+      state->depth = SERVICEGROUP_ENTRY_EPR;
+    }
   }
   else if( !xmlStrcmp(name, (const xmlChar *) "wssg:Content") ){
     if(state->depth == CONTENT) state->depth = WSRF_ENTRY;
@@ -2067,6 +2102,10 @@ void Characters_handler(void          *user_data,
     strncpy(state->entries[state->num_entries].gsh, (char *)ch, len);
     state->entries[state->num_entries].gsh[len] = '\0';
   } 
+  else if(state->depth == SERVICEGROUP_WSADDRESS){
+    strncpy(state->entries[state->num_entries].entry_gsh, (char *)ch, len);
+    state->entries[state->num_entries].entry_gsh[len] = '\0';
+  }
   else if (state->depth == SERVICE_TYPE){
     strncpy(state->entries[state->num_entries].service_type, (char *)ch, len);
     state->entries[state->num_entries].service_type[len]='\0';
