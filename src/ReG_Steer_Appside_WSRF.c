@@ -389,7 +389,9 @@ struct msg_struct *Get_control_msg_wsrf ()
       pLast = strstr(pLast+1, "<sws:controlMsg");
     }
 
-    fprintf(stderr, "ARPDBG, Get_control_msg_wsrf parsing >>%s<<\n", pLastBut1);
+#if REG_DEBUG_FULL
+    fprintf(stderr, "STEER: Get_control_msg_wsrf parsing >>%s<<\n", pLastBut1);
+#endif
 
     /* Parse the doc - pass NULLs in as this is appside so have no
        Sim_entry struct and results will be put in Msg_store struct */
@@ -531,105 +533,147 @@ int Get_data_source_address_wsrf(int   index,
   label[0]='\0';
   count = 1;
   pLast = pBuf;
-  while( (pLast = strstr(pLast, "<sws:dataSource")) ){
-    if(count == index){
-      /* Pull out the EPR of the service that will provide
-	 our data */
-      pchar = strstr(pLast, "<sourceEPR>");
-      pchar += strlen("<sourceEPR>");
-      pLast = strchr(pchar, '<');
-      count = pLast - pchar;
-      strncpy(epr, pchar, count);
-      epr[count]='\0';
-      /* Pull out the label of the IOType of that SWS that
-	 will provide our data */
-      pchar = strstr(pLast, "<sourceLabel>");
-      pchar += strlen("<sourceLabel>");
-      pLast = strchr(pchar, '<');
-      count = pLast - pchar;
-      strncpy(label, pchar, count);
-      label[count]='\0';
-      break;
+  if(strstr(pLast, "<sourceEPR>")){
+    while( (pLast = strstr(pLast, "<sws:dataSource")) ){
+      if(count == index){
+	/* Pull out the EPR of the service that will provide
+	   our data */
+	pchar = strstr(pLast, "<sourceEPR>");
+	pchar += strlen("<sourceEPR>");
+	pLast = strchr(pchar, '<');
+	count = pLast - pchar;
+	strncpy(epr, pchar, count);
+	epr[count]='\0';
+	/* Pull out the label of the IOType of that SWS that
+	   will provide our data */
+	pchar = strstr(pLast, "<sourceLabel>");
+	pchar += strlen("<sourceLabel>");
+	pLast = strchr(pchar, '<');
+	count = pLast - pchar;
+	strncpy(label, pchar, count);
+	label[count]='\0';
+	break;
+      }
+      pLast++;
     }
-    pLast++;
-  }
 
-  if(strlen(epr)==0 || strlen(label)==0){
-    return REG_FAILURE;
-  }
+    if(strlen(epr)==0 || strlen(label)==0){
+      return REG_FAILURE;
+    }
 
 #if REG_DEBUG
-  fprintf(stderr, "Get_data_source_address_wsrf: Got EPR = %s\n"
-	  "                                label = %s\n",
-	  epr, label);
+    fprintf(stderr, "Get_data_source_address_wsrf: Got EPR = %s\n"
+	    "                                label = %s\n",
+	    epr, label);
 #endif
 
-  /* Set-up soap environment for call to a SWS other than our own */
-  /* Initialise the soap run-time environment:
-     Use this form to turn-on keep-alive for both incoming and outgoing
-     http connections */
-  soap_init2(&mySoap, SOAP_IO_KEEPALIVE, 
-	     SOAP_IO_KEEPALIVE);
-  /* Set the endpoint address */
-  snprintf(address, REG_MAX_STRING_LENGTH, 
-	   "%s", epr);
-  /* Since we are using KEEPALIVE, we can also ask gSOAP to bind the 
-     socket to a specific port on the local machine - only do this if 
-     GLOBUS_TCP_PORT_RANGE is set. */
-  mySoap.client_port_min = Steerer_connection.SGS_info.soap->client_port_min;
-  mySoap.client_port_max = Steerer_connection.SGS_info.soap->client_port_max;
+    /* Set-up soap environment for call to a SWS other than our own */
+    /* Initialise the soap run-time environment:
+       Use this form to turn-on keep-alive for both incoming and outgoing
+       http connections */
+    soap_init2(&mySoap, SOAP_IO_KEEPALIVE, 
+	       SOAP_IO_KEEPALIVE);
+    /* Set the endpoint address */
+    snprintf(address, REG_MAX_STRING_LENGTH, 
+	     "%s", epr);
+    /* Since we are using KEEPALIVE, we can also ask gSOAP to bind the 
+       socket to a specific port on the local machine - only do this if 
+       GLOBUS_TCP_PORT_RANGE is set. */
+    mySoap.client_port_min = Steerer_connection.SGS_info.soap->client_port_min;
+    mySoap.client_port_max = Steerer_connection.SGS_info.soap->client_port_max;
 
-  if(Get_resource_property(&mySoap, address,
-			   "ioTypeDefinitions", &pBuf) != REG_SUCCESS){
-    return REG_FAILURE;
-  }
-  printf("ARPDBG, pBuf contains >>%s<<\n", pBuf);
+    if(Get_resource_property(&mySoap, address,
+			     "ioTypeDefinitions", &pBuf) != REG_SUCCESS){
+      return REG_FAILURE;
+    }
+    printf("ARPDBG, pBuf contains >>%s<<\n", pBuf);
 
-  /* Parse the IOtypes */
+    /* Parse the IOtypes */
 
-  pIOType = pBuf;
-  while( (pIOType = strstr(pIOType, "<IOType>")) ){
-    /* According to schema, Label must occur before Address */
-    pLast = strstr(pIOType, "<Label>");
-    pLast += 7; /* strlen("<Label>") = 7 */
-    pchar = strstr(pLast, "</Label>");
-    *pchar = '\0';
-    if(!strncmp(pLast, label, count)){
-      /* This is the one we want */
+    pIOType = pBuf;
+    while( (pIOType = strstr(pIOType, "<IOType>")) ){
+      /* According to schema, Label must occur before Address */
+      pLast = strstr(pIOType, "<Label>");
+      pLast += 7; /* strlen("<Label>") = 7 */
+      pchar = strstr(pLast, "</Label>");
+      *pchar = '\0';
+      if(!strncmp(pLast, label, count)){
+	/* This is the one we want */
+	*pchar = '<';
+	pLast = strstr(pIOType, "<Address>");
+	pLast += 9; /* strlen("<Address>") = 9 */
+	pchar = strstr(pLast, "</Address>");
+	count = pchar - pLast;
+	strncpy(label, pLast, count);
+	label[count]='\0';
+	break;
+      }
       *pchar = '<';
-      pLast = strstr(pIOType, "<Address>");
-      pLast += 9; /* strlen("<Address>") = 9 */
-      pchar = strstr(pLast, "</Address>");
-      count = pchar - pLast;
-      strncpy(label, pLast, count);
-      label[count]='\0';
-      break;
+      pIOType++;
+      printf("ARPDBG, Label didn't match, looping...\n");
     }
-    *pchar = '<';
-    pIOType++;
-    printf("ARPDBG, Label didn't match, looping...\n");
-  }
 
-  soap_end(&mySoap);
-  /* Reset: close master/slave sockets and remove callbacks */
-  soap_done(&mySoap);
+    soap_end(&mySoap);
+    /* Reset: close master/slave sockets and remove callbacks */
+    soap_done(&mySoap);
 
-  /* Parse the Address field to pull out port and host */
-  if( (pchar = strchr(label, ':')) ){
-    strncpy(hostname, label, (pchar - label));
-    hostname[(pchar - label)] = '\0';
-    pchar++;
-    *port = (unsigned short int)atoi(pchar);
+    /* Parse the Address field to pull out port and host */
+    if( (pchar = strchr(label, ':')) ){
+      strncpy(hostname, label, (pchar - label));
+      hostname[(pchar - label)] = '\0';
+      pchar++;
+      *port = (unsigned short int)atoi(pchar);
 #if REG_DEBUG
-    fprintf(stderr, "Get_data_source_address_wsrf: host = %s\n"
-	    "                              port = %d\n",
-	    hostname, *port);
+      fprintf(stderr, "Get_data_source_address_wsrf: host = %s\n"
+	      "                              port = %d\n",
+	      hostname, *port);
 #endif
-    return REG_SUCCESS;
-  }
+      return REG_SUCCESS;
+    }
 
-  fprintf(stderr, "Get_data_source_address_wsrf: failed to match "
-	  "IOType label\n");  
+    fprintf(stderr, "Get_data_source_address_wsrf: failed to match "
+	    "IOType label\n");  
+  }
+  else{ /* Using a proxy for IO */
+
+    while( (pLast = strstr(pLast, "<sws:dataSource")) ){
+      if(count == index){
+	/* Pull out the hostname and port of the proxy that will
+	   provide our data */
+	pchar = strstr(pLast, "<sourceProxy>");
+	pchar = strstr(++pchar, "<address>");
+	pchar += 9; /* = strlen("<address>") */
+	pLast = strchr(pchar, '<');
+	count = pLast - pchar;
+	strncpy(hostname, pchar, count);
+	hostname[count]='\0';
+	pchar = strstr(pLast, "<port>");
+	pchar += 6; /* = strlen("<port>") */
+	pLast = strchr(pchar, '<');
+	count = pLast - pchar;
+	/* epr used as temp buffer here */
+	strncpy(epr, pchar, count);
+	epr[count]='\0';
+	*port = (unsigned short int)atoi(epr);
+	/* Pull out the label used to identify our data by
+	   the proxy */
+	pchar = strstr(pLast, "<sourceLabel>");
+	pchar += 13; /* = strlen("<sourceLabel>") */
+	pLast = strchr(pchar, '<');
+	count = pLast - pchar;
+	strncpy(label, pchar, count);
+	label[count]='\0';
+	break;
+      }
+      pLast++;
+    }
+#if REG_DEBUG
+    fprintf(stderr, "Get_data_source_address_wsrf: proxy host = %s\n"
+	            "                              proxy port = %d\n",
+ 	            "                                   label = %s\n",
+	    hostname, *port, label);
+#endif /* REG_DEBUG */
+  } /* end if(strstr("sourceEPR")) */
 
   /* So long as soap call did return something we return success - even
      if we didn't actually get a valid address.  This consistent with
