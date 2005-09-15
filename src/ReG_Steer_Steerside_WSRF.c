@@ -301,9 +301,9 @@ struct msg_struct *Get_next_stored_msg(Sim_entry_type *sim)
 /*------------------------------------------------------------------*/
 /** Get the value of the specified resource property */
 int Get_resource_property (struct soap *soapStruct,
-                           char *epr,
-			   char *name,
-			   char **pRP)
+                           const char  *epr,
+			   const char  *name,
+			   char       **pRP)
 {
   struct wsrp__GetMultipleResourcePropertiesRequest in;
   char  *out;
