@@ -44,16 +44,25 @@
 #endif
 
 /**
-  Holds details on a entry in the registry 
+  Holds details on an entry in the registry 
 */
 struct registry_entry {
 
+  /** The type of service (SWS, SGS, SGSFactory etc.) */
   char service_type[REG_MAX_STRING_LENGTH];
+  /** The endpoint of the service */
   char gsh[REG_MAX_STRING_LENGTH];
+  /** The endpoint of the service modelling the registry entry */
+  char entry_gsh[REG_MAX_STRING_LENGTH];
+  /** Name of the application */
   char application[REG_MAX_STRING_LENGTH];
+  /** Date and time at which application started */
   char start_date_time[REG_MAX_STRING_LENGTH];
+  /** User who lauched the application */
   char user[REG_MAX_STRING_LENGTH];
+  /** The group to which the user belongs */
   char group[REG_MAX_STRING_LENGTH];
+  /** Description of purpose of job */
   char job_description[REG_MAX_STRING_LENGTH];
 
 };
@@ -78,7 +87,7 @@ extern PREFIX int Get_sim_list(int   *nSims,
     @return Details for each entry
     @internal
  */
-extern PREFIX int Get_registry_entries(char *registryGSH, 
+extern PREFIX int Get_registry_entries(const char *registryGSH, 
 				       int *num_entries,  
 				       struct registry_entry **entries);
 
