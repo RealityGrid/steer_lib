@@ -514,6 +514,7 @@ int Get_data_source_address_wsrf(int   index,
   char  *pchar;
   char  *pLast;
   char  *pIOType;
+  char  *pLabel;
   int    count;
   char   epr[REG_MAX_STRING_LENGTH];
   char   label[REG_MAX_STRING_LENGTH];
@@ -539,14 +540,17 @@ int Get_data_source_address_wsrf(int   index,
 	/* Pull out the EPR of the service that will provide
 	   our data */
 	pchar = strstr(pLast, "<sourceEPR>");
+	pLabel = strstr(pLast, "<sourceLabel>");
+
 	pchar += strlen("<sourceEPR>");
 	pLast = strchr(pchar, '<');
 	count = pLast - pchar;
 	strncpy(epr, pchar, count);
 	epr[count]='\0';
+
 	/* Pull out the label of the IOType of that SWS that
 	   will provide our data */
-	pchar = strstr(pLast, "<sourceLabel>");
+	pchar = strstr(pLabel, "<sourceLabel>");
 	pchar += strlen("<sourceLabel>");
 	pLast = strchr(pchar, '<');
 	count = pLast - pchar;
@@ -669,7 +673,7 @@ int Get_data_source_address_wsrf(int   index,
     }
 #if REG_DEBUG
     fprintf(stderr, "Get_data_source_address_wsrf: proxy host = %s\n"
-	            "                              proxy port = %d\n",
+	            "                              proxy port = %d\n"
  	            "                                   label = %s\n",
 	    hostname, *port, label);
 #endif /* REG_DEBUG */
