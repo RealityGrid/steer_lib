@@ -11,7 +11,7 @@ extern "C" {
 
 SOAP_BEGIN_NAMESPACE(soap)
 
-SOAP_SOURCE_STAMP("@(#) soapClient.c ver 2.7.2 2005-09-15 13:36:47 GMT")
+SOAP_SOURCE_STAMP("@(#) soapClient.c ver 2.7.2 2005-09-20 11:52:59 GMT")
 
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_call_wsrp__GetResourceProperty(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct GetResourcePropertyRequest *in_, char **out_)
@@ -210,14 +210,14 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call_wsrp__GetResourcePropertyDocument(struct soa
 	return soap_closesock(soap);
 }
 
-SOAP_FMAC5 int SOAP_FMAC6 soap_call_sws__AddChild(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct sws__AddChildRequest in, struct sws__AddChildResponse *out_)
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_sws__AddChild(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct sws__AddChildRequest __in, struct sws__AddChildResponse *out_)
 {	struct sws__AddChild soap_tmp_sws__AddChild;
 	if (!soap_endpoint)
 		soap_endpoint = "http://some.where/";
 	if (!soap_action)
 		soap_action = "";
 	soap->encodingStyle = NULL;
-	soap_tmp_sws__AddChild.in = in;
+	soap_tmp_sws__AddChild.__in = __in;
 	soap_begin(soap);
 	soap_serializeheader(soap);
 	soap_serialize_sws__AddChild(soap, &soap_tmp_sws__AddChild);

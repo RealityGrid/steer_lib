@@ -110,8 +110,8 @@ struct wsrp__SetResourcePropertiesResponse
 /* sws:AddChildRequest: */
 struct sws__AddChildRequest
 {
-	char *__epr;
-	char *__name;
+	char *epr;	/* optional element of type xsd:string */
+	char *name;	/* optional element of type xsd:string */
 };
 
 /* sws:AddChildResponse: */
@@ -153,7 +153,7 @@ struct wsrp__GetResourcePropertyDocument
 /* sws:AddChild: */
 struct sws__AddChild
 {
-	struct sws__AddChildRequest in;	/* required element of type sws:AddChildRequest */
+	struct sws__AddChildRequest __in;
 };
 
 /* sws:Attach: */
@@ -833,7 +833,7 @@ SOAP_FMAC5 int SOAP_FMAC6 wsrp__SetResourceProperties(struct soap*, char *wsrp__
 
 SOAP_FMAC5 int SOAP_FMAC6 wsrp__GetResourcePropertyDocument(struct soap*, void *_, char **out_);
 
-SOAP_FMAC5 int SOAP_FMAC6 sws__AddChild(struct soap*, struct sws__AddChildRequest in, struct sws__AddChildResponse *out_);
+SOAP_FMAC5 int SOAP_FMAC6 sws__AddChild(struct soap*, struct sws__AddChildRequest __in, struct sws__AddChildResponse *out_);
 
 SOAP_FMAC5 int SOAP_FMAC6 sws__Attach(struct soap*, void *_, struct sws__AttachResponse *out_);
 
@@ -956,7 +956,7 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call_wsrp__SetResourceProperties(struct soap *soa
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_call_wsrp__GetResourcePropertyDocument(struct soap *soap, const char *soap_endpoint, const char *soap_action, void *_, char **out_);
 
-SOAP_FMAC5 int SOAP_FMAC6 soap_call_sws__AddChild(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct sws__AddChildRequest in, struct sws__AddChildResponse *out_);
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_sws__AddChild(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct sws__AddChildRequest __in, struct sws__AddChildResponse *out_);
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_call_sws__Attach(struct soap *soap, const char *soap_endpoint, const char *soap_action, void *_, struct sws__AttachResponse *out_);
 

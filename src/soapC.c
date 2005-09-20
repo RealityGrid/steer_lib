@@ -11,7 +11,7 @@ extern "C" {
 
 SOAP_BEGIN_NAMESPACE(soap)
 
-SOAP_SOURCE_STAMP("@(#) soapC.c ver 2.7.2 2005-09-15 13:36:47 GMT")
+SOAP_SOURCE_STAMP("@(#) soapC.c ver 2.7.2 2005-09-20 11:52:59 GMT")
 
 
 #ifndef WITH_NOGLOBAL
@@ -10311,14 +10311,14 @@ SOAP_FMAC3 struct sws__Attach * SOAP_FMAC4 soap_in_sws__Attach(struct soap *soap
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_sws__AddChild(struct soap *soap, const struct sws__AddChild *a)
 {
 	(void)soap; (void)a; /* appease -Wall -Werror */
-	soap_embedded(soap, &a->in, SOAP_TYPE_sws__AddChildRequest);
-	soap_serialize_sws__AddChildRequest(soap, &a->in);
+	soap_embedded(soap, &a->__in, SOAP_TYPE_sws__AddChildRequest);
+	soap_serialize_sws__AddChildRequest(soap, &a->__in);
 }
 
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_sws__AddChild(struct soap *soap, struct sws__AddChild *a)
 {
 	(void)soap; (void)a; /* appease -Wall -Werror */
-	soap_default_sws__AddChildRequest(soap, &a->in);
+	soap_default_sws__AddChildRequest(soap, &a->__in);
 }
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_sws__AddChild(struct soap *soap, const struct sws__AddChild *a, const char *tag, const char *type)
@@ -10332,7 +10332,7 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_put_sws__AddChild(struct soap *soap, const struct
 SOAP_FMAC3 int SOAP_FMAC4 soap_out_sws__AddChild(struct soap *soap, const char *tag, int id, const struct sws__AddChild *a, const char *type)
 {
 	soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_sws__AddChild), type);
-	soap_out_sws__AddChildRequest(soap, "in", -1, &a->in, "");
+	soap_out_sws__AddChildRequest(soap, "-in", -1, &a->__in, "");
 	soap_element_end_out(soap, tag);
 	return SOAP_OK;
 }
@@ -10346,7 +10346,7 @@ SOAP_FMAC3 struct sws__AddChild * SOAP_FMAC4 soap_get_sws__AddChild(struct soap 
 
 SOAP_FMAC3 struct sws__AddChild * SOAP_FMAC4 soap_in_sws__AddChild(struct soap *soap, const char *tag, struct sws__AddChild *a, const char *type)
 {
-	short soap_flag_in = 1;
+	short soap_flag___in = 1;
 	if (soap_element_begin_in(soap, tag, 0))
 		return NULL;
 	if (*soap->type && soap_match_tag(soap, soap->type, type))
@@ -10361,9 +10361,9 @@ SOAP_FMAC3 struct sws__AddChild * SOAP_FMAC4 soap_in_sws__AddChild(struct soap *
 	if (soap->body && !*soap->href)
 	{	for (;;)
 		{	soap->error = SOAP_TAG_MISMATCH;
-			if (soap_flag_in && soap->error == SOAP_TAG_MISMATCH)
-				if (soap_in_sws__AddChildRequest(soap, "in", &a->in, "sws:AddChildRequest"))
-				{	soap_flag_in = 0;
+			if (soap_flag___in && soap->error == SOAP_TAG_MISMATCH)
+				if (soap_in_sws__AddChildRequest(soap, "-in", &a->__in, "sws:AddChildRequest"))
+				{	soap_flag___in = 0;
 					continue;
 				}
 			if (soap->error == SOAP_TAG_MISMATCH)
@@ -10373,7 +10373,7 @@ SOAP_FMAC3 struct sws__AddChild * SOAP_FMAC4 soap_in_sws__AddChild(struct soap *
 			if (soap->error)
 				return NULL;
 		}
-		if ((soap->mode & SOAP_XML_STRICT) && (soap_flag_in))
+		if ((soap->mode & SOAP_XML_STRICT) && (soap_flag___in))
 		{	soap->error = SOAP_OCCURS;
 			return NULL;
 		}
@@ -10835,17 +10835,17 @@ SOAP_FMAC3 struct sws__AddChildResponse * SOAP_FMAC4 soap_in_sws__AddChildRespon
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_sws__AddChildRequest(struct soap *soap, const struct sws__AddChildRequest *a)
 {
 	(void)soap; (void)a; /* appease -Wall -Werror */
-	soap_embedded(soap, &a->__epr, SOAP_TYPE_xsd__string);
-	soap_serialize_xsd__string(soap, &a->__epr);
-	soap_embedded(soap, &a->__name, SOAP_TYPE_xsd__string);
-	soap_serialize_xsd__string(soap, &a->__name);
+	soap_embedded(soap, &a->epr, SOAP_TYPE_xsd__string);
+	soap_serialize_xsd__string(soap, &a->epr);
+	soap_embedded(soap, &a->name, SOAP_TYPE_xsd__string);
+	soap_serialize_xsd__string(soap, &a->name);
 }
 
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_sws__AddChildRequest(struct soap *soap, struct sws__AddChildRequest *a)
 {
 	(void)soap; (void)a; /* appease -Wall -Werror */
-	soap_default_xsd__string(soap, &a->__epr);
-	soap_default_xsd__string(soap, &a->__name);
+	soap_default_xsd__string(soap, &a->epr);
+	soap_default_xsd__string(soap, &a->name);
 }
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_sws__AddChildRequest(struct soap *soap, const struct sws__AddChildRequest *a, const char *tag, const char *type)
@@ -10859,8 +10859,8 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_put_sws__AddChildRequest(struct soap *soap, const
 SOAP_FMAC3 int SOAP_FMAC4 soap_out_sws__AddChildRequest(struct soap *soap, const char *tag, int id, const struct sws__AddChildRequest *a, const char *type)
 {
 	soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_sws__AddChildRequest), type);
-	soap_out_xsd__string(soap, "-epr", -1, &a->__epr, "");
-	soap_out_xsd__string(soap, "-name", -1, &a->__name, "");
+	soap_out_xsd__string(soap, "epr", -1, &a->epr, "");
+	soap_out_xsd__string(soap, "name", -1, &a->name, "");
 	soap_element_end_out(soap, tag);
 	return SOAP_OK;
 }
@@ -10874,7 +10874,7 @@ SOAP_FMAC3 struct sws__AddChildRequest * SOAP_FMAC4 soap_get_sws__AddChildReques
 
 SOAP_FMAC3 struct sws__AddChildRequest * SOAP_FMAC4 soap_in_sws__AddChildRequest(struct soap *soap, const char *tag, struct sws__AddChildRequest *a, const char *type)
 {
-	short soap_flag___epr = 1, soap_flag___name = 1;
+	short soap_flag_epr = 1, soap_flag_name = 1;
 	if (soap_element_begin_in(soap, tag, 0))
 		return NULL;
 	if (*soap->type && soap_match_tag(soap, soap->type, type))
@@ -10889,14 +10889,14 @@ SOAP_FMAC3 struct sws__AddChildRequest * SOAP_FMAC4 soap_in_sws__AddChildRequest
 	if (soap->body && !*soap->href)
 	{	for (;;)
 		{	soap->error = SOAP_TAG_MISMATCH;
-			if (soap_flag___epr && (soap->error == SOAP_TAG_MISMATCH || soap->error == SOAP_NO_TAG))
-				if (soap_in_xsd__string(soap, "-epr", &a->__epr, "xsd:string"))
-				{	soap_flag___epr = 0;
+			if (soap_flag_epr && (soap->error == SOAP_TAG_MISMATCH || soap->error == SOAP_NO_TAG))
+				if (soap_in_xsd__string(soap, "epr", &a->epr, "xsd:string"))
+				{	soap_flag_epr = 0;
 					continue;
 				}
-			if (soap_flag___name && (soap->error == SOAP_TAG_MISMATCH || soap->error == SOAP_NO_TAG))
-				if (soap_in_xsd__string(soap, "-name", &a->__name, "xsd:string"))
-				{	soap_flag___name = 0;
+			if (soap_flag_name && (soap->error == SOAP_TAG_MISMATCH || soap->error == SOAP_NO_TAG))
+				if (soap_in_xsd__string(soap, "name", &a->name, "xsd:string"))
+				{	soap_flag_name = 0;
 					continue;
 				}
 			if (soap->error == SOAP_TAG_MISMATCH)
