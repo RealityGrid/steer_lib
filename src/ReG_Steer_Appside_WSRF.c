@@ -253,6 +253,7 @@ int Send_status_msg_wsrf (char *msg)
   char   query_buf[REG_MAX_MSG_SIZE];
   int    nbytes;
   int    new_size;
+  int    loopCount;
   struct wsrp__SetResourcePropertiesResponse out;
   char  *pTmpBuf = NULL;
   char  *pbuf = NULL;
@@ -314,8 +315,10 @@ int Send_status_msg_wsrf (char *msg)
 
   /* We loop until we have a clear-cut success or failure - i.e.
      if we have a deadlock we fall back to here and try again */
-  while(1){
+  loopCount = -1;
+  while(1 && (loopCount < 5)){
 
+    loopCount++;
     if(soap_call_wsrp__SetResourceProperties(Steerer_connection.SGS_info.soap, 
 					     Steerer_connection.SGS_info.address,
 					     "", pTmpBuf, &out) != SOAP_OK){
