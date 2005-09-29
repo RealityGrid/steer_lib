@@ -45,6 +45,7 @@ all:
 
 no_f90:
 	$(MAKE) lib
+	$(MAKE) lib_utils
 	$(MAKE) c_examples
 	$(MAKE) wrappers
 
