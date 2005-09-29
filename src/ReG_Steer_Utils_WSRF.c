@@ -139,6 +139,27 @@ char *Create_SWS(const int   lifetimeMinutes,
   char                                      *contents;
   char                                      *pchar;
   int                                        numBytes;
+  char                                      *nullAddress = '\0';
+  char                                      *aChkAddress;
+
+#if REG_DEBUG_FULL
+  fprintf(stderr,"lifetimeMinutes: %d\n", lifetimeMinutes);
+  fprintf(stderr,"containerAddress: %s\n", containerAddress);
+  fprintf(stderr,"registryAddress: %s\n", registryAddress);
+  fprintf(stderr,"userName: %s\n", userName);
+  fprintf(stderr,"group: %s\n", group);
+  fprintf(stderr,"software: %s\n", software);
+  fprintf(stderr,"purpose: %s\n", purpose);
+  fprintf(stderr,"inputFilename: %s\n", inputFilename);
+  fprintf(stderr,"checkpointAddress: %s\n", checkpointAddress);
+#endif /* REG_DEBUG_FULL */
+
+  if(!checkpointAddress){
+    aChkAddress = nullAddress;
+  }
+  else{
+    aChkAddress = checkpointAddress;
+  }
 
   snprintf(jobDescription, 1024, "<registryEntry>\n"
 	   "<serviceType>SWS</serviceType>\n"
@@ -171,7 +192,7 @@ char *Create_SWS(const int   lifetimeMinutes,
 				       1440, 
 				       (char *)registryAddress, 
 				       (char *)jobDescription, 
-				       (char *)checkpointAddress, 
+				       aChkAddress, 
 				       &response) != SOAP_OK){
     if(soap.fault && soap.fault->detail){
 
@@ -202,7 +223,7 @@ char *Create_SWS(const int   lifetimeMinutes,
 
   /* If an input deck has been specified, grab it and store on the
      steering service */
-  if(strlen(inputFilename) &&
+  if(inputFilename && strlen(inputFilename) &&
      (Read_file(inputFilename, &contents, &numBytes, REG_TRUE) 
       == REG_SUCCESS) ){
     /* 49 = 12 + 37 = strlen("<![CDATA[]]>") + 
