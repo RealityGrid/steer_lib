@@ -4150,8 +4150,8 @@ int Detach_from_steerer()
 
 #if REG_OGSI
   Detach_from_steerer_soap();
-#else
-  Detach_from_steerer_wsrf();
+  /* No need for this in WSRF as protocol no longer calls for
+     client to wait for confirmation from application */
 #endif
 
 #else /* File-based steering */
