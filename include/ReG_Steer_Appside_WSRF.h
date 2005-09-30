@@ -46,10 +46,6 @@
     @internal */
 int Initialize_steering_connection_wsrf(int  NumSupportedCmds,
 					int *SupportedCmds);
-/** Acknowledge a detach command from client
-    NOT USED
-    @internal */
-int Detach_from_steerer_wsrf();
 /** Check whether a steering client has connected to the SWS
     @internal */
 int Steerer_connected_wsrf ();

@@ -463,28 +463,20 @@ int Save_log_wsrf (char *log_data)
 
 /*-------------------------------------------------------------------------*/
 
-int Detach_from_steerer_wsrf()
-{
-  /* ARPDBG - I don't think we need this function anymore
-  struct wsrp__DestroyResponse out;
-
-  if(soap_call_wsrp__Destroy(Steerer_connection.SGS_info.soap, 
-			    Steerer_connection.SGS_info.address, 
-			    "", &out)){
-    fprintf(stderr, "Detach_from_steerer_wsrf: Destroy call failed:\n");
-    soap_print_fault(Steerer_connection.SGS_info.soap, stderr);
-    return REG_FAILURE;
-  }
-  */
-  return REG_SUCCESS;
-}
-
-/*-------------------------------------------------------------------------*/
-
 int Finalize_steering_connection_wsrf ()
 {
   int return_status = REG_SUCCESS;
   struct wsrp__DestroyResponse out;
+  int  commands[1];
+
+  fprintf(stderr, "ARPDBG: Finalize_steering_connection_wsrf: sending "
+	  "Detach command\n");
+  commands[0] = REG_STR_DETACH;
+  Emit_status(0,
+	      0,   
+	      NULL,
+	      1,
+	      commands);
 
   fprintf(stderr, "ARPDBG: Finalize_steering_connection_wsrf: calling "
 	  "Destroy\n");
