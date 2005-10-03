@@ -144,3 +144,16 @@ char *Create_checkpoint_tree(const char *factory,
 
   return epr;
 }
+
+/*----------------------------------------------------------------*/
+
+int Destroy_steering_service(char *address){
+
+#if REG_OGSI
+
+  fprintf(stderr, "Destroy_steering_service: not implemented for OGSI :-(\n");
+#else
+  return Destroy_WSRP(address);
+#endif
+
+}

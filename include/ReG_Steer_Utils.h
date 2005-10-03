@@ -59,6 +59,9 @@ extern PREFIX char* Create_steering_service(const int   lifetimeMinutes,
 					    const char *inputFilename,
 					    const char *checkpointAddress);
 
+/** Destroy either an SGS or SWS */
+extern PREFIX int Destroy_steering_service(char *address);
+
 /** Creates a new checkpoint tree and returns its GSH 
     @param factory The address of the factory to use
     @param metadata Text describing the experiment that the tree will record */
