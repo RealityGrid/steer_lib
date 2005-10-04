@@ -248,8 +248,9 @@ int Parse_xml_file(char* filename, struct msg_struct *msg,
     @param msg  Pointer to message struct to hold results
     @param sim Pointer to Sim_entry struct or NULL
     @internal */
-int Parse_xml_buf(char* buf, int size, struct msg_struct *msg,
-		  Sim_entry_type *sim);
+extern PREFIX int Parse_xml_buf(char* buf, int size, 
+				struct msg_struct *msg,
+				Sim_entry_type *sim);
 /** Parse the DOM document and put the results in msg_struct
     @param sim Pointer to Sim_entry struct or NULL
     @internal */
