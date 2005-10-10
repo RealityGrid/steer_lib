@@ -70,10 +70,10 @@ struct registry_entry {
 /*-------------------------------------------------------------------*/
 
 /**
-   Returns list of steerable applications returned by UNICORE 
-   registry (contacted via GridService on the port given in the
-   REGISTRY_GSH environment variable. If the steering proxy is not
-   available this routine returns REG_FAILURE and nsims=0. The Grid
+   Really just wraps Get_registry_entries.  Uses the registry 
+   address in REG_REGISTRY_ADDRESS if set, otherwise uses
+   default (#define'd at the top of ReG_Steer_Browser.c).
+   Returns list of steerable applications. The Grid
    Service Handle returned in simGSH must be supplied as the SimID
    to Sim_attach. */
 extern PREFIX int Get_sim_list(int   *nSims,
@@ -83,12 +83,24 @@ extern PREFIX int Get_sim_list(int   *nSims,
 /** Queries specified registry
     The pointer held in *entries must be free'd once the data
     has been used.
-    @return The number of entries in the registry
-    @return Details for each entry
-    @internal
+    @param registryGSH Address of the ServiceGroup/Registry to query
+    @param num_entries Number of entries in the registry
+    @param entries Array of structs holding details for each entry
  */
 extern PREFIX int Get_registry_entries(const char *registryGSH, 
 				       int *num_entries,  
 				       struct registry_entry **entries);
 
+/** Queries specified registry and filters results using the
+    supplied string.
+    An entry is matched if the supplied string appears in one or more
+    of its service_type, application, user, group, start_date_time or
+    job_description fields.
+    @see Get_registry_entries
+    @param pattern String holding pattern to be used in filtering
+ */
+extern PREFIX int Get_registry_entries_filtered(const char *registryGSH, 
+						int *num_entries,  
+						struct registry_entry **entries,
+						char *pattern);
 #endif

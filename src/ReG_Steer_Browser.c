@@ -232,7 +232,8 @@ int Get_registry_entries(const char *registryGSH,
       fprintf(stderr,"Entry %d:\n", i);
       fprintf(stderr,"          GSH: %s\n", (*entries)[i].gsh);
       fprintf(stderr,"          App: %s\n", (*entries)[i].application);
-      fprintf(stderr,"         user: %s, %s\n", (*entries)[i].user, (*entries)[i].group);
+      fprintf(stderr,"         user: %s, %s\n", (*entries)[i].user, 
+	      (*entries)[i].group);
       fprintf(stderr,"   Start time: %s\n", (*entries)[i].start_date_time);
       fprintf(stderr,"  Description: %s\n", (*entries)[i].job_description);
     }
@@ -240,4 +241,74 @@ int Get_registry_entries(const char *registryGSH,
 #endif
 
   return status;
+}
+
+/*-------------------------------------------------------------------------*/
+
+int Get_registry_entries_filtered(const char *registryGSH, 
+			 int *num_entries,  
+			 struct registry_entry **entries,
+			 char *pattern){
+  int status;
+  int i, j;
+  int count;
+
+  if( (status = Get_registry_entries(registryGSH, 
+				     num_entries,  
+				     entries)) != REG_SUCCESS ){
+    return status;
+  }
+
+  j=0; /* j will index the filtered entries */
+  count = *num_entries;
+
+  for(i=0; i<*num_entries; i++){
+
+    /* Does this entry match the supplied pattern? */
+    if(strstr((*entries)[i].service_type, pattern) ||
+       strstr((*entries)[i].application, pattern) ||
+       strstr((*entries)[i].user, pattern) ||
+       strstr((*entries)[i].group, pattern) ||
+       strstr((*entries)[i].start_date_time, pattern) ||
+       strstr((*entries)[i].job_description, pattern)){
+
+      /* It does */
+      if(j<i){
+	strcpy((*entries)[j].service_type, (*entries)[i].service_type);
+	strcpy((*entries)[j].gsh, (*entries)[i].gsh);
+	strcpy((*entries)[j].entry_gsh, (*entries)[i].entry_gsh);
+	strcpy((*entries)[j].application, (*entries)[i].application);
+	strcpy((*entries)[j].user, (*entries)[i].user);
+	strcpy((*entries)[j].group, (*entries)[i].group);
+	strcpy((*entries)[j].start_date_time, (*entries)[i].start_date_time);
+	strcpy((*entries)[j].job_description, (*entries)[i].job_description);
+      }
+
+      j++;
+    }
+    else{
+      /* It didn't match the supplied pattern */
+      count--;
+    }
+  }
+
+  *num_entries = count;
+
+#if REG_DEBUG
+  fprintf(stderr,
+	  "Get_registry_entries_filtered, got %d filtered entries...\n", 
+	  *num_entries);
+
+  for(i=0; i<*num_entries; i++){
+    fprintf(stderr,"Entry %d:\n", i);
+    fprintf(stderr,"          GSH: %s\n", (*entries)[i].gsh);
+    fprintf(stderr,"          App: %s\n", (*entries)[i].application);
+    fprintf(stderr,"         user: %s, %s\n", (*entries)[i].user, 
+	    (*entries)[i].group);
+    fprintf(stderr,"   Start time: %s\n", (*entries)[i].start_date_time);
+    fprintf(stderr,"  Description: %s\n", (*entries)[i].job_description);
+  }
+#endif
+
+  return REG_SUCCESS;
 }
