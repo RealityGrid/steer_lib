@@ -287,8 +287,10 @@ int parseResourceProperties(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 	  Delete_msg_struct(&(curMsg->msg));
 	}
 	else{
-	  fprintf(stderr, "ARPDBG STORING msg with UID %s\n", 
-		  curMsg->msg->msg_uid);
+#if REG_DEBUG
+	  fprintf(stderr, "STEER: parseResourceProperties: storing msg "
+		  "with UID %s\n", curMsg->msg->msg_uid);
+#endif
 	  curMsg->next = New_msg_store_struct();
 	  curMsg = curMsg->next;
 	}
@@ -428,7 +430,6 @@ int parseSteerMessage(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
   case IO_DEFS:
 #if REG_DEBUG_FULL
     fprintf(stderr, "parseSteerMessage: Calling parseIOTypeDef...\n");
-    fprintf(stderr, "parseSteerMessage: ARPDBG, msg ptr = %p\n", msg);
 #endif
     msg->io_def = New_io_def_struct();
     parseIOTypeDef(doc, ns, cur, msg->io_def);
@@ -1627,9 +1628,6 @@ void Print_io_struct(struct io_struct   *io)
 
   while(ptr){
 
-    fprintf(stderr, "IO def. no.: %d\n", count++);
-    fprintf(stderr, "ARPDBG, ptr to io struct = %p\n", ptr);
-
     if(ptr->label)fprintf(stderr, "Label = %s\n", 
 			  (char *)(ptr->label));
     if(ptr->handle)fprintf(stderr, "Handle = %s\n", 
@@ -1815,7 +1813,7 @@ void Start_element_handler(void * 	user_data,
 
   struct ParserState *state;
   state = (struct ParserState *)user_data;
-  fprintf(stderr, "ARPDBG Start_element_handler...\n");
+
   /* Check that we haven't previously hit an error */
   if(state->return_val != REG_SUCCESS) return;
   /*
@@ -1832,9 +1830,6 @@ void Start_element_handler(void * 	user_data,
   </registryEntry>
   /wssg:Content
   */
-  fprintf(stderr, "ARPDBG Start_element_handler: name = %s\n", 
-	  (char *)name);
-
   if( !xmlStrcmp(name, (const xmlChar *) "ogsi:entry") ){
 
     if (state->depth == STARTING){
@@ -1853,7 +1848,6 @@ void Start_element_handler(void * 	user_data,
 
     if (state->depth == STARTING){
       state->depth = WSRF_ENTRY;
-      fprintf(stderr, "ARPDBG depth = WSRF_ENTRY\n");
       /* Initialise table to hold this content */
       state->entries[state->num_entries].service_type[0] = '\0';
       state->entries[state->num_entries].gsh[0] = '\0';
@@ -1908,39 +1902,32 @@ void Start_element_handler(void * 	user_data,
   else if( !xmlStrcmp(name, (const xmlChar *) "wssg:ServiceGroupEntryEPR") ){
     if(state->depth == WSRF_ENTRY){
       state->depth = SERVICEGROUP_ENTRY_EPR;
-      fprintf(stderr, "ARPDBG depth = SERVICEGROUP_ENTRY_EPR\n");
     }
   }
   else if( !xmlStrcmp(name, (const xmlChar *) "wssg:MemberServiceEPR") ){
     if(state->depth == WSRF_ENTRY){
       state->depth = MEMBER_SERVICE_EPR;
-      fprintf(stderr, "ARPDBG depth = MEMBER_SERVICE_EPR\n");
     }
   }
   else if( !xmlStrcmp(name, (const xmlChar *) "EndpointReference") ){
     if(state->depth == MEMBER_SERVICE_EPR){
       state->depth = EPR;
-      fprintf(stderr, "ARPDBG depth = EPR\n");
     }
     else if(state->depth == SERVICEGROUP_ENTRY_EPR){
       state->depth = SERVICEGROUP_EPR;
-      fprintf(stderr, "ARPDBG depth = SERVICEGROUP_EPR\n");
     }
   }
   else if( !xmlStrcmp(name, (const xmlChar *) "Address") ){
     if(state->depth == EPR){
       state->depth = WSADDRESS;
-      fprintf(stderr, "ARPDBG depth = WSADDRESS\n");
     }
     else if(state->depth == SERVICEGROUP_EPR){
       state->depth = SERVICEGROUP_WSADDRESS;
-      fprintf(stderr, "ARPDBG depth = SERVICEGROUP_WSADDRESS\n");
     }
   }
   else if( !xmlStrcmp(name, (const xmlChar *) "wssg:Content") ){
     if(state->depth == WSRF_ENTRY){
       state->depth = CONTENT;
-      fprintf(stderr, "ARPDBG depth = CONTENT\n");
     }
   }
 }
@@ -1954,7 +1941,6 @@ void End_element_handler(void          *user_data,
   struct registry_entry *tmp;
 
   state = (struct ParserState *)user_data;
-  printf("ARPDBG End_element_handler for >>%s<<\n", (char *)name);
 
   /* Check that we haven't previously hit an error */
   if(state->return_val != REG_SUCCESS) return;
