@@ -212,7 +212,6 @@ int Initialize_steering_connection_wsrf(int  NumSupportedCmds,
     return REG_FAILURE;
   }
 
-  fprintf(stderr, "ARPDBG Initialize_steering_connection_wsrf: done ok\n");
   return REG_SUCCESS;
 }
 
@@ -255,8 +254,8 @@ int Send_status_msg_wsrf (char *msg)
   int    new_size;
   int    loopCount;
   struct wsrp__SetResourcePropertiesResponse out;
-  char  *pTmpBuf = NULL;
-  char  *pbuf = NULL;
+  char  *pTmpBuf;
+  char  *pbuf;
 
   /* Status & log messages are both sent as 'status' messages */
   if(strstr(msg, "<App_status>") || strstr(msg, "<Steer_log>")){
@@ -285,6 +284,7 @@ int Send_status_msg_wsrf (char *msg)
     return REG_FAILURE;
   }
 
+  pbuf = NULL;
   pTmpBuf = query_buf;
   nbytes = snprintf(query_buf, REG_MAX_MSG_SIZE, "<%s>%s</%s>", 
 		    sde_name, msg, sde_name);
@@ -482,7 +482,7 @@ int Finalize_steering_connection_wsrf ()
 	  "Destroy\n");
   if(soap_call_wsrp__Destroy(Steerer_connection.SGS_info.soap, 
 			    Steerer_connection.SGS_info.address, 
-			    "",  &out)){
+			    "",  NULL, &out)){
     fprintf(stderr, "Finalize_steering_connection_wsrf: call to Destroy"
 	    " failed:\n");
     soap_print_fault(Steerer_connection.SGS_info.soap, stderr);

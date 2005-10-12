@@ -293,6 +293,7 @@ struct sgs__AppStopResponse
 /* sgs:destroyResponse: */
 struct sgs__destroyResponse
 {
+	void *_;	/* RPC return element */	/* transient */
 };
 
 /* sgs:ClearStatusMsgQueueResponse: */
@@ -599,6 +600,7 @@ struct rgtf__requestTerminationAfterResponse
 /* rgtf:destroyResponse: */
 struct rgtf__destroyResponse
 {
+	void *_;	/* RPC return element */	/* transient */
 };
 
 /* rgtf:createNewTree: */
@@ -620,6 +622,7 @@ struct rgtf__findByHandle
 /* rgtf:destroy: */
 struct rgtf__destroy
 {
+	void *_;	/* transient */
 };
 
 /* rgtf:findServiceData: */
@@ -631,6 +634,7 @@ struct rgtf__findServiceData
 /* rgtf:getActiveTrees: */
 struct rgtf__getActiveTrees
 {
+	void *_;	/* transient */
 };
 
 /* rgtf:requestTerminationBefore: */
@@ -678,6 +682,7 @@ struct rgt__findServiceDataResponse
 /* rgt:setCheckPointDataResponse: */
 struct rgt__setCheckPointDataResponse
 {
+	void *_;	/* RPC return element */	/* transient */
 };
 
 /* rgt:getChildNodesResponse: */
@@ -707,6 +712,7 @@ struct rgt__getInputFileResponse
 /* rgt:destroyResponse: */
 struct rgt__destroyResponse
 {
+	void *_;	/* RPC return element */	/* transient */
 };
 
 /* rgt:requestTerminationAfter: */
@@ -718,11 +724,13 @@ struct rgt__requestTerminationAfter
 /* rgt:getChildNodes: */
 struct rgt__getChildNodes
 {
+	void *_;	/* transient */
 };
 
 /* rgt:getInputFile: */
 struct rgt__getInputFile
 {
+	void *_;	/* transient */
 };
 
 /* rgt:findServiceData: */
@@ -734,11 +742,13 @@ struct rgt__findServiceData
 /* rgt:setCheckPointData: */
 struct rgt__setCheckPointData
 {
+	void *_;	/* transient */
 };
 
 /* rgt:destroy: */
 struct rgt__destroy
 {
+	void *_;	/* transient */
 };
 
 /* rgt:getSteeringCommands: */
@@ -755,11 +765,13 @@ struct rgt__requestTerminationBefore
 /* rgt:getCheckPointData: */
 struct rgt__getCheckPointData
 {
+	void *_;	/* transient */
 };
 
 /* rgt:getParentNode: */
 struct rgt__getParentNode
 {
+	void *_;	/* transient */
 };
 
 /* rgt:addNode: */
@@ -924,11 +936,11 @@ SOAP_FMAC5 int SOAP_FMAC6 rgtf__createNewTree(struct soap*, char *in0, char *in1
 
 SOAP_FMAC5 int SOAP_FMAC6 rgtf__findByHandle(struct soap*, char *in0, char *in1, struct rgtf__findByHandleResponse *out);
 
-SOAP_FMAC5 int SOAP_FMAC6 rgtf__destroy(struct soap*, struct rgtf__destroyResponse *out);
+SOAP_FMAC5 int SOAP_FMAC6 rgtf__destroy(struct soap*, void *_, struct rgtf__destroyResponse *out);
 
 SOAP_FMAC5 int SOAP_FMAC6 rgtf__findServiceData(struct soap*, char *in0, struct rgtf__findServiceDataResponse *out);
 
-SOAP_FMAC5 int SOAP_FMAC6 rgtf__getActiveTrees(struct soap*, struct rgtf__getActiveTreesResponse *out);
+SOAP_FMAC5 int SOAP_FMAC6 rgtf__getActiveTrees(struct soap*, void *_, struct rgtf__getActiveTreesResponse *out);
 
 SOAP_FMAC5 int SOAP_FMAC6 rgtf__requestTerminationBefore(struct soap*, char *in0, struct rgtf__requestTerminationBeforeResponse *out);
 
@@ -936,23 +948,23 @@ SOAP_FMAC5 int SOAP_FMAC6 rgtf__requestTerminationAfter(struct soap*, char *in0,
 
 SOAP_FMAC5 int SOAP_FMAC6 rgt__requestTerminationAfter(struct soap*, char *in0, struct rgt__requestTerminationAfterResponse *out);
 
-SOAP_FMAC5 int SOAP_FMAC6 rgt__getChildNodes(struct soap*, struct rgt__getChildNodesResponse *out);
+SOAP_FMAC5 int SOAP_FMAC6 rgt__getChildNodes(struct soap*, void *_, struct rgt__getChildNodesResponse *out);
 
-SOAP_FMAC5 int SOAP_FMAC6 rgt__getInputFile(struct soap*, struct rgt__getInputFileResponse *out);
+SOAP_FMAC5 int SOAP_FMAC6 rgt__getInputFile(struct soap*, void *_, struct rgt__getInputFileResponse *out);
 
 SOAP_FMAC5 int SOAP_FMAC6 rgt__findServiceData(struct soap*, char *in0, struct rgt__findServiceDataResponse *out);
 
-SOAP_FMAC5 int SOAP_FMAC6 rgt__setCheckPointData(struct soap*, struct rgt__setCheckPointDataResponse *out);
+SOAP_FMAC5 int SOAP_FMAC6 rgt__setCheckPointData(struct soap*, void *_, struct rgt__setCheckPointDataResponse *out);
 
-SOAP_FMAC5 int SOAP_FMAC6 rgt__destroy(struct soap*, struct rgt__destroyResponse *out);
+SOAP_FMAC5 int SOAP_FMAC6 rgt__destroy(struct soap*, void *_, struct rgt__destroyResponse *out);
 
 SOAP_FMAC5 int SOAP_FMAC6 rgt__getSteeringCommands(struct soap*, struct rgt__getSteeringCommandsResponse *out);
 
 SOAP_FMAC5 int SOAP_FMAC6 rgt__requestTerminationBefore(struct soap*, char *in0, struct rgt__requestTerminationBeforeResponse *out);
 
-SOAP_FMAC5 int SOAP_FMAC6 rgt__getCheckPointData(struct soap*, struct rgt__getCheckPointDataResponse *out);
+SOAP_FMAC5 int SOAP_FMAC6 rgt__getCheckPointData(struct soap*, void *_, struct rgt__getCheckPointDataResponse *out);
 
-SOAP_FMAC5 int SOAP_FMAC6 rgt__getParentNode(struct soap*, struct rgt__getParentNodeResponse *out);
+SOAP_FMAC5 int SOAP_FMAC6 rgt__getParentNode(struct soap*, void *_, struct rgt__getParentNodeResponse *out);
 
 SOAP_FMAC5 int SOAP_FMAC6 rgt__addNode(struct soap*, char *in0, char *in1, char *in2, char *in3, char *in4, struct rgt__addNodeResponse *out);
 
@@ -1047,11 +1059,11 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgtf__createNewTree(struct soap *soap, const
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgtf__findByHandle(struct soap *soap, const char *soap_endpoint, const char *soap_action, char *in0, char *in1, struct rgtf__findByHandleResponse *out);
 
-SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgtf__destroy(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct rgtf__destroyResponse *out);
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgtf__destroy(struct soap *soap, const char *soap_endpoint, const char *soap_action, void *_, struct rgtf__destroyResponse *out);
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgtf__findServiceData(struct soap *soap, const char *soap_endpoint, const char *soap_action, char *in0, struct rgtf__findServiceDataResponse *out);
 
-SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgtf__getActiveTrees(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct rgtf__getActiveTreesResponse *out);
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgtf__getActiveTrees(struct soap *soap, const char *soap_endpoint, const char *soap_action, void *_, struct rgtf__getActiveTreesResponse *out);
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgtf__requestTerminationBefore(struct soap *soap, const char *soap_endpoint, const char *soap_action, char *in0, struct rgtf__requestTerminationBeforeResponse *out);
 
@@ -1059,23 +1071,23 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgtf__requestTerminationAfter(struct soap *s
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgt__requestTerminationAfter(struct soap *soap, const char *soap_endpoint, const char *soap_action, char *in0, struct rgt__requestTerminationAfterResponse *out);
 
-SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgt__getChildNodes(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct rgt__getChildNodesResponse *out);
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgt__getChildNodes(struct soap *soap, const char *soap_endpoint, const char *soap_action, void *_, struct rgt__getChildNodesResponse *out);
 
-SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgt__getInputFile(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct rgt__getInputFileResponse *out);
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgt__getInputFile(struct soap *soap, const char *soap_endpoint, const char *soap_action, void *_, struct rgt__getInputFileResponse *out);
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgt__findServiceData(struct soap *soap, const char *soap_endpoint, const char *soap_action, char *in0, struct rgt__findServiceDataResponse *out);
 
-SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgt__setCheckPointData(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct rgt__setCheckPointDataResponse *out);
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgt__setCheckPointData(struct soap *soap, const char *soap_endpoint, const char *soap_action, void *_, struct rgt__setCheckPointDataResponse *out);
 
-SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgt__destroy(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct rgt__destroyResponse *out);
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgt__destroy(struct soap *soap, const char *soap_endpoint, const char *soap_action, void *_, struct rgt__destroyResponse *out);
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgt__getSteeringCommands(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct rgt__getSteeringCommandsResponse *out);
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgt__requestTerminationBefore(struct soap *soap, const char *soap_endpoint, const char *soap_action, char *in0, struct rgt__requestTerminationBeforeResponse *out);
 
-SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgt__getCheckPointData(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct rgt__getCheckPointDataResponse *out);
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgt__getCheckPointData(struct soap *soap, const char *soap_endpoint, const char *soap_action, void *_, struct rgt__getCheckPointDataResponse *out);
 
-SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgt__getParentNode(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct rgt__getParentNodeResponse *out);
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgt__getParentNode(struct soap *soap, const char *soap_endpoint, const char *soap_action, void *_, struct rgt__getParentNodeResponse *out);
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgt__addNode(struct soap *soap, const char *soap_endpoint, const char *soap_action, char *in0, char *in1, char *in2, char *in3, char *in4, struct rgt__addNodeResponse *out);
 

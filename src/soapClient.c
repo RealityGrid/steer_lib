@@ -11,7 +11,7 @@ extern "C" {
 
 SOAP_BEGIN_NAMESPACE(soap)
 
-SOAP_SOURCE_STAMP("@(#) soapClient.c ver 2.7.2 2005-10-12 13:49:06 GMT")
+SOAP_SOURCE_STAMP("@(#) soapClient.c ver 2.7.2 2005-10-12 13:54:46 GMT")
 
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_call_wsrp__GetResourceProperty(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct GetResourcePropertyRequest *in_, char **out_)
@@ -2154,13 +2154,14 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgtf__findByHandle(struct soap *soap, const 
 	return soap_closesock(soap);
 }
 
-SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgtf__destroy(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct rgtf__destroyResponse *out)
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgtf__destroy(struct soap *soap, const char *soap_endpoint, const char *soap_action, void *_, struct rgtf__destroyResponse *out)
 {	struct rgtf__destroy soap_tmp_rgtf__destroy;
 	if (!soap_endpoint)
 		soap_endpoint = "http://vermont.mvc.mcc.ac.uk:50000/Session/RealityGridTree/factory";
 	if (!soap_action)
 		soap_action = "";
 	soap->encodingStyle = NULL;
+	soap_tmp_rgtf__destroy._ = _;
 	soap_begin(soap);
 	soap_serializeheader(soap);
 	soap_serialize_rgtf__destroy(soap, &soap_tmp_rgtf__destroy);
@@ -2255,13 +2256,14 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgtf__findServiceData(struct soap *soap, con
 	return soap_closesock(soap);
 }
 
-SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgtf__getActiveTrees(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct rgtf__getActiveTreesResponse *out)
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgtf__getActiveTrees(struct soap *soap, const char *soap_endpoint, const char *soap_action, void *_, struct rgtf__getActiveTreesResponse *out)
 {	struct rgtf__getActiveTrees soap_tmp_rgtf__getActiveTrees;
 	if (!soap_endpoint)
 		soap_endpoint = "http://vermont.mvc.mcc.ac.uk:50000/Session/RealityGridTree/factory";
 	if (!soap_action)
 		soap_action = "";
 	soap->encodingStyle = NULL;
+	soap_tmp_rgtf__getActiveTrees._ = _;
 	soap_begin(soap);
 	soap_serializeheader(soap);
 	soap_serialize_rgtf__getActiveTrees(soap, &soap_tmp_rgtf__getActiveTrees);
@@ -2458,13 +2460,14 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgt__requestTerminationAfter(struct soap *so
 	return soap_closesock(soap);
 }
 
-SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgt__getChildNodes(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct rgt__getChildNodesResponse *out)
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgt__getChildNodes(struct soap *soap, const char *soap_endpoint, const char *soap_action, void *_, struct rgt__getChildNodesResponse *out)
 {	struct rgt__getChildNodes soap_tmp_rgt__getChildNodes;
 	if (!soap_endpoint)
 		soap_endpoint = "http://foo.bar/";
 	if (!soap_action)
 		soap_action = "";
 	soap->encodingStyle = NULL;
+	soap_tmp_rgt__getChildNodes._ = _;
 	soap_begin(soap);
 	soap_serializeheader(soap);
 	soap_serialize_rgt__getChildNodes(soap, &soap_tmp_rgt__getChildNodes);
@@ -2508,13 +2511,14 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgt__getChildNodes(struct soap *soap, const 
 	return soap_closesock(soap);
 }
 
-SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgt__getInputFile(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct rgt__getInputFileResponse *out)
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgt__getInputFile(struct soap *soap, const char *soap_endpoint, const char *soap_action, void *_, struct rgt__getInputFileResponse *out)
 {	struct rgt__getInputFile soap_tmp_rgt__getInputFile;
 	if (!soap_endpoint)
 		soap_endpoint = "http://foo.bar/";
 	if (!soap_action)
 		soap_action = "";
 	soap->encodingStyle = NULL;
+	soap_tmp_rgt__getInputFile._ = _;
 	soap_begin(soap);
 	soap_serializeheader(soap);
 	soap_serialize_rgt__getInputFile(soap, &soap_tmp_rgt__getInputFile);
@@ -2609,13 +2613,14 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgt__findServiceData(struct soap *soap, cons
 	return soap_closesock(soap);
 }
 
-SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgt__setCheckPointData(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct rgt__setCheckPointDataResponse *out)
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgt__setCheckPointData(struct soap *soap, const char *soap_endpoint, const char *soap_action, void *_, struct rgt__setCheckPointDataResponse *out)
 {	struct rgt__setCheckPointData soap_tmp_rgt__setCheckPointData;
 	if (!soap_endpoint)
 		soap_endpoint = "http://foo.bar/";
 	if (!soap_action)
 		soap_action = "";
 	soap->encodingStyle = NULL;
+	soap_tmp_rgt__setCheckPointData._ = _;
 	soap_begin(soap);
 	soap_serializeheader(soap);
 	soap_serialize_rgt__setCheckPointData(soap, &soap_tmp_rgt__setCheckPointData);
@@ -2659,13 +2664,14 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgt__setCheckPointData(struct soap *soap, co
 	return soap_closesock(soap);
 }
 
-SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgt__destroy(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct rgt__destroyResponse *out)
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgt__destroy(struct soap *soap, const char *soap_endpoint, const char *soap_action, void *_, struct rgt__destroyResponse *out)
 {	struct rgt__destroy soap_tmp_rgt__destroy;
 	if (!soap_endpoint)
 		soap_endpoint = "http://foo.bar/";
 	if (!soap_action)
 		soap_action = "";
 	soap->encodingStyle = NULL;
+	soap_tmp_rgt__destroy._ = _;
 	soap_begin(soap);
 	soap_serializeheader(soap);
 	soap_serialize_rgt__destroy(soap, &soap_tmp_rgt__destroy);
@@ -2810,13 +2816,14 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgt__requestTerminationBefore(struct soap *s
 	return soap_closesock(soap);
 }
 
-SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgt__getCheckPointData(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct rgt__getCheckPointDataResponse *out)
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgt__getCheckPointData(struct soap *soap, const char *soap_endpoint, const char *soap_action, void *_, struct rgt__getCheckPointDataResponse *out)
 {	struct rgt__getCheckPointData soap_tmp_rgt__getCheckPointData;
 	if (!soap_endpoint)
 		soap_endpoint = "http://foo.bar/";
 	if (!soap_action)
 		soap_action = "";
 	soap->encodingStyle = NULL;
+	soap_tmp_rgt__getCheckPointData._ = _;
 	soap_begin(soap);
 	soap_serializeheader(soap);
 	soap_serialize_rgt__getCheckPointData(soap, &soap_tmp_rgt__getCheckPointData);
@@ -2860,13 +2867,14 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgt__getCheckPointData(struct soap *soap, co
 	return soap_closesock(soap);
 }
 
-SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgt__getParentNode(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct rgt__getParentNodeResponse *out)
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgt__getParentNode(struct soap *soap, const char *soap_endpoint, const char *soap_action, void *_, struct rgt__getParentNodeResponse *out)
 {	struct rgt__getParentNode soap_tmp_rgt__getParentNode;
 	if (!soap_endpoint)
 		soap_endpoint = "http://foo.bar/";
 	if (!soap_action)
 		soap_action = "";
 	soap->encodingStyle = NULL;
+	soap_tmp_rgt__getParentNode._ = _;
 	soap_begin(soap);
 	soap_serializeheader(soap);
 	soap_serialize_rgt__getParentNode(soap, &soap_tmp_rgt__getParentNode);

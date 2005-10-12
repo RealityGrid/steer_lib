@@ -11,7 +11,7 @@ extern "C" {
 
 SOAP_BEGIN_NAMESPACE(soap)
 
-SOAP_SOURCE_STAMP("@(#) soapC.c ver 2.7.2 2005-10-12 13:49:06 GMT")
+SOAP_SOURCE_STAMP("@(#) soapC.c ver 2.7.2 2005-10-12 13:54:46 GMT")
 
 
 #ifndef WITH_NOGLOBAL
@@ -2690,11 +2690,13 @@ SOAP_FMAC3 struct rgt__addNode * SOAP_FMAC4 soap_in_rgt__addNode(struct soap *so
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_rgt__getParentNode(struct soap *soap, const struct rgt__getParentNode *a)
 {
 	(void)soap; (void)a; /* appease -Wall -Werror */
+	/* transient _ skipped */
 }
 
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_rgt__getParentNode(struct soap *soap, struct rgt__getParentNode *a)
 {
 	(void)soap; (void)a; /* appease -Wall -Werror */
+	/* transient _ skipped */
 }
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_rgt__getParentNode(struct soap *soap, const struct rgt__getParentNode *a, const char *tag, const char *type)
@@ -2708,6 +2710,7 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_put_rgt__getParentNode(struct soap *soap, const s
 SOAP_FMAC3 int SOAP_FMAC4 soap_out_rgt__getParentNode(struct soap *soap, const char *tag, int id, const struct rgt__getParentNode *a, const char *type)
 {
 	soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_rgt__getParentNode), type);
+	/* transient _ skipped */
 	soap_element_end_out(soap, tag);
 	return SOAP_OK;
 }
@@ -2735,6 +2738,7 @@ SOAP_FMAC3 struct rgt__getParentNode * SOAP_FMAC4 soap_in_rgt__getParentNode(str
 	if (soap->body && !*soap->href)
 	{	for (;;)
 		{	soap->error = SOAP_TAG_MISMATCH;
+		/* transient _ skipped */
 			if (soap->error == SOAP_TAG_MISMATCH)
 				soap->error = soap_ignore_element(soap);
 			if (soap->error == SOAP_NO_TAG)
@@ -2756,11 +2760,13 @@ SOAP_FMAC3 struct rgt__getParentNode * SOAP_FMAC4 soap_in_rgt__getParentNode(str
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_rgt__getCheckPointData(struct soap *soap, const struct rgt__getCheckPointData *a)
 {
 	(void)soap; (void)a; /* appease -Wall -Werror */
+	/* transient _ skipped */
 }
 
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_rgt__getCheckPointData(struct soap *soap, struct rgt__getCheckPointData *a)
 {
 	(void)soap; (void)a; /* appease -Wall -Werror */
+	/* transient _ skipped */
 }
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_rgt__getCheckPointData(struct soap *soap, const struct rgt__getCheckPointData *a, const char *tag, const char *type)
@@ -2774,6 +2780,7 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_put_rgt__getCheckPointData(struct soap *soap, con
 SOAP_FMAC3 int SOAP_FMAC4 soap_out_rgt__getCheckPointData(struct soap *soap, const char *tag, int id, const struct rgt__getCheckPointData *a, const char *type)
 {
 	soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_rgt__getCheckPointData), type);
+	/* transient _ skipped */
 	soap_element_end_out(soap, tag);
 	return SOAP_OK;
 }
@@ -2801,6 +2808,7 @@ SOAP_FMAC3 struct rgt__getCheckPointData * SOAP_FMAC4 soap_in_rgt__getCheckPoint
 	if (soap->body && !*soap->href)
 	{	for (;;)
 		{	soap->error = SOAP_TAG_MISMATCH;
+		/* transient _ skipped */
 			if (soap->error == SOAP_TAG_MISMATCH)
 				soap->error = soap_ignore_element(soap);
 			if (soap->error == SOAP_NO_TAG)
@@ -2964,11 +2972,13 @@ SOAP_FMAC3 struct rgt__getSteeringCommands * SOAP_FMAC4 soap_in_rgt__getSteering
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_rgt__destroy(struct soap *soap, const struct rgt__destroy *a)
 {
 	(void)soap; (void)a; /* appease -Wall -Werror */
+	/* transient _ skipped */
 }
 
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_rgt__destroy(struct soap *soap, struct rgt__destroy *a)
 {
 	(void)soap; (void)a; /* appease -Wall -Werror */
+	/* transient _ skipped */
 }
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_rgt__destroy(struct soap *soap, const struct rgt__destroy *a, const char *tag, const char *type)
@@ -2982,6 +2992,7 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_put_rgt__destroy(struct soap *soap, const struct 
 SOAP_FMAC3 int SOAP_FMAC4 soap_out_rgt__destroy(struct soap *soap, const char *tag, int id, const struct rgt__destroy *a, const char *type)
 {
 	soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_rgt__destroy), type);
+	/* transient _ skipped */
 	soap_element_end_out(soap, tag);
 	return SOAP_OK;
 }
@@ -3009,6 +3020,7 @@ SOAP_FMAC3 struct rgt__destroy * SOAP_FMAC4 soap_in_rgt__destroy(struct soap *so
 	if (soap->body && !*soap->href)
 	{	for (;;)
 		{	soap->error = SOAP_TAG_MISMATCH;
+		/* transient _ skipped */
 			if (soap->error == SOAP_TAG_MISMATCH)
 				soap->error = soap_ignore_element(soap);
 			if (soap->error == SOAP_NO_TAG)
@@ -3030,11 +3042,13 @@ SOAP_FMAC3 struct rgt__destroy * SOAP_FMAC4 soap_in_rgt__destroy(struct soap *so
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_rgt__setCheckPointData(struct soap *soap, const struct rgt__setCheckPointData *a)
 {
 	(void)soap; (void)a; /* appease -Wall -Werror */
+	/* transient _ skipped */
 }
 
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_rgt__setCheckPointData(struct soap *soap, struct rgt__setCheckPointData *a)
 {
 	(void)soap; (void)a; /* appease -Wall -Werror */
+	/* transient _ skipped */
 }
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_rgt__setCheckPointData(struct soap *soap, const struct rgt__setCheckPointData *a, const char *tag, const char *type)
@@ -3048,6 +3062,7 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_put_rgt__setCheckPointData(struct soap *soap, con
 SOAP_FMAC3 int SOAP_FMAC4 soap_out_rgt__setCheckPointData(struct soap *soap, const char *tag, int id, const struct rgt__setCheckPointData *a, const char *type)
 {
 	soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_rgt__setCheckPointData), type);
+	/* transient _ skipped */
 	soap_element_end_out(soap, tag);
 	return SOAP_OK;
 }
@@ -3075,6 +3090,7 @@ SOAP_FMAC3 struct rgt__setCheckPointData * SOAP_FMAC4 soap_in_rgt__setCheckPoint
 	if (soap->body && !*soap->href)
 	{	for (;;)
 		{	soap->error = SOAP_TAG_MISMATCH;
+		/* transient _ skipped */
 			if (soap->error == SOAP_TAG_MISMATCH)
 				soap->error = soap_ignore_element(soap);
 			if (soap->error == SOAP_NO_TAG)
@@ -3172,11 +3188,13 @@ SOAP_FMAC3 struct rgt__findServiceData * SOAP_FMAC4 soap_in_rgt__findServiceData
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_rgt__getInputFile(struct soap *soap, const struct rgt__getInputFile *a)
 {
 	(void)soap; (void)a; /* appease -Wall -Werror */
+	/* transient _ skipped */
 }
 
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_rgt__getInputFile(struct soap *soap, struct rgt__getInputFile *a)
 {
 	(void)soap; (void)a; /* appease -Wall -Werror */
+	/* transient _ skipped */
 }
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_rgt__getInputFile(struct soap *soap, const struct rgt__getInputFile *a, const char *tag, const char *type)
@@ -3190,6 +3208,7 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_put_rgt__getInputFile(struct soap *soap, const st
 SOAP_FMAC3 int SOAP_FMAC4 soap_out_rgt__getInputFile(struct soap *soap, const char *tag, int id, const struct rgt__getInputFile *a, const char *type)
 {
 	soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_rgt__getInputFile), type);
+	/* transient _ skipped */
 	soap_element_end_out(soap, tag);
 	return SOAP_OK;
 }
@@ -3217,6 +3236,7 @@ SOAP_FMAC3 struct rgt__getInputFile * SOAP_FMAC4 soap_in_rgt__getInputFile(struc
 	if (soap->body && !*soap->href)
 	{	for (;;)
 		{	soap->error = SOAP_TAG_MISMATCH;
+		/* transient _ skipped */
 			if (soap->error == SOAP_TAG_MISMATCH)
 				soap->error = soap_ignore_element(soap);
 			if (soap->error == SOAP_NO_TAG)
@@ -3238,11 +3258,13 @@ SOAP_FMAC3 struct rgt__getInputFile * SOAP_FMAC4 soap_in_rgt__getInputFile(struc
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_rgt__getChildNodes(struct soap *soap, const struct rgt__getChildNodes *a)
 {
 	(void)soap; (void)a; /* appease -Wall -Werror */
+	/* transient _ skipped */
 }
 
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_rgt__getChildNodes(struct soap *soap, struct rgt__getChildNodes *a)
 {
 	(void)soap; (void)a; /* appease -Wall -Werror */
+	/* transient _ skipped */
 }
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_rgt__getChildNodes(struct soap *soap, const struct rgt__getChildNodes *a, const char *tag, const char *type)
@@ -3256,6 +3278,7 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_put_rgt__getChildNodes(struct soap *soap, const s
 SOAP_FMAC3 int SOAP_FMAC4 soap_out_rgt__getChildNodes(struct soap *soap, const char *tag, int id, const struct rgt__getChildNodes *a, const char *type)
 {
 	soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_rgt__getChildNodes), type);
+	/* transient _ skipped */
 	soap_element_end_out(soap, tag);
 	return SOAP_OK;
 }
@@ -3283,6 +3306,7 @@ SOAP_FMAC3 struct rgt__getChildNodes * SOAP_FMAC4 soap_in_rgt__getChildNodes(str
 	if (soap->body && !*soap->href)
 	{	for (;;)
 		{	soap->error = SOAP_TAG_MISMATCH;
+		/* transient _ skipped */
 			if (soap->error == SOAP_TAG_MISMATCH)
 				soap->error = soap_ignore_element(soap);
 			if (soap->error == SOAP_NO_TAG)
@@ -3380,11 +3404,13 @@ SOAP_FMAC3 struct rgt__requestTerminationAfter * SOAP_FMAC4 soap_in_rgt__request
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_rgt__destroyResponse(struct soap *soap, const struct rgt__destroyResponse *a)
 {
 	(void)soap; (void)a; /* appease -Wall -Werror */
+	/* transient _ skipped */
 }
 
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_rgt__destroyResponse(struct soap *soap, struct rgt__destroyResponse *a)
 {
 	(void)soap; (void)a; /* appease -Wall -Werror */
+	/* transient _ skipped */
 }
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_rgt__destroyResponse(struct soap *soap, const struct rgt__destroyResponse *a, const char *tag, const char *type)
@@ -3398,6 +3424,9 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_put_rgt__destroyResponse(struct soap *soap, const
 SOAP_FMAC3 int SOAP_FMAC4 soap_out_rgt__destroyResponse(struct soap *soap, const char *tag, int id, const struct rgt__destroyResponse *a, const char *type)
 {
 	soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_rgt__destroyResponse), type);
+	if (a->_)
+		soap_element_result(soap, "");
+	/* transient _ skipped */
 	soap_element_end_out(soap, tag);
 	return SOAP_OK;
 }
@@ -3425,6 +3454,7 @@ SOAP_FMAC3 struct rgt__destroyResponse * SOAP_FMAC4 soap_in_rgt__destroyResponse
 	if (soap->body && !*soap->href)
 	{	for (;;)
 		{	soap->error = SOAP_TAG_MISMATCH;
+		/* transient _ skipped */
 			if (soap->error == SOAP_TAG_MISMATCH)
 				soap->error = soap_ignore_element(soap);
 			if (soap->error == SOAP_NO_TAG)
@@ -3758,11 +3788,13 @@ SOAP_FMAC3 struct rgt__getChildNodesResponse * SOAP_FMAC4 soap_in_rgt__getChildN
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_rgt__setCheckPointDataResponse(struct soap *soap, const struct rgt__setCheckPointDataResponse *a)
 {
 	(void)soap; (void)a; /* appease -Wall -Werror */
+	/* transient _ skipped */
 }
 
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_rgt__setCheckPointDataResponse(struct soap *soap, struct rgt__setCheckPointDataResponse *a)
 {
 	(void)soap; (void)a; /* appease -Wall -Werror */
+	/* transient _ skipped */
 }
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_rgt__setCheckPointDataResponse(struct soap *soap, const struct rgt__setCheckPointDataResponse *a, const char *tag, const char *type)
@@ -3776,6 +3808,9 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_put_rgt__setCheckPointDataResponse(struct soap *s
 SOAP_FMAC3 int SOAP_FMAC4 soap_out_rgt__setCheckPointDataResponse(struct soap *soap, const char *tag, int id, const struct rgt__setCheckPointDataResponse *a, const char *type)
 {
 	soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_rgt__setCheckPointDataResponse), type);
+	if (a->_)
+		soap_element_result(soap, "");
+	/* transient _ skipped */
 	soap_element_end_out(soap, tag);
 	return SOAP_OK;
 }
@@ -3803,6 +3838,7 @@ SOAP_FMAC3 struct rgt__setCheckPointDataResponse * SOAP_FMAC4 soap_in_rgt__setCh
 	if (soap->body && !*soap->href)
 	{	for (;;)
 		{	soap->error = SOAP_TAG_MISMATCH;
+		/* transient _ skipped */
 			if (soap->error == SOAP_TAG_MISMATCH)
 				soap->error = soap_ignore_element(soap);
 			if (soap->error == SOAP_NO_TAG)
@@ -4366,11 +4402,13 @@ SOAP_FMAC3 struct rgtf__requestTerminationBefore * SOAP_FMAC4 soap_in_rgtf__requ
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_rgtf__getActiveTrees(struct soap *soap, const struct rgtf__getActiveTrees *a)
 {
 	(void)soap; (void)a; /* appease -Wall -Werror */
+	/* transient _ skipped */
 }
 
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_rgtf__getActiveTrees(struct soap *soap, struct rgtf__getActiveTrees *a)
 {
 	(void)soap; (void)a; /* appease -Wall -Werror */
+	/* transient _ skipped */
 }
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_rgtf__getActiveTrees(struct soap *soap, const struct rgtf__getActiveTrees *a, const char *tag, const char *type)
@@ -4384,6 +4422,7 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_put_rgtf__getActiveTrees(struct soap *soap, const
 SOAP_FMAC3 int SOAP_FMAC4 soap_out_rgtf__getActiveTrees(struct soap *soap, const char *tag, int id, const struct rgtf__getActiveTrees *a, const char *type)
 {
 	soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_rgtf__getActiveTrees), type);
+	/* transient _ skipped */
 	soap_element_end_out(soap, tag);
 	return SOAP_OK;
 }
@@ -4411,6 +4450,7 @@ SOAP_FMAC3 struct rgtf__getActiveTrees * SOAP_FMAC4 soap_in_rgtf__getActiveTrees
 	if (soap->body && !*soap->href)
 	{	for (;;)
 		{	soap->error = SOAP_TAG_MISMATCH;
+		/* transient _ skipped */
 			if (soap->error == SOAP_TAG_MISMATCH)
 				soap->error = soap_ignore_element(soap);
 			if (soap->error == SOAP_NO_TAG)
@@ -4508,11 +4548,13 @@ SOAP_FMAC3 struct rgtf__findServiceData * SOAP_FMAC4 soap_in_rgtf__findServiceDa
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_rgtf__destroy(struct soap *soap, const struct rgtf__destroy *a)
 {
 	(void)soap; (void)a; /* appease -Wall -Werror */
+	/* transient _ skipped */
 }
 
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_rgtf__destroy(struct soap *soap, struct rgtf__destroy *a)
 {
 	(void)soap; (void)a; /* appease -Wall -Werror */
+	/* transient _ skipped */
 }
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_rgtf__destroy(struct soap *soap, const struct rgtf__destroy *a, const char *tag, const char *type)
@@ -4526,6 +4568,7 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_put_rgtf__destroy(struct soap *soap, const struct
 SOAP_FMAC3 int SOAP_FMAC4 soap_out_rgtf__destroy(struct soap *soap, const char *tag, int id, const struct rgtf__destroy *a, const char *type)
 {
 	soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_rgtf__destroy), type);
+	/* transient _ skipped */
 	soap_element_end_out(soap, tag);
 	return SOAP_OK;
 }
@@ -4553,6 +4596,7 @@ SOAP_FMAC3 struct rgtf__destroy * SOAP_FMAC4 soap_in_rgtf__destroy(struct soap *
 	if (soap->body && !*soap->href)
 	{	for (;;)
 		{	soap->error = SOAP_TAG_MISMATCH;
+		/* transient _ skipped */
 			if (soap->error == SOAP_TAG_MISMATCH)
 				soap->error = soap_ignore_element(soap);
 			if (soap->error == SOAP_NO_TAG)
@@ -4762,11 +4806,13 @@ SOAP_FMAC3 struct rgtf__createNewTree * SOAP_FMAC4 soap_in_rgtf__createNewTree(s
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_rgtf__destroyResponse(struct soap *soap, const struct rgtf__destroyResponse *a)
 {
 	(void)soap; (void)a; /* appease -Wall -Werror */
+	/* transient _ skipped */
 }
 
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_rgtf__destroyResponse(struct soap *soap, struct rgtf__destroyResponse *a)
 {
 	(void)soap; (void)a; /* appease -Wall -Werror */
+	/* transient _ skipped */
 }
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_rgtf__destroyResponse(struct soap *soap, const struct rgtf__destroyResponse *a, const char *tag, const char *type)
@@ -4780,6 +4826,9 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_put_rgtf__destroyResponse(struct soap *soap, cons
 SOAP_FMAC3 int SOAP_FMAC4 soap_out_rgtf__destroyResponse(struct soap *soap, const char *tag, int id, const struct rgtf__destroyResponse *a, const char *type)
 {
 	soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_rgtf__destroyResponse), type);
+	if (a->_)
+		soap_element_result(soap, "");
+	/* transient _ skipped */
 	soap_element_end_out(soap, tag);
 	return SOAP_OK;
 }
@@ -4807,6 +4856,7 @@ SOAP_FMAC3 struct rgtf__destroyResponse * SOAP_FMAC4 soap_in_rgtf__destroyRespon
 	if (soap->body && !*soap->href)
 	{	for (;;)
 		{	soap->error = SOAP_TAG_MISMATCH;
+		/* transient _ skipped */
 			if (soap->error == SOAP_TAG_MISMATCH)
 				soap->error = soap_ignore_element(soap);
 			if (soap->error == SOAP_NO_TAG)
@@ -8603,11 +8653,13 @@ SOAP_FMAC3 struct sgs__ClearStatusMsgQueueResponse * SOAP_FMAC4 soap_in_sgs__Cle
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_sgs__destroyResponse(struct soap *soap, const struct sgs__destroyResponse *a)
 {
 	(void)soap; (void)a; /* appease -Wall -Werror */
+	/* transient _ skipped */
 }
 
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_sgs__destroyResponse(struct soap *soap, struct sgs__destroyResponse *a)
 {
 	(void)soap; (void)a; /* appease -Wall -Werror */
+	/* transient _ skipped */
 }
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_sgs__destroyResponse(struct soap *soap, const struct sgs__destroyResponse *a, const char *tag, const char *type)
@@ -8621,6 +8673,9 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_put_sgs__destroyResponse(struct soap *soap, const
 SOAP_FMAC3 int SOAP_FMAC4 soap_out_sgs__destroyResponse(struct soap *soap, const char *tag, int id, const struct sgs__destroyResponse *a, const char *type)
 {
 	soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_sgs__destroyResponse), type);
+	if (a->_)
+		soap_element_result(soap, "");
+	/* transient _ skipped */
 	soap_element_end_out(soap, tag);
 	return SOAP_OK;
 }
@@ -8648,6 +8703,7 @@ SOAP_FMAC3 struct sgs__destroyResponse * SOAP_FMAC4 soap_in_sgs__destroyResponse
 	if (soap->body && !*soap->href)
 	{	for (;;)
 		{	soap->error = SOAP_TAG_MISMATCH;
+		/* transient _ skipped */
 			if (soap->error == SOAP_TAG_MISMATCH)
 				soap->error = soap_ignore_element(soap);
 			if (soap->error == SOAP_NO_TAG)

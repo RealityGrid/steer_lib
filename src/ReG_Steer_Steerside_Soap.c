@@ -66,7 +66,7 @@ int Sim_attach_soap(Sim_entry_type *sim, char *SimID)
   /* SimID holds the address of the soap server of the SGS */
   attach_response._AttachReturn = NULL;
   if(soap_call_sgs__Attach(sim->SGS_info.soap, SimID, 
-			   "", &attach_response )){
+			   "", NULL, &attach_response )){
 
     fprintf(stderr, "Sim_attach_soap: Attach to %s failed with message: \n",
 	    SimID);
@@ -197,7 +197,7 @@ struct msg_struct *Get_status_msg_soap(Sim_entry_type *sim)
   /* Check SGS for new notifications */
   getNotifications_response._GetNotificationsReturn = NULL;
   if(soap_call_sgs__GetNotifications(sim->SGS_info.soap, sim->SGS_info.address, 
-				     "", &getNotifications_response )){
+				     "", NULL, &getNotifications_response )){
 
     fprintf(stderr, "Get_status_msg_soap: GetNotifications failed:\n");
     soap_print_fault(sim->SGS_info.soap, stderr);
@@ -254,7 +254,7 @@ struct msg_struct *Get_status_msg_soap(Sim_entry_type *sim)
   /* Only ask for a status msg if had no notifications */
   getStatus_response._GetStatusReturn = NULL;
   if(soap_call_sgs__GetStatus(sim->SGS_info.soap, sim->SGS_info.address, 
-			       "", &getStatus_response )){
+			       "", NULL, &getStatus_response )){
 
     fprintf(stderr, "Get_status_msg_soap: GetStatus failed:\n");
     soap_print_fault(sim->SGS_info.soap, stderr);
@@ -394,7 +394,7 @@ int Send_pause_msg_soap(Sim_entry_type *sim)
 #endif
   pause_response._PauseReturn = NULL;
   if(soap_call_sgs__Pause(sim->SGS_info.soap, sim->SGS_info.address, 
-			   "", &pause_response )){
+			   "", NULL, &pause_response )){
 
     fprintf(stderr, "Send_pause_msg_soap: Pause failed:\n");
     soap_print_fault(sim->SGS_info.soap, stderr);
@@ -421,7 +421,7 @@ int Send_resume_msg_soap(Sim_entry_type *sim)
 #endif
   resume_response._ResumeReturn = NULL;
   if(soap_call_sgs__Resume(sim->SGS_info.soap, sim->SGS_info.address, 
-			   "", &resume_response )){
+			   "", NULL, &resume_response )){
 
     fprintf(stderr, "Send_resume_msg_soap: Resume failed:\n");
     soap_print_fault(sim->SGS_info.soap, stderr);
@@ -448,7 +448,7 @@ int Send_detach_msg_soap(Sim_entry_type *sim)
 #endif
   detach_response._DetachReturn = NULL;
   if(soap_call_sgs__Detach(sim->SGS_info.soap, sim->SGS_info.address, 
-			   "", &detach_response )){
+			   "", NULL, &detach_response )){
 
     fprintf(stderr, "Send_detach_msg_soap: Detach failed:\n");
     soap_print_fault(sim->SGS_info.soap, stderr);
@@ -475,7 +475,7 @@ int Send_stop_msg_soap(Sim_entry_type *sim)
 #endif
   stop_response._StopReturn = NULL;
   if(soap_call_sgs__Stop(sim->SGS_info.soap, sim->SGS_info.address, 
-			   "", &stop_response )){
+			   "", NULL, &stop_response )){
 
     fprintf(stderr, "Send_stop_msg_soap: Stop failed:\n");
     soap_print_fault(sim->SGS_info.soap, stderr);

@@ -162,7 +162,7 @@ int Initialize_steering_connection_soap(int  NumSupportedCmds,
   appStart_response._AppStartReturn = NULL;
   if (soap_call_sgs__AppStart(Steerer_connection.SGS_info.soap, 
 			      Steerer_connection.SGS_info.address, "", 
-			      &appStart_response)){
+			      NULL, &appStart_response)){
 
     fprintf(stderr, "Initialize_steering_connection_soap: failed to "
 	    "attach to SGS: %s\n", Steerer_connection.SGS_info.address);
@@ -254,7 +254,7 @@ int Detach_from_steerer_soap()
   appDetach_response._AppDetachReturn = NULL;
   if(soap_call_sgs__AppDetach(Steerer_connection.SGS_info.soap, 
 			      Steerer_connection.SGS_info.address, 
-			      "", &appDetach_response )){
+			      "", NULL, &appDetach_response )){
 
     fprintf(stderr, "Detach_from_steerer_soap: AppDetach failed:\n");
     soap_print_fault(Steerer_connection.SGS_info.soap, stderr);
@@ -461,7 +461,7 @@ struct msg_struct *Get_control_msg_soap()
     getControl_response._GetControlReturn = NULL;
   if(soap_call_sgs__GetControl(Steerer_connection.SGS_info.soap, 
 			       Steerer_connection.SGS_info.address, 
-			       "",  &getControl_response)){
+			       "",  NULL, &getControl_response)){
     soap_print_fault(Steerer_connection.SGS_info.soap, stderr);
     return NULL;
   }
@@ -505,7 +505,7 @@ int Finalize_steering_connection_soap()
   appStop_response._AppStopReturn = NULL;
   if(soap_call_sgs__AppStop(Steerer_connection.SGS_info.soap, 
 			    Steerer_connection.SGS_info.address, 
-			    "",  &appStop_response)){
+			    "",  NULL, &appStop_response)){
     soap_print_fault(Steerer_connection.SGS_info.soap, stderr);
     return REG_FAILURE;
   }

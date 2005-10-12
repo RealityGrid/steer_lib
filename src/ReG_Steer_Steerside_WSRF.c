@@ -333,7 +333,7 @@ int Get_resource_property (struct soap *soapStruct,
   Get_current_time_seconds(&time1);
 #if REG_DEBUG
   fprintf(stderr, "STEER: TIMING: soap_call_wsrp__GetMultipleResourceProperties"
-	  " took %f seconds\n", (time1-time0));
+	  " took %f seconds\n", (float)(time1-time0));
 #endif
 #endif
 #if REG_DEBUG_FULL
