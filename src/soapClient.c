@@ -11,7 +11,7 @@ extern "C" {
 
 SOAP_BEGIN_NAMESPACE(soap)
 
-SOAP_SOURCE_STAMP("@(#) soapClient.c ver 2.7.2 2005-09-20 11:52:59 GMT")
+SOAP_SOURCE_STAMP("@(#) soapClient.c ver 2.7.2 2005-10-12 13:49:06 GMT")
 
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_call_wsrp__GetResourceProperty(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct GetResourcePropertyRequest *in_, char **out_)
@@ -517,9 +517,10 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call_sws__PutParamLog(struct soap *soap, const ch
 	return soap_closesock(soap);
 }
 
-SOAP_FMAC5 int SOAP_FMAC6 soap_call_wsrp__Destroy(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct wsrp__DestroyResponse *out)
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_wsrp__Destroy(struct soap *soap, const char *soap_endpoint, const char *soap_action, void *_, struct wsrp__DestroyResponse *out)
 {	struct wsrp__Destroy soap_tmp_wsrp__Destroy;
 	soap->encodingStyle = NULL;
+	soap_tmp_wsrp__Destroy._ = _;
 	soap_begin(soap);
 	soap_serializeheader(soap);
 	soap_serialize_wsrp__Destroy(soap, &soap_tmp_wsrp__Destroy);
@@ -563,13 +564,14 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call_wsrp__Destroy(struct soap *soap, const char 
 	return soap_closesock(soap);
 }
 
-SOAP_FMAC5 int SOAP_FMAC6 soap_call_sgs__Attach(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct sgs__AttachResponse *out)
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_sgs__Attach(struct soap *soap, const char *soap_endpoint, const char *soap_action, void *_, struct sgs__AttachResponse *out)
 {	struct sgs__Attach soap_tmp_sgs__Attach;
 	if (!soap_endpoint)
 		soap_endpoint = "http://foo.bar/";
 	if (!soap_action)
 		soap_action = "";
 	soap->encodingStyle = NULL;
+	soap_tmp_sgs__Attach._ = _;
 	soap_begin(soap);
 	soap_serializeheader(soap);
 	soap_serialize_sgs__Attach(soap, &soap_tmp_sgs__Attach);
@@ -613,13 +615,14 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call_sgs__Attach(struct soap *soap, const char *s
 	return soap_closesock(soap);
 }
 
-SOAP_FMAC5 int SOAP_FMAC6 soap_call_sgs__GetStatus(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct sgs__GetStatusResponse *out)
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_sgs__GetStatus(struct soap *soap, const char *soap_endpoint, const char *soap_action, void *_, struct sgs__GetStatusResponse *out)
 {	struct sgs__GetStatus soap_tmp_sgs__GetStatus;
 	if (!soap_endpoint)
 		soap_endpoint = "http://foo.bar/";
 	if (!soap_action)
 		soap_action = "";
 	soap->encodingStyle = NULL;
+	soap_tmp_sgs__GetStatus._ = _;
 	soap_begin(soap);
 	soap_serializeheader(soap);
 	soap_serialize_sgs__GetStatus(soap, &soap_tmp_sgs__GetStatus);
@@ -663,13 +666,14 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call_sgs__GetStatus(struct soap *soap, const char
 	return soap_closesock(soap);
 }
 
-SOAP_FMAC5 int SOAP_FMAC6 soap_call_sgs__Stop(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct sgs__StopResponse *out)
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_sgs__Stop(struct soap *soap, const char *soap_endpoint, const char *soap_action, void *_, struct sgs__StopResponse *out)
 {	struct sgs__Stop soap_tmp_sgs__Stop;
 	if (!soap_endpoint)
 		soap_endpoint = "http://foo.bar/";
 	if (!soap_action)
 		soap_action = "";
 	soap->encodingStyle = NULL;
+	soap_tmp_sgs__Stop._ = _;
 	soap_begin(soap);
 	soap_serializeheader(soap);
 	soap_serialize_sgs__Stop(soap, &soap_tmp_sgs__Stop);
@@ -713,13 +717,14 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call_sgs__Stop(struct soap *soap, const char *soa
 	return soap_closesock(soap);
 }
 
-SOAP_FMAC5 int SOAP_FMAC6 soap_call_sgs__ClearStatusMsgQueue(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct sgs__ClearStatusMsgQueueResponse *out)
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_sgs__ClearStatusMsgQueue(struct soap *soap, const char *soap_endpoint, const char *soap_action, void *_, struct sgs__ClearStatusMsgQueueResponse *out)
 {	struct sgs__ClearStatusMsgQueue soap_tmp_sgs__ClearStatusMsgQueue;
 	if (!soap_endpoint)
 		soap_endpoint = "http://foo.bar/";
 	if (!soap_action)
 		soap_action = "";
 	soap->encodingStyle = NULL;
+	soap_tmp_sgs__ClearStatusMsgQueue._ = _;
 	soap_begin(soap);
 	soap_serializeheader(soap);
 	soap_serialize_sgs__ClearStatusMsgQueue(soap, &soap_tmp_sgs__ClearStatusMsgQueue);
@@ -763,13 +768,14 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call_sgs__ClearStatusMsgQueue(struct soap *soap, 
 	return soap_closesock(soap);
 }
 
-SOAP_FMAC5 int SOAP_FMAC6 soap_call_sgs__Detach(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct sgs__DetachResponse *out)
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_sgs__Detach(struct soap *soap, const char *soap_endpoint, const char *soap_action, void *_, struct sgs__DetachResponse *out)
 {	struct sgs__Detach soap_tmp_sgs__Detach;
 	if (!soap_endpoint)
 		soap_endpoint = "http://foo.bar/";
 	if (!soap_action)
 		soap_action = "";
 	soap->encodingStyle = NULL;
+	soap_tmp_sgs__Detach._ = _;
 	soap_begin(soap);
 	soap_serializeheader(soap);
 	soap_serialize_sgs__Detach(soap, &soap_tmp_sgs__Detach);
@@ -813,13 +819,14 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call_sgs__Detach(struct soap *soap, const char *s
 	return soap_closesock(soap);
 }
 
-SOAP_FMAC5 int SOAP_FMAC6 soap_call_sgs__Resume(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct sgs__ResumeResponse *out)
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_sgs__Resume(struct soap *soap, const char *soap_endpoint, const char *soap_action, void *_, struct sgs__ResumeResponse *out)
 {	struct sgs__Resume soap_tmp_sgs__Resume;
 	if (!soap_endpoint)
 		soap_endpoint = "http://foo.bar/";
 	if (!soap_action)
 		soap_action = "";
 	soap->encodingStyle = NULL;
+	soap_tmp_sgs__Resume._ = _;
 	soap_begin(soap);
 	soap_serializeheader(soap);
 	soap_serialize_sgs__Resume(soap, &soap_tmp_sgs__Resume);
@@ -966,13 +973,14 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call_sgs__PutStatus(struct soap *soap, const char
 	return soap_closesock(soap);
 }
 
-SOAP_FMAC5 int SOAP_FMAC6 soap_call_sgs__AppStart(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct sgs__AppStartResponse *out)
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_sgs__AppStart(struct soap *soap, const char *soap_endpoint, const char *soap_action, void *_, struct sgs__AppStartResponse *out)
 {	struct sgs__AppStart soap_tmp_sgs__AppStart;
 	if (!soap_endpoint)
 		soap_endpoint = "http://foo.bar/";
 	if (!soap_action)
 		soap_action = "";
 	soap->encodingStyle = NULL;
+	soap_tmp_sgs__AppStart._ = _;
 	soap_begin(soap);
 	soap_serializeheader(soap);
 	soap_serialize_sgs__AppStart(soap, &soap_tmp_sgs__AppStart);
@@ -1169,13 +1177,14 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call_sgs__AppPutLog(struct soap *soap, const char
 	return soap_closesock(soap);
 }
 
-SOAP_FMAC5 int SOAP_FMAC6 soap_call_sgs__AppDetach(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct sgs__AppDetachResponse *out)
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_sgs__AppDetach(struct soap *soap, const char *soap_endpoint, const char *soap_action, void *_, struct sgs__AppDetachResponse *out)
 {	struct sgs__AppDetach soap_tmp_sgs__AppDetach;
 	if (!soap_endpoint)
 		soap_endpoint = "http://foo.bar/";
 	if (!soap_action)
 		soap_action = "";
 	soap->encodingStyle = NULL;
+	soap_tmp_sgs__AppDetach._ = _;
 	soap_begin(soap);
 	soap_serializeheader(soap);
 	soap_serialize_sgs__AppDetach(soap, &soap_tmp_sgs__AppDetach);
@@ -1219,13 +1228,14 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call_sgs__AppDetach(struct soap *soap, const char
 	return soap_closesock(soap);
 }
 
-SOAP_FMAC5 int SOAP_FMAC6 soap_call_sgs__Pause(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct sgs__PauseResponse *out)
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_sgs__Pause(struct soap *soap, const char *soap_endpoint, const char *soap_action, void *_, struct sgs__PauseResponse *out)
 {	struct sgs__Pause soap_tmp_sgs__Pause;
 	if (!soap_endpoint)
 		soap_endpoint = "http://foo.bar/";
 	if (!soap_action)
 		soap_action = "";
 	soap->encodingStyle = NULL;
+	soap_tmp_sgs__Pause._ = _;
 	soap_begin(soap);
 	soap_serializeheader(soap);
 	soap_serialize_sgs__Pause(soap, &soap_tmp_sgs__Pause);
@@ -1473,13 +1483,14 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call_sgs__findServiceData(struct soap *soap, cons
 	return soap_closesock(soap);
 }
 
-SOAP_FMAC5 int SOAP_FMAC6 soap_call_sgs__destroy(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct sgs__destroyResponse *out)
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_sgs__destroy(struct soap *soap, const char *soap_endpoint, const char *soap_action, void *_, struct sgs__destroyResponse *out)
 {	struct sgs__destroy soap_tmp_sgs__destroy;
 	if (!soap_endpoint)
 		soap_endpoint = "http://foo.bar/";
 	if (!soap_action)
 		soap_action = "";
 	soap->encodingStyle = NULL;
+	soap_tmp_sgs__destroy._ = _;
 	soap_begin(soap);
 	soap_serializeheader(soap);
 	soap_serialize_sgs__destroy(soap, &soap_tmp_sgs__destroy);
@@ -1523,13 +1534,14 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call_sgs__destroy(struct soap *soap, const char *
 	return soap_closesock(soap);
 }
 
-SOAP_FMAC5 int SOAP_FMAC6 soap_call_sgs__GetControl(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct sgs__GetControlResponse *out)
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_sgs__GetControl(struct soap *soap, const char *soap_endpoint, const char *soap_action, void *_, struct sgs__GetControlResponse *out)
 {	struct sgs__GetControl soap_tmp_sgs__GetControl;
 	if (!soap_endpoint)
 		soap_endpoint = "http://foo.bar/";
 	if (!soap_action)
 		soap_action = "";
 	soap->encodingStyle = NULL;
+	soap_tmp_sgs__GetControl._ = _;
 	soap_begin(soap);
 	soap_serializeheader(soap);
 	soap_serialize_sgs__GetControl(soap, &soap_tmp_sgs__GetControl);
@@ -1573,13 +1585,14 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call_sgs__GetControl(struct soap *soap, const cha
 	return soap_closesock(soap);
 }
 
-SOAP_FMAC5 int SOAP_FMAC6 soap_call_sgs__GetNotifications(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct sgs__GetNotificationsResponse *out)
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_sgs__GetNotifications(struct soap *soap, const char *soap_endpoint, const char *soap_action, void *_, struct sgs__GetNotificationsResponse *out)
 {	struct sgs__GetNotifications soap_tmp_sgs__GetNotifications;
 	if (!soap_endpoint)
 		soap_endpoint = "http://foo.bar/";
 	if (!soap_action)
 		soap_action = "";
 	soap->encodingStyle = NULL;
+	soap_tmp_sgs__GetNotifications._ = _;
 	soap_begin(soap);
 	soap_serializeheader(soap);
 	soap_serialize_sgs__GetNotifications(soap, &soap_tmp_sgs__GetNotifications);
@@ -1623,13 +1636,14 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call_sgs__GetNotifications(struct soap *soap, con
 	return soap_closesock(soap);
 }
 
-SOAP_FMAC5 int SOAP_FMAC6 soap_call_sgs__AppStop(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct sgs__AppStopResponse *out)
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_sgs__AppStop(struct soap *soap, const char *soap_endpoint, const char *soap_action, void *_, struct sgs__AppStopResponse *out)
 {	struct sgs__AppStop soap_tmp_sgs__AppStop;
 	if (!soap_endpoint)
 		soap_endpoint = "http://foo.bar/";
 	if (!soap_action)
 		soap_action = "";
 	soap->encodingStyle = NULL;
+	soap_tmp_sgs__AppStop._ = _;
 	soap_begin(soap);
 	soap_serializeheader(soap);
 	soap_serialize_sgs__AppStop(soap, &soap_tmp_sgs__AppStop);
