@@ -246,9 +246,9 @@ int Get_registry_entries(const char *registryGSH,
 /*-------------------------------------------------------------------------*/
 
 int Get_registry_entries_filtered(const char *registryGSH, 
-			 int *num_entries,  
-			 struct registry_entry **entries,
-			 char *pattern){
+				  int *num_entries,  
+				  struct registry_entry **entries,
+				  char *pattern){
   int status;
   int i, j;
   int count;
@@ -257,6 +257,12 @@ int Get_registry_entries_filtered(const char *registryGSH,
 				     num_entries,  
 				     entries)) != REG_SUCCESS ){
     return status;
+  }
+
+  /* Job done if we have no valid string to match against */
+  if(!pattern || (strlen(pattern) == 0)){
+
+    return REG_SUCCESS;
   }
 
   j=0; /* j will index the filtered entries */
@@ -296,7 +302,7 @@ int Get_registry_entries_filtered(const char *registryGSH,
 
 #if REG_DEBUG
   fprintf(stderr,
-	  "Get_registry_entries_filtered, got %d filtered entries...\n", 
+	  "\nGet_registry_entries_filtered, got %d filtered entries...\n", 
 	  *num_entries);
 
   for(i=0; i<*num_entries; i++){
