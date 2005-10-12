@@ -353,12 +353,12 @@ int Read_proxy(const int index, int *size, void** buffer){
   pchar++; /* Allow one more character (following hybrid_comms.c) */
 
   /* ARPDBG - optimise; use scratch instead of malloc?? */
-  if( !(buffer = malloc(*size)) ){
+  if( !(*buffer = malloc(*size)) ){
     fprintf("Read_proxy: ERROR: malloc of %d bytes failed\n", *size);
   }
 
   /* Blocks until *size bytes received */
-  if((nbytes = recv(sock_info->connector_handle, buffer, *size, 
+  if((nbytes = recv(sock_info->connector_handle, *buffer, *size, 
 		    MSG_WAITALL)) <= 0) {
     if(nbytes < 0) {
       /* error */
@@ -493,38 +493,46 @@ int Consume_msg_header_proxy(int index, int* datatype, int* count,
 
   /* Check for end of data */
   if(!strncmp(inBuffer, REG_DATA_FOOTER, strlen(REG_DATA_FOOTER))) {
+    free(inBuffer);
     return REG_EOD;
   }
   else if(strncmp(inBuffer, BEGIN_SLICE_HEADER, strlen(BEGIN_SLICE_HEADER))) {
     fprintf(stderr, "ERROR: Consume_msg_header_proxy: incorrect "
 	    "header on slice\n");
+    free(inBuffer);
     return REG_FAILURE;
   }
 
   if(!(pchar = strstr(inBuffer, "<Data_type>")) ){
+    free(inBuffer);
     return REG_FAILURE;
   }
   sscanf(pchar, "<Data_type>%d</Data_type>", datatype);
 
-  if( !(pchar = strstr(buffer, "<Num_objects>")) ){
+  if( !(pchar = strstr(inBuffer, "<Num_objects>")) ){
+    free(inBuffer);
     return REG_FAILURE;
   }
   if(sscanf(pchar, "<Num_objects>%d</Num_objects>", count) != 1){
     fprintf(stderr, "ERROR: Consume_msg_header_sockets: failed to "
 	    "read Num_objects\n");
+    free(inBuffer);
     return REG_FAILURE;
   }
 
-  if( !(pchar = strstr(buffer, "<Num_bytes>")) ){
+  if( !(pchar = strstr(inBuffer, "<Num_bytes>")) ){
+    free(inBuffer);
     return REG_FAILURE;
   }
   if(sscanf(pchar, "<Num_bytes>%d</Num_bytes>", num_bytes) != 1) {
     fprintf(stderr, "ERROR: Consume_msg_header_sockets: failed to read "
 	    "Num_bytes\n");
+    free(inBuffer);
     return REG_FAILURE;
   }
 
-  if( !(pchar = strstr(buffer, "<Array_order>")) ){
+  if( !(pchar = strstr(inBuffer, "<Array_order>")) ){
+    free(inBuffer);
     return REG_FAILURE;
   }
   if(strstr(pchar, "FORTRAN")){
@@ -537,12 +545,14 @@ int Consume_msg_header_proxy(int index, int* datatype, int* count,
   }
 
   /*--- End of header ---*/
-  if(strncmp(buffer, END_SLICE_HEADER, strlen(END_SLICE_HEADER))) {
+  if(strncmp(inBuffer, END_SLICE_HEADER, strlen(END_SLICE_HEADER))) {
     fprintf(stderr, "ERROR: Consume_msg_header_sockets: failed to find "
 	    "end of header\n");
+    free(inBuffer);
     return REG_FAILURE;
   }
 
+  free(inBuffer);
   return REG_SUCCESS;
 }
 
@@ -694,9 +704,10 @@ int Consume_start_data_check_sockets(const int index) {
 
 /*--------------------------------------------------------------*/
 
-int Consume_data_read_sockets(const int index, const int datatype, const int num_bytes_to_read, void *pData) {
+int Consume_data_read_sockets(const int index, const int datatype, 
+			      const int num_bytes_to_read, 
+			      void *pData) {
   int nbytes;
-
   socket_io_type  *sock_info;
 
 #if REG_DEBUG
@@ -705,7 +716,8 @@ int Consume_data_read_sockets(const int index, const int datatype, const int num
   double time0, time1;
 #endif
 
-  fprintf(stderr, "Consume_data_read_sockets: calling recv for %d bytes\n", (int) num_bytes_to_read);
+  fprintf(stderr, "Consume_data_read_sockets: calling recv for %d bytes\n", 
+	  (int) num_bytes_to_read);
 
 #ifdef USE_REG_TIMING
   Get_current_time_seconds(&time0);
@@ -716,18 +728,23 @@ int Consume_data_read_sockets(const int index, const int datatype, const int num
   sock_info = &(IOTypes_table.io_def[index].socket_info);
 
   if(IOTypes_table.io_def[index].use_xdr || IOTypes_table.io_def[index].convert_array_order == REG_TRUE) {
-    nbytes = recv(sock_info->connector_handle, IOTypes_table.io_def[index].buffer, num_bytes_to_read, MSG_WAITALL);
+    nbytes = recv(sock_info->connector_handle, 
+		  IOTypes_table.io_def[index].buffer, num_bytes_to_read, 
+		  MSG_WAITALL);
   }
   else {
-    nbytes = recv(sock_info->connector_handle, pData, num_bytes_to_read, MSG_WAITALL);
+    nbytes = recv(sock_info->connector_handle, pData, num_bytes_to_read, 
+		  MSG_WAITALL);
   }
 
 #if REG_DEBUG
-  fprintf(stderr, "Consume_data_read_sockets: recv read %d bytes\n", (int) nbytes);
+  fprintf(stderr, "Consume_data_read_sockets: recv read %d bytes\n", 
+	  (int) nbytes);
 
 #ifdef USE_REG_TIMING
   Get_current_time_seconds(&time1);
-  fprintf(stderr, "                          in %.3f seconds\n", (float) (time1-time0));
+  fprintf(stderr, "                          in %.3f seconds\n", 
+	  (float) (time1-time0));
 #endif
 #endif /* REG_DEBUG */
 
