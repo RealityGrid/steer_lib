@@ -117,7 +117,7 @@ char *Create_checkpoint_tree(const char *factory,
 				   factory, 
 				   "", /* soap Action */
 				   "<ogsi:terminationTime />", "", "", 
-				   metadata, 
+				   (char *)metadata, 
 				   &out) != SOAP_OK){
     fprintf(stderr, "Create_checkpoint_tree: soap call failed:\n");
     soap_print_fault(&soap, stderr);

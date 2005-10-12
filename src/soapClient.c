@@ -11,7 +11,7 @@ extern "C" {
 
 SOAP_BEGIN_NAMESPACE(soap)
 
-SOAP_SOURCE_STAMP("@(#) soapClient.c ver 2.7.2 2005-10-12 13:54:46 GMT")
+SOAP_SOURCE_STAMP("@(#) soapClient.c ver 2.7.2 2005-10-12 14:23:13 GMT")
 
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_call_wsrp__GetResourceProperty(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct GetResourcePropertyRequest *in_, char **out_)
@@ -1739,13 +1739,14 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call_sgsf__registerSelf(struct soap *soap, const 
 	return soap_closesock(soap);
 }
 
-SOAP_FMAC5 int SOAP_FMAC6 soap_call_sgsf__destroy(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct sgsf__destroyResponse *out)
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_sgsf__destroy(struct soap *soap, const char *soap_endpoint, const char *soap_action, void *_, struct sgsf__destroyResponse *out)
 {	struct sgsf__destroy soap_tmp_sgsf__destroy;
 	if (!soap_endpoint)
 		soap_endpoint = "http://foo.bar/";
 	if (!soap_action)
 		soap_action = "";
 	soap->encodingStyle = NULL;
+	soap_tmp_sgsf__destroy._ = _;
 	soap_begin(soap);
 	soap_serializeheader(soap);
 	soap_serialize_sgsf__destroy(soap, &soap_tmp_sgsf__destroy);
@@ -2715,13 +2716,14 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgt__destroy(struct soap *soap, const char *
 	return soap_closesock(soap);
 }
 
-SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgt__getSteeringCommands(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct rgt__getSteeringCommandsResponse *out)
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgt__getSteeringCommands(struct soap *soap, const char *soap_endpoint, const char *soap_action, void *_, struct rgt__getSteeringCommandsResponse *out)
 {	struct rgt__getSteeringCommands soap_tmp_rgt__getSteeringCommands;
 	if (!soap_endpoint)
 		soap_endpoint = "http://foo.bar/";
 	if (!soap_action)
 		soap_action = "";
 	soap->encodingStyle = NULL;
+	soap_tmp_rgt__getSteeringCommands._ = _;
 	soap_begin(soap);
 	soap_serializeheader(soap);
 	soap_serialize_rgt__getSteeringCommands(soap, &soap_tmp_rgt__getSteeringCommands);

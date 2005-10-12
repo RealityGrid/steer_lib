@@ -38,7 +38,7 @@
   */
 
 /** Get the entries from a WSRF-based registry */
-int Get_registry_entries_wsrf(char                   *registryEPR, 
+int Get_registry_entries_wsrf(const char             *registryEPR, 
 			      int                    *num_entries,  
 			      struct registry_entry **entries);
 

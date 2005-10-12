@@ -49,7 +49,7 @@ extern char Global_scratch_buffer[];
 
 /*-------------------------------------------------------------------------*/
 
-int Get_registry_entries_wsrf(char *registryEPR, int *num_entries,  
+int Get_registry_entries_wsrf(const char *registryEPR, int *num_entries,  
 			      struct registry_entry **entries){
 
   struct wsrp__GetMultipleResourcePropertiesRequest in;

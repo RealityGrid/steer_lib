@@ -468,6 +468,7 @@ struct sgsf__createServiceResponse
 /* sgsf:destroyResponse: */
 struct sgsf__destroyResponse
 {
+	void *_;	/* RPC return element */	/* transient */
 };
 
 /* sgsf:registerSelfResponse: */
@@ -486,6 +487,7 @@ struct sgsf__registerSelf
 /* sgsf:destroy: */
 struct sgsf__destroy
 {
+	void *_;	/* transient */
 };
 
 /* sgsf:createService: */
@@ -539,6 +541,7 @@ struct ArrayOf_USCORE_xsd_USCORE_string
 /* sgr:removeResponse: */
 struct sgr__removeResponse
 {
+	void *_;	/* RPC return element */	/* transient */
 };
 
 /* sgr:remove: */
@@ -754,6 +757,7 @@ struct rgt__destroy
 /* rgt:getSteeringCommands: */
 struct rgt__getSteeringCommands
 {
+	void *_;	/* transient */
 };
 
 /* rgt:requestTerminationBefore: */
@@ -920,7 +924,7 @@ SOAP_FMAC5 int SOAP_FMAC6 sgs__AppStop(struct soap*, void *_, struct sgs__AppSto
 
 SOAP_FMAC5 int SOAP_FMAC6 sgsf__registerSelf(struct soap*, char *in0, char *in1, struct sgsf__registerSelfResponse *out);
 
-SOAP_FMAC5 int SOAP_FMAC6 sgsf__destroy(struct soap*, struct sgsf__destroyResponse *out);
+SOAP_FMAC5 int SOAP_FMAC6 sgsf__destroy(struct soap*, void *_, struct sgsf__destroyResponse *out);
 
 SOAP_FMAC5 int SOAP_FMAC6 sgsf__createService(struct soap*, char *in0, char *in1, struct sgsf__createServiceResponse *out);
 
@@ -958,7 +962,7 @@ SOAP_FMAC5 int SOAP_FMAC6 rgt__setCheckPointData(struct soap*, void *_, struct r
 
 SOAP_FMAC5 int SOAP_FMAC6 rgt__destroy(struct soap*, void *_, struct rgt__destroyResponse *out);
 
-SOAP_FMAC5 int SOAP_FMAC6 rgt__getSteeringCommands(struct soap*, struct rgt__getSteeringCommandsResponse *out);
+SOAP_FMAC5 int SOAP_FMAC6 rgt__getSteeringCommands(struct soap*, void *_, struct rgt__getSteeringCommandsResponse *out);
 
 SOAP_FMAC5 int SOAP_FMAC6 rgt__requestTerminationBefore(struct soap*, char *in0, struct rgt__requestTerminationBeforeResponse *out);
 
@@ -1043,7 +1047,7 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call_sgs__AppStop(struct soap *soap, const char *
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_call_sgsf__registerSelf(struct soap *soap, const char *soap_endpoint, const char *soap_action, char *in0, char *in1, struct sgsf__registerSelfResponse *out);
 
-SOAP_FMAC5 int SOAP_FMAC6 soap_call_sgsf__destroy(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct sgsf__destroyResponse *out);
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_sgsf__destroy(struct soap *soap, const char *soap_endpoint, const char *soap_action, void *_, struct sgsf__destroyResponse *out);
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_call_sgsf__createService(struct soap *soap, const char *soap_endpoint, const char *soap_action, char *in0, char *in1, struct sgsf__createServiceResponse *out);
 
@@ -1081,7 +1085,7 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgt__setCheckPointData(struct soap *soap, co
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgt__destroy(struct soap *soap, const char *soap_endpoint, const char *soap_action, void *_, struct rgt__destroyResponse *out);
 
-SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgt__getSteeringCommands(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct rgt__getSteeringCommandsResponse *out);
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgt__getSteeringCommands(struct soap *soap, const char *soap_endpoint, const char *soap_action, void *_, struct rgt__getSteeringCommandsResponse *out);
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgt__requestTerminationBefore(struct soap *soap, const char *soap_endpoint, const char *soap_action, char *in0, struct rgt__requestTerminationBeforeResponse *out);
 
