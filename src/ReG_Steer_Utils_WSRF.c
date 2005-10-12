@@ -158,7 +158,7 @@ char *Create_SWS(const int   lifetimeMinutes,
     aChkAddress = nullAddress;
   }
   else{
-    aChkAddress = checkpointAddress;
+    aChkAddress = (char *)checkpointAddress;
   }
 
   snprintf(jobDescription, 1024, "<registryEntry>\n"
@@ -269,7 +269,7 @@ int Destroy_WSRP(char *epr)
     /* Something to do with the XML type */
     soap.encodingStyle = NULL;
 
-    if(soap_call_wsrp__Destroy(&soap, epr, NULL, &out) != SOAP_OK){
+    if(soap_call_wsrp__Destroy(&soap, epr, NULL, NULL, &out) != SOAP_OK){
       fprintf(stderr, "Destroy_WSRP: call to Destroy on %s failed:\n   ",
 	      epr);
       soap_print_fault(&soap, stderr);
