@@ -34,6 +34,9 @@
 #ifndef __REG_STEER_STEERSIDE_WSRF_H__
 #define __REG_STEER_STEERSIDE_WSRF_H__
 
+#include "ReG_Steer_Common.h"
+#include "ReG_Steer_XML.h"
+
 /** @file ReG_Steer_Steerside_WSRF.h
     @brief Header file for WSRF over SOAP communications for the steering client.
   */
@@ -80,13 +83,14 @@ extern PREFIX int Get_resource_property (struct soap *soapStruct,
 					 char       **pRP);
 
 /** Get the whole resource property document 
-    @internal 
-    @param sgs_info Pointer to struct holding info on SWS
+    @param soapStruct Pointer to initalised gSoap soap struct
+    @param epr The EndPointReference of the SWS to query
     @param pRPDoc   If successful, ptr to array of char holding 
-    contents of the ResourceProperty document */
-int Get_resource_property_doc(struct soap *soapStruct,
-			      char        *epr,
-			      char         **pRPDoc);
+    contents of the ResourceProperty document (will be free'd when
+    soap_end called on soapStruct) */
+extern PREFIX int Get_resource_property_doc(struct soap *soapStruct,
+					    const char  *epr,
+					    char        **pRPDoc);
 /** Clean up a WSRF-based steering connection 
     @internal */
 int Finalize_connection_wsrf (Sim_entry_type *sim);

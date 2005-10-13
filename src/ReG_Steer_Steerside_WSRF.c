@@ -350,7 +350,7 @@ int Get_resource_property (struct soap *soapStruct,
 /*------------------------------------------------------------------*/
 /** Get the whole resource property document */
 int Get_resource_property_doc(struct soap *soapStruct,
-			      char  *epr,
+			      const char  *epr,
 			      char **pDoc)
 {
   char *out;
@@ -369,7 +369,7 @@ int Get_resource_property_doc(struct soap *soapStruct,
 #endif
 
   if(soap_call_wsrp__GetResourcePropertyDocument(soapStruct, 
-						 epr, 
+						 (char *)epr, 
 						 "", NULL,
 						 &out) != SOAP_OK){
     soap_print_fault(soapStruct, stderr);
@@ -384,9 +384,6 @@ int Get_resource_property_doc(struct soap *soapStruct,
 #endif
 #endif
 
-  /*
-  printf("STEER: GetResourcePropertyDocument returned: %s\n", out);
-  */
   *pDoc = out;
 
   return REG_SUCCESS;
