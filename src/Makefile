@@ -61,6 +61,8 @@ REG_LIB_UTILS_OBJECTS=ReG_Steer_Utils_WSRF.o \
  ReG_Steer_Utils.o \
  ReG_Steer_Browser.o
 
+# The -DWITH_CDATA is to ensure gSoap retains CDATA sections in xml string
+# literals
 .c.o:
 	${CC} ${C_FLAGS} \
         -DREG_SOCKET_SAMPLES=${REG_SOCKET_SAMPLES_FLAG} \
@@ -68,6 +70,7 @@ REG_LIB_UTILS_OBJECTS=ReG_Steer_Utils_WSRF.o \
         -DREG_DEBUG=${REG_DEBUG_FLAG} \
         -DREG_DEBUG_FULL=${REG_DEBUG_FULL_FLAG} \
         -DREG_STEER_LIB_VERSION=\"${REG_STEER_LIB_VERSION}\" \
+        -DWITH_CDATA \
         ${INCLUDE_PATH} -c $< -o $@
 
 all:
