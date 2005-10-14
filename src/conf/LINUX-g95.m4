@@ -4,8 +4,8 @@ undefine(`len')
 # append two underscores to FORTRAN function names 'cos that's the way
 # g95 likes it...
 #
-define(`FUNCTION',`$1__')
-#define(`FUNCTION',`$1_')
+#define(`FUNCTION',`$1__')
+define(`FUNCTION',`ifelse(`-1',index($1, `_'),`$1_',`$1__')')
 #
 # FORTRAN character strings are passed as follows:
 # a pointer to the base of the string is passed in the normal
