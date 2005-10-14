@@ -361,19 +361,26 @@ int parseSteerMessage(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 #if REG_DEBUG_FULL
     fprintf(stderr, "parseSteerMessage: msg UID = %s\n",
 	    (char*)(msg->msg_uid));
-#endif
+#endif /* REG_DEBUG_FULL */
     /* Check that we haven't already seen this message 
        before we bother to store it */
     if( Msg_already_received((char*)(msg->msg_uid), uidStorePtr) ){
-#if REG_DEBUG
+#if REG_DEBUG_FULL
       fprintf(stderr, "STEER: INFO: parseSteerMessage: msg"
 	      " with UID %s has been seen before\n", 
 	      msg->msg_uid);
-#endif
+#endif /* REG_DEBUG_FULL */
       /* We have - skip this one */
       msg->msg_type = MSG_NOTSET;
       return REG_FAILURE;
     }
+#if REG_DEBUG_FULL
+    else{
+      fprintf(stderr, "STEER: INFO: parseSteerMessage: msg"
+	      " with UID %s has NOT been seen before\n", 
+	      msg->msg_uid);
+    }
+#endif /* REG_DEBUG_FULL */
   }
 
  /* Walk the tree */
@@ -2128,36 +2135,37 @@ int Msg_already_received(char *msg_uid,
   int                  i;
   unsigned int         uid;
 
-  if(msg_uid){
- 
-    if(!(hist->uidStorePtr)){
-      for(i=0; i<REG_UID_HISTORY_BUFFER_SIZE; i++){
-	/* Initialize array with a value not used as a msg UID */
-	hist->uidStore[i] = -1;
-      }
-      hist->uidStorePtr = hist->uidStore;
-      hist->maxPtr = &(hist->uidStore[REG_UID_HISTORY_BUFFER_SIZE-1]);
-    }
-    
-    if(sscanf(msg_uid, "%u", &uid) != 1){
-      fprintf(stderr, "STEER ERROR: Msg_already_received: failed to "
-	      "read msg UID\n");
-      return REG_FALSE;
-    }
+  if (!msg_uid) return REG_FALSE;
 
+  if(!(hist->uidStorePtr)){
     for(i=0; i<REG_UID_HISTORY_BUFFER_SIZE; i++){
-      if(hist->uidStore[i] == uid)return REG_TRUE;
+      /* Initialize array with a value not used as a msg UID */
+      hist->uidStore[i] = -1;
     }
-    *(hist->uidStorePtr) = uid;
-    if(hist->uidStorePtr == hist->maxPtr){
-      /* Wrap ptr back to beginning of array */
-      hist->uidStorePtr = hist->uidStore;
-    }
-    else{
-      hist->uidStorePtr++;
-    }
-
+    hist->uidStorePtr = hist->uidStore;
+    hist->maxPtr = &(hist->uidStore[REG_UID_HISTORY_BUFFER_SIZE-1]);
   }
+    
+  if(sscanf(msg_uid, "%u", &uid) != 1){
+    fprintf(stderr, "STEER ERROR: Msg_already_received: failed to "
+	    "read msg UID\n");
+    return REG_FALSE;
+  }
+
+  for(i=0; i<REG_UID_HISTORY_BUFFER_SIZE; i++){
+    /* Have seen this uid before so return & don't alter our records */
+    if(hist->uidStore[i] == uid)return REG_TRUE;
+  }
+  /* We haven't seen it before so store it */
+  *(hist->uidStorePtr) = uid;
+  if(hist->uidStorePtr == hist->maxPtr){
+    /* Wrap ptr back to beginning of array */
+    hist->uidStorePtr = hist->uidStore;
+  }
+  else{
+    hist->uidStorePtr++;
+  }
+
   return REG_FALSE;
 }
 
