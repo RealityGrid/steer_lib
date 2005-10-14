@@ -40,10 +40,10 @@
  */
 
 /** Uncomment line below to use OGSI rather than WSRF */
-/*#define REG_OGSI 1 */
+/*#define REG_OGSI 1*/
 
-/** Whether or not to use timing routines - these are not very portable */
-#define USE_REG_TIMING
+/** Whether or not to use timing routines - these are not very portable 
+#define USE_REG_TIMING*/
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -265,6 +265,6 @@ typedef int REG_IOHandleType;
 
 /** Size of the buffer in which to store previous msg UIDs - used
     to check whether we've seen a message before */
-#define REG_UID_HISTORY_BUFFER_SIZE 16
+#define REG_UID_HISTORY_BUFFER_SIZE 64
 
 #endif /* __REG_TYPES_INCLUDED defined */
