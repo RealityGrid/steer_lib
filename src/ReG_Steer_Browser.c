@@ -92,12 +92,11 @@ int Get_sim_list(int   *nSims,
       count = 0;
       for(i=0; i<*nSims; i++){
 
-	/* ARPDBG should check type of service here
-	   if(strstr(entries[i].serviceType, "Registry")){
 
-	   } */
+	if((strlen(entries[i].application) > 0) && 
+	   (!strcmp(entries[i].service_type, "SWS") || 
+	   !strcmp(entries[i].service_type, "SGS")) ){
 
-	if(strlen(entries[i].application) > 0){
 	  sprintf(simName[count], "%s %s %s", entries[i].user, 
 		  entries[i].application, 
 		  entries[i].start_date_time);
