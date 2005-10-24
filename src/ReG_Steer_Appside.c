@@ -2673,6 +2673,7 @@ int Steering_control(int     SeqNum,
   int    num_commands  = 0;
   int    num_param     = 0;
   int    commands[REG_MAX_NUM_STR_CMDS];
+  int    saved_commands[REG_MAX_NUM_STR_CMDS];
   int    param_handles[REG_MAX_NUM_STR_PARAMS];
   char*  param_labels[REG_MAX_NUM_STR_PARAMS];
  
@@ -2958,11 +2959,6 @@ int Steering_control(int     SeqNum,
       fprintf(stderr, "Steering_control: done Emit_log for chk log\n");
     }
 #endif
-    /*
-    if(Param_log.emit_in_progress == REG_TRUE){
-      Emit_log(&Param_log);
-    }
-    */
 
 #if REG_DEBUG_FULL
     fprintf(stderr, "Steering_control: done Consume_control\n");
@@ -3021,6 +3017,19 @@ int Steering_control(int     SeqNum,
     case REG_STR_PAUSE:
       
       if(Steerer_connection.handle_pause_cmd == REG_TRUE){
+
+	/* Emit a status message to signal that we are paused */
+	commands[0] = REG_STR_PAUSE;
+	if(Emit_status(SeqNum, 0, NULL, 1, commands) != REG_SUCCESS){
+	  fprintf(stderr, "STEER: Steering_control: FAILED to signal that "
+		  "now paused\n");
+	}
+#if REG_DEBUG
+	else{
+	  fprintf(stderr, "STEER: Steering_control: signalled that now "
+		  "paused OK\n");
+	}
+#endif /* REG_DEBUG */
 	
 	Steering_pause(NumSteerParams,
 		       SteerParamLabels,
@@ -3092,7 +3101,9 @@ int Steering_control(int     SeqNum,
 			 0,    /* *NumSteerParams, */
 			 NULL, /* param_handles,   */
 			 *NumSteerCommands,
-			 commands);
+			 SteerCommands);
+    /*commands); ARPDBG - report the commands that we will be passing up
+      and don't report any pause commands received again. */
 
     if(status != REG_SUCCESS){
 
@@ -3126,7 +3137,6 @@ int Auto_generate_steer_cmds(int    SeqNum,
   int    i;
   int    return_status = REG_SUCCESS;
   int    cmd_count, param_count;
-  double valid_time;
 
   struct msg_store_struct *previous = NULL;
   struct msg_store_struct *toDelete  = NULL;
@@ -3194,7 +3204,6 @@ int Auto_generate_steer_cmds(int    SeqNum,
     /* We only ever instruct the app. to emit checkpoints since to consume
        a checkpoint implies a restart */
     sprintf(SteerCmdParams[*posn], "OUT");
-
     (*posn)++;
   }
 
@@ -3205,14 +3214,8 @@ int Auto_generate_steer_cmds(int    SeqNum,
   if(ReG_ctrl_msg_first){
     storedMsg = ReG_ctrl_msg_first;
     while(storedMsg){
-      sscanf((char *)storedMsg->msg->control->valid_after, "%lg", &valid_time);
 
-      printf("ARPDBG: total sim time = %.20g\n", ReG_TotalSimTimeSecs);
-      printf("ARPDBG, stored msg has valid_time = %.20g\n", valid_time);
-      printf("ARPDBG, sim timestep = %.20g\n", ReG_SimTimeStepSecs);
-
-      if(valid_time < (ReG_TotalSimTimeSecs+0.1*ReG_SimTimeStepSecs)){
-	printf("...ARPDBG, stored msg is now valid\n");
+      if(Control_msg_now_valid(storedMsg->msg)){
 
 #if REG_LOG_STEERING
 	Log_control_msg(storedMsg->msg->control);
@@ -3274,6 +3277,15 @@ int Steering_pause(int   *NumSteerParams,
   /* Can only call this function if steering lib initialised */
 
   if (!ReG_SteeringInit) return REG_FAILURE;
+
+  /* Get the current Sequence Number of the simulation */
+  index = Param_index_from_handle(&(Params_table), REG_SEQ_NUM_HANDLE);
+  if(index != -1){
+    sscanf(Params_table.param[index].value, "%d", &seqnum);
+  }
+  else{
+    seqnum = -1;
+  }
 
   /* Pause the application by waiting for a 'resume' or 'detach'
      (failsafe) command from the steerer.  If comms link goes 
@@ -3342,6 +3354,9 @@ int Steering_pause(int   *NumSteerParams,
 	    strcpy(SteerCmdParams[j], SteerCmdParams[i + 1 + j]);
 	  }
 
+	  /* Confirm receipt of the resume command */
+	  commands[0] = REG_STR_RESUME;
+	  Emit_status(seqnum, 0, NULL, 1, commands);
 	  break;
 	}
 	else if(commands[i] == REG_STR_DETACH){
@@ -3350,21 +3365,8 @@ int Steering_pause(int   *NumSteerParams,
 	  return_status = Detach_from_steerer();
 
 	  /* Confirm that we have received the detach command */
-
-	  index = Param_index_from_handle(&(Params_table), REG_SEQ_NUM_HANDLE);
-	  if(index != -1){
-	    sscanf(Params_table.param[index].value, "%d", &seqnum);
-	  }
-	  else{
-	    seqnum = -1;
-	  }
-
 	  commands[0] = REG_STR_DETACH;
-	  Emit_status(seqnum,
-		      0,   
-		      NULL,
-		      1,
-		      commands);
+	  Emit_status(seqnum, 0, NULL, 1, commands);
 
 	  *NumCommands  = 0;
 	  break;
@@ -3384,11 +3386,7 @@ int Steering_pause(int   *NumSteerParams,
 	    seqnum = -1;
 	  }
 	  commands[0] = REG_STR_STOP;
-          Emit_status(seqnum,
-		      0,   
-		      NULL,
-		      1,
-		      commands);
+          Emit_status(seqnum, 0, NULL, 1, commands);
 
 	  /* Return the stop command so app can act on it */
 	  *NumCommands = 1;
@@ -3896,7 +3894,6 @@ int Consume_control(int    *NumCommands,
   int                  param_count = 0;
   struct msg_struct   *msg;
   int                  return_status = REG_SUCCESS;  
-  double               valid_time;
 
   *NumSteerParams = 0;
   *NumCommands    = 0;
@@ -3908,30 +3905,23 @@ int Consume_control(int    *NumCommands,
 
     if(msg->control){
 
-      if(msg->control->valid_after){
-	sscanf((char *)(msg->control->valid_after), "%lg", &(valid_time));
-	/*
-	fprintf(stderr, "ARPDBG Consume_control, msg has valid_after = %.20g\n", 
-		valid_time);
-	fprintf(stderr, "                 current sim time = %.20g\n", 
-		ReG_TotalSimTimeSecs);
-	*/
-	if(valid_time > ReG_TotalSimTimeSecs){
-	  /* Don't read this message yet - store it */
-	  if(!ReG_ctrl_msg_first){
-	    ReG_ctrl_msg_first = New_msg_store_struct();
-	    ReG_ctrl_msg_current = ReG_ctrl_msg_first;
-	    ReG_ctrl_msg_current->msg = msg;
-	    ReG_ctrl_msg_current = ReG_ctrl_msg_current->next;
-	  }
-	  else{
-	    ReG_ctrl_msg_current = New_msg_store_struct();
-	    ReG_ctrl_msg_current->msg = msg;
-	    ReG_ctrl_msg_current = ReG_ctrl_msg_current->next;
-	  }
-	  /* Don't delete msg as we are keeping a reference to it */
-	  return REG_SUCCESS;
+      if(!Control_msg_now_valid(msg)){
+	/* Don't read this message yet - store it.  This message store is
+	   checked in Auto_generate_steer_cmds.  This is the same check
+	   that is performed in Auto_generate_steer_cmds */
+	if(!ReG_ctrl_msg_first){
+	  ReG_ctrl_msg_first = New_msg_store_struct();
+	  ReG_ctrl_msg_current = ReG_ctrl_msg_first;
+	  ReG_ctrl_msg_current->msg = msg;
+	  ReG_ctrl_msg_current = ReG_ctrl_msg_current->next;
 	}
+	else{
+	  ReG_ctrl_msg_current = New_msg_store_struct();
+	  ReG_ctrl_msg_current->msg = msg;
+	  ReG_ctrl_msg_current = ReG_ctrl_msg_current->next;
+	}
+	/* Don't delete msg as we are keeping a reference to it */
+	return REG_SUCCESS;
       }
 
 #if REG_LOG_STEERING
@@ -5716,4 +5706,38 @@ int Free_string_arrays()
   ReG_list_head = NULL;
 
   return REG_SUCCESS;
+}
+
+/*-----------------------------------------------------------------*/
+
+int Control_msg_now_valid(struct msg_struct *msg){
+
+  double valid_time;
+
+  if(!msg || !(msg->control))return 0;
+
+  /* Msg must be valid if it has no valid_after field */
+  if( !(msg->control->valid_after) )return 1;
+
+  if(sscanf((char *)(msg->control->valid_after), "%lg", 
+	    &(valid_time)) != 1){
+    return 1;
+  }
+
+#if REG_DEBUG
+  fprintf(stderr, "STEER: Control_msg_now_valid, msg has valid_after = %.20g\n", 
+	  valid_time);
+  fprintf(stderr, "                                 current sim time = %.20g\n", 
+	  ReG_TotalSimTimeSecs);
+#endif /* REG_DEBUG */
+
+  /* Comparing the valid_time with the current simulated time + one ten-
+     thousandth of the time step allows for rounding errors. */
+  if( valid_time < (ReG_TotalSimTimeSecs)){/*+0.0001*ReG_SimTimeStepSecs) ){*/
+#if REG_DEBUG
+    printf("STEER: Control_msg_now_valid: stored msg is now valid\n");
+#endif
+    return 1;
+  }
+  return 0;
 }
