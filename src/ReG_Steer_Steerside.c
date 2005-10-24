@@ -1617,9 +1617,8 @@ int Emit_control(int    SimHandle,
   }
 
   /* Create control message in buffer */
-
   pbuf = buf;
-  Write_xml_header(&pbuf, REG_FALSE);
+  Write_xml_header(&pbuf);
 
   pbuf += sprintf(pbuf, "<Steer_control>\n");
 

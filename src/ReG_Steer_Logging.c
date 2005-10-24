@@ -1030,7 +1030,7 @@ int Pack_send_log_entries(char **pBuf, int *msg_count)
     if(tot_len == 0){
       /* Begin the first message */
       pmsg_buf = msg_buf;
-      Write_xml_header(&pmsg_buf, REG_TRUE);
+      Write_xml_header(&pmsg_buf);
       pmsg_buf += sprintf(pmsg_buf, "<Steer_log>\n");
       tot_len = (int)(pmsg_buf - msg_buf);
     }
@@ -1113,7 +1113,7 @@ int Pack_send_log_entries(char **pBuf, int *msg_count)
       /* Begin the next message */
       plast = NULL;
       pmsg_buf = msg_buf;
-      Write_xml_header(&pmsg_buf, REG_TRUE);
+      Write_xml_header(&pmsg_buf);
       pmsg_buf += sprintf(pmsg_buf, "<Steer_log>\n");
 
       strncpy(pmsg_buf, pbuf2, len);

@@ -619,36 +619,17 @@ int IOdef_index_from_handle(IOdef_table_type *table, int IOdefHandle)
 /** Write the header of a new steering message into the supplied buffer 
     @param buf Pointer to array of char to write into
     @internal */
-int Write_xml_header(char **buf, int isAppSide)
+int Write_xml_header(char **buf)
 {
   int  return_status = REG_SUCCESS;
-  /** Count of messages created - used to provide a UID for each msg */
-  static unsigned int ReG_Msg_Count = 0;
-
-  /* Write header for a ReG steering message */
 
   if(buf){
-    if(isAppSide == REG_TRUE){
-      /* Include message UID in header if we are generating a message
-	 FROM the application. */
-      *buf += sprintf(*buf, "<ReG_steer_message xmlns:xsi=\""
-		      "http://www.w3.org/2001/XMLSchema-instance\"\n"
-		      "xmlns=\"%s\"\n       xsi:SchemaLocation=\"%s %s\"\n"
-		      "Msg_UID=\"%u\">\n", 
-		      REG_STEER_NAMESPACE,
-		      REG_STEER_NAMESPACE,
-		      ReG_Steer_Schema_Locn, ReG_Msg_Count++);
-    }
-    else{
-      /* If we are a steering client then don't generate a message UID
-	 as the SWS does this (because we may have >1 steering client) */
-      *buf += sprintf(*buf, "<ReG_steer_message xmlns:xsi=\""
-		      "http://www.w3.org/2001/XMLSchema-instance\"\n"
-		      "xmlns=\"%s\"\n       xsi:SchemaLocation=\"%s %s\">\n", 
-		      REG_STEER_NAMESPACE,
-		      REG_STEER_NAMESPACE,
-		      ReG_Steer_Schema_Locn);
-    }
+    *buf += sprintf(*buf, "<ReG_steer_message xmlns:xsi=\""
+		    "http://www.w3.org/2001/XMLSchema-instance\"\n"
+		    "xmlns=\"%s\"\n       xsi:SchemaLocation=\"%s %s\">\n", 
+		    REG_STEER_NAMESPACE,
+		    REG_STEER_NAMESPACE,
+		    ReG_Steer_Schema_Locn);
   }
   else{
     return_status = REG_FAILURE;
