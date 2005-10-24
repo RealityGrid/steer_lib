@@ -359,9 +359,11 @@ int Send_status_msg_wsrf (char *msg)
 struct msg_struct *Get_control_msg_wsrf ()
 {
   struct msg_struct *msg = NULL;
-  char *pBuf, *pLast, *pLastBut1, *pStart;
+  char *pBuf, *pLast, *pStart;
+  /*
+  char *pLastBut1;
   int   i;
-
+  */
   /* If we have a backlog of messages then return the next one 
      - we are only interested in control messages */
   while( (msg = Get_next_stored_msg(NULL)) ){
