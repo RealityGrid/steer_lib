@@ -1631,7 +1631,6 @@ void Print_io_def_struct(struct io_def_struct   *io_def)
 void Print_io_struct(struct io_struct   *io)
 {
   struct io_struct *ptr   = io;
-  int               count = 0;
 
   while(ptr){
 
