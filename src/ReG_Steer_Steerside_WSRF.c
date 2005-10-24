@@ -118,46 +118,6 @@ int Sim_attach_wsrf (Sim_entry_type *sim, char *SimID){
     return REG_FAILURE;
   }
 
-  /* Parse the supported commands *
-  len = strlen(response.__return);
-  if(len){
-    if(!(msg = New_msg_struct())){
-
-      fprintf(stderr, "Sim_attach_wsrf: failed to get new msg struct\n");
-      Finalize_connection_wsrf(sim);
-      return REG_FAILURE;
-    }
-
-    return_status = Parse_xml_buf(response.__return, len, msg, sim);
-
-    if(return_status == REG_SUCCESS && msg->supp_cmd){
-
-      cmd = msg->supp_cmd->first_cmd;
-
-      while(cmd){
-
-	sscanf((char *)(cmd->id), "%d", 
-	       &(sim->Cmds_table.cmd[sim->Cmds_table.num_registered].cmd_id));
-
-	* ARPDBG - may need to add cmd parameters here too *
-	Increment_cmd_registered(&(sim->Cmds_table));
-	cmd = cmd->next;
-      }
-    }
-    else{
-      fprintf(stderr, "Sim_attach_wsrf: error parsing supported cmds\n");
-    }
-
-    Delete_msg_struct(&msg);
-
-    return return_status;
-  }
-  else{
-    Finalize_connection_wsrf(sim);
-    return REG_FAILURE;
-  }
-  */
-
   return REG_SUCCESS;
 }
 
@@ -219,7 +179,6 @@ struct msg_struct *Get_status_msg_wsrf(Sim_entry_type *sim)
 
     /* Parse the whole doc; messages are stored in the Msg_store struct
        associated with the sim entry */
-    fprintf(stderr, "Get_status_msg_wsrf: ARPDBG, parsing whole RPDoc...\n");
     Parse_xml_buf(pRPDoc, strlen(pRPDoc), NULL, sim);
     return Get_next_stored_msg(sim);
   }
@@ -255,8 +214,11 @@ struct msg_struct *Get_next_stored_msg(Sim_entry_type *sim)
   }
 
   if(msgStorePtr->msg){
+    /*
     fprintf(stderr, "STEER: Get_next_stored_msg: ARPDBG: retrieving "
-	    "a stored msg\n");
+	    "a stored msg:\n");
+    Print_msg(msgStorePtr->msg);
+    */
 
     /* Take a copy of the pointer to the oldest stored message */
     msg = msgStorePtr->msg;
