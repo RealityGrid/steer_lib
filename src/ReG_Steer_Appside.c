@@ -2673,7 +2673,6 @@ int Steering_control(int     SeqNum,
   int    num_commands  = 0;
   int    num_param     = 0;
   int    commands[REG_MAX_NUM_STR_CMDS];
-  int    saved_commands[REG_MAX_NUM_STR_CMDS];
   int    param_handles[REG_MAX_NUM_STR_PARAMS];
   char*  param_labels[REG_MAX_NUM_STR_PARAMS];
  
@@ -3434,7 +3433,7 @@ int Emit_param_defs()
 
   /* Assume header and following line fit comfortably within
      REG_MAX_MSG_SIZE so don't check for truncation yet */
-  Write_xml_header(&pbuf, REG_TRUE);
+  Write_xml_header(&pbuf);
 
   pbuf += sprintf(pbuf, "<Param_defs>\n");
   bytes_left -= (int)(pbuf - buf);
@@ -3656,7 +3655,7 @@ int Emit_IOType_defs(){
   
   bytes_left = REG_MAX_MSG_SIZE;
   pbuf = buf;
-  Write_xml_header(&pbuf, REG_TRUE);
+  Write_xml_header(&pbuf);
 
   nbytes = sprintf(pbuf, "<IOType_defs>\n");
   
@@ -3780,7 +3779,7 @@ int Emit_ChkType_defs(){
   
   bytes_left = REG_MAX_MSG_SIZE;
   pbuf = buf;
-  Write_xml_header(&pbuf, REG_TRUE);
+  Write_xml_header(&pbuf);
 
   nbytes = sprintf(pbuf, "<ChkType_defs>\n");
   
@@ -4224,7 +4223,7 @@ int Emit_status(int   SeqNum,
 
     pbuf = buf;
 
-    Write_xml_header(&pbuf, REG_TRUE);
+    Write_xml_header(&pbuf);
     nbytes = sprintf(pbuf, "<App_status>\n");
 
     bytes_left = REG_MAX_MSG_SIZE - nbytes -  (pbuf - buf);
@@ -5036,7 +5035,7 @@ int Make_supp_cmds_msg(int   NumSupportedCmds,
   bytes_left = max_msg_size;
   pchar = msg;
 
-  Write_xml_header(&pchar, REG_TRUE);
+  Write_xml_header(&pchar);
 
   pchar += sprintf(pchar, "<Supported_commands>\n");
   bytes_left -= (int)(pchar - msg);
