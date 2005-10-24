@@ -316,7 +316,7 @@ int Send_status_msg_wsrf (char *msg)
   /* We loop until we have a clear-cut success or failure - i.e.
      if we have a deadlock we fall back to here and try again */
   loopCount = -1;
-  while(1 && (loopCount < 5)){
+  while(1 && (loopCount < 10)){
 
     loopCount++;
     if(soap_call_wsrp__SetResourceProperties(Steerer_connection.SGS_info.soap, 
@@ -359,7 +359,8 @@ int Send_status_msg_wsrf (char *msg)
 struct msg_struct *Get_control_msg_wsrf ()
 {
   struct msg_struct *msg = NULL;
-  char *pBuf, *pLast, *pLastBut1;
+  char *pBuf, *pLast, *pLastBut1, *pStart;
+  int   i;
 
   /* If we have a backlog of messages then return the next one 
      - we are only interested in control messages */
@@ -379,13 +380,40 @@ struct msg_struct *Get_control_msg_wsrf ()
     return msg;
   }
 
+  /* Parse and store the control messages in the order in which they
+     occur in the RPDoc which is the same as the order in which they
+     were received. */
+  if( !(pStart = strstr(pBuf, "<sws:controlMsg")) ){
+    /* No control message found */    
+    return NULL;
+  }
+
+  while(pStart){
+
+    pLast = strstr(pStart+1, "<sws:controlMsg");
+    /* Parse the doc - pass NULLs in as this is appside so have no
+       Sim_entry struct and results will be put in Msg_store struct */
+    if(pLast){
+      Parse_xml_buf(pStart, (int)(pLast-pStart), NULL, NULL);
+    }
+    else{
+      /* Have reached last control message so length of this one
+	 is just num. chars 'til end of buffer */
+      Parse_xml_buf(pStart, strlen(pStart), NULL, NULL);
+    }
+    pStart = pLast;
+  }
+
+  /* I think this stores the messages in reverse order - I don't know
+     why I went to the trouble of doing this!
   pLastBut1 = NULL;
   while(pLastBut1 != pBuf){
 
     if( !(pLast = strstr(pBuf, "<sws:controlMsg")) ){
-      /* No control message found */
+      * No control message found *
       return NULL;
     }
+
     pLastBut1 = pLast;
     while(pLast){
       pLastBut1 = pLast;
@@ -396,12 +424,13 @@ struct msg_struct *Get_control_msg_wsrf ()
     fprintf(stderr, "STEER: Get_control_msg_wsrf parsing >>%s<<\n", pLastBut1);
 #endif
 
-    /* Parse the doc - pass NULLs in as this is appside so have no
-       Sim_entry struct and results will be put in Msg_store struct */
+    * Parse the doc - pass NULLs in as this is appside so have no
+       Sim_entry struct and results will be put in Msg_store struct *
     Parse_xml_buf(pLastBut1, strlen(pLastBut1), NULL, NULL);
 
     *pLastBut1 = '\0';
   }
+*/
 
   /* The results of parsing the ResourcePropertyDocument are stored
      as a series of messages - go through these until we find a 
@@ -469,8 +498,6 @@ int Finalize_steering_connection_wsrf ()
   struct wsrp__DestroyResponse out;
   int  commands[1];
 
-  fprintf(stderr, "ARPDBG: Finalize_steering_connection_wsrf: sending "
-	  "Detach command\n");
   commands[0] = REG_STR_DETACH;
   Emit_status(0,
 	      0,   
@@ -478,8 +505,6 @@ int Finalize_steering_connection_wsrf ()
 	      1,
 	      commands);
 
-  fprintf(stderr, "ARPDBG: Finalize_steering_connection_wsrf: calling "
-	  "Destroy\n");
   if(soap_call_wsrp__Destroy(Steerer_connection.SGS_info.soap, 
 			    Steerer_connection.SGS_info.address, 
 			    "",  NULL, &out)){
