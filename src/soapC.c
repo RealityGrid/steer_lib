@@ -11,7 +11,7 @@ extern "C" {
 
 SOAP_BEGIN_NAMESPACE(soap)
 
-SOAP_SOURCE_STAMP("@(#) soapC.c ver 2.7.2 2005-10-12 14:23:13 GMT")
+SOAP_SOURCE_STAMP("@(#) soapC.c ver 2.7.2 2005-10-13 08:34:49 GMT")
 
 
 #ifndef WITH_NOGLOBAL
