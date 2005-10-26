@@ -219,7 +219,7 @@ ReG_Steering_Initialize.o: ReG_Steering_Initialize.f90 \
         -DREG_DEBUG=${REG_DEBUG_FLAG} \
         -DREG_DEBUG_FULL=${REG_DEBUG_FULL_FLAG} \
         -DREG_STEER_LIB_VERSION=\"${REG_STEER_LIB_VERSION}\" \
-        ${INCLUDE_PATH} -c $< -o $@
+        ${INCLUDE_PATH} -c ReG_Steering_Initialize.f90 -o $@
 
 ReG_Steer_Appside_IOProxy.o: ReG_Steer_Appside_IOProxy.c \
         ../include/ReG_Steer_Appside_IOProxy.h \
