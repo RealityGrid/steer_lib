@@ -278,4 +278,10 @@ int Unpack_control_msg(struct control_struct *ctrl,
 		       int    *SteerParamHandles,
 		       char  **SteerParamLabels);
 
+/** Extracts the valid_time (if any) from the message and compares
+    it with the current simulation time.  Message is valid if its
+    valid_time < (Current_time + 0.1*time_step).
+    @returns 1 if msg valid, 0 otherwise */
+int Control_msg_now_valid(struct msg_struct *msg);
+
 #endif
