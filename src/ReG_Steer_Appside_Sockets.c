@@ -136,7 +136,8 @@ int create_listener(const int index) {
   IOTypes_table.io_def[index].socket_info.listener_handle = listener;
 
   /* Turn off the "Address already in use" error message */
-  if(setsockopt(listener, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == REG_SOCKETS_ERROR) {
+  if(setsockopt(listener, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == 
+     REG_SOCKETS_ERROR) {
     perror("setsockopt");
     return REG_FAILURE;
   }
@@ -146,6 +147,17 @@ int create_listener(const int index) {
    * that's what we use.  If not, call Get_fully_qualified_hostname which 
    * itself uses  REG_TCP_INTERFACE if set. */
   if( (pchar = getenv("REG_IO_ADDRESS")) ){
+#if REG_DEBUG
+    fprintf(stderr, "STEER: create_listener: Taking hostname from "
+	    "REG_IO_ADDRESS variable\n");
+#endif
+    strcpy(IOTypes_table.io_def[index].socket_info.listener_hostname, pchar);
+  }
+  else if( (pchar = getenv("GLOBUS_HOSTNAME")) ){
+#if REG_DEBUG
+    fprintf(stderr, "STEER: create_listener: Taking hostname from "
+	    "GLOBUS_HOSTNAME variable\n");
+#endif
     strcpy(IOTypes_table.io_def[index].socket_info.listener_hostname, pchar);
   }
   else if(Get_fully_qualified_hostname(&pchar, &ip_addr) == REG_SUCCESS){
@@ -153,7 +165,8 @@ int create_listener(const int index) {
   }
   else{
     fprintf(stderr, "Sockets_create_listener: WARNING: failed to get hostname\n");
-    sprintf(IOTypes_table.io_def[index].socket_info.listener_hostname, "NOT_SET");
+    sprintf(IOTypes_table.io_def[index].socket_info.listener_hostname, 
+	    "NOT_SET");
   }
   
   /* set up server address */
@@ -162,7 +175,8 @@ int create_listener(const int index) {
     myAddr.sin_addr.s_addr = INADDR_ANY;
   }
   else {
-    inet_aton(IOTypes_table.io_def[index].socket_info.tcp_interface, &(myAddr.sin_addr));
+    inet_aton(IOTypes_table.io_def[index].socket_info.tcp_interface, 
+	      &(myAddr.sin_addr));
   }
   memset(&(myAddr.sin_zero), '\0', 8); /* zero the rest */
 
@@ -170,7 +184,8 @@ int create_listener(const int index) {
   i = IOTypes_table.io_def[index].socket_info.min_port;
   myAddr.sin_port = htons((short) i);
 
-  while(bind(listener, (struct sockaddr*) &myAddr, sizeof(struct sockaddr)) == REG_SOCKETS_ERROR) {
+  while(bind(listener, (struct sockaddr*) &myAddr, sizeof(struct sockaddr)) == 
+	REG_SOCKETS_ERROR) {
     if(++i > IOTypes_table.io_def[index].socket_info.max_port) {
       perror("bind");
       close(listener);
