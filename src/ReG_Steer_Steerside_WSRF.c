@@ -34,6 +34,7 @@
 #include "ReG_Steer_Steerside.h"
 #include "ReG_Steer_Steerside_internal.h"
 #include "ReG_Steer_Steerside_WSRF.h"
+#include "ReG_Steer_Utils_WSRF.h"
 
 /** @file ReG_Steer_Steerside_WSRF.c
     @brief Code for WSRF over SOAP communications for the steering client.
@@ -88,8 +89,11 @@ int Sim_attach_wsrf (Sim_entry_type *sim, char *SimID){
   sim->SGS_info.soap->fignore = soapMismatchHandler;
 #endif
 
-  printf("STEER: Calling Attach...\n");
-  if(soap_call_sws__Attach((sim->SGS_info.soap), SimID, "", NULL, 
+  if(sim->SGS_info.passwd[0]){
+    Create_WSSE_header(sim->SGS_info.soap, sim->SGS_info.passwd);
+  }
+  fprintf(stderr, "STEER: Calling Attach...\n");
+  if(soap_call_sws__Attach(sim->SGS_info.soap, SimID, "", NULL, 
 			   &response) != SOAP_OK){
     soap_print_fault((sim->SGS_info.soap), stderr);
     Finalize_connection_wsrf(sim);
@@ -100,7 +104,7 @@ int Sim_attach_wsrf (Sim_entry_type *sim, char *SimID){
   sprintf(sim->SGS_info.address, SimID);
 
   for(i=0; i<response.ReG_USCOREsteer_USCOREmessage.Supported_USCOREcommands.__size; i++){
-    printf("STEER: Attach, cmd %d = %d\n", i, 
+    fprintf(stderr, "STEER: Attach, cmd %d = %d\n", i, 
 	   response.ReG_USCOREsteer_USCOREmessage.Supported_USCOREcommands.__ptr[i].Cmd_USCOREid);
 
     sim->Cmds_table.cmd[sim->Cmds_table.num_registered].cmd_id = 
@@ -126,11 +130,16 @@ int Sim_attach_wsrf (Sim_entry_type *sim, char *SimID){
 int Send_control_msg_wsrf (Sim_entry_type *sim, char *buf){
 
   char   inputBuf[REG_MAX_MSG_SIZE + 32];
-  struct wsrp__SetResourcePropertiesResponse out;
+  /*struct wsrp__SetResourcePropertiesResponse out;*/
 
   snprintf(inputBuf, REG_MAX_MSG_SIZE + 32,
 	   "<controlMsg>%s</controlMsg>", buf);
 
+  return Set_resource_property (sim->SGS_info.soap,
+				sim->SGS_info.address,
+				sim->SGS_info.passwd,
+				inputBuf);
+  /*
   if(soap_call_wsrp__SetResourceProperties((sim->SGS_info.soap), 
 					   sim->SGS_info.address, 
 					   "", inputBuf, &out) != SOAP_OK){
@@ -139,6 +148,7 @@ int Send_control_msg_wsrf (Sim_entry_type *sim, char *buf){
   }
 
   return REG_SUCCESS;
+  */
 }
 
 /*------------------------------------------------------------------*/
@@ -156,6 +166,7 @@ struct msg_struct *Get_status_msg_wsrf(Sim_entry_type *sim)
 
   if( Get_resource_property_doc(sim->SGS_info.soap, 
 				sim->SGS_info.address,
+				sim->SGS_info.passwd,
 				&pRPDoc) != REG_SUCCESS){
 
     msg = New_msg_struct();
@@ -264,6 +275,7 @@ struct msg_struct *Get_next_stored_msg(Sim_entry_type *sim)
 /** Get the value of the specified resource property */
 int Get_resource_property (struct soap *soapStruct,
                            const char  *epr,
+			   const char  *passwd,
 			   const char  *name,
 			   char       **pRP)
 {
@@ -279,6 +291,10 @@ int Get_resource_property (struct soap *soapStruct,
 
   in.__ptr[0].ResourceProperty = (char *)malloc(REG_MAX_STRING_LENGTH*sizeof(char));
   strncpy(in.__ptr[0].ResourceProperty, name, REG_MAX_STRING_LENGTH);
+
+  if(passwd && passwd[0]){
+    Create_WSSE_header(soapStruct, passwd);
+  }
 
 #ifdef USE_REG_TIMING
   Get_current_time_seconds(&time0);
@@ -313,7 +329,8 @@ int Get_resource_property (struct soap *soapStruct,
 /** Get the whole resource property document */
 int Get_resource_property_doc(struct soap *soapStruct,
 			      const char  *epr,
-			      char **pDoc)
+			      const char  *passwd,
+			      char       **pDoc)
 {
   char *out;
 #ifdef USE_REG_TIMING
@@ -323,6 +340,10 @@ int Get_resource_property_doc(struct soap *soapStruct,
  /* Free-up dynamically-allocated memory regularly because the RP
     doc can be big */
   soap_end(soapStruct);
+
+  if(passwd && passwd[0]){
+    Create_WSSE_header(soapStruct, passwd);
+  }
 
   *pDoc = NULL;
 
@@ -352,12 +373,50 @@ int Get_resource_property_doc(struct soap *soapStruct,
 }
 
 /*------------------------------------------------------------------*/
+
+int Set_resource_property (struct soap *soapStruct,
+                           const char  *epr,
+			   const char  *passwd,
+			   char        *input)
+{
+  struct wsrp__SetResourcePropertiesResponse out;
+
+  if(passwd[0]){
+    Create_WSSE_header(soapStruct, passwd);
+  }
+
+  if(soap_call_wsrp__SetResourceProperties(soapStruct, epr,
+					   "", input, &out) != SOAP_OK){
+    fprintf(stderr, "STEER: Set_resource_property: failed to set RP:\n");
+    soap_print_fault(soapStruct, stderr);
+
+    if(soapStruct->fault && soapStruct->fault->detail){
+	fprintf(stderr, "STEER: Set_resource_property: Soap error detail"
+		" any = %s\n", soapStruct->fault->detail->__any);
+	if(strstr(soapStruct->fault->detail->__any, "deadlock")){
+	  /* If we timed-out because of a deadlock situation (possible in
+	     coupled models) then return appropriate code */
+	  return REG_TIMED_OUT;
+	}
+      }
+
+    return REG_FAILURE;
+  }
+
+  return REG_SUCCESS;
+}
+
+/*------------------------------------------------------------------*/
 /** Send a detach msg to a simulation */
 int Send_detach_msg_wsrf (Sim_entry_type *sim){
 
 #if REG_DEBUG
   fprintf(stderr, "STEER: Send_detach_msg_wsrf: calling Detach...\n");
 #endif
+
+  if(sim->SGS_info.passwd[0]){
+    Create_WSSE_header(sim->SGS_info.soap, sim->SGS_info.passwd);
+  }
 
   if(soap_call_sws__Detach(sim->SGS_info.soap, sim->SGS_info.address, 
 			   "", NULL, NULL )){
@@ -420,6 +479,10 @@ int Get_param_log_wsrf(Sim_entry_type *sim,
 
       return REG_MEM_FAIL;
     }
+  }
+
+  if(sim->SGS_info.passwd[0]){
+    Create_WSSE_header(sim->SGS_info.soap, sim->SGS_info.passwd);
   }
 
 #ifdef USE_REG_TIMING

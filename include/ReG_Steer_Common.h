@@ -324,6 +324,8 @@ typedef struct {
     int  sde_index;
     /** The stucture holding the gSOAP environment for this connection */
     struct soap *soap;
+    /** The passphrase (if any) used with WS-Security for this service */
+    char passwd[REG_MAX_STRING_LENGTH];
 
   } SGS_info_type;
 
@@ -389,7 +391,7 @@ extern PREFIX int IOdef_index_from_handle(IOdef_table_type *table,
 extern PREFIX int Increment_param_registered(Param_table_type *table);
 
 /**
-  Increment the count of commandss registered and allocate
+  Increment the count of commands registered and allocate
   more memory if required.
  */
 extern PREFIX int Increment_cmd_registered(Supp_cmd_table_type *table);
@@ -455,5 +457,19 @@ extern PREFIX int Reorder_decode_array(IOdef_entry *io,
 /** Does what is says.  Uses uname and gethostbyname. */
 extern PREFIX int Get_fully_qualified_hostname(char **hostname, 
 					       char **ip_addr_ptr);
+
+/** Initialize the OpenSSL random number generator for this thread 
+    @internal */
+extern PREFIX int Init_random();
+
+/** Creates a WS-Security header for gSoap (within the soap struct)
+    @internal
+    @returns REG_SUCCESS or REG_FAILURE if no header created */
+extern PREFIX int Create_WSSE_header(struct soap *aSoap,
+				     const  char *passwd);
+
+/** Return the current (GMT) date and time as a string in the format
+    YYYY-MM-DDTHH:MM:SSZ suitable for inclusion in XML documents */
+extern PREFIX char *Get_current_time_string();
 
 #endif

@@ -38,6 +38,8 @@
 
 #include "ReG_Steer_types.h"
 #include "ReG_Steer_Common.h"
+
+#include "Base64.h"
 #ifndef WIN32
 #include <sys/time.h>
 #endif
@@ -1195,4 +1197,179 @@ int Get_fully_qualified_hostname(char **hostname, char **ip_addr_ptr)
  
   return REG_SUCCESS;
 #endif
+}
+
+/*----------------------------------------------------------------*/
+
+int Init_random()
+{
+  struct stat stbuf;
+  char *randBuf = "/dev/random";
+
+  if(stat(randBuf, &stbuf) == -1){
+    fprintf(stderr, "STEER: Init_random: %s does not exist on this "
+	    "system - cannot initalize random sequence\n", randBuf);
+    return REG_FAILURE;
+  }
+
+  /* Use contents of /dev/random to initialise sequence of pseudo
+     random numbers from OpenSSL */
+  if(!RAND_load_file(randBuf, 128)){
+    fprintf(stderr, "STEER: Init_random: Failed to initialize pseudo-random "
+	    "number sequence from %s\n", randBuf);
+    return REG_FAILURE;
+  }
+
+  return REG_SUCCESS;
+}
+
+/*-----------------------------------------------------------------*/
+
+int Create_WSSE_header(struct soap *aSoap,
+		       const  char *passwd)
+{
+  const int     MAX_LEN = 1024;
+  int           i, len;
+  int           status;
+  int           bytesLeft, nbytes;
+  unsigned char randBuf[MAX_LEN];
+  char         *pBuf;
+  char          buf[MAX_LEN];
+  char          digest[SHA_DIGEST_LENGTH];
+  char         *pBase64Buf = NULL;
+  char         *timePtr;
+
+  /* alloc new header for WS-Security */
+  aSoap->header = soap_malloc(aSoap, sizeof(struct SOAP_ENV__Header));
+  if(!(aSoap->header)){
+    fprintf(stderr,
+	    "STEER: Create_WSSE_header: Failed to malloc space for header\n");
+    return REG_FAILURE;
+  }
+
+  aSoap->header->Security.UsernameToken.wsse__Username = 
+                                       (char *)soap_malloc(aSoap, 128);
+  aSoap->header->Security.UsernameToken.wsu__Created = 
+                                       (char *)soap_malloc(aSoap, 128);
+  aSoap->header->Security.UsernameToken.wsse__Password.Type = 
+                                       (char *)soap_malloc(aSoap, 128);
+
+  if( !(aSoap->header->Security.UsernameToken.wsse__Username) ||
+      !(aSoap->header->Security.UsernameToken.wsu__Created) ||
+      !(aSoap->header->Security.UsernameToken.wsse__Password.Type) ){
+    fprintf(stderr, "STEER: Create_WSSE_header: Failed to malloc space "
+	    "for header elements\n");
+    return REG_FAILURE;
+  }
+
+  status = RAND_pseudo_bytes(randBuf, 16);
+#if REG_DEBUG_FULL
+  if(status == 0){
+    fprintf(stderr, "Sequence is not cryptographically strong\n");
+  }
+  else if(status == 1){
+    fprintf(stderr, "Sequence IS cryptographically strong\n");
+  }
+  else if(status == -1){
+    fprintf(stderr, "RAND_pseudo_bytes is not supported\n");
+    return REG_FAILURE;
+  }
+#endif /* REG_DEBUG_FULL */
+
+  /* Base64-encode this random sequence to make our nonce a nice
+     ASCII string (XML friendly) */
+  Base64_encode(randBuf, 16, &pBase64Buf, &len);
+
+  snprintf(aSoap->header->Security.UsernameToken.wsse__Username, 128, 
+	   "RealityGrid");
+
+  aSoap->header->Security.UsernameToken.wsse__Nonce = 
+                                       (char *)soap_malloc(aSoap, len+1);
+  if( !(aSoap->header->Security.UsernameToken.wsse__Nonce) ){
+    fprintf(stderr, 
+	    "STEER: Create_WSSE_header: Failed to malloc space for nonce\n");
+    return REG_FAILURE;
+  }
+  strncpy(aSoap->header->Security.UsernameToken.wsse__Nonce, pBase64Buf, len);
+  aSoap->header->Security.UsernameToken.wsse__Nonce[len] = '\0';
+
+  timePtr = Get_current_time_string(); /* Steer lib */
+  snprintf(aSoap->header->Security.UsernameToken.wsu__Created, 128,
+	   timePtr);
+  fprintf(stderr, "STEER: Create_WSSE_header: Created: >>%s<<\n", 
+	 aSoap->header->Security.UsernameToken.wsu__Created);
+
+  snprintf(aSoap->header->Security.UsernameToken.wsse__Password.Type, 128,
+	   "PasswordDigest");
+
+  fprintf(stderr, "STEER: Create_WSSE_header: Creating PasswordDigest...\n");
+  /* Password_digest = Base64(SHA-1(nonce + created + password)) */
+  bytesLeft = MAX_LEN;
+  pBuf = buf;
+  nbytes = snprintf(pBuf, bytesLeft, 
+		    aSoap->header->Security.UsernameToken.wsse__Nonce); /* nonce */
+  bytesLeft -= nbytes; pBuf += nbytes;
+  nbytes = snprintf(pBuf, bytesLeft, timePtr); /* created */
+  bytesLeft -= nbytes; pBuf += nbytes;
+  nbytes = snprintf(pBuf, bytesLeft, passwd); /* password */
+  bytesLeft -= nbytes; pBuf += nbytes;
+  printf("Digest is: >>");
+  for(i=0;i<(MAX_LEN-bytesLeft);i++){
+    printf("%c", buf[i]);
+  }
+  printf("<<\n");
+
+  SHA1(buf, (MAX_LEN-bytesLeft), digest); /* openssl call */
+
+  free(pBase64Buf); len = 0; pBase64Buf=NULL;
+  Base64_encode(digest, SHA_DIGEST_LENGTH, &pBase64Buf, &len); /* Steer lib */
+  /* Strip padding characters from end because perl doesn't add them from
+     the sha1_base64 function */
+  i = len-1;
+  while((i > -1) && (pBase64Buf[i] == '=')){
+    pBase64Buf[i--] = '\0';
+  }
+
+  printf("Encoded digest is: >>");
+  for(i=0; i<len; i++){
+    printf("%c", pBase64Buf[i]);
+  }
+  printf("<<\n");
+
+  /* +1 allows for null terminator (which Base64_encode does not include) */
+  aSoap->header->Security.UsernameToken.wsse__Password.__item = 
+                                       (char *)soap_malloc(aSoap, len+1);
+  if( !(aSoap->header->Security.UsernameToken.wsse__Password.__item) ){
+    printf("Failed to malloc space for Password\n");
+    return REG_FAILURE;
+  } 
+  strncpy(aSoap->header->Security.UsernameToken.wsse__Password.__item,
+	  pBase64Buf, len);
+  aSoap->header->Security.UsernameToken.wsse__Password.__item[len] = '\0';
+
+  return REG_SUCCESS;
+}
+
+/*----------------------------------------------------------------*/
+
+char *Get_current_time_string()
+{
+  struct timeval tv;
+  struct timezone tz;
+  struct tm *now_details;
+  static char date_string[128];
+
+  gettimeofday(&tv, &tz);
+
+  now_details = gmtime(&(tv.tv_sec));
+  /* 2005-08-31T14:31:51Z */
+  sprintf(date_string,"%d-%02d-%02dT%02d:%02d:%02dZ",
+	  (now_details->tm_year) + 1900,
+	  (now_details->tm_mon) + 1, 
+	  now_details->tm_mday,
+	  now_details->tm_hour,
+	  now_details->tm_min,
+	  now_details->tm_sec);
+
+  return date_string;
 }

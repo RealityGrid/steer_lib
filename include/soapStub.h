@@ -788,10 +788,32 @@ struct rgt__addNode
 	char *in4;	/* optional element of type xsd:string */
 };
 
+/* Primitive stringWithAttr schema type: */
+struct stringWithAttr
+{
+	char *__item;
+	char *Type;	/* optional attribute of type xsd:string */
+};
+
+/* wsse:UsernameToken: */
+struct wsse__UsernameToken
+{
+	char *wsse__Username;	/* optional element of type xsd:string */
+	struct stringWithAttr wsse__Password;	/* required element of type stringWithAttr */
+	char *wsse__Nonce;	/* optional element of type xsd:string */
+	char *wsu__Created;	/* optional element of type xsd:string */
+};
+
+/* wsse:Security: */
+struct wsse__Security
+{
+	struct wsse__UsernameToken UsernameToken;	/* required element of type wsse:UsernameToken */
+};
+
 /* SOAP Header: */
 struct SOAP_ENV__Header
 {
-	void *dummy;	/* transient */
+	struct wsse__Security Security;	/* required element of type wsse:Security */
 };
 
 /* SOAP Fault Code: */

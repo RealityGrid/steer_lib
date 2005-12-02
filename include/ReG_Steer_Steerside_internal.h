@@ -49,8 +49,14 @@
 
 typedef struct {
 
+  /** Whether the OpenSSL pseudo-random no. generator is 
+      correctly initialized */
+  int             ossl_rand_available;
+  /** No. of simulations we have registered with us */
   int             num_registered;
+  /** Maximum no. of entries we can have in the sim array */
   int             max_entries;
+  /** Ptr to array of structs holding info on each attached sim */
   Sim_entry_type *sim;
 
 } Sim_table_type;

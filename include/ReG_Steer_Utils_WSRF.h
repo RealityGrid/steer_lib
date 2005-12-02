@@ -32,6 +32,7 @@
 
 ---------------------------------------------------------------------------*/
 #include <ReG_Steer_Browser.h>
+#include "soapH.h"
 
 /** @file ReG_Steer_Utils_WSRF.h
     @brief Header file for routines to do registry look-up

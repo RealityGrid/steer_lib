@@ -44,10 +44,6 @@
   #define PREFIX 
 #endif
 
-/** Return the current (GMT) date and time as a string in the format
-    YYYY-MM-DDTHH:MM:SSZ suitable for inclusion in XML documents */
-extern PREFIX char *Get_current_time_string();
-
 /** Creates either an SGS or SWS */
 extern PREFIX char* Create_steering_service(const int   lifetimeMinutes,
 					    const char *containerAddress,

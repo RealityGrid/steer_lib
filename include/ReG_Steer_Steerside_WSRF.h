@@ -73,24 +73,41 @@ struct msg_struct *Get_status_msg_wsrf(Sim_entry_type *sim);
 struct msg_struct *Get_next_stored_msg(Sim_entry_type *sim);
 /** Get the value of the specified resource property 
     @internal 
-    @param sgs_info Pointer to struct holding info on SWS
-    @param name     Name of the resource property to get
-    @param pRP      If successful, ptr to array of char 
+    @param soapStruct Pointer to soap struct
+    @param epr     Pointer to array of char holding EPR of service
+    @param passwd  Ptr to array of char holding passphrase (if any)
+    @param name    Ptr to array of char holding name of RP to get
+    @param pRP     If successful, ptr to array of char 
                     holding value of RP */
 extern PREFIX int Get_resource_property (struct soap *soapStruct,
 					 const char  *epr,
+					 const char  *passwd,
 					 const char  *name,
 					 char       **pRP);
 
 /** Get the whole resource property document 
     @param soapStruct Pointer to initalised gSoap soap struct
     @param epr The EndPointReference of the SWS to query
+    @param passwd  Ptr to array of char holding passphrase (if any)
     @param pRPDoc   If successful, ptr to array of char holding 
     contents of the ResourceProperty document (will be free'd when
     soap_end called on soapStruct) */
 extern PREFIX int Get_resource_property_doc(struct soap *soapStruct,
 					    const char  *epr,
-					    char        **pRPDoc);
+					    const char  *passwd,
+					    char       **pRPDoc);
+/** Calls the SetResourceProperty method and passes the supplied buffer
+    as input to call 
+    @param soapStruct Pointer to initalised gSoap soap struct
+    @param epr The EndPointReference of the SWS to query
+    @param passwd  Ptr to array of char holding passphrase (if any)
+    @param input string to use as arg. for remote call
+    @returns REG_SUCCESS if call succeeds, REG_FAILURE otherwise
+*/
+int Set_resource_property (struct soap *soapStruct,
+                           const char  *epr,
+			   const char  *passwd,
+			   char        *input);
 /** Clean up a WSRF-based steering connection 
     @internal */
 int Finalize_connection_wsrf (Sim_entry_type *sim);

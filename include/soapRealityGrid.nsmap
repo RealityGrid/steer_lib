@@ -15,5 +15,7 @@ SOAP_NMAC struct Namespace namespaces[] =
 	{"sgr", "http://vermont.mvc.mcc.ac.uk/ServiceGroupRegistration", NULL, NULL},
 	{"rgtf", "http://www.RealityGrid.org/factory", NULL, NULL},
 	{"rgt", "http://www.RealityGrid.org/RealityGridTree", NULL, NULL},
+	{"wsu", "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd", NULL, NULL},
+	{"wsse", "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd", NULL, NULL},
 	{NULL, NULL, NULL, NULL}
 };

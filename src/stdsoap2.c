@@ -2600,7 +2600,8 @@ ssl_tmp_dh(SSL *ssl, int is_export, int keylength)
 #ifndef PALM_1
 static int
 ssl_auth_init(struct soap *soap)
-{ ssl_init();
+{ unsigned long errCode; 
+  ssl_init();
   if (!soap->ctx)
     if (!(soap->ctx = SSL_CTX_new(SSLv23_method())))
       return soap_set_receiver_error(soap, "SSL error", "Can't setup context", SOAP_SSL_ERROR);
@@ -2608,20 +2609,34 @@ ssl_auth_init(struct soap *soap)
   { if (!RAND_load_file(soap->randfile, -1))
       return soap_set_receiver_error(soap, "SSL error", "Can't load randomness", SOAP_SSL_ERROR);
   }
-  if (soap->cafile || soap->capath)
+  if (soap->cafile || soap->capath){
     if (!SSL_CTX_load_verify_locations(soap->ctx, soap->cafile, soap->capath))
       return soap_set_receiver_error(soap, "SSL error", "Can't read CA file and/or directory", SOAP_SSL_ERROR);
-  if (!SSL_CTX_set_default_verify_paths(soap->ctx))
+  }
+  else if (!SSL_CTX_set_default_verify_paths(soap->ctx)){
     return soap_set_receiver_error(soap, "SSL error", "Can't read default CA file and/or directory", SOAP_SSL_ERROR);
+  }
   if (soap->keyfile)
-  { if (!SSL_CTX_use_certificate_chain_file(soap->ctx, soap->keyfile))
+  { /* Load user cert. into ssl context */
+    if (!SSL_CTX_use_certificate_chain_file(soap->ctx, soap->keyfile)){
+      printf("ARPDBG, keyfile = >>%s<<\n", soap->keyfile);
+      while( (errCode = ERR_get_error()) ){
+	printf("ARPDBG: SSL error: %s\n", ERR_error_string(errCode, NULL));
+      }
       return soap_set_receiver_error(soap, "SSL error", "Can't read certificate key file", SOAP_SSL_ERROR);
+    }
     if (soap->password)
     { SSL_CTX_set_default_passwd_cb_userdata(soap->ctx, (void*)soap->password);
       SSL_CTX_set_default_passwd_cb(soap->ctx, ssl_password);
     }
-    if (!SSL_CTX_use_PrivateKey_file(soap->ctx, soap->keyfile, SSL_FILETYPE_PEM))
+    /* Load user key into ssl context */
+    if (!SSL_CTX_use_PrivateKey_file(soap->ctx, soap->keyfile, SSL_FILETYPE_PEM)){
+      printf("ARPDBG, keyfile = >>%s<<\n", soap->keyfile);
+      while( (errCode = ERR_get_error()) ){
+	printf("ARPDBG: SSL error: %s\n", ERR_error_string(errCode, NULL));
+      }
       return soap_set_receiver_error(soap, "SSL error", "Can't read key file", SOAP_SSL_ERROR);
+    }
   }
   if (soap->rsa)
   { RSA *rsa = RSA_generate_key(512, RSA_F4, NULL, NULL);

@@ -88,6 +88,13 @@ extern PREFIX int Sim_attach(char *SimID,
 			     int  *SimHandle);
 
 /**
+   As Sim_attach except takes a passphrase for use with WS-Security
+   (only supported in the WSRF implementation). */
+extern PREFIX int Sim_attach_secure(char *SimID,
+				    char *passwd,
+				    int  *SimHandle);
+
+/**
    Detach from the specfied simulation.  Signals the simulation
    that steerer has detached and then cleans-up associated
    files and table entries. */

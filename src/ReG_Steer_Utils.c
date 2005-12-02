@@ -48,30 +48,6 @@
 
 /*----------------------------------------------------------------*/
 
-char *Get_current_time_string()
-{
-  struct timeval tv;
-  struct timezone tz;
-  struct tm *now_details;
-  static char date_string[128];
-
-  gettimeofday(&tv, &tz);
-
-  now_details = gmtime(&(tv.tv_sec));
-  /* 2005-08-31T14:31:51Z */
-  sprintf(date_string,"%d-%02d-%02dT%02d:%02d:%02dZ",
-	  (now_details->tm_year) + 1900,
-	  (now_details->tm_mon) + 1, 
-	  now_details->tm_mday,
-	  now_details->tm_hour,
-	  now_details->tm_min,
-	  now_details->tm_sec);
-
-  return date_string;
-}
-
-/*----------------------------------------------------------------*/
-
 char* Create_steering_service(const int   lifetimeMinutes,
 			      const char *containerAddress,
 			      const char *registryAddress,

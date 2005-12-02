@@ -162,6 +162,15 @@ int Steerer_initialize()
   }
   */
 
+  /* Initialize the (OpenSSL) pseudo-random number generator for
+     use with WS-Security */
+  if(Init_random() == REG_SUCCESS){
+    Sim_table.ossl_rand_available = REG_TRUE;
+  }
+  else{
+    Sim_table.ossl_rand_available = REG_FALSE;
+  }
+
   return REG_SUCCESS;
 }
 
@@ -202,6 +211,15 @@ int Steerer_finalize()
 
 int Sim_attach(char *SimID,
 	       int  *SimHandle)
+{
+  return Sim_attach_secure(SimID, "", SimHandle);
+}
+
+/*----------------------------------------------------------------*/
+
+int Sim_attach_secure(char *SimID,
+		      char *passwd,
+		      int  *SimHandle)
 {
   int                  current_sim;
   int                  i, j;
@@ -358,6 +376,14 @@ int Sim_attach(char *SimID,
   sim_ptr->SGS_info.active = REG_FALSE;
   sim_ptr->SGS_info.sde_count = 0;
   sim_ptr->SGS_info.sde_index = 0;
+  /* We'll only be able to do WS-Security if we previously successfully
+     initialized the OpenSSL random number generator */
+  if(Sim_table.ossl_rand_available == REG_TRUE){
+    strncpy(sim_ptr->SGS_info.passwd, passwd, REG_MAX_STRING_LENGTH);
+  }
+  else{
+    sim_ptr->SGS_info.passwd[0] = '\0';
+  }
 
   /* Now we actually connect to the application */
 
