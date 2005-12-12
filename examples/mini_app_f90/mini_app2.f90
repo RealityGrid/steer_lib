@@ -383,8 +383,8 @@ PROGRAM mini_app
                  ! Send chunk header to describe data
                  data_count = LEN_TRIM(header)
                  data_type  = REG_CHAR
-                 CALL emit_data_slice_f(iohandle, data_type, data_count, &
-                                        header, status)
+                 CALL emit_char_data_slice_f(iohandle,  &
+                                             header, status)
 
                  ! Send data
                  data_type  = REG_INT
