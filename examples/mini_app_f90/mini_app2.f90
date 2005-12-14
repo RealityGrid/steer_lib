@@ -273,10 +273,10 @@ PROGRAM mini_app
   DO WHILE(iloop<num_sim_loops .AND. (finished .ne. 1))
 
     IF(iloop .eq. 5)THEN
-      CALL enable_param_logging_f("test_integer_2nd", REG_FALSE, status)
+      CALL disable_param_logging_f("test_integer_2nd", status)
     END IF
     IF(iloop .eq. 10)THEN
-      CALL enable_param_logging_f("test_integer_2nd", REG_TRUE, status)
+      CALL enable_param_logging_f("test_integer_2nd", status)
     END IF
     CALL steering_control_f(iloop, num_params_changed, changed_param_labels, &
                             num_recvd_cmds, recvd_cmds, recvd_cmd_params, &
