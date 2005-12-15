@@ -78,6 +78,7 @@ int main(int argc, char **argv){
   char  *pchar;
   char  *sim_name[REG_MAX_NUM_STEERED_SIM];
   char  *sim_gsh[REG_MAX_NUM_STEERED_SIM];
+  char  *passPtr;
 
   int                num_entries;
   Output_log_struct  chk_entries[10];
@@ -174,7 +175,14 @@ int main(int argc, char **argv){
 	    printf("\n");
 	  }
 
-	  status = Sim_attach(sim_gsh[i], &sim_handle);
+	  /*status = Sim_attach(sim_gsh[i], &sim_handle);*/
+	  if( !(passPtr = getpass("Enter password for SWS: ")) ){
+	    printf("Failed to get password from command line\n");
+	  }
+	  else{
+	    status = Sim_attach_secure(sim_gsh[i], getenv("USER"), 
+				       passPtr, &sim_handle);
+	  }
 	}
 	else{
 	  status = Sim_attach("", &sim_handle);
