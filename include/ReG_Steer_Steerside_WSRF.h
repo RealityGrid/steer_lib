@@ -75,12 +75,14 @@ struct msg_struct *Get_next_stored_msg(Sim_entry_type *sim);
     @internal 
     @param soapStruct Pointer to soap struct
     @param epr     Pointer to array of char holding EPR of service
-    @param passwd  Ptr to array of char holding passphrase (if any)
+    @param username Ptr to array of char holding WSSE username (if any)
+    @param passwd  Ptr to array of char holding WSSE passphrase (if any)
     @param name    Ptr to array of char holding name of RP to get
     @param pRP     If successful, ptr to array of char 
                     holding value of RP */
 extern PREFIX int Get_resource_property (struct soap *soapStruct,
 					 const char  *epr,
+					 const char  *username,
 					 const char  *passwd,
 					 const char  *name,
 					 char       **pRP);
@@ -88,24 +90,28 @@ extern PREFIX int Get_resource_property (struct soap *soapStruct,
 /** Get the whole resource property document 
     @param soapStruct Pointer to initalised gSoap soap struct
     @param epr The EndPointReference of the SWS to query
-    @param passwd  Ptr to array of char holding passphrase (if any)
+    @param username Ptr to array of char holding WSSE username (if any)
+    @param passwd  Ptr to array of char holding WSSE passphrase (if any)
     @param pRPDoc   If successful, ptr to array of char holding 
     contents of the ResourceProperty document (will be free'd when
     soap_end called on soapStruct) */
 extern PREFIX int Get_resource_property_doc(struct soap *soapStruct,
 					    const char  *epr,
+					    const char  *username,
 					    const char  *passwd,
 					    char       **pRPDoc);
 /** Calls the SetResourceProperty method and passes the supplied buffer
     as input to call 
     @param soapStruct Pointer to initalised gSoap soap struct
     @param epr The EndPointReference of the SWS to query
-    @param passwd  Ptr to array of char holding passphrase (if any)
+    @param username Ptr to array of char holding WSSE username (if any)
+    @param passwd  Ptr to array of char holding WSSE passphrase (if any)
     @param input string to use as arg. for remote call
     @returns REG_SUCCESS if call succeeds, REG_FAILURE otherwise
 */
 int Set_resource_property (struct soap *soapStruct,
                            const char  *epr,
+			   const char  *username,
 			   const char  *passwd,
 			   char        *input);
 /** Clean up a WSRF-based steering connection 

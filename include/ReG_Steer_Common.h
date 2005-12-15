@@ -324,7 +324,9 @@ typedef struct {
     int  sde_index;
     /** The stucture holding the gSOAP environment for this connection */
     struct soap *soap;
-    /** The passphrase (if any) used with WS-Security for this service */
+    /** Username to use with WS-Security with this service */
+    char username[REG_MAX_STRING_LENGTH];
+    /** the passphrase (if any) used with WS-Security for this service */
     char passwd[REG_MAX_STRING_LENGTH];
 
   } SGS_info_type;
@@ -466,10 +468,24 @@ extern PREFIX int Init_random();
     @internal
     @returns REG_SUCCESS or REG_FAILURE if no header created */
 extern PREFIX int Create_WSSE_header(struct soap *aSoap,
+				     const  char *username,
 				     const  char *passwd);
 
 /** Return the current (GMT) date and time as a string in the format
     YYYY-MM-DDTHH:MM:SSZ suitable for inclusion in XML documents */
 extern PREFIX char *Get_current_time_string();
+
+/** Initialize the SSL context for the supplied gSoap structure
+    @param aSoap Ptr to soap struct to be initialized
+    @param certKeyPemFile Full path to file containing user's certificate
+           and key (if doing mutual authentication, NULL otherwise) 
+    @param passphrase Passphrase for the user's key (can be NULL if not
+           doing mutual authentication)
+    @param caCertPath Path to directory containing CA certs 
+    @return REG_SUCCESS or REG_FAILURE */
+extern PREFIX int REG_Init_ssl_context(struct soap *aSoap,
+				       char *certKeyPemFile,
+				       char *passphrase,
+				       char *caCertPath);
 
 #endif

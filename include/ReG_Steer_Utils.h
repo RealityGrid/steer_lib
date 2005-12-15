@@ -53,10 +53,13 @@ extern PREFIX char* Create_steering_service(const int   lifetimeMinutes,
 					    const char *software,
 					    const char *purpose,
 					    const char *inputFilename,
-					    const char *checkpointAddress);
+					    const char *checkpointAddress,
+					    const char *passPhrase);
 
 /** Destroy either an SGS or SWS */
-extern PREFIX int Destroy_steering_service(char *address);
+extern PREFIX int Destroy_steering_service(char *address,
+					   char *username,
+					   char *passphrase);
 
 /** Creates a new checkpoint tree and returns its GSH 
     @param factory The address of the factory to use

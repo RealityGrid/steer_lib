@@ -88,9 +88,10 @@ extern PREFIX int Sim_attach(char *SimID,
 			     int  *SimHandle);
 
 /**
-   As Sim_attach except takes a passphrase for use with WS-Security
-   (only supported in the WSRF implementation). */
+   As Sim_attach except takes a username and passphrase for use 
+   with WS-Security (only supported in the WSRF implementation). */
 extern PREFIX int Sim_attach_secure(char *SimID,
+				    char *username,
 				    char *passwd,
 				    int  *SimHandle);
 
@@ -311,5 +312,6 @@ extern PREFIX int Get_chk_log_entries_reverse(int                sim_handle,
 					      int                chk_handle,
 					      int                num_entries,
 					      Output_log_struct *entries);
+
 
 #endif

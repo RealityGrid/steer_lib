@@ -38,12 +38,26 @@
     @brief Header file for routines to do registry look-up
   */
 
-/** Get the entries from a WSRF-based registry */
+/** Get the entries from a WSRF-based registry
+    @param registryEPR Endpoint of the registry to query
+    @param num_entries On successful return, holds the number of entries in the registry
+    @param entries Array of structst holding details on each entry */
 int Get_registry_entries_wsrf(const char             *registryEPR, 
 			      int                    *num_entries,  
 			      struct registry_entry **entries);
 
-/** Create a Steering Web Service and return its address */
+/** Create a Steering Web Service and return its address 
+    @param lifetimeMinutes Lifetime of the SWS in minutes
+    @param containerAddress Address of the WSRF-Lite container to use
+    @param registryAddress Endpoint of the registery to register SWS with
+    @param userName Identity of user creating SWS - recorded in metadata and used with WS-Security 
+    @param group Group to which the user belongs
+    @param software The software being run for this job
+    @param purpose The purpose of this job
+    @param inputFilename Name of the input deck for this job
+    @param checkpointAddress Endpoint of the checkpoint this job is starting from (blank if none)
+    @param passPhrase Passphrase for use with WSSE or blank if none 
+    @returns Pointer to static buffer containing the EPR of the new SWS or NULL on failure.  Static buffer will be overwritten on subsequent calls to this routine. */
 char *Create_SWS(const int   lifetimeMinutes,
 		 const char *containerAddress,
 		 const char *registryAddress,
@@ -52,9 +66,15 @@ char *Create_SWS(const int   lifetimeMinutes,
 		 const char *software,
 		 const char *purpose,
 		 const char *inputFilename,
-		 const char *checkpointAddress);
+		 const char *checkpointAddress,
+		 const char *passPhrase);
 
 /** Calls the Destroy method on the service at the supplied Endpoint.
     Note that an SWS is derived from a WSRP so this method applies
-    to SWSs.*/
-int Destroy_WSRP(char *epr);
+    to SWSs.
+    @param epr Endpoint reference of the service to destroy
+    @param username   Username for use with WSSE
+    @param passphrase Passphrase to the service (if any) */
+int Destroy_WSRP(char *epr, 
+		 char *username,
+		 char *passphrase);

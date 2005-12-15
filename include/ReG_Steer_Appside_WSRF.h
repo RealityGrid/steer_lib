@@ -39,6 +39,10 @@
     steered application
   */
 
+/** The username which the application will use within WS-Security
+    when talking to the SWS */
+#define REG_APPSIDE_WSSE_USERNAME "application"
+
 /*-------------------------------------------------------------------*/
 
 /** Set up the connection to the SWS and publish the supported
