@@ -48,15 +48,18 @@
 /* These four functions are defined in the steerside_WSRF code */
 extern int Get_resource_property (struct soap *soapStruct,
 				  char        *epr,
+				  char        *username,
 				  char        *passwd,
 				  char        *name,
 				  char       **pRP);
 extern int Get_resource_property_doc(struct soap *soapStruct,
 				     char        *epr,
+				     char        *username,
 				     char        *passwd,
 				     char       **pDoc);
 extern int Set_resource_property(struct soap *soapStruct,
 				 const char        *epr,
+				 const char        *username,
 				 const char        *passwd,
 				 char              *pInput);
 extern struct msg_struct *Get_next_stored_msg(Sim_entry_type *sim);
@@ -157,6 +160,8 @@ int Initialize_steering_connection_wsrf(int  NumSupportedCmds,
   /* Initialize the OpenSSL random no. generator and, if successful, 
      get the passphrase, if any, for the SWS (for use with WS-Security) */
   Steerer_connection.SGS_info.passwd[0] = '\0';
+  snprintf(Steerer_connection.SGS_info.username, REG_MAX_STRING_LENGTH,
+	   "%s", REG_APPSIDE_WSSE_USERNAME);
 
   if(Init_random() == REG_SUCCESS){
     if( (pchar = getenv("REG_PASSPHRASE")) ){
@@ -213,6 +218,7 @@ int Initialize_steering_connection_wsrf(int  NumSupportedCmds,
 
   if(Steerer_connection.SGS_info.passwd[0]){
     Create_WSSE_header(Steerer_connection.SGS_info.soap,
+		       Steerer_connection.SGS_info.username,
 		       Steerer_connection.SGS_info.passwd);
   }
 
@@ -239,6 +245,7 @@ int Initialize_steering_connection_wsrf(int  NumSupportedCmds,
 #endif
   if(Steerer_connection.SGS_info.passwd[0]){
     Create_WSSE_header(Steerer_connection.SGS_info.soap,
+		       Steerer_connection.SGS_info.username,
 		       Steerer_connection.SGS_info.passwd);
   }
   if(soap_call_wsrp__SetResourceProperties(Steerer_connection.SGS_info.soap, 
@@ -262,6 +269,7 @@ int Steerer_connected_wsrf ()
   
   status = Get_resource_property(Steerer_connection.SGS_info.soap,
 				 Steerer_connection.SGS_info.address,
+				 Steerer_connection.SGS_info.username,
 				 Steerer_connection.SGS_info.passwd,
 				 STEER_STATUS_RP,
 				 &steer_status);
@@ -361,6 +369,7 @@ int Send_status_msg_wsrf (char *msg)
     loopCount++;
     status = Set_resource_property(Steerer_connection.SGS_info.soap, 
 				   Steerer_connection.SGS_info.address,
+				   Steerer_connection.SGS_info.username,
 				   Steerer_connection.SGS_info.passwd, 
 				   pTmpBuf);
     if(status == REG_TIMED_OUT){
@@ -433,6 +442,7 @@ struct msg_struct *Get_control_msg_wsrf ()
   /* Get any new control messages */
   if(Get_resource_property(Steerer_connection.SGS_info.soap,
 			   Steerer_connection.SGS_info.address,
+			   Steerer_connection.SGS_info.username,
 			   Steerer_connection.SGS_info.passwd,
 			   "controlMsg", &pBuf) != REG_SUCCESS){
     msg = New_msg_struct();
@@ -532,6 +542,7 @@ int Save_log_wsrf (char *log_data)
 
   if(Steerer_connection.SGS_info.passwd[0]){
     Create_WSSE_header(Steerer_connection.SGS_info.soap,
+		       Steerer_connection.SGS_info.username,
 		       Steerer_connection.SGS_info.passwd);
   }
 
@@ -573,6 +584,7 @@ int Finalize_steering_connection_wsrf ()
 
   if(Steerer_connection.SGS_info.passwd[0]){
     Create_WSSE_header(Steerer_connection.SGS_info.soap,
+		       Steerer_connection.SGS_info.username,
 		       Steerer_connection.SGS_info.passwd);
   }
 
@@ -617,6 +629,7 @@ int Get_data_source_address_wsrf(int   index,
 
   if(Get_resource_property(Steerer_connection.SGS_info.soap,
 			   Steerer_connection.SGS_info.address,
+			   Steerer_connection.SGS_info.username,
 			   Steerer_connection.SGS_info.passwd,
 			   "dataSource", &pBuf) != REG_SUCCESS){
     return REG_FAILURE;
@@ -679,6 +692,7 @@ int Get_data_source_address_wsrf(int   index,
     mySoap.client_port_max = Steerer_connection.SGS_info.soap->client_port_max;
 
     if(Get_resource_property(&mySoap, address,
+			     "", /* ARPDBG - need username for this sws */
 			     "", /* ARPDBG - need passphrase for this sws */
 			     "ioTypeDefinitions", &pBuf) != REG_SUCCESS){
       return REG_FAILURE;
@@ -788,6 +802,7 @@ int Record_checkpoint_set_wsrf(char *chk_data,
 
   if(Steerer_connection.SGS_info.passwd[0]){
     Create_WSSE_header(Steerer_connection.SGS_info.soap,
+		       Steerer_connection.SGS_info.username,
 		       Steerer_connection.SGS_info.passwd);
   }
 

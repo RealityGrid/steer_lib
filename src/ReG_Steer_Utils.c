@@ -56,7 +56,8 @@ char* Create_steering_service(const int   lifetimeMinutes,
 			      const char *software,
 			      const char *purpose,
 			      const char *inputFilename,
-			      const char *checkpointAddress)
+			      const char *checkpointAddress,
+			      const char *passPhrase)
 {
 #if REG_OGSI
   fprintf(stderr, "Create_steering_service: NOT IMPLEMENTED for OGSI\n");
@@ -70,7 +71,8 @@ char* Create_steering_service(const int   lifetimeMinutes,
 		    software,
 		    purpose,
 		    inputFilename,
-		    checkpointAddress);
+		    checkpointAddress,
+		    passPhrase);
 #endif /* REG_OGSI */
 }
 
@@ -123,13 +125,15 @@ char *Create_checkpoint_tree(const char *factory,
 
 /*----------------------------------------------------------------*/
 
-int Destroy_steering_service(char *address){
+int Destroy_steering_service(char *address,
+			     char *username,
+			     char *passphrase){
 
 #if REG_OGSI
 
   fprintf(stderr, "Destroy_steering_service: not implemented for OGSI :-(\n");
 #else
-  return Destroy_WSRP(address);
+  return Destroy_WSRP(address, username, passphrase);
 #endif
 
 }

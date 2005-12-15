@@ -128,7 +128,8 @@ char *Create_SWS(const int   lifetimeMinutes,
 		 const char *software,
 		 const char *purpose,
 		 const char *inputFilename,
-		 const char *checkpointAddress){
+		 const char *checkpointAddress,
+		 const char *passphrase){
 
   struct swsf__createSWSResourceResponse     response;
   struct wsrp__SetResourcePropertiesResponse setRPresponse;
@@ -185,6 +186,22 @@ char *Create_SWS(const int   lifetimeMinutes,
   /* Something to do with the XML type */
   soap.encodingStyle = NULL;
 
+  if(strstr(factoryAddr, "https") == factoryAddr){
+    if( REG_Init_ssl_context(&soap,
+			     NULL,/*char *certKeyPemFile,*/
+			     NULL, /* char *passphrase,*/
+			     "/etc/grid-security/certificates") == REG_FAILURE){
+
+      fprintf(stderr, "ERROR: call to initialize soap SSL context failed\n");
+      return NULL;
+    }
+  }
+
+  if(passphrase[0]){
+    printf("userName for call to createSWSResource >>%s<<\n", userName);
+    Create_WSSE_header(&soap, userName, passphrase);
+  }
+
   /* 1440 = 24hrs in minutes.  Is the default lifetime of the service
      until its associated job starts up and then the TerminationTime
      is reset using the maxRunTime RP */
@@ -193,6 +210,7 @@ char *Create_SWS(const int   lifetimeMinutes,
 				       (char *)registryAddress, 
 				       (char *)jobDescription, 
 				       aChkAddress, 
+				       passphrase,
 				       &response) != SOAP_OK){
     if(soap.fault && soap.fault->detail){
 
@@ -211,6 +229,10 @@ char *Create_SWS(const int   lifetimeMinutes,
   snprintf(jobDescription, 1024, "<maxRunTime>%d</maxRunTime>",
 	   lifetimeMinutes);
 
+  if(passphrase[0]){
+    Create_WSSE_header(&soap, userName, passphrase);
+  }
+
 #if REG_DEBUG
   fprintf(stderr, "Calling SetResourceProperties with >>%s<<\n",
 	  jobDescription);
@@ -227,7 +249,7 @@ char *Create_SWS(const int   lifetimeMinutes,
      (Read_file(inputFilename, &contents, &numBytes, REG_TRUE) 
       == REG_SUCCESS) ){
     /* 49 = 12 + 37 = strlen("<![CDATA[]]>") + 
-       2*strlen("<inputFileContent>") + 1 */
+                             2*strlen("<inputFileContent>") + 1 */
     if((strlen(contents) + 49)< REG_SCRATCH_BUFFER_SIZE){
       pchar = Global_scratch_buffer;
       /* Protect the file content from any XML parsing by wrapping
@@ -259,7 +281,9 @@ char *Create_SWS(const int   lifetimeMinutes,
 
 /*-----------------------------------------------------------------*/
 
-int Destroy_WSRP(char *epr)
+int Destroy_WSRP(char *epr, 
+		 char *username,
+		 char *passphrase)
 {
   struct wsrp__DestroyResponse out;
   struct soap soap;
@@ -268,6 +292,22 @@ int Destroy_WSRP(char *epr)
     soap_init(&soap);
     /* Something to do with the XML type */
     soap.encodingStyle = NULL;
+
+    if(passphrase && passphrase[0]){
+      Create_WSSE_header(&soap, username, passphrase);
+    }
+
+    /* If we're using https then set up the context */
+    if(strstr(epr, "https") == epr){
+      if( REG_Init_ssl_context(&soap,
+			       NULL,/*char *certKeyPemFile,*/
+			       NULL, /* char *passphrase,*/
+			       "/etc/grid-security/certificates") == REG_FAILURE){
+
+	fprintf(stderr, "ERROR: call to initialize soap SSL context failed\n");
+	return REG_FAILURE;
+      }
+    }
 
     if(soap_call_wsrp__Destroy(&soap, epr, NULL, NULL, &out) != SOAP_OK){
       fprintf(stderr, "Destroy_WSRP: call to Destroy on %s failed:\n   ",

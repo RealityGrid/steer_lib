@@ -212,12 +212,13 @@ int Steerer_finalize()
 int Sim_attach(char *SimID,
 	       int  *SimHandle)
 {
-  return Sim_attach_secure(SimID, "", SimHandle);
+  return Sim_attach_secure(SimID, "", "", SimHandle);
 }
 
 /*----------------------------------------------------------------*/
 
 int Sim_attach_secure(char *SimID,
+		      char *username,
 		      char *passwd,
 		      int  *SimHandle)
 {
@@ -379,9 +380,11 @@ int Sim_attach_secure(char *SimID,
   /* We'll only be able to do WS-Security if we previously successfully
      initialized the OpenSSL random number generator */
   if(Sim_table.ossl_rand_available == REG_TRUE){
+    strncpy(sim_ptr->SGS_info.username, username, REG_MAX_STRING_LENGTH);
     strncpy(sim_ptr->SGS_info.passwd, passwd, REG_MAX_STRING_LENGTH);
   }
   else{
+    sim_ptr->SGS_info.username[0] = '\0';
     sim_ptr->SGS_info.passwd[0] = '\0';
   }
 

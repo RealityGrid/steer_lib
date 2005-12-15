@@ -1226,6 +1226,7 @@ int Init_random()
 /*-----------------------------------------------------------------*/
 
 int Create_WSSE_header(struct soap *aSoap,
+		       const  char *username,
 		       const  char *passwd)
 {
   const int     MAX_LEN = 1024;
@@ -1281,7 +1282,7 @@ int Create_WSSE_header(struct soap *aSoap,
   Base64_encode(randBuf, 16, &pBase64Buf, &len);
 
   snprintf(aSoap->header->Security.UsernameToken.wsse__Username, 128, 
-	   "RealityGrid");
+	   username);
 
   aSoap->header->Security.UsernameToken.wsse__Nonce = 
                                        (char *)soap_malloc(aSoap, len+1);
@@ -1372,4 +1373,51 @@ char *Get_current_time_string()
 	  now_details->tm_sec);
 
   return date_string;
+}
+
+/*-------------------------------------------------------------------*/
+
+int REG_Init_ssl_context(struct soap *aSoap,
+			        char *certKeyPemFile,
+			        char *passphrase,
+			        char *caCertPath)
+{
+  struct stat stbuf;
+
+  if(!aSoap){
+    fprintf(stderr, "STEER: REG_Init_ssl_context: pointer to soap "
+	    "struct is NULL\n");
+    return REG_FAILURE;
+  }
+  if(!caCertPath){
+    fprintf(stderr, "STEER: REG_Init_ssl_context: CA certificates "
+	    "directory MUST be specified\n");
+    return REG_FAILURE;
+  }
+  else if( stat(caCertPath, &stbuf) == -1 ){
+    fprintf(stderr, "STEER: REG_Init_ssl_context: CA certificates "
+	    "directory >>%s<< is not valid\n", caCertPath);
+    return REG_FAILURE;
+  }
+  if (soap_ssl_client_context(aSoap,
+			      SOAP_SSL_DEFAULT,
+			      /* user's cert. & key file */
+			      certKeyPemFile,
+			      /* Password to read key file */
+			      passphrase,
+			      /* Optional CA cert. file to store trusted 
+				 certificates (to verify server) */
+			      NULL,
+			      /* Optional path to directory containing  
+				 trusted CA certs (to verify server) */
+			      caCertPath,
+			      /* if randfile!=NULL: use a file with 
+				 random data to seed randomness */
+			      NULL)){
+    fprintf(stderr, "STEER: REG_Init_ssl_context: failed to initialize "
+	    "gSoap ssl context:\n");
+    soap_print_fault(aSoap, stderr);
+    return REG_FAILURE;
+  }
+  return REG_SUCCESS;
 }

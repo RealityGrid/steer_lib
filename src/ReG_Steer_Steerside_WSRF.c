@@ -89,8 +89,22 @@ int Sim_attach_wsrf (Sim_entry_type *sim, char *SimID){
   sim->SGS_info.soap->fignore = soapMismatchHandler;
 #endif
 
+  /* If address of SWS begins with 'https' then initialize SSL context */
+  if(strstr(SimID, "https") == SimID){
+    if( REG_Init_ssl_context(sim->SGS_info.soap,
+			     NULL,/*char *certKeyPemFile,*/
+			     NULL, /* char *passphrase,*/
+			     "/etc/grid-security/certificates") == REG_FAILURE){
+
+      fprintf(stderr, "STEER: ERROR: Sim_attach_wsrf: call to initialize "
+	      "soap SSL context failed\n");
+      return REG_FAILURE;
+    }
+  }
+
   if(sim->SGS_info.passwd[0]){
-    Create_WSSE_header(sim->SGS_info.soap, sim->SGS_info.passwd);
+    Create_WSSE_header(sim->SGS_info.soap, sim->SGS_info.username, 
+		       sim->SGS_info.passwd);
   }
   fprintf(stderr, "STEER: Calling Attach...\n");
   if(soap_call_sws__Attach(sim->SGS_info.soap, SimID, "", NULL, 
@@ -104,7 +118,7 @@ int Sim_attach_wsrf (Sim_entry_type *sim, char *SimID){
   sprintf(sim->SGS_info.address, SimID);
 
   for(i=0; i<response.ReG_USCOREsteer_USCOREmessage.Supported_USCOREcommands.__size; i++){
-    fprintf(stderr, "STEER: Attach, cmd %d = %d\n", i, 
+    fprintf(stderr, "STEER: Sim_attach_wsrf, cmd %d = %d\n", i, 
 	   response.ReG_USCOREsteer_USCOREmessage.Supported_USCOREcommands.__ptr[i].Cmd_USCOREid);
 
     sim->Cmds_table.cmd[sim->Cmds_table.num_registered].cmd_id = 
@@ -137,6 +151,7 @@ int Send_control_msg_wsrf (Sim_entry_type *sim, char *buf){
 
   return Set_resource_property (sim->SGS_info.soap,
 				sim->SGS_info.address,
+				sim->SGS_info.username,
 				sim->SGS_info.passwd,
 				inputBuf);
   /*
@@ -166,6 +181,7 @@ struct msg_struct *Get_status_msg_wsrf(Sim_entry_type *sim)
 
   if( Get_resource_property_doc(sim->SGS_info.soap, 
 				sim->SGS_info.address,
+				sim->SGS_info.username,
 				sim->SGS_info.passwd,
 				&pRPDoc) != REG_SUCCESS){
 
@@ -275,6 +291,7 @@ struct msg_struct *Get_next_stored_msg(Sim_entry_type *sim)
 /** Get the value of the specified resource property */
 int Get_resource_property (struct soap *soapStruct,
                            const char  *epr,
+			   const char  *username,
 			   const char  *passwd,
 			   const char  *name,
 			   char       **pRP)
@@ -293,7 +310,7 @@ int Get_resource_property (struct soap *soapStruct,
   strncpy(in.__ptr[0].ResourceProperty, name, REG_MAX_STRING_LENGTH);
 
   if(passwd && passwd[0]){
-    Create_WSSE_header(soapStruct, passwd);
+    Create_WSSE_header(soapStruct, username, passwd);
   }
 
 #ifdef USE_REG_TIMING
@@ -329,6 +346,7 @@ int Get_resource_property (struct soap *soapStruct,
 /** Get the whole resource property document */
 int Get_resource_property_doc(struct soap *soapStruct,
 			      const char  *epr,
+			      const char  *username,
 			      const char  *passwd,
 			      char       **pDoc)
 {
@@ -341,8 +359,11 @@ int Get_resource_property_doc(struct soap *soapStruct,
     doc can be big */
   soap_end(soapStruct);
 
+  printf("Get_resource_property_doc ARPDBG passwd = >>%s<<\n"
+	 "                               username = >>%s<<\n", 
+	 passwd, username);
   if(passwd && passwd[0]){
-    Create_WSSE_header(soapStruct, passwd);
+    Create_WSSE_header(soapStruct, username, passwd);
   }
 
   *pDoc = NULL;
@@ -376,13 +397,14 @@ int Get_resource_property_doc(struct soap *soapStruct,
 
 int Set_resource_property (struct soap *soapStruct,
                            const char  *epr,
+			   const char  *username,
 			   const char  *passwd,
 			   char        *input)
 {
   struct wsrp__SetResourcePropertiesResponse out;
 
   if(passwd[0]){
-    Create_WSSE_header(soapStruct, passwd);
+    Create_WSSE_header(soapStruct, username, passwd);
   }
 
   if(soap_call_wsrp__SetResourceProperties(soapStruct, epr,
@@ -415,7 +437,8 @@ int Send_detach_msg_wsrf (Sim_entry_type *sim){
 #endif
 
   if(sim->SGS_info.passwd[0]){
-    Create_WSSE_header(sim->SGS_info.soap, sim->SGS_info.passwd);
+    Create_WSSE_header(sim->SGS_info.soap, sim->SGS_info.username,
+		       sim->SGS_info.passwd);
   }
 
   if(soap_call_sws__Detach(sim->SGS_info.soap, sim->SGS_info.address, 
@@ -482,7 +505,8 @@ int Get_param_log_wsrf(Sim_entry_type *sim,
   }
 
   if(sim->SGS_info.passwd[0]){
-    Create_WSSE_header(sim->SGS_info.soap, sim->SGS_info.passwd);
+    Create_WSSE_header(sim->SGS_info.soap, sim->SGS_info.username, 
+		       sim->SGS_info.passwd);
   }
 
 #ifdef USE_REG_TIMING

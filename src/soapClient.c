@@ -11,7 +11,7 @@ extern "C" {
 
 SOAP_BEGIN_NAMESPACE(soap)
 
-SOAP_SOURCE_STAMP("@(#) soapClient.c ver 2.7.2 2005-11-18 09:09:16 GMT")
+SOAP_SOURCE_STAMP("@(#) soapClient.c ver 2.7.2 2005-12-13 12:08:20 GMT")
 
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_call_wsrp__GetResourceProperty(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct GetResourcePropertyRequest *in_, char **out_)
@@ -1842,7 +1842,7 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call_sgsf__createService(struct soap *soap, const
 	return soap_closesock(soap);
 }
 
-SOAP_FMAC5 int SOAP_FMAC6 soap_call_swsf__createSWSResource(struct soap *soap, const char *soap_endpoint, const char *soap_action, int timeToLive, char *registryEPR, char *jobDescription, char *chkpointEPR, struct swsf__createSWSResourceResponse *out)
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_swsf__createSWSResource(struct soap *soap, const char *soap_endpoint, const char *soap_action, int timeToLive, char *registryEPR, char *jobDescription, char *chkpointEPR, char *passPhrase, struct swsf__createSWSResourceResponse *out)
 {	struct swsf__createSWSResource soap_tmp_swsf__createSWSResource;
 	if (!soap_endpoint)
 		soap_endpoint = "http://some.where/";
@@ -1851,6 +1851,7 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call_swsf__createSWSResource(struct soap *soap, c
 	soap_tmp_swsf__createSWSResource.registryEPR = registryEPR;
 	soap_tmp_swsf__createSWSResource.jobDescription = jobDescription;
 	soap_tmp_swsf__createSWSResource.chkpointEPR = chkpointEPR;
+	soap_tmp_swsf__createSWSResource.passPhrase = passPhrase;
 	soap_begin(soap);
 	soap_serializeheader(soap);
 	soap_serialize_swsf__createSWSResource(soap, &soap_tmp_swsf__createSWSResource);

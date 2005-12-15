@@ -11,7 +11,7 @@ extern "C" {
 
 SOAP_BEGIN_NAMESPACE(soap)
 
-SOAP_SOURCE_STAMP("@(#) soapC.c ver 2.7.2 2005-11-18 09:09:16 GMT")
+SOAP_SOURCE_STAMP("@(#) soapC.c ver 2.7.2 2005-12-13 12:08:20 GMT")
 
 
 #ifndef WITH_NOGLOBAL
@@ -6233,6 +6233,8 @@ SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_swsf__createSWSResource(struct soap *s
 	soap_serialize_xsd__string(soap, &a->jobDescription);
 	soap_embedded(soap, &a->chkpointEPR, SOAP_TYPE_xsd__string);
 	soap_serialize_xsd__string(soap, &a->chkpointEPR);
+	soap_embedded(soap, &a->passPhrase, SOAP_TYPE_xsd__string);
+	soap_serialize_xsd__string(soap, &a->passPhrase);
 }
 
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_swsf__createSWSResource(struct soap *soap, struct swsf__createSWSResource *a)
@@ -6242,6 +6244,7 @@ SOAP_FMAC3 void SOAP_FMAC4 soap_default_swsf__createSWSResource(struct soap *soa
 	soap_default_xsd__string(soap, &a->registryEPR);
 	soap_default_xsd__string(soap, &a->jobDescription);
 	soap_default_xsd__string(soap, &a->chkpointEPR);
+	soap_default_xsd__string(soap, &a->passPhrase);
 }
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_swsf__createSWSResource(struct soap *soap, const struct swsf__createSWSResource *a, const char *tag, const char *type)
@@ -6259,6 +6262,7 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_out_swsf__createSWSResource(struct soap *soap, co
 	soap_out_xsd__string(soap, "registryEPR", -1, &a->registryEPR, "");
 	soap_out_xsd__string(soap, "jobDescription", -1, &a->jobDescription, "");
 	soap_out_xsd__string(soap, "chkpointEPR", -1, &a->chkpointEPR, "");
+	soap_out_xsd__string(soap, "passPhrase", -1, &a->passPhrase, "");
 	soap_element_end_out(soap, tag);
 	return SOAP_OK;
 }
@@ -6272,7 +6276,7 @@ SOAP_FMAC3 struct swsf__createSWSResource * SOAP_FMAC4 soap_get_swsf__createSWSR
 
 SOAP_FMAC3 struct swsf__createSWSResource * SOAP_FMAC4 soap_in_swsf__createSWSResource(struct soap *soap, const char *tag, struct swsf__createSWSResource *a, const char *type)
 {
-	short soap_flag_timeToLive = 1, soap_flag_registryEPR = 1, soap_flag_jobDescription = 1, soap_flag_chkpointEPR = 1;
+	short soap_flag_timeToLive = 1, soap_flag_registryEPR = 1, soap_flag_jobDescription = 1, soap_flag_chkpointEPR = 1, soap_flag_passPhrase = 1;
 	if (soap_element_begin_in(soap, tag, 0))
 		return NULL;
 	if (*soap->type && soap_match_tag(soap, soap->type, type))
@@ -6305,6 +6309,11 @@ SOAP_FMAC3 struct swsf__createSWSResource * SOAP_FMAC4 soap_in_swsf__createSWSRe
 			if (soap_flag_chkpointEPR && (soap->error == SOAP_TAG_MISMATCH || soap->error == SOAP_NO_TAG))
 				if (soap_in_xsd__string(soap, "chkpointEPR", &a->chkpointEPR, "xsd:string"))
 				{	soap_flag_chkpointEPR = 0;
+					continue;
+				}
+			if (soap_flag_passPhrase && (soap->error == SOAP_TAG_MISMATCH || soap->error == SOAP_NO_TAG))
+				if (soap_in_xsd__string(soap, "passPhrase", &a->passPhrase, "xsd:string"))
+				{	soap_flag_passPhrase = 0;
 					continue;
 				}
 			if (soap->error == SOAP_TAG_MISMATCH)
