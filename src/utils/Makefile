@@ -35,10 +35,6 @@
 include ../../Makefile.include
 include ../../make/Makefile.${ARCH}
 
-# Set-up access to M4 scripts for production of F90 wrappers, this is
-# taken from the PVM project.
-M4FILE = ../conf/${ARCH}.m4
-
 all:
 	make sizeof_f.o
 	make max_kind
