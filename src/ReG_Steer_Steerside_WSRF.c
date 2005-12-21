@@ -92,6 +92,7 @@ int Sim_attach_wsrf (Sim_entry_type *sim, char *SimID){
   /* If address of SWS begins with 'https' then initialize SSL context */
   if(strstr(SimID, "https") == SimID){
     if( REG_Init_ssl_context(sim->SGS_info.soap,
+			     REG_TRUE, /* Authenticate SWS */
 			     NULL,/*char *certKeyPemFile,*/
 			     NULL, /* char *passphrase,*/
 			     "/etc/grid-security/certificates") == REG_FAILURE){
