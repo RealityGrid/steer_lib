@@ -157,6 +157,27 @@ int Initialize_steering_connection_wsrf(int  NumSupportedCmds,
     return REG_FAILURE;
   }
 
+  /* Initialise the soap run-time environment:
+     Use this form to turn-on keep-alive for both incoming and outgoing
+     http connections */
+  soap_init2(Steerer_connection.SGS_info.soap, SOAP_IO_KEEPALIVE, 
+	     SOAP_IO_KEEPALIVE);
+
+  /* If address of SWS begins with 'https' then initialize SSL context */
+  if(strstr(Steerer_connection.SGS_info.address, "https") == 
+     Steerer_connection.SGS_info.address){
+    if( REG_Init_ssl_context(Steerer_connection.SGS_info.soap,
+			     REG_FALSE, /* Don't authenticate SWS */
+			     NULL,/*char *certKeyPemFile,*/
+			     NULL, /* char *passphrase,*/
+			     NULL/*CA certs directory */) == REG_FAILURE){
+
+      fprintf(stderr, "STEER: ERROR: Initialize_steering_connection_wsrf: "
+	      "call to initialize soap SSL context failed\n");
+      return REG_FAILURE;
+    }
+  }
+
   /* Initialize the OpenSSL random no. generator and, if successful, 
      get the passphrase, if any, for the SWS (for use with WS-Security) */
   Steerer_connection.SGS_info.passwd[0] = '\0';
@@ -182,12 +203,6 @@ int Initialize_steering_connection_wsrf(int  NumSupportedCmds,
 	      "failed to initialize OpenSSL random no. generator\n");
   }
 
-  /* Initialise the soap run-time environment:
-     Use this form to turn-on keep-alive for both incoming and outgoing
-     http connections */
-  soap_init2(Steerer_connection.SGS_info.soap, SOAP_IO_KEEPALIVE, 
-	     SOAP_IO_KEEPALIVE);
-
   /* Since we are using KEEPALIVE, we can also ask gSOAP to bind the 
      socket to a specific port on the local machine - only do this if 
      GLOBUS_TCP_PORT_RANGE is set. */
@@ -211,16 +226,16 @@ int Initialize_steering_connection_wsrf(int  NumSupportedCmds,
   snprintf(query_buf, REG_MAX_MSG_SIZE, "<%s>%s</%s>", 
 	  SUPPORTED_CMDS_RP, pchar, SUPPORTED_CMDS_RP);
 
-#if REG_DEBUG_FULL
-  fprintf(stderr, "STEER: Initialize_steering_connection_wsrf: sending "
-	  "1st msg:\n>>%s<<\n\n",query_buf);
-#endif
-
   if(Steerer_connection.SGS_info.passwd[0]){
     Create_WSSE_header(Steerer_connection.SGS_info.soap,
 		       Steerer_connection.SGS_info.username,
 		       Steerer_connection.SGS_info.passwd);
   }
+
+#if REG_DEBUG_FULL
+  fprintf(stderr, "STEER: Initialize_steering_connection_wsrf: sending "
+	  "1st msg:\n>>%s<<\n\n",query_buf);
+#endif
 
   if(soap_call_wsrp__SetResourceProperties(Steerer_connection.SGS_info.soap,
 					   Steerer_connection.SGS_info.address,
@@ -239,15 +254,17 @@ int Initialize_steering_connection_wsrf(int  NumSupportedCmds,
 	   MACHINE_ADDRESS_RP, ReG_Hostname, MACHINE_ADDRESS_RP,
 	   APP_NAME_RP, ReG_AppName, APP_NAME_RP);
 
-#if REG_DEBUG_FULL
-  fprintf(stderr, "STEER: Initialize_steering_connection_wsrf: sending "
-	  "2nd msg:\n>>%s<<\n\n", query_buf);
-#endif
   if(Steerer_connection.SGS_info.passwd[0]){
     Create_WSSE_header(Steerer_connection.SGS_info.soap,
 		       Steerer_connection.SGS_info.username,
 		       Steerer_connection.SGS_info.passwd);
   }
+
+#if REG_DEBUG_FULL
+  fprintf(stderr, "STEER: Initialize_steering_connection_wsrf: sending "
+	  "2nd msg:\n>>%s<<\n\n", query_buf);
+#endif
+
   if(soap_call_wsrp__SetResourceProperties(Steerer_connection.SGS_info.soap, 
 					   Steerer_connection.SGS_info.address,
 					   "", query_buf, &out) != SOAP_OK){
