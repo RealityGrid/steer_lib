@@ -1264,18 +1264,20 @@ int Create_WSSE_header(struct soap *aSoap,
   }
 
   status = RAND_pseudo_bytes(randBuf, 16);
-#if REG_DEBUG_FULL
   if(status == 0){
-    fprintf(stderr, "Sequence is not cryptographically strong\n");
+    fprintf(stderr, "STEER: WARNING: Create_WSSE_header: Sequence is not "
+	    "cryptographically strong\n");
   }
+  /*
   else if(status == 1){
     fprintf(stderr, "Sequence IS cryptographically strong\n");
   }
+  */
   else if(status == -1){
-    fprintf(stderr, "RAND_pseudo_bytes is not supported\n");
+    fprintf(stderr, "STEER: ERROR: Create_WSSE_header: RAND_pseudo_bytes "
+	    "is not supported\n");
     return REG_FAILURE;
   }
-#endif /* REG_DEBUG_FULL */
 
   /* Base64-encode this random sequence to make our nonce a nice
      ASCII string (XML friendly) */
@@ -1297,13 +1299,13 @@ int Create_WSSE_header(struct soap *aSoap,
   timePtr = Get_current_time_string(); /* Steer lib */
   snprintf(aSoap->header->Security.UsernameToken.wsu__Created, 128,
 	   timePtr);
+  /*
   fprintf(stderr, "STEER: Create_WSSE_header: Created: >>%s<<\n", 
 	 aSoap->header->Security.UsernameToken.wsu__Created);
-
+  */
   snprintf(aSoap->header->Security.UsernameToken.wsse__Password.Type, 128,
 	   "PasswordDigest");
 
-  fprintf(stderr, "STEER: Create_WSSE_header: Creating PasswordDigest...\n");
   /* Password_digest = Base64(SHA-1(nonce + created + password)) */
   bytesLeft = MAX_LEN;
   pBuf = buf;
@@ -1314,12 +1316,13 @@ int Create_WSSE_header(struct soap *aSoap,
   bytesLeft -= nbytes; pBuf += nbytes;
   nbytes = snprintf(pBuf, bytesLeft, passwd); /* password */
   bytesLeft -= nbytes; pBuf += nbytes;
+  /*
   printf("Digest is: >>");
   for(i=0;i<(MAX_LEN-bytesLeft);i++){
     printf("%c", buf[i]);
   }
   printf("<<\n");
-
+  */
   SHA1(buf, (MAX_LEN-bytesLeft), digest); /* openssl call */
 
   free(pBase64Buf); len = 0; pBase64Buf=NULL;
@@ -1330,13 +1333,13 @@ int Create_WSSE_header(struct soap *aSoap,
   while((i > -1) && (pBase64Buf[i] == '=')){
     pBase64Buf[i--] = '\0';
   }
-
+  /*
   printf("Encoded digest is: >>");
   for(i=0; i<len; i++){
     printf("%c", pBase64Buf[i]);
   }
   printf("<<\n");
-
+  */
   /* +1 allows for null terminator (which Base64_encode does not include) */
   aSoap->header->Security.UsernameToken.wsse__Password.__item = 
                                        (char *)soap_malloc(aSoap, len+1);
@@ -1378,29 +1381,38 @@ char *Get_current_time_string()
 /*-------------------------------------------------------------------*/
 
 int REG_Init_ssl_context(struct soap *aSoap,
+			   const int  authenticateSWS,
 			        char *certKeyPemFile,
 			        char *passphrase,
 			        char *caCertPath)
 {
   struct stat stbuf;
+  int soap_ssl_flag;
 
   if(!aSoap){
     fprintf(stderr, "STEER: REG_Init_ssl_context: pointer to soap "
 	    "struct is NULL\n");
     return REG_FAILURE;
   }
-  if(!caCertPath){
+
+  if((authenticateSWS == REG_TRUE) && !caCertPath){
     fprintf(stderr, "STEER: REG_Init_ssl_context: CA certificates "
-	    "directory MUST be specified\n");
+	    "directory MUST be specified when SWS authentication is on\n");
     return REG_FAILURE;
   }
-  else if( stat(caCertPath, &stbuf) == -1 ){
+  else if( caCertPath && (stat(caCertPath, &stbuf) == -1) ){
     fprintf(stderr, "STEER: REG_Init_ssl_context: CA certificates "
 	    "directory >>%s<< is not valid\n", caCertPath);
     return REG_FAILURE;
   }
+
+  soap_ssl_flag = SOAP_SSL_NO_AUTHENTICATION;
+  if(authenticateSWS == REG_TRUE){
+    soap_ssl_flag = SOAP_SSL_DEFAULT;
+  }
+  fprintf(stderr, "STEER: ARPDBG initializing SSL context...\n");
   if (soap_ssl_client_context(aSoap,
-			      SOAP_SSL_DEFAULT,
+			      soap_ssl_flag,
 			      /* user's cert. & key file */
 			      certKeyPemFile,
 			      /* Password to read key file */
@@ -1419,5 +1431,6 @@ int REG_Init_ssl_context(struct soap *aSoap,
     soap_print_fault(aSoap, stderr);
     return REG_FAILURE;
   }
+  fprintf(stderr, "STEER: ARPDBG...done\n");
   return REG_SUCCESS;
 }

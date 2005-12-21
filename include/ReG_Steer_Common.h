@@ -477,6 +477,7 @@ extern PREFIX char *Get_current_time_string();
 
 /** Initialize the SSL context for the supplied gSoap structure
     @param aSoap Ptr to soap struct to be initialized
+    @param authenticateSWS Whether or not to verify the cert. presented by the SWS.  If REG_TRUE then caCertPath must be set.
     @param certKeyPemFile Full path to file containing user's certificate
            and key (if doing mutual authentication, NULL otherwise) 
     @param passphrase Passphrase for the user's key (can be NULL if not
@@ -484,6 +485,7 @@ extern PREFIX char *Get_current_time_string();
     @param caCertPath Path to directory containing CA certs 
     @return REG_SUCCESS or REG_FAILURE */
 extern PREFIX int REG_Init_ssl_context(struct soap *aSoap,
+				       const int    authenticateSWS,
 				       char *certKeyPemFile,
 				       char *passphrase,
 				       char *caCertPath);
