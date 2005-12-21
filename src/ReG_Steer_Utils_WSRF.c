@@ -187,7 +187,9 @@ char *Create_SWS(const int   lifetimeMinutes,
   soap.encodingStyle = NULL;
 
   if(strstr(factoryAddr, "https") == factoryAddr){
+
     if( REG_Init_ssl_context(&soap,
+			     REG_TRUE, /* Authenticate SWS */
 			     NULL,/*char *certKeyPemFile,*/
 			     NULL, /* char *passphrase,*/
 			     "/etc/grid-security/certificates") == REG_FAILURE){
@@ -300,6 +302,7 @@ int Destroy_WSRP(char *epr,
     /* If we're using https then set up the context */
     if(strstr(epr, "https") == epr){
       if( REG_Init_ssl_context(&soap,
+			       REG_TRUE, /* Authenticate SWS */
 			       NULL,/*char *certKeyPemFile,*/
 			       NULL, /* char *passphrase,*/
 			       "/etc/grid-security/certificates") == REG_FAILURE){
