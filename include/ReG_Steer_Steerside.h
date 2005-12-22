@@ -89,10 +89,13 @@ extern PREFIX int Sim_attach(char *SimID,
 
 /**
    As Sim_attach except takes a username and passphrase for use 
-   with WS-Security (only supported in the WSRF implementation). */
-extern PREFIX int Sim_attach_secure(char *SimID,
-				    char *username,
-				    char *passwd,
+   with WS-Security (only supported in the WSRF implementation) 
+   and path to directory holding CA certs (WSRF only, if specified,
+   turns on authentication of SWS). */
+extern PREFIX int Sim_attach_secure(const char *SimID,
+				    const char *username,
+				    const char *passwd,
+				    const char *caCertsPath,
 				    int  *SimHandle);
 
 /**
