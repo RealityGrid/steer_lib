@@ -47,6 +47,9 @@ long int ReG_lastModTime = 0;
 /* Actual declaration is in ReG_Steer_Appside.c */
 extern struct msg_store_struct  Msg_store;
 extern struct msg_store_struct *Msg_store_tail;
+/* Table holding general configuration info. is declared in 
+   ReG_Steer_Steerside.c */
+extern Steerer_config_table_type Steer_config;
 
 /*------------------------------------------------------------------*/
 /* Handler for unrecognised tags in gSoap */
@@ -95,7 +98,7 @@ int Sim_attach_wsrf (Sim_entry_type *sim, char *SimID){
 			     REG_TRUE, /* Authenticate SWS */
 			     NULL,/*char *certKeyPemFile,*/
 			     NULL, /* char *passphrase,*/
-			     "/etc/grid-security/certificates") == REG_FAILURE){
+			     Steer_config.caCertsPath) == REG_FAILURE){
 
       fprintf(stderr, "STEER: ERROR: Sim_attach_wsrf: call to initialize "
 	      "soap SSL context failed\n");
