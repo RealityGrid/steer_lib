@@ -64,6 +64,11 @@ Sim_table_type Sim_table;
 Proxy_table_type Proxy;
 
 /**
+   Structure holding general configuration details for the 
+   steering-side of the library */
+Steerer_config_table_type Steer_config;
+
+/**
    This function's prototype is in ReG_Steer_Appside.c 'cos it's
    a utility that may be used by an application developer too */
 extern char** Alloc_string_array(int, int);
@@ -165,10 +170,10 @@ int Steerer_initialize()
   /* Initialize the (OpenSSL) pseudo-random number generator for
      use with WS-Security */
   if(Init_random() == REG_SUCCESS){
-    Sim_table.ossl_rand_available = REG_TRUE;
+    Steer_config.ossl_rand_available = REG_TRUE;
   }
   else{
-    Sim_table.ossl_rand_available = REG_FALSE;
+    Steer_config.ossl_rand_available = REG_FALSE;
   }
 
   return REG_SUCCESS;
@@ -212,14 +217,15 @@ int Steerer_finalize()
 int Sim_attach(char *SimID,
 	       int  *SimHandle)
 {
-  return Sim_attach_secure(SimID, "", "", SimHandle);
+  return Sim_attach_secure(SimID, "", "", NULL, SimHandle);
 }
 
 /*----------------------------------------------------------------*/
 
-int Sim_attach_secure(char *SimID,
-		      char *username,
-		      char *passwd,
+int Sim_attach_secure(const char *SimID,
+		      const char *username,
+		      const char *passwd,
+		      const char *caCertsPath,
 		      int  *SimHandle)
 {
   int                  current_sim;
@@ -379,13 +385,19 @@ int Sim_attach_secure(char *SimID,
   sim_ptr->SGS_info.sde_index = 0;
   /* We'll only be able to do WS-Security if we previously successfully
      initialized the OpenSSL random number generator */
-  if(Sim_table.ossl_rand_available == REG_TRUE){
+  if(Steer_config.ossl_rand_available == REG_TRUE){
     strncpy(sim_ptr->SGS_info.username, username, REG_MAX_STRING_LENGTH);
     strncpy(sim_ptr->SGS_info.passwd, passwd, REG_MAX_STRING_LENGTH);
   }
   else{
     sim_ptr->SGS_info.username[0] = '\0';
     sim_ptr->SGS_info.passwd[0] = '\0';
+  }
+
+  /* SSL configuration */
+  if(caCertsPath){
+    strncpy(Steer_config.caCertsPath, caCertsPath, 
+	    REG_MAX_STRING_LENGTH);
   }
 
   /* Now we actually connect to the application */
