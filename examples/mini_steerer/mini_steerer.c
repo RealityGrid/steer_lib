@@ -181,7 +181,7 @@ int main(int argc, char **argv){
 	  }
 	  else{
 	    status = Sim_attach_secure(sim_gsh[i], getenv("USER"), 
-				       passPtr, &sim_handle);
+				       passPtr, NULL, &sim_handle);
 	  }
 	}
 	else{
