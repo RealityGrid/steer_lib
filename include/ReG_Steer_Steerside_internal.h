@@ -49,9 +49,6 @@
 
 typedef struct {
 
-  /** Whether the OpenSSL pseudo-random no. generator is 
-      correctly initialized */
-  int             ossl_rand_available;
   /** No. of simulations we have registered with us */
   int             num_registered;
   /** Maximum no. of entries we can have in the sim array */
@@ -74,6 +71,17 @@ typedef struct {
 
 } Proxy_table_type;
 
+/** Typedef for structure holding general configuration details
+    for the steerer */
+
+typedef struct {
+  /** Whether the OpenSSL pseudo-random no. generator is 
+      correctly initialized */
+  int             ossl_rand_available;
+  char            privateKeyCertFile[REG_MAX_STRING_LENGTH];
+  char            caCertsPath[REG_MAX_STRING_LENGTH];
+
+} Steerer_config_table_type;
 
 /*--------- Prototypes of internal library functions -------------*/
 
