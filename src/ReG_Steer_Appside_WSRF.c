@@ -708,9 +708,11 @@ int Get_data_source_address_wsrf(int   index,
     mySoap.client_port_min = Steerer_connection.SGS_info.soap->client_port_min;
     mySoap.client_port_max = Steerer_connection.SGS_info.soap->client_port_max;
 
+    /* We use the same username and password for the data-source SWS as we do
+       for 'our' SWS */
     if(Get_resource_property(&mySoap, address,
-			     "", /* ARPDBG - need username for this sws */
-			     "", /* ARPDBG - need passphrase for this sws */
+			     Steerer_connection.SGS_info.username,
+			     Steerer_connection.SGS_info.passwd,
 			     "ioTypeDefinitions", &pBuf) != REG_SUCCESS){
       return REG_FAILURE;
     }
