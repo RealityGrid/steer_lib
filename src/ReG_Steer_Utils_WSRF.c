@@ -49,7 +49,11 @@ extern char Global_scratch_buffer[];
 
 /*-------------------------------------------------------------------------*/
 
-int Get_registry_entries_wsrf(const char *registryEPR, int *num_entries,  
+int Get_registry_entries_wsrf(const char *registryEPR, 
+			      const char *userKeyPasswd,
+			      const char *userKeyCertPath,
+			      const char *caCertsPath,
+			      int *num_entries,  
 			      struct registry_entry **entries){
 
   struct wsrp__GetMultipleResourcePropertiesRequest in;
@@ -63,6 +67,22 @@ int Get_registry_entries_wsrf(const char *registryEPR, int *num_entries,
   *num_entries = 0;
 
   soap_init(&soap);
+
+  /* regServiceGroup uses SSL for authentication */
+  /* If address of SWS begins with 'https' then initialize SSL context */
+  if(strstr(registryEPR, "https") == registryEPR){
+    if( REG_Init_ssl_context(&soap,
+			     REG_TRUE, /* Authenticate SWS */
+			     userKeyCertPath,
+			     userKeyPasswd,
+			     caCertsPath) == REG_FAILURE){
+
+      fprintf(stderr, "Get_registry_entries_wsrf: call to initialize "
+	      "soap SSL context failed\n");
+      return REG_FAILURE;
+    }
+  }
+
   in.__size = 1;
   in.__ptr = (struct wsrp__ResourcePropertyStruct *)malloc(in.__size*
 							  sizeof(struct wsrp__ResourcePropertyStruct));

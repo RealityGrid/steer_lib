@@ -40,9 +40,15 @@
 
 /** Get the entries from a WSRF-based registry
     @param registryEPR Endpoint of the registry to query
+    @param userKeyPasswd Passphrase for the user's key
+    @param userKeyCertPath Path to the PEM file containing both the user's key and certificate
+    @param caCertsPath Path to the directory containing CA certificates
     @param num_entries On successful return, holds the number of entries in the registry
     @param entries Array of structst holding details on each entry */
 int Get_registry_entries_wsrf(const char             *registryEPR, 
+			      const char             *userKeyPasswd,
+			      const char             *userKeyCertPath,
+			      const char             *caCertsPath,
 			      int                    *num_entries,  
 			      struct registry_entry **entries);
 

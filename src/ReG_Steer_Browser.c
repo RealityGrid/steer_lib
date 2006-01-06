@@ -178,83 +178,28 @@ int Get_sim_list(int   *nSims,
 
 /*-------------------------------------------------------------------------*/
 
-int Get_registry_entries(const char *registryGSH, 
-			 int *num_entries,  
+int Get_registry_entries(const char             *registryGSH, 
+			 int                    *num_entries,  
 			 struct registry_entry **entries){
-  int    status;
 
-#if REG_OGSI
-  struct sgr__findServiceDataResponse out;
-  struct soap soap;
-  char   query_buf[256];
-
-  soap_init(&soap);
-
-  sprintf(query_buf, "<ogsi:queryByServiceDataNames names=\"ogsi:entry\"/>");
-
-  if (soap_call_sgr__findServiceData ( &soap, registryGSH, "", query_buf, 
-				       &out)){
-    soap_print_fault(&soap,stderr);
-    return REG_FAILURE;
-  }
-  else{
-    if(!(out._findServiceDataReturn)){
-      fprintf(stderr, "Get_registry_entries: findServiceData returned null\n");
-      return REG_FAILURE;
-    }
-#if REG_DEBUG
-    else{
-      fprintf(stderr, "Get_registry_entries: findServiceData returned: %s\n", 
-	      out._findServiceDataReturn);
-    }
-#endif
-  }
-
-  status = Parse_registry_entries(out._findServiceDataReturn, 
-				  strlen(out._findServiceDataReturn),
-				  num_entries, entries);
-  soap_destroy(&soap);
-  soap_end(&soap);
-
-#else /* use WSRF, not OGSI */
-
-  status = Get_registry_entries_wsrf(registryGSH, num_entries,  
-				     entries);
-
-#endif
-
-#if REG_DEBUG
-  if(status == REG_SUCCESS){
-    int i;
-    fprintf(stderr,"Get_registry_entries, got %d entries...\n", *num_entries);
-    for(i=0; i<*num_entries; i++){
-      fprintf(stderr,"Entry %d:\n", i);
-      fprintf(stderr,"          GSH: %s\n", (*entries)[i].gsh);
-      fprintf(stderr,"          App: %s\n", (*entries)[i].application);
-      fprintf(stderr,"         user: %s, %s\n", (*entries)[i].user, 
-	      (*entries)[i].group);
-      fprintf(stderr,"   Start time: %s\n", (*entries)[i].start_date_time);
-      fprintf(stderr,"  Description: %s\n", (*entries)[i].job_description);
-    }
-  }
-#endif
-
-  return status;
+  return Get_registry_entries_secure(registryGSH, "", "", "", 
+				     num_entries, entries);
 }
 
 /*-------------------------------------------------------------------------*/
 
-int Get_registry_entries_filtered(const char *registryGSH, 
-				  int *num_entries,  
+int Get_registry_entries_filtered(const char             *registryGSH, 
+				  int                    *num_entries,  
 				  struct registry_entry **entries,
-				  char *pattern){
+				  char                   *pattern){
   int status;
   int i, j;
   int count;
 
-  if( (status = Get_registry_entries(registryGSH, 
-				     num_entries,  
-				     entries)) != REG_SUCCESS ){
+  if( (status = Get_registry_entries_secure(registryGSH, 
+					    "","","",
+					    num_entries,  
+					    entries)) != REG_SUCCESS ){
     return status;
   }
 
@@ -316,4 +261,77 @@ int Get_registry_entries_filtered(const char *registryGSH,
 #endif
 
   return REG_SUCCESS;
+}
+
+/*-------------------------------------------------------------------------*/
+
+int Get_registry_entries_secure(const char *registryGSH, 
+				const char *userKeyPasswd,
+				const char *userKeyCertPath,
+				const char *caCertsPath,
+				int *num_entries,  
+				struct registry_entry **entries){
+  int status;
+
+#if REG_OGSI
+
+  fprintf(stderr, "Get_registry_entries_secure: WARNING: no secure version "
+	  "available for OGSI implementation!\n");
+
+  struct sgr__findServiceDataResponse out;
+  struct soap soap;
+  char   query_buf[256];
+
+  soap_init(&soap);
+
+  sprintf(query_buf, "<ogsi:queryByServiceDataNames names=\"ogsi:entry\"/>");
+
+  if (soap_call_sgr__findServiceData ( &soap, registryGSH, "", query_buf, 
+				       &out)){
+    soap_print_fault(&soap,stderr);
+    return REG_FAILURE;
+  }
+  else{
+    if(!(out._findServiceDataReturn)){
+      fprintf(stderr, "Get_registry_entries: findServiceData returned null\n");
+      return REG_FAILURE;
+    }
+#if REG_DEBUG
+    else{
+      fprintf(stderr, "Get_registry_entries: findServiceData returned: %s\n", 
+	      out._findServiceDataReturn);
+    }
+#endif
+  }
+
+  status = Parse_registry_entries(out._findServiceDataReturn, 
+				  strlen(out._findServiceDataReturn),
+				  num_entries, entries);
+  soap_destroy(&soap);
+  soap_end(&soap);
+#else
+
+  status = Get_registry_entries_wsrf(registryGSH, userKeyPasswd, 
+				     userKeyCertPath, caCertsPath, 
+				     num_entries, entries);
+
+#if REG_DEBUG
+  if(status == REG_SUCCESS){
+    int i;
+    fprintf(stderr,"Get_registry_entries_secure, got %d entries...\n", 
+	    *num_entries);
+    for(i=0; i<*num_entries; i++){
+      fprintf(stderr,"Entry %d:\n", i);
+      fprintf(stderr,"          GSH: %s\n", (*entries)[i].gsh);
+      fprintf(stderr,"          App: %s\n", (*entries)[i].application);
+      fprintf(stderr,"         user: %s, %s\n", (*entries)[i].user, 
+	      (*entries)[i].group);
+      fprintf(stderr,"   Start time: %s\n", (*entries)[i].start_date_time);
+      fprintf(stderr,"  Description: %s\n", (*entries)[i].job_description);
+    }
+  }
+#endif
+
+  return status;
+#endif /* REG_OGSI */
 }

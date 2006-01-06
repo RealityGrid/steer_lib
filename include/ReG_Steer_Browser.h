@@ -103,4 +103,19 @@ extern PREFIX int Get_registry_entries_filtered(const char *registryGSH,
 						int *num_entries,  
 						struct registry_entry **entries,
 						char *pattern);
+
+/** Queries the specified, secure registry using SSL
+    The pointer held in *entries must be free'd once the data
+    has been used.
+    @param userKeyPasswd Passphrase for the user's key
+    @param userKeyCertPath Path to the PEM file containing both the user's key and certificate
+    @param caCertsPath Path to the directory containing CA certificates
+*/
+extern PREFIX int Get_registry_entries_secure(const char *registryGSH, 
+					      const char *userKeyPasswd,
+					      const char *userKeyCertPath,
+					      const char *caCertsPath,
+					      int *num_entries,  
+					      struct registry_entry **entries);
+
 #endif
