@@ -118,4 +118,14 @@ extern PREFIX int Get_registry_entries_secure(const char *registryGSH,
 					      int *num_entries,  
 					      struct registry_entry **entries);
 
+/** @see Get_registry_entries_filtered
+    @see Get_registry_entries_secure */
+extern PREFIX int Get_registry_entries_filtered_secure(const char             *registryGSH, 
+						       const char             *userKeyPasswd,
+						       const char             *userKeyCertPath,
+						       const char             *caCertsPath,
+						       int                    *num_entries,  
+						       struct registry_entry **entries,
+						       char                   *pattern);
+
 #endif

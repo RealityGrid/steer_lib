@@ -188,16 +188,21 @@ int Get_registry_entries(const char             *registryGSH,
 
 /*-------------------------------------------------------------------------*/
 
-int Get_registry_entries_filtered(const char             *registryGSH, 
-				  int                    *num_entries,  
-				  struct registry_entry **entries,
-				  char                   *pattern){
+int Get_registry_entries_filtered_secure(const char             *registryGSH, 
+					 const char             *userKeyPasswd,
+					 const char             *userKeyCertPath,
+					 const char             *caCertsPath,
+					 int                    *num_entries,  
+					 struct registry_entry **entries,
+					 char                   *pattern){
   int status;
   int i, j;
   int count;
 
   if( (status = Get_registry_entries_secure(registryGSH, 
-					    "","","",
+					    userKeyPasswd, 
+					    userKeyCertPath,
+					    caCertsPath,
 					    num_entries,  
 					    entries)) != REG_SUCCESS ){
     return status;
@@ -334,4 +339,18 @@ int Get_registry_entries_secure(const char *registryGSH,
 
   return status;
 #endif /* REG_OGSI */
+}
+
+/*-------------------------------------------------------------------------*/
+
+int Get_registry_entries_filtered(const char             *registryGSH, 
+				  int                    *num_entries,  
+				  struct registry_entry **entries,
+				  char                   *pattern){
+
+  return Get_registry_entries_filtered_secure(registryGSH,
+					      "","","",
+					      num_entries,
+					      entries,
+					      pattern);
 }
