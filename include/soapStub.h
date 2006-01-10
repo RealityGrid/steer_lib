@@ -27,6 +27,12 @@ SOAP_BEGIN_NAMESPACE(soap)
 \******************************************************************************/
 
 
+/* epr: */
+struct epr
+{
+	char *wsa__Address;	/* optional element of type xsd:string */
+};
+
 /* sws:GetParamLogResponse: */
 struct sws__GetParamLogResponse
 {
@@ -497,12 +503,6 @@ struct sgsf__createService
 	char *in1;	/* optional element of type xsd:string */
 };
 
-/* epr: */
-struct epr
-{
-	char *wsa__Address;	/* optional element of type xsd:string */
-};
-
 /* swsf:createSWSResourceResponse: */
 struct swsf__createSWSResourceResponse
 {
@@ -513,8 +513,6 @@ struct swsf__createSWSResourceResponse
 struct swsf__createSWSResource
 {
 	int timeToLive;	/* required element of type xsd:int */
-	char *registryEPR;	/* optional element of type xsd:string */
-	char *jobDescription;	/* optional element of type xsd:string */
 	char *chkpointEPR;	/* optional element of type xsd:string */
 	char *passPhrase;	/* optional element of type xsd:string */
 };
@@ -789,6 +787,18 @@ struct rgt__addNode
 	char *in4;	/* optional element of type xsd:string */
 };
 
+/* rsg:AddResponse: */
+struct rsg__AddResponse
+{
+	struct epr wsa__EndpointReference;	/* RPC return element */	/* required element of type epr */
+};
+
+/* rsg:Add: */
+struct rsg__Add
+{
+	char *_in;	/* optional element of type xsd:anyType */
+};
+
 /* Primitive stringWithAttr schema type: */
 struct stringWithAttr
 {
@@ -951,7 +961,7 @@ SOAP_FMAC5 int SOAP_FMAC6 sgsf__destroy(struct soap*, void *_, struct sgsf__dest
 
 SOAP_FMAC5 int SOAP_FMAC6 sgsf__createService(struct soap*, char *in0, char *in1, struct sgsf__createServiceResponse *out);
 
-SOAP_FMAC5 int SOAP_FMAC6 swsf__createSWSResource(struct soap*, int timeToLive, char *registryEPR, char *jobDescription, char *chkpointEPR, char *passPhrase, struct swsf__createSWSResourceResponse *out);
+SOAP_FMAC5 int SOAP_FMAC6 swsf__createSWSResource(struct soap*, int timeToLive, char *chkpointEPR, char *passPhrase, struct swsf__createSWSResourceResponse *out);
 
 SOAP_FMAC5 int SOAP_FMAC6 sgr__remove(struct soap*, char *in0, struct sgr__removeResponse *out);
 
@@ -994,6 +1004,8 @@ SOAP_FMAC5 int SOAP_FMAC6 rgt__getCheckPointData(struct soap*, void *_, struct r
 SOAP_FMAC5 int SOAP_FMAC6 rgt__getParentNode(struct soap*, void *_, struct rgt__getParentNodeResponse *out);
 
 SOAP_FMAC5 int SOAP_FMAC6 rgt__addNode(struct soap*, char *in0, char *in1, char *in2, char *in3, char *in4, struct rgt__addNodeResponse *out);
+
+SOAP_FMAC5 int SOAP_FMAC6 rsg__Add(struct soap*, char *_in, struct rsg__AddResponse *_out);
 
 /******************************************************************************\
  *                                                                            *
@@ -1074,7 +1086,7 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call_sgsf__destroy(struct soap *soap, const char 
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_call_sgsf__createService(struct soap *soap, const char *soap_endpoint, const char *soap_action, char *in0, char *in1, struct sgsf__createServiceResponse *out);
 
-SOAP_FMAC5 int SOAP_FMAC6 soap_call_swsf__createSWSResource(struct soap *soap, const char *soap_endpoint, const char *soap_action, int timeToLive, char *registryEPR, char *jobDescription, char *chkpointEPR, char *passPhrase, struct swsf__createSWSResourceResponse *out);
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_swsf__createSWSResource(struct soap *soap, const char *soap_endpoint, const char *soap_action, int timeToLive, char *chkpointEPR, char *passPhrase, struct swsf__createSWSResourceResponse *out);
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_call_sgr__remove(struct soap *soap, const char *soap_endpoint, const char *soap_action, char *in0, struct sgr__removeResponse *out);
 
@@ -1117,6 +1129,8 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgt__getCheckPointData(struct soap *soap, co
 SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgt__getParentNode(struct soap *soap, const char *soap_endpoint, const char *soap_action, void *_, struct rgt__getParentNodeResponse *out);
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgt__addNode(struct soap *soap, const char *soap_endpoint, const char *soap_action, char *in0, char *in1, char *in2, char *in3, char *in4, struct rgt__addNodeResponse *out);
+
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_rsg__Add(struct soap *soap, const char *soap_endpoint, const char *soap_action, char *_in, struct rsg__AddResponse *_out);
 
 /******************************************************************************\
  *                                                                            *
@@ -1243,6 +1257,8 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_serve_rgt__getCheckPointData(struct soap*);
 SOAP_FMAC5 int SOAP_FMAC6 soap_serve_rgt__getParentNode(struct soap*);
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_serve_rgt__addNode(struct soap*);
+
+SOAP_FMAC5 int SOAP_FMAC6 soap_serve_rsg__Add(struct soap*);
 
 SOAP_END_NAMESPACE(soap)
 

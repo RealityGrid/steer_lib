@@ -11,7 +11,7 @@ extern "C" {
 
 SOAP_BEGIN_NAMESPACE(soap)
 
-SOAP_SOURCE_STAMP("@(#) soapClient.c ver 2.7.2 2005-12-13 12:08:20 GMT")
+SOAP_SOURCE_STAMP("@(#) soapClient.c ver 2.7.2 2006-01-10 15:04:23 GMT")
 
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_call_wsrp__GetResourceProperty(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct GetResourcePropertyRequest *in_, char **out_)
@@ -1842,14 +1842,12 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call_sgsf__createService(struct soap *soap, const
 	return soap_closesock(soap);
 }
 
-SOAP_FMAC5 int SOAP_FMAC6 soap_call_swsf__createSWSResource(struct soap *soap, const char *soap_endpoint, const char *soap_action, int timeToLive, char *registryEPR, char *jobDescription, char *chkpointEPR, char *passPhrase, struct swsf__createSWSResourceResponse *out)
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_swsf__createSWSResource(struct soap *soap, const char *soap_endpoint, const char *soap_action, int timeToLive, char *chkpointEPR, char *passPhrase, struct swsf__createSWSResourceResponse *out)
 {	struct swsf__createSWSResource soap_tmp_swsf__createSWSResource;
 	if (!soap_endpoint)
 		soap_endpoint = "http://some.where/";
 	soap->encodingStyle = NULL;
 	soap_tmp_swsf__createSWSResource.timeToLive = timeToLive;
-	soap_tmp_swsf__createSWSResource.registryEPR = registryEPR;
-	soap_tmp_swsf__createSWSResource.jobDescription = jobDescription;
 	soap_tmp_swsf__createSWSResource.chkpointEPR = chkpointEPR;
 	soap_tmp_swsf__createSWSResource.passPhrase = passPhrase;
 	soap_begin(soap);
@@ -2961,6 +2959,57 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgt__addNode(struct soap *soap, const char *
 	 || soap_body_begin_in(soap))
 		return soap_closesock(soap);
 	soap_get_rgt__addNodeResponse(soap, out, "rgt:addNodeResponse", "");
+	if (soap->error)
+	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
+			return soap_recv_fault(soap);
+		return soap_closesock(soap);
+	}
+	if (soap_body_end_in(soap)
+	 || soap_envelope_end_in(soap)
+#ifndef WITH_LEANER
+	 || soap_resolve_attachments(soap)
+#endif
+	 || soap_end_recv(soap))
+		return soap_closesock(soap);
+	return soap_closesock(soap);
+}
+
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_rsg__Add(struct soap *soap, const char *soap_endpoint, const char *soap_action, char *_in, struct rsg__AddResponse *_out)
+{	struct rsg__Add soap_tmp_rsg__Add;
+	if (!soap_endpoint)
+		soap_endpoint = "http://some.where/";
+	if (!soap_action)
+		soap_action = "";
+	soap->encodingStyle = NULL;
+	soap_tmp_rsg__Add._in = _in;
+	soap_begin(soap);
+	soap_serializeheader(soap);
+	soap_serialize_rsg__Add(soap, &soap_tmp_rsg__Add);
+	soap_begin_count(soap);
+	if (soap->mode & SOAP_IO_LENGTH)
+	{	soap_envelope_begin_out(soap);
+		soap_putheader(soap);
+		soap_body_begin_out(soap);
+		soap_put_rsg__Add(soap, &soap_tmp_rsg__Add, "rsg:Add", "");
+		soap_body_end_out(soap);
+		soap_envelope_end_out(soap);
+	}
+	if (soap_connect(soap, soap_endpoint, soap_action)
+	 || soap_envelope_begin_out(soap)
+	 || soap_putheader(soap)
+	 || soap_body_begin_out(soap)
+	 || soap_put_rsg__Add(soap, &soap_tmp_rsg__Add, "rsg:Add", "")
+	 || soap_body_end_out(soap)
+	 || soap_envelope_end_out(soap)
+	 || soap_end_send(soap))
+		return soap_closesock(soap);
+	soap_default_rsg__AddResponse(soap, _out);
+	if (soap_begin_recv(soap)
+	 || soap_envelope_begin_in(soap)
+	 || soap_recv_header(soap)
+	 || soap_body_begin_in(soap))
+		return soap_closesock(soap);
+	soap_get_rsg__AddResponse(soap, _out, "rsg:AddResponse", "");
 	if (soap->error)
 	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
 			return soap_recv_fault(soap);
