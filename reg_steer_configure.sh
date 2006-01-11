@@ -61,8 +61,8 @@ export REG_XML_INCDIR=/usr/include/libxml2
 # Set which SSL libs (normally "-lssl -lcrypto") to link against and
 # the location of OpenSSL libraries if not in standard place
 export REG_SSL_LIBS=""
-export REG_SSL_LIBDIR=""
-export REG_SSL_INCDIR=""
+export REG_SSL_LIBDIR="."
+export REG_SSL_INCDIR="."
 
 #---------------------------------------------------------------
 # This section only necessary if using sockets rather
