@@ -1203,6 +1203,8 @@ int Get_fully_qualified_hostname(char **hostname, char **ip_addr_ptr)
 
 int Init_random()
 {
+#ifdef WITH_OPENSSL
+
   struct stat stbuf;
   char *randBuf = "/dev/random";
 
@@ -1221,6 +1223,14 @@ int Init_random()
   }
 
   return REG_SUCCESS;
+
+#else /* No OpenSSL available */
+
+  fprintf(stderr, "STEER: Init_random: library not built with SSL support "
+	  "so cannot initialize OpenSSL random no. generator\n");
+  return REG_FAILURE;
+
+#endif /* defined WITH_OPENSSL */
 }
 
 /*-----------------------------------------------------------------*/
@@ -1229,6 +1239,7 @@ int Create_WSSE_header(struct soap *aSoap,
 		       const  char *username,
 		       const  char *passwd)
 {
+#ifdef WITH_OPENSSL
   const int     MAX_LEN = 1024;
   int           i, len;
   int           status;
@@ -1344,7 +1355,8 @@ int Create_WSSE_header(struct soap *aSoap,
   aSoap->header->Security.UsernameToken.wsse__Password.__item = 
                                        (char *)soap_malloc(aSoap, len+1);
   if( !(aSoap->header->Security.UsernameToken.wsse__Password.__item) ){
-    printf("Failed to malloc space for Password\n");
+    fprintf(stderr, "STEER: Create_WSSE_header: Failed to malloc "
+	    "space for Password\n");
     return REG_FAILURE;
   } 
   strncpy(aSoap->header->Security.UsernameToken.wsse__Password.__item,
@@ -1352,6 +1364,14 @@ int Create_WSSE_header(struct soap *aSoap,
   aSoap->header->Security.UsernameToken.wsse__Password.__item[len] = '\0';
 
   return REG_SUCCESS;
+
+#else /* WITH_OPENSSL not defined */
+
+  fprintf(stderr, "STEER: Create_WSSE_header: library not compiled with "
+	  "OpenSSL so no security possible\n");
+  return REG_FAILURE;
+
+#endif
 }
 
 /*----------------------------------------------------------------*/
@@ -1386,6 +1406,8 @@ int REG_Init_ssl_context(struct soap *aSoap,
 			 const char *passphrase,
 			 const char *caCertPath)
 {
+#ifdef WITH_OPENSSL
+
   struct stat stbuf;
   int soap_ssl_flag;
 
@@ -1432,4 +1454,12 @@ int REG_Init_ssl_context(struct soap *aSoap,
     return REG_FAILURE;
   }
   return REG_SUCCESS;
+
+#else /* No SSL available */
+
+  fprintf(stderr, "STEER: REG_Init_ssl_context: library not built "
+	  "with SSL so no security available\n");
+  return REG_FAILURE;
+
+#endif /* defined WITH_OPENSSL */
 }

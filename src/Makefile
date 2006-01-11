@@ -71,6 +71,7 @@ REG_LIB_UTILS_OBJECTS=ReG_Steer_Utils_WSRF.o \
         -DREG_DEBUG_FULL=${REG_DEBUG_FULL_FLAG} \
         -DREG_STEER_LIB_VERSION=\"${REG_STEER_LIB_VERSION}\" \
         -DWITH_CDATA \
+        -DREG_WITH_OPENSSL=${REG_WITH_OPENSSL_FLAG} \
         ${INCLUDE_PATH} -c $< -o $@
 
 all:
