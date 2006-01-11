@@ -58,6 +58,12 @@ setenv REG_APP_POLL_INTERVAL 5
 setenv REG_XML_LIBDIR /usr/lib
 setenv REG_XML_INCDIR /usr/include/libxml2
 
+# Set which SSL libs to link against and the location of OpenSSL 
+# libraries if not in standard place
+setenv REG_SSL_LIBS ""
+setenv REG_SSL_LIBDIR ""
+setenv REG_SSL_INCDIR ""
+
 #---------------------------------------------------------------
 # This section only necessary if using sockets rather
 # than file-based data transfer
