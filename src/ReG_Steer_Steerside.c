@@ -1497,7 +1497,8 @@ int Emit_stop_cmd(int SimHandle)
   /* Check that handle is valid */
   if(SimHandle == REG_SIM_HANDLE_NOTSET) return REG_SUCCESS;
 
-  if( (index = Sim_index_from_handle(SimHandle)) == -1){
+  index = Sim_index_from_handle(SimHandle);
+  if( index == -1){
 
     return REG_FAILURE;
   }
@@ -1526,7 +1527,8 @@ int Emit_pause_cmd(int SimHandle)
   /* Check that handle is valid */
   if(SimHandle == REG_SIM_HANDLE_NOTSET) return REG_SUCCESS;
 
-  if( (index = Sim_index_from_handle(SimHandle)) == -1){
+  index = Sim_index_from_handle(SimHandle);
+  if( index == -1){
 
     return REG_FAILURE;
   }
@@ -1553,7 +1555,8 @@ int Emit_resume_cmd(int SimHandle)
   /* Check that handle is valid */
   if(SimHandle == REG_SIM_HANDLE_NOTSET) return REG_SUCCESS;
 
-  if( (index = Sim_index_from_handle(SimHandle)) == -1){
+  index = Sim_index_from_handle(SimHandle);
+  if( index == -1){
 
     return REG_FAILURE;
   }
