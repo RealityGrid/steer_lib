@@ -35,11 +35,11 @@ NBIT = 32
 
 # Location of C compiler and flags to use
 CC = gcc
-C_FLAGS = -O2 
+C_FLAGS = -O2 -Wall -DWITH_OPENSSL
 LIB_C_FLAGS = ${C_FLAGS} -fPIC -I../include
 
 # Linker flags to use
-LD_FLAGS = -shared -soname=libReG_Steer.so -L${REG_XML_LIBDIR} -lm -lz -lxml2
+LD_FLAGS = -shared -soname=libReG_Steer.so -L${REG_XML_LIBDIR} -lm -lz -lxml2 -lssl -lcrypto
 
 # Location of F90 compiler (if any) and flags to use
 F90 = g95
@@ -70,4 +70,4 @@ STEER_LIBS = -L${REG_STEER_HOME}/lib${NBIT} \
              -L${REG_XML_LIBDIR}
 
 # Libraries to link example applications against
-STEER_LDFLAGS = -lm -lz -lxml2
+STEER_LDFLAGS = -lm -lz -lxml2  -lssl -lcrypto
