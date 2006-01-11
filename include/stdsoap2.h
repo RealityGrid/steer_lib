@@ -50,6 +50,11 @@ A commercial use license is available from Genivia, Inc., contact@genivia.com
 --------------------------------------------------------------------------------
 */
 
+/* ARP - this ReG header file included so as to allow control of
+   whether WITH_OPENSSL is defined via standard ReG library 
+   configuration files */
+#include "ReG_Steer_types.h"
+
 /* ARP - added to uniquely identify TRU64 systems.  Necessary on
    Alpha workstations */
 #ifndef TRU64
