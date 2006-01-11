@@ -44,17 +44,31 @@
   #define PREFIX 
 #endif
 
-/** Creates either an SGS or SWS */
-extern PREFIX char* Create_steering_service(const int   lifetimeMinutes,
+/** Holds details on the job associated with an SWS */
+struct job_details {
+  int  lifetimeMinutes;
+  char userName[REG_MAX_STRING_LENGTH];
+  char group[REG_MAX_STRING_LENGTH];
+  char software[REG_MAX_STRING_LENGTH];
+  char purpose[REG_MAX_STRING_LENGTH];
+  char inputFilename[REG_MAX_STRING_LENGTH];
+  char checkpointAddress[REG_MAX_STRING_LENGTH];
+  char passphrase[REG_MAX_STRING_LENGTH];
+};
+
+/** Creates either an SGS or SWS
+    @param job Ptr to struct holding details on the job
+    @param containerAddress Address of the container in which to create SWS
+    @param registryAddress Address of registry with which to register SWS
+    @param keyPassphrase Passphrase to user's (encrypted) SSL key
+    @param keyAndCertFile Location of pem file containing the user's certificate and private key
+    @param caCertsPath Location of directory containg CA certs, used when authenticating connection to Containern */
+extern PREFIX char* Create_steering_service(const struct job_details *job,
 					    const char *containerAddress,
 					    const char *registryAddress,
-					    const char *userName,
-					    const char *group,
-					    const char *software,
-					    const char *purpose,
-					    const char *inputFilename,
-					    const char *checkpointAddress,
-					    const char *passPhrase);
+					    const char *keyPassphrase,
+					    const char *keyAndCertFile,
+					    const char *caCertsPath);
 
 /** Destroy either an SGS or SWS */
 extern PREFIX int Destroy_steering_service(char *address,
