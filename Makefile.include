@@ -60,6 +60,11 @@ REG_SOCKET_SAMPLES_FLAG = 1
 # Whether or not to build with OpenSSL support.  If no SSL is available
 # then no security (whether WSSE or SSL) is possible.
 REG_WITH_OPENSSL_FLAG = 0
+# Set which SSL libs (normally "-lssl -lcrypto") to link against and
+# the location of OpenSSL libraries if not in a standard place
+REG_SSL_LIBS = 
+REG_SSL_LIBDIR = .
+REG_SSL_INCDIR = .
 
 #------------------------------------
 # Set flag to 1 to get (a lot of) debug output, 0 otherwise.
