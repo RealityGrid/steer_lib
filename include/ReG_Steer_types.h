@@ -45,6 +45,12 @@
 /** Whether or not to use timing routines - these are not very portable 
 #define USE_REG_TIMING*/
 
+/** This is here to allow use of SSL to be switched on and off by editing
+    Makefile.include */
+#if REG_WITH_OPENSSL
+#  define WITH_OPENSSL
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 
