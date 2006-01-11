@@ -57,6 +57,11 @@ REG_SOAP_STEERING_FLAG = 1
 REG_SOCKET_SAMPLES_FLAG = 1
 
 #------------------------------------
+# Whether or not to build with OpenSSL support.  If no SSL is available
+# then no security (whether WSSE or SSL) is possible.
+REG_WITH_OPENSSL_FLAG = 0
+
+#------------------------------------
 # Set flag to 1 to get (a lot of) debug output, 0 otherwise.
 REG_DEBUG_FLAG 	= 1
 
