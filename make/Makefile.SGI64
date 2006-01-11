@@ -39,7 +39,7 @@ C_FLAGS = -O2 -64
 LIB_C_FLAGS = ${C_FLAGS} -KPIC -I../include
 
 # Linker flags to use
-LD_FLAGS = -64 -shared -soname libReG_Steer.so -L${REG_XML_LIBDIR}${NBIT} -lxml2
+LD_FLAGS = -64 -shared -soname libReG_Steer.so -L${REG_XML_LIBDIR}${NBIT} -lxml2 -L${REG_SSL_LIBDIR}${NBIT} ${REG_SSL_LIBS}
 
 # Location of F90 compiler (if any) and flags to use
 F90 = f90
@@ -63,11 +63,13 @@ AR_FLAGS = rv
 
 # include directories
 STEER_INCLUDES = -I${REG_STEER_HOME}/include \
-                 -I${REG_XML_INCDIR}
+                 -I${REG_XML_INCDIR} \
+                 -I${REG_SSL_INCDIR}
 
 # library directories
 STEER_LIBS = -L${REG_STEER_HOME}/lib${NBIT} \
-             -L${REG_XML_LIBDIR}${NBIT}
+             -L${REG_XML_LIBDIR}${NBIT} \
+             -L${REG_SSL_LIBDIR}${NBIT}
 
 # Libraries to link example applications against
-STEER_LDFLAGS = -lxml2
+STEER_LDFLAGS = -lxml2 ${REG_SSL_LIBS}
