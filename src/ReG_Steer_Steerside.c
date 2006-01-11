@@ -408,7 +408,8 @@ int Sim_attach_secure(const char *SimID,
 #if REG_DEBUG
     fprintf(stderr, "Sim_attach: calling Sim_attach_proxy...\n");
 #endif
-    return_status = Sim_attach_proxy(&(Sim_table.sim[current_sim]), SimID);
+    return_status = Sim_attach_proxy(&(Sim_table.sim[current_sim]), 
+				     (char *)SimID);
   }
   else{
 
@@ -423,9 +424,11 @@ int Sim_attach_secure(const char *SimID,
 #endif
 
 #if REG_OGSI
-      return_status = Sim_attach_soap(&(Sim_table.sim[current_sim]), SimID);
+      return_status = Sim_attach_soap(&(Sim_table.sim[current_sim]), 
+				      (char *)SimID);
 #else
-      return_status = Sim_attach_wsrf(&(Sim_table.sim[current_sim]), SimID);
+      return_status = Sim_attach_wsrf(&(Sim_table.sim[current_sim]), 
+				      (char *)SimID);
 #endif
       if(return_status == REG_SUCCESS){
 	Sim_table.sim[current_sim].SGS_info.active = REG_TRUE;
@@ -441,7 +444,8 @@ int Sim_attach_secure(const char *SimID,
 #if REG_DEBUG
       fprintf(stderr, "Sim_attach: calling Sim_attach_local...\n");
 #endif
-      return_status = Sim_attach_local(&(Sim_table.sim[current_sim]), SimID);
+      return_status = Sim_attach_local(&(Sim_table.sim[current_sim]), 
+				       (char *)SimID);
     }
   }
 
