@@ -140,19 +140,16 @@ int Get_registry_entries_wsrf(const char *registryEPR,
 
 /*-----------------------------------------------------------------*/
 
-char *Create_SWS(const int   lifetimeMinutes,
+char *Create_SWS(const struct job_details *job,
 		 const char *containerAddress,
 		 const char *registryAddress,
-		 const char *userName,
-		 const char *group,
-		 const char *software,
-		 const char *purpose,
-		 const char *inputFilename,
-		 const char *checkpointAddress,
-		 const char *passphrase){
+		 const char *keyPassphrase,
+		 const char *keyAndCertFile,
+		 const char *caCertsPath){
 
   struct swsf__createSWSResourceResponse     response;
   struct wsrp__SetResourcePropertiesResponse setRPresponse;
+  struct rsg__AddResponse                    addResponse;
   char                                       factoryAddr[256];
   char                                       jobDescription[1024];
   static char                                epr[256];
@@ -160,39 +157,18 @@ char *Create_SWS(const int   lifetimeMinutes,
   char                                      *contents;
   char                                      *pchar;
   int                                        numBytes;
-  char                                      *nullAddress = '\0';
-  char                                      *aChkAddress;
-
+  int                                        ssl_initialized = 0;
 #if REG_DEBUG_FULL
-  fprintf(stderr,"lifetimeMinutes: %d\n", lifetimeMinutes);
+  fprintf(stderr,"lifetimeMinutes: %d\n", job->lifetimeMinutes);
   fprintf(stderr,"containerAddress: %s\n", containerAddress);
   fprintf(stderr,"registryAddress: %s\n", registryAddress);
-  fprintf(stderr,"userName: %s\n", userName);
-  fprintf(stderr,"group: %s\n", group);
-  fprintf(stderr,"software: %s\n", software);
-  fprintf(stderr,"purpose: %s\n", purpose);
-  fprintf(stderr,"inputFilename: %s\n", inputFilename);
-  fprintf(stderr,"checkpointAddress: %s\n", checkpointAddress);
+  fprintf(stderr,"userName: %s\n", job->userName);
+  fprintf(stderr,"group: %s\n", job->group);
+  fprintf(stderr,"software: %s\n", job->software);
+  fprintf(stderr,"purpose: %s\n", job->purpose);
+  fprintf(stderr,"inputFilename: %s\n", job->inputFilename);
+  fprintf(stderr,"checkpointAddress: %s\n", job->checkpointAddress);
 #endif /* REG_DEBUG_FULL */
-
-  if(!checkpointAddress){
-    aChkAddress = nullAddress;
-  }
-  else{
-    aChkAddress = (char *)checkpointAddress;
-  }
-
-  snprintf(jobDescription, 1024, "<registryEntry>\n"
-	   "<serviceType>SWS</serviceType>\n"
-	   "<componentContent>\n"
-	   "<componentStartDateTime>%s</componentStartDateTime>\n"
-	   "<componentCreatorName>%s</componentCreatorName>\n"
-	   "<componentCreatorGroup>%s</componentCreatorGroup>\n"
-	   "<componentSoftwarePackage>%s</componentSoftwarePackage>\n"
-	   "<componentTaskDescription>%s</componentTaskDescription>\n"
-	   "</componentContent>"
-	   "</registryEntry>",
-	   Get_current_time_string(), userName, group, software, purpose);
 
   sprintf(factoryAddr, "%sSession/SWSFactory/SWSFactory", 
 	  containerAddress);
@@ -209,19 +185,21 @@ char *Create_SWS(const int   lifetimeMinutes,
   if(strstr(factoryAddr, "https") == factoryAddr){
 
     if( REG_Init_ssl_context(&soap,
-			     REG_TRUE, /* Authenticate SWS */
-			     NULL,/*char *certKeyPemFile,*/
-			     NULL, /* char *passphrase,*/
-			     "/etc/grid-security/certificates") == REG_FAILURE){
+			     REG_TRUE, /* Authenticate container */
+			     keyAndCertFile,
+			     keyPassphrase,
+			     caCertsPath) == REG_FAILURE){
 
       fprintf(stderr, "ERROR: call to initialize soap SSL context failed\n");
       return NULL;
     }
+    ssl_initialized = 1;
   }
 
-  if(passphrase[0]){
-    printf("userName for call to createSWSResource >>%s<<\n", userName);
-    Create_WSSE_header(&soap, userName, passphrase);
+  if(job->passphrase[0]){
+    printf("userName for call to createSWSResource >>%s<<\n", 
+	   job->userName);
+    Create_WSSE_header(&soap, job->userName, job->passphrase);
   }
 
   /* 1440 = 24hrs in minutes.  Is the default lifetime of the service
@@ -229,10 +207,8 @@ char *Create_SWS(const int   lifetimeMinutes,
      is reset using the maxRunTime RP */
   if(soap_call_swsf__createSWSResource(&soap, factoryAddr, NULL, 
 				       1440, 
-				       (char *)registryAddress, 
-				       (char *)jobDescription, 
-				       aChkAddress, 
-				       passphrase,
+				       job->checkpointAddress, 
+				       job->passphrase,
 				       &response) != SOAP_OK){
     if(soap.fault && soap.fault->detail){
 
@@ -245,14 +221,73 @@ char *Create_SWS(const int   lifetimeMinutes,
 
   strncpy(epr, response.wsa__EndpointReference.wsa__Address, 256);
 
+  /* Register this SWS ARPDBG - need soap interface for registry*/
+
+  snprintf(jobDescription, 1024, 
+	   "<MemberEPR><wsa:Address>%s</wsa:Address></MemberEPR>"
+	   "<Content><registryEntry>\n"
+	   "<serviceType>SWS</serviceType>\n"
+	   "<componentContent>\n"
+	   "<componentStartDateTime>%s</componentStartDateTime>\n"
+	   "<componentCreatorName>%s</componentCreatorName>\n"
+	   "<componentCreatorGroup>%s</componentCreatorGroup>\n"
+	   "<componentSoftwarePackage>%s</componentSoftwarePackage>\n"
+	   "<componentTaskDescription>%s</componentTaskDescription>\n"
+	   "</componentContent>"
+	   "<regSecurity>"
+	   "<passphrase>%s</passphrase>"
+	   "<allowedUsers>"
+	   "<user>%s</user>"
+	   "</allowedUsers>"
+	   "</regSecurity>"
+	   "</registryEntry>"
+	   "</Content>",
+	   epr, Get_current_time_string(), job->userName, job->group, 
+	   job->software, job->purpose, job->passphrase, job->userName);
+
+  if(!ssl_initialized && 
+     (strstr(registryAddress, "https") == registryAddress) ){
+
+    if( REG_Init_ssl_context(&soap,
+			     REG_TRUE, /* Authenticate container */
+			     keyAndCertFile,
+			     keyPassphrase,
+			     caCertsPath) == REG_FAILURE){
+
+      fprintf(stderr, "ERROR: call to initialize soap SSL context "
+	      "for call to regServiceGroup::Add failed\n");
+
+      Destroy_WSRP(epr, job->userName, job->passphrase);
+      return NULL;
+    }
+    ssl_initialized = 1;
+  }
+
+  if(soap_call_rsg__Add(&soap, registryAddress, 
+			"", jobDescription,
+			&addResponse) != SOAP_OK){
+    soap_print_fault(&soap, stderr);
+
+    Destroy_WSRP(epr, job->userName, job->passphrase);
+    return NULL;
+  }
+
+  /* Parse returned xml to find the address of the ServiceGroupEntry
+     that represents our SWS's entry in the registry 
+     AddResponse/EndpointReference/Address */
+  fprintf(stderr, "ARPDBG: SGE Address >>%s<<\n", 
+	  addResponse.wsa__EndpointReference.wsa__Address);
   /* Finally, set it up with information on its
-     maximum run-time */
+     maximum run-time, address of registry and address of SGE */
 
-  snprintf(jobDescription, 1024, "<maxRunTime>%d</maxRunTime>",
-	   lifetimeMinutes);
+  snprintf(jobDescription, 1024, "<maxRunTime>%d</maxRunTime>"
+	   "<registryEPR>%s</registryEPR>"
+	   "<ServiceGroupEntry>%s</ServiceGroupEntry>",
+	   job->lifetimeMinutes, registryAddress, 
+	   addResponse.wsa__EndpointReference.wsa__Address);
 
-  if(passphrase[0]){
-    Create_WSSE_header(&soap, userName, passphrase);
+  if(job->passphrase[0]){
+    Create_WSSE_header(&soap, job->userName, job->passphrase);
   }
 
 #if REG_DEBUG
@@ -267,8 +302,8 @@ char *Create_SWS(const int   lifetimeMinutes,
 
   /* If an input deck has been specified, grab it and store on the
      steering service */
-  if(inputFilename && strlen(inputFilename) &&
-     (Read_file(inputFilename, &contents, &numBytes, REG_TRUE) 
+  if(strlen(job->inputFilename) &&
+     (Read_file(job->inputFilename, &contents, &numBytes, REG_TRUE) 
       == REG_SUCCESS) ){
     /* 49 = 12 + 37 = strlen("<![CDATA[]]>") + 
                              2*strlen("<inputFileContent>") + 1 */
@@ -303,9 +338,9 @@ char *Create_SWS(const int   lifetimeMinutes,
 
 /*-----------------------------------------------------------------*/
 
-int Destroy_WSRP(char *epr, 
-		 char *username,
-		 char *passphrase)
+int Destroy_WSRP(const char *epr, 
+		 const char *username,
+		 const char *passphrase)
 {
   struct wsrp__DestroyResponse out;
   struct soap soap;
