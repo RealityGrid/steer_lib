@@ -1381,10 +1381,10 @@ char *Get_current_time_string()
 /*-------------------------------------------------------------------*/
 
 int REG_Init_ssl_context(struct soap *aSoap,
-			   const int  authenticateSWS,
-			        char *certKeyPemFile,
-			        char *passphrase,
-			        char *caCertPath)
+			 const int  authenticateSWS,
+			 const char *certKeyPemFile,
+			 const char *passphrase,
+			 const char *caCertPath)
 {
   struct stat stbuf;
   int soap_ssl_flag;
@@ -1410,7 +1410,7 @@ int REG_Init_ssl_context(struct soap *aSoap,
   if(authenticateSWS == REG_TRUE){
     soap_ssl_flag = SOAP_SSL_DEFAULT;
   }
-  fprintf(stderr, "STEER: ARPDBG initializing SSL context...\n");
+
   if (soap_ssl_client_context(aSoap,
 			      soap_ssl_flag,
 			      /* user's cert. & key file */
@@ -1431,6 +1431,5 @@ int REG_Init_ssl_context(struct soap *aSoap,
     soap_print_fault(aSoap, stderr);
     return REG_FAILURE;
   }
-  fprintf(stderr, "STEER: ARPDBG...done\n");
   return REG_SUCCESS;
 }
