@@ -37,6 +37,7 @@
   */
 
 #include "ReG_Steer_types.h"
+#include "ReG_Steer_Utils.h"
 #include "ReG_Steer_Utils_WSRF.h"
 
 #ifndef WIN32
@@ -48,31 +49,23 @@
 
 /*----------------------------------------------------------------*/
 
-char* Create_steering_service(const int   lifetimeMinutes,
+char* Create_steering_service(const struct job_details *job,
 			      const char *containerAddress,
 			      const char *registryAddress,
-			      const char *userName,
-			      const char *group,
-			      const char *software,
-			      const char *purpose,
-			      const char *inputFilename,
-			      const char *checkpointAddress,
-			      const char *passPhrase)
+			      const char *keyPassphrase,
+			      const char *keyAndCertFile,
+			      const char *caCertsPath)
 {
 #if REG_OGSI
   fprintf(stderr, "Create_steering_service: NOT IMPLEMENTED for OGSI\n");
 #else
 
-  return Create_SWS(lifetimeMinutes,
+  return Create_SWS(job,
 		    containerAddress,
 		    registryAddress,
-		    userName,
-		    group,
-		    software,
-		    purpose,
-		    inputFilename,
-		    checkpointAddress,
-		    passPhrase);
+		    keyPassphrase,
+		    keyAndCertFile,
+		    caCertsPath);
 #endif /* REG_OGSI */
 }
 
