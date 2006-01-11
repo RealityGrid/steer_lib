@@ -31,7 +31,7 @@
 #---------------------------------------------------------------------
 
 # Set root directory for library installation
-setenv REG_STEER_HOME ${HOME}/RealityGrid/reg_steer_lib
+setenv REG_STEER_HOME $HOME/RealityGrid/reg_steer_lib
 
 # Set various paths needed for the wrappers
 setenv LD_LIBRARY_PATH ${LD_LIBRARY_PATH}:${REG_STEER_HOME}/wrappers/python
@@ -57,12 +57,6 @@ setenv REG_APP_POLL_INTERVAL 5
 # appropriate make/Makefile.<ARCH> file.)
 setenv REG_XML_LIBDIR /usr/lib
 setenv REG_XML_INCDIR /usr/include/libxml2
-
-# Set which SSL libs (normally "-lssl -lcrypto") to link against and 
-# the location of OpenSSL libraries if not in standard place
-setenv REG_SSL_LIBS ""
-setenv REG_SSL_LIBDIR ""
-setenv REG_SSL_INCDIR ""
 
 #---------------------------------------------------------------
 # This section only necessary if using sockets rather
