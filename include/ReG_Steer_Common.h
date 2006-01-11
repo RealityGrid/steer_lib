@@ -486,8 +486,8 @@ extern PREFIX char *Get_current_time_string();
     @return REG_SUCCESS or REG_FAILURE */
 extern PREFIX int REG_Init_ssl_context(struct soap *aSoap,
 				       const int    authenticateSWS,
-				       char *certKeyPemFile,
-				       char *passphrase,
-				       char *caCertPath);
+				       const char  *certKeyPemFile,
+				       const char  *passphrase,
+				       const char  *caCertPath);
 
 #endif
