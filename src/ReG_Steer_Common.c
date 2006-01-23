@@ -75,6 +75,11 @@
 
 char ReG_Steer_Schema_Locn[REG_MAX_STRING_LENGTH];
 
+/**
+   Flag holding whether or not the ssl random no. generator has
+   been initialized. */
+int ReG_ssl_random_initialized = REG_FALSE;
+
 /*----------------------------------------------------------*/
 
 FILE *Open_next_file(char* base_name)
@@ -1208,6 +1213,8 @@ int Init_random()
   struct stat stbuf;
   char *randBuf = "/dev/random";
 
+  if(ReG_ssl_random_initialized == REG_TRUE)return;
+
   if(stat(randBuf, &stbuf) == -1){
     fprintf(stderr, "STEER: Init_random: %s does not exist on this "
 	    "system - cannot initalize random sequence\n", randBuf);
@@ -1222,6 +1229,7 @@ int Init_random()
     return REG_FAILURE;
   }
 
+  ReG_ssl_random_initialized = REG_TRUE;
   return REG_SUCCESS;
 
 #else /* No OpenSSL available */
@@ -1274,6 +1282,15 @@ int Create_WSSE_header(struct soap *aSoap,
     return REG_FAILURE;
   }
 
+  if(ReG_ssl_random_initialized == REG_FALSE){
+    if(Init_random() != REG_SUCCESS){
+      fprintf(stderr, "STEER: Create_WSSE_header: Failed to "
+	      "initialize SSL random number generator\n");
+      return REG_FAILURE;
+    }
+  }
+
+  /* This call requires that Init_random() has been called previously */
   status = RAND_pseudo_bytes(randBuf, 16);
   if(status == 0){
     fprintf(stderr, "STEER: WARNING: Create_WSSE_header: Sequence is not "
