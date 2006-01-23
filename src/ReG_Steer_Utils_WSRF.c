@@ -123,8 +123,9 @@ int Get_registry_entries_wsrf(const char *registryEPR,
 	  "took %f seconds\n", (time1-time0));
 #endif
 
-#if REG_DEBUG
-  printf("Get_resource_property for Entry: %s\n", out);
+#if REG_DEBUG_FULL
+  fprintf(stderr, "STEER: Get_registry_entries_wsrf: "
+	  "Get_resource_property for Entry returned >>%s<<\n\n", out);
 #endif
   if(strlen(out) > 0){
     status = Parse_registry_entries(out, 
@@ -159,22 +160,23 @@ char *Create_SWS(const struct job_details *job,
   int                                        numBytes;
   int                                        ssl_initialized = 0;
 #if REG_DEBUG_FULL
-  fprintf(stderr,"lifetimeMinutes: %d\n", job->lifetimeMinutes);
-  fprintf(stderr,"containerAddress: %s\n", containerAddress);
-  fprintf(stderr,"registryAddress: %s\n", registryAddress);
-  fprintf(stderr,"userName: %s\n", job->userName);
-  fprintf(stderr,"group: %s\n", job->group);
-  fprintf(stderr,"software: %s\n", job->software);
-  fprintf(stderr,"purpose: %s\n", job->purpose);
-  fprintf(stderr,"inputFilename: %s\n", job->inputFilename);
-  fprintf(stderr,"checkpointAddress: %s\n", job->checkpointAddress);
+  fprintf(stderr,"\nCreate_SWS args:\n");
+  fprintf(stderr," - lifetimeMinutes: %d\n", job->lifetimeMinutes);
+  fprintf(stderr," - containerAddress: %s\n", containerAddress);
+  fprintf(stderr," - registryAddress: %s\n", registryAddress);
+  fprintf(stderr," - userName: %s\n", job->userName);
+  fprintf(stderr," - group: %s\n", job->group);
+  fprintf(stderr," - software: %s\n", job->software);
+  fprintf(stderr," - purpose: %s\n", job->purpose);
+  fprintf(stderr," - inputFilename: %s\n", job->inputFilename);
+  fprintf(stderr," - checkpointAddress: %s\n", job->checkpointAddress);
 #endif /* REG_DEBUG_FULL */
 
   sprintf(factoryAddr, "%sSession/SWSFactory/SWSFactory", 
 	  containerAddress);
 
-#if REG_DEBUG
-  fprintf(stderr, "Create_SWS: using factory >>%s<<\n",
+#if REG_DEBUG_FULL
+  fprintf(stderr, "\nCreate_SWS: using factory >>%s<<\n",
 	  factoryAddr);
 #endif
 
@@ -197,8 +199,10 @@ char *Create_SWS(const struct job_details *job,
   }
 
   if(job->passphrase[0]){
-    printf("userName for call to createSWSResource >>%s<<\n", 
+#if REG_DEBUG_FULL
+    printf("Create_SWS: userName for call to createSWSResource >>%s<<\n", 
 	   job->userName);
+#endif /* REG_DEBUG_FULL */
     Create_WSSE_header(&soap, job->userName, job->passphrase);
   }
 
@@ -221,7 +225,7 @@ char *Create_SWS(const struct job_details *job,
 
   strncpy(epr, response.wsa__EndpointReference.wsa__Address, 256);
 
-  /* Register this SWS ARPDBG - need soap interface for registry*/
+  /* Register this SWS */
 
   snprintf(jobDescription, 1024, 
 	   "<MemberEPR><wsa:Address>%s</wsa:Address></MemberEPR>"
@@ -254,8 +258,8 @@ char *Create_SWS(const struct job_details *job,
 			     keyPassphrase,
 			     caCertsPath) == REG_FAILURE){
 
-      fprintf(stderr, "ERROR: call to initialize soap SSL context "
-	      "for call to regServiceGroup::Add failed\n");
+      fprintf(stderr, "Create_SWS: ERROR: call to initialize soap SSL"
+	      " context for call to regServiceGroup::Add failed\n");
 
       Destroy_WSRP(epr, job->userName, job->passphrase);
       return NULL;
@@ -272,11 +276,13 @@ char *Create_SWS(const struct job_details *job,
     return NULL;
   }
 
-  /* Parse returned xml to find the address of the ServiceGroupEntry
-     that represents our SWS's entry in the registry 
-     AddResponse/EndpointReference/Address */
-  fprintf(stderr, "ARPDBG: SGE Address >>%s<<\n", 
+  /* Print out address of the ServiceGroupEntry
+     that represents our SWS's entry in the registry */
+#if REG_DEBUG_FULL
+  fprintf(stderr, "Create_SWS: Address of SGE >>%s<<\n", 
 	  addResponse.wsa__EndpointReference.wsa__Address);
+#endif /* REG_DEBUG_FULL */
+
   /* Finally, set it up with information on its
      maximum run-time, address of registry and address of SGE */
 
@@ -290,8 +296,9 @@ char *Create_SWS(const struct job_details *job,
     Create_WSSE_header(&soap, job->userName, job->passphrase);
   }
 
-#if REG_DEBUG
-  fprintf(stderr, "Calling SetResourceProperties with >>%s<<\n",
+#if REG_DEBUG_FULL
+  fprintf(stderr,
+	  "\nCreate_SWS: Calling SetResourceProperties with >>%s<<\n",
 	  jobDescription);
 #endif
   if(soap_call_wsrp__SetResourceProperties(&soap, epr, "", jobDescription,
@@ -318,8 +325,9 @@ char *Create_SWS(const struct job_details *job,
     else{
       
     }
-#if REG_DEBUG
-    fprintf(stderr, "Calling SetResourceProperties with >>%s<<\n",
+#if REG_DEBUG_FULL
+    fprintf(stderr,
+	    "\nCreate_SWS: Calling SetResourceProperties with >>%s<<\n",
 	    Global_scratch_buffer);
 #endif
     if(soap_call_wsrp__SetResourceProperties(&soap, epr, "", 

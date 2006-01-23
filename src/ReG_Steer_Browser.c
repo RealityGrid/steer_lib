@@ -251,8 +251,8 @@ int Get_registry_entries_filtered_secure(const char             *registryGSH,
 
 #if REG_DEBUG
   fprintf(stderr,
-	  "\nGet_registry_entries_filtered, got %d filtered entries...\n", 
-	  *num_entries);
+	  "\nGet_registry_entries_filtered_secure, got %d filtered "
+	  "entries...\n", *num_entries);
 
   for(i=0; i<*num_entries; i++){
     fprintf(stderr,"Entry %d:\n", i);
@@ -298,15 +298,16 @@ int Get_registry_entries_secure(const char *registryGSH,
   }
   else{
     if(!(out._findServiceDataReturn)){
-      fprintf(stderr, "Get_registry_entries: findServiceData returned null\n");
+      fprintf(stderr, "Get_registry_entries_secure: findServiceData "
+	      "returned null\n");
       return REG_FAILURE;
     }
-#if REG_DEBUG
+#if REG_DEBUG_FULL
     else{
-      fprintf(stderr, "Get_registry_entries: findServiceData returned: %s\n", 
-	      out._findServiceDataReturn);
+      fprintf(stderr, "Get_registry_entries_secure: findServiceData "
+	      "returned: %s\n", out._findServiceDataReturn);
     }
-#endif
+#endif /* REG_DEBUG_FULL */
   }
 
   status = Parse_registry_entries(out._findServiceDataReturn, 
@@ -314,29 +315,12 @@ int Get_registry_entries_secure(const char *registryGSH,
 				  num_entries, entries);
   soap_destroy(&soap);
   soap_end(&soap);
-#else
+
+#else /* WSRF, not OGSI */
 
   status = Get_registry_entries_wsrf(registryGSH, userKeyPasswd, 
 				     userKeyCertPath, caCertsPath, 
 				     num_entries, entries);
-
-#if REG_DEBUG
-  if(status == REG_SUCCESS){
-    int i;
-    fprintf(stderr,"Get_registry_entries_secure, got %d entries...\n", 
-	    *num_entries);
-    for(i=0; i<*num_entries; i++){
-      fprintf(stderr,"Entry %d:\n", i);
-      fprintf(stderr,"          GSH: %s\n", (*entries)[i].gsh);
-      fprintf(stderr,"          App: %s\n", (*entries)[i].application);
-      fprintf(stderr,"         user: %s, %s\n", (*entries)[i].user, 
-	      (*entries)[i].group);
-      fprintf(stderr,"   Start time: %s\n", (*entries)[i].start_date_time);
-      fprintf(stderr,"  Description: %s\n", (*entries)[i].job_description);
-    }
-  }
-#endif
-
   return status;
 #endif /* REG_OGSI */
 }
