@@ -1406,6 +1406,14 @@ int REG_Init_ssl_context(struct soap *aSoap,
 			 const char *passphrase,
 			 const char *caCertPath)
 {
+  /*
+  fprintf(stderr, "REG_Init_ssl_context arguments:\n"
+	          " - authenticateSWS = %d\n"
+                  " - certKeyPemFile = >>%s<<\n"
+	          " - passphrase = >>%s<<\n"
+                  " - caCertPath = >>%s<<\n", 
+	  authenticateSWS, certKeyPemFile, passphrase, caCertPath);
+  */
 #ifdef WITH_OPENSSL
 
   struct stat stbuf;
@@ -1425,6 +1433,31 @@ int REG_Init_ssl_context(struct soap *aSoap,
   else if( caCertPath && (stat(caCertPath, &stbuf) == -1) ){
     fprintf(stderr, "STEER: REG_Init_ssl_context: CA certificates "
 	    "directory >>%s<< is not valid\n", caCertPath);
+    if(errno == ENOENT){
+      fprintf(stderr, "    Error from stat = ENOENT\n");
+    }
+    else if(errno == ENOTDIR){
+      fprintf(stderr, "    Error from stat = ENOTDIR\n");
+    }
+    else if(errno == ELOOP){
+      fprintf(stderr, "    Error from stat = ELOOP\n");
+    }
+    else if(errno == EFAULT){
+      fprintf(stderr, "    Error from stat = EFAULT\n");
+    }
+    else if(errno == EACCES){
+      fprintf(stderr, "    Error from stat = EACCES\n");
+    }
+    else if(errno == ENOMEM){
+      fprintf(stderr, "    Error from stat = ENOMEM\n");
+    }
+    else if(errno == ENAMETOOLONG){
+      fprintf(stderr, "    Error from stat = ENAMETOOLONG\n");
+    }
+    else{
+      fprintf(stderr, "    Error from stat = UNKNOWN!\n");
+    }
+
     return REG_FAILURE;
   }
 
