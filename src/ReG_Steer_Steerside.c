@@ -785,10 +785,14 @@ int Consume_param_defs(int SimHandle)
 	   sprintf(Sim_table.sim[index].Params_table.param[j].value, " ");
 	 }
       }
+      /*
       else if(ptr->value){
 	strcpy(Sim_table.sim[index].Params_table.param[j].value,
-		(char *)(ptr->value));
-      }
+	(char *)(ptr->value));
+      }*/
+      /* Don't take the value supplied when param first registered
+	 as may not be valid */
+      Sim_table.sim[index].Params_table.param[j].value[0] = '\0';
 
       Sim_table.sim[index].Params_table.num_registered++;
     }
