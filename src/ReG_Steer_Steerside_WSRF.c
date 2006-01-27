@@ -363,9 +363,6 @@ int Get_resource_property_doc(struct soap *soapStruct,
     doc can be big */
   soap_end(soapStruct);
 
-  printf("Get_resource_property_doc ARPDBG passwd = >>%s<<\n"
-	 "                               username = >>%s<<\n", 
-	 passwd, username);
   if(passwd && passwd[0]){
     Create_WSSE_header(soapStruct, username, passwd);
   }
