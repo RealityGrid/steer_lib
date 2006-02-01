@@ -31,7 +31,7 @@
 #---------------------------------------------------------------------
 
 # Set root directory for library installation
-export REG_STEER_HOME=$HOME/RealityGrid/reg_steer_lib
+export REG_STEER_HOME=${HOME}/RealityGrid/reg_steer_lib
 
 # Set various paths needed for the wrappers
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$REG_STEER_HOME/wrappers/python

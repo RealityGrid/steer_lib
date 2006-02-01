@@ -45,7 +45,7 @@ LOCAL_BIN_DIR  = ${HOME}/RealityGrid/bin
 # Medium to use for steering communication - you have a choice of
 # files or SOAP over http.
 # Set flag to 1 to use SOAP for steering communication, 0 to use files 
-REG_SOAP_STEERING_FLAG = 1
+REG_SOAP_STEERING_FLAG = 0
 
 #------------------------------------
 # Medium to use for data set transfer - you have a choice of 
@@ -58,7 +58,7 @@ REG_SOCKET_SAMPLES_FLAG = 1
 
 #------------------------------------
 # Set flag to 1 to get (a lot of) debug output, 0 otherwise.
-REG_DEBUG_FLAG 	= 1
+REG_DEBUG_FLAG = 0
 
 #------------------------------------
 # Set flag to 1 to get additional debug output, 0 otherwise.
@@ -67,10 +67,9 @@ REG_DEBUG_FULL_FLAG = 0
 #------------------------------------
 # Create a static or shared library?
 LIB_NAME=libReG_Steer.a
-LIB_UTILS_NAME=libReG_Steer_Utils.a
 
 #--------------------------------------------------------------------
 # Don't edit anything below this line
 
 # Pass version information to compile
-REG_STEER_LIB_VERSION = 2.0a
+REG_STEER_LIB_VERSION = 1.2
