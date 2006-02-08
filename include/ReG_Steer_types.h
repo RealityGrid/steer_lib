@@ -39,8 +39,8 @@
     @brief Top-level header file
  */
 
-/** Uncomment line below to use OGSI rather than WSRF */
-/*#define REG_OGSI 1*/
+/* Comment-out line below to use OGSI rather than WSRF */
+#define REG_WSRF
 
 /** Whether or not to use timing routines - these are not very portable 
 #define USE_REG_TIMING*/
