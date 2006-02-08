@@ -56,17 +56,17 @@ char* Create_steering_service(const struct job_details *job,
 			      const char *keyAndCertFile,
 			      const char *caCertsPath)
 {
-#if REG_OGSI
-  fprintf(stderr, "Create_steering_service: NOT IMPLEMENTED for OGSI\n");
-#else
-
+#ifdef REG_WSRF
   return Create_SWS(job,
 		    containerAddress,
 		    registryAddress,
 		    keyPassphrase,
 		    keyAndCertFile,
 		    caCertsPath);
-#endif /* REG_OGSI */
+#else
+  fprintf(stderr, "Create_steering_service: NOT IMPLEMENTED for OGSI\n");
+  return NULL;
+#endif /* REG_WSRF */
 }
 
 /*----------------------------------------------------------------*/
@@ -122,11 +122,11 @@ int Destroy_steering_service(char *address,
 			     char *username,
 			     char *passphrase){
 
-#if REG_OGSI
-
-  fprintf(stderr, "Destroy_steering_service: not implemented for OGSI :-(\n");
-#else
+#ifdef REG_WSRF
   return Destroy_WSRP(address, username, passphrase);
+#else
+  fprintf(stderr, "Destroy_steering_service: not implemented for OGSI :-(\n");
+  return REG_FAILURE;
 #endif
 
 }
