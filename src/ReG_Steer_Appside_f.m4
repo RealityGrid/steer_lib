@@ -1478,6 +1478,30 @@ INT_KIND_1_DECL(Status);
 
 /*----------------------------------------------------------------
 
+SUBROUTINE emit_char_data_slice_f(IOHandle, pData, Status)
+
+  INTEGER(KIND=REG_SP_KIND), INTENT(in)  :: IOHandle
+  CHARACTER, DIMENSION(),    INTENT(in)  :: pData
+  INTEGER(KIND=REG_SP_KIND), INTENT(out) :: Status
+
+----------------------------------------------------------------*/
+
+void FUNCTION(emit_char_data_slice_f) ARGS(`IOHandle,
+                                            STRING_ARG(pData),
+                                            Status')
+INT_KIND_1_DECL(IOHandle);
+STRING_ARG_DECL(pData);
+INT_KIND_1_DECL(Status);
+{
+  *Status = INT_KIND_1_CAST( Emit_data_slice(*IOHandle, REG_CHAR, 
+                                             STRING_LEN(pData), 
+                                             STRING_PTR(pData)) );
+
+  return;
+}
+
+/*----------------------------------------------------------------
+
 SUBROUTINE make_vtk_buffer_f(nx, ny, nz, veclen, a, b, c, 
                              array, status)
 
@@ -1543,6 +1567,8 @@ INT_KIND_1_DECL(veclen);
 INT_KIND_1_DECL(type);
 INT_KIND_1_DECL(Status);
 {
+  memset(STRING_PTR(header), '\0', STRING_LEN(header));
+
   *Status = INT_KIND_1_CAST( Make_vtk_header(STRING_PTR(header),
                                              STRING_PTR(title),
                                              (int)*nx, 

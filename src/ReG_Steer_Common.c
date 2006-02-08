@@ -1213,7 +1213,7 @@ int Init_random()
   struct stat stbuf;
   char *randBuf = "/dev/random";
 
-  if(ReG_ssl_random_initialized == REG_TRUE)return;
+  if(ReG_ssl_random_initialized == REG_TRUE)return REG_SUCCESS;
 
   if(stat(randBuf, &stbuf) == -1){
     fprintf(stderr, "STEER: Init_random: %s does not exist on this "

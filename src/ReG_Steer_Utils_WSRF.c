@@ -211,8 +211,8 @@ char *Create_SWS(const struct job_details *job,
      is reset using the maxRunTime RP */
   if(soap_call_swsf__createSWSResource(&soap, factoryAddr, NULL, 
 				       1440, 
-				       job->checkpointAddress, 
-				       job->passphrase,
+				       (char *)job->checkpointAddress, 
+				       (char *)job->passphrase,
 				       &response) != SOAP_OK){
     if(soap.fault && soap.fault->detail){
 

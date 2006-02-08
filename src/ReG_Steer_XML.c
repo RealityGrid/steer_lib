@@ -1741,9 +1741,6 @@ int Parse_registry_entries(char* buf, int size, int *num_entries,
   char              *pChar;
   char              *pNext;
   char               entryDelimiter[16];
-#if REG_DEBUG
-  int i;
-#endif
 
   /* Set pointers to our event handlers */
   my_handler.startElement = Start_element_handler;
