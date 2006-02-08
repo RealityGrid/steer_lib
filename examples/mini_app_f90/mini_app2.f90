@@ -273,10 +273,10 @@ PROGRAM mini_app
   DO WHILE(iloop<num_sim_loops .AND. (finished .ne. 1))
 
     IF(iloop .eq. 5)THEN
-      CALL enable_param_logging_f("test_integer_2nd", REG_FALSE, status)
+      CALL disable_param_logging_f("test_integer_2nd", status)
     END IF
     IF(iloop .eq. 10)THEN
-      CALL enable_param_logging_f("test_integer_2nd", REG_TRUE, status)
+      CALL enable_param_logging_f("test_integer_2nd", status)
     END IF
     CALL steering_control_f(iloop, num_params_changed, changed_param_labels, &
                             num_recvd_cmds, recvd_cmds, recvd_cmd_params, &
@@ -383,8 +383,8 @@ PROGRAM mini_app
                  ! Send chunk header to describe data
                  data_count = LEN_TRIM(header)
                  data_type  = REG_CHAR
-                 CALL emit_data_slice_f(iohandle, data_type, data_count, &
-                                        header, status)
+                 CALL emit_char_data_slice_f(iohandle,  &
+                                             header, status)
 
                  ! Send data
                  data_type  = REG_INT
