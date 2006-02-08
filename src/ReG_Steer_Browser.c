@@ -43,10 +43,10 @@
 #include "ReG_Steer_Utils_WSRF.h"
 #include "soapH.h"
 
-#if REG_OGSI
-#define REG_TOP_LEVEL_REGISTRY "http://yaffel.mvc.mcc.ac.uk:50000/Session/ServiceGroupRegistration/service?3893432997"
-#else
+#ifdef REG_WSRF
 #define REG_TOP_LEVEL_REGISTRY "http://calculon.cs.man.ac.uk:50005/Session/myServiceGroup/myServiceGroup/51449871051219079298"
+#else
+#define REG_TOP_LEVEL_REGISTRY "http://yaffel.mvc.mcc.ac.uk:50000/Session/ServiceGroupRegistration/service?3893432997"
 #endif
 
 /*----------------------------------------------------------------*/
@@ -278,7 +278,7 @@ int Get_registry_entries_secure(const char *registryGSH,
 				struct registry_entry **entries){
   int status;
 
-#if REG_OGSI
+#ifndef REG_WSRF
 
   fprintf(stderr, "Get_registry_entries_secure: WARNING: no secure version "
 	  "available for OGSI implementation!\n");
@@ -322,7 +322,7 @@ int Get_registry_entries_secure(const char *registryGSH,
 				     userKeyCertPath, caCertsPath, 
 				     num_entries, entries);
   return status;
-#endif /* REG_OGSI */
+#endif /* !defined REG_WSRF */
 }
 
 /*-------------------------------------------------------------------------*/

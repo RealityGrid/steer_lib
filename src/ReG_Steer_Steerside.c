@@ -423,11 +423,11 @@ int Sim_attach_secure(const char *SimID,
 	      "current_sim = %d\n", current_sim);
 #endif
 
-#if REG_OGSI
-      return_status = Sim_attach_soap(&(Sim_table.sim[current_sim]), 
+#ifdef REG_WSRF
+      return_status = Sim_attach_wsrf(&(Sim_table.sim[current_sim]), 
 				      (char *)SimID);
 #else
-      return_status = Sim_attach_wsrf(&(Sim_table.sim[current_sim]), 
+      return_status = Sim_attach_soap(&(Sim_table.sim[current_sim]), 
 				      (char *)SimID);
 #endif
       if(return_status == REG_SUCCESS){
@@ -556,10 +556,10 @@ int Get_next_message(int   *SimHandle,
 
         if(Sim_table.sim[isim].SGS_info.active){
 
-#if REG_OGSI
-  	  Sim_table.sim[isim].msg = Get_status_msg_soap(&(Sim_table.sim[isim]));
-#else
+#ifdef REG_WSRF
   	  Sim_table.sim[isim].msg = Get_status_msg_wsrf(&(Sim_table.sim[isim]));
+#else
+  	  Sim_table.sim[isim].msg = Get_status_msg_soap(&(Sim_table.sim[isim]));
 #endif
 	}
 	else{
@@ -1472,10 +1472,10 @@ int Emit_detach_cmd(int SimHandle)
   if(Sim_table.sim[index].detached == REG_TRUE) return REG_SUCCESS;
 
   if(Sim_table.sim[index].SGS_info.active){
-#if REG_OGSI
-    status = Send_detach_msg_soap(&(Sim_table.sim[index]));
-#else
+#ifdef REG_WSRF
     status = Send_detach_msg_wsrf(&(Sim_table.sim[index]));
+#else
+    status = Send_detach_msg_soap(&(Sim_table.sim[index]));
 #endif
   }
   else{
@@ -1507,7 +1507,7 @@ int Emit_stop_cmd(int SimHandle)
     return REG_FAILURE;
   }
 
-#if REG_OGSI
+#ifndef REG_WSRF
   if(Sim_table.sim[index].SGS_info.active){
     return Send_stop_msg_soap(&(Sim_table.sim[index]));
   }
@@ -1537,7 +1537,7 @@ int Emit_pause_cmd(int SimHandle)
     return REG_FAILURE;
   }
 
-#if REG_OGSI
+#ifndef REG_WSRF
   if(Sim_table.sim[index].SGS_info.active){
     return Send_pause_msg_soap(&(Sim_table.sim[index]));
   }
@@ -1565,7 +1565,7 @@ int Emit_resume_cmd(int SimHandle)
     return REG_FAILURE;
   }
 
-#if REG_OGSI
+#ifndef REG_WSRF
   if(Sim_table.sim[index].SGS_info.active){
     return Send_resume_msg_soap(&(Sim_table.sim[index]));
   }
@@ -1595,11 +1595,11 @@ int Emit_retrieve_param_log_cmd(int SimHandle, int ParamHandle)
 
   if(Sim_table.sim[index].SGS_info.active){
 
-#if REG_OGSI
+#ifdef REG_WSRF
     /* Get all of the log entries cached on the SGS */
-    return Get_param_log_soap(&(Sim_table.sim[index]), ParamHandle);
-#else
     return Get_param_log_wsrf(&(Sim_table.sim[index]), ParamHandle);
+#else
+    return Get_param_log_soap(&(Sim_table.sim[index]), ParamHandle);
 #endif
   }
   else{
@@ -1633,10 +1633,10 @@ int Emit_restart_cmd(int SimHandle, char *chkGSH)
   }
 
   if(Sim_table.sim[index].SGS_info.active){
-#if REG_OGSI
-    return Send_restart_msg_soap(&(Sim_table.sim[index]), chkGSH);
-#else
+#ifdef REG_WSRF
     return Send_restart_msg_wsrf(&(Sim_table.sim[index]), chkGSH);
+#else
+    return Send_restart_msg_soap(&(Sim_table.sim[index]), chkGSH);
 #endif
   }
   else{
@@ -1782,10 +1782,10 @@ int Send_control_msg(int SimIndex, char* buf)
 
     if(sim->SGS_info.active){
 
-#if REG_OGSI
-      return Send_control_msg_soap(sim, buf);
-#else
+#ifdef REG_WSRF
       return Send_control_msg_wsrf(sim, buf);
+#else
+      return Send_control_msg_soap(sim, buf);
 #endif
     }
     else{
@@ -3464,7 +3464,14 @@ int Finalize_connection(Sim_entry_type *sim)
 
     if(sim->SGS_info.active){
 
-#if REG_OGSI
+#ifdef REG_WSRF
+      if(sim->detached == REG_FALSE){
+	if(Send_detach_msg_wsrf(sim) == REG_SUCCESS){
+	  sim->detached = REG_TRUE;
+	}
+      }
+      return Finalize_connection_wsrf(sim);
+#else
       /* Detach from the SGS and then clean up */
       if(sim->detached == REG_FALSE){
 	if(Send_detach_msg_soap(sim) == REG_SUCCESS){
@@ -3472,13 +3479,6 @@ int Finalize_connection(Sim_entry_type *sim)
 	}
       }
       return Finalize_connection_soap(sim);
-#else
-      if(sim->detached == REG_FALSE){
-	if(Send_detach_msg_wsrf(sim) == REG_SUCCESS){
-	  sim->detached = REG_TRUE;
-	}
-      }
-      return Finalize_connection_wsrf(sim);
 #endif
     }
 

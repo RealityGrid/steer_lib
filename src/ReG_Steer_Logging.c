@@ -240,10 +240,10 @@ int Save_log(Chk_log_type *log)
       fprintf(log->file_ptr, "%s", buf);
     }
 #if REG_SOAP_STEERING
-#if REG_OGSI
-    Save_log_soap(buf);
-#else
+#ifdef REG_WSRF
     Save_log_wsrf(buf);
+#else
+    Save_log_soap(buf);
 #endif
 #endif
   }

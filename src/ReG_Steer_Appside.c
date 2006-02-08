@@ -1569,10 +1569,10 @@ int Record_checkpoint_set(int   ChkType,
 #endif
 
   /* Record checkpoint */
-#if REG_OGSI
-  Record_checkpoint_set_soap(cp_data, node_data);
-#else
+#ifdef REG_WSRF
   Record_checkpoint_set_wsrf(cp_data, node_data);
+#else
+  Record_checkpoint_set_soap(cp_data, node_data);
 #endif
 
   return REG_SUCCESS;
@@ -4137,7 +4137,7 @@ int Detach_from_steerer()
   int i;
 #if REG_SOAP_STEERING
 
-#if REG_OGSI
+#ifndef REG_WSRF
   Detach_from_steerer_soap();
   /* No need for this in WSRF as protocol no longer calls for
      client to wait for confirmation from application */
@@ -4812,10 +4812,10 @@ int Steerer_connected()
 {
 
 #if REG_SOAP_STEERING
-#if REG_OGSI
-  return Steerer_connected_soap();
-#else
+#ifdef REG_WSRF
   return Steerer_connected_wsrf();
+#else
+  return Steerer_connected_soap();
 #endif
 #else
 
@@ -4833,10 +4833,10 @@ int Send_status_msg(char *buf)
 
 #if REG_SOAP_STEERING
 
-#if REG_OGSI
-  return Send_status_msg_soap(buf);
-#else
+#ifdef REG_WSRF
   return Send_status_msg_wsrf(buf);
+#else
+  return Send_status_msg_soap(buf);
 #endif
 #else
 
@@ -4850,10 +4850,10 @@ struct msg_struct *Get_control_msg()
 {
 
 #if REG_SOAP_STEERING
-#if REG_OGSI
-  return Get_control_msg_soap();
-#else
+#ifdef REG_WSRF
   return Get_control_msg_wsrf();
+#else
+  return Get_control_msg_soap();
 #endif
 #else
 
@@ -4901,11 +4901,11 @@ int Initialize_steering_connection(int  NumSupportedCmds,
 
 #if REG_SOAP_STEERING
 
-#if REG_OGSI
-  return Initialize_steering_connection_soap(NumSupportedCmds,
+#ifdef REG_WSRF
+  return Initialize_steering_connection_wsrf(NumSupportedCmds,
 					     SupportedCmds);
 #else
-  return Initialize_steering_connection_wsrf(NumSupportedCmds,
+  return Initialize_steering_connection_soap(NumSupportedCmds,
 					     SupportedCmds);
 #endif
 #else
@@ -4997,10 +4997,10 @@ int Finalize_steering_connection()
 
 #if REG_SOAP_STEERING
 
-#if REG_OGSI
-  return Finalize_steering_connection_soap();
-#else
+#ifdef REG_WSRF
   return Finalize_steering_connection_wsrf();
+#else
+  return Finalize_steering_connection_soap();
 #endif
 
 #else

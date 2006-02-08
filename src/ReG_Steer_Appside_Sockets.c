@@ -284,15 +284,15 @@ int connect_connector(const int index) {
   if(IOTypes_table.io_def[index].socket_info.connector_port == 0) {
 #if REG_SOAP_STEERING	  
     /* Go out into the world of grid services... */
-#if REG_OGSI
-    return_status = Get_data_source_address_soap(IOTypes_table.io_def[index].input_index, 
-						 IOTypes_table.io_def[index].socket_info.connector_hostname,
-						 &(IOTypes_table.io_def[index].socket_info.connector_port));
-#else /* use WSRF */
+#ifdef REG_WSRF /* use WSRF */
     return_status = Get_data_source_address_wsrf(IOTypes_table.io_def[index].input_index, 
 						 IOTypes_table.io_def[index].socket_info.connector_hostname,
 						 &(IOTypes_table.io_def[index].socket_info.connector_port));
-#endif /* REG_OGSI */
+#else /* use OGSI */
+    return_status = Get_data_source_address_soap(IOTypes_table.io_def[index].input_index, 
+						 IOTypes_table.io_def[index].socket_info.connector_hostname,
+						 &(IOTypes_table.io_def[index].socket_info.connector_port));
+#endif /* REG_WSRF */
 
 #else /* File-based steering */
     /* get hostname and port from environment variables */
