@@ -1380,6 +1380,9 @@ int Create_WSSE_header(struct soap *aSoap,
 	  pBase64Buf, len);
   aSoap->header->Security.UsernameToken.wsse__Password.__item[len] = '\0';
 
+  free(pBase64Buf);
+  pBase64Buf = NULL;
+
   return REG_SUCCESS;
 
 #else /* WITH_OPENSSL not defined */

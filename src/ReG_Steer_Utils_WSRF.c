@@ -141,7 +141,7 @@ int Get_registry_entries_wsrf(const char *registryEPR,
 
 /*-----------------------------------------------------------------*/
 
-char *Create_SWS(const struct job_details *job,
+char *Create_SWS(const struct reg_job_details *job,
 		 const char *containerAddress,
 		 const char *registryAddress,
 		 const char *keyPassphrase,

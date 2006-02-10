@@ -66,7 +66,7 @@ int Get_registry_entries_wsrf(const char             *registryEPR,
     @param passphrase Passphrase for use with WSSE or blank if none 
     @param caCertsPath Path to directory containing CA certs (for SSL)
     @returns Pointer to static buffer containing the EPR of the new SWS or NULL on failure.  Static buffer will be overwritten on subsequent calls to this routine. */
-char *Create_SWS(const struct job_details *job,
+char *Create_SWS(const struct reg_job_details *job,
 		 const char *containerAddress,
 		 const char *registryAddress,
 		 const char *keyPassphrase,

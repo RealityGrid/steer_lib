@@ -39,6 +39,8 @@
 #include "ReG_Steer_types.h"
 #include "ReG_Steer_Utils.h"
 #include "ReG_Steer_Utils_WSRF.h"
+#include "libxml/xmlmemory.h"
+#include "libxml/parser.h"
 
 #ifndef WIN32
 #include <time.h>
@@ -49,7 +51,7 @@
 
 /*----------------------------------------------------------------*/
 
-char* Create_steering_service(const struct job_details *job,
+char* Create_steering_service(const struct reg_job_details *job,
 			      const char *containerAddress,
 			      const char *registryAddress,
 			      const char *keyPassphrase,
@@ -129,4 +131,85 @@ int Destroy_steering_service(char *address,
   return REG_FAILURE;
 #endif
 
+}
+
+/*----------------------------------------------------------------*/
+
+int Get_security_config(const char               *configFile,
+			struct reg_security_info *sec){
+  char      *pChar;
+  int        len;
+  xmlDocPtr  doc;
+  xmlNodePtr cur;
+  xmlChar   *attrValue;
+  FILE      *fp;
+  char       bufline[512];
+
+  /* Parse the RealityGrid/etc/security.conf file */
+
+  doc = xmlParseFile(configFile);
+  if( !(cur = xmlDocGetRootElement(doc)) ){
+    printf("Error parsing xml from security.conf: empty document\n");
+    xmlFreeDoc(doc);
+    xmlCleanupParser();
+    return 1;
+  }
+  if (xmlStrcmp(cur->name, (const xmlChar *) "Security_config")){
+    printf("Error parsing xml from security.conf: root element "
+           "is not 'Security_config'\n");
+    return 1;
+  }
+  cur = cur->xmlChildrenNode;
+  /* Walk the tree - search for first non-blank node */
+  while ( cur ){
+    if(xmlIsBlankNode ( cur ) ){
+      cur = cur -> next;
+      continue;
+    }
+    if( !xmlStrcmp(cur->name, (const xmlChar *)"caCertsPath") ){
+      attrValue = xmlGetProp(cur, "value");
+      if(attrValue){
+        len = xmlStrlen(attrValue);
+        strncpy(sec->caCertsPath, (char *)attrValue, len);
+        sec->caCertsPath[len] = '\0';
+        printf("caCertsPath >>%s<<\n", sec->caCertsPath);
+        xmlFree(attrValue);
+      }
+    }
+    else if( !xmlStrcmp(cur->name, (const xmlChar *)"privateKeyCertFile") ){
+      attrValue = xmlGetProp(cur, "value");
+      if(attrValue){
+        len = xmlStrlen(attrValue);
+        strncpy(sec->myKeyCertFile, (char *)attrValue, len);
+        sec->myKeyCertFile[len] = '\0';
+        printf("myKeyCertFile >>%s<<\n", sec->myKeyCertFile);
+        xmlFree(attrValue);
+      }
+    }
+    cur = cur->next;
+  }
+
+  /* Extract user's DN from their certificate */
+  if( !(fp = fopen(sec->myKeyCertFile, "r")) ){
+
+    fprintf(stderr, "Failed to open key and cert file >>%s<<\n",
+            sec->myKeyCertFile);
+    return REG_FAILURE;
+  }
+
+  sec->userDN[0] = '\0';
+  while( fgets(bufline, 512, fp) ){
+    if(strstr(bufline, "subject=")){
+      /* Remove trailing new-line character */
+      bufline[strlen(bufline)-1] = '\0';
+      pChar = strchr(bufline, '=');
+      snprintf(sec->userDN, REG_MAX_STRING_LENGTH, "%s", pChar+1);
+      break;
+    }
+  }
+  fclose(fp);
+
+  printf("User's DN >>%s<<\n\n", sec->userDN);
+
+  return REG_SUCCESS;
 }

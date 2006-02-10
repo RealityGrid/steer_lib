@@ -45,7 +45,7 @@
 #endif
 
 /** Holds details on the job associated with an SWS */
-struct job_details {
+struct reg_job_details {
   int  lifetimeMinutes;
   char userName[REG_MAX_STRING_LENGTH];
   char group[REG_MAX_STRING_LENGTH];
@@ -56,6 +56,12 @@ struct job_details {
   char passphrase[REG_MAX_STRING_LENGTH];
 };
 
+struct reg_security_info {
+  char caCertsPath[REG_MAX_STRING_LENGTH];
+  char myKeyCertFile[REG_MAX_STRING_LENGTH];
+  char userDN[REG_MAX_STRING_LENGTH];
+};
+
 /** Creates either an SGS or SWS
     @param job Ptr to struct holding details on the job
     @param containerAddress Address of the container in which to create SWS
@@ -63,7 +69,7 @@ struct job_details {
     @param keyPassphrase Passphrase to user's (encrypted) SSL key
     @param keyAndCertFile Location of pem file containing the user's certificate and private key
     @param caCertsPath Location of directory containg CA certs, used when authenticating connection to Containern */
-extern PREFIX char* Create_steering_service(const struct job_details *job,
+extern PREFIX char* Create_steering_service(const struct reg_job_details *job,
 					    const char *containerAddress,
 					    const char *registryAddress,
 					    const char *keyPassphrase,
@@ -80,6 +86,15 @@ extern PREFIX int Destroy_steering_service(char *address,
     @param metadata Text describing the experiment that the tree will record */
 extern PREFIX char *Create_checkpoint_tree(const char *factory, 
 					   const char *metadata);
+
+/** Reads the specified RealityGrid security configuration file to get
+    location of the PEM file containing BOTH the user's key and certificate
+    and the path to the directory containing CA certificates.  Parses 
+    user's certificate to get their DN.
+    @param configFile Location of RealityGrid security config file
+    @param sec Pointer to reg_security_info struct to populate */ 
+extern PREFIX int Get_security_config(const char               *configFile,
+				      struct reg_security_info *sec);
 
 #endif
 
