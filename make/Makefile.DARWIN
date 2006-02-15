@@ -66,4 +66,4 @@ STEER_LIBS = -L${REG_STEER_HOME}/lib${NBIT} \
              -L${REG_XML_LIBDIR}
 
 # Libraries to link example applications against
-STEER_LDFLAGS = -lm -lz -lxml2
+STEER_LDFLAGS = -lm -lz -lxml2  ${REG_SSL_LIBS}

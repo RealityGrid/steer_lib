@@ -34,8 +34,8 @@
 NBIT = 32
 
 # Location of C compiler and flags to use
-CC = gcc
-C_FLAGS = -O2 -Wall
+CC = distcc
+C_FLAGS = -g -Wall
 LIB_C_FLAGS = ${C_FLAGS} -fPIC -I../include
 
 # Linker flags to use
