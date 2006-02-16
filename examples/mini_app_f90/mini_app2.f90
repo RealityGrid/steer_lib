@@ -355,10 +355,7 @@ PROGRAM mini_app
 
                IF( status .eq. REG_SUCCESS )THEN
 	
-                 data_count = LEN(header)
-                 data_type  = REG_CHAR
-                 CALL emit_data_slice_f(iohandle, data_type, data_count, &
-                                        header, status)
+                 CALL emit_char_data_slice_f(iohandle, header, status)
 
                  ! Test with int data
                  ALLOCATE(i_array(NX,NY,NZ))
@@ -381,8 +378,6 @@ PROGRAM mini_app
                                           NX/2, NY/2, NZ, status)
 
                  ! Send chunk header to describe data
-                 data_count = LEN_TRIM(header)
-                 data_type  = REG_CHAR
                  CALL emit_char_data_slice_f(iohandle,  &
                                              header, status)
 
@@ -396,11 +391,7 @@ PROGRAM mini_app
                  CALL make_chunk_header_f(header, iohandle, NZ, NY, NZ, &
                                           (NX/2), 0, 0, &
                                           NX/2, NY/2, NZ, status)
-
-                 data_count = LEN_TRIM(header)
-                 data_type  = REG_CHAR
-                 CALL emit_data_slice_f(iohandle, data_type, data_count, &
-                                        header, status)
+                 CALL emit_char_data_slice_f(iohandle, header, status)
 
                  data_type  = REG_INT
                  data_count = NX*NY*NZ/4;
@@ -410,11 +401,7 @@ PROGRAM mini_app
                  CALL make_chunk_header_f(header, iohandle, NZ, NY, NZ, &
                                           0, (NY/2), 0, &
                                           NX/2, NY/2, NZ, status)
-
-                 data_count = LEN_TRIM(header)
-                 data_type  = REG_CHAR
-                 CALL emit_data_slice_f(iohandle, data_type, data_count, &
-                                        header, status)
+                 CALL emit_char_data_slice_f(iohandle, header, status)
 
                  data_type  = REG_INT
                  data_count = NX*NY*NZ/4;
@@ -424,11 +411,7 @@ PROGRAM mini_app
                  CALL make_chunk_header_f(header, iohandle, NZ, NY, NZ, &
                                           (NX/2), (NY/2), 0, &
                                           NX/2, NY/2, NZ, status)
-
-                 data_count = LEN_TRIM(header)
-                 data_type  = REG_CHAR
-                 CALL emit_data_slice_f(iohandle, data_type, data_count, &
-                                        header, status)
+                 CALL emit_char_data_slice_f(iohandle, header, status)
 
                  data_type  = REG_INT
                  data_count = NX*NY*NZ/4;
