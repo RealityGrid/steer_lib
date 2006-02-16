@@ -293,7 +293,9 @@ INT_KIND_1_DECL(Status);
   int    i;
   int    len;
   char **str_array;
-/*  char  *buf;*/
+  int    *typeArray;
+  int    *dirnArray;
+  int    *freqArray;
 
   len = STRING_LEN(IOLabel);
   if(len >= REG_MAX_STRING_LENGTH){
@@ -304,47 +306,48 @@ INT_KIND_1_DECL(Status);
   }
 
   str_array = (char**)malloc((*NumTypes)*sizeof(char*));
- /* buf       = (char*)malloc((*NumTypes)*(len+1));*/
+  typeArray = (int *)malloc((*NumTypes)*sizeof(int));
+  dirnArray = (int *)malloc((*NumTypes)*sizeof(int));
+  freqArray = (int *)malloc((*NumTypes)*sizeof(int));
 
-  for(i=0; i<(*NumTypes); i++){
-
-    str_array[i] = (char *)malloc(REG_MAX_STRING_LENGTH);
-  }
-
-/*  if(!str_array || !buf){*/
-  if(!str_array){
+  if(!str_array  || !typeArray || !dirnArray || !freqArray){
 
     fprintf(stderr, "Register_IOTypes_f: malloc failed\n");
     *Status = INT_KIND_1_CAST( REG_FAILURE );
     return;
   }
 
+  for(i=0; i<(*NumTypes); i++){
+
+    str_array[i] = (char *)malloc(REG_MAX_STRING_LENGTH);
+  }
+
   /* Convert from a single array of char to an array of char* */
 
   for(i=0; i<(int)(*NumTypes); i++){
 
-    /*str_array[i] = &(buf[i*(len + 1)]);*/
     memcpy(str_array[i], 
            &(STRING_PTR(IOLabel)[i*STRING_LEN(IOLabel)]),
            len);
     str_array[i][len] = '\0';
+
+    dirnArray[i] = (int)(IODirn[i]);
+    freqArray[i] = (int)(IOFrequency[i]);
   }
 
   *Status = INT_KIND_1_CAST( Register_IOTypes((int)*NumTypes,
-			                             str_array,
-                                              (int *)IODirn,
-                                              (int *)IOFrequency,
-			                      (int *)IOType) );
+			                      str_array,
+                                              dirnArray,
+                                              freqArray,
+			                      typeArray) );
   for(i=0; i<(*NumTypes); i++){
-
+    IOType[i] = INT_KIND_1_CAST(typeArray[i]);
     free(str_array[i]);
   }
 
   free(str_array);
   str_array = NULL;
-/*  free(buf);
-  buf = NULL;
-*/
+
   return;
 }
 
@@ -373,6 +376,7 @@ INT_KIND_1_DECL(Status);
 {
   int   len;
   char *buf;
+  int   dirn, freq, type;
 
   len = STRING_LEN(IOLabel);
   if(len >= REG_MAX_STRING_LENGTH){
@@ -394,10 +398,12 @@ INT_KIND_1_DECL(Status);
   memcpy(buf, STRING_PTR(IOLabel), len);
   buf[len] = '\0';
 
-  *Status = INT_KIND_1_CAST( Register_IOType(buf,
-                                             (int)*IODirn,
-                                             (int)*IOFrequency,
-			                     (int *)IOType) );
+  dirn = (int)*IODirn;
+  freq = (int)*IOFrequency;
+  
+  *Status = INT_KIND_1_CAST( Register_IOType(buf, dirn,
+                                             freq, &type) );
+  *IOType = INT_KIND_1_CAST(type);
   free(buf);
   buf = NULL;
 
@@ -1381,12 +1387,15 @@ INT_KIND_1_DECL(SeqNum);
 INT_KIND_1_DECL(IOHandle);
 INT_KIND_1_DECL(Status);
 {
+  int handle;
   *Status = INT_KIND_1_CAST( Emit_start((int)*IOType, 
                                         (int)*SeqNum, 
-                                        (int *)IOHandle) );
+                                        &handle) );
 
   if(*Status == REG_SUCCESS){
     Set_f90_array_ordering((int)*IOHandle, REG_TRUE);
+
+    *IOHandle = INT_KIND_1_CAST(handle);
   }
 
   return;
@@ -1416,13 +1425,16 @@ INT_KIND_1_DECL(IOHandle);
 float *TimeOut;
 INT_KIND_1_DECL(Status);
 {
+  int handle;
   *Status = INT_KIND_1_CAST( Emit_start_blocking((int)*IOType, 
                                                  (int)*SeqNum, 
-                                                 (int *)IOHandle,
+                                                 &handle,
                                                  *TimeOut) );
 
   if(*Status == REG_SUCCESS){
     Set_f90_array_ordering((int)*IOHandle, REG_TRUE);
+
+    *IOHandle = INT_KIND_1_CAST(handle);
   }
 
   return;
@@ -1442,7 +1454,11 @@ void FUNCTION(emit_stop_f) ARGS(`IOHandle,
 INT_KIND_1_DECL(IOHandle);
 INT_KIND_1_DECL(Status);
 {
-  *Status = INT_KIND_1_CAST( Emit_stop(IOHandle) );
+  int handle;
+
+  handle = (int)*IOHandle;
+  *Status = INT_KIND_1_CAST( Emit_stop(&handle) );
+  *IOHandle = INT_KIND_1_CAST(handle);
 
   return;
 }
@@ -1470,7 +1486,9 @@ INT_KIND_1_DECL(Count);
 void *pData;
 INT_KIND_1_DECL(Status);
 {
-  *Status = INT_KIND_1_CAST( Emit_data_slice(*IOHandle, *DataType, *Count, 
+  *Status = INT_KIND_1_CAST( Emit_data_slice((int)*IOHandle, 
+                                             (int)*DataType, 
+                                             (int)*Count, 
                                              pData) );
 
   return;
@@ -1567,10 +1585,15 @@ INT_KIND_1_DECL(veclen);
 INT_KIND_1_DECL(type);
 INT_KIND_1_DECL(Status);
 {
+  int len = STRING_LEN(title);
   memset(STRING_PTR(header), '\0', STRING_LEN(header));
-
+  /* Ensure that the string that we pass in to the library is 
+  correctly null-terminated */
+  strncpy(string_buf, STRING_PTR(title), len);
+  string_buf[len] = '\0';
+printf("ARPDBG: string_buf >>%s<<\n", string_buf);
   *Status = INT_KIND_1_CAST( Make_vtk_header(STRING_PTR(header),
-                                             STRING_PTR(title),
+                                             string_buf,
                                              (int)*nx, 
                                              (int)*ny, 
                                              (int)*nz,
@@ -1611,7 +1634,7 @@ INT_KIND_1_DECL(ny);
 INT_KIND_1_DECL(nz);
 INT_KIND_1_DECL(Status);
 {
-
+  memset(STRING_PTR(header), '\0', STRING_LEN(header));
   *Status = INT_KIND_1_CAST( Make_chunk_header(STRING_PTR(header),
                                                (int)*IOindex, 
                                                (int)*totx, 
@@ -1659,25 +1682,29 @@ INT_KIND_1_DECL(SteerCommands);
 STRING_ARG_DECL(SteerCommandParams);
 INT_KIND_1_DECL(Status);
 {
-  int   i, len, pos;
+  int steer_commands[REG_MAX_NUM_STR_CMDS];
+  int num_commands, num_params;
+  int i, len, pos;
 
 #if REG_DEBUG
   fprintf(stderr, "steering_control_f: Calling Steering_control...\n");
 #endif
 
   *Status = INT_KIND_1_CAST( Steering_control((int)*SeqNum,
-			     		      (int *)NumSteerParams,
+			     		      &num_params,
 			     		      str_array,
-			     		      (int *)NumSteerCommands,
-			     		      (int *)SteerCommands,
+			     		      &num_commands,
+			     		      steer_commands,
                                               str_array_params) );
 #if REG_DEBUG
   fprintf(stderr, 
           "steering_control_f: got %d params and %d cmds\n", 
-          *NumSteerParams, *NumSteerCommands);
+          num_params, num_commands);
 #endif
 
   if(*Status == INT_KIND_1_CAST(REG_SUCCESS) ){
+
+    *NumSteerParams = INT_KIND_1_CAST(num_params);
 
     /* ARPDBG Copy each returned string back into single array of char
        to return to caller. This may well fail on Crays. */
@@ -1698,7 +1725,11 @@ INT_KIND_1_DECL(Status);
       }
     }
 
+    *NumSteerCommands =  INT_KIND_1_CAST(num_commands);
+
     for(i=0; i<(int)(*NumSteerCommands); i++){
+
+      SteerCommands[i] = INT_KIND_1_CAST(steer_commands[i]);
 
       strcpy(&(STRING_PTR(SteerCommandParams)[i*STRING_LEN(SteerCommandParams)]),
              str_array_params[i]);
