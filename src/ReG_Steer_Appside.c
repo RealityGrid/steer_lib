@@ -4779,7 +4779,6 @@ int Make_vtk_header(char  *header,
 
     pchar += sprintf(pchar, "LOOKUP_TABLE default\n");
   }
-
   return REG_SUCCESS;
 }
 
