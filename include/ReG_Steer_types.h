@@ -42,8 +42,8 @@
 /* Comment-out line below to use OGSI rather than WSRF */
 #define REG_WSRF
 
-/** Whether or not to use timing routines - these are not very portable 
-#define USE_REG_TIMING*/
+/** Whether or not to use timing routines - these are not very portable */
+#define USE_REG_TIMING
 
 /** This is here to allow use of SSL to be switched on and off by editing
     Makefile.include */
@@ -91,13 +91,19 @@
 #define STR_TO_APP_FILENAME "control_info"
 
 /* Return values */
-
+/** Return value upon complete success */
 #define REG_SUCCESS    0
+/** Return value upon failure */
 #define REG_FAILURE    1
+/** Return value upon reaching End Of Data */
 #define REG_EOD        2
+/** Return value upon running out of memory */
 #define REG_MEM_FAIL   3
+/** Return value when call has timed out */
 #define REG_TIMED_OUT  4
+/** Return value when library not in state to complete task */
 #define REG_NOT_READY  5
+/** Return value indicating more data needs to be sent - NOT USED? */
 #define REG_UNFINISHED 6
 
 /** Limit on number of commands steerer can send at any one time */
@@ -109,9 +115,9 @@
 /** Limit on number of log messages we can send in one go */
 #define REG_MAX_NUM_LOG_MSG 30
 
-/** Initial sizes for internal tables of registered IO types 
-   and parameters */
+/** Initial size for internal table of registered IO types */
 #define REG_INITIAL_NUM_IOTYPES 20
+/** Initial size for internal table of registered parameters */
 #define REG_INITIAL_NUM_PARAMS  40
 
 /** Initial limit on no. of registered supported commands */
@@ -127,25 +133,32 @@
 /** Maximum length for any string */
 #define REG_MAX_STRING_LENGTH 256
 
-/* Steering commands */
-
+/** Encoding for STOP command */
 #define REG_STR_STOP             1
+/** Encoding for PAUSE command */
 #define REG_STR_PAUSE            2
+/** Encoding for RESUME command */
 #define REG_STR_RESUME           3
+/** Encoding for DETACH command */
 #define REG_STR_DETACH           4
+/** Encoding for EMIT PARAM LOG command */
 #define REG_STR_EMIT_PARAM_LOG   5
+/** Encoding for INTERNAL PAUSE command (used when the
+    pause command is to be handled internally by
+    the library rather than passed up to the application) */
 #define REG_STR_PAUSE_INTERNAL   6
 
-/* All generated IOtype handles must be >= this value because they
-   will be interpreted as commands - this value must therefore be >
-   than all of the commands #define'd above */
-
+/** All generated IOtype handles must be >= this value because they
+    will be interpreted as commands - this value must therefore be >
+    than all of the commands #define'd above */
 #define REG_MIN_IOTYPE_HANDLE 1000
 
-/** The three different types that an IOtype can have - used only
-   by the steerer in the construction of a more intuitive gui */
+/** The three different types that an IOtype/CHKtype can have */
+/** Type for an IOtype that is input only */
 #define REG_IO_IN    0
+/** Type for an IOtype that is output only */
 #define REG_IO_OUT   1
+/** Type for an IOtype that is for input and output */
 #define REG_IO_INOUT 2
 
 /** Size (in bytes) of input buffer for each active IO channel */
@@ -154,40 +167,59 @@
 /** Max length of each ASCII packet to be sent down a socket.  This enables
    headers and footers to be sent. */
 #define REG_PACKET_SIZE 128
+/** The format to be used with printf to create a header/footer */
 #define REG_PACKET_FORMAT "%-128s"
-
+/** The header to use when sending data down a socket */
 #define REG_DATA_HEADER "<ReG_data>"
+/** The footer to use when sending data down a socket */
 #define REG_DATA_FOOTER "</ReG_data>"
-
+/** Marks the start of a header for an individual 'slice' of data 
+    being sent down a socket */
 #define BEGIN_SLICE_HEADER "<ReG_data_slice_header>"
+/** Marks the end of a header for an individual 'slice' of data 
+    being sent down a socket */
 #define END_SLICE_HEADER   "</ReG_data_slice_header>"
 
 
 /* Coding scheme for data types */
-
+/** Encoding for an int type - equivalent to KIND(REG_INT_KIND) in F90 */
 #define REG_INT        0
+/** Encoding for a float type - equivalent to KIND(REG_SP_KIND) in F90 */
 #define REG_FLOAT      1
+/** Encoding for a double type - equivalent to KIND(REG_DP_KIND) in F90 */
 #define REG_DBL        2
+/** Encoding for a char type - equivalent to CHARACTER in F90 */
 #define REG_CHAR       3
+/** Encoding for an XDR int */
 #define REG_XDR_INT    4
+/** Encoding for an XDR float */
 #define REG_XDR_FLOAT  5
+/** Encoding for an XDR double */
 #define REG_XDR_DOUBLE 6
+/** Encoding for raw binary data type */
 #define REG_BIN        7
 
+/** Stores the size in bytes of an XDR-encoded int - NOT USED? */
 #define REG_SIZEOF_XDR_INT    4
+/** Stores the size in bytes of an XDR-encoded float - NOT USED? */
 #define REG_SIZEOF_XDR_FLOAT  8
+/** Stores the size in bytes of an XDR-encoded double - NOT USED? */
 #define REG_SIZEOF_XDR_DOUBLE 8
 
-/** Type definitions */
+/* Type definitions */
 #define REG_FALSE 0
 #define REG_TRUE  1
 #define reg_false 0
 #define reg_true  1
 
-/** Reserved handle values */
+/* Reserved handle values */
+/** Special value indicating a simulation handle is not in use */
 #define REG_SIM_HANDLE_NOTSET   -1
+/** Special value indicating an IOtype handle is not in use */
 #define REG_IODEF_HANDLE_NOTSET -1
+/** Special value indicating a parameter handle is not in use */
 #define REG_PARAM_HANDLE_NOTSET -1
+
 /** Handle for the sequence number parameter */
 #define REG_SEQ_NUM_HANDLE      -100
 /** Handle for the time-per-step parameter */
@@ -203,39 +235,56 @@
 /** Min value for an automatically generated parameter handle
    - must be > than all special handles defined above */
 #define REG_MIN_PARAM_HANDLE     0
-
+/** Label to use for the Time Step monitored parameter that
+    the simulation library creates itself */
 #define REG_TIMESTEP_LABEL "REG_TIME_STEP"
 
 /* Message tags */
-
+/** Indicates an error with the latest message */
 #define MSG_ERROR   -1
+/** Indicates no message received */
 #define MSG_NOTSET  0
+/** Indicates a supported commands message has been received */
 #define SUPP_CMDS   1
+/** Indicates an IOType definitions message has been received */
 #define IO_DEFS     2
+/** Indicates a parameter definitions message has been received */
 #define PARAM_DEFS  3
+/** Indicates a status message has been received */
 #define STATUS      4
+/** Indicates a control message has been received */
 #define CONTROL     5
+/** Indicates a ChkTypes definitions message has been received */
 #define CHK_DEFS    6
+/** Indicates that a log message has been received */
 #define STEER_LOG   7
 
-/** Some type definitions - handles are simply integers for
+/** Typedef for handles - are simply integers for
    the moment */
 typedef int REG_IOHandleType;
 
-/** Definitions used in communicating with the java proxy */
+/** Max. line length to used in communicating with java steering 
+    proxy (obsolete - UNICORE) */
 #define REG_MAX_LINE_LEN 256
-#define REG_MAX_MSG_SIZE 131072 /* 262144 524288 1048576 16384 8192 */
+/** Used to indicate whether pipe connecting us to java steering
+    proxy is valid (obsolete - UNICORE) */
 #define REG_PIPE_UNSET   -1
+
+/** Maximum possible size of a steering msg in bytes */
+#define REG_MAX_MSG_SIZE 131072 /* 262144 524288 1048576 16384 8192 */
 
 /** Tolerance used to determine whether a floating point no. should
    be interpreted as zero */
 #define REG_TOL_ZERO 1.0e-6
 
-/** Parameters used to configure table for logging checkpoints */
+/* Parameters used to configure table for logging checkpoints */
+/** The initial size of the table for logging checkpoints */
 #define REG_INITIAL_CHK_LOG_SIZE 50
+/** The filename to use for the checkpoint log */
 #define REG_LOG_FILENAME         "ReG_checkpoint_log.xml"
+/** The filename to use for the parameter log */
 #define REG_PARAM_LOG_FILENAME   "ReG_params_log.dat"
-
+/** Whether or not to log steering commands */
 #define REG_LOG_STEERING 1
 
 /** Values for IOdef_entry.comms_status */
