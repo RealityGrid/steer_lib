@@ -49,7 +49,7 @@ SUBROUTINE steering_initialize_f(AppName, NumSupportedCmds, &
   ! These calls are the reason this F90 wrapper exists - allows us to 
   ! calculate the sizeof(each ReG type).  This info. is used in
   ! Register_bin_param_f(...)
-  CALL set_type_size(REG_INT, AppName(1:1), AppName(2:2), Status)
+  CALL set_type_size(REG_CHAR, AppName(1:1), AppName(2:2), Status)
   CALL set_type_size(REG_INT, int_array(1), int_array(2), Status)
   CALL set_type_size(REG_FLOAT, real_array(1), real_array(2), Status)
   CALL set_type_size(REG_DBL, dbl_array(1), dbl_array(2), Status)
