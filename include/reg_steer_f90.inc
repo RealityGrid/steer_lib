@@ -33,7 +33,8 @@
 
 ! KIND parameters to ensure we match types when passing between
 ! C and F90
-  INTEGER, PARAMETER :: REG_SP_KIND = KIND(1)
+  INTEGER, PARAMETER :: REG_INT_KIND = KIND(1)
+  INTEGER, PARAMETER :: REG_SP_KIND = KIND(1.0)
   INTEGER, PARAMETER :: REG_DP_KIND = KIND(1.0D0)
 
 ! These are variables, not parameters so as to allow call by
