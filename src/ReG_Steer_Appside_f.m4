@@ -1909,7 +1909,7 @@ INT_KIND_1_DECL(Status);
 
   size = (int)(Ptr2 - Ptr1);
 
-  switch(*Type){
+  switch((int)*Type){
 
     case REG_CHAR:
       sizeof_type[REG_CHAR] = size;
@@ -1928,7 +1928,8 @@ INT_KIND_1_DECL(Status);
       break;
 
     default:
-      fprintf(stderr, "set_type_size: ERROR: unrecognised type\n");
+      fprintf(stderr, "set_type_size: ERROR: unrecognised type: %d\n",
+              (int)*Type);
       *Status = INT_KIND_1_CAST(REG_FAILURE);
       break;
   }
