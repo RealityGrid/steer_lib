@@ -1,6 +1,7 @@
 This document describes the environment variables that the
 RealityGrid steering software requires to be set at 
-run-time. (SGS = Steering Grid Service; only used when
+run-time. (SGS = Steering Grid Service [OGSI]; SWS = Steering
+Web Service [WSRF]; only used when
 steering via SOAP.)  Angle brackets indicate that a given
 variable does not have to be set but may be used to 
 configure the behaviour of the library.
@@ -22,7 +23,8 @@ Directory location to use for steering communication
 
 Minimum time interval (integer no. of seconds) between checks on 
 whether a steering client has connected.  If set to zero then a 
-check is performed on every call to Steering_control.  If unset
+check is performed on every call to Steering_control (which is
+likely to have a detrimental impact on performance).  If unset
 then a default value (set in ReG_Steer_types.h) is used.
 
 -------------------------------
@@ -30,22 +32,23 @@ then a default value (set in ReG_Steer_types.h) is used.
 
 Hostname of machine to connect to (using sockets) to get data
 from.
-Note that this is published in the SGS if steering via SOAP &
+Note that this is published in the SGS/SWS if steering via SOAP &
 thus this variable need not be set.
 
 -------------------------------
 <REG_CONNECTOR_PORT> 
 
 Port on machine REG_CONNECTOR_HOSTNAME to connect to (using sockets)
-Note that this is published in the SGS if steering via SOAP & thus
-this variable need not be set.
+Note that this is published in the SGS/SWS if steering via SOAP & 
+thus this variable need not be set.
 
 -------------------------------
 <GLOBUS_TCP_PORT_RANGE   2566,2686>
 
 Used by both sockets and gSOAP - specifies a range of ports
 that may be opened on the client machine.  Port chosen at random if
-not set.
+not set. For use on machines that have a firewall that limits which 
+ports may be used.
 
 -------------------------------
 <REG_DATA_DIRECTORY>
@@ -57,10 +60,17 @@ if not set.  Applies to all IOTypes registered by a program.
 -------------------------------
 REG_SGS_ADDRESS
 
-Location of steering grid service that provides public interface for
+Location of steering grid/web service that provides public interface for
 steering simulation and discovering address of remote data sources.
 Required only if the steering library has been built to use SOAP
 (see Makefile.include) for remote steering.
+
+-------------------------------
+REG_PASSPHRASE
+
+The passphrase that is required to access the SWS, as specified when
+it was created.  Only applicable when the library has been built 
+to use SOAP and WSRF (the default for versions >= 2.0.)
 
 -------------------------------
 <REG_TCP_INTERFACE>
@@ -68,6 +78,10 @@ Required only if the steering library has been built to use SOAP
 For use when machine hosting simulation/visualisation has more than
 one TCP interface.  Set to IP address of desired interface to use for
 globus_io/sockets.  Uses default if not set (i.e. probably INADDR_ANY).
+If you're running a data sink (e.g. a visualization) on a machine
+with no externally accessible IP address then it may be necessary to
+set this to " " in order to prevent the connecting socket from 
+being bound to the localhost interface.
 
 -------------------------------
 <REG_MACHINE_NAME>
@@ -82,7 +96,8 @@ set then uname and gethostbyname are used to get the fully-qualified
 domain name of the node we're executing on.  
   This variable only affects what address the SGS (and checkpoint 
 data) publishes to the outside world - it does not alter which local 
-interface is used by socket connections.
+interface is used by socket connections (use REG_TCP_INTERFACE to
+do that).
 
 -------------------------------
 <REG_IO_ADDRESS>
@@ -98,6 +113,11 @@ published address is the address to which the socket is bound.
 
 ------------------------------
 <REG_REGISTRY_ADDRESS>
-Use to set the address of the top-level registry for use in the
-steering-client-side routines.  If this variable is unset then
-the default of http://yaffel.blah.blah:50000/blah is used.
+This has been superceded by the move to routines that allow the
+address of the registry to be specified.  The calling code then
+normally gets the address from some configuration file.
+Was originally used to set the address of the top-level registry 
+for use in the steering-client-side routines.  If this variable 
+is unset then the default of http://yaffel.blah.blah:50000/blah 
+is used.
+
