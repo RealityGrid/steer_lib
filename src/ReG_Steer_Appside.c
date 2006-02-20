@@ -2194,7 +2194,7 @@ int Emit_data_slice(int		      IOTypeIndex,
   case REG_INT:
     if(IOTypes_table.io_def[IOTypeIndex].use_xdr){
       datatype = REG_XDR_INT;
-      num_bytes_to_send = actual_count*REG_SIZEOF_XDR_INT;
+      num_bytes_to_send = actual_count*REG_MAX_SIZEOF_XDR_TYPE;
 
       if(num_bytes_to_send > IOTypes_table.io_def[IOTypeIndex].buffer_max_bytes){
 
@@ -2224,10 +2224,43 @@ int Emit_data_slice(int		      IOTypeIndex,
     }
     break;
 
+  case REG_LONG:
+    if(IOTypes_table.io_def[IOTypeIndex].use_xdr){
+      datatype = REG_XDR_LONG;
+      num_bytes_to_send = actual_count*REG_MAX_SIZEOF_XDR_TYPE;
+
+      if(num_bytes_to_send > IOTypes_table.io_def[IOTypeIndex].buffer_max_bytes){
+
+	if(Realloc_iotype_buffer(IOTypeIndex, num_bytes_to_send) 
+	   != REG_SUCCESS){
+	  IOTypes_table.io_def[IOTypeIndex].ack_needed = REG_FALSE;
+	  return REG_FAILURE;
+	}
+      }
+
+      xdrmem_create(&xdrs, 
+		    IOTypes_table.io_def[IOTypeIndex].buffer,
+		    num_bytes_to_send,
+		    XDR_ENCODE);
+      xdr_vector(&xdrs, (char *)pData, (unsigned int)actual_count, 
+		 (unsigned int)sizeof(long), (xdrproc_t)xdr_long);
+
+      num_bytes_to_send = (int)xdr_getpos(&xdrs);
+      out_ptr = IOTypes_table.io_def[IOTypeIndex].buffer;
+
+      xdr_destroy(&xdrs);
+    }
+    else{
+      datatype = DataType;
+      num_bytes_to_send = actual_count*sizeof(int);
+      out_ptr = (void *)pData;
+    }
+    break;
+
   case REG_FLOAT:
     if(IOTypes_table.io_def[IOTypeIndex].use_xdr){
       datatype = REG_XDR_FLOAT;
-      num_bytes_to_send = actual_count*REG_SIZEOF_XDR_FLOAT;
+      num_bytes_to_send = actual_count*REG_MAX_SIZEOF_XDR_TYPE;
 
       if(num_bytes_to_send > IOTypes_table.io_def[IOTypeIndex].buffer_max_bytes){
 
@@ -2260,7 +2293,7 @@ int Emit_data_slice(int		      IOTypeIndex,
   case REG_DBL:
     if(IOTypes_table.io_def[IOTypeIndex].use_xdr){
       datatype = REG_XDR_DOUBLE;
-      num_bytes_to_send = actual_count*REG_SIZEOF_XDR_DOUBLE;
+      num_bytes_to_send = actual_count*REG_MAX_SIZEOF_XDR_TYPE;
 
       if(num_bytes_to_send > IOTypes_table.io_def[IOTypeIndex].buffer_max_bytes){
 

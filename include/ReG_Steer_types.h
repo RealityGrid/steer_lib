@@ -198,6 +198,10 @@
 #define REG_XDR_DOUBLE 6
 /** Encoding for raw binary data type */
 #define REG_BIN        7
+/** Encoding for a long type - mainly for 64-bit F90 interface */
+#define REG_LONG       8
+/** Encoding for an XDR long */
+#define REG_XDR_LONG   9
 
 /** Stores the size in bytes of an XDR-encoded int - NOT USED? */
 #define REG_SIZEOF_XDR_INT    4
@@ -205,6 +209,9 @@
 #define REG_SIZEOF_XDR_FLOAT  8
 /** Stores the size in bytes of an XDR-encoded double - NOT USED? */
 #define REG_SIZEOF_XDR_DOUBLE 8
+/** The maximum number of bytes an XDR-encoded type might use - only
+    used for malloc'ing a sufficiently large buffer */
+#define REG_MAX_SIZEOF_XDR_TYPE 8
 
 /* Type definitions */
 #define REG_FALSE 0

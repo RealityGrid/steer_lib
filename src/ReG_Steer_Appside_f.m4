@@ -55,7 +55,9 @@ static char *str_array[REG_MAX_NUM_STR_PARAMS];
 static char *str_array_params[REG_MAX_NUM_STR_CMDS];
 static int   gSteerCommands[REG_MAX_NUM_STR_CMDS];
 /** Array to store size in bytes of each of ReG type */
-static int sizeof_type[8] = {0,0,0,0,0,0,0,0};
+static int sizeof_type[10] = {0,0,0,0,0,0,0,0,0,0};
+/** Array to store mapping of F90 type to equivalent C type */
+static int f90_to_c_type[10] = {0,0,0,0,0,0,0,0,0,0};
 
 /*----------------------------------------------------------------
 
@@ -1485,7 +1487,7 @@ void *pData;
 INT_KIND_1_DECL(Status);
 {
   *Status = INT_KIND_1_CAST( Emit_data_slice((int)*IOHandle, 
-                                             (int)*DataType, 
+                                             f90_to_c_type[(int)*DataType],/*(int)*DataType,*/
                                              (int)*Count, 
                                              pData) );
 
@@ -1902,6 +1904,7 @@ char *Ptr2;
 INT_KIND_1_DECL(Status);
 {
   int size;
+  int type;
 
   if(Ptr2 < Ptr1){
     fprintf(stderr, "set_type_size: ERROR: Ptr2 < Ptr1; arguments"
@@ -1911,30 +1914,62 @@ INT_KIND_1_DECL(Status);
   }
 
   size = (int)(Ptr2 - Ptr1);
+  type = (int)*Type;
 
-  switch((int)*Type){
+  switch(type){
 
     case REG_CHAR:
+      fprintf(stderr, "Sizeof REG_CHAR = %d, ", size);
       sizeof_type[REG_CHAR] = size;
       break;
 
     case REG_INT:
+      fprintf(stderr, "Sizeof REG_INT = %d\n, ", size);
       sizeof_type[REG_INT] = size;
       break;
 
     case REG_FLOAT:
+      fprintf(stderr, "Sizeof REG_FLOAT = %d, ", size);
       sizeof_type[REG_FLOAT] = size;
       break;
 
     case REG_DBL:
+      fprintf(stderr, "Sizeof REG_DBL = %d, ", size);
       sizeof_type[REG_DBL] = size;
       break;
 
     default:
       fprintf(stderr, "set_type_size: ERROR: unrecognised type: %d\n",
-              (int)*Type);
+              type);
       *Status = INT_KIND_1_CAST(REG_FAILURE);
       break;
+  }
+
+  if(size == sizeof(char)){
+    fprintf(stderr, "equivalent to a C char\n");
+    f90_to_c_type[type] = REG_CHAR;
+  }
+
+  if((type == REG_INT) || (type == REG_LONG)){
+    if(size == sizeof(int)){
+      fprintf(stderr, "equivalent to a C int\n");
+      f90_to_c_type[type] = REG_INT;
+    }
+    else if(size == sizeof(long)){
+      fprintf(stderr, "equivalent to a C long\n");
+      f90_to_c_type[type] = REG_LONG;
+    }
+  }
+
+  if((type == REG_FLOAT) || (type == REG_DBL)){
+    if(size == sizeof(float)){
+      fprintf(stderr, "equivalent to a C float\n");
+      f90_to_c_type[(int)*Type] = REG_FLOAT;
+    }
+    else if(size == sizeof(double)){
+      fprintf(stderr, "equivalent to a C double\n");
+      f90_to_c_type[(int)*Type] = REG_DBL;
+    }
   }
 
   *Status = INT_KIND_1_CAST(REG_SUCCESS);

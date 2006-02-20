@@ -36,15 +36,14 @@ SUBROUTINE steering_initialize_f(AppName, NumSupportedCmds, &
   IMPLICIT none
   INCLUDE 'reg_steer_f90.inc'
 
-  CHARACTER (LEN=*), INTENT(in)                        :: AppName
-  INTEGER (KIND=REG_SP_KIND), INTENT(in)               :: NumSupportedCmds
-  INTEGER (KIND=REG_SP_KIND), DIMENSION(*), INTENT(in) :: SupportedCmds
-  INTEGER (KIND=REG_SP_KIND), INTENT(out)              :: Status
+  CHARACTER (LEN=*), INTENT(in)                         :: AppName
+  INTEGER (KIND=REG_INT_KIND), INTENT(in)               :: NumSupportedCmds
+  INTEGER (KIND=REG_INT_KIND), DIMENSION(*), INTENT(in) :: SupportedCmds
+  INTEGER (KIND=REG_INT_KIND), INTENT(out)              :: Status
 
-  INTEGER (KIND=REG_SP_KIND), DIMENSION(2) :: int_array
+  INTEGER (KIND=REG_INT_KIND), DIMENSION(2) :: int_array
   REAL (KIND=REG_SP_KIND), DIMENSION(2)    :: real_array
   REAL (KIND=REG_DP_KIND), DIMENSION(2)    :: dbl_array
-  INTEGER (KIND=4)                         :: bytes
 
   ! These calls are the reason this F90 wrapper exists - allows us to 
   ! calculate the sizeof(each ReG type).  This info. is used in
