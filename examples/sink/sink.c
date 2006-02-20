@@ -52,6 +52,7 @@ int main(){
   /* For receiving data */
   char   *c_array;
   int    *i_array;
+  long   *l_array;
   float  *f_array;
   double *d_array;
 
@@ -214,6 +215,25 @@ int main(){
 						data_count, i_array);
 
 		    printf("Got int data\n");
+
+		    bytes_read += data_count*sizeof(int);
+		    free(i_array);
+		  }
+		  break;
+
+		case REG_LONG:
+
+		  l_array = (int *)malloc(data_count*sizeof(long));
+
+		  if(l_array){
+		    status = Consume_data_slice(iohandle, data_type, 
+						data_count, l_array);
+
+		    printf("Got long data:\n");
+		    for(j=0; j<data_count; j++){
+		      printf("%d ", l_array[j]);
+		    }
+		    printf("\n------------------------\n");
 
 		    bytes_read += data_count*sizeof(int);
 		    free(i_array);
