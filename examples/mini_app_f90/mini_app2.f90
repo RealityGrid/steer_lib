@@ -36,61 +36,61 @@ PROGRAM mini_app
 
   INCLUDE 'reg_steer_f90.inc'
 
-  INTEGER (KIND=REG_SP_KIND) :: num_sim_loops = 1000
-  INTEGER (KIND=REG_SP_KIND) :: status
+  INTEGER (KIND=REG_INT_KIND) :: num_sim_loops = 1000
+  INTEGER (KIND=REG_INT_KIND) :: status
 
   ! For supported commands
-  INTEGER (KIND=REG_SP_KIND) :: num_cmds
-  INTEGER (KIND=REG_SP_KIND), DIMENSION(REG_INITIAL_NUM_CMDS) :: commands
+  INTEGER (KIND=REG_INT_KIND) :: num_cmds
+  INTEGER (KIND=REG_INT_KIND), DIMENSION(REG_INITIAL_NUM_CMDS) :: commands
 
   ! For IO types
-  INTEGER (KIND=REG_SP_KIND), &
+  INTEGER (KIND=REG_INT_KIND), &
                            DIMENSION(REG_INITIAL_NUM_IOTYPES) :: iotype_handles
-  INTEGER (KIND=REG_SP_KIND), &
+  INTEGER (KIND=REG_INT_KIND), &
                            DIMENSION(REG_INITIAL_NUM_IOTYPES) :: chk_handles
   CHARACTER(LEN=40)                                           :: chk_tag
   REAL (KIND=REG_SP_KIND)    :: ran_no
-  INTEGER (KIND=REG_SP_KIND) :: itag
+  INTEGER (KIND=REG_INT_KIND) :: itag
   CHARACTER(LEN=5)           :: ctag
 
-  INTEGER (KIND=REG_SP_KIND) :: output_freq = 5
-  INTEGER (KIND=REG_SP_KIND) :: iohandle
-  INTEGER (KIND=REG_SP_KIND) :: data_type
-  INTEGER (KIND=REG_SP_KIND) :: data_count
-  INTEGER (KIND=REG_SP_KIND), DIMENSION(:,:,:), ALLOCATABLE :: i_array
+  INTEGER (KIND=REG_INT_KIND) :: output_freq = 5
+  INTEGER (KIND=REG_INT_KIND) :: iohandle
+  INTEGER (KIND=REG_INT_KIND) :: data_type
+  INTEGER (KIND=REG_INT_KIND) :: data_count
+  INTEGER (KIND=REG_INT_KIND), DIMENSION(:,:,:), ALLOCATABLE :: i_array
 
   ! For parameters
   CHARACTER(LEN=40)          :: param_label
-  INTEGER (KIND=REG_SP_KIND) :: param_type
-  INTEGER (KIND=REG_SP_KIND) :: param_strbl
+  INTEGER (KIND=REG_INT_KIND) :: param_type
+  INTEGER (KIND=REG_INT_KIND) :: param_strbl
 
   ! Parameters for steering
-  INTEGER (KIND=REG_SP_KIND)           :: dum_int, dum_int2, dum_int3
+  INTEGER (KIND=REG_INT_KIND)          :: dum_int, dum_int2, dum_int3
   REAL (KIND=REG_SP_KIND)              :: dum_real, dum_real2, dum_real3
   REAL (KIND=REG_DP_KIND)              :: dum_dbl, dum_dbl2, dum_dbl3
   CHARACTER(LEN=REG_MAX_STRING_LENGTH) :: dum_str
 
-  INTEGER (KIND=REG_SP_KIND) :: num_recvd_cmds
-  INTEGER (KIND=REG_SP_KIND) :: num_params_changed
-  INTEGER (KIND=REG_SP_KIND), DIMENSION(REG_MAX_NUM_STR_CMDS) :: recvd_cmds
+  INTEGER (KIND=REG_INT_KIND) :: num_recvd_cmds
+  INTEGER (KIND=REG_INT_KIND) :: num_params_changed
+  INTEGER (KIND=REG_INT_KIND), DIMENSION(REG_MAX_NUM_STR_CMDS) :: recvd_cmds
   CHARACTER(LEN=REG_MAX_STRING_LENGTH), &
               DIMENSION(REG_MAX_NUM_STR_CMDS)   :: recvd_cmd_params
   CHARACTER(LEN=REG_MAX_STRING_LENGTH), &
               DIMENSION(REG_MAX_NUM_STR_PARAMS) :: changed_param_labels
 
-  INTEGER (KIND=4) :: iloop, icmd, iparam, hdr_len, i, j, k
-  INTEGER (KIND=4) :: finished = 0
-  INTEGER (KIND=4) :: NX = 4
-  INTEGER (KIND=4) :: NY = 4
-  INTEGER (KIND=4) :: NZ = 4
-  INTEGER (KIND=4) :: veclen = 1
+  INTEGER (KIND=REG_INT_KIND) :: iloop, icmd, iparam, hdr_len, i, j, k
+  INTEGER (KIND=REG_INT_KIND) :: finished = 0
+  INTEGER (KIND=REG_INT_KIND) :: NX = 4
+  INTEGER (KIND=REG_INT_KIND) :: NY = 4
+  INTEGER (KIND=REG_INT_KIND) :: NZ = 4
+  INTEGER (KIND=REG_INT_KIND) :: veclen = 1
   CHARACTER(LEN=4096) :: header
   CHARACTER(LEN=128)  :: buf
   REAL (KIND=REG_DP_KIND) :: aaxis=1.5
   REAL (KIND=REG_DP_KIND) :: baxis=1.5
   REAL (KIND=REG_DP_KIND) :: caxis=1.5
-  INTEGER (KIND=REG_SP_KIND), DIMENSION(56) :: ibin_blob_array;
-  INTEGER (KIND=REG_SP_KIND) :: ilength
+  INTEGER (KIND=REG_INT_KIND), DIMENSION(56) :: ibin_blob_array;
+  INTEGER (KIND=REG_INT_KIND) :: ilength
 
   ! Enable steering
   CALL steering_enable_f(reg_true)
