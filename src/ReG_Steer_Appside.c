@@ -1828,6 +1828,12 @@ int Consume_data_slice_header(int  IOTypeIndex,
     *DataType = REG_DBL;
     break;
 
+  case REG_XDR_LONG:
+    IOTypes_table.io_def[IOTypeIndex].use_xdr = REG_TRUE;
+    IOTypes_table.io_def[IOTypeIndex].num_xdr_bytes = NumBytes;
+    *DataType = REG_LONG;
+    break;
+
   default:
     IOTypes_table.io_def[IOTypeIndex].use_xdr = REG_FALSE;
     break;
@@ -1875,7 +1881,6 @@ int Consume_data_slice(int    IOTypeIndex,
 
   case REG_INT:
     if(IOTypes_table.io_def[IOTypeIndex].use_xdr){
-/*       num_bytes_to_read = Count*REG_SIZEOF_XDR_INT; */
       num_bytes_to_read = IOTypes_table.io_def[IOTypeIndex].num_xdr_bytes;
     }
     else{
@@ -1883,9 +1888,17 @@ int Consume_data_slice(int    IOTypeIndex,
     }
     break;
 
+  case REG_LONG:
+    if(IOTypes_table.io_def[IOTypeIndex].use_xdr){
+      num_bytes_to_read = IOTypes_table.io_def[IOTypeIndex].num_xdr_bytes;
+    }
+    else{
+      num_bytes_to_read = Count*sizeof(long);
+    }
+    break;
+
   case REG_FLOAT:
     if(IOTypes_table.io_def[IOTypeIndex].use_xdr){
-/*       num_bytes_to_read = Count*REG_SIZEOF_XDR_FLOAT; */
       num_bytes_to_read = IOTypes_table.io_def[IOTypeIndex].num_xdr_bytes;
     }
     else{
@@ -1895,7 +1908,6 @@ int Consume_data_slice(int    IOTypeIndex,
 
   case REG_DBL:
     if(IOTypes_table.io_def[IOTypeIndex].use_xdr){
-/*       num_bytes_to_read = Count*REG_SIZEOF_XDR_DOUBLE; */
       num_bytes_to_read = IOTypes_table.io_def[IOTypeIndex].num_xdr_bytes;
     }
     else{
@@ -2368,6 +2380,7 @@ int Register_param(char* ParamLabel,
 {
   int    current;
   int    dum_int;
+  long   dum_long;
   float  dum_flt;
   double dum_dbl;
 
@@ -2436,6 +2449,15 @@ int Register_param(char* ParamLabel,
       Params_table.param[current].min_val_valid = REG_TRUE;
     }
     if(sscanf(ParamMaximum, "%d", &dum_int) == 1){
+      Params_table.param[current].max_val_valid = REG_TRUE;
+    }
+    break;
+
+  case REG_LONG:
+    if(sscanf(ParamMinimum, "%ld", &dum_long) == 1){
+      Params_table.param[current].min_val_valid = REG_TRUE;
+    }
+    if(sscanf(ParamMaximum, "%ld", &dum_long) == 1){
       Params_table.param[current].max_val_valid = REG_TRUE;
     }
     break;
@@ -2578,6 +2600,10 @@ int Register_bin_param(char *ParamLabel, void *ParamPtr,
 
     case REG_INT:
       size = sizeof(int);
+      break;
+
+    case REG_LONG:
+      size = sizeof(long);
       break;
 
     case REG_FLOAT:
@@ -4407,6 +4433,10 @@ int Update_ptr_value(param_entry *param)
     sscanf(param->value, "%d", (int *)(param->ptr));
     break;
 
+  case REG_LONG:
+    sscanf(param->value, "%ld", (long *)(param->ptr));
+    break;
+
   case REG_FLOAT:
     sscanf(param->value, "%f", (float *)(param->ptr));
     break;
@@ -4463,6 +4493,10 @@ int Get_ptr_value(param_entry *param)
   
   case REG_INT:
     sprintf(param->value,"%d", *((int *)(param->ptr)));
+    break;
+  
+  case REG_LONG:
+    sprintf(param->value,"%ld", *((long *)(param->ptr)));
     break;
   
   case REG_FLOAT:
@@ -4729,15 +4763,15 @@ int Make_vtk_header(char  *header,
       sprintf(type_text, "double");
     }
     else if(type == REG_FLOAT){
-
       sprintf(type_text, "float");
     }
     else if(type == REG_INT){
-
       sprintf(type_text, "integer");
     }
+    else if(type == REG_LONG){
+      sprintf(type_text, "long");
+    }
     else{
-
       fprintf(stderr, "Make_vtk_header: Unrecognised data type\n");
       return REG_FAILURE;
     }
@@ -4783,12 +4817,13 @@ int Make_vtk_header(char  *header,
       sprintf(type_text, "double");
     }
     else if(type == REG_FLOAT){
-
       sprintf(type_text, "float");
     }
     else if(type == REG_INT){
-
       sprintf(type_text, "int");
+    }
+    else if(type == REG_LONG){
+      sprintf(type_text, "long");
     }
     else{
 
@@ -5652,6 +5687,8 @@ int Reorder_array(int          ndims,
     break;
     
   default:
+    fprintf(stderr, "Reorder_array: unrecognised data type: %d\n",
+	    type);
     break;
   }
 

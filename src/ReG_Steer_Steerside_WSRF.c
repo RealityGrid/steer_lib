@@ -481,6 +481,7 @@ int Get_param_log_wsrf(Sim_entry_type *sim,
   int    index, lindex;
   char  *ptr1;
   int    dum_int;
+  long   dum_long;
   float  dum_float;
 #ifdef USE_REG_TIMING
   double time0, time1;
@@ -547,6 +548,24 @@ int Get_param_log_wsrf(Sim_entry_type *sim,
       /* Parse space-delimited list of parameter values */
       sscanf(ptr1, "%d ", &dum_int);
       sim->Params_table.param[index].log[lindex++] = (double)dum_int;
+
+      if(!(ptr1 = strchr(ptr1, ' ')))break;
+      if(*(++ptr1) == '\0')break;
+
+      if(lindex >= sim->Params_table.param[index].log_size){
+	Realloc_param_log(&(sim->Params_table.param[index]));
+      }
+    }
+    sim->Params_table.param[index].log_index = lindex;
+    break;
+
+  case REG_LONG:
+
+    while(1){
+
+      /* Parse space-delimited list of parameter values */
+      sscanf(ptr1, "%ld ", &dum_long);
+      sim->Params_table.param[index].log[lindex++] = (double)dum_long;
 
       if(!(ptr1 = strchr(ptr1, ' ')))break;
       if(*(++ptr1) == '\0')break;

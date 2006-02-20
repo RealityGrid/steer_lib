@@ -1928,6 +1928,11 @@ INT_KIND_1_DECL(Status);
       sizeof_type[REG_INT] = size;
       break;
 
+    case REG_LONG:
+      fprintf(stderr, "Sizeof REG_LONG = %d\n, ", size);
+      sizeof_type[REG_LONG] = size;
+      break;
+
     case REG_FLOAT:
       fprintf(stderr, "Sizeof REG_FLOAT = %d, ", size);
       sizeof_type[REG_FLOAT] = size;

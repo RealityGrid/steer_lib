@@ -823,7 +823,18 @@ int Reorder_decode_array(IOdef_entry *io,
       
       if(1 != xdr_vector(&xdrs, (char *)pData, (unsigned int)count, 
 			 (unsigned int)sizeof(int), (xdrproc_t)xdr_int)){
-	fprintf(stderr, "Reorder_decode_array: xdr_vector decode failed\n");
+	fprintf(stderr, "Reorder_decode_array: xdr_vector decode "
+		"failed for REG_INT\n");
+	return_status = REG_FAILURE;
+      }
+      break;
+
+    case REG_LONG:
+      
+      if(1 != xdr_vector(&xdrs, (char *)pData, (unsigned int)count, 
+			 (unsigned int)sizeof(int), (xdrproc_t)xdr_long)){
+	fprintf(stderr, "Reorder_decode_array: xdr_vector decode "
+		"failed for REG_LONG\n");
 	return_status = REG_FAILURE;
       }
       break;
@@ -832,7 +843,8 @@ int Reorder_decode_array(IOdef_entry *io,
       
       if(1 != xdr_vector(&xdrs, (char *)pData, (unsigned int)count, 
 			 (unsigned int)sizeof(float), (xdrproc_t)xdr_float)){
-	fprintf(stderr, "Reorder_decode_array: xdr_vector decode failed\n");
+	fprintf(stderr, "Reorder_decode_array: xdr_vector decode "
+		"failed for REG_FLOAT\n");
 	return_status = REG_FAILURE;
       }
       break;
@@ -841,7 +853,8 @@ int Reorder_decode_array(IOdef_entry *io,
       
       if(1 != xdr_vector(&xdrs, (char *)pData, (unsigned int)count, 
 			 (unsigned int)sizeof(double), (xdrproc_t)xdr_double)){
-	fprintf(stderr, "Reorder_decode_array: xdr_vector decode failed\n");
+	fprintf(stderr, "Reorder_decode_array: xdr_vector decode "
+		"failed for REG_DBL\n");
 	return_status = REG_FAILURE;
       }
       break;
@@ -928,6 +941,95 @@ int Reorder_decode_array(IOdef_entry *io,
 
 	  /* Data we've read in is stored in io->buffer */
 	  pi_old = (int *)io->buffer;
+
+	  /* Order loops so i,j,k vary as they should for a C-style
+	     array ordered consecutively in memory */
+	  for(i=array->sx; i<(array->nx+array->sx); i++){
+	    for(j=array->sy; j<(array->ny+array->sy); j++){
+	      for(k=array->sz; k<(array->nz+array->sz); k++){
+		/* Calculate position of (i,j,k)'th element in an F90 array 
+		   (where i varies most rapidly) and store value */
+		pi[k*nslab + j*nrow + i] = *(pi_old++);
+	      }
+	    }
+	  }
+	}
+      }
+      break;
+
+
+    case REG_LONG:
+
+      pi = (long *)pData;
+
+      /* In this context, array->is_f90 flags whether we want to
+	 convert _to_ an F90-style array */
+      if(array->is_f90 != REG_TRUE){
+
+	/* Convert F90 array to C array */
+
+	nslab = (array->totz)*(array->toty);
+	nrow  = array->totz;
+
+	if(io->use_xdr){
+
+	  /* Order loops so i,j,k vary as they should for an F90-style
+	     array ordered consecutively in memory */
+	  for(k=array->sz; k<(array->nz+array->sz); k++){
+	    for(j=array->sy; j<(array->ny+array->sy); j++){
+	      for(i=array->sx; i<(array->nx+array->sx); i++){
+		/* Calculate position of (i,j,k)'th element in a C array 
+		   (where k varies most rapidly) and store value. This
+		   statement decodes the next value from the array we
+		   specified when we opened 'xdrs'.*/
+		xdr_long(&xdrs, &(pi[i*nslab + j*nrow + k]));
+	      }
+	    }
+	  }
+	}
+	else{ /* No xdr-decode required */
+
+	  /* Data we've read in is stored in io->buffer */
+	  pi_old = (long *)io->buffer;
+
+	  /* Order loops so i,j,k vary as they should for an F90-style
+	     array ordered consecutively in memory */
+	  for(k=array->sz; k<(array->nz+array->sz); k++){
+	    for(j=array->sy; j<(array->ny+array->sy); j++){
+	      for(i=array->sx; i<(array->nx+array->sx); i++){
+		/* Calculate position of (i,j,k)'th element in a C array 
+		   (where k varies most rapidly) and store value */
+		pi[i*nslab + j*nrow + k] = *(pi_old++);
+	      }
+	    }
+	  }
+	}
+      }
+      else{
+      
+	/* Convert C array to F90 array */
+
+	nslab = array->totx*array->toty;
+	nrow  = array->totx;
+
+	if(io->use_xdr){
+
+	  /* Order loops so i,j,k vary as they should for a C-style
+	     array ordered consecutively in memory */
+	  for(i=array->sx; i<(array->nx+array->sx); i++){
+	    for(j=array->sy; j<(array->ny+array->sy); j++){
+	      for(k=array->sz; k<(array->nz+array->sz); k++){
+		/* Calculate position of (i,j,k)'th element in an F90 array 
+		   (where i varies most rapidly) and store value */
+		xdr_long(&xdrs, &(pi[k*nslab + j*nrow + i]));
+	      }
+	    }
+	  }
+	}
+	else{ /* No xdr-decode required */
+
+	  /* Data we've read in is stored in io->buffer */
+	  pi_old = (long *)io->buffer;
 
 	  /* Order loops so i,j,k vary as they should for a C-style
 	     array ordered consecutively in memory */

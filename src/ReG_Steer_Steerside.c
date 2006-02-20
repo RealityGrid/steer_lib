@@ -1201,6 +1201,7 @@ int Consume_param_log(Sim_entry_type *sim,
   int index;
   int i = -1;
   int   dum_int;
+  long  dum_long;
   float dum_float;
   
   while(param_ptr){
@@ -1241,6 +1242,11 @@ int Consume_param_log(Sim_entry_type *sim,
 	sscanf((char *)(param_ptr->value), "%d",
 	       &dum_int);
 	sim->Params_table.param[i].log[index++] = (double)dum_int;
+        break;
+      case REG_LONG:
+	sscanf((char *)(param_ptr->value), "%ld",
+	       &dum_long);
+	sim->Params_table.param[i].log[index++] = (double)dum_long;
         break;
       case REG_FLOAT:
 	sscanf((char *)(param_ptr->value), "%f",
@@ -2271,6 +2277,7 @@ int Set_param_values(int    sim_handle,
   int outside_range;
 
   int    ivalue, imin, imax;
+  long   lvalue, llimit;
   float  fvalue, fmin, fmax;
   double dvalue, dmin, dmax;
 
@@ -2312,6 +2319,29 @@ int Set_param_values(int    sim_handle,
 	    fprintf(stderr, "Set_param_values: new value (%d) of %s is outside\n"
 		    "permitted range (%s,%s) - skipping...\n", 
 		    ivalue, 
+		    Sim_table.sim[isim].Params_table.param[index].label, 
+		    Sim_table.sim[isim].Params_table.param[index].min_val,
+		    Sim_table.sim[isim].Params_table.param[index].max_val);
+	    continue;
+	  }
+	  break;
+
+	case REG_LONG:
+	  sscanf(vals[i], "%ld", &lvalue);
+	  if(Sim_table.sim[isim].Params_table.param[index].min_val_valid == REG_TRUE){
+	    sscanf(Sim_table.sim[isim].Params_table.param[index].min_val, 
+		   "%ld", &llimit);
+	    if (lvalue < llimit) outside_range = REG_TRUE;
+	  }
+	  if(Sim_table.sim[isim].Params_table.param[index].max_val_valid == REG_TRUE){
+	    sscanf(Sim_table.sim[isim].Params_table.param[index].max_val, 
+		   "%ld", &llimit);
+	    if (lvalue > llimit) outside_range = REG_TRUE;
+	  }
+	  if(outside_range == REG_TRUE){
+	    fprintf(stderr, "Set_param_values: new value (%d) of %s is outside\n"
+		    "permitted range (%s,%s) - skipping...\n", 
+		    lvalue, 
 		    Sim_table.sim[isim].Params_table.param[index].label, 
 		    Sim_table.sim[isim].Params_table.param[index].min_val,
 		    Sim_table.sim[isim].Params_table.param[index].max_val);
