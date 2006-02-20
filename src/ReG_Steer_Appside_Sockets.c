@@ -234,7 +234,8 @@ int create_connector(const int index) {
   IOTypes_table.io_def[index].socket_info.connector_handle = connector;
 
   /* ...turn off the "Address already in use" error message... */
-  if(setsockopt(connector, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == REG_SOCKETS_ERROR) {
+  if(setsockopt(connector, SOL_SOCKET, SO_REUSEADDR, &yes, 
+		sizeof(int)) == REG_SOCKETS_ERROR) {
     perror("setsockopt");
     return REG_FAILURE;
   }
@@ -245,7 +246,8 @@ int create_connector(const int index) {
     myAddr.sin_addr.s_addr = INADDR_ANY;
   }
   else {
-    inet_aton(IOTypes_table.io_def[index].socket_info.tcp_interface, &(myAddr.sin_addr));
+    inet_aton(IOTypes_table.io_def[index].socket_info.tcp_interface, 
+	      &(myAddr.sin_addr));
   }
   memset(&(myAddr.sin_zero), '\0', 8); /* zero the rest */
 
