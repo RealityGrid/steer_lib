@@ -1,8 +1,5 @@
 /*---------------------------------------------------------------------------
-  This file contains a very simple example of a steering 
-  application.
-
-  (C) Copyright 2005, University of Manchester, United Kingdom,
+  (C) Copyright 2006, University of Manchester, United Kingdom,
   all rights reserved.
 
   This software was developed by the RealityGrid project
@@ -28,12 +25,17 @@
   DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR
   CORRECTION.
 
-  Authors........: Andrew Porter, Robert Haines
-
 ---------------------------------------------------------------------------*/
+
+/** @file mini_steerer.c
+    @brief A simple, command-line example of a steering application
+    @author Andrew Porter
+    @author Robert Haines */
 
 #include "ReG_Steer_Steerside.h"
 #include "ReG_Steer_Browser.h"
+#include "ReG_Steer_Utils.h"
+#include "ReG_Steer_Utils_WSRF.h"
 #include <string.h>
 #include <unistd.h>
 
@@ -41,7 +43,12 @@
 #define REG_DEBUG 0
 #endif
 
+/** Allows the user to edit a steerable parameter
+    @param sim_handle Handle of the simulation being steered */
 static int Edit_parameter(int sim_handle);
+/** Allows the user to choose a parameter 
+    @param sim_handle Handle of the simulation being steered
+    @param steerable  Whether to show user steerable or monitored params*/
 static int Choose_parameter(int sim_handle, int steerable);
 
 /*-------------------------------------------------------------------------*/
@@ -83,6 +90,12 @@ int main(int argc, char **argv){
   int                num_entries;
   Output_log_struct  chk_entries[10];
   double            *log_ptr;
+
+  char                    registryAddr[REG_MAX_STRING_LENGTH];
+  char                    keyPassphrase[REG_MAX_STRING_LENGTH];
+  char                    confFile[REG_MAX_STRING_LENGTH];
+  struct registry_entry   *entries;
+  struct reg_security_info sec;
 
   /* Initialise arrays for querying param values */
 
@@ -130,23 +143,96 @@ int main(int argc, char **argv){
   char_ptr = NULL;
 
   /* Take GSH/EPR off command line if supplied */
-  if(argc == 2 && strstr(argv[1], "http://")){
-    status = Sim_attach(argv[1], &sim_handle);
+  if(argc == 2){
+    if(strstr(argv[1], "http://")){
+      status = Sim_attach(argv[1], &sim_handle);
+    }
+    else if(strstr(argv[1], "https://")){
+
+      if(!getenv("REG_STEER_HOME")){
+	printf("REG_STEER_HOME environment variable is not set. Please set\n"
+	       "it to the location of your reg_steer_lib directory.\n");
+	return 1;
+      }
+      snprintf(confFile, REG_MAX_STRING_LENGTH,
+	       "%s/examples/mini_steerer/security.conf", 
+	       getenv("REG_STEER_HOME"));
+
+      /* Read the location of certs etc. into global variables */
+      if(Get_security_config(confFile, &sec)){
+	printf("Failed to get security configuration\n");
+	return 1;
+      }
+
+      if( !(passPtr = getpass("Enter password for SWS: ")) ){
+	printf("Failed to get password from command line\n");
+      }
+      else{
+	status = Sim_attach_secure(argv[1], getenv("USER"), 
+				   passPtr, 
+				   sec.caCertsPath, &sim_handle);
+      }
+    }
   }
   else{
     printf("Do (l)ocal or (r)emote attach: ");
-    while(REG_TRUE){
-      scanf("%c", user_char);
-      if(user_char[0] != '\n' && user_char[0] != ' ')break;
-    }
+    i = getchar();
+    while(getchar() != '\n'){}
 
-    if(user_char[0] == 'l' || user_char[0] == 'L'){
+    if(i == 'l' || i == 'L'){
 
       status = Sim_attach("", &sim_handle);
     }
     else{
+      printf("Enter address of registry and hit return: ");
+      j = 0;
+      /*                            -1 allows for terminating '\0'*/
+      while( (i = getchar()) && (j < (REG_MAX_STRING_LENGTH-1)) ){
 
-      Get_sim_list(&nsims, sim_name, sim_gsh);
+	if(i == '\n')break;
+	registryAddr[j++] = i;
+      }
+      registryAddr[j] = '\0';
+      printf("\n");
+       
+      if(strstr(registryAddr, "https") == registryAddr){
+
+	if(!getenv("REG_STEER_HOME")){
+	  printf("REG_STEER_HOME environment variable is not set. Please set\n"
+		 "it to the location of your reg_steer_lib directory.\n");
+	  return 1;
+	}
+	snprintf(confFile, REG_MAX_STRING_LENGTH,
+		 "%s/examples/mini_steerer/security.conf", 
+		 getenv("REG_STEER_HOME"));
+
+	/* Read the location of certs etc. into global variables */
+	if(Get_security_config(confFile, &sec)){
+	  printf("Failed to get security configuration\n");
+	  return 1;
+	}
+
+	/* Now get the user's passphrase for their key */
+	if( !(passPtr = getpass("Enter passphrase for key: ")) ){
+
+	  printf("Failed to get key passphrase from command line\n");
+	  return 1;
+	}
+	snprintf(keyPassphrase, REG_MAX_STRING_LENGTH, "%s", passPtr);
+      }
+      printf("\n");
+
+      Get_registry_entries_filtered_secure(registryAddr,
+					   keyPassphrase,
+					   sec.myKeyCertFile,
+					   sec.caCertsPath,
+					   &nsims,
+					   &entries,
+#ifdef REG_WSRF
+					   "SWS");
+#else
+                                           "SGS");
+#endif
 
       /* Attempt to attach to (just one) simulation - this blocks */
 
@@ -163,7 +249,8 @@ int main(int argc, char **argv){
 	  printf("\n%d steerable applications available:\n", nsims);
 	  for(i=0; i<nsims; i++){
 
-	    printf("    %d: %s, gsh = %s\n", i, sim_name[i], sim_gsh[i]);
+	    printf("    %d: %s, gsh = %s\n", i, entries[i].application, 
+		   entries[i].gsh);
 	  }
 
 	  i = -1;
@@ -180,8 +267,9 @@ int main(int argc, char **argv){
 	    printf("Failed to get password from command line\n");
 	  }
 	  else{
-	    status = Sim_attach_secure(sim_gsh[i], getenv("USER"), 
-				       passPtr, NULL, &sim_handle);
+	    status = Sim_attach_secure(entries[i].gsh, getenv("USER"), 
+				       passPtr, sec.caCertsPath, 
+				       &sim_handle);
 	  }
 	}
 	else{
@@ -197,6 +285,7 @@ int main(int argc, char **argv){
 
   /* Done with malloc'd memory */
   free(pchar);
+  free(entries);
 
   if(status != REG_SUCCESS){
 
@@ -276,7 +365,6 @@ int main(int argc, char **argv){
     /* Wait for a command from the user */
 
     fprintf(stderr, "\nCommand: ");
-
     while(REG_TRUE){
       scanf("%c", user_char);
       if(user_char[0] != '\n' && user_char[0] != ' ')break;
@@ -284,6 +372,7 @@ int main(int argc, char **argv){
 
     switch(user_char[0]){
 
+    /*--------------------------------------------------*/
     case 'c':
       fprintf(stderr, "Sending Consume command\n");
       Get_iotype_number(sim_handle,
@@ -324,6 +413,7 @@ int main(int argc, char **argv){
       }
       break;
 
+    /*--------------------------------------------------*/
     case 'd':
       Get_supp_cmd_number(sim_handle,
 			  &num_cmds);
@@ -344,6 +434,7 @@ int main(int argc, char **argv){
       }
       break;
 
+    /*--------------------------------------------------*/
     case 'e':
 
       if( Edit_parameter(sim_handle) == REG_SUCCESS){
@@ -360,6 +451,7 @@ int main(int argc, char **argv){
       }
       break;
 
+    /*--------------------------------------------------*/
     case 'f':
       /* Edit IO consume/emit frequency */
       Get_iotype_number(sim_handle,
@@ -418,6 +510,7 @@ int main(int argc, char **argv){
       }
       break;
 
+    /*--------------------------------------------------*/
     case 'h':
       fprintf(stderr, "Possible commands are:\n");
       fprintf(stderr, "  c - send Consume command\n");
@@ -438,6 +531,7 @@ int main(int argc, char **argv){
       fprintf(stderr, "\n");
       break;
 
+    /*--------------------------------------------------*/
     case 'l':
       Get_chktype_number(sim_handle,
 			 &num_types);
@@ -467,31 +561,49 @@ int main(int argc, char **argv){
       }
       break;
 
+    /*--------------------------------------------------*/
     case 'o':
-      /* Get the log of parameters back */
-      handle = Choose_parameter(sim_handle, REG_FALSE);
+      
+      fprintf(stderr, "\nGet log of (m)onitored or (s)teerable parameter?: ");
+      while(REG_TRUE){
+	scanf("%s", user_str);
+	if(user_str[0] != '\n' && user_str[0] != ' ')break;
+      }
+      fprintf(stderr, "\n");
 
+      if(strchr(user_str, 'm')){
+	handle = Choose_parameter(sim_handle, REG_FALSE);
+      }
+      else{
+	handle = Choose_parameter(sim_handle, REG_TRUE);
+      }
+
+     /* Get the log of parameters back */
       if(handle != REG_PARAM_HANDLE_NOTSET)
 	Emit_retrieve_param_log_cmd(sim_handle, handle);
       break;
 
+    /*--------------------------------------------------*/
     case 'p':
       /* Pause the application */
       fprintf(stderr, "Pausing application...\n");
       Emit_pause_cmd(sim_handle);
       break;
 
+    /*--------------------------------------------------*/
     case 'q':
       /* Quit command */
       done = REG_TRUE;
       break;
 
+    /*--------------------------------------------------*/
     case 'r':
       /* Resume a paused application */
       fprintf(stderr, "Resuming application...\n");
       Emit_resume_cmd(sim_handle);
       break;
 
+    /*--------------------------------------------------*/
     case 'R':
       /* This only works if we're steering in a Grid Service 
 	 framework - otherwise a GSH is meaningless */
@@ -503,11 +615,13 @@ int main(int argc, char **argv){
       Emit_restart_cmd(sim_handle, chk_GSH);
       break;
 
+    /*--------------------------------------------------*/
     case 's':
       fprintf(stderr, "Sending stop signal...\n");
       Emit_stop_cmd(sim_handle);
       break;		   
 
+    /*--------------------------------------------------*/
     case 'g':
       Get_next_message(&sim_handle,
 		       &msg_type);
@@ -628,6 +742,7 @@ int main(int argc, char **argv){
       }
       break;
 
+    /*--------------------------------------------------*/
     case 'v':
       Get_chktype_number(sim_handle,
 			 &num_types);
@@ -680,16 +795,29 @@ int main(int argc, char **argv){
       }
       break;
 
+    /*--------------------------------------------------*/
     case 'V':
 
-      handle = Choose_parameter(sim_handle, REG_FALSE);
+      fprintf(stderr, "\nView log of (m)onitored or (s)teerable parameter?: ");
+      while(REG_TRUE){
+	scanf("%s", user_str);
+	if(user_str[0] != '\n' && user_str[0] != ' ')break;
+      }
+      fprintf(stderr, "\n");
+
+      if(strchr(user_str, 'm')){
+	handle = Choose_parameter(sim_handle, REG_FALSE);
+      }
+      else{
+	handle = Choose_parameter(sim_handle, REG_TRUE);
+      }
       if(handle == REG_PARAM_HANDLE_NOTSET)break;
 
       if(Get_param_log(sim_handle,	    /* ReG library */
 		       handle,
 		       &(log_ptr),
 		       &i) == REG_SUCCESS){
-	printf("Got %d param log entries for handle %d\n",
+	printf("\nGot %d param log entries for handle %d:\n\n",
 	       i, handle);
 
 	for(j=0; j<i; j++){
