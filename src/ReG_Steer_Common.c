@@ -789,6 +789,7 @@ int Reorder_decode_array(IOdef_entry *io,
   int        *pi, *pi_old;
   float      *pf, *pf_old;
   double     *pd, *pd_old;
+  long       *pl, *pl_old;
   int         return_status = REG_SUCCESS;
   XDR         xdrs;
   Array_type *array;
@@ -840,7 +841,7 @@ int Reorder_decode_array(IOdef_entry *io,
       break;
 
     case REG_FLOAT:
-      
+
       if(1 != xdr_vector(&xdrs, (char *)pData, (unsigned int)count, 
 			 (unsigned int)sizeof(float), (xdrproc_t)xdr_float)){
 	fprintf(stderr, "Reorder_decode_array: xdr_vector decode "
@@ -960,7 +961,7 @@ int Reorder_decode_array(IOdef_entry *io,
 
     case REG_LONG:
 
-      pi = (long *)pData;
+      pl = (long *)pData;
 
       /* In this context, array->is_f90 flags whether we want to
 	 convert _to_ an F90-style array */
@@ -982,7 +983,7 @@ int Reorder_decode_array(IOdef_entry *io,
 		   (where k varies most rapidly) and store value. This
 		   statement decodes the next value from the array we
 		   specified when we opened 'xdrs'.*/
-		xdr_long(&xdrs, &(pi[i*nslab + j*nrow + k]));
+		xdr_long(&xdrs, &(pl[i*nslab + j*nrow + k]));
 	      }
 	    }
 	  }
@@ -990,7 +991,7 @@ int Reorder_decode_array(IOdef_entry *io,
 	else{ /* No xdr-decode required */
 
 	  /* Data we've read in is stored in io->buffer */
-	  pi_old = (long *)io->buffer;
+	  pl_old = (long *)io->buffer;
 
 	  /* Order loops so i,j,k vary as they should for an F90-style
 	     array ordered consecutively in memory */
@@ -999,7 +1000,7 @@ int Reorder_decode_array(IOdef_entry *io,
 	      for(i=array->sx; i<(array->nx+array->sx); i++){
 		/* Calculate position of (i,j,k)'th element in a C array 
 		   (where k varies most rapidly) and store value */
-		pi[i*nslab + j*nrow + k] = *(pi_old++);
+		pl[i*nslab + j*nrow + k] = *(pl_old++);
 	      }
 	    }
 	  }
@@ -1021,7 +1022,7 @@ int Reorder_decode_array(IOdef_entry *io,
 	      for(k=array->sz; k<(array->nz+array->sz); k++){
 		/* Calculate position of (i,j,k)'th element in an F90 array 
 		   (where i varies most rapidly) and store value */
-		xdr_long(&xdrs, &(pi[k*nslab + j*nrow + i]));
+		xdr_long(&xdrs, &(pl[k*nslab + j*nrow + i]));
 	      }
 	    }
 	  }
@@ -1029,7 +1030,7 @@ int Reorder_decode_array(IOdef_entry *io,
 	else{ /* No xdr-decode required */
 
 	  /* Data we've read in is stored in io->buffer */
-	  pi_old = (long *)io->buffer;
+	  pl_old = (long *)io->buffer;
 
 	  /* Order loops so i,j,k vary as they should for a C-style
 	     array ordered consecutively in memory */
@@ -1038,7 +1039,7 @@ int Reorder_decode_array(IOdef_entry *io,
 	      for(k=array->sz; k<(array->nz+array->sz); k++){
 		/* Calculate position of (i,j,k)'th element in an F90 array 
 		   (where i varies most rapidly) and store value */
-		pi[k*nslab + j*nrow + i] = *(pi_old++);
+		pl[k*nslab + j*nrow + i] = *(pl_old++);
 	      }
 	    }
 	  }
