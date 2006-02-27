@@ -180,8 +180,9 @@ struct msg_struct *Get_status_msg_wsrf(Sim_entry_type *sim)
   struct msg_struct *msg = NULL;
 
   /* If we have a backlog of messages then return the next one */
-  if( (msg = Get_next_stored_msg(sim)) ) return msg;
-
+  if( (msg = Get_next_stored_msg(sim)) ){
+    return msg;
+  }
 
   if( Get_resource_property_doc(sim->SGS_info.soap, 
 				sim->SGS_info.address,
@@ -454,8 +455,8 @@ int Send_detach_msg_wsrf (Sim_entry_type *sim){
   return REG_SUCCESS;
 }
 
-/*------------------------------------------------------------------*/
-/** Clean up a WSRF-based steering connection - free memory */
+/*------------------------------------------------------------------
+ * Clean up a WSRF-based steering connection - free memory */
 int Finalize_connection_wsrf (Sim_entry_type *sim)
 {
   /* Remove temporary data and deserialized data except
@@ -472,8 +473,8 @@ int Finalize_connection_wsrf (Sim_entry_type *sim)
   return REG_SUCCESS;  
 }
 
-/*------------------------------------------------------------------*/
-/** Retrieve the full log of the specified parameter */
+/*------------------------------------------------------------------
+ * Retrieve the full log of the specified parameter */
 int Get_param_log_wsrf(Sim_entry_type *sim,
 		       int             handle)
 {
@@ -506,14 +507,13 @@ int Get_param_log_wsrf(Sim_entry_type *sim,
     }
   }
 
+#ifdef USE_REG_TIMING
+  Get_current_time_seconds(&time0);
+#endif
   if(sim->SGS_info.passwd[0]){
     Create_WSSE_header(sim->SGS_info.soap, sim->SGS_info.username, 
 		       sim->SGS_info.passwd);
   }
-
-#ifdef USE_REG_TIMING
-  Get_current_time_seconds(&time0);
-#endif
   if(soap_call_sws__GetParamLog(sim->SGS_info.soap, sim->SGS_info.address, 
 				"", (xsd__int)handle, &response )){
 #ifdef USE_REG_TIMING
@@ -534,8 +534,11 @@ int Get_param_log_wsrf(Sim_entry_type *sim,
     return REG_FAILURE;
   }
 
-  fprintf(stderr, "STEER: ARPDBG, got log from SWS>>%s<<",
-    (char*)response.LogValues);
+#if REG_DEBUG_FULL
+  fprintf(stderr, "STEER: Get_param_log_wsrf: got log from SWS >>%s<<\n",
+	  (char*)response.LogValues);
+#endif
+
   ptr1 = (char*)response.LogValues;
   lindex = sim->Params_table.param[index].log_index;
 
