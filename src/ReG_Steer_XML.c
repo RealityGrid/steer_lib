@@ -285,6 +285,7 @@ int parseResourceProperties(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 	if(parseSteerMessage(doc, ns, child, curMsg->msg, sim) !=
 	   REG_SUCCESS){
 	  Delete_msg_struct(&(curMsg->msg));
+	  curMsg->next = NULL;
 	}
 	else{
 #if REG_DEBUG
@@ -2181,6 +2182,7 @@ int Delete_msg_store(struct msg_store_struct *msgStore)
     tmp = curEntry->next;
     free(curEntry);
   }
+
   return REG_SUCCESS;
 }
 

@@ -1905,6 +1905,10 @@ int Delete_sim_table_entry(int *SimHandle)
     }
   }
 
+  Delete_msg_store(&(sim->Msg_store));
+  Delete_msg_uid_store(&(sim->Msg_uid_store));
+  sim->Msg_store_tail  = &(sim->Msg_store);
+
   /* Flag that this entry no longer contains valid data */
   sim->handle = REG_SIM_HANDLE_NOTSET;
   *SimHandle = REG_SIM_HANDLE_NOTSET;

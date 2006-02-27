@@ -460,15 +460,13 @@ int Send_detach_msg_wsrf (Sim_entry_type *sim){
 int Finalize_connection_wsrf (Sim_entry_type *sim)
 {
   /* Remove temporary data and deserialized data except
-     class instances*/
+     class instances */
   soap_end(sim->SGS_info.soap);
   /* Reset: close master/slave sockets and remove callbacks */
   soap_done(sim->SGS_info.soap);
 
   free(sim->SGS_info.soap);
   sim->SGS_info.soap = NULL;
-
-  Delete_msg_store(&(sim->Msg_store));
 
   return REG_SUCCESS;  
 }
