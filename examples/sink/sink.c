@@ -214,7 +214,11 @@ int main(){
 		    status = Consume_data_slice(iohandle, data_type, 
 						data_count, i_array);
 
-		    printf("Got int data\n");
+		    printf("Got int data:\n");
+		    for(j=0; j<data_count; j++){
+		      printf("%d ", i_array[j]);
+		    }
+		    printf("\n------------\n");
 
 		    bytes_read += data_count*sizeof(int);
 		    free(i_array);
@@ -248,6 +252,10 @@ int main(){
 		    status = Consume_data_slice(iohandle, data_type, 
 						data_count, f_array);
 		    printf("Got float data\n");
+		    for(j=0; j<data_count; j++){
+		      printf("%f ", f_array[j]);
+		    }
+		    printf("\n------------\n");
 
 		    bytes_read += data_count*sizeof(float);
 		    free(f_array);
@@ -262,6 +270,10 @@ int main(){
 		    status = Consume_data_slice(iohandle, data_type, 
 						data_count, d_array);
 		    printf("Got double data\n");
+		    for(j=0; j<data_count; j++){
+		      printf("%f ", d_array[j]);
+		    }
+		    printf("\n------------\n");
 
 		    bytes_read += data_count*sizeof(double);
 		    free(d_array);
