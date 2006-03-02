@@ -59,13 +59,12 @@ f90_examples:
 	$(MAKE) app_f90
 	$(MAKE) app_f90_parallel
 
-lib:
-	rm -f $(LIB_PATH)/$(LIB_NAME)
-	cd src; $(MAKE) lib
+lib: 
+	cd src; $(MAKE) $(LIB_PATH)/$(LIB_NAME)
 
-lib_utils:
-	rm -f $(LIB_PATH)/$(LIB_UTILS_NAME)
-	cd src; $(MAKE) libutils
+lib_utils: 
+	cd src; $(MAKE) $(LIB_PATH)/$(LIB_UTILS_NAME)
+
 libss:
 	cd src; $(MAKE) -f Makefile.ss all
 	rm -f $(LIB_PATH)/libReG_Steer.so

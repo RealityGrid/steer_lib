@@ -78,13 +78,6 @@ all:
 	$(MAKE) ${LIB_PATH}/$(LIB_NAME)
 	$(MAKE) ${LIB_PATH}/libReG_Steer_Utils.a
 
-libutils:
-	$(MAKE) ${LIB_PATH}/$(LIB_UTILS_NAME)
-
-lib:
-	echo $(MAKE) ${LIB_PATH}/$(LIB_NAME)
-	$(MAKE) ${LIB_PATH}/$(LIB_NAME)
-
 ${LIB_PATH}/libReG_Steer.so: ${REG_LIB_OBJECTS}
 	$(MAKE) -f Makefile.ss all
 	$(MAKE) -f Makefile.ssd all
@@ -98,6 +91,7 @@ ${LIB_PATH}/libReG_Steer.so: ${REG_LIB_OBJECTS}
 	ln -s libReG_SteerSoapSockets.so $(LIB_PATH)/libReG_Steer.so
 
 ${LIB_PATH}/libReG_Steer.a: ${REG_LIB_OBJECTS}
+	rm -f $(LIB_PATH)/libReG_Steer.a
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Appside_f.o
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Appside.o
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Steerside.o
@@ -119,6 +113,7 @@ ${LIB_PATH}/libReG_Steer.a: ${REG_LIB_OBJECTS}
 	-${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steering_Initialize.o
 
 ${LIB_PATH}/libReG_Steer_Utils.a: ${REG_LIB_UTILS_OBJECTS}
+	rm -f ${LIB_PATH}/libReG_Steer_Utils.a
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer_Utils.a ${REG_LIB_UTILS_OBJECTS}
 
 #---------------------------------------------------------------
