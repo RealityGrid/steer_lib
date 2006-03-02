@@ -1,0 +1,12 @@
+According to WSRF spec., messages should contain
+a wsa:To element in the SOAP:Header.
+wsa=http://www.w3.org/2005/08/addressing/
+Need to alter gSoap headers so this element is
+included.
+
+Continue working on altering reg_wsrf_tools to 
+work with latest form of secure api.
+
+Remove some unecessary malloc's from the
+WSRF steering code.
+
