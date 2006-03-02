@@ -217,16 +217,16 @@ int Steerer_finalize()
 int Sim_attach(char *SimID,
 	       int  *SimHandle)
 {
-  return Sim_attach_secure(SimID, "", "", NULL, SimHandle);
+  struct reg_security_info sec;
+  Wipe_security_info(&sec);
+  return Sim_attach_secure(SimID, &sec, SimHandle);
 }
 
 /*----------------------------------------------------------------*/
 
-int Sim_attach_secure(const char *SimID,
-		      const char *username,
-		      const char *passwd,
-		      const char *caCertsPath,
-		      int  *SimHandle)
+int Sim_attach_secure(const char                     *SimID,
+		      const struct reg_security_info *sec,
+		      int                            *SimHandle)
 {
   int                  current_sim;
   int                  i, j;
@@ -386,8 +386,8 @@ int Sim_attach_secure(const char *SimID,
   /* We'll only be able to do WS-Security if we previously successfully
      initialized the OpenSSL random number generator */
   if(Steer_config.ossl_rand_available == REG_TRUE){
-    strncpy(sim_ptr->SGS_info.username, username, REG_MAX_STRING_LENGTH);
-    strncpy(sim_ptr->SGS_info.passwd, passwd, REG_MAX_STRING_LENGTH);
+    strncpy(sim_ptr->SGS_info.username, sec->userDN, REG_MAX_STRING_LENGTH);
+    strncpy(sim_ptr->SGS_info.passwd, sec->passphrase, REG_MAX_STRING_LENGTH);
   }
   else{
     sim_ptr->SGS_info.username[0] = '\0';
@@ -395,8 +395,8 @@ int Sim_attach_secure(const char *SimID,
   }
 
   /* SSL configuration */
-  if(caCertsPath){
-    strncpy(Steer_config.caCertsPath, caCertsPath, 
+  if(sec->caCertsPath[0]){
+    strncpy(Steer_config.caCertsPath, sec->caCertsPath, 
 	    REG_MAX_STRING_LENGTH);
   }
 
@@ -2343,8 +2343,8 @@ int Set_param_values(int    sim_handle,
 	    if (lvalue > llimit) outside_range = REG_TRUE;
 	  }
 	  if(outside_range == REG_TRUE){
-	    fprintf(stderr, "Set_param_values: new value (%d) of %s is outside\n"
-		    "permitted range (%s,%s) - skipping...\n", 
+	    fprintf(stderr, "Set_param_values: new value (%ld) of %s is "
+		    "outside\npermitted range (%s,%s) - skipping...\n", 
 		    lvalue, 
 		    Sim_table.sim[isim].Params_table.param[index].label, 
 		    Sim_table.sim[isim].Params_table.param[index].min_val,

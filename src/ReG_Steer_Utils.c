@@ -52,19 +52,15 @@
 /*----------------------------------------------------------------*/
 
 char* Create_steering_service(const struct reg_job_details *job,
-			      const char *containerAddress,
-			      const char *registryAddress,
-			      const char *keyPassphrase,
-			      const char *keyAndCertFile,
-			      const char *caCertsPath)
+			      const char                   *containerAddress,
+			      const char                   *registryAddress,
+			      const struct reg_security_info *sec)
 {
 #ifdef REG_WSRF
   return Create_SWS(job,
 		    containerAddress,
 		    registryAddress,
-		    keyPassphrase,
-		    keyAndCertFile,
-		    caCertsPath);
+		    sec);
 #else
   fprintf(stderr, "Create_steering_service: NOT IMPLEMENTED for OGSI\n");
   return NULL;
@@ -120,12 +116,10 @@ char *Create_checkpoint_tree(const char *factory,
 
 /*----------------------------------------------------------------*/
 
-int Destroy_steering_service(char *address,
-			     char *username,
-			     char *passphrase){
-
+int Destroy_steering_service(char                           *address,
+                             const struct reg_security_info *sec){
 #ifdef REG_WSRF
-  return Destroy_WSRP(address, username, passphrase);
+  return Destroy_WSRP(address, sec);
 #else
   fprintf(stderr, "Destroy_steering_service: not implemented for OGSI :-(\n");
   return REG_FAILURE;

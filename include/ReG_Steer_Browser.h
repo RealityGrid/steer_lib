@@ -37,6 +37,8 @@
 /** @file ReG_Steer_Browser.h
     @brief Header file for registry browsing functionality */
 
+#include "ReG_Steer_Utils.h"
+
 #ifdef __cplusplus
   #define PREFIX "C"
 #else
@@ -107,23 +109,21 @@ extern PREFIX int Get_registry_entries_filtered(const char *registryGSH,
 /** Queries the specified, secure registry using SSL
     The pointer held in *entries must be free'd once the data
     has been used.
-    @param userKeyPasswd Passphrase for the user's key
-    @param userKeyCertPath Path to the PEM file containing both the user's key and certificate
-    @param caCertsPath Path to the directory containing CA certificates
+    @param sec Pointer to reg_security_info struct holding information
+needed to authenticate user to the registry (using either ssl or wsse)
+    @param num_entries The number of entries found
+    @param entries Pointer to array of registry_entry structs containing
+details on the entries found.  Must be free'd by calling code.
 */
 extern PREFIX int Get_registry_entries_secure(const char *registryGSH, 
-					      const char *userKeyPasswd,
-					      const char *userKeyCertPath,
-					      const char *caCertsPath,
+					      const struct reg_security_info *sec,
 					      int *num_entries,  
 					      struct registry_entry **entries);
 
 /** @see Get_registry_entries_filtered
     @see Get_registry_entries_secure */
 extern PREFIX int Get_registry_entries_filtered_secure(const char             *registryGSH, 
-						       const char             *userKeyPasswd,
-						       const char             *userKeyCertPath,
-						       const char             *caCertsPath,
+						       const struct reg_security_info *sec,
 						       int                    *num_entries,  
 						       struct registry_entry **entries,
 						       char                   *pattern);

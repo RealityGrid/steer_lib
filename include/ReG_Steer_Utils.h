@@ -44,32 +44,29 @@
   #define PREFIX 
 #endif
 
+#include "ReG_Steer_types.h"
+#include "ReG_Steer_Common.h"
+
 /** Holds details on the job associated with an SWS */
 struct reg_job_details {
+  /** How long the SWS should live for once its associated job
+      has contacted it for the first time */
   int  lifetimeMinutes;
+  /** Name of the person creating this SWS - recorded in metadata
+      and used with WS-Security. If using SSL then this
+      must be the DN of the user */
   char userName[REG_MAX_STRING_LENGTH];
+  /** The group that the person @p userName belongs to */
   char group[REG_MAX_STRING_LENGTH];
+  /** The software that this job is using */
   char software[REG_MAX_STRING_LENGTH];
+  /** The purpose of the job */
   char purpose[REG_MAX_STRING_LENGTH];
+  /** The name of the main input file of the job (if any) */
   char inputFilename[REG_MAX_STRING_LENGTH];
+  /** Address of the checkpoint node being used for a restart (if any) */
   char checkpointAddress[REG_MAX_STRING_LENGTH];
-  char passphrase[REG_MAX_STRING_LENGTH];
-};
-
-/** Holds details required for secure access to a service
-    using either SSL or WSSE */
-struct reg_security_info {
-  /** Whether or not this structure contains info. for use with
-      ssl (REG_TRUE) or WSSE (REG_FALSE) */
-  int  use_ssl;
-  /** Path to directroy containing CA certificates (ssl) */
-  char caCertsPath[REG_MAX_STRING_LENGTH];
-  /** Full path to pem file containing user's key and certificate
-      concatenated together (ssl) */
-  char myKeyCertFile[REG_MAX_STRING_LENGTH];
-  /** The user's DN or other username (ssl or WSSE) */
-  char userDN[REG_MAX_STRING_LENGTH];
-  /** Passphrase (ssl - for key, wsse - for service) */
+  /** The passphrase used to access the SWS (using WSSE) */
   char passphrase[REG_MAX_STRING_LENGTH];
 };
 
@@ -77,20 +74,19 @@ struct reg_security_info {
     @param job Ptr to struct holding details on the job
     @param containerAddress Address of the container in which to create SWS
     @param registryAddress Address of registry with which to register SWS
-    @param keyPassphrase Passphrase to user's (encrypted) SSL key
-    @param keyAndCertFile Location of pem file containing the user's certificate and private key
-    @param caCertsPath Location of directory containg CA certs, used when authenticating connection to Containern */
+    @param sec Pointer to struct holding ssl authentication details and
+    WSSE username and password */
 extern PREFIX char* Create_steering_service(const struct reg_job_details *job,
 					    const char *containerAddress,
 					    const char *registryAddress,
-					    const char *keyPassphrase,
-					    const char *keyAndCertFile,
-					    const char *caCertsPath);
+					    const struct reg_security_info *sec);
 
-/** Destroy either an SGS or SWS */
+/** Destroy either an SGS or SWS 
+    @param address The address of the service to destroy 
+    @param sec Pointer to struct holding details for 
+    authentication to the service (using SSL or WSSE) */
 extern PREFIX int Destroy_steering_service(char *address,
-					   char *username,
-					   char *passphrase);
+					   const struct reg_security_info *sec);
 
 /** Creates a new checkpoint tree and returns its GSH 
     @param factory The address of the factory to use

@@ -182,16 +182,16 @@ int Get_registry_entries(const char             *registryGSH,
 			 int                    *num_entries,  
 			 struct registry_entry **entries){
 
-  return Get_registry_entries_secure(registryGSH, "", "", "", 
+  struct reg_security_info sec;
+  Wipe_security_info(&sec);
+  return Get_registry_entries_secure(registryGSH, &sec, 
 				     num_entries, entries);
 }
 
 /*-------------------------------------------------------------------------*/
 
-int Get_registry_entries_filtered_secure(const char             *registryGSH, 
-					 const char             *userKeyPasswd,
-					 const char             *userKeyCertPath,
-					 const char             *caCertsPath,
+int Get_registry_entries_filtered_secure(const char             *registryGSH,
+					 const struct reg_security_info *sec,
 					 int                    *num_entries,  
 					 struct registry_entry **entries,
 					 char                   *pattern){
@@ -200,9 +200,7 @@ int Get_registry_entries_filtered_secure(const char             *registryGSH,
   int count;
 
   if( (status = Get_registry_entries_secure(registryGSH, 
-					    userKeyPasswd, 
-					    userKeyCertPath,
-					    caCertsPath,
+					    sec,
 					    num_entries,  
 					    entries)) != REG_SUCCESS ){
     return status;
@@ -271,9 +269,7 @@ int Get_registry_entries_filtered_secure(const char             *registryGSH,
 /*-------------------------------------------------------------------------*/
 
 int Get_registry_entries_secure(const char *registryGSH, 
-				const char *userKeyPasswd,
-				const char *userKeyCertPath,
-				const char *caCertsPath,
+				const struct reg_security_info *sec,
 				int *num_entries,  
 				struct registry_entry **entries){
   int status;
@@ -318,8 +314,7 @@ int Get_registry_entries_secure(const char *registryGSH,
 
 #else /* WSRF, not OGSI */
 
-  status = Get_registry_entries_wsrf(registryGSH, userKeyPasswd, 
-				     userKeyCertPath, caCertsPath, 
+  status = Get_registry_entries_wsrf(registryGSH, sec, 
 				     num_entries, entries);
   return status;
 #endif /* !defined REG_WSRF */
@@ -331,9 +326,11 @@ int Get_registry_entries_filtered(const char             *registryGSH,
 				  int                    *num_entries,  
 				  struct registry_entry **entries,
 				  char                   *pattern){
+  struct reg_security_info sec;
+  Wipe_security_info(&sec);
 
   return Get_registry_entries_filtered_secure(registryGSH,
-					      "","","",
+					      &sec,
 					      num_entries,
 					      entries,
 					      pattern);

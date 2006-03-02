@@ -331,6 +331,23 @@ typedef struct {
 
   } SGS_info_type;
 
+/** Holds details required for secure access to a service
+    using either SSL or WSSE */
+struct reg_security_info {
+  /** Whether or not this structure contains info. for use with
+      ssl (REG_TRUE) or WSSE (REG_FALSE) */
+  int  use_ssl;
+  /** Path to directroy containing CA certificates (ssl) */
+  char caCertsPath[REG_MAX_STRING_LENGTH];
+  /** Full path to pem file containing user's key and certificate
+      concatenated together (ssl) */
+  char myKeyCertFile[REG_MAX_STRING_LENGTH];
+  /** The user's DN or other username (ssl or WSSE) */
+  char userDN[REG_MAX_STRING_LENGTH];
+  /** Passphrase (ssl - for key, wsse - for service) */
+  char passphrase[REG_MAX_STRING_LENGTH];
+};
+
 /*-------- Function prototypes --------*/
 
 /**
@@ -489,5 +506,9 @@ extern PREFIX int REG_Init_ssl_context(struct soap *aSoap,
 				       const char  *certKeyPemFile,
 				       const char  *passphrase,
 				       const char  *caCertPath);
+
+/** Resets all entries in the struct
+    @param sec Pointer to the reg_security_info structure to reset */
+extern PREFIX void Wipe_security_info(struct reg_security_info *sec);
 
 #endif

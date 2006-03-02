@@ -1619,3 +1619,14 @@ int REG_Init_ssl_context(struct soap *aSoap,
 
 #endif /* defined WITH_OPENSSL */
 }
+
+/*----------------------------------------------------------------*/
+
+void Wipe_security_info(struct reg_security_info *sec){
+
+  sec->use_ssl = 0;
+  sec->caCertsPath[0] = '\0';
+  sec->myKeyCertFile[0] = '\0';
+  sec->userDN[0] = '\0';
+  sec->passphrase[0] = '\0';
+}

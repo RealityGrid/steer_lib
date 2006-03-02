@@ -40,6 +40,7 @@
 #define __REG_STEER_STEERSIDE_H__
 
 #include "ReG_Steer_types.h"
+#include "ReG_Steer_Utils.h"
 
 #ifdef __cplusplus
   #define PREFIX "C"
@@ -83,7 +84,8 @@ typedef struct {
 
 /**
    Attempt to attach to the specified simulation - returns a 
-   handle for this simulation if successful. */
+   handle for this simulation if successful.
+   @param SimHandle On successful return holds the handle of the simulation */
 extern PREFIX int Sim_attach(char *SimID,
 			     int  *SimHandle);
 
@@ -91,11 +93,13 @@ extern PREFIX int Sim_attach(char *SimID,
    As Sim_attach except takes a username and passphrase for use 
    with WS-Security (only supported in the WSRF implementation) 
    and path to directory holding CA certs (WSRF only, if specified,
-   turns on authentication of SWS). */
+   turns on authentication of SWS). 
+   @param SimID Address of service or directory to attach to 
+   @param sec Pointer to struct holding userDN, passphrase and,
+   potentially, path to CA certs 
+   @param SimHandle On successful return holds the handle of the simulation */
 extern PREFIX int Sim_attach_secure(const char *SimID,
-				    const char *username,
-				    const char *passwd,
-				    const char *caCertsPath,
+                                    const struct reg_security_info *sec,
 				    int  *SimHandle);
 
 /**

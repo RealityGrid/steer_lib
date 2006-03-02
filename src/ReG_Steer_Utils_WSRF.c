@@ -50,9 +50,7 @@ extern char Global_scratch_buffer[];
 /*-------------------------------------------------------------------------*/
 
 int Get_registry_entries_wsrf(const char *registryEPR, 
-			      const char *userKeyPasswd,
-			      const char *userKeyCertPath,
-			      const char *caCertsPath,
+			      const struct reg_security_info *sec,
 			      int *num_entries,  
 			      struct registry_entry **entries){
 
@@ -68,19 +66,25 @@ int Get_registry_entries_wsrf(const char *registryEPR,
 
   soap_init(&soap);
 
-  /* regServiceGroup uses SSL for authentication */
+  /* regServiceGroup can use SSL for authentication */
   /* If address of SWS begins with 'https' then initialize SSL context */
   if(strstr(registryEPR, "https") == registryEPR){
     if( REG_Init_ssl_context(&soap,
 			     REG_TRUE, /* Authenticate SWS */
-			     userKeyCertPath,
-			     userKeyPasswd,
-			     caCertsPath) == REG_FAILURE){
+			     sec->myKeyCertFile,
+			     sec->passphrase,
+			     sec->caCertsPath) == REG_FAILURE){
 
       fprintf(stderr, "Get_registry_entries_wsrf: call to initialize "
 	      "soap SSL context failed\n");
       return REG_FAILURE;
     }
+  }
+  else{
+    /* Otherwise we just use WSSE */
+    printf("ARPDBG: using WSSE, user = %s, pass = %s\n",
+	   sec->userDN, sec->passphrase);
+    Create_WSSE_header(&soap, sec->userDN, sec->passphrase);
   }
 
   in.__size = 1;
@@ -141,12 +145,10 @@ int Get_registry_entries_wsrf(const char *registryEPR,
 
 /*-----------------------------------------------------------------*/
 
-char *Create_SWS(const struct reg_job_details *job,
-		 const char *containerAddress,
-		 const char *registryAddress,
-		 const char *keyPassphrase,
-		 const char *keyAndCertFile,
-		 const char *caCertsPath){
+char *Create_SWS(const struct reg_job_details   *job,
+		 const char                     *containerAddress,
+		 const char                     *registryAddress,
+		 const struct reg_security_info *sec){
 
   struct swsf__createSWSResourceResponse     response;
   struct wsrp__SetResourcePropertiesResponse setRPresponse;
@@ -188,9 +190,9 @@ char *Create_SWS(const struct reg_job_details *job,
 
     if( REG_Init_ssl_context(&soap,
 			     REG_TRUE, /* Authenticate container */
-			     keyAndCertFile,
-			     keyPassphrase,
-			     caCertsPath) == REG_FAILURE){
+			     sec->myKeyCertFile,
+			     sec->passphrase,
+			     sec->caCertsPath) == REG_FAILURE){
 
       fprintf(stderr, "ERROR: call to initialize soap SSL context failed\n");
       return NULL;
@@ -198,12 +200,12 @@ char *Create_SWS(const struct reg_job_details *job,
     ssl_initialized = 1;
   }
 
-  if(job->passphrase[0]){
+  if(sec->passphrase[0]){
 #if REG_DEBUG_FULL
     printf("Create_SWS: userName for call to createSWSResource >>%s<<\n", 
-	   job->userName);
+	   sec->userDN);
 #endif /* REG_DEBUG_FULL */
-    Create_WSSE_header(&soap, job->userName, job->passphrase);
+    Create_WSSE_header(&soap, sec->userDN, sec->passphrase);
   }
 
   /* 1440 = 24hrs in minutes.  Is the default lifetime of the service
@@ -212,7 +214,7 @@ char *Create_SWS(const struct reg_job_details *job,
   if(soap_call_swsf__createSWSResource(&soap, factoryAddr, NULL, 
 				       1440, 
 				       (char *)job->checkpointAddress, 
-				       (char *)job->passphrase,
+				       (char *)sec->passphrase,
 				       &response) != SOAP_OK){
     if(soap.fault && soap.fault->detail){
 
@@ -247,24 +249,28 @@ char *Create_SWS(const struct reg_job_details *job,
 	   "</registryEntry>"
 	   "</Content>",
 	   epr, Get_current_time_string(), job->userName, job->group, 
-	   job->software, job->purpose, job->passphrase, job->userName);
+	   job->software, job->purpose, sec->passphrase, sec->userDN);
 
   if(!ssl_initialized && 
      (strstr(registryAddress, "https") == registryAddress) ){
 
     if( REG_Init_ssl_context(&soap,
 			     REG_TRUE, /* Authenticate container */
-			     keyAndCertFile,
-			     keyPassphrase,
-			     caCertsPath) == REG_FAILURE){
+			     sec->myKeyCertFile,
+			     sec->passphrase,
+			     sec->caCertsPath) == REG_FAILURE){
 
       fprintf(stderr, "Create_SWS: ERROR: call to initialize soap SSL"
 	      " context for call to regServiceGroup::Add failed\n");
 
-      Destroy_WSRP(epr, job->userName, job->passphrase);
+      Destroy_WSRP(epr, sec);
       return NULL;
     }
     ssl_initialized = 1;
+  }
+
+  if(sec->passphrase[0]){
+    Create_WSSE_header(&soap, sec->userDN, sec->passphrase);
   }
 
   if(soap_call_rsg__Add(&soap, registryAddress, 
@@ -272,7 +278,7 @@ char *Create_SWS(const struct reg_job_details *job,
 			&addResponse) != SOAP_OK){
     soap_print_fault(&soap, stderr);
 
-    Destroy_WSRP(epr, job->userName, job->passphrase);
+    Destroy_WSRP(epr, sec);
     return NULL;
   }
 
@@ -293,7 +299,7 @@ char *Create_SWS(const struct reg_job_details *job,
 	   addResponse.wsa__EndpointReference.wsa__Address);
 
   if(job->passphrase[0]){
-    Create_WSSE_header(&soap, job->userName, job->passphrase);
+    Create_WSSE_header(&soap, sec->userDN, sec->passphrase);
   }
 
 #if REG_DEBUG_FULL
@@ -325,6 +331,10 @@ char *Create_SWS(const struct reg_job_details *job,
     else{
       
     }
+
+    if(job->passphrase[0]){
+      Create_WSSE_header(&soap, sec->userDN, sec->passphrase);
+    }
 #if REG_DEBUG_FULL
     fprintf(stderr,
 	    "\nCreate_SWS: Calling SetResourceProperties with >>%s<<\n",
@@ -346,9 +356,8 @@ char *Create_SWS(const struct reg_job_details *job,
 
 /*-----------------------------------------------------------------*/
 
-int Destroy_WSRP(const char *epr, 
-		 const char *username,
-		 const char *passphrase)
+int Destroy_WSRP(const char                     *epr, 
+		 const struct reg_security_info *sec)
 {
   struct wsrp__DestroyResponse out;
   struct soap soap;
@@ -358,8 +367,8 @@ int Destroy_WSRP(const char *epr,
     /* Something to do with the XML type */
     soap.encodingStyle = NULL;
 
-    if(passphrase && passphrase[0]){
-      Create_WSSE_header(&soap, username, passphrase);
+    if(sec->use_ssl != REG_TRUE){
+      Create_WSSE_header(&soap, sec->userDN, sec->passphrase);
     }
 
     /* If we're using https then set up the context */
@@ -368,7 +377,7 @@ int Destroy_WSRP(const char *epr,
 			       REG_TRUE, /* Authenticate SWS */
 			       NULL,/*char *certKeyPemFile,*/
 			       NULL, /* char *passphrase,*/
-			       "/etc/grid-security/certificates") == REG_FAILURE){
+			       sec->caCertsPath) == REG_FAILURE){
 
 	fprintf(stderr, "ERROR: call to initialize soap SSL context failed\n");
 	return REG_FAILURE;

@@ -91,9 +91,8 @@ int main(int argc, char **argv){
   Output_log_struct  chk_entries[10];
   double            *log_ptr;
 
-  char                    registryAddr[REG_MAX_STRING_LENGTH];
-  char                    keyPassphrase[REG_MAX_STRING_LENGTH];
-  char                    confFile[REG_MAX_STRING_LENGTH];
+  char                     registryAddr[REG_MAX_STRING_LENGTH];
+  char                     confFile[REG_MAX_STRING_LENGTH];
   struct registry_entry   *entries;
   struct reg_security_info sec;
 
@@ -122,6 +121,8 @@ int main(int argc, char **argv){
     fprintf(stderr, "Steerer_initialize failed\n");
     return 1;
   }
+
+  Wipe_security_info(&sec);
 
   /* Get list of steerable simulations */
 
@@ -160,17 +161,16 @@ int main(int argc, char **argv){
 
       /* Read the location of certs etc. into global variables */
       if(Get_security_config(confFile, &sec)){
-	printf("Failed to get security configuration\n");
-	return 1;
+	printf("WARNING: Failed to get SSL security configuration\n");
       }
 
       if( !(passPtr = getpass("Enter password for SWS: ")) ){
 	printf("Failed to get password from command line\n");
       }
       else{
-	status = Sim_attach_secure(argv[1], getenv("USER"), 
-				   passPtr, 
-				   sec.caCertsPath, &sim_handle);
+	strncpy(sec.passphrase, passPtr, REG_MAX_STRING_LENGTH);
+	strncpy(sec.userDN, getenv("USER"), REG_MAX_STRING_LENGTH);
+	status = Sim_attach_secure(argv[1], &sec, &sim_handle);
       }
     }
   }
@@ -218,14 +218,12 @@ int main(int argc, char **argv){
 	  printf("Failed to get key passphrase from command line\n");
 	  return 1;
 	}
-	snprintf(keyPassphrase, REG_MAX_STRING_LENGTH, "%s", passPtr);
+	strncpy(sec.passphrase, passPtr, REG_MAX_STRING_LENGTH);
       }
       printf("\n");
 
       Get_registry_entries_filtered_secure(registryAddr,
-					   keyPassphrase,
-					   sec.myKeyCertFile,
-					   sec.caCertsPath,
+					   &sec,
 					   &nsims,
 					   &entries,
 #ifdef REG_WSRF
@@ -267,8 +265,9 @@ int main(int argc, char **argv){
 	    printf("Failed to get password from command line\n");
 	  }
 	  else{
-	    status = Sim_attach_secure(entries[i].gsh, getenv("USER"), 
-				       passPtr, sec.caCertsPath, 
+	    strncpy(sec.passphrase, passPtr, REG_MAX_STRING_LENGTH);
+	    strncpy(sec.userDN, getenv("USER"), REG_MAX_STRING_LENGTH);
+	    status = Sim_attach_secure(entries[i].gsh, &sec, 
 				       &sim_handle);
 	  }
 	}
