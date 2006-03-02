@@ -1,8 +1,4 @@
 /*---------------------------------------------------------------------------
-  This file contains a very simple example of an application that
-  reads data from an IO channel using the RealityGrid steering 
-  library.
-
   (C) Copyright 2005, University of Manchester, United Kingdom,
   all rights reserved.
 
@@ -29,9 +25,15 @@
   DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR
   CORRECTION.
 
-  Authors........: Andrew Porter, Robert Haines
-
 ---------------------------------------------------------------------------*/
+
+/** @file sink.c
+    @brief A very simple example of an application that
+    reads data from an IO channel using the RealityGrid steering 
+    library.
+    @author Andrew Porter
+    @author Robert Haines */
+
 #include "ReG_Steer_Appside.h"
 #include <string.h>
 #include <unistd.h>
@@ -227,7 +229,7 @@ int main(){
 
 		case REG_LONG:
 
-		  l_array = (int *)malloc(data_count*sizeof(long));
+		  l_array = (long *)malloc(data_count*sizeof(long));
 
 		  if(l_array){
 		    status = Consume_data_slice(iohandle, data_type, 
@@ -235,7 +237,7 @@ int main(){
 
 		    printf("Got long data:\n");
 		    for(j=0; j<data_count; j++){
-		      printf("%d ", l_array[j]);
+		      printf("%ld ", l_array[j]);
 		    }
 		    printf("\n------------------------\n");
 
