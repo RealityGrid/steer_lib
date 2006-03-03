@@ -481,10 +481,17 @@ extern PREFIX int Get_fully_qualified_hostname(char **hostname,
     @internal */
 extern PREFIX int Init_random();
 
-/** Creates a WS-Security header for gSoap (within the soap struct)
+/** Creates a WSRF header including WS-Security elements  for gSoap 
+    (within the supplied soap struct). If @p username is null or
+    is empty then no WS-Security elements are created.
     @internal
+    @param aSoap Pointer to soap struct to construct header in
+    @param epr The address of the service to be called
+    @param username The username to present to the service
+    @param passwd The password used to access the service
     @returns REG_SUCCESS or REG_FAILURE if no header created */
 extern PREFIX int Create_WSSE_header(struct soap *aSoap,
+				     const  char *epr,
 				     const  char *username,
 				     const  char *passwd);
 

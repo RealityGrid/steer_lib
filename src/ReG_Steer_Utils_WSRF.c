@@ -79,12 +79,15 @@ int Get_registry_entries_wsrf(const char *registryEPR,
 	      "soap SSL context failed\n");
       return REG_FAILURE;
     }
+    Create_WSSE_header(&soap, registryEPR,
+		       NULL, NULL);
   }
   else{
     /* Otherwise we just use WSSE */
     printf("ARPDBG: using WSSE, user = %s, pass = %s\n",
 	   sec->userDN, sec->passphrase);
-    Create_WSSE_header(&soap, sec->userDN, sec->passphrase);
+    Create_WSSE_header(&soap, registryEPR,
+		       sec->userDN, sec->passphrase);
   }
 
   in.__size = 1;
@@ -200,13 +203,13 @@ char *Create_SWS(const struct reg_job_details   *job,
     ssl_initialized = 1;
   }
 
-  if(sec->passphrase[0]){
 #if REG_DEBUG_FULL
+  if(sec->passphrase[0]){
     printf("Create_SWS: userName for call to createSWSResource >>%s<<\n", 
 	   sec->userDN);
 #endif /* REG_DEBUG_FULL */
-    Create_WSSE_header(&soap, sec->userDN, sec->passphrase);
   }
+  Create_WSSE_header(&soap, factoryAddr, sec->userDN, sec->passphrase);
 
   /* 1440 = 24hrs in minutes.  Is the default lifetime of the service
      until its associated job starts up and then the TerminationTime
@@ -269,9 +272,8 @@ char *Create_SWS(const struct reg_job_details   *job,
     ssl_initialized = 1;
   }
 
-  if(sec->passphrase[0]){
-    Create_WSSE_header(&soap, sec->userDN, sec->passphrase);
-  }
+  Create_WSSE_header(&soap, registryAddress, 
+                     sec->userDN, sec->passphrase);
 
   if(soap_call_rsg__Add(&soap, registryAddress, 
 			"", jobDescription,
@@ -298,9 +300,7 @@ char *Create_SWS(const struct reg_job_details   *job,
 	   job->lifetimeMinutes, registryAddress, 
 	   addResponse.wsa__EndpointReference.wsa__Address);
 
-  if(job->passphrase[0]){
-    Create_WSSE_header(&soap, sec->userDN, sec->passphrase);
-  }
+  Create_WSSE_header(&soap, epr, sec->userDN, sec->passphrase);
 
 #if REG_DEBUG_FULL
   fprintf(stderr,
@@ -332,9 +332,7 @@ char *Create_SWS(const struct reg_job_details   *job,
       
     }
 
-    if(job->passphrase[0]){
-      Create_WSSE_header(&soap, sec->userDN, sec->passphrase);
-    }
+    Create_WSSE_header(&soap, epr, sec->userDN, sec->passphrase);
 #if REG_DEBUG_FULL
     fprintf(stderr,
 	    "\nCreate_SWS: Calling SetResourceProperties with >>%s<<\n",
@@ -368,7 +366,10 @@ int Destroy_WSRP(const char                     *epr,
     soap.encodingStyle = NULL;
 
     if(sec->use_ssl != REG_TRUE){
-      Create_WSSE_header(&soap, sec->userDN, sec->passphrase);
+      Create_WSSE_header(&soap, epr, sec->userDN, sec->passphrase);
+    }
+    else{
+      Create_WSSE_header(&soap, epr, NULL, NULL);
     }
 
     /* If we're using https then set up the context */

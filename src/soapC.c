@@ -11,7 +11,7 @@ extern "C" {
 
 SOAP_BEGIN_NAMESPACE(soap)
 
-SOAP_SOURCE_STAMP("@(#) soapC.c ver 2.7.2 2006-01-10 15:04:23 GMT")
+SOAP_SOURCE_STAMP("@(#) soapC.c ver 2.7.2 2006-03-03 11:40:23 GMT")
 
 
 #ifndef WITH_NOGLOBAL
@@ -2568,6 +2568,8 @@ SOAP_FMAC3 struct SOAP_ENV__Code * SOAP_FMAC4 soap_in_SOAP_ENV__Code(struct soap
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_SOAP_ENV__Header(struct soap *soap, const struct SOAP_ENV__Header *a)
 {
 	(void)soap; (void)a; /* appease -Wall -Werror */
+	soap_embedded(soap, &a->wsa__To, SOAP_TYPE_xsd__string);
+	soap_serialize_xsd__string(soap, &a->wsa__To);
 	soap_embedded(soap, &a->Security, SOAP_TYPE_wsse__Security);
 	soap_serialize_wsse__Security(soap, &a->Security);
 }
@@ -2575,6 +2577,7 @@ SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_SOAP_ENV__Header(struct soap *soap, co
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_SOAP_ENV__Header(struct soap *soap, struct SOAP_ENV__Header *a)
 {
 	(void)soap; (void)a; /* appease -Wall -Werror */
+	soap_default_xsd__string(soap, &a->wsa__To);
 	soap_default_wsse__Security(soap, &a->Security);
 }
 
@@ -2589,6 +2592,7 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_put_SOAP_ENV__Header(struct soap *soap, const str
 SOAP_FMAC3 int SOAP_FMAC4 soap_out_SOAP_ENV__Header(struct soap *soap, const char *tag, int id, const struct SOAP_ENV__Header *a, const char *type)
 {
 	soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_SOAP_ENV__Header), type);
+	soap_out_xsd__string(soap, "wsa:To", -1, &a->wsa__To, "");
 	soap_out_wsse__Security(soap, "Security", -1, &a->Security, "");
 	soap_element_end_out(soap, tag);
 	return SOAP_OK;
@@ -2603,7 +2607,7 @@ SOAP_FMAC3 struct SOAP_ENV__Header * SOAP_FMAC4 soap_get_SOAP_ENV__Header(struct
 
 SOAP_FMAC3 struct SOAP_ENV__Header * SOAP_FMAC4 soap_in_SOAP_ENV__Header(struct soap *soap, const char *tag, struct SOAP_ENV__Header *a, const char *type)
 {
-	short soap_flag_Security = 1;
+	short soap_flag_wsa__To = 1, soap_flag_Security = 1;
 	if (soap_element_begin_in(soap, tag, 0))
 		return NULL;
 	if (*soap->type && soap_match_tag(soap, soap->type, type))
@@ -2618,6 +2622,11 @@ SOAP_FMAC3 struct SOAP_ENV__Header * SOAP_FMAC4 soap_in_SOAP_ENV__Header(struct 
 	if (soap->body && !*soap->href)
 	{	for (;;)
 		{	soap->error = SOAP_TAG_MISMATCH;
+			if (soap_flag_wsa__To && (soap->error == SOAP_TAG_MISMATCH || soap->error == SOAP_NO_TAG))
+				if (soap_in_xsd__string(soap, "wsa:To", &a->wsa__To, "xsd:string"))
+				{	soap_flag_wsa__To = 0;
+					continue;
+				}
 			if (soap_flag_Security && soap->error == SOAP_TAG_MISMATCH)
 				if (soap_in_wsse__Security(soap, "Security", &a->Security, "wsse:Security"))
 				{	soap_flag_Security = 0;

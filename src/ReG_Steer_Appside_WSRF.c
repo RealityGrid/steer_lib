@@ -226,11 +226,10 @@ int Initialize_steering_connection_wsrf(int  NumSupportedCmds,
   snprintf(query_buf, REG_MAX_MSG_SIZE, "<%s>%s</%s>", 
 	  SUPPORTED_CMDS_RP, pchar, SUPPORTED_CMDS_RP);
 
-  if(Steerer_connection.SGS_info.passwd[0]){
-    Create_WSSE_header(Steerer_connection.SGS_info.soap,
-		       Steerer_connection.SGS_info.username,
-		       Steerer_connection.SGS_info.passwd);
-  }
+  Create_WSSE_header(Steerer_connection.SGS_info.soap,
+                     Steerer_connection.SGS_info.address,
+                     Steerer_connection.SGS_info.username,
+		     Steerer_connection.SGS_info.passwd);
 
 #if REG_DEBUG_FULL
   fprintf(stderr, "STEER: Initialize_steering_connection_wsrf: sending "
@@ -254,11 +253,10 @@ int Initialize_steering_connection_wsrf(int  NumSupportedCmds,
 	   MACHINE_ADDRESS_RP, ReG_Hostname, MACHINE_ADDRESS_RP,
 	   APP_NAME_RP, ReG_AppName, APP_NAME_RP);
 
-  if(Steerer_connection.SGS_info.passwd[0]){
-    Create_WSSE_header(Steerer_connection.SGS_info.soap,
-		       Steerer_connection.SGS_info.username,
-		       Steerer_connection.SGS_info.passwd);
-  }
+  Create_WSSE_header(Steerer_connection.SGS_info.soap,
+                     Steerer_connection.SGS_info.address,
+		     Steerer_connection.SGS_info.username,
+		     Steerer_connection.SGS_info.passwd);
 
 #if REG_DEBUG_FULL
   fprintf(stderr, "STEER: Initialize_steering_connection_wsrf: sending "
@@ -557,11 +555,10 @@ int Save_log_wsrf (char *log_data)
   pmsg_buf += strlen(log_data);
   pmsg_buf += sprintf(pmsg_buf, "]]></Raw_param_log></Steer_log>");
 
-  if(Steerer_connection.SGS_info.passwd[0]){
-    Create_WSSE_header(Steerer_connection.SGS_info.soap,
-		       Steerer_connection.SGS_info.username,
-		       Steerer_connection.SGS_info.passwd);
-  }
+  Create_WSSE_header(Steerer_connection.SGS_info.soap,
+                     Steerer_connection.SGS_info.address,
+		     Steerer_connection.SGS_info.username,
+		     Steerer_connection.SGS_info.passwd);
 
 #ifdef USE_REG_TIMING
   Get_current_time_seconds(&time0);
@@ -599,11 +596,10 @@ int Finalize_steering_connection_wsrf ()
 	      1,
 	      commands);
 
-  if(Steerer_connection.SGS_info.passwd[0]){
-    Create_WSSE_header(Steerer_connection.SGS_info.soap,
-		       Steerer_connection.SGS_info.username,
-		       Steerer_connection.SGS_info.passwd);
-  }
+  Create_WSSE_header(Steerer_connection.SGS_info.soap,
+                     Steerer_connection.SGS_info.address,
+		     Steerer_connection.SGS_info.username,
+		     Steerer_connection.SGS_info.passwd);
 
   if(soap_call_wsrp__Destroy(Steerer_connection.SGS_info.soap, 
 			    Steerer_connection.SGS_info.address, 
@@ -819,11 +815,10 @@ int Record_checkpoint_set_wsrf(char *chk_data,
 {
   struct sws__RecordCheckpointResponse response;
 
-  if(Steerer_connection.SGS_info.passwd[0]){
-    Create_WSSE_header(Steerer_connection.SGS_info.soap,
-		       Steerer_connection.SGS_info.username,
-		       Steerer_connection.SGS_info.passwd);
-  }
+  Create_WSSE_header(Steerer_connection.SGS_info.soap,
+                     Steerer_connection.SGS_info.address,
+		     Steerer_connection.SGS_info.username,
+		     Steerer_connection.SGS_info.passwd);
 
   response._RecordCheckpointReturn = NULL;
   if(soap_call_sws__RecordCheckpoint(Steerer_connection.SGS_info.soap, 

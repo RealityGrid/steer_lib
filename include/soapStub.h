@@ -824,6 +824,7 @@ struct wsse__Security
 /* SOAP Header: */
 struct SOAP_ENV__Header
 {
+	char *wsa__To;	/* optional element of type xsd:string */
 	struct wsse__Security Security;	/* required element of type wsse:Security */
 };
 

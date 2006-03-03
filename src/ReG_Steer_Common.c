@@ -1347,6 +1347,7 @@ int Init_random()
 /*-----------------------------------------------------------------*/
 
 int Create_WSSE_header(struct soap *aSoap,
+		       const  char *epr,
 		       const  char *username,
 		       const  char *passwd)
 {
@@ -1368,6 +1369,19 @@ int Create_WSSE_header(struct soap *aSoap,
     fprintf(stderr,
 	    "STEER: Create_WSSE_header: Failed to malloc space for header\n");
     return REG_FAILURE;
+  }
+
+  aSoap->header->wsa__To = (char *)soap_malloc(aSoap, strlen(epr)+1);
+  if(!(aSoap->header->wsa__To)){
+    fprintf(stderr, "STEER: Create_WSSE_header: Failed to malloc space "
+	    "for header wsa:To element\n");
+    return REG_FAILURE;
+  }
+
+  strcpy(aSoap->header->wsa__To, epr);
+
+  if(!username || !(username[0])){
+    return REG_SUCCESS;
   }
 
   aSoap->header->Security.UsernameToken.wsse__Username = 
@@ -1399,11 +1413,6 @@ int Create_WSSE_header(struct soap *aSoap,
     fprintf(stderr, "STEER: WARNING: Create_WSSE_header: Sequence is not "
 	    "cryptographically strong\n");
   }
-  /*
-  else if(status == 1){
-    fprintf(stderr, "Sequence IS cryptographically strong\n");
-  }
-  */
   else if(status == -1){
     fprintf(stderr, "STEER: ERROR: Create_WSSE_header: RAND_pseudo_bytes "
 	    "is not supported\n");
@@ -1430,10 +1439,6 @@ int Create_WSSE_header(struct soap *aSoap,
   timePtr = Get_current_time_string(); /* Steer lib */
   snprintf(aSoap->header->Security.UsernameToken.wsu__Created, 128,
 	   timePtr);
-  /*
-  fprintf(stderr, "STEER: Create_WSSE_header: Created: >>%s<<\n", 
-	 aSoap->header->Security.UsernameToken.wsu__Created);
-  */
   snprintf(aSoap->header->Security.UsernameToken.wsse__Password.Type, 128,
 	   "PasswordDigest");
 
@@ -1447,13 +1452,7 @@ int Create_WSSE_header(struct soap *aSoap,
   bytesLeft -= nbytes; pBuf += nbytes;
   nbytes = snprintf(pBuf, bytesLeft, passwd); /* password */
   bytesLeft -= nbytes; pBuf += nbytes;
-  /*
-  printf("Digest is: >>");
-  for(i=0;i<(MAX_LEN-bytesLeft);i++){
-    printf("%c", buf[i]);
-  }
-  printf("<<\n");
-  */
+
   SHA1(buf, (MAX_LEN-bytesLeft), digest); /* openssl call */
 
   free(pBase64Buf); len = 0; pBase64Buf=NULL;
@@ -1464,13 +1463,7 @@ int Create_WSSE_header(struct soap *aSoap,
   while((i > -1) && (pBase64Buf[i] == '=')){
     pBase64Buf[i--] = '\0';
   }
-  /*
-  printf("Encoded digest is: >>");
-  for(i=0; i<len; i++){
-    printf("%c", pBase64Buf[i]);
-  }
-  printf("<<\n");
-  */
+
   /* +1 allows for null terminator (which Base64_encode does not include) */
   aSoap->header->Security.UsernameToken.wsse__Password.__item = 
                                        (char *)soap_malloc(aSoap, len+1);
