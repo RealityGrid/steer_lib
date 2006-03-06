@@ -75,18 +75,18 @@
 
 /** Root of filename used by application to send data to steerer
     Actual communication consists of two files: of the form 
-    APP_TO_STR_FILENAME_<n> and APP_TO_STR_FILENAME_<n>.lock.  The 
+    APP_TO_STR_FILENAME_\<n\> and APP_TO_STR_FILENAME_\<n\>.lock.  The 
     library looks for the presence of the (empty) .lock file before 
-    attempting to open the associated data file.  <n> is some integer, 
+    attempting to open the associated data file.  \<n\> is some integer, 
     incremented each time a file is written and limited 
     to 0 <= n <= REG_MAX_NUM_FILES-1 */
 #define APP_TO_STR_FILENAME "status_info"
 
 /** Root of filename used by steerer to send data to application.
-    Actual name will be of form STR_TO_APP_FILENAME_<n> and
-    STR_TO_APP_FILENAME_<n>.lock.  The library looks for the 
+    Actual name will be of form STR_TO_APP_FILENAME_\<n\> and
+    STR_TO_APP_FILENAME_\<n\>.lock.  The library looks for the 
     presence of the (empty) .lock file before attempting to open
-    the associated data file.  <n> is some integer, incremented each
+    the associated data file.  \<n\> is some integer, incremented each
     time a file is written and limited to 0 <= n <= REG_MAX_NUM_FILES-1 */
 #define STR_TO_APP_FILENAME "control_info"
 
