@@ -79,14 +79,14 @@ int Get_registry_entries_wsrf(const char *registryEPR,
 	      "soap SSL context failed\n");
       return REG_FAILURE;
     }
-    Create_WSSE_header(&soap, registryEPR,
+    Create_WSRF_header(&soap, registryEPR,
 		       NULL, NULL);
   }
   else{
     /* Otherwise we just use WSSE */
     printf("ARPDBG: using WSSE, user = %s, pass = %s\n",
 	   sec->userDN, sec->passphrase);
-    Create_WSSE_header(&soap, registryEPR,
+    Create_WSRF_header(&soap, registryEPR,
 		       sec->userDN, sec->passphrase);
   }
 
@@ -164,6 +164,10 @@ char *Create_SWS(const struct reg_job_details   *job,
   char                                      *pchar;
   int                                        numBytes;
   int                                        ssl_initialized = 0;
+  /* NOTE that the job struct contains information about the service
+     to be created (including username and password) while the sec
+     struct contains information to allow us to authenticate to the
+     registry */
 #if REG_DEBUG_FULL
   fprintf(stderr,"\nCreate_SWS args:\n");
   fprintf(stderr," - lifetimeMinutes: %d\n", job->lifetimeMinutes);
@@ -209,7 +213,7 @@ char *Create_SWS(const struct reg_job_details   *job,
 	   sec->userDN);
 #endif /* REG_DEBUG_FULL */
   }
-  Create_WSSE_header(&soap, factoryAddr, sec->userDN, sec->passphrase);
+  Create_WSRF_header(&soap, factoryAddr, NULL, NULL);
 
   /* 1440 = 24hrs in minutes.  Is the default lifetime of the service
      until its associated job starts up and then the TerminationTime
@@ -217,12 +221,12 @@ char *Create_SWS(const struct reg_job_details   *job,
   if(soap_call_swsf__createSWSResource(&soap, factoryAddr, NULL, 
 				       1440, 
 				       (char *)job->checkpointAddress, 
-				       (char *)sec->passphrase,
+				       (char *)job->passphrase,
 				       &response) != SOAP_OK){
     if(soap.fault && soap.fault->detail){
 
-      printf("Soap error detail any = %s\n", 
-	     soap.fault->detail->__any);
+      fprintf(stderr, "Call to createSWSResource failed: Soap error "
+	      "detail any = %s\n", soap.fault->detail->__any);
     }
     soap_print_fault(&soap, stderr);
     return NULL;
@@ -252,7 +256,7 @@ char *Create_SWS(const struct reg_job_details   *job,
 	   "</registryEntry>"
 	   "</Content>",
 	   epr, Get_current_time_string(), job->userName, job->group, 
-	   job->software, job->purpose, sec->passphrase, sec->userDN);
+	   job->software, job->purpose, job->passphrase, job->userName);
 
   if(!ssl_initialized && 
      (strstr(registryAddress, "https") == registryAddress) ){
@@ -265,21 +269,21 @@ char *Create_SWS(const struct reg_job_details   *job,
 
       fprintf(stderr, "Create_SWS: ERROR: call to initialize soap SSL"
 	      " context for call to regServiceGroup::Add failed\n");
-
       Destroy_WSRP(epr, sec);
       return NULL;
     }
     ssl_initialized = 1;
   }
 
-  Create_WSSE_header(&soap, registryAddress, 
+  Create_WSRF_header(&soap, registryAddress, 
                      sec->userDN, sec->passphrase);
 
   if(soap_call_rsg__Add(&soap, registryAddress, 
 			"", jobDescription,
 			&addResponse) != SOAP_OK){
+    fprintf(stderr, "Create_SWS: ERROR: call to Add service to "
+	    "registry failed:\n");
     soap_print_fault(&soap, stderr);
-
     Destroy_WSRP(epr, sec);
     return NULL;
   }
@@ -300,7 +304,7 @@ char *Create_SWS(const struct reg_job_details   *job,
 	   job->lifetimeMinutes, registryAddress, 
 	   addResponse.wsa__EndpointReference.wsa__Address);
 
-  Create_WSSE_header(&soap, epr, sec->userDN, sec->passphrase);
+  Create_WSRF_header(&soap, epr, job->userName, job->passphrase);
 
 #if REG_DEBUG_FULL
   fprintf(stderr,
@@ -332,7 +336,7 @@ char *Create_SWS(const struct reg_job_details   *job,
       
     }
 
-    Create_WSSE_header(&soap, epr, sec->userDN, sec->passphrase);
+    Create_WSRF_header(&soap, epr, job->userName, job->passphrase);
 #if REG_DEBUG_FULL
     fprintf(stderr,
 	    "\nCreate_SWS: Calling SetResourceProperties with >>%s<<\n",
@@ -366,10 +370,10 @@ int Destroy_WSRP(const char                     *epr,
     soap.encodingStyle = NULL;
 
     if(sec->use_ssl != REG_TRUE){
-      Create_WSSE_header(&soap, epr, sec->userDN, sec->passphrase);
+      Create_WSRF_header(&soap, epr, sec->userDN, sec->passphrase);
     }
     else{
-      Create_WSSE_header(&soap, epr, NULL, NULL);
+      Create_WSRF_header(&soap, epr, NULL, NULL);
     }
 
     /* If we're using https then set up the context */
