@@ -1346,7 +1346,7 @@ int Init_random()
 
 /*-----------------------------------------------------------------*/
 
-int Create_WSSE_header(struct soap *aSoap,
+int Create_WSRF_header(struct soap *aSoap,
 		       const  char *epr,
 		       const  char *username,
 		       const  char *passwd)
@@ -1367,13 +1367,13 @@ int Create_WSSE_header(struct soap *aSoap,
   aSoap->header = soap_malloc(aSoap, sizeof(struct SOAP_ENV__Header));
   if(!(aSoap->header)){
     fprintf(stderr,
-	    "STEER: Create_WSSE_header: Failed to malloc space for header\n");
+	    "STEER: Create_WSRF_header: Failed to malloc space for header\n");
     return REG_FAILURE;
   }
 
   aSoap->header->wsa__To = (char *)soap_malloc(aSoap, strlen(epr)+1);
   if(!(aSoap->header->wsa__To)){
-    fprintf(stderr, "STEER: Create_WSSE_header: Failed to malloc space "
+    fprintf(stderr, "STEER: Create_WSRF_header: Failed to malloc space "
 	    "for header wsa:To element\n");
     return REG_FAILURE;
   }
@@ -1381,27 +1381,33 @@ int Create_WSSE_header(struct soap *aSoap,
   strcpy(aSoap->header->wsa__To, epr);
 
   if(!username || !(username[0])){
+    fprintf(stderr, "STEER: Create_WSRF_header: ARPDBG: not adding security to header\n");
+    aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Username = NULL;
+    aSoap->header->wsse__Security.wsse__UsernameToken.wsu__Created = NULL;
+    aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.Type = NULL;
+    aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.__item = NULL;
+    aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Nonce = NULL;
     return REG_SUCCESS;
   }
 
-  aSoap->header->Security.UsernameToken.wsse__Username = 
+  aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Username = 
                                        (char *)soap_malloc(aSoap, 128);
-  aSoap->header->Security.UsernameToken.wsu__Created = 
+  aSoap->header->wsse__Security.wsse__UsernameToken.wsu__Created = 
                                        (char *)soap_malloc(aSoap, 128);
-  aSoap->header->Security.UsernameToken.wsse__Password.Type = 
+  aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.Type = 
                                        (char *)soap_malloc(aSoap, 128);
 
-  if( !(aSoap->header->Security.UsernameToken.wsse__Username) ||
-      !(aSoap->header->Security.UsernameToken.wsu__Created) ||
-      !(aSoap->header->Security.UsernameToken.wsse__Password.Type) ){
-    fprintf(stderr, "STEER: Create_WSSE_header: Failed to malloc space "
+  if( !(aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Username) ||
+      !(aSoap->header->wsse__Security.wsse__UsernameToken.wsu__Created) ||
+      !(aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.Type) ){
+    fprintf(stderr, "STEER: Create_WSRF_header: Failed to malloc space "
 	    "for header elements\n");
     return REG_FAILURE;
   }
 
   if(ReG_ssl_random_initialized == REG_FALSE){
     if(Init_random() != REG_SUCCESS){
-      fprintf(stderr, "STEER: Create_WSSE_header: Failed to "
+      fprintf(stderr, "STEER: Create_WSRF_header: Failed to "
 	      "initialize SSL random number generator\n");
       return REG_FAILURE;
     }
@@ -1410,11 +1416,11 @@ int Create_WSSE_header(struct soap *aSoap,
   /* This call requires that Init_random() has been called previously */
   status = RAND_pseudo_bytes(randBuf, 16);
   if(status == 0){
-    fprintf(stderr, "STEER: WARNING: Create_WSSE_header: Sequence is not "
+    fprintf(stderr, "STEER: WARNING: Create_WSRF_header: Sequence is not "
 	    "cryptographically strong\n");
   }
   else if(status == -1){
-    fprintf(stderr, "STEER: ERROR: Create_WSSE_header: RAND_pseudo_bytes "
+    fprintf(stderr, "STEER: ERROR: Create_WSRF_header: RAND_pseudo_bytes "
 	    "is not supported\n");
     return REG_FAILURE;
   }
@@ -1423,34 +1429,38 @@ int Create_WSSE_header(struct soap *aSoap,
      ASCII string (XML friendly) */
   Base64_encode(randBuf, 16, &pBase64Buf, &len);
 
-  snprintf(aSoap->header->Security.UsernameToken.wsse__Username, 128, 
-	   username);
+  snprintf(aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Username, 
+	   128, username);
 
-  aSoap->header->Security.UsernameToken.wsse__Nonce = 
+  aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Nonce = 
                                        (char *)soap_malloc(aSoap, len+1);
-  if( !(aSoap->header->Security.UsernameToken.wsse__Nonce) ){
+  if( !(aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Nonce) ){
     fprintf(stderr, 
-	    "STEER: Create_WSSE_header: Failed to malloc space for nonce\n");
+	    "STEER: Create_WSRF_header: Failed to malloc space for nonce\n");
     return REG_FAILURE;
   }
-  strncpy(aSoap->header->Security.UsernameToken.wsse__Nonce, pBase64Buf, len);
-  aSoap->header->Security.UsernameToken.wsse__Nonce[len] = '\0';
+  strncpy(aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Nonce, 
+	  pBase64Buf, len);
+  aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Nonce[len] = '\0';
 
   timePtr = Get_current_time_string(); /* Steer lib */
-  snprintf(aSoap->header->Security.UsernameToken.wsu__Created, 128,
-	   timePtr);
-  snprintf(aSoap->header->Security.UsernameToken.wsse__Password.Type, 128,
-	   "PasswordDigest");
+  snprintf(aSoap->header->wsse__Security.wsse__UsernameToken.wsu__Created, 
+	   128, timePtr);
+  snprintf(aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.Type,
+	   128, "PasswordDigest");
 
   /* Password_digest = Base64(SHA-1(nonce + created + password)) */
   bytesLeft = MAX_LEN;
   pBuf = buf;
+  /* Nonce */
   nbytes = snprintf(pBuf, bytesLeft, 
-		    aSoap->header->Security.UsernameToken.wsse__Nonce); /* nonce */
+		    aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Nonce);
   bytesLeft -= nbytes; pBuf += nbytes;
-  nbytes = snprintf(pBuf, bytesLeft, timePtr); /* created */
+  /* Created */
+  nbytes = snprintf(pBuf, bytesLeft, timePtr);
   bytesLeft -= nbytes; pBuf += nbytes;
-  nbytes = snprintf(pBuf, bytesLeft, passwd); /* password */
+  /* Password */
+  nbytes = snprintf(pBuf, bytesLeft, passwd);
   bytesLeft -= nbytes; pBuf += nbytes;
 
   SHA1(buf, (MAX_LEN-bytesLeft), digest); /* openssl call */
@@ -1465,16 +1475,16 @@ int Create_WSSE_header(struct soap *aSoap,
   }
 
   /* +1 allows for null terminator (which Base64_encode does not include) */
-  aSoap->header->Security.UsernameToken.wsse__Password.__item = 
+  aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.__item = 
                                        (char *)soap_malloc(aSoap, len+1);
-  if( !(aSoap->header->Security.UsernameToken.wsse__Password.__item) ){
-    fprintf(stderr, "STEER: Create_WSSE_header: Failed to malloc "
+  if( !(aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.__item) ){
+    fprintf(stderr, "STEER: Create_WSRF_header: Failed to malloc "
 	    "space for Password\n");
     return REG_FAILURE;
   } 
-  strncpy(aSoap->header->Security.UsernameToken.wsse__Password.__item,
+  strncpy(aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.__item,
 	  pBase64Buf, len);
-  aSoap->header->Security.UsernameToken.wsse__Password.__item[len] = '\0';
+  aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.__item[len] = '\0';
 
   free(pBase64Buf);
   pBase64Buf = NULL;
@@ -1483,7 +1493,7 @@ int Create_WSSE_header(struct soap *aSoap,
 
 #else /* WITH_OPENSSL not defined */
 
-  fprintf(stderr, "STEER: Create_WSSE_header: library not compiled with "
+  fprintf(stderr, "STEER: Create_WSRF_header: library not compiled with "
 	  "OpenSSL so no security possible\n");
   return REG_FAILURE;
 
