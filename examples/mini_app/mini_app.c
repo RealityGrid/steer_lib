@@ -1,7 +1,4 @@
-/*---------------------------------------------------------------------------
-  This file contains an example of a steering-enabled 
-  application using most of the steering lib's features.
-
+/*-------------------------------------------------------------------------
   (C) Copyright 2005, University of Manchester, United Kingdom,
   all rights reserved.
 
@@ -28,9 +25,14 @@
   DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR
   CORRECTION.
 
-  Authors........: Andrew Porter, Robert Haines
-
 ---------------------------------------------------------------------------*/
+/** @file mini_app.c
+    @brief An example of a steering-enabled application using most of 
+    the steering lib's features.
+
+    @author Andrew Porter
+    @author Robert Haines */
+
 #include "ReG_Steer_Appside.h"
 #include <string.h>
 #include <unistd.h>

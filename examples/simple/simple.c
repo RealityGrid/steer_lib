@@ -1,7 +1,4 @@
 /*---------------------------------------------------------------------------
-  This file contains a very simple example of a steering-enabled 
-  application.
-
   (C) Copyright 2005, University of Manchester, United Kingdom,
   all rights reserved.
 
@@ -28,9 +25,15 @@
   DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR
   CORRECTION.
 
-  Authors........: Andrew Porter, Robert Haines
-
 ---------------------------------------------------------------------------*/
+
+/** @file simple.c
+    @brief A very simple example of a steering-enabled application.
+
+    @author Andrew Porter
+    @author Robert Haines
+*/
+
 #include "ReG_Steer_Appside.h"
 #include <unistd.h> /* for 'sleep' */
 
