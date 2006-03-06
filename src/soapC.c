@@ -11,7 +11,7 @@ extern "C" {
 
 SOAP_BEGIN_NAMESPACE(soap)
 
-SOAP_SOURCE_STAMP("@(#) soapC.c ver 2.7.2 2006-03-03 11:40:23 GMT")
+SOAP_SOURCE_STAMP("@(#) soapC.c ver 2.7.2 2006-03-06 10:50:05 GMT")
 
 
 #ifndef WITH_NOGLOBAL
@@ -134,10 +134,10 @@ SOAP_FMAC3 void * SOAP_FMAC4 soap_getelement(struct soap *soap, int *type)
 		return soap_in_xsd__int(soap, NULL, NULL, "xsd:int");
 	case SOAP_TYPE_int:
 		return soap_in_int(soap, NULL, NULL, "xsd:int");
-	case SOAP_TYPE_wsse__Security:
-		return soap_in_wsse__Security(soap, NULL, NULL, "wsse:Security");
-	case SOAP_TYPE_wsse__UsernameToken:
-		return soap_in_wsse__UsernameToken(soap, NULL, NULL, "wsse:UsernameToken");
+	case SOAP_TYPE_Security:
+		return soap_in_Security(soap, NULL, NULL, "Security");
+	case SOAP_TYPE_UsernameToken:
+		return soap_in_UsernameToken(soap, NULL, NULL, "UsernameToken");
 	case SOAP_TYPE_stringWithAttr:
 		return soap_in_stringWithAttr(soap, NULL, NULL, "stringWithAttr");
 	case SOAP_TYPE_rsg__Add:
@@ -543,13 +543,13 @@ SOAP_FMAC3 void * SOAP_FMAC4 soap_getelement(struct soap *soap, int *type)
 		{	*type = SOAP_TYPE_int;
 			return soap_in_int(soap, NULL, NULL, NULL);
 		}
-		if (!soap_match_tag(soap, t, "wsse:Security"))
-		{	*type = SOAP_TYPE_wsse__Security;
-			return soap_in_wsse__Security(soap, NULL, NULL, NULL);
+		if (!soap_match_tag(soap, t, "Security"))
+		{	*type = SOAP_TYPE_Security;
+			return soap_in_Security(soap, NULL, NULL, NULL);
 		}
-		if (!soap_match_tag(soap, t, "wsse:UsernameToken"))
-		{	*type = SOAP_TYPE_wsse__UsernameToken;
-			return soap_in_wsse__UsernameToken(soap, NULL, NULL, NULL);
+		if (!soap_match_tag(soap, t, "UsernameToken"))
+		{	*type = SOAP_TYPE_UsernameToken;
+			return soap_in_UsernameToken(soap, NULL, NULL, NULL);
 		}
 		if (!soap_match_tag(soap, t, "stringWithAttr"))
 		{	*type = SOAP_TYPE_stringWithAttr;
@@ -1133,10 +1133,10 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_putelement(struct soap *soap, const void *ptr, co
 		return soap_out_xsd__int(soap, tag, id, (const int *)ptr, "xsd:int");
 	case SOAP_TYPE_int:
 		return soap_out_int(soap, tag, id, (const int *)ptr, "xsd:int");
-	case SOAP_TYPE_wsse__Security:
-		return soap_out_wsse__Security(soap, tag, id, (const struct wsse__Security *)ptr, "wsse:Security");
-	case SOAP_TYPE_wsse__UsernameToken:
-		return soap_out_wsse__UsernameToken(soap, tag, id, (const struct wsse__UsernameToken *)ptr, "wsse:UsernameToken");
+	case SOAP_TYPE_Security:
+		return soap_out_Security(soap, tag, id, (const struct Security *)ptr, "Security");
+	case SOAP_TYPE_UsernameToken:
+		return soap_out_UsernameToken(soap, tag, id, (const struct UsernameToken *)ptr, "UsernameToken");
 	case SOAP_TYPE_stringWithAttr:
 		return soap_out_stringWithAttr(soap, tag, id, (const struct stringWithAttr *)ptr, "stringWithAttr");
 	case SOAP_TYPE_rsg__Add:
@@ -1528,11 +1528,11 @@ SOAP_FMAC3 void SOAP_FMAC4 soap_markelement(struct soap *soap, const void *ptr, 
 	(void)soap; (void)ptr; (void)type; /* appease -Wall -Werror */
 	switch (type)
 	{
-	case SOAP_TYPE_wsse__Security:
-		soap_serialize_wsse__Security(soap, (const struct wsse__Security *)ptr);
+	case SOAP_TYPE_Security:
+		soap_serialize_Security(soap, (const struct Security *)ptr);
 		break;
-	case SOAP_TYPE_wsse__UsernameToken:
-		soap_serialize_wsse__UsernameToken(soap, (const struct wsse__UsernameToken *)ptr);
+	case SOAP_TYPE_UsernameToken:
+		soap_serialize_UsernameToken(soap, (const struct UsernameToken *)ptr);
 		break;
 	case SOAP_TYPE_stringWithAttr:
 		soap_serialize_stringWithAttr(soap, (const struct stringWithAttr *)ptr);
@@ -2570,15 +2570,15 @@ SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_SOAP_ENV__Header(struct soap *soap, co
 	(void)soap; (void)a; /* appease -Wall -Werror */
 	soap_embedded(soap, &a->wsa__To, SOAP_TYPE_xsd__string);
 	soap_serialize_xsd__string(soap, &a->wsa__To);
-	soap_embedded(soap, &a->Security, SOAP_TYPE_wsse__Security);
-	soap_serialize_wsse__Security(soap, &a->Security);
+	soap_embedded(soap, &a->wsse__Security, SOAP_TYPE_Security);
+	soap_serialize_Security(soap, &a->wsse__Security);
 }
 
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_SOAP_ENV__Header(struct soap *soap, struct SOAP_ENV__Header *a)
 {
 	(void)soap; (void)a; /* appease -Wall -Werror */
 	soap_default_xsd__string(soap, &a->wsa__To);
-	soap_default_wsse__Security(soap, &a->Security);
+	soap_default_Security(soap, &a->wsse__Security);
 }
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_SOAP_ENV__Header(struct soap *soap, const struct SOAP_ENV__Header *a, const char *tag, const char *type)
@@ -2593,7 +2593,7 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_out_SOAP_ENV__Header(struct soap *soap, const cha
 {
 	soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_SOAP_ENV__Header), type);
 	soap_out_xsd__string(soap, "wsa:To", -1, &a->wsa__To, "");
-	soap_out_wsse__Security(soap, "Security", -1, &a->Security, "");
+	soap_out_Security(soap, "wsse:Security", -1, &a->wsse__Security, "");
 	soap_element_end_out(soap, tag);
 	return SOAP_OK;
 }
@@ -2607,7 +2607,7 @@ SOAP_FMAC3 struct SOAP_ENV__Header * SOAP_FMAC4 soap_get_SOAP_ENV__Header(struct
 
 SOAP_FMAC3 struct SOAP_ENV__Header * SOAP_FMAC4 soap_in_SOAP_ENV__Header(struct soap *soap, const char *tag, struct SOAP_ENV__Header *a, const char *type)
 {
-	short soap_flag_wsa__To = 1, soap_flag_Security = 1;
+	short soap_flag_wsa__To = 1, soap_flag_wsse__Security = 1;
 	if (soap_element_begin_in(soap, tag, 0))
 		return NULL;
 	if (*soap->type && soap_match_tag(soap, soap->type, type))
@@ -2627,9 +2627,9 @@ SOAP_FMAC3 struct SOAP_ENV__Header * SOAP_FMAC4 soap_in_SOAP_ENV__Header(struct 
 				{	soap_flag_wsa__To = 0;
 					continue;
 				}
-			if (soap_flag_Security && soap->error == SOAP_TAG_MISMATCH)
-				if (soap_in_wsse__Security(soap, "Security", &a->Security, "wsse:Security"))
-				{	soap_flag_Security = 0;
+			if (soap_flag_wsse__Security && soap->error == SOAP_TAG_MISMATCH)
+				if (soap_in_Security(soap, "wsse:Security", &a->wsse__Security, "Security"))
+				{	soap_flag_wsse__Security = 0;
 					continue;
 				}
 			if (soap->error == SOAP_TAG_MISMATCH)
@@ -2639,7 +2639,7 @@ SOAP_FMAC3 struct SOAP_ENV__Header * SOAP_FMAC4 soap_in_SOAP_ENV__Header(struct 
 			if (soap->error)
 				return NULL;
 		}
-		if ((soap->mode & SOAP_XML_STRICT) && (soap_flag_Security))
+		if ((soap->mode & SOAP_XML_STRICT) && (soap_flag_wsse__Security))
 		{	soap->error = SOAP_OCCURS;
 			return NULL;
 		}
@@ -2656,62 +2656,62 @@ SOAP_FMAC3 struct SOAP_ENV__Header * SOAP_FMAC4 soap_in_SOAP_ENV__Header(struct 
 
 #endif
 
-SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_wsse__Security(struct soap *soap, const struct wsse__Security *a)
+SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_Security(struct soap *soap, const struct Security *a)
 {
 	(void)soap; (void)a; /* appease -Wall -Werror */
-	soap_embedded(soap, &a->UsernameToken, SOAP_TYPE_wsse__UsernameToken);
-	soap_serialize_wsse__UsernameToken(soap, &a->UsernameToken);
+	soap_embedded(soap, &a->wsse__UsernameToken, SOAP_TYPE_UsernameToken);
+	soap_serialize_UsernameToken(soap, &a->wsse__UsernameToken);
 }
 
-SOAP_FMAC3 void SOAP_FMAC4 soap_default_wsse__Security(struct soap *soap, struct wsse__Security *a)
+SOAP_FMAC3 void SOAP_FMAC4 soap_default_Security(struct soap *soap, struct Security *a)
 {
 	(void)soap; (void)a; /* appease -Wall -Werror */
-	soap_default_wsse__UsernameToken(soap, &a->UsernameToken);
+	soap_default_UsernameToken(soap, &a->wsse__UsernameToken);
 }
 
-SOAP_FMAC3 int SOAP_FMAC4 soap_put_wsse__Security(struct soap *soap, const struct wsse__Security *a, const char *tag, const char *type)
+SOAP_FMAC3 int SOAP_FMAC4 soap_put_Security(struct soap *soap, const struct Security *a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_wsse__Security);
-	if (soap_out_wsse__Security(soap, tag, id, a, type))
+	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_Security);
+	if (soap_out_Security(soap, tag, id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
 }
 
-SOAP_FMAC3 int SOAP_FMAC4 soap_out_wsse__Security(struct soap *soap, const char *tag, int id, const struct wsse__Security *a, const char *type)
+SOAP_FMAC3 int SOAP_FMAC4 soap_out_Security(struct soap *soap, const char *tag, int id, const struct Security *a, const char *type)
 {
-	soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_wsse__Security), type);
-	soap_out_wsse__UsernameToken(soap, "UsernameToken", -1, &a->UsernameToken, "");
+	soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_Security), type);
+	soap_out_UsernameToken(soap, "wsse:UsernameToken", -1, &a->wsse__UsernameToken, "");
 	soap_element_end_out(soap, tag);
 	return SOAP_OK;
 }
 
-SOAP_FMAC3 struct wsse__Security * SOAP_FMAC4 soap_get_wsse__Security(struct soap *soap, struct wsse__Security *p, const char *tag, const char *type)
+SOAP_FMAC3 struct Security * SOAP_FMAC4 soap_get_Security(struct soap *soap, struct Security *p, const char *tag, const char *type)
 {
-	if ((p = soap_in_wsse__Security(soap, tag, p, type)))
+	if ((p = soap_in_Security(soap, tag, p, type)))
 		soap_getindependent(soap);
 	return p;
 }
 
-SOAP_FMAC3 struct wsse__Security * SOAP_FMAC4 soap_in_wsse__Security(struct soap *soap, const char *tag, struct wsse__Security *a, const char *type)
+SOAP_FMAC3 struct Security * SOAP_FMAC4 soap_in_Security(struct soap *soap, const char *tag, struct Security *a, const char *type)
 {
-	short soap_flag_UsernameToken = 1;
+	short soap_flag_wsse__UsernameToken = 1;
 	if (soap_element_begin_in(soap, tag, 0))
 		return NULL;
 	if (*soap->type && soap_match_tag(soap, soap->type, type))
 	{	soap->error = SOAP_TYPE;
 		return NULL;
 	}
-	a = (struct wsse__Security *)soap_id_enter(soap, soap->id, a, SOAP_TYPE_wsse__Security, sizeof(struct wsse__Security), 0, NULL, NULL, NULL);
+	a = (struct Security *)soap_id_enter(soap, soap->id, a, SOAP_TYPE_Security, sizeof(struct Security), 0, NULL, NULL, NULL);
 	if (!a)
 		return NULL;
 	if (soap->alloced)
-		soap_default_wsse__Security(soap, a);
+		soap_default_Security(soap, a);
 	if (soap->body && !*soap->href)
 	{	for (;;)
 		{	soap->error = SOAP_TAG_MISMATCH;
-			if (soap_flag_UsernameToken && soap->error == SOAP_TAG_MISMATCH)
-				if (soap_in_wsse__UsernameToken(soap, "UsernameToken", &a->UsernameToken, "wsse:UsernameToken"))
-				{	soap_flag_UsernameToken = 0;
+			if (soap_flag_wsse__UsernameToken && soap->error == SOAP_TAG_MISMATCH)
+				if (soap_in_UsernameToken(soap, "wsse:UsernameToken", &a->wsse__UsernameToken, "UsernameToken"))
+				{	soap_flag_wsse__UsernameToken = 0;
 					continue;
 				}
 			if (soap->error == SOAP_TAG_MISMATCH)
@@ -2721,7 +2721,7 @@ SOAP_FMAC3 struct wsse__Security * SOAP_FMAC4 soap_in_wsse__Security(struct soap
 			if (soap->error)
 				return NULL;
 		}
-		if ((soap->mode & SOAP_XML_STRICT) && (soap_flag_UsernameToken))
+		if ((soap->mode & SOAP_XML_STRICT) && (soap_flag_wsse__UsernameToken))
 		{	soap->error = SOAP_OCCURS;
 			return NULL;
 		}
@@ -2729,14 +2729,14 @@ SOAP_FMAC3 struct wsse__Security * SOAP_FMAC4 soap_in_wsse__Security(struct soap
 			return NULL;
 	}
 	else
-	{	a = (struct wsse__Security *)soap_id_forward(soap, soap->href, (void**)a, SOAP_TYPE_wsse__Security, 0, sizeof(struct wsse__Security), 0, NULL);
+	{	a = (struct Security *)soap_id_forward(soap, soap->href, (void**)a, SOAP_TYPE_Security, 0, sizeof(struct Security), 0, NULL);
 		if (soap->body && soap_element_end_in(soap, tag))
 			return NULL;
 	}
 	return a;
 }
 
-SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_wsse__UsernameToken(struct soap *soap, const struct wsse__UsernameToken *a)
+SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_UsernameToken(struct soap *soap, const struct UsernameToken *a)
 {
 	(void)soap; (void)a; /* appease -Wall -Werror */
 	soap_embedded(soap, &a->wsse__Username, SOAP_TYPE_xsd__string);
@@ -2749,7 +2749,7 @@ SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_wsse__UsernameToken(struct soap *soap,
 	soap_serialize_xsd__string(soap, &a->wsu__Created);
 }
 
-SOAP_FMAC3 void SOAP_FMAC4 soap_default_wsse__UsernameToken(struct soap *soap, struct wsse__UsernameToken *a)
+SOAP_FMAC3 void SOAP_FMAC4 soap_default_UsernameToken(struct soap *soap, struct UsernameToken *a)
 {
 	(void)soap; (void)a; /* appease -Wall -Werror */
 	soap_default_xsd__string(soap, &a->wsse__Username);
@@ -2758,17 +2758,17 @@ SOAP_FMAC3 void SOAP_FMAC4 soap_default_wsse__UsernameToken(struct soap *soap, s
 	soap_default_xsd__string(soap, &a->wsu__Created);
 }
 
-SOAP_FMAC3 int SOAP_FMAC4 soap_put_wsse__UsernameToken(struct soap *soap, const struct wsse__UsernameToken *a, const char *tag, const char *type)
+SOAP_FMAC3 int SOAP_FMAC4 soap_put_UsernameToken(struct soap *soap, const struct UsernameToken *a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_wsse__UsernameToken);
-	if (soap_out_wsse__UsernameToken(soap, tag, id, a, type))
+	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_UsernameToken);
+	if (soap_out_UsernameToken(soap, tag, id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
 }
 
-SOAP_FMAC3 int SOAP_FMAC4 soap_out_wsse__UsernameToken(struct soap *soap, const char *tag, int id, const struct wsse__UsernameToken *a, const char *type)
+SOAP_FMAC3 int SOAP_FMAC4 soap_out_UsernameToken(struct soap *soap, const char *tag, int id, const struct UsernameToken *a, const char *type)
 {
-	soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_wsse__UsernameToken), type);
+	soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_UsernameToken), type);
 	soap_out_xsd__string(soap, "wsse:Username", -1, &a->wsse__Username, "");
 	soap_out_stringWithAttr(soap, "wsse:Password", -1, &a->wsse__Password, "");
 	soap_out_xsd__string(soap, "wsse:Nonce", -1, &a->wsse__Nonce, "");
@@ -2777,14 +2777,14 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_out_wsse__UsernameToken(struct soap *soap, const 
 	return SOAP_OK;
 }
 
-SOAP_FMAC3 struct wsse__UsernameToken * SOAP_FMAC4 soap_get_wsse__UsernameToken(struct soap *soap, struct wsse__UsernameToken *p, const char *tag, const char *type)
+SOAP_FMAC3 struct UsernameToken * SOAP_FMAC4 soap_get_UsernameToken(struct soap *soap, struct UsernameToken *p, const char *tag, const char *type)
 {
-	if ((p = soap_in_wsse__UsernameToken(soap, tag, p, type)))
+	if ((p = soap_in_UsernameToken(soap, tag, p, type)))
 		soap_getindependent(soap);
 	return p;
 }
 
-SOAP_FMAC3 struct wsse__UsernameToken * SOAP_FMAC4 soap_in_wsse__UsernameToken(struct soap *soap, const char *tag, struct wsse__UsernameToken *a, const char *type)
+SOAP_FMAC3 struct UsernameToken * SOAP_FMAC4 soap_in_UsernameToken(struct soap *soap, const char *tag, struct UsernameToken *a, const char *type)
 {
 	short soap_flag_wsse__Username = 1, soap_flag_wsse__Password = 1, soap_flag_wsse__Nonce = 1, soap_flag_wsu__Created = 1;
 	if (soap_element_begin_in(soap, tag, 0))
@@ -2793,11 +2793,11 @@ SOAP_FMAC3 struct wsse__UsernameToken * SOAP_FMAC4 soap_in_wsse__UsernameToken(s
 	{	soap->error = SOAP_TYPE;
 		return NULL;
 	}
-	a = (struct wsse__UsernameToken *)soap_id_enter(soap, soap->id, a, SOAP_TYPE_wsse__UsernameToken, sizeof(struct wsse__UsernameToken), 0, NULL, NULL, NULL);
+	a = (struct UsernameToken *)soap_id_enter(soap, soap->id, a, SOAP_TYPE_UsernameToken, sizeof(struct UsernameToken), 0, NULL, NULL, NULL);
 	if (!a)
 		return NULL;
 	if (soap->alloced)
-		soap_default_wsse__UsernameToken(soap, a);
+		soap_default_UsernameToken(soap, a);
 	if (soap->body && !*soap->href)
 	{	for (;;)
 		{	soap->error = SOAP_TAG_MISMATCH;
@@ -2836,7 +2836,7 @@ SOAP_FMAC3 struct wsse__UsernameToken * SOAP_FMAC4 soap_in_wsse__UsernameToken(s
 			return NULL;
 	}
 	else
-	{	a = (struct wsse__UsernameToken *)soap_id_forward(soap, soap->href, (void**)a, SOAP_TYPE_wsse__UsernameToken, 0, sizeof(struct wsse__UsernameToken), 0, NULL);
+	{	a = (struct UsernameToken *)soap_id_forward(soap, soap->href, (void**)a, SOAP_TYPE_UsernameToken, 0, sizeof(struct UsernameToken), 0, NULL);
 		if (soap->body && soap_element_end_in(soap, tag))
 			return NULL;
 	}

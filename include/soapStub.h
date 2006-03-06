@@ -806,8 +806,8 @@ struct stringWithAttr
 	char *Type;	/* optional attribute of type xsd:string */
 };
 
-/* wsse:UsernameToken: */
-struct wsse__UsernameToken
+/* UsernameToken: */
+struct UsernameToken
 {
 	char *wsse__Username;	/* optional element of type xsd:string */
 	struct stringWithAttr wsse__Password;	/* required element of type stringWithAttr */
@@ -815,17 +815,17 @@ struct wsse__UsernameToken
 	char *wsu__Created;	/* optional element of type xsd:string */
 };
 
-/* wsse:Security: */
-struct wsse__Security
+/* Security: */
+struct Security
 {
-	struct wsse__UsernameToken UsernameToken;	/* required element of type wsse:UsernameToken */
+	struct UsernameToken wsse__UsernameToken;	/* required element of type UsernameToken */
 };
 
 /* SOAP Header: */
 struct SOAP_ENV__Header
 {
 	char *wsa__To;	/* optional element of type xsd:string */
-	struct wsse__Security Security;	/* required element of type wsse:Security */
+	struct Security wsse__Security;	/* required element of type Security */
 };
 
 /* SOAP Fault Code: */

@@ -105,25 +105,25 @@ SOAP_FMAC3 struct SOAP_ENV__Header * SOAP_FMAC4 soap_in_SOAP_ENV__Header(struct 
 
 #endif
 
-#ifndef SOAP_TYPE_wsse__Security
-#define SOAP_TYPE_wsse__Security (259)
+#ifndef SOAP_TYPE_Security
+#define SOAP_TYPE_Security (259)
 #endif
-SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_wsse__Security(struct soap*, const struct wsse__Security *);
-SOAP_FMAC3 void SOAP_FMAC4 soap_default_wsse__Security(struct soap*, struct wsse__Security *);
-SOAP_FMAC3 int SOAP_FMAC4 soap_put_wsse__Security(struct soap*, const struct wsse__Security *, const char*, const char*);
-SOAP_FMAC3 int SOAP_FMAC4 soap_out_wsse__Security(struct soap*, const char*, int, const struct wsse__Security *, const char*);
-SOAP_FMAC3 struct wsse__Security * SOAP_FMAC4 soap_get_wsse__Security(struct soap*, struct wsse__Security *, const char*, const char*);
-SOAP_FMAC3 struct wsse__Security * SOAP_FMAC4 soap_in_wsse__Security(struct soap*, const char*, struct wsse__Security *, const char*);
+SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_Security(struct soap*, const struct Security *);
+SOAP_FMAC3 void SOAP_FMAC4 soap_default_Security(struct soap*, struct Security *);
+SOAP_FMAC3 int SOAP_FMAC4 soap_put_Security(struct soap*, const struct Security *, const char*, const char*);
+SOAP_FMAC3 int SOAP_FMAC4 soap_out_Security(struct soap*, const char*, int, const struct Security *, const char*);
+SOAP_FMAC3 struct Security * SOAP_FMAC4 soap_get_Security(struct soap*, struct Security *, const char*, const char*);
+SOAP_FMAC3 struct Security * SOAP_FMAC4 soap_in_Security(struct soap*, const char*, struct Security *, const char*);
 
-#ifndef SOAP_TYPE_wsse__UsernameToken
-#define SOAP_TYPE_wsse__UsernameToken (258)
+#ifndef SOAP_TYPE_UsernameToken
+#define SOAP_TYPE_UsernameToken (258)
 #endif
-SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_wsse__UsernameToken(struct soap*, const struct wsse__UsernameToken *);
-SOAP_FMAC3 void SOAP_FMAC4 soap_default_wsse__UsernameToken(struct soap*, struct wsse__UsernameToken *);
-SOAP_FMAC3 int SOAP_FMAC4 soap_put_wsse__UsernameToken(struct soap*, const struct wsse__UsernameToken *, const char*, const char*);
-SOAP_FMAC3 int SOAP_FMAC4 soap_out_wsse__UsernameToken(struct soap*, const char*, int, const struct wsse__UsernameToken *, const char*);
-SOAP_FMAC3 struct wsse__UsernameToken * SOAP_FMAC4 soap_get_wsse__UsernameToken(struct soap*, struct wsse__UsernameToken *, const char*, const char*);
-SOAP_FMAC3 struct wsse__UsernameToken * SOAP_FMAC4 soap_in_wsse__UsernameToken(struct soap*, const char*, struct wsse__UsernameToken *, const char*);
+SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_UsernameToken(struct soap*, const struct UsernameToken *);
+SOAP_FMAC3 void SOAP_FMAC4 soap_default_UsernameToken(struct soap*, struct UsernameToken *);
+SOAP_FMAC3 int SOAP_FMAC4 soap_put_UsernameToken(struct soap*, const struct UsernameToken *, const char*, const char*);
+SOAP_FMAC3 int SOAP_FMAC4 soap_out_UsernameToken(struct soap*, const char*, int, const struct UsernameToken *, const char*);
+SOAP_FMAC3 struct UsernameToken * SOAP_FMAC4 soap_get_UsernameToken(struct soap*, struct UsernameToken *, const char*, const char*);
+SOAP_FMAC3 struct UsernameToken * SOAP_FMAC4 soap_in_UsernameToken(struct soap*, const char*, struct UsernameToken *, const char*);
 
 #ifndef SOAP_TYPE_stringWithAttr
 #define SOAP_TYPE_stringWithAttr (257)
