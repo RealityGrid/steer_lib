@@ -29,12 +29,12 @@
   DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR
   CORRECTION.
 
-  Authors........: Andrew Porter, Robert Haines
-    
 ---------------------------------------------------------------------------*/
 
 /** @file ReG_Steer_Common.h
     @brief Header file for routines used in both Appside and Steerside
+    @author Andrew Porter
+    @author Robert Haines
   */
 
 #ifndef __REG_STEER_COMMON_H__
@@ -182,7 +182,6 @@ typedef struct {
 /**
   Holds information on all registered parameters
  */
-
 typedef struct {
 
   int          num_registered;
@@ -220,13 +219,13 @@ typedef struct {
  */
 typedef struct {
 
-  /* Whether array data is in F90 ordering */
+  /** Whether array data is in F90 ordering */
   int is_f90;
-  /* Extent of whole array */
+  /** Extent of whole array */
   int totx, toty, totz;
-  /* Extent of sub-array */
+  /** Extent of sub-array */
   int nx, ny, nz;
-  /* Origin of sub-array within whole */
+  /** Origin of sub-array within whole */
   int sx, sy, sz;
 
 } Array_type;
