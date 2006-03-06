@@ -28,12 +28,11 @@
   DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR
   CORRECTION.
 
-  Authors........: Andrew Porter
-
 ---------------------------------------------------------------------------*/
 
 /** @file ReG_Steer_Utils_WSRF.c
     @brief Source file for routines to do registry look-up
+    @author Andrew Porter
   */
 
 #include "ReG_Steer_types.h"
@@ -211,8 +210,9 @@ char *Create_SWS(const struct reg_job_details   *job,
   if(sec->passphrase[0]){
     printf("Create_SWS: userName for call to createSWSResource >>%s<<\n", 
 	   sec->userDN);
-#endif /* REG_DEBUG_FULL */
   }
+#endif /* REG_DEBUG_FULL */
+
   Create_WSRF_header(&soap, factoryAddr, NULL, NULL);
 
   /* 1440 = 24hrs in minutes.  Is the default lifetime of the service
