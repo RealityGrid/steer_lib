@@ -1,5 +1,4 @@
 /*--------------------------------------------------------------------------*/
-
 /** @file ReG_Steer_Utils.h
     @brief Header file containing prototypes and datatype definitions for
     entities that are using in the utilities library (provides
@@ -32,8 +31,8 @@
   CORRECTION.
 
   @author Andrew Porter
-    
----------------------------------------------------------------------------*/
+*/
+/*-------------------------------------------------------------------------*/
 
 #ifndef __REG_STEER_UTILS_H__
 #define __REG_STEER_UTILS_H__
@@ -71,11 +70,12 @@ struct reg_job_details {
 };
 
 /** Creates either an SGS or SWS
-    @param job Ptr to struct holding details on the job
+    @param job Ptr to struct holding details on the job.  @p userName 
+    and @p passphrase are used for the SWS, not the registry.
     @param containerAddress Address of the container in which to create SWS
     @param registryAddress Address of registry with which to register SWS
     @param sec Pointer to struct holding ssl authentication details and
-    WSSE username and password */
+    WSSE username and password (WSSE stuff for registry only) */
 extern PREFIX char* Create_steering_service(const struct reg_job_details *job,
 					    const char *containerAddress,
 					    const char *registryAddress,
