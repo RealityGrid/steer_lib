@@ -490,7 +490,7 @@ extern PREFIX int Init_random();
     @param username The username to present to the service
     @param passwd The password used to access the service
     @returns REG_SUCCESS or REG_FAILURE if no header created */
-extern PREFIX int Create_WSSE_header(struct soap *aSoap,
+extern PREFIX int Create_WSRF_header(struct soap *aSoap,
 				     const  char *epr,
 				     const  char *username,
 				     const  char *passwd);

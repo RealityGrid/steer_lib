@@ -106,7 +106,7 @@ int Sim_attach_wsrf (Sim_entry_type *sim, char *SimID){
     }
   }
 
-  Create_WSSE_header(sim->SGS_info.soap, 
+  Create_WSRF_header(sim->SGS_info.soap, 
 		     SimID,
 		     sim->SGS_info.username, 
 		     sim->SGS_info.passwd);
@@ -315,7 +315,7 @@ int Get_resource_property (struct soap *soapStruct,
   in.__ptr[0].ResourceProperty = (char *)malloc(REG_MAX_STRING_LENGTH*sizeof(char));
   strncpy(in.__ptr[0].ResourceProperty, name, REG_MAX_STRING_LENGTH);
 
-  Create_WSSE_header(soapStruct, epr, username, passwd);
+  Create_WSRF_header(soapStruct, epr, username, passwd);
 
 #ifdef USE_REG_TIMING
   Get_current_time_seconds(&time0);
@@ -363,7 +363,7 @@ int Get_resource_property_doc(struct soap *soapStruct,
     doc can be big */
   soap_end(soapStruct);
 
-  Create_WSSE_header(soapStruct, epr, username, passwd);
+  Create_WSRF_header(soapStruct, epr, username, passwd);
 
   *pDoc = NULL;
 
@@ -402,7 +402,7 @@ int Set_resource_property (struct soap *soapStruct,
 {
   struct wsrp__SetResourcePropertiesResponse out;
 
-  Create_WSSE_header(soapStruct, epr, username, passwd);
+  Create_WSRF_header(soapStruct, epr, username, passwd);
 
   if(soap_call_wsrp__SetResourceProperties(soapStruct, epr,
 					   "", input, &out) != SOAP_OK){
@@ -433,7 +433,7 @@ int Send_detach_msg_wsrf (Sim_entry_type *sim){
   fprintf(stderr, "STEER: Send_detach_msg_wsrf: calling Detach...\n");
 #endif
 
-  Create_WSSE_header(sim->SGS_info.soap, sim->SGS_info.address,
+  Create_WSRF_header(sim->SGS_info.soap, sim->SGS_info.address,
 		     sim->SGS_info.username, sim->SGS_info.passwd);
 
   if(soap_call_sws__Detach(sim->SGS_info.soap, sim->SGS_info.address, 
@@ -502,7 +502,7 @@ int Get_param_log_wsrf(Sim_entry_type *sim,
   Get_current_time_seconds(&time0);
 #endif
   if(sim->SGS_info.passwd[0]){
-    Create_WSSE_header(sim->SGS_info.soap, 
+    Create_WSRF_header(sim->SGS_info.soap, 
                        sim->SGS_info.address,
                        sim->SGS_info.username, 
 		       sim->SGS_info.passwd);

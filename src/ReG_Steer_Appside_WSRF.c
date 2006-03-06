@@ -226,7 +226,7 @@ int Initialize_steering_connection_wsrf(int  NumSupportedCmds,
   snprintf(query_buf, REG_MAX_MSG_SIZE, "<%s>%s</%s>", 
 	  SUPPORTED_CMDS_RP, pchar, SUPPORTED_CMDS_RP);
 
-  Create_WSSE_header(Steerer_connection.SGS_info.soap,
+  Create_WSRF_header(Steerer_connection.SGS_info.soap,
                      Steerer_connection.SGS_info.address,
                      Steerer_connection.SGS_info.username,
 		     Steerer_connection.SGS_info.passwd);
@@ -253,7 +253,7 @@ int Initialize_steering_connection_wsrf(int  NumSupportedCmds,
 	   MACHINE_ADDRESS_RP, ReG_Hostname, MACHINE_ADDRESS_RP,
 	   APP_NAME_RP, ReG_AppName, APP_NAME_RP);
 
-  Create_WSSE_header(Steerer_connection.SGS_info.soap,
+  Create_WSRF_header(Steerer_connection.SGS_info.soap,
                      Steerer_connection.SGS_info.address,
 		     Steerer_connection.SGS_info.username,
 		     Steerer_connection.SGS_info.passwd);
@@ -555,7 +555,7 @@ int Save_log_wsrf (char *log_data)
   pmsg_buf += strlen(log_data);
   pmsg_buf += sprintf(pmsg_buf, "]]></Raw_param_log></Steer_log>");
 
-  Create_WSSE_header(Steerer_connection.SGS_info.soap,
+  Create_WSRF_header(Steerer_connection.SGS_info.soap,
                      Steerer_connection.SGS_info.address,
 		     Steerer_connection.SGS_info.username,
 		     Steerer_connection.SGS_info.passwd);
@@ -596,7 +596,7 @@ int Finalize_steering_connection_wsrf ()
 	      1,
 	      commands);
 
-  Create_WSSE_header(Steerer_connection.SGS_info.soap,
+  Create_WSRF_header(Steerer_connection.SGS_info.soap,
                      Steerer_connection.SGS_info.address,
 		     Steerer_connection.SGS_info.username,
 		     Steerer_connection.SGS_info.passwd);
@@ -815,7 +815,7 @@ int Record_checkpoint_set_wsrf(char *chk_data,
 {
   struct sws__RecordCheckpointResponse response;
 
-  Create_WSSE_header(Steerer_connection.SGS_info.soap,
+  Create_WSRF_header(Steerer_connection.SGS_info.soap,
                      Steerer_connection.SGS_info.address,
 		     Steerer_connection.SGS_info.username,
 		     Steerer_connection.SGS_info.passwd);
