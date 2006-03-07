@@ -139,6 +139,10 @@ int Get_security_config(const char               *configFile,
   FILE      *fp;
   char       bufline[512];
 
+  /* Set the username to the value of the USER environment variable
+     in case we fail to get/parse the certificate for the DN */
+  snprintf(sec->userDN, REG_MAX_STRING_LENGTH, "%s", getenv('USER'));
+
   /* Parse the RealityGrid/etc/security.conf file */
 
   doc = xmlParseFile(configFile);
