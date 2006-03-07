@@ -109,11 +109,11 @@ extern PREFIX int Get_resource_property_doc(struct soap *soapStruct,
     @param input string to use as arg. for remote call
     @returns REG_SUCCESS if call succeeds, REG_FAILURE otherwise
 */
-int Set_resource_property (struct soap *soapStruct,
-                           const char  *epr,
-			   const char  *username,
-			   const char  *passwd,
-			   char        *input);
+extern PREFIX int Set_resource_property (struct soap *soapStruct,
+					 const char  *epr,
+					 const char  *username,
+					 const char  *passwd,
+					 char        *input);
 /** Clean up a WSRF-based steering connection 
     @internal */
 int Finalize_connection_wsrf (Sim_entry_type *sim);
