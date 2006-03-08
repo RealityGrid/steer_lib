@@ -1,7 +1,4 @@
 /*----------------------------------------------------------------------------
-  This file contains utility routines and data structures for the utilities
-  library associated with the ReG computational steering framework.
-
   (C) Copyright 2005, University of Manchester, United Kingdom,
   all rights reserved.
 
@@ -27,13 +24,15 @@
   AND PERFORMANCE OF THE PROGRAM IS WITH YOU.  SHOULD THE PROGRAM PROVE
   DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR
   CORRECTION.
-
-  Authors........: Andrew Porter
-
 ---------------------------------------------------------------------------*/
 
 /** @file ReG_Steer_Utils.c
     @brief Source file for utilities
+
+    This file contains utility routines and data structures for the utilities
+    library associated with the ReG computational steering framework.
+
+    @author Andrew Porter
   */
 
 #include "ReG_Steer_types.h"
@@ -141,7 +140,9 @@ int Get_security_config(const char               *configFile,
 
   /* Set the username to the value of the USER environment variable
      in case we fail to get/parse the certificate for the DN */
-  snprintf(sec->userDN, REG_MAX_STRING_LENGTH, "%s", getenv('USER'));
+  if( (pChar = getenv("USER")) ){
+    snprintf(sec->userDN, REG_MAX_STRING_LENGTH, "%s", pChar);
+  }
 
   /* Parse the RealityGrid/etc/security.conf file */
 
