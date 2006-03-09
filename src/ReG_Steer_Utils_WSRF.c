@@ -377,7 +377,7 @@ int Destroy_WSRP(const char                     *epr,
     }
 
     /* If we're using https then set up the context */
-    if(strstr(epr, "https") == epr){
+    if((sec->use_ssl == 1) && (strstr(epr, "https") == epr) ){
       if( REG_Init_ssl_context(&soap,
 			       REG_TRUE, /* Authenticate SWS */
 			       NULL,/*char *certKeyPemFile,*/
