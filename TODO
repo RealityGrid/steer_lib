@@ -1,3 +1,6 @@
+Upgrade to using gSoap 2.7.6.e because that should(??) fix problems
+on AIX...
+
 Continue working on altering reg_wsrf_tools to 
 work with latest form of secure api. - TEST
 
