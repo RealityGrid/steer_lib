@@ -39,7 +39,54 @@
     @brief Top-level header file
  */
 
-/* Comment-out line below to use OGSI rather than WSRF */
+/** @mainpage
+
+    @section intro_sec Introduction 
+
+    The API has been designed with the assumption that the control and
+    status links in Figure 1 will involve the exchange of small
+    quantities of data.  For cases where the steerable `parameter'
+    is a large array of data, it will best be treated as a form of 
+    `sample data' with the steering client issuing instructions for
+    it to be emitted and consumed as required.
+
+    All routines will provide integer return values with a return
+    value of REG_SUCCESS (zero) indicating success and a return value
+    of REG_FAILURE (unity) indicating failure.  (These quantities are
+    defined in ReG_Steer_types.h.)  Some routines use this return
+    value to specify more detailed information on the nature of the
+    success/failure - see individual interface
+    specifications for details.
+
+    @section sec_f90 F90 bindings
+
+    The API itself also provides F90 bindings for the simulation-side
+    routines.  All of the routines making up the F90 bindings are
+    implemented as F90 subroutines and hence their return value is
+    passed back to the caller by an additional `status' argument
+    (c.f. MPI).Since F90 does not have the void type, where an
+    argument to one of the F90 interfaces in this API can be of more
+    than one type then its type is denoted by <TYPE>.  Where an
+    argument to an interface in the API is an array, the first element
+    of the array should be supplied by the calling routine. The KIND
+    parameters used here, REG_INT_KIND, REG_SP_KIND and REG_DP_KIND,
+    are defined in reg_steer_f90.inc and correspond to KIND(1),
+    KIND(1.0) and KIND(1.0D0), respectively.
+
+    @section cmds_sec Pre-defined steering commands
+
+    The API defines and uses four pre-defined commands: `stop', 
+    `pause', `resume' and `detach'.  An application that is
+    steering enabled using the API supports `detach' by default.  It
+    is the responsibility of the application programmer to decide
+    whether or not their application will support `stop' and `pause' 
+    and, if so, to implement this functionality.  An application that
+    supports `pause' is automatically assumed to support `resume.' 
+    The relevant constants are defined in ReG_Steer_types.h
+*/
+
+/** If REG_WSRF is not defined then the code builds with OGSI stubs
+    instead */
 #define REG_WSRF
 
 /** Whether or not to use timing routines - these are not very portable */
@@ -90,7 +137,6 @@
     time a file is written and limited to 0 <= n <= REG_MAX_NUM_FILES-1 */
 #define STR_TO_APP_FILENAME "control_info"
 
-/* Return values */
 /** Return value upon complete success */
 #define REG_SUCCESS    0
 /** Return value upon failure */
@@ -135,7 +181,9 @@
 
 /** Encoding for STOP command */
 #define REG_STR_STOP             1
-/** Encoding for PAUSE command */
+/** Encoding for PAUSE command - indicates that application supports
+    pause but it is up to the application programmer to actually
+    implement it. */
 #define REG_STR_PAUSE            2
 /** Encoding for RESUME command */
 #define REG_STR_RESUME           3
@@ -143,9 +191,10 @@
 #define REG_STR_DETACH           4
 /** Encoding for EMIT PARAM LOG command */
 #define REG_STR_EMIT_PARAM_LOG   5
-/** Encoding for INTERNAL PAUSE command (used when the
-    pause command is to be handled internally by
-    the library rather than passed up to the application) */
+/** Encoding for INTERNAL PAUSE command (used when the pause command
+    is to be handled internally by the library rather than passed up
+    to the application - i.e. the call to Steering_control will block
+    until a `resume' or `stop' command is received) */
 #define REG_STR_PAUSE_INTERNAL   6
 
 /** All generated IOtype handles must be >= this value because they
