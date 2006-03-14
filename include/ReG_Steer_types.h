@@ -27,9 +27,6 @@
   AND PERFORMANCE OF THE PROGRAM IS WITH YOU.  SHOULD THE PROGRAM PROVE
   DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR
   CORRECTION.
-
-  Authors........: Andrew Porter, Robert Haines
-
 ---------------------------------------------------------------------------*/
 
 #ifndef __REG_TYPES_INCLUDED
@@ -37,9 +34,10 @@
 
 /** @file ReG_Steer_types.h
     @brief Top-level header file
- */
+    @author Andrew Porter
+    @author Robert Haines
 
-/** @mainpage
+    @mainpage
 
     @section intro_sec Introduction 
 
@@ -57,6 +55,44 @@
     value to specify more detailed information on the nature of the
     success/failure - see individual interface
     specifications for details.
+
+    @section sec_background Background Assumptions
+
+    Application scientists have pre-existing codes (hereafter referred
+    to as simulations), which are to be made steerable. These codes
+    are written in Fortran, C, C++ or a mixture of these, and can be
+    compiled using standards-compliant Fortran90 and C/C++
+    compilers. These codes will in general be parallel, but we avoid
+    assuming or prescribing any particular paradigm (e.g. message
+    passing or shared memory) or harness (e.g. MPI, PVM, SHMEM).  As a
+    consequence of this, the API presented here is designed to be
+    called on a single thread only.  In a parallel code therefore, the
+    application programmer assumes the responsibility of communicating
+    any changes resulting from steering activity to the other
+    threads/processes.
+
+    We assume that the logical structure within the simulation is such
+    that there exists a point (breakpoint) within a larger control
+    loop at which it is feasible to insert new functionality intended
+    to:
+    @li (a) accept a change to one or more of the parameters of the
+    simulation (steerable parameters); 
+    @li (b) emit a consistent representation of the current state of 
+    both the steerable parameters and other variables (monitored 
+    quantities); 
+    @li (c) emit a consistent representation (provisionally called 
+    outsample) of part of the system being simulated that may be 
+    required by a downstream component (eg. a visualisation system or 
+    another simulation).  
+
+    We also assume that it is feasible, at the same point in the control
+    loop, to:
+    @li (d) output a consistent representation of the system (checkpoint) 
+    containing sufficient information to enable a subsequent restart of 
+    the simulation from its current state;
+    @li (e) (in the case that the steered component is itself downstream 
+    of another component), to accept a sample emitted by an upstream 
+    component (provisionally called insample).
 
     @section sec_f90 F90 bindings
 

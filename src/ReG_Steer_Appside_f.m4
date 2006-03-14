@@ -1,10 +1,4 @@
 /*----------------------------------------------------------------------------
-  This file contains wrapper routines allowing the routines for the 
-  construction of an interface to a steering component (from an 
-  application component) to be called from F90.  The m4 macros used
-  to create the platform-specific C functions are taken from the
-  PVM distribution.  See the readme file in the 'conf' directory.
-
   (C) Copyright 2005, University of Manchester, United Kingdom,
   all rights reserved.
 
@@ -30,8 +24,6 @@
   AND PERFORMANCE OF THE PROGRAM IS WITH YOU.  SHOULD THE PROGRAM PROVE
   DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR
   CORRECTION.
-
-  Authors........: Andrew Porter, Robert Haines
 ---------------------------------------------------------------------------*/
 
 #include "ReG_Steer_Appside.h"
@@ -43,20 +35,33 @@
 #endif
 
 /** @file ReG_Steer_Appside_f.c
-    @brief Generated from ReG_Steer_Appside_f.m4 to produce platform-specific
-    f90 bindings for the application-side of the steering library */
+    @brief Generated from ReG_Steer_Appside_f.m4 
+    @author Andrew Porter
+    @author Robert Haines
 
-/** Some global variables for this interface layer - used in 
-    steering_control_f but initialised in steering_initialize_f */
+    This file contains wrapper routines allowing the routines for the 
+    construction of an interface to a steering component (from an 
+    application component) to be called from F90.  The m4 macros used
+    to create the platform-specific C functions are based on those from the
+    PVM distribution.  See the readme file in the 'conf' directory.
+*/
 
+/** Large global string buffer.  str_array and str_array_params are
+    initialized to point into this array. */
 static char gStringBuf[(REG_MAX_NUM_STR_PARAMS+REG_MAX_NUM_STR_CMDS)
                        *REG_MAX_STRING_LENGTH];
+/** Global array of char* pointers - used for passing parameter
+    labels into the steering library.  Initialised in 
+    steering_initialize_f. */
 static char *str_array[REG_MAX_NUM_STR_PARAMS];
+/** Global array of char* pointers - used for passing parameter info
+    associated with commands.  Initialised in steering_initialize_f. */
 static char *str_array_params[REG_MAX_NUM_STR_CMDS];
+/** Global array to store steering commands being sent or received */
 static int   gSteerCommands[REG_MAX_NUM_STR_CMDS];
-/** Array to store size in bytes of each of ReG type */
+/** Global array to store size in bytes of each of ReG type */
 static int sizeof_type[10] = {0,0,0,0,0,0,0,0,0,0};
-/** Array to store mapping of F90 type to equivalent C type */
+/** Global array to store mapping of F90 type to equivalent C type */
 static int f90_to_c_type[10] = {0,0,0,0,0,0,0,0,0,0};
 
 /*----------------------------------------------------------------
@@ -66,6 +71,7 @@ SUBROUTINE steering_enable_f(EnableSteer)
   INTEGER (KIND=REG_SP_KIND), INTENT(in) :: EnableSteer
 ----------------------------------------------------------------*/
 
+/** Wrapper for Steering_enable(), for use from within F90 */
 void FUNCTION(steering_enable_f) ARGS(`EnableSteer')
 INT_KIND_1_DECL(EnableSteer);
 {
@@ -84,6 +90,8 @@ SUBROUTINE steering_initialize_wrapper(AppName, NumSupportedCmds, &
   INTEGER (KIND=REG_SP_KIND), INTENT(out) :: Status
 ----------------------------------------------------------------*/
 
+/** Wrapper for Steering_initialize(), for use from within F90 
+    @param Status Return status of the call */
 void FUNCTION(steering_initialize_wrapper) ARGS(`STRING_ARG(AppName), 
                                                  NumSupportedCmds,
 			                         SupportedCmds, Status')
@@ -176,10 +184,12 @@ SUBROUTINE steering_finalize_f(Status)
   INTEGER (KIND=REG_SP_KIND), INTENT(out) :: Status
 ----------------------------------------------------------------*/
 
+/** Wrapper for Steering_finalize(), for use from within F90
+    @param Status Return status of the call, REG_SUCCESS or 
+    REG_FAILURE */
 void FUNCTION(steering_finalize_f) ARGS(`Status')
 INT_KIND_1_DECL(Status);
 {
-
   *Status = INT_KIND_1_CAST( Steering_finalize() );
   return;
 }
@@ -192,8 +202,12 @@ SUBROUTINE enable_iotypes_on_registrn_f(Toggle, Status)
   INTEGER (KIND=REG_SP_KIND), INTENT(out) :: Status
 ----------------------------------------------------------------*/
 
+/** Wrapper for Enable_IOTypes_on_registration(), for use from 
+    within F90
+    @param Status Return status of the call, REG_SUCCESS or 
+    REG_FAILURE */
 void FUNCTION(enable_iotypes_on_registrn_f) ARGS(`Toggle,
-                                                      Status')
+                                                  Status')
 INT_KIND_1_DECL(Toggle);
 INT_KIND_1_DECL(Status);
 {
@@ -209,6 +223,9 @@ SUBROUTINE enable_iotype_f(IOType, Status)
   INTEGER (KIND=REG_SP_KIND), INTENT(out) :: Status
 ----------------------------------------------------------------*/
 
+/** Wrapper for Enable_IOType(), for use from within F90
+    @param Status Return status of the call, REG_SUCCESS or 
+    REG_FAILURE */
 void FUNCTION(enable_iotype_f) ARGS(`IOType,
                                      Status')
 INT_KIND_1_DECL(IOType);
@@ -226,6 +243,9 @@ SUBROUTINE disable_iotype_f(IOType, Status)
   INTEGER (KIND=REG_SP_KIND), INTENT(out) :: Status
 ----------------------------------------------------------------*/
 
+/** Wrapper for Disable_IOType(), for use from within F90
+    @param Status Return status of the call, REG_SUCCESS or
+    REG_FAILURE */
 void FUNCTION(disable_iotype_f) ARGS(`IOType,
                                       Status')
 INT_KIND_1_DECL(IOType);
@@ -243,6 +263,9 @@ SUBROUTINE enable_iotype_acks_f(IOType, Status)
   INTEGER (KIND=REG_SP_KIND), INTENT(out) :: Status
 ----------------------------------------------------------------*/
 
+/** Wrapper for Enable_IOType_acks(), for use from within F90
+    @param Status Return status of the call, REG_SUCCESS or
+    REG_FAILURE */
 void FUNCTION(enable_iotype_acks_f) ARGS(`IOType,
                                           Status')
 INT_KIND_1_DECL(IOType);
@@ -261,6 +284,9 @@ SUBROUTINE disable_iotype_acks_f(IOType, Status)
   INTEGER (KIND=REG_SP_KIND), INTENT(out) :: Status
 ----------------------------------------------------------------*/
 
+/** Wrapper for Disable_IOType_acks(), for use from within F90
+    @param Status Return status of the call, REG_SUCCESS or
+    REG_FAILURE */
 void FUNCTION(disable_iotype_acks_f) ARGS(`IOType,
                                            Status')
 INT_KIND_1_DECL(IOType);
@@ -284,6 +310,9 @@ SUBROUTINE register_iotypes_f(NumTypes, IOLabel, IODirn, IOFrequency,
   INTEGER (KIND=REG_SP_KIND), INTENT(out)                     :: Status
 ----------------------------------------------------------------*/
 
+/** Wrapper for Register_IOTypes(), for use from within F90
+    @param Status Return status of the call, REG_SUCCESS or
+    REG_FAILURE */
 void FUNCTION(register_iotypes_f) ARGS(`NumTypes, 
 				        STRING_ARG(IOLabel),
 					IODirn,
@@ -372,6 +401,9 @@ SUBROUTINE register_iotype_f(IOLabel, IODirn, IOFrequency,
   INTEGER (KIND=REG_SP_KIND), INTENT(out):: Status
 ----------------------------------------------------------------*/
 
+/** Wrapper for Register_IOType(), for use from within F90 
+    @param Status Return status of the call, REG_SUCCESS or
+    REG_FAILURE */
 void FUNCTION(register_iotype_f) ARGS(`STRING_ARG(IOLabel),
 				       IODirn,
 				       IOFrequency,
@@ -421,6 +453,9 @@ SUBROUTINE register_chktypes_f(NumTypes, ChkLabel, ChkDirn,
 
 ----------------------------------------------------------------*/
 
+/** Wrapper for Register_ChkTypes(), for use from F90
+    @param Status Return status of the call, REG_SUCCESS or
+    REG_FAILURE */
 void FUNCTION(register_chktypes_f) ARGS(`NumTypes, 
                                         STRING_ARG(ChkLabel), 
                                         ChkDirn,
@@ -496,6 +531,9 @@ SUBROUTINE register_chktype_f(ChkLabel, ChkDirn,
 
 ----------------------------------------------------------------*/
 
+/** Wrapper for Register_ChkType(), for use from F90
+    @param Status Return status of the call, REG_SUCCESS or
+    REG_FAILURE */
 void FUNCTION(register_chktype_f) ARGS(`STRING_ARG(ChkLabel), 
                                         ChkDirn,
                                         ChkFrequency,
@@ -538,7 +576,9 @@ SUBROUTINE record_chkpt_f(ChkType, ChkTag, Status)
 
 ----------------------------------------------------------------*/
 
-
+/** Wrapper for Record_Chkpt(), for use from F90
+    @param Status Return status of the call, REG_SUCCESS or
+    REG_FAILURE */
 void FUNCTION(record_chkpt_f) ARGS(`ChkType,
                                     STRING_ARG(ChkTag),
                                     Status')
@@ -608,7 +648,9 @@ SUBROUTINE add_checkpoint_file_f(ChkType, ChkTag, Status)
 
 ----------------------------------------------------------------*/
 
-
+/** Wrapper for Add_checkpoint_file(), for use from F90
+    @param Status Return status of the call, REG_SUCCESS or
+    REG_FAILURE */
 void FUNCTION(add_checkpoint_file_f) ARGS(`ChkType,
                                            STRING_ARG(Filename),
                                            Status')
@@ -678,7 +720,9 @@ SUBROUTINE record_checkpoint_set_f(ChkType, ChkTag, Status)
 
 ----------------------------------------------------------------*/
 
-
+/** Wrapper for Record_checkpoint_set(), for use from F90
+    @param Status Return status of the call, REG_SUCCESS or
+    REG_FAILURE */
 void FUNCTION(record_checkpoint_set_f) ARGS(`ChkType,
                                              STRING_ARG(ChkTag),
                                              STRING_ARG(Path),
@@ -779,7 +823,6 @@ INT_KIND_1_DECL(Status);
   *Status = INT_KIND_1_CAST(Record_checkpoint_set((int)*ChkType, 
                                          	  gStringBuf,
                                                   path_buf) );
-
   return;
 }
 
@@ -802,6 +845,9 @@ register_string_param_f should be used if the monitored/steerable
 parameter is a CHARACTER string.
 ----------------------------------------------------------------*/
 
+/** Wrapper for Register_param(), for use from F90
+    @param Status Return status of the call, REG_SUCCESS or
+    REG_FAILURE */
 void FUNCTION(register_param_f) ARGS(`STRING_ARG(ParamLabel),
 		                      ParamSteerable,
 		                      ParamPtr,
@@ -920,6 +966,15 @@ SUBROUTINE register_string_param_f(ParamLabel, ParamSteerable, &
 
 ----------------------------------------------------------------*/
 
+/** F90-only.  For registering a monitored/steerable parameter that
+    is of type CHARACTER.
+    @param ParamLabel A string containing the label of this parameter 
+    @param ParamSteerable Whether (REG_TRUE) or not (REG_FALSE) this
+           parameter is steerable
+    @param StringParam The string variable to register
+    @param Status Return status of the call, REG_SUCCESS or
+    REG_FAILURE
+    @see Register_param() */
 void FUNCTION(register_string_param_f) ARGS(`STRING_ARG(ParamLabel),
 		                       ParamSteerable,
 		                       STRING_ARG(StringParam),
@@ -1005,7 +1060,6 @@ INT_KIND_1_DECL(Status);
 }
 
 /*----------------------------------------------------------------
-
 SUBROUTINE register_bin_param_f(ParamLabel, ParamPtr, &
                                 ParamType, NumObjects, Status)
 
@@ -1014,8 +1068,11 @@ SUBROUTINE register_bin_param_f(ParamLabel, ParamPtr, &
   INTEGER (KIND=REG_SP_KIND), INTENT(in)            :: ParamType
   INTEGER (KIND=REG_SP_KIND), INTENT(in)            :: NumObjects
   INTEGER (KIND=REG_SP_KIND), INTENT(out)           :: Status
-
 ----------------------------------------------------------------*/
+
+/** Wrapper for Register_bin_param(), for use from F90.
+    @param Status Return status of the call, REG_SUCCESS or
+    REG_FAILURE */
 void FUNCTION(register_bin_param_f) ARGS(`STRING_ARG(ParamLabel),
 		                          ParamPtr,
 		                          ParamType,
@@ -1098,13 +1155,15 @@ INT_KIND_1_DECL(Status);
 }
 
 /*----------------------------------------------------------------
-
 SUBROUTINE enable_all_param_logging_f(Toggle, Status)
 
   INTEGER (KIND=REG_SP_KIND), INTENT(in)  :: Toggle
   INTEGER (KIND=REG_SP_KIND), INTENT(out) :: Status
 ----------------------------------------------------------------*/
 
+/** Wrapper for Enable_all_param_logging(), for use from F90.
+    @param Status Return status of the call, REG_SUCCESS or
+    REG_FAILURE */
 void FUNCTION(enable_all_param_logging_f) ARGS(`Toggle,
 		        	                Status')
 INT_KIND_1_DECL(Toggle);
@@ -1115,13 +1174,15 @@ INT_KIND_1_DECL(Status);
 }
 
 /*----------------------------------------------------------------
-
 SUBROUTINE enable_param_logging_f(ParamLabel, Status)
 
   CHARACTER (LEN=REG_MAX_STRING_LENGTH), INTENT(in) :: ParamLabel
   INTEGER (KIND=REG_SP_KIND), INTENT(out)           :: Status
 ----------------------------------------------------------------*/
 
+/** Wrapper for Enable_param_logging(), for use from F90.
+    @param Status Return status of the call, REG_SUCCESS or
+    REG_FAILURE */
 void FUNCTION(enable_param_logging_f) ARGS(`STRING_ARG(ParamLabel),
 		        	            Status')
 STRING_ARG_DECL(ParamLabel);
@@ -1173,13 +1234,15 @@ INT_KIND_1_DECL(Status);
 }
 
 /*----------------------------------------------------------------
-
 SUBROUTINE disable_param_logging_f(ParamLabel, Status)
 
   CHARACTER (LEN=REG_MAX_STRING_LENGTH), INTENT(in) :: ParamLabel
   INTEGER (KIND=REG_SP_KIND), INTENT(out)           :: Status
 ----------------------------------------------------------------*/
 
+/** Wrapper for Disable_param_logging(), for use from F90.
+    @param Status Return status of the call, REG_SUCCESS or
+    REG_FAILURE */
 void FUNCTION(disable_param_logging_f) ARGS(`STRING_ARG(ParamLabel),
 		        	             Status')
 STRING_ARG_DECL(ParamLabel);
@@ -1231,14 +1294,15 @@ INT_KIND_1_DECL(Status);
 }
 
 /*----------------------------------------------------------------
-
 SUBROUTINE consume_start_f(IOType, IOHandle, Status)
 
   INTEGER (KIND=REG_SP_KIND), INTENT(in)  :: IOType
   INTEGER (KIND=REG_SP_KIND), INTENT(out) :: IOHandle
   INTEGER (KIND=REG_SP_KIND), INTENT(out) :: Status
 ----------------------------------------------------------------*/
-
+/** Wrapper for Consume_start(), for use from within F90.
+    @param Status Return status of the call, REG_SUCCESS or
+    REG_FAILURE */
 void FUNCTION(consume_start_f) ARGS(`IOType,
 		                     IOHandle,
 			             Status')
@@ -1260,7 +1324,6 @@ INT_KIND_1_DECL(Status);
 }
 
 /*----------------------------------------------------------------
-
 SUBROUTINE consume_start_blocking_f(IOType, IOHandle, TimeOut, &
                                     Status)
 
@@ -1269,7 +1332,9 @@ SUBROUTINE consume_start_blocking_f(IOType, IOHandle, TimeOut, &
   REAL    (KIND=REG_SP_KIND), INTENT(in)  :: TimeOut
   INTEGER (KIND=REG_SP_KIND), INTENT(out) :: Status
 ----------------------------------------------------------------*/
-
+/** Wrapper for Consume_start_blocking(), for use from within F90.
+    @param Status Return status of the call, REG_SUCCESS or
+    REG_FAILURE */
 void FUNCTION(consume_start_blocking_f) ARGS(`IOType,
 		                              IOHandle,
                                               TimeOut,
@@ -1283,7 +1348,6 @@ INT_KIND_1_DECL(Status);
   *Status = INT_KIND_1_CAST( Consume_start_blocking((int)*IOType,
 	                                            &handle,
                                                     *TimeOut) );
-
   if(*Status == REG_SUCCESS){
     Set_f90_array_ordering((int)*IOHandle, REG_TRUE);
   }
@@ -1293,13 +1357,14 @@ INT_KIND_1_DECL(Status);
 }
 
 /*----------------------------------------------------------------
-
 SUBROUTINE consume_stop_f(IOHandle, Status)
 
   INTEGER(KIND=REG_SP_KIND), INTENT(inout) :: IOHandle
   INTEGER(KIND=REG_SP_KIND), INTENT(out)   :: Status
 ----------------------------------------------------------------*/
-
+/** Wrapper for Consume_stop(), for use from within F90.
+    @param Status Return status of the call, REG_SUCCESS or
+    REG_FAILURE */
 void FUNCTION(consume_stop_f) ARGS(`IOHandle,
                                     Status')
 INT_KIND_1_DECL(IOHandle);
@@ -1312,7 +1377,6 @@ INT_KIND_1_DECL(Status);
 }
 
 /*----------------------------------------------------------------
-
 SUBROUTINE consume_data_slice_header_f(IOHandle, DataType, &
                                        Count, Status)
 
@@ -1321,7 +1385,9 @@ SUBROUTINE consume_data_slice_header_f(IOHandle, DataType, &
   INTEGER(KIND=REG_SP_KIND), INTENT(out) :: Count
   INTEGER(KIND=REG_SP_KIND), INTENT(out) :: Status
 ----------------------------------------------------------------*/
-
+/** Wrapper for Consume_data_slice_header(), for use from within F90.
+    @param Status Return status of the call, REG_SUCCESS or
+    REG_FAILURE */
 void FUNCTION(consume_data_slice_header_f) ARGS(`IOHandle,
                                                  DataType,
                                                  Count,
@@ -1341,7 +1407,6 @@ INT_KIND_1_DECL(Status);
 }
 
 /*----------------------------------------------------------------
-
 SUBROUTINE consume_data_slice_f(IOHandle, pData, Status)
 
   INTEGER(KIND=REG_SP_KIND), INTENT(in)  :: IOHandle
@@ -1349,9 +1414,10 @@ SUBROUTINE consume_data_slice_f(IOHandle, pData, Status)
   INTEGER(KIND=REG_SP_KIND), INTENT(in)  :: Count
   XXXXXXX(KIND=REG_DP_KIND), DIMENSION(),INTENT(out) :: pData
   INTEGER(KIND=REG_SP_KIND), INTENT(out) :: Status
-
 ----------------------------------------------------------------*/
-
+/** Wrapper for Consume_data_slice(), for use from within F90.
+    @param Status Return status of the call, REG_SUCCESS or
+    REG_FAILURE */
 void FUNCTION(consume_data_slice_f) ARGS(`IOHandle,
                                           DataType,
                                           Count,
@@ -1371,16 +1437,16 @@ INT_KIND_1_DECL(Status);
 }
 
 /*----------------------------------------------------------------
-
 SUBROUTINE emit_start_f(IOType, SeqNum, IOHandle, Status)
 
   INTEGER(KIND=REG_SP_KIND), INTENT(in)  :: IOType
   INTEGER(KIND=REG_SP_KIND), INTENT(in)  :: SeqNum
   INTEGER(KIND=REG_SP_KIND), INTENT(out) :: IOHandle
   INTEGER(KIND=REG_SP_KIND), INTENT(out) :: Status
-
 ----------------------------------------------------------------*/
-
+/** Wrapper for Emit_start(), for use from within F90.
+    @param Status Return status of the call, REG_SUCCESS or
+    REG_FAILURE */
 void FUNCTION(emit_start_f) ARGS(`IOType, 
                                 SeqNum, 
                                 IOHandle,
@@ -1405,7 +1471,6 @@ INT_KIND_1_DECL(Status);
 }
 
 /*----------------------------------------------------------------
-
 SUBROUTINE emit_start_blocking_f(IOType, SeqNum, IOHandle, &
                                  TimeOut, Status)
 
@@ -1414,9 +1479,10 @@ SUBROUTINE emit_start_blocking_f(IOType, SeqNum, IOHandle, &
   INTEGER(KIND=REG_SP_KIND), INTENT(out) :: IOHandle
   REAL(KIND=REG_SP_KIND),    INTENT(in)  :: TimeOut
   INTEGER(KIND=REG_SP_KIND), INTENT(out) :: Status
-
 ----------------------------------------------------------------*/
-
+/** Wrapper for Emit_start_blocking(), for use from within F90.
+    @param Status Return status of the call, REG_SUCCESS or
+    REG_FAILURE */
 void FUNCTION(emit_start_blocking_f) ARGS(`IOType, 
                                            SeqNum, 
                                            IOHandle,
@@ -1443,14 +1509,14 @@ INT_KIND_1_DECL(Status);
 }
 
 /*----------------------------------------------------------------
-
 SUBROUTINE emit_stop_f(IOHandle, Status)
 
   INTEGER(KIND=REG_SP_KIND), INTENT(inout) :: IOHandle
   INTEGER(KIND=REG_SP_KIND), INTENT(out)   :: Status
-
 ----------------------------------------------------------------*/
-
+/** Wrapper for Emit_stop(), for use from within F90.
+    @param Status Return status of the call, REG_SUCCESS or
+    REG_FAILURE */
 void FUNCTION(emit_stop_f) ARGS(`IOHandle,
                                  Status')
 INT_KIND_1_DECL(IOHandle);
@@ -1464,7 +1530,6 @@ INT_KIND_1_DECL(Status);
 }
 
 /*----------------------------------------------------------------
-
 SUBROUTINE emit_data_slice_f(IOHandle, DataType, Count, pData, Status)
 
   INTEGER(KIND=REG_SP_KIND), INTENT(in)  :: IOHandle
@@ -1472,9 +1537,10 @@ SUBROUTINE emit_data_slice_f(IOHandle, DataType, Count, pData, Status)
   INTEGER(KIND=REG_SP_KIND), INTENT(in)  :: Count
   XXXXXXX(KIND=REG_DP_KIND), DIMENSION(),INTENT(in) :: pData
   INTEGER(KIND=REG_SP_KIND), INTENT(out) :: Status
-
 ----------------------------------------------------------------*/
-
+/** Wrapper for Emit_data_slice(), for use from within F90.
+    @param Status Return status of the call, REG_SUCCESS or
+    REG_FAILURE */
 void FUNCTION(emit_data_slice_f) ARGS(`IOHandle,
                                        DataType,
                                        Count,
@@ -1490,20 +1556,22 @@ INT_KIND_1_DECL(Status);
                                              f90_to_c_type[(int)*DataType],/*(int)*DataType,*/
                                              (int)*Count, 
                                              pData) );
-
   return;
 }
 
 /*----------------------------------------------------------------
-
 SUBROUTINE emit_char_data_slice_f(IOHandle, pData, Status)
 
   INTEGER(KIND=REG_SP_KIND), INTENT(in)  :: IOHandle
   CHARACTER, DIMENSION(),    INTENT(in)  :: pData
   INTEGER(KIND=REG_SP_KIND), INTENT(out) :: Status
-
 ----------------------------------------------------------------*/
-
+/** F90 only. Routine to emit a data slice consisting of CHARACTER data.
+    @param IOHandle The handle of the IOType to use to emit data
+    @param pData The CHARACTER string to emit
+    @param Status Return status of the call, REG_SUCCESS or
+    REG_FAILURE 
+    @see emit_data_slice() */
 void FUNCTION(emit_char_data_slice_f) ARGS(`IOHandle,
                                             STRING_ARG(pData),
                                             Status')
@@ -1514,12 +1582,10 @@ INT_KIND_1_DECL(Status);
   *Status = INT_KIND_1_CAST( Emit_data_slice(*IOHandle, REG_CHAR, 
                                              STRING_LEN(pData), 
                                              STRING_PTR(pData)) );
-
   return;
 }
 
 /*----------------------------------------------------------------
-
 SUBROUTINE make_vtk_buffer_f(nx, ny, nz, veclen, a, b, c, 
                              array, status)
 
@@ -1528,9 +1594,10 @@ SUBROUTINE make_vtk_buffer_f(nx, ny, nz, veclen, a, b, c,
   REAL (KIND=REG_DP_KIND),    INTENT(in)  :: a, b, c
   REAL (KIND=REG_SP_KIND), DIMENSION(nx*ny*nz), INTENT(out) :: array
   INTEGER (KIND=REG_SP_KIND), INTENT(out) :: status
-
 ----------------------------------------------------------------*/
-
+/** Wrapper for Make_vtk_buffer(), for use from within F90.
+    @param Status Return status of the call, REG_SUCCESS or
+    REG_FAILURE */
 void FUNCTION(make_vtk_buffer_f) ARGS(`nx, ny, nz,
                                        veclen, 
                                        a, b, c,
@@ -1558,7 +1625,6 @@ INT_KIND_1_DECL(Status);
 }
 
 /*----------------------------------------------------------------
-
 SUBROUTINE make_vtk_header_f(header, title, nx, ny, nz, veclen, 
                              type, status)
 
@@ -1567,9 +1633,10 @@ SUBROUTINE make_vtk_header_f(header, title, nx, ny, nz, veclen,
   INTEGER (KIND=REG_SP_KIND), INTENT(in)            :: nx, ny, nz
   INTEGER (KIND=REG_SP_KIND), INTENT(in)            :: veclen
   INTEGER (KIND=REG_SP_KIND), INTENT(out)           :: status
-
 ----------------------------------------------------------------*/
-
+/** Wrapper for Make_vtk_header(), for use from within F90.
+    @param Status Return status of the call, REG_SUCCESS or
+    REG_FAILURE */
 void FUNCTION(make_vtk_header_f) ARGS(`STRING_ARG(header),
                                        STRING_ARG(title),
                                        nx, ny, nz,
@@ -1603,7 +1670,6 @@ INT_KIND_1_DECL(Status);
 }
 
 /*----------------------------------------------------------------
-
 SUBROUTINE make_chunk_header_f(header, IOindex, sx, sy, sz, nx, ny, nz, 
                                status)
 
@@ -1612,9 +1678,10 @@ SUBROUTINE make_chunk_header_f(header, IOindex, sx, sy, sz, nx, ny, nz,
   INTEGER (KIND=REG_SP_KIND), INTENT(in)            :: nx, ny, nz
   INTEGER (KIND=REG_SP_KIND), INTENT(in)            :: sz, sy, sz
   INTEGER (KIND=REG_SP_KIND), INTENT(out)           :: status
-
 ----------------------------------------------------------------*/
-
+/** Wrapper for Make_chunk_header(), for use from within F90.
+    @param Status Return status of the call, REG_SUCCESS or
+    REG_FAILURE */
 void FUNCTION(make_chunk_header_f) ARGS(`STRING_ARG(header),
                                          IOindex,
                                          totx, toty, totz,
@@ -1650,7 +1717,6 @@ INT_KIND_1_DECL(Status);
 }
 
 /*----------------------------------------------------------------
-
 SUBROUTINE steering_control_f(SeqNum, NumSteerParams, SteerParamLabels, &
                               NumSteerCommands, SteerCommands, &
                               SteerCommandParams, Status)
@@ -1666,7 +1732,9 @@ SUBROUTINE steering_control_f(SeqNum, NumSteerParams, SteerParamLabels, &
       DIMENSION(REG_MAX_NUM_STR_CMDS), INTENT(out) :: SteerCommandParams
   INTEGER (KIND=REG_SP_KIND), INTENT(out)          :: Status  
 ----------------------------------------------------------------*/
-
+/** Wrapper for Steering_control(), for use from within F90.
+    @param Status Return status of the call, REG_SUCCESS or
+    REG_FAILURE */
 void FUNCTION(steering_control_f) ARGS(`SeqNum,
 		     	                NumSteerParams,
 		     			STRING_ARG(SteerParamLabels),
@@ -1749,7 +1817,6 @@ INT_KIND_1_DECL(Status);
 }
 
 /*----------------------------------------------------------------
-
 SUBROUTINE steering_pause_f(NumSteerParams, SteerParamLabels, &
                             NumCommands, SteerCommands, &
                             SteerCommandParams, Status)
@@ -1764,7 +1831,9 @@ SUBROUTINE steering_pause_f(NumSteerParams, SteerParamLabels, &
       DIMENSION(REG_MAX_NUM_STR_CMDS), INTENT(out) :: SteerCommandParams
   INTEGER (KIND=REG_SP_KIND), INTENT(out)          :: Status  
 ----------------------------------------------------------------*/
-
+/** Wrapper for Steering_pause(), for use from within F90.
+    @param Status Return status of the call, REG_SUCCESS or
+    REG_FAILURE */
 void FUNCTION(steering_pause_f) ARGS(`NumSteerParams,
 		                      STRING_ARG(SteerParamLabels),
 		                      NumCommands,
@@ -1849,10 +1918,10 @@ INT_KIND_1_DECL(Status);
 }
 
 /*----------------------------------------------------------------
-
 SUBROUTINE steering_sleep_f()
 ----------------------------------------------------------------*/
-
+/** Wrapper for C call to sleep(2), for use from F90. 
+    @internal */
 void FUNCTION(steering_sleep_f) ARGS(`')
 {
   sleep(2);
@@ -1860,13 +1929,14 @@ void FUNCTION(steering_sleep_f) ARGS(`')
 }
 
 /*----------------------------------------------------------------
-
 SUBROUTINE steering_char_to_ptr_f(string, ptr)
 
   CHARACTER (LEN=REG_MAX_STRING_LENGTH), INTENT(in) :: string
   INTEGER (KIND=REG_DP_KIND), INTENT(out)           :: ptr
 ----------------------------------------------------------------*/
-
+/** F90 only. Routine to obtain a pointer to the supplied string.
+    Originally intended to be passed to register_params_f as type void*. 
+    Now obsolete since introduction of FUNCTION(register_string_param_f)()? */
 void FUNCTION(steering_char_to_ptr_f) ARGS(`STRING_ARG(string),
                                             ptr')
 STRING_ARG_DECL(string);
@@ -1885,18 +1955,24 @@ INT_KIND_1D0_DECL(ptr);
 #if REG_DEBUG
   fprintf(stderr, "steering_char_to_ptr_f: Leaving routine\n");
 #endif
-
 }
 
 /*----------------------------------------------------------------
-
 SUBROUTINE set_type_size(Type, Ptr1, Ptr2, Status)
 
   INTEGER (KIND=REG_SP_KIND), INTENT(in)  :: Type
   XXXXXXX, INTENT(in)                     :: Ptr1, Ptr2
   INTEGER (KIND=REG_SP_KIND), INTENT(out) :: Status
 ----------------------------------------------------------------*/
-
+/** Routine to allow the storage size of different variable types
+    to be determined at run time.
+    @param Type The type of the variable being examined, as encoded 
+           in ReG_Steer_types.h
+    @param Ptr1 Pointer to first element in array of type @p Type
+    @param Ptr2 Pointer to second element in array of type @p Type
+    @param Status Return status of the call, REG_SUCCESS or
+    REG_FAILURE 
+    @internal */    
 void FUNCTION(set_type_size) ARGS(`Type, Ptr1, Ptr2, Status')
 INT_KIND_1_DECL(Type);
 char *Ptr1;
