@@ -1,7 +1,4 @@
 /*----------------------------------------------------------------------------
-  Header file defining public routines used in the construction of
-  the steering interface of a steering component.
-
   (C) Copyright 2005, University of Manchester, United Kingdom,
   all rights reserved.
 
@@ -27,13 +24,16 @@
   AND PERFORMANCE OF THE PROGRAM IS WITH YOU.  SHOULD THE PROGRAM PROVE
   DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR
   CORRECTION.
-
-  Authors........: Andrew Porter, Robert Haines
-
 ---------------------------------------------------------------------------*/
 
 /** @file ReG_Steer_Steerside.h 
     @brief Header file for inclusion in steering-client code 
+
+    Header file defining public routines used in the construction of
+    the steering interface of a steering component.
+
+    @author Andrew Porter
+    @author Robert Haines
   */
 
 #ifndef __REG_STEER_STEERSIDE_H__
@@ -51,15 +51,14 @@
 /**
    Data structure used to return details of checkpoint log
    entries to steerer */
-
 typedef struct {
-
-  /* Tag associated with this checkpoing */
+  /** Tag associated with this checkpoing */
   char   chk_tag[REG_MAX_STRING_LENGTH];
-  /* No. of parameters for which we have details at this chkpt */
+  /** No. of parameters for which we have details at this chkpt */
   int    num_param;
-  /* Associated parameter labels and values at this chkpt */
+  /** Associated parameter labels at this chkpt */
   char   param_labels[REG_MAX_NUM_STR_PARAMS][REG_MAX_STRING_LENGTH];
+  /** Associated parameter values at this chkpt */
   char   param_values[REG_MAX_NUM_STR_PARAMS][REG_MAX_STRING_LENGTH];
 
 } Output_log_struct;
@@ -67,15 +66,23 @@ typedef struct {
 /**
    Data structure used to return details of steerable/monitored
    parameters */
-
 typedef struct {
-
+  /** Label given to this parameter at its registration */
   char  label[REG_MAX_STRING_LENGTH];
+  /** The type of this parameter */
   int   type;
+  /** The handle generated for this parameter at its registration */
   int   handle;
+  /** The current value of this parameter */
   char  value[REG_MAX_STRING_LENGTH];
+  /** The minimum permitted value for this parameter (if steerable) */
   char  min_val[REG_MAX_STRING_LENGTH];
+  /** The maximum permitted value for this parameter (if steerable).
+      If the parameter is of type REG_CHAR then this holds the maximum
+      permitted length fo the string. */
   char  max_val[REG_MAX_STRING_LENGTH];
+  /** If this parameter is of type REG_BIN, then this points to the
+      raw data */
   void *raw_data;
 
 } Param_details_struct;
@@ -83,46 +90,90 @@ typedef struct {
 /*-------------- Steerer-side function prototypes -------------*/
 
 /**
-   Attempt to attach to the specified simulation - returns a 
-   handle for this simulation if successful.
-   @param SimHandle On successful return holds the handle of the simulation */
+   @param SimID A string (of no more than REG_MAX_STRING_LENGTH 
+   characters) identifying the simulation to attach to
+   (Web Service endpoint or directory on hard disk)
+   @param SimHandle On successful return, holds the 
+   library-generated handle of the simulation
+   @return REG_SUCCESS, REG_FAILURE, REG_MEM_FAIL
+
+   In the RealityGrid implementation, this routine first attempts to
+   contact the Steering Web/Grid Service with the handle given by @p
+   SimID.  If this fails then it attempts to revert to steering via
+   the local file system.  In this case, the library first tries
+   interpreting @p SimID as a directory on the local filesystem (@e
+   i.e. it assumes that @p SimID gives the directory that was passed
+   to the running simulation in the REG_STEER_DIRECTORY environment
+   variable).  If this too fails then the library attempts to get a
+   valid steering directory from the REG_STEER_DIRECTORY environment
+   variable.  If all of these attempts fail then the routine returns
+   REG_FAILURE.
+*/
 extern PREFIX int Sim_attach(char *SimID,
 			     int  *SimHandle);
 
 /**
-   As Sim_attach except takes a username and passphrase for use 
-   with WS-Security (only supported in the WSRF implementation) 
-   and path to directory holding CA certs (WSRF only, if specified,
-   turns on authentication of SWS). 
    @param SimID Address of service or directory to attach to 
    @param sec Pointer to struct holding userDN, passphrase and,
    potentially, path to CA certs 
-   @param SimHandle On successful return holds the handle of the simulation */
+   @param SimHandle On successful return holds the library-generated 
+   handle of the simulation 
+   @return REG_SUCCESS, REG_FAILURE, REG_MEM_FAIL
+
+   As Sim_attach() except takes a pointer to a reg_security_info struct.
+   This holds a username and passphrase for use 
+   with WS-Security (only supported in the WSRF implementation).  If this
+   struct also holds a valid path to the directory holding CA certs then 
+   this turns on authentication of the SWS via SSL (WSRF only).
+*/
 extern PREFIX int Sim_attach_secure(const char *SimID,
                                     const struct reg_security_info *sec,
 				    int  *SimHandle);
 
 /**
+   @param SimHandle Handle of the simulation from which to detach, not
+   valid once call has returned
+   @return REG_SUCCESS
+
    Detach from the specfied simulation.  Signals the simulation
    that steerer has detached and then cleans-up associated
    files and table entries. */
 extern PREFIX int Sim_detach(int *SimHandle);
 
 /**
-   Looks for the next message from any attached simulations. If
-   it finds one then it returns the handle of the originating
-   simulation and the type of message. */
+   @param SimHandle Handle of the simulation that emitted the message
+   @param msg_type The type of the message received
+   @return REG_SUCCESS, REG_FAILURE
+
+   Looks for the next message from any attached simulations. If it
+   finds one then it returns the handle of the originating simulation
+   and the type of message.  If it fails to find a message then it
+   returns REG_FAILURE.
+*/
 extern PREFIX int Get_next_message(int   *SimHandle,
 				   int   *msg_type);
 
 /**
-   Consume and store the parameter definitions that the 
-   simulation referred to by SimHandle has emitted. */
+   @param SimHandle Handle of simulation from which to receive
+   definitions of steerable and monitored parameters
+   @return REG_SUCCESS, REG_FAILURE
+
+   Consume the parameter definitions emitted by the steered
+   application.  The internal table of parameters is updated ready for
+   querying (@e e.g. in order to update a GUI).
+*/
 extern PREFIX int Consume_param_defs(int SimHandle);
 
 /**
-   Consume and store the IO-type definitions that the 
-   simulation referred to by SimHandle has emitted. */
+   @param SimHandle Handle of simulation from which to receive
+   definitions of IOTypes.
+   @return REG_SUCCESS, REG_FAILURE
+
+   Consume and store the IOType definitions that the simulation has
+   emitted. These definitions provide information to be displayed by a
+   steering client in order to allow the user to request sample data
+   to be emitted and consumed.
+*/
 extern PREFIX int Consume_IOType_defs(int SimHandle);
 
 /** 
@@ -130,26 +181,53 @@ extern PREFIX int Consume_IOType_defs(int SimHandle);
    simulation referred to by SimHandle has emitted. */
 extern PREFIX int Consume_ChkType_defs(int SimHandle);
 
-/** 
-   Consume a status message emitted by the simulation associated
-   with SimHandle.  Returns that simulations current sequence no.
-   and a list of any commands received (e.g. finish). */
+/**
+   @param SimHandle Handle of simulation from which to receive status msg
+   @param SeqNum Measure of progress of attached simulation
+   @param NumCmds No. of commands received from simulation
+   @param Commands List of commands received from simulation
+   @return REG_SUCCESS, REG_FAILURE, REG_MEM_FAIL
+
+   Consume a status message emitted by the simulation associated with
+   @p SimHandle.  Returns that simulation's current sequence no.  and
+   a list of any commands received (@e e.g. notification that it has
+   finished). Any parameter values received by this routine are
+   automatically used to update the internal library table of
+   parameters.
+*/
 extern PREFIX int Consume_status(int   SimHandle,
 				 int  *SeqNum,
 				 int  *NumCmds,
 				 int  *Commands);
 
-/** 
-   Consume a logging message emitted by the simulation associated
-   with SimHandle.  Contents of the message are stored in the log
-   for that simulation. */
+/**
+   @param SimHandle Handle of simulation from which to receive log msg
+   @return REG_SUCCESS, REG_FAILURE
+
+   Consumes any logging messages (containing details on checkpoints
+   taken) emitted by an attached simulation.  The contents of the
+   message are stored in the log for that simulation.  This log may be
+   accessed by the Get_chk_log_number() and Get_chk_log_entries()
+   functions.  This functionality is only used in local (file-based)
+   steering - in remote steering using Grid Services the checkpoint
+   logging is carried out using a Checkpoint Tree.  See the
+   ReG_Steering_Grid_Service.doc document for more details.
+ */
 extern PREFIX int Consume_log(int   SimHandle);
 
-/** 
-   Emit a steering-control message to the simulation associated
-   with SimHandle.  Emits the specified commands (if any) and
-   automatically sends any (steerable) parameter values that have
-   been edited since the last call to this routine. */
+/**
+   @param SimHandle Handle of the simulation to send control msg to
+   @param NumCommands No. of commands to send (cannot exceed 
+   REG_MAX_NUM_STR_CMDS, defined in ReG_Steer_types.h)
+   @param SysCommands List of commands to send
+   @param SysCmdParams Parameters (if any) to go with each command
+   @return REG_SUCCESS, REG_FAILURE
+
+   Emit a steering-control message to a simulation. Emits the
+   specified commands (if any) and automatically sends any (steerable)
+   parameter values that have been edited since the last call to this
+   routine. 
+*/
 extern PREFIX int Emit_control(int    SimHandle,
 			       int    NumCommands,
 			       int   *SysCommands,
@@ -157,32 +235,77 @@ extern PREFIX int Emit_control(int    SimHandle,
 
 /** Wrapper for generating common steering command */
 extern PREFIX int Emit_detach_cmd(int SimHandle);
+
 /** Wrapper for generating common steering command */
 extern PREFIX int Emit_stop_cmd(int SimHandle);
-/** Wrapper for generating common steering command */
+
+/**
+   @param SimHandle Handle of the simulation to send msg to
+   @return REG_SUCCESS, REG_FAILURE
+
+   Wrapper for generating pause command and sending to attached 
+   simulation.
+ */
 extern PREFIX int Emit_pause_cmd(int SimHandle);
-/** Wrapper for generating common steering command */
+
+/**
+   @param SimHandle Handle of the simulation to send msg to
+   @return REG_SUCCESS, REG_FAILURE
+
+   Wrapper for generating resume command and sending it to the attached 
+   simulation.
+*/
 extern PREFIX int Emit_resume_cmd(int SimHandle);
-/** Wrapper for generating common steering command */
+
+/**
+   @param SimHandle Handle of the simulation to send msg to
+   @param ParamHandle Handle of parameter for which to retrieve log
+   @return REG_SUCCESS, REG_FAILURE
+
+   Emit a command to instruct the steered application to emit all of
+   the logged values of the specified parameter.  The log itself is
+   stored internally and is accessed via Get_param_log().
+ */
 extern PREFIX int Emit_retrieve_param_log_cmd(int SimHandle, 
 					      int ParamHandle);
-/** This one is SGS-specific as it uses the Checkpoint Tree */
-extern PREFIX int Emit_restart_cmd(int SimHandle, char *chkGSH);
 
 /** 
-   Initialize the internal tables etc. used by the steering library
-   on the steering application sied.  Must be called before all other
+   @param SimHandle Handle of the simulation to send msg to
+   @param chkGSH Grid Service Handle of checkpoint to restart from
+   @return REG_SUCCESS, REG_FAILURE
+
+   OGSI/WSRF-specific for generating restart command and sending it to
+   the attached application.  Note that the steering library does not
+   concern itself with the physical location of checkpoint files and
+   therefore this must be handled externally if the specified
+   checkpoint does not exist on the machine running the steered
+   application.
+*/
+extern PREFIX int Emit_restart_cmd(int   SimHandle, 
+				   char *chkGSH);
+
+/** 
+   @return REG_SUCCESS, REF_FAILURE
+   Initialize the internal tables @e etc. used by the steering library
+   on the steering application side.  Must be called before all other
    steering-library routines. */
 extern PREFIX int Steerer_initialize();
 
 /** 
-   Cleans up the internal tables etc. Must be called after all steering
+   @return REG_SUCCESS
+   Cleans up the internal tables @e etc. Must be called after all steering
    activity is complete. */
 extern PREFIX int Steerer_finalize();
 
 /** 
-   Deletes all data associated with the simulation with handle SimHandle.
-   Used when a simulation detaches. */
+   @param SimHandle Handle of simulation for which to delete tables
+   @return REG_SUCCESS, REG_FAILURE
+
+   Deletes all data associated with the simulation with handle @p
+   SimHandle.  Used when a simulation detaches.  Supplied as a
+   separate interface because also required when the simulation
+   initiates the detach (@e e.g. when it has completed its run).
+*/
 extern PREFIX int Delete_sim_table_entry(int *SimHandle);
 
 /**
@@ -192,9 +315,15 @@ extern PREFIX int Delete_sim_table_entry(int *SimHandle);
 extern PREFIX int Dump_sim_table();
 
 /** 
-   Gets the number of <steerable> parameters associated with the simulation 
-   with handle sim_handle.  i.e. if steerable==TRUE then this returns the
-   number of steerable parameters that the simulation has. */
+   @param sim_handle Handle of simulation for which to get no. of params
+   @param steerable Whether to get steerable (@c REG_TRUE) or monitored 
+   (@c REG_FALSE) parameters
+   @param num_params On success, the no. of parameters currently registered
+   by the attached simulation
+   @return REG_SUCCESS, REG_FAILURE
+
+   Gets the number of @p steerable parameters associated with the simulation 
+   with handle @p sim_handle.  */
 extern PREFIX int Get_param_number(int  sim_handle,
 				   int  steerable,
 				   int *num_params);

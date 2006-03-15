@@ -119,6 +119,33 @@
     and, if so, to implement this functionality.  An application that
     supports `pause' is automatically assumed to support `resume.' 
     The relevant constants are defined in ReG_Steer_types.h
+
+    @section sec_IO IO Control
+
+    The API contains a number of routines  intended to allow an
+    application to emit and consume potentially large quantities of
+    data (`Sample data').  An application may emit or consume various
+    sorts of data set and we term each of these an `IOType.'  The
+    library is designed to cope with parallel applications that are
+    unable to collect the complete data set to be emitted on a single
+    processor.  Such a data set must therefore be emitted piece by
+    piece - this corresponds to several calls to Emit_data_slice() in
+    the steering library.  Multiple calls to this routine must also be
+    made if emitting data of different types.
+    @see Emit_start(), Emit_data_slice(), Emit_stop() @n Consume_start(),
+    Consume_data_slice_header, Consume_data_slice(), Consume_stop()
+
+    @section sec_ChkPt Checkpointing Control
+
+    When requesting that the simulation perform a restart,
+    Steering_control() returns the ChkType from which to restart and a
+    ChkTag identifying which checkpoint set.  Currently, no information
+    is supplied on where to find the checkpoint or on how the ChkTag
+    should be used to construct the necessary filenames; this is all
+    assumed to be carried out by the simulation.  This situation is not
+    satisfactory but is difficult to resolve since it impinges on the
+    more general area of checkpoint management.
+    @see Register_ChkTypes(), Add_checkpoint_file(), Record_checkpoint_set()
 */
 
 /** If REG_WSRF is not defined then the code builds with OGSI stubs

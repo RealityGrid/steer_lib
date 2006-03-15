@@ -967,7 +967,8 @@ SUBROUTINE register_string_param_f(ParamLabel, ParamSteerable, &
 ----------------------------------------------------------------*/
 
 /** F90-only.  For registering a monitored/steerable parameter that
-    is of type CHARACTER.
+    is of type CHARACTER. The maximum length of the string is 
+    automatically obtained and stored along with the registered parameter.
     @param ParamLabel A string containing the label of this parameter 
     @param ParamSteerable Whether (REG_TRUE) or not (REG_FALSE) this
            parameter is steerable

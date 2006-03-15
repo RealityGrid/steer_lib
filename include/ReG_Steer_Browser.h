@@ -1,7 +1,4 @@
 /*----------------------------------------------------------------------------
-  This header file contains routines and data structures for
-  steerside SOAP-based communication.
-
   (C) Copyright 2005, University of Manchester, United Kingdom,
   all rights reserved.
 
@@ -27,15 +24,19 @@
   AND PERFORMANCE OF THE PROGRAM IS WITH YOU.  SHOULD THE PROGRAM PROVE
   DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR
   CORRECTION.
-
-  Authors........: Andrew Porter, Robert Haines
-
 ---------------------------------------------------------------------------*/
 #ifndef __REG_STEER_BROWSER_H__
 #define __REG_STEER_BROWSER_H__
 
 /** @file ReG_Steer_Browser.h
-    @brief Header file for registry browsing functionality */
+    @brief Header file for registry browsing functionality 
+
+    This header file contains routines and data structures for
+    steerside SOAP-based communication.
+
+    @author Andrew Porter
+    @author Robert Haines
+*/
 
 #include "ReG_Steer_Utils.h"
 
@@ -72,12 +73,22 @@ struct registry_entry {
 /*-------------------------------------------------------------------*/
 
 /**
-   Really just wraps Get_registry_entries.  Uses the registry 
+   @param nSims No. of steerable applications available
+   @param simName Pointer to array of strings, each of length 
+   REG_MAX_STRING_LENGTH.  On successful return holds names of each 
+   steerable application
+   @param simGSH Pointer to array of strings, each of length 
+   REG_MAX_STRING_LENGTH. On successful return holds Grid Service 
+   Handles of each application
+   @return REG_SUCCESS, REG_FAILURE
+
+   @b OBSOLETE - superceded by Get_registry_entries() @n
+   Really just wraps Get_registry_entries().  Uses the registry 
    address in REG_REGISTRY_ADDRESS if set, otherwise uses
    default (#define'd at the top of ReG_Steer_Browser.c).
-   Returns list of steerable applications. The Grid
-   Service Handle returned in simGSH must be supplied as the SimID
-   to Sim_attach. */
+   Returns list of steerable applications (up to 
+   REG_MAX_NUM_STEERED_SIM). The Grid Service Handle returned 
+   in @p simGSH must be supplied as the SimID to Sim_attach. */
 extern PREFIX int Get_sim_list(int   *nSims,
 			       char **simName,
 			       char **simGSH);
