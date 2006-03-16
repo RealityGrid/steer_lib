@@ -311,7 +311,9 @@ extern PREFIX int Delete_sim_table_entry(int *SimHandle);
 /**
    A debugging routine - writes the complete contents of the internal
    table holding information on all connected simulations to 
-   ./sim_table.txt */
+   ./sim_table.txt 
+   @internal
+*/
 extern PREFIX int Dump_sim_table();
 
 /** 
@@ -329,44 +331,75 @@ extern PREFIX int Get_param_number(int  sim_handle,
 				   int *num_params);
 
 /**
-   Gets the first <num_params> <steerable> parameters assocaited with the
-   simulation with handle sim_handle.  
-   @return The handles, labels and values (as strings) of these parameters 
-   @see Param_details_struct
+   @param sim_handle Handle of simulation for which to get param values
+   @param steerable Whether to get steerable (@c REG_TRUE) or monitored 
+   (@c REG_FALSE) parameters
+   @param num_params Number of parameter values to retrieve
+   @param param_details Pointer to array of Param_details_struct structs
+   holding details of the parameters registered with the library
+   @return REG_SUCCESS, REG_FAILURE
+   Get_param_number() should be called before this routine in order
+   to establish the number of parameters available and @p param_details
+   should point to a sufficiently long array
+   @see Get_param_number(), Param_details_struct
 */
 extern PREFIX int Get_param_values(int                   sim_handle,
 				   int                   steerable,
 				   int                   num_params,
 				   Param_details_struct *param_details);
 
-/** 
+/**
+   @param sim_handle Handle of simulation for which to set param values
+   @param num_params No. of parameters for which to set new values
+   @param handles Array of handles of the parameters to change
+   @param vals Array of new values (encoded as strings) to give the parameters
+   @return REG_SUCCESS, REG_FAILURE
    Sets the values of the parameters with the specified handles for the
-   simulation with handle sim_handle. Causes internal flags to be set
-   to indicate that these parameter values have changed. */
+   simulation with handle @p sim_handle. Causes internal flags to be set
+   to indicate that these parameter values have changed. The new values are 
+   sent to the simulation on the next call of Emit_control().
+*/
 extern PREFIX int Set_param_values(int    sim_handle,
 				   int    num_params,
 				   int   *handles,
 				   char* *vals);
 
 /**
-   Retrieve pointer to internal buffer holding previous values of
-   the parameter with handle 'handle' belonging to 'sim_handle.'
-   num_entries holds the no. of entries in the log. */
+   @param sim_handle Handle of simulation for which to get param log
+   @param handle Handle of parameter for which to get log
+   @param buf On successful return, holds pointer to internal library buffer
+   holding logged values as array of doubles
+   @param num_entries On successful return, holds no. of entries in log
+   Retrieve pointer to internal library buffer holding previous values of
+   the parameter.
+*/
 extern PREFIX int Get_param_log(int      sim_handle,
 				int      handle,
 				double **buf, 
 				int     *num_entries);
 
-/** 
-   Gets the number of IO types associated with the simulation with
-   handle <sim_handle>. */
+/**
+   @param sim_handle Handle of simulation for which to get no. of IOTypes
+   @param num_iotypes On successful return, holds no. of IOTypes registered
+   by the simulation
+   Gets the number of IO types associated by the simulation.
+   @see Get_iotypes()
+*/
 extern PREFIX int Get_iotype_number(int sim_handle,
 				    int *num_iotypes);
 
-/** 
-   Gets the first <num_iotypes> IO types associated with the simulation
-   with hand <sim_handle>. 
-   @return The handle and label associated with each IO type, whether IO type is IN,OUT or CHKPT, whether it supports automatic emission/consumption and, if so, with what frequency (in no. of steps between emission/consumption) it is currently doing so. 
+/**
+   @param sim_handle Handle of simulation for which to get details of IOTypes
+   @param num_iotypes Number of IOTypes to retrieve details on
+   @param handles List of handles of retrieved IOTypes
+   @param labels List of labels of retrieved IOTypes
+   @param types List of the types (REG_IO_IN or REG_IO_OUT) 
+   of the retrieved IOTypes
+   @param io_freqs Frequency associated with each IOType (zero if no 
+   automatic emission/consumption)
+   @return REG_SUCCESS, REG_FAILURE
+   Gets the first @p num_iotypes IOTypes associated with the simulation
+   with handle @p sim_handle. 
  */
 extern PREFIX int Get_iotypes(int    sim_handle,
 			      int    num_iotypes,
@@ -375,27 +408,34 @@ extern PREFIX int Get_iotypes(int    sim_handle,
 			      int   *types,
 			      int   *io_freqs);
 
-/** 
+/**
+   @param sim_handle Handle of simulation for which to set IOType freqs
+   @param num_iotypes The number of IOTypes to change
+   @param iotype_handles Array of handles of the IOTypes to change
+   @param freqs Array of the new frequency values
    A utility function that allows the steerer to update the emit/consume
-   frequency associated with a given IOtype - the frequency itself is
-   stored as a steerable parameter and therefore must be looked-up. */
+   frequency associated with a given IOtype. The new values are sent to 
+   the simulation on the next call of Emit_control(). */
 extern PREFIX int Set_iotype_freq(int  sim_handle,
 				  int  num_iotypes,
 				  int *iotype_handles,
 				  int *freqs);
 
 /**
-   Gets the number of Chk types associated with the simulation with
-   handle <sim_handle>. */
+   @param sim_handle Handle of simulation to get details for
+   @param num_chktypes On successful return, the no of ChkTypes registered 
+   by the simulation
+   Gets the number of Chk types associated with a simulation.
+   @see Get_chktypes(), Get_iotype_number()
+ */
 extern PREFIX int Get_chktype_number(int  sim_handle,
 				     int *num_chktypes);
 
 /** 
-   Gets the first <num_iotypes> Chk types associated with the simulation
-   with hand <sim_handle>. Returns the handle and label associated with
-   each Chk type. Also returns whether Chk type is IN or OUT and
-   frequency (in no. of steps between each emission) of
-   automatic emission. */
+   As for Get_iotypes() with the only exception that a checkpoint type
+   can be of type REG_IO_IN, REG_IO_OUT or REG_IO_INOUT.
+   @see Get_chktype_number(), Get_iotypes() 
+*/
 extern PREFIX int Get_chktypes(int    sim_handle,
 			       int    num_chktypes,
 			       int   *handles,
@@ -403,47 +443,75 @@ extern PREFIX int Get_chktypes(int    sim_handle,
 			       int   *types,
 			       int   *chk_freqs);
 
-/** 
+/**
    A utility function that allows the steerer to update the emit
-   frequency associated with a given Chktype - the frequency itself is
-   stored as a steerable parameter and therefore must be looked-up. */
+   frequency associated with a given Chktype. 
+   @see Set_iotype_freq()
+*/
 extern PREFIX int Set_chktype_freq(int  sim_handle,
 				   int  num_chktypes,
 				   int *chktype_handles,
 				   int *freqs);
 
-/** 
-   Gets the number of supported commands registered by the simulation
-   with handle <sim_handle>. */
+/**
+   @param sim_handle Handle of the simulation to get info. on
+   @param num_cmds On successful return, the no. of supported commands
+   that the simulation has.
+   Gets the number of supported commands registered by a simulation.
+*/
 extern PREFIX int Get_supp_cmd_number(int  sim_handle,
 				      int *num_cmds);
 
-/** 
-  Get the first <num_cmds> supported commands registered for the
-  simulation with handle <sim_handle>.  Returns the id of each
-  command in the array pointed to by cmd_ids.  This array must be
-  large enough to hold <num_cmds> integers */
+/**
+   @param sim_handle Handle of the simulation to get info. on
+   @param num_cmds No. of supported commands to get details on
+   @param cmd_ids On successful return, list of supported commands.  Must
+   point to an array large enough to hold @p num_cmds integers.
+   Get the first @p num_cmds supported commands registered by a
+   simulation @e i.e. those that the application has undertaken to 
+   support in its call to Steering_initialize() (plus those that are 
+   supported by default such as REG_STR_DETACH).
+*/
 extern PREFIX int Get_supp_cmds(int  sim_handle,
 				int  num_cmds,
 				int *cmd_ids);
 
-/** 
-  Query functions for getting checkpoint information out of logging 
-  structure */
+/**
+   @param sim_handle Handle of the simulation to get info. on
+   @param chk_handle Handle of ChkType to get info. on
+   @param num_entries On successful return, holds the number of entries
+   in the log for checkpoints of this type
+   @return REG_SUCCESS, REG_FAILURE
+
+   Query function for getting checkpoint information out of logging
+   structure. Note that in the RealityGrid implementation this routine
+   is only used for local (file-based) steering.  When the
+   grid/web-service framework is used, checkpoint logging is performed
+   using a tree of grid services and querying this tree is outside the
+   scope of this API.
+*/
 extern PREFIX int Get_chk_log_number(int  sim_handle,
 				     int  chk_handle,
 				     int *num_entries);
 
-/** 
-  Returns the FIRST num_entries checkpoint entries from the logs */
+/**
+   @param sim_handle Handle of the simulation to get info. on
+   @param chk_handle Handle of ChkType to get info. on (as 
+   returned in the @p handles array by a call to Get_chktypes())
+   @param num_entries No. of entries to retrieve from logs
+   @param entries On successful return, holds array of @p num_entries
+   structs giving information on each log entry.
+   @return REG_SUCCESS, REG_FAILURE
+   Returns the FIRST @p num_entries checkpoint entries from the logs */
 extern PREFIX int Get_chk_log_entries(int                sim_handle,
 				      int                chk_handle,
 			              int                num_entries,
 				      Output_log_struct *entries);
 
-/** 
-  Returns the LAST num_entries checkpoint entries in reverse
-  chronological order */
+/**
+   Returns the LAST @p num_entries checkpoint entries in reverse
+   chronological order 
+   @see Get_chk_log_entries */
 extern PREFIX int Get_chk_log_entries_reverse(int                sim_handle,
 					      int                chk_handle,
 					      int                num_entries,

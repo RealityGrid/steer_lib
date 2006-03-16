@@ -1,7 +1,4 @@
 /*----------------------------------------------------------------------------
-  Base header file for the steering library - contains definitions
-  of return values, message types and array sizes.
-
   (C) Copyright 2005, University of Manchester, United Kingdom,
   all rights reserved.
 
@@ -34,6 +31,10 @@
 
 /** @file ReG_Steer_types.h
     @brief Top-level header file
+
+    Base header file for the steering library - contains definitions
+    of return values, message types and array sizes.
+
     @author Andrew Porter
     @author Robert Haines
 
@@ -41,20 +42,55 @@
 
     @section intro_sec Introduction 
 
+    A number of people contributed to the initial design of the
+    RealityGrid steering API and thus were authors of the document
+    that this Doxygen-generated documentation replaces.  They are:
+    Stephen Pickles, Robin Pinning, Andrew Porter, Graham Riley,
+    Rupert Ford, Ken Mayes, David Snelling, Jim Stanton, Steven Kenny
+    and Shantenu Jha.
+
+    @latexonly
+    \begin{figure}
+    \centerline{\includegraphics{../steer_arch_symm.png}}
+    \caption{Basic architecture for RealityGrid steering.  Each ellipse
+    represents a distinct application, the location of which is not
+    constrained.  The client can dynamically attach to the running
+    application, perform some steering activity and then detach again. The
+    application may also use the steering library to send data sets to
+    some other component, {\it e.g}. a visualization package.}
+    \end{figure}
+    @endlatexonly
+
+    <IMG SRC="../steer_arch_symm.png" alt="Illustrative architecture diagram"
+         title="Illustrative architecture of a steering scenario"/>
+
+    The figure shows an example use case for computational steering.
+    The simulation component has been instrumented using the steering
+    API.  This enables it to receive control messages from the
+    steering client and return status messages to it. In addition to
+    interacting with the steering client, the simulation in the figure
+    also uses the API to transfer (potentially large) data sets to a
+    second component.  Although this second component is labelled 
+    'visualization,' it could in fact be any other type of component
+    including a second form of simulation (as in a coupled-model
+    scenario).
+
     The API has been designed with the assumption that the control and
-    status links in Figure 1 will involve the exchange of small
-    quantities of data.  For cases where the steerable `parameter'
-    is a large array of data, it will best be treated as a form of 
-    `sample data' with the steering client issuing instructions for
-    it to be emitted and consumed as required.
+    status links between a steering client (labelled 'Steering
+    connection' in the figure) and simulation will involve the
+    exchange of small quantities of data.  For cases where the
+    steerable 'parameter' is a large array of data, it will best be
+    treated as a form of 'sample data' with the steering client
+    issuing instructions for it to be emitted and consumed as
+    required.
 
     All routines will provide integer return values with a return
     value of REG_SUCCESS (zero) indicating success and a return value
     of REG_FAILURE (unity) indicating failure.  (These quantities are
     defined in ReG_Steer_types.h.)  Some routines use this return
     value to specify more detailed information on the nature of the
-    success/failure - see individual interface
-    specifications for details.
+    success/failure - see individual interface specifications for
+    details.
 
     @section sec_background Background Assumptions
 
@@ -75,57 +111,55 @@
     that there exists a point (breakpoint) within a larger control
     loop at which it is feasible to insert new functionality intended
     to:
-    @li (a) accept a change to one or more of the parameters of the
+    @li accept a change to one or more of the parameters of the
     simulation (steerable parameters); 
-    @li (b) emit a consistent representation of the current state of 
+    @li emit a consistent representation of the current state of 
     both the steerable parameters and other variables (monitored 
     quantities); 
-    @li (c) emit a consistent representation (provisionally called 
+    @li emit a consistent representation (provisionally called 
     outsample) of part of the system being simulated that may be 
-    required by a downstream component (eg. a visualisation system or 
+    required by a downstream component (@e e.g. a visualisation system or 
     another simulation).  
 
     We also assume that it is feasible, at the same point in the control
     loop, to:
-    @li (d) output a consistent representation of the system (checkpoint) 
+    @li output a consistent representation of the system (checkpoint) 
     containing sufficient information to enable a subsequent restart of 
     the simulation from its current state;
-    @li (e) (in the case that the steered component is itself downstream 
+    @li (in the case that the steered component is itself downstream 
     of another component), to accept a sample emitted by an upstream 
     component (provisionally called insample).
 
     @section sec_f90 F90 bindings
 
     The API itself also provides F90 bindings for the simulation-side
-    routines.  All of the routines making up the F90 bindings are
-    implemented as F90 subroutines and hence their return value is
-    passed back to the caller by an additional `status' argument
-    (c.f. MPI).Since F90 does not have the void type, where an
-    argument to one of the F90 interfaces in this API can be of more
-    than one type then its type is denoted by <TYPE>.  Where an
-    argument to an interface in the API is an array, the first element
-    of the array should be supplied by the calling routine. The KIND
-    parameters used here, REG_INT_KIND, REG_SP_KIND and REG_DP_KIND,
-    are defined in reg_steer_f90.inc and correspond to KIND(1),
-    KIND(1.0) and KIND(1.0D0), respectively.
+    routines in ReG_Steer_Appside_f.c.  All of the routines making up
+    the F90 bindings are implemented as F90 subroutines and hence
+    their return value is passed back to the caller by an additional
+    @p status argument (c.f. MPI).  Where an argument to an interface
+    in the API is an array, the first element of the array should be
+    supplied by the calling routine. The KIND parameters used here,
+    REG_INT_KIND, REG_SP_KIND and REG_DP_KIND, are defined in
+    reg_steer_f90.inc and correspond to KIND(1), KIND(1.0) and
+    KIND(1.0D0), respectively.
 
     @section cmds_sec Pre-defined steering commands
 
-    The API defines and uses four pre-defined commands: `stop', 
-    `pause', `resume' and `detach'.  An application that is
+    The API defines and uses four pre-defined commands: 'stop', 
+    'pause', 'resume' and 'detach'.  An application that is
     steering enabled using the API supports `detach' by default.  It
     is the responsibility of the application programmer to decide
-    whether or not their application will support `stop' and `pause' 
+    whether or not their application will support 'stop' and 'pause' 
     and, if so, to implement this functionality.  An application that
-    supports `pause' is automatically assumed to support `resume.' 
+    supports 'pause' is automatically assumed to support `resume.' 
     The relevant constants are defined in ReG_Steer_types.h
 
     @section sec_IO IO Control
 
     The API contains a number of routines  intended to allow an
     application to emit and consume potentially large quantities of
-    data (`Sample data').  An application may emit or consume various
-    sorts of data set and we term each of these an `IOType.'  The
+    data ('Sample data').  An application may emit or consume various
+    sorts of data set and we term each of these an 'IOType.'  The
     library is designed to cope with parallel applications that are
     unable to collect the complete data set to be emitted on a single
     processor.  Such a data set must therefore be emitted piece by
@@ -146,6 +180,14 @@
     satisfactory but is difficult to resolve since it impinges on the
     more general area of checkpoint management.
     @see Register_ChkTypes(), Add_checkpoint_file(), Record_checkpoint_set()
+
+    @section sec_Acks Acknowledgements
+
+    This work was funded by the Engineering and Physical Sciences
+    Research Council (http://www.epsrc.ac.uk) as part of the
+    RealityGrid project (http://www.realitygrid.org).  More
+    documentation and the library itself are available from
+    http://www.sve.man.ac.uk/Research/AtoZ/RealityGrid/.
 */
 
 /** If REG_WSRF is not defined then the code builds with OGSI stubs
@@ -156,7 +198,7 @@
 #define USE_REG_TIMING
 
 /** This is here to allow use of SSL to be switched on and off by editing
-    Makefile.include */
+    Makefile.include (because WITH_OPENSSL is a gSoap #define) */
 #if REG_WITH_OPENSSL
 #  define WITH_OPENSSL
 #endif
@@ -170,7 +212,7 @@
 /** UNICORE_DEMO must be defined in order to produce a steering lib
     compatible with the UNICORE steering demonstration framework.
     Only consequence is that the status files emitted by the application
-    are all called 'steer_status' and not indexed - i.e. some output will 
+    are all called 'steer_status' and not indexed - @e i.e. some output will 
     be lost if the status files are not consumed sufficiently rapidly */
 /*#define UNICORE_DEMO*/
 
@@ -185,19 +227,19 @@
 
 /** Root of filename used by application to send data to steerer
     Actual communication consists of two files: of the form 
-    APP_TO_STR_FILENAME_\<n\> and APP_TO_STR_FILENAME_\<n\>.lock.  The 
+    APP_TO_STR_FILENAME_@p n and APP_TO_STR_FILENAME_@p n.lock.  The 
     library looks for the presence of the (empty) .lock file before 
-    attempting to open the associated data file.  \<n\> is some integer, 
+    attempting to open the associated data file.  @p n is some integer, 
     incremented each time a file is written and limited 
-    to 0 <= n <= REG_MAX_NUM_FILES-1 */
+    to 0 \<= n \<= REG_MAX_NUM_FILES-1 */
 #define APP_TO_STR_FILENAME "status_info"
 
 /** Root of filename used by steerer to send data to application.
-    Actual name will be of form STR_TO_APP_FILENAME_\<n\> and
-    STR_TO_APP_FILENAME_\<n\>.lock.  The library looks for the 
+    Actual name will be of form STR_TO_APP_FILENAME_@p n and
+    STR_TO_APP_FILENAME_@p n.lock.  The library looks for the 
     presence of the (empty) .lock file before attempting to open
-    the associated data file.  \<n\> is some integer, incremented each
-    time a file is written and limited to 0 <= n <= REG_MAX_NUM_FILES-1 */
+    the associated data file.  @p n is some integer, incremented each
+    time a file is written and limited to 0 \<= n \<= REG_MAX_NUM_FILES-1 */
 #define STR_TO_APP_FILENAME "control_info"
 
 /** Return value upon complete success */
@@ -256,8 +298,8 @@
 #define REG_STR_EMIT_PARAM_LOG   5
 /** Encoding for INTERNAL PAUSE command (used when the pause command
     is to be handled internally by the library rather than passed up
-    to the application - i.e. the call to Steering_control will block
-    until a `resume' or `stop' command is received) */
+    to the application - @e i.e. the call to Steering_control will block
+    until a 'resume' or 'stop' command is received) */
 #define REG_STR_PAUSE_INTERNAL   6
 
 /** All generated IOtype handles must be >= this value because they
