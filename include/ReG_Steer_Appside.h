@@ -260,8 +260,8 @@ extern PREFIX int Add_checkpoint_file(int   ChkType,
    Add_checkpoint_file() has not been called one or more times prior
    to this call then @p ChkTag is used by the library to identify all
    of the files belonging to the checkpoint (@e i.e. executing 'ls
-   ./@p Path/* @p ChkTag*' will return a list of all the files
-   constituting the checkpoint.).  If one or more calls to
+   ./@p Path/*@p ChkTag*' will return a list of all the files
+   constituting the checkpoint).  If one or more calls to
    Add_checkpoint_file() have been made since the last call of this
    routine then the checkpoint set is recorded as consisting of the
    file(s) specified in those calls.  That list of files is reset
@@ -271,7 +271,7 @@ extern PREFIX int Record_checkpoint_set(int   ChkType,
 					char *ChkTag,
 					char *Path);
 
-/** 
+/**
     @param NumParams Number of params to register
     @param ParamLabels Label for each parameter
     @param ParamSteerable @c REG_TRUE if parameter steerable, @c REG_FALSE 

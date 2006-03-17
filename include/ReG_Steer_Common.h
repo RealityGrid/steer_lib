@@ -1,8 +1,4 @@
 /*----------------------------------------------------------------------------
-  Header file containing prototypes and datatype definitions for
-  entities that are common to both the application- and steerer-side
-  of the RealityGrid steering library.
-
   (C) Copyright 2005, University of Manchester, United Kingdom,
   all rights reserved.
 
@@ -28,11 +24,15 @@
   AND PERFORMANCE OF THE PROGRAM IS WITH YOU.  SHOULD THE PROGRAM PROVE
   DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR
   CORRECTION.
-
 ---------------------------------------------------------------------------*/
 
 /** @file ReG_Steer_Common.h
     @brief Header file for routines used in both Appside and Steerside
+
+    Header file containing prototypes and datatype definitions for
+    entities that are common to both the application- and steerer-side
+    of the RealityGrid steering library.
+
     @author Andrew Porter
     @author Robert Haines
   */
