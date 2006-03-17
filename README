@@ -30,32 +30,6 @@ location and don't want to have to set LD_LIBRARY64_PATH/LD_LIBRARYN32_PATH
 then you can also specify that you only want a static library by giving the
 --enable-shared=no flag.)
 
-gSOAP
-
-The library distribution includes gSOAP, version 2.7.2.  If for any reason
-you wish to change the version of gSOAP used then the relevant files are:
-
-src/stdsoap2.c
-include/stdsoap2.h
-
-However, PLEASE NOTE that the version of gSOAP used by the library
-includes an addition to allow the
-calling code to control which port the http connection uses on the
-local machine.  The latter is necessary to make use of the
-GLOBUS_TCP_PORT_RANGE holes in firewalls that restrict outgoing as
-well as incoming connections.  Search for client_port_min and
-client_port_max in the source and header files.
-
-The following files are generated (using gSoap) tools from header
-files that describe the functionality of the various services
-that the steering library can interact with:
-
-src/soapC.c
-src/soapClient.c
-include/soapH.h
-include/soapStub.h
-include/soapRealityGrid.nsmap
-
 ----------------------------------------------------------------------------
 
 The Steering Library.
@@ -190,6 +164,33 @@ The use of this framework is described in docs/ReG_Steering_Web_Service.tex.
 (Versions of the library prior to 2.0 used the OGSI-Lite package
 [http://www.sve.man.ac.uk/Research/AtoZ/ILCT].  The use of this
 framework is described in docs/ReG_Steering_Grid_Service.doc.)
+
+gSoap
+
+The library distribution includes gSoap, version 2.7.6e.  If for any reason
+you wish to change the version of gSOAP used then the relevant files are:
+
+src/stdsoap2.c
+include/stdsoap2.h
+
+However, PLEASE NOTE that the version of gSOAP used by the library
+includes an addition to allow the calling code to control which port the
+http connection uses on the local machine.  The latter is necessary to
+make use of the GLOBUS_TCP_PORT_RANGE holes in firewalls that restrict
+outgoing as well as incoming connections.  Search for ARPDBG in the
+source and header files.
+
+The following files are generated (using gSoap) tools from header
+files that describe the functionality of the various services
+that the steering library can interact with:
+
+src/soapC.c
+src/soapClient.c
+include/soapH.h
+include/soapStub.h
+include/soapRealityGrid.nsmap
+
+See the src/gsoap_stubs/README file for more details.
 
 ----------------------------------------------------------------------------
 
