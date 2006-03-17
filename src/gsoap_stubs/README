@@ -1,0 +1,32 @@
+The contents of this directory are for those wishing to develop/extend
+the gSoap-generated SOAP bindings that the steering library uses.  If
+all you want to do is build and use the steering library then you can
+ignore this directory and its contents.
+
+The definitions of the interfaces that are used are in the all_hdrs.h
+header file (which itself includes other header files for each
+Web/Grid service that the library talks to).  This header file is
+processed by the gSoap soapcpp2 tool in order to generate the bindings
+in the form of the files:
+  soapC.c
+  soapClient.c
+  soapH.h
+  soapStub.h
+  *.nsmap
+
+The current bindings have been generated under linux using gSoap
+2.7.6e.  To generate bindings yourself, you will need to install gSoap
+and then edit the Makefile in this directory in order to specify the
+location of the soapcpp2 executable.  Once that is done, typing 'make'
+should be sufficient to generate the bindings.  If you are changing
+the version of gSoap that is used then you will also need to update
+the reg_steer_lib/include/stdsoap2.h and reg_steer_lib/src/stdsoap2.c
+files.  To do this you will need to slightly modify the standard
+gSoap-supplied versions of those files - search for 'ARPDBG' in the
+versions of those files supplied with the steering library.
+
+Once new bindings have been generated, the source files need to be
+copied to the reg_steer_lib/src directory and the header files to the
+reg_steer_lib/include directory. Any one of the generated *.nsmap files 
+(they are all identical) should be copied to:
+      reg_steer_lib/include/soapRealityGrid.nsmap.
