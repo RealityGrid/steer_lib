@@ -1,8 +1,4 @@
 /*----------------------------------------------------------------------------
-  Header file defining internal (to the steering library) utility
-  routines for use in constructing a steering interface to an 
-  application.
-
   (C) Copyright 2005, University of Manchester, United Kingdom,
   all rights reserved.
 
@@ -28,9 +24,6 @@
   AND PERFORMANCE OF THE PROGRAM IS WITH YOU.  SHOULD THE PROGRAM PROVE
   DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR
   CORRECTION.
-
-  Authors........: Andrew Porter, Robert Haines
-
 ---------------------------------------------------------------------------*/
 #ifndef __REG_STEER_APPSIDE_INTERNAL_H__
 #define __REG_STEER_APPSIDE_INTERNAL_H__
@@ -39,24 +32,32 @@
 #include "ReG_Steer_XML.h"
 #include "soapH.h"
 
-/** @file ReG_Steer_Appside_internal.h
+/** @internal
+    @file ReG_Steer_Appside_internal.h
     @brief Source file for steering-client routines
+    @author Andrew Porter
+    @author Robert Haines
+
+    Header file defining internal (to the steering library) utility
+    routines for use in constructing a steering interface to an 
+    application.
   */
 
 /*----------------------- Data structures -----------------------*/
 
-/** Structure to hold details of open IO channels */
+/** @internal
+    Structure to hold details of open IO channels */
 typedef struct {
 
-  /* Handle of associated IOType */
+  /** Handle of associated IOType */
   int   iotype_handle;
-
-  /* Pointer to buffer to hold data */
+  /** Pointer to buffer to hold data received data */
   void *buffer;
 
 }IO_channel_table_type;
 
-/** Type definition for table used to hold details on the communication
+/** @internal 
+    Type definition for table used to hold details on the communication
     channel between the application and the steerer */
 typedef struct {
 
@@ -71,9 +72,8 @@ typedef struct {
   /** Where to write files for file-based steering */
   char			file_root[REG_MAX_STRING_LENGTH];
 
-  /** Address of the Steering Grid Service (for SOAP-based steering)
-  char                  SGS_address[REG_MAX_STRING_LENGTH];*/
-  SGS_info_type SGS_info;
+  /** Address of the Steering Grid Service (for SOAP-based steering) */
+  SGS_info_type         SGS_info;
 
   /** String to hold 'supported commands' message 'cos we can't 
       actually send it until a steerer has connected in the case
@@ -91,26 +91,30 @@ typedef struct {
 
 /*--------- Prototypes of internal library functions -------------*/
 
-/** Emit all of the parameters that have previously been registered 
+/** @internal 
+    Emit all of the parameters that have previously been registered 
     (if any). */
 int Emit_param_defs();
 
-/** Emit all of the IO types that have previously been registered
+/** @internal
+    Emit all of the IO types that have previously been registered
     (if any). */
 int Emit_IOType_defs();
 
-/** Emit all of the Chk types that have previously been registered
+/** @internal 
+    Emit all of the Chk types that have previously been registered
     (if any). */
 int Emit_ChkType_defs();
 
-/** 
+/** @internal
    Consume a control message (if any present) from the steerer. Returns
    any commands and associated parameters (the latter as a space-separated 
    list in a string) that the application must deal with.  CommandParams is an
    array of pointers to strings that must have already had memory allocated
    for them. Also returns 
    the handles and labels of any (steerable) parameters whose values have
-   changed. (The values themselves are updated from within this routine.) */
+   changed. (The values themselves are updated from within this routine.) 
+*/
 int Consume_control(int    *NumCommands,
 		    int    *Commands,
 		    char  **CommandParams,
