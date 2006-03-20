@@ -1,5 +1,5 @@
 Upgrade to using gSoap 2.7.6.e because that should(??) fix problems
-on AIX... - TEST
+on AIX... - TEST, esp. on Bez etc. Robin to do hpcx.
 
 Continue working on altering reg_wsrf_tools to 
 work with latest form of secure api. - TEST
