@@ -1,8 +1,4 @@
 /*----------------------------------------------------------------------------
-  This file contains routines and data structures that are common to
-  the construction of a steering interface for both a steering
-  component and a steered application.
-
   (C) Copyright 2005, University of Manchester, United Kingdom,
   all rights reserved.
 
@@ -28,13 +24,18 @@
   AND PERFORMANCE OF THE PROGRAM IS WITH YOU.  SHOULD THE PROGRAM PROVE
   DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR
   CORRECTION.
-
-  Authors........: Andrew Porter, Robert Haines
 ---------------------------------------------------------------------------*/
 
 /** @file ReG_Steer_Common.c
     @brief Source file for utility routines used in both Appside and Steerside
-  */
+
+    This file contains routines and data structures that are common to
+    the construction of a steering interface for both a steering
+    component and a steered application.
+
+    @author Andrew Porter
+    @author Robert Haines
+ */
 
 #include "ReG_Steer_types.h"
 #include "ReG_Steer_Common.h"
@@ -360,7 +361,6 @@ int Get_message_type(const char *name)
 
     return MSG_NOTSET;
   }
-
 }
 
 /*----------------------------------------------------------------*/
@@ -1353,17 +1353,18 @@ int Create_WSRF_header(struct soap *aSoap,
 {
 #ifdef WITH_OPENSSL
   const int     MAX_LEN = 1024;
+  int           bytesLeft, nbytes;
   int           i, len;
   int           status;
-  int           bytesLeft, nbytes;
   unsigned char randBuf[MAX_LEN];
   char         *pBuf;
   char          buf[MAX_LEN];
   char          digest[SHA_DIGEST_LENGTH];
   char         *pBase64Buf = NULL;
   char         *timePtr;
+#endif
 
-  /* alloc new header for WS-Security */
+  /* alloc new header for WS-RF */
   aSoap->header = soap_malloc(aSoap, sizeof(struct SOAP_ENV__Header));
   if(!(aSoap->header)){
     fprintf(stderr,
@@ -1381,7 +1382,10 @@ int Create_WSRF_header(struct soap *aSoap,
   strcpy(aSoap->header->wsa__To, epr);
 
   if(!username || !(username[0])){
-    fprintf(stderr, "STEER: Create_WSRF_header: ARPDBG: not adding security to header\n");
+#if REG_DEBUG
+    fprintf(stderr, 
+	    "STEER: Create_WSRF_header: not adding security to header\n");
+#endif /* REG_DEBUG */
     aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Username = NULL;
     aSoap->header->wsse__Security.wsse__UsernameToken.wsu__Created = NULL;
     aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.Type = NULL;
@@ -1389,6 +1393,8 @@ int Create_WSRF_header(struct soap *aSoap,
     aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Nonce = NULL;
     return REG_SUCCESS;
   }
+
+#ifdef WITH_OPENSSL
 
   aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Username = 
                                        (char *)soap_malloc(aSoap, 128);
@@ -1493,9 +1499,14 @@ int Create_WSRF_header(struct soap *aSoap,
 
 #else /* WITH_OPENSSL not defined */
 
-  fprintf(stderr, "STEER: Create_WSRF_header: library not compiled with "
-	  "OpenSSL so no security possible\n");
-  return REG_FAILURE;
+  fprintf(stderr, "STEER: WARNING: Create_WSRF_header: library not "
+	  "compiled with OpenSSL so no security possible\n");
+  aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Username = NULL;
+  aSoap->header->wsse__Security.wsse__UsernameToken.wsu__Created = NULL;
+  aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.Type = NULL;
+  aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.__item = NULL;
+  aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Nonce = NULL;
+  return REG_SUCCESS;
 
 #endif
 }
