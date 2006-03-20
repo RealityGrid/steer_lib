@@ -168,6 +168,8 @@
     @li mini_app2.f90 similar to mini_app.c but using the F90 bindings
     @li mini_app_para.f90 An example of using the steering library in a
     parallel (MPI), F90 code
+    @li sink.c Example of using steering library to receive data (@e e.g.
+    for visualization)
 
     @section sec_IO IO Control
 
