@@ -154,6 +154,21 @@
     supports 'pause' is automatically assumed to support `resume.' 
     The relevant constants are defined in ReG_Steer_types.h
 
+    @section sec_example Example useage
+
+    Included with the RealityGrid steering library are a number of
+    example applications:
+
+    @li simple.c provides a very simple example of the basic 
+    instrumentation required in order to make a simulation
+    steerable.  
+    @li mini_steerer.c provides a fairly simple example of a command-line 
+    steering client.
+    @li mini_app.c illustrates more of the library's functionality
+    @li mini_app2.f90 similar to mini_app.c but using the F90 bindings
+    @li mini_app_para.f90 An example of using the steering library in a
+    parallel (MPI), F90 code
+
     @section sec_IO IO Control
 
     The API contains a number of routines  intended to allow an

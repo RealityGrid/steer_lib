@@ -46,7 +46,8 @@
 #include "ReG_Steer_types.h"
 #include "ReG_Steer_Common.h"
 
-/** Holds details on the job associated with an SWS */
+/** @internal 
+    Holds details on the job associated with an SWS */
 struct reg_job_details {
   /** How long the SWS should live for once its associated job
       has contacted it for the first time */
@@ -69,7 +70,8 @@ struct reg_job_details {
   char passphrase[REG_MAX_STRING_LENGTH];
 };
 
-/** Creates either an SGS or SWS
+/** @internal
+    Creates either an SGS or SWS
     @param job Ptr to struct holding details on the job.  @p userName 
     and @p passphrase are used for the SWS, not the registry.
     @param containerAddress Address of the container in which to create SWS
@@ -81,25 +83,38 @@ extern PREFIX char* Create_steering_service(const struct reg_job_details *job,
 					    const char *registryAddress,
 					    const struct reg_security_info *sec);
 
-/** Destroy either an SGS or SWS 
+/** @internal
+    Destroy either an SGS or SWS 
     @param address The address of the service to destroy 
     @param sec Pointer to struct holding details for 
     authentication to the service (using SSL or WSSE) */
 extern PREFIX int Destroy_steering_service(char *address,
 					   const struct reg_security_info *sec);
 
-/** Creates a new checkpoint tree and returns its GSH 
+/** @internal
+    Creates a new checkpoint tree and returns its GSH 
     @param factory The address of the factory to use
     @param metadata Text describing the experiment that the tree will record */
 extern PREFIX char *Create_checkpoint_tree(const char *factory, 
 					   const char *metadata);
 
-/** Reads the specified RealityGrid security configuration file to get
+/** @internal
+    @param configFile Location of RealityGrid security config file
+    @param sec Pointer to reg_security_info struct to populate
+
+    Reads the specified RealityGrid security configuration file to get
     location of the PEM file containing BOTH the user's key and certificate
     and the path to the directory containing CA certificates.  Parses 
     user's certificate to get their DN.
-    @param configFile Location of RealityGrid security config file
-    @param sec Pointer to reg_security_info struct to populate */ 
+    The security config. file is of the form: @n
+    <tt>
+    <?xml version="1.0"?> @n
+    <Security_config> @n
+      <caCertsPath value="/etc/grid-security/certificates"/> @n
+      <privateKeyCertFile value="/home/me/.globus/mycertnkey.pem"/> @n
+    </Security_config>
+    </tt>
+ */ 
 extern PREFIX int Get_security_config(const char               *configFile,
 				      struct reg_security_info *sec);
 

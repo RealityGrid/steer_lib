@@ -24,7 +24,6 @@
   AND PERFORMANCE OF THE PROGRAM IS WITH YOU.  SHOULD THE PROGRAM PROVE
   DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR
   CORRECTION.
-
 ---------------------------------------------------------------------------*/
 
 /** @file simple.c
@@ -39,7 +38,7 @@
 
 int main(){
 
-  /* No. of 'simulation' loops to do */
+  /** No. of 'simulation' loops to do */
   const int nloops = 500000;
 
   /* For steering */
@@ -59,8 +58,7 @@ int main(){
 
   /*---------- End of declarations ------------*/
 
-  /* Initialise & enable the steering library */
-
+  /** Initialise & enable the steering library */
   Steering_enable(REG_TRUE);
 
   numCommands = 2;
