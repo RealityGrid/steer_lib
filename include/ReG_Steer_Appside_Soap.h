@@ -1,7 +1,4 @@
 /*----------------------------------------------------------------------------
-  This header file contains routines and data structures for
-  SOAP-based steering communication.
-
   (C) Copyright 2005, University of Manchester, United Kingdom,
   all rights reserved.
 
@@ -27,22 +24,22 @@
   AND PERFORMANCE OF THE PROGRAM IS WITH YOU.  SHOULD THE PROGRAM PROVE
   DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR
   CORRECTION.
-
-  Authors........: Andrew Porter, Robert Haines
-
 ---------------------------------------------------------------------------*/
 #ifndef __REG_STEER_APPSIDE_SOAP_H__
 #define __REG_STEER_APPSIDE_SOAP_H__
 
-/** @file ReG_Steer_Appside_Soap.h
-    @brief Header file for Soap-related Appside routines
-  */
+/** @internal
+    @file ReG_Steer_Appside_Soap.h
+    @brief Header file for SOAP-related Appside routines and structures
+    @author Andrew Porter
+    @author Robert Haines
+*/
 
-/*------------------------------------------------------------------*/
-
-/** Initialize the connection to a steering client.
-
-    */
+/** @internal 
+    @param NumSupportedCmds No. of commands supported by the application
+    @param SupportedCmds Array containing the supported commands
+    Initialize the SOAP connection to a steering client.
+*/
 int Initialize_steering_connection_soap(int  NumSupportedCmds,
 					int *SupportedCmds);
 

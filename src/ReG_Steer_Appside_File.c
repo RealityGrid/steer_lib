@@ -27,9 +27,6 @@
   AND PERFORMANCE OF THE PROGRAM IS WITH YOU.  SHOULD THE PROGRAM PROVE
   DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR
   CORRECTION.
-
-  Authors........: Andrew Porter, Robert Haines
-
 ---------------------------------------------------------------------------*/
 #include <string.h>
 
@@ -38,8 +35,11 @@
 #include "ReG_Steer_Common.h"
 #include "ReG_Steer_Appside_internal.h"
 
-/** @file ReG_Steer_Appside_File.c
+/** @internal
+    @file ReG_Steer_Appside_File.c
     @brief Source file for file-related Appside routines
+    @author Andrew Porter
+    @author Robert Haines
   */
 
 #ifndef WIN32
@@ -53,17 +53,17 @@
 #define REG_DEBUG 1
 #endif
 
-/** 
+/** @internal
    The table holding details of our communication channel with the
    steering client - defined in ReG_Steer_Appside.c */
 extern Steerer_connection_table_type Steerer_connection;
 
-/**
+/** @internal
    The table holding details of the registered IOTypes for this
    application - defined in ReG_Steer_Appside.c */
 extern IOdef_table_type IOTypes_table;
 
-/** Global scratch buffer - declared in ReG_Steer_Appside.c */
+/** @internal Global scratch buffer - declared in ReG_Steer_Appside.c */
 extern char Global_scratch_buffer[];
 
 /*-----------------------------------------------------------------------*/

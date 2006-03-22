@@ -1,7 +1,4 @@
 /*-----------------------------------------------------------------------
-  This file contains routines and data structures for socket
-  communication with a proxy or 'switch'.
-
   (C) Copyright 2005, University of Manchester, United Kingdom,
   all rights reserved.
 
@@ -27,14 +24,16 @@
   AND PERFORMANCE OF THE PROGRAM IS WITH YOU.  SHOULD THE PROGRAM PROVE
   DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR
   CORRECTION.
-
-  Authors........: Andrew Porter, Robert Haines
-
 -----------------------------------------------------------------------*/
 
-/** @file ReG_Steer_Appside_IOProxy.c
+/** @internal
+    @file ReG_Steer_Appside_IOProxy.c
     @brief Source file for proxy-related routines for data IO
-  */
+ 
+    This file contains routines and data structures for socket
+    communication with a proxy or 'switch'.
+    @author Andrew Porter
+ */
 
 #if REG_PROXY_SAMPLES
 

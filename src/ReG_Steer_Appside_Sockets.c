@@ -27,13 +27,13 @@
   AND PERFORMANCE OF THE PROGRAM IS WITH YOU.  SHOULD THE PROGRAM PROVE
   DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR
   CORRECTION.
-
-  Authors........: Andrew Porter, Robert Haines
-
 -----------------------------------------------------------------------*/
 
-/** @file ReG_Steer_Appside_Sockets.c
-    @brief Source file for socket-related routines
+/** @internal
+    @file ReG_Steer_Appside_Sockets.c
+    @brief Source file for socket-related routines and data structures
+    @author Andrew Porter
+    @author Robert Haines
   */
 
 #if REG_SOCKET_SAMPLES

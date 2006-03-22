@@ -1,4 +1,3 @@
-
 /*********************************************************************
 * Base64 - a simple base64 encoder and decoder.
 *
@@ -16,9 +15,12 @@
 *
 *********************************************************************/
 
-/** @file Base64.c
+/** @internal
+    @file Base64.c
     @brief Source file for Base64-codec routines
-  */
+    @author Bob Withers
+    @author Andrew Porter
+*/
 
 #include "Base64.h"
 #include "ReG_Steer_types.h"
