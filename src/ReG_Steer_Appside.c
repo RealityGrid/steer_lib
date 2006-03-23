@@ -3562,6 +3562,9 @@ int Emit_param_defs()
 	    pbuf += Params_table.param[i].raw_buf_size;
 	    bytes_left -= Params_table.param[i].raw_buf_size;
 	  }
+	  /* Free the memory malloc'd during the Base64 encode */
+	  free(Params_table.param[i].ptr_raw);
+	  Params_table.param[i].ptr_raw = NULL;
 
 	  nbytes = snprintf(pbuf, bytes_left, "</Value>\n");
 	}
@@ -4326,6 +4329,9 @@ int Emit_status(int   SeqNum,
 	      pbuf += Params_table.param[tot_pcount].raw_buf_size; 
 	      bytes_left -= Params_table.param[tot_pcount].raw_buf_size;
 	    }
+	    /* Free the memory that was malloc'd during the Base64 encode */
+	    free(Params_table.param[tot_pcount].ptr_raw);
+	    Params_table.param[tot_pcount].ptr_raw = NULL;
 
 	    nbytes = snprintf(pbuf, bytes_left, "</Value>\n</Param>\n");
 	  }
