@@ -27,10 +27,13 @@
   AND PERFORMANCE OF THE PROGRAM IS WITH YOU.  SHOULD THE PROGRAM PROVE
   DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR
   CORRECTION.
-
-  Authors........: Andrew Porter, Robert Haines
-
 ---------------------------------------------------------------------------*/
+
+/** @internal
+    @file ReG_Steer_XML.c
+    @author Andrew Porter
+    @author Robert Haines
+    @brief Code for parsing xml documents */
 
 #include "ReG_Steer_types.h"
 #include "ReG_Steer_Common.h"
@@ -43,10 +46,6 @@
 #ifndef REG_DEBUG
 #define REG_DEBUG 1
 #endif
-
-/** @file ReG_Steer_XML.c
- *  @author Andrew Porter
- *  @brief Code for parsing xml documents */
 
 /** Declared in ReG_Steer_Appside.c */
 extern struct msg_store_struct  Msg_store;

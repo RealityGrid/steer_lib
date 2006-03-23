@@ -27,9 +27,6 @@
   AND PERFORMANCE OF THE PROGRAM IS WITH YOU.  SHOULD THE PROGRAM PROVE
   DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR
   CORRECTION.
-
-  Authors........: Andrew Porter
-
 ---------------------------------------------------------------------------*/
 #include "ReG_Steer_Steerside.h"
 #include "ReG_Steer_Steerside_internal.h"
@@ -38,7 +35,8 @@
 
 /** @file ReG_Steer_Steerside_WSRF.c
     @brief Code for WSRF over SOAP communications for the steering client.
-  */
+    @author Andrew Porter
+*/
 
 /** The last modified time of the ResourceProperty document of our
     associated SWS when we last looked at it. */
