@@ -96,6 +96,9 @@ int main(int argc, char **argv){
   struct registry_entry   *entries;
   struct reg_security_info sec;
 
+  pchar = NULL;
+  entries = NULL;
+
   /* Initialise arrays for querying param values */
 
   for(i=0; i<REG_INITIAL_NUM_PARAMS; i++){
@@ -289,8 +292,8 @@ int main(int argc, char **argv){
   }
 
   /* Done with malloc'd memory */
-  free(pchar);
-  free(entries);
+  if(pchar)free(pchar);
+  if(entries)free(entries);
 
   if(status != REG_SUCCESS){
 
