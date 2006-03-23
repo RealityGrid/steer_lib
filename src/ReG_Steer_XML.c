@@ -1794,9 +1794,13 @@ int Parse_registry_entries(char* buf, int size, int *num_entries,
   /* Clean-up */
   xmlCleanupParser();
 
-  *num_entries = my_state.num_entries;
-  *entries = my_state.entries;
-
+  if( (*num_entries = my_state.num_entries) ){
+    *entries = my_state.entries;
+  }
+  else{
+    free(my_state.entries);
+    my_state.entries = NULL;
+  }
   /*
   fprintf(stderr, "Parse_registry_entries: got %d entries from registry:\n", 
 	  my_state.num_entries);
