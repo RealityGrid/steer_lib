@@ -1,7 +1,4 @@
 /*----------------------------------------------------------------------------
-  This header file contains routines and data structures for
-  application-side WSRF, SOAP-based communication.
-
   (C) Copyright 2005, University of Manchester, United Kingdom,
   all rights reserved.
 
@@ -27,16 +24,18 @@
   AND PERFORMANCE OF THE PROGRAM IS WITH YOU.  SHOULD THE PROGRAM PROVE
   DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR
   CORRECTION.
-
-  Authors........: Andrew Porter
-
 ---------------------------------------------------------------------------*/
 #ifndef __REG_STEER_APPSIDE_WSRF_H__
 #define __REG_STEER_APPSIDE_WSRF_H__
 
-/** @file ReG_Steer_Appside_WSRF.h
-    @brief Header file for WSRF over SOAP communications for the 
-    steered application
+/** @internal
+    @file ReG_Steer_Appside_WSRF.h
+    @brief Header file for WSRF over SOAP communications 
+
+    This header file contains routines and data structures for
+    application-side WSRF, SOAP-based communication between the steered
+    application and the Steering Web Service.
+    @author Andrew Porter
   */
 
 /** The username which the application will use within WS-Security
@@ -45,41 +44,53 @@
 
 /*-------------------------------------------------------------------*/
 
-/** Set up the connection to the SWS and publish the supported
-    commands to it 
-    @internal */
+/** @internal
+    @param NumSupportedCmds No. of commands supported by the application
+    @param SupportedCmds Array containing the supported commands
+
+    Set up the connection to the SWS and publish the supported
+    commands to it */
 int Initialize_steering_connection_wsrf(int  NumSupportedCmds,
 					int *SupportedCmds);
-/** Check whether a steering client has connected to the SWS
-    @internal */
+/** @internal
+    Check whether a steering client has connected to the SWS */
 int Steerer_connected_wsrf ();
-/** Clean-up the connection to the SWS
-    @internal */
+
+/** @internal
+    Clean-up the connection to the SWS */
 int Finalize_steering_connection_wsrf ();
-/** Send the supplied status message to the SWS 
-    @internal */
+
+/** @internal
+    @param msg Buffer containing the status message to send
+
+    Send the supplied status message to the SWS */
 int Send_status_msg_wsrf (char *msg);
-/** Get the next control msg that has been sent to the app
-    from a steering client 
-    @internal */
+
+/** @internal
+    Get the next control msg that has been sent to the app
+    from a steering client */
 struct msg_struct *Get_control_msg_wsrf ();
-/** Save a log (parameter or checkpoint) to the SWS 
-    @internal */
+
+/** @internal
+    @param log_data Buffer containing logging data (columns if parameter
+    data, XML otherwise)
+
+    Save a log (parameter or checkpoint) to the SWS */
 int Save_log_wsrf (char *log_data);
 
-/** Query the SWS for the address to connect to for the
-    specified IO channel
-    @param index Index (generated from order registered) of channel for which to get address
-
-    @param hostname The full-qualified hostname of machine to connect to
+/** @internal
+    @param index Index of IOType for which to get address
+    @param hostname The fully-qualified hostname of machine to connect to
     @param port     The port on that machine to connect to
-    @internal */
+
+    Query the SWS for the address to connect to for the
+    specified IO channel */
 int Get_data_source_address_wsrf (int index, char *hostname, 
 				  unsigned short int *port);
 
-/** Notify the SWS that the application has created a checkpoint
-    @internal */
+/** @internal
+    Notify the SWS that the application has created a checkpoint
+    @see Record_checkpoint_set_soap() */
 int Record_checkpoint_set_wsrf (char *chk_data, 
 				char *node_data);
-
 #endif

@@ -26,7 +26,8 @@
   CORRECTION.
 ---------------------------------------------------------------------------*/
 
-/** @file ReG_Steer_Common.c
+/** @internal 
+    @file ReG_Steer_Common.c
     @brief Source file for utility routines used in both Appside and Steerside
 
     This file contains routines and data structures that are common to
@@ -66,7 +67,7 @@
 #define snprintf _snprintf
 #endif
 
-/**
+/** @internal
    Location of file specifying the schema/namespace to which all
    steering messages should belong.  Set in Steerer_initialize or
    Steering_initialize (depending on whether we are steerer or
@@ -76,7 +77,7 @@
 
 char ReG_Steer_Schema_Locn[REG_MAX_STRING_LENGTH];
 
-/**
+/** @internal
    Flag holding whether or not the ssl random no. generator has
    been initialized. */
 int ReG_ssl_random_initialized = REG_FALSE;

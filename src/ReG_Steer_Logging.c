@@ -1,8 +1,4 @@
 /*----------------------------------------------------------------------------
-  This file contains routines and data structures for the construction
-  of an interface to a steering component (from an application
-  component).
-
   (C) Copyright 2005, University of Manchester, United Kingdom,
   all rights reserved.
 
@@ -28,11 +24,18 @@
   AND PERFORMANCE OF THE PROGRAM IS WITH YOU.  SHOULD THE PROGRAM PROVE
   DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR
   CORRECTION.
-
-  Authors........: Andrew Porter
 ---------------------------------------------------------------------------*/
-#include <string.h>
 
+/** @internal
+    @file ReG_Steer_Logging.c
+    @brief Implementation of logging functionality 
+
+    This file contains routines and data structures for the construction
+    of an interface to a steering component (from an application
+    component).
+    @author Andrew Porter */
+
+#include <string.h>
 #include "ReG_Steer_types.h"
 #include "ReG_Steer_Common.h"
 #include "ReG_Steer_Logging.h"
@@ -48,9 +51,6 @@
 #define snprintf _snprintf
 #define usleep(microseconds) (Sleep(microseconds/1000))
 #endif
-
-/** @file ReG_Steer_Logging.c
-    @brief Implementation of logging functionality */
 
 /* Allow value of 'REG_DEBUG' to propagate down from Reg_steer_types.h if
    it has been set there */

@@ -1,7 +1,4 @@
 /*----------------------------------------------------------------------------
-  This header file contains routines and data structures for
-  file-based data communication.
-
   (C) Copyright 2005, University of Manchester, United Kingdom,
   all rights reserved.
 
@@ -27,16 +24,13 @@
   AND PERFORMANCE OF THE PROGRAM IS WITH YOU.  SHOULD THE PROGRAM PROVE
   DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR
   CORRECTION.
-
-  Authors........: Andrew Porter, Robert Haines
-
 ---------------------------------------------------------------------------*/
 #ifndef __REG_STEER_APPSIDE_FILE_H__
 #define __REG_STEER_APPSIDE_FILE_H__
 
 /** @internal
     @file ReG_Steer_Appside_File.h
-    @brief Header file for file-related Appside routines
+    @brief Header file for file-related Appside routines and structures
     @author Andrew Porter
     @author Robert Haines
   */

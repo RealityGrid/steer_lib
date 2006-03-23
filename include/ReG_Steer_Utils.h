@@ -1,9 +1,4 @@
-/*--------------------------------------------------------------------------*/
-/** @file ReG_Steer_Utils.h
-    @brief Header file containing prototypes and datatype definitions for
-    entities that are using in the utilities library (provides
-    functionality related to the ReG steering framework).
-
+/*--------------------------------------------------------------------------
   (C) Copyright 2005, University of Manchester, United Kingdom,
   all rights reserved.
 
@@ -29,10 +24,17 @@
   AND PERFORMANCE OF THE PROGRAM IS WITH YOU.  SHOULD THE PROGRAM PROVE
   DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR
   CORRECTION.
+-------------------------------------------------------------------------*/
 
-  @author Andrew Porter
+/** @file ReG_Steer_Utils.h
+    @brief Header file for the utilities library
+
+    Contains prototypes and datatype definitions for
+    entities that are using in the utilities library (provides
+    functionality related to the ReG steering framework).
+
+    @author Andrew Porter
 */
-/*-------------------------------------------------------------------------*/
 
 #ifndef __REG_STEER_UTILS_H__
 #define __REG_STEER_UTILS_H__
