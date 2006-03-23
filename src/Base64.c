@@ -77,7 +77,6 @@ int Base64_encode(const char *data,
   char          c;
   char         *pchar;
 
-  /**out_data = (char *)malloc(len*1.5);*/
   *out_data = (char *)malloc(len*2.5);
   if(!*out_data){
     fprintf(stderr, "Base64_encode: malloc failed\n");
