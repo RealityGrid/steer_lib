@@ -1867,6 +1867,11 @@ int Delete_sim_table_entry(int *SimHandle)
   }
   sim = &(Sim_table.sim[index]);
 
+  /* Free-up msg struct if not done earlier */
+  if(sim->msg){
+    Delete_msg_struct(&(sim->msg));
+  }
+
   Finalize_connection(sim);
 
   /* Clean-up the provided entry in the table of connected
