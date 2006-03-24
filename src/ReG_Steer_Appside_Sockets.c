@@ -1,7 +1,4 @@
 /*-----------------------------------------------------------------------
-  This file contains routines and data structures for socket
-  communication.
-
   (C) Copyright 2005, University of Manchester, United Kingdom,
   all rights reserved.
 
@@ -36,7 +33,7 @@
     @author Robert Haines
   */
 
-#if REG_SOCKET_SAMPLES
+#if REG_SOCKET_SAMPLES || defined(DOXYGEN)
 
 #include "ReG_Steer_Common.h"
 #include "ReG_Steer_Appside_internal.h"
@@ -315,8 +312,14 @@ int connect_connector(const int index) {
     }
 
     theirAddr.sin_family = AF_INET;
-    theirAddr.sin_port = htons(IOTypes_table.io_def[index].socket_info.connector_port);
-    inet_aton(IOTypes_table.io_def[index].socket_info.connector_hostname, &(theirAddr.sin_addr));
+    theirAddr.sin_port = 
+             htons(IOTypes_table.io_def[index].socket_info.connector_port);
+    if( !inet_aton(IOTypes_table.io_def[index].socket_info.connector_hostname, 
+		   &(theirAddr.sin_addr)) ){
+      fprintf(stderr, 
+	      "connect_connector: inet_aton reports address is invalid\n");
+      return REG_FAILURE;
+    }
     memset(&(theirAddr.sin_zero), '\0', 8); /* zero the rest */
     
     /* ...finally connect to the remote address! */
@@ -557,7 +560,7 @@ void poll_socket(const int index) {
 
 int dns_lookup(char* hostname) {
   struct hostent* host;
-
+  printf("ARPDBG, dns_lookup, hostname >>%s<<\n", hostname);
   if((host = gethostbyname(hostname)) == NULL) {
     herror("gethostbyname");
     return REG_FAILURE;
@@ -570,7 +573,9 @@ int dns_lookup(char* hostname) {
 
   /* This next bit must be done with a sprintf for AIX...
    * It can be done with a strcpy on Linux or IRIX...      */
-  sprintf(hostname, "%s", inet_ntoa(*((struct in_addr*) host->h_addr)));
+  sprintf(hostname, "%s", 
+	  inet_ntoa(*((struct in_addr*) host->h_addr_list[0])));
+  printf("ARPDBG, dns_lookup, returning hostname >>%s<<\n", hostname);
   return REG_SUCCESS;
 }
 

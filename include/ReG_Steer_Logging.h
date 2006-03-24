@@ -59,7 +59,7 @@ int Set_log_primary_key(Chk_log_type *log);
     @param log_type The type of log (whether PARAM or CHK)
 
     Allocate memory etc. for the log structure supplied.
-    @p log->@p filename must be set prior to call. */
+    @p log->filename must be set prior to call. */
 int Initialize_log(Chk_log_type *log, 
 		   log_type_type log_type);
 

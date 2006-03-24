@@ -43,7 +43,7 @@
 #endif
 #endif
 
-#if REG_SOCKET_SAMPLES
+#if REG_SOCKET_SAMPLES || defined(DOXYGEN)
 
 #include <errno.h>
 #if defined(TRU64)
@@ -60,7 +60,8 @@
 
 #define REG_SOCKETS_ERROR -1
 
-/** @internal structure to hold socket information */
+/** @internal 
+    Structure to hold socket information */
 typedef struct
 {
   /** Minimum port number we can use (zero if any) */
@@ -310,6 +311,10 @@ void retry_connect(const int index);
 void poll_socket(const int index);
 
 /** @internal
+    @param hostname Fully qualified name of machine to look-up.  On
+    successful return holds the IP address of the machine.
+    @return REG_SUCCESS, REG_FAILURE
+
     Looks up the IP of the specified @p hostname */
 int dns_lookup(char* hostname);
 

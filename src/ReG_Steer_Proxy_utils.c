@@ -1,8 +1,4 @@
 /*----------------------------------------------------------------------------
-  Library routines and associated data structures for use in
-  creating and communicating with a steering-proxy process (as
-  defined in SteeringProxy.java).
-
   (C) Copyright 2005, University of Manchester, United Kingdom,
   all rights reserved.
 
@@ -28,10 +24,18 @@
   AND PERFORMANCE OF THE PROGRAM IS WITH YOU.  SHOULD THE PROGRAM PROVE
   DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR
   CORRECTION.
-
-  Authors........: Andrew Porter, Robert Haines
 ---------------------------------------------------------------------------*/
 
+/** @internal
+    @file ReG_Steer_Proxy_utils.c
+    @brief Routines and structures for communicating with java proxy process
+
+    Library routines and associated data structures for use in
+    creating and communicating with a steering-proxy process (as
+    defined in SteeringProxy.java).
+    @author Andrew Porter
+    @author Robert Haines
+*/
 #include "ReG_Steer_Proxy_utils.h"
 
 #ifndef REG_DEBUG
