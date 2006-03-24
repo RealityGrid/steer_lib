@@ -560,7 +560,7 @@ void poll_socket(const int index) {
 
 int dns_lookup(char* hostname) {
   struct hostent* host;
-  printf("ARPDBG, dns_lookup, hostname >>%s<<\n", hostname);
+
   if((host = gethostbyname(hostname)) == NULL) {
     herror("gethostbyname");
     return REG_FAILURE;
@@ -575,7 +575,7 @@ int dns_lookup(char* hostname) {
    * It can be done with a strcpy on Linux or IRIX...      */
   sprintf(hostname, "%s", 
 	  inet_ntoa(*((struct in_addr*) host->h_addr_list[0])));
-  printf("ARPDBG, dns_lookup, returning hostname >>%s<<\n", hostname);
+
   return REG_SUCCESS;
 }
 
