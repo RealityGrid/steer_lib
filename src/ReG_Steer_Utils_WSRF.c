@@ -27,7 +27,6 @@
   AND PERFORMANCE OF THE PROGRAM IS WITH YOU.  SHOULD THE PROGRAM PROVE
   DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR
   CORRECTION.
-
 ---------------------------------------------------------------------------*/
 
 /** @file ReG_Steer_Utils_WSRF.c

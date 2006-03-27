@@ -27,55 +27,97 @@
   AND PERFORMANCE OF THE PROGRAM IS WITH YOU.  SHOULD THE PROGRAM PROVE
   DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR
   CORRECTION.
-
-  Authors........: Andrew Porter, Robert Haines
-
 ---------------------------------------------------------------------------*/
 #ifndef __REG_STEER_STEERSIDE_SOAP_H__
 #define __REG_STEER_STEERSIDE_SOAP_H__
+
+/** @file ReG_Steer_Steerside_Soap.h
+    @brief Header file for SOAP communications for the steering client.
+    @author Andrew Porter
+    @author Robert Haines
+*/
 
 /* These NEED TO MATCH the names given to the service data elements in
    SGS.pm */
 #define REG_APP_STATUS_SDE "SGS:Application_status"
 #define REG_STEER_STATUS_SDE "SGS:Steerer_status"
 
-/** @file ReG_Steer_Steerside_Soap.h
-    @brief Header file for SOAP communications for the steering client.
-  */
-
 /*-------------------------------------------------------------------*/
 
-/** Initialise soap-specific structures & attach to simulation via SOAP */
+/** @internal
+    @param sim Pointer to entry in main Sim_table
+    @param SimID GSH of the SGS representing the simulation
+    
+    Initialise soap-specific structures & attach to simulation via SOAP */
 int Sim_attach_soap(Sim_entry_type *sim, char *SimID);
 
-/** Send the supplied control message to the simulation */
+/** @internal 
+    @param sim Pointer to entry in main Sim_table
+    @param buf The control message to send
+
+    Send the supplied control message to the simulation */
 int Send_control_msg_soap(Sim_entry_type *sim, char* buf);
 
-/** Send a detach message to the simulation */
+/** @internal
+    @param sim Pointer to entry in main Sim_table
+
+    Send a detach message to the simulation */
 int Send_detach_msg_soap(Sim_entry_type *sim);
 
-/** Send a stop message to the simulation (wraps Send_control_msg_soap) */
+/** @internal
+    @param sim Pointer to entry in main Sim_table
+    
+    Send a stop message to the simulation (wraps 
+    Send_control_msg_soap() ) */
 int Send_stop_msg_soap(Sim_entry_type *sim);
 
-/** Send a pause message to the simulation (wraps Send_control_msg_soap) */
+/** @internal
+    @param sim Pointer to entry in main Sim_table
+
+    Send a pause message to the simulation (wraps 
+    Send_control_msg_soap()) */
 int Send_pause_msg_soap(Sim_entry_type *sim);
 
-/** Send a resume message to the simulation (wraps Send_control_msg_soap) */
+/** @internal
+    @param sim Pointer to entry in main Sim_table
+
+    Send a resume message to the simulation (wraps 
+    Send_control_msg_soap()) */
 int Send_resume_msg_soap(Sim_entry_type *sim);
 
-/** Gets the next status message from the simulation */
+/** @internal
+    @param sim Pointer to entry in main Sim_table
+
+    Gets the next status message from the simulation */
 struct msg_struct *Get_status_msg_soap(Sim_entry_type *sim);
 
-/** Get the specified ServiceDataEntry from the SGS representing the simulation */
+/** @internal
+    @param sim Pointer to entry in main Sim_table
+    @param sde_name Name of the ServiceDataEntry to fetch
+
+    Get the specified ServiceDataEntry from the SGS representing 
+    the simulation */
 struct msg_struct *Get_service_data(Sim_entry_type *sim, char *sde_name);
 
-/** Send a restart message to the simulation (wraps Send_control_msg_soap) */
+/** @internal
+    @param sim Pointer to entry in main Sim_table
+    @param chkGSH The Grid Service Handle of the node in a checkpoint
+    tree from which to restart
+
+    Send a restart message to the simulation (wraps Send_control_msg_soap()) */
 int Send_restart_msg_soap(Sim_entry_type *sim, char *chkGSH);
 
-/** Clean-up soap-specific structures */
+/** @internal
+    @param sim Pointer to entry in main Sim_table
+
+    Clean-up soap-specific structures */
 int Finalize_connection_soap(Sim_entry_type *sim);
 
-/** Requests the log of values of the parameter with the specified handle */
+/** @internal
+    @param sim Pointer to entry in main Sim_table
+    @param handle Handle of a parameter registered by the simulation
+
+    Requests the log of values of the parameter with the specified handle */
 int Get_param_log_soap(Sim_entry_type *sim, int handle);
 
 #endif

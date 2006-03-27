@@ -1,7 +1,4 @@
 /*----------------------------------------------------------------------------
-  This file contains routines and data structures for parsing the XML
-  steering-communication messages
-
   (C) Copyright 2005, University of Manchester, United Kingdom,
   all rights reserved.
 
@@ -33,7 +30,7 @@
     @file ReG_Steer_XML.c
     @author Andrew Porter
     @author Robert Haines
-    @brief Code for parsing xml documents */
+    @brief Routines and structures for parsing xml documents */
 
 #include "ReG_Steer_types.h"
 #include "ReG_Steer_Common.h"

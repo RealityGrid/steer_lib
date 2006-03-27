@@ -239,9 +239,10 @@ int Consume_param_log(Sim_entry_type *sim,
 		      struct param_struct *param_ptr);
 
 /** @internal
-    @param param_table 
-    @param in
-    @param out
+    @param param_table Pointer to param table from which to get details
+    @param in The type of Checkpoint log to get details for
+    @param out On successful return, holds the details associated with
+    the specified checkpoint log.
 
     Obtain details associated with the supplied Chk log entry (@e 
     e.g. values of steerable parameters at that point). Necessary

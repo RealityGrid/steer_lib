@@ -1,7 +1,4 @@
 /*----------------------------------------------------------------------------
-  This file contains routines and data structures for SOAP-based 
-  steering communication.
-
   (C) Copyright 2005, University of Manchester, United Kingdom,
   all rights reserved.
 
@@ -27,17 +24,16 @@
   AND PERFORMANCE OF THE PROGRAM IS WITH YOU.  SHOULD THE PROGRAM PROVE
   DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR
   CORRECTION.
-
-  Authors........: Andrew Porter, Robert Haines
-
 ---------------------------------------------------------------------------*/
 #include "ReG_Steer_Steerside.h"
 #include "ReG_Steer_Steerside_internal.h"
 #include "ReG_Steer_Steerside_Soap.h"
 
 /** @file ReG_Steer_Steerside_Soap.c
-    @brief Code for SOAP communications for the steering client.
-  */
+    @brief Code & structs for SOAP communications for the steering client.
+    @author Andrew Porter
+    @author Robert Haines
+*/
 
 /*-------------------------------------------------------------------------*/
 

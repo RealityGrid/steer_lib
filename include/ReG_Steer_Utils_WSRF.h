@@ -1,7 +1,4 @@
 /*----------------------------------------------------------------------------
-  This file contains prototypes for utility routines and data
-  structures related to WSRF(SOAP)-based steering.
-
   (C) Copyright 2005, University of Manchester, United Kingdom,
   all rights reserved.
 
@@ -33,32 +30,42 @@
 #include <ReG_Steer_Utils.h>
 #include "soapH.h"
 
-/** @file ReG_Steer_Utils_WSRF.h
-    @brief Header file for routines to do registry look-up
+/** @internal
+    @file ReG_Steer_Utils_WSRF.h
+    @brief Header file for WSRF-specific utility routines
+
+    This file contains prototypes for utility routines and data
+    structures related to WSRF(SOAP)-based steering.
     @author Andrew Porter  */
 
-/** Get the entries from a WSRF-based registry
+/** @internal
+    Get the entries from a WSRF-based registry
     @param registryEPR Endpoint of the registry to query
     @param sec Pointer to struct holding authentication information
-    @param num_entries On successful return, holds the number of entries in the registry
-    @param entries Array of structst holding details on each entry */
+    @param num_entries On successful return, holds the number of 
+    entries in the registry
+    @param entries Array of structs holding details on each entry */
 int Get_registry_entries_wsrf(const char             *registryEPR, 
 			      const struct reg_security_info *sec,
 			      int                    *num_entries,  
 			      struct registry_entry **entries);
 
-/** Create a Steering Web Service and return its address 
+/** @internal
+    Create a Steering Web Service and return its address 
     @param job Pointer to struct containing info on job associated with SWS
     @param containerAddress Address of the WSRF-Lite container to use
     @param registryAddress Endpoint of the registery to register SWS with
     @param sec Pointer to struct containing authentication information
-    @returns Pointer to static buffer containing the EPR of the new SWS or NULL on failure.  Static buffer will be overwritten on subsequent calls to this routine. */
+    @returns Pointer to static buffer containing the EPR of the new 
+    SWS or NULL on failure.  Static buffer will be overwritten on 
+    subsequent calls to this routine. */
 char *Create_SWS(const struct reg_job_details   *job,
 		 const char                     *containerAddress,
 		 const char                     *registryAddress,
 		 const struct reg_security_info *sec);
 
-/** Calls the Destroy method on the service at the supplied Endpoint.
+/** @internal
+    Calls the Destroy method on the service at the supplied Endpoint.
     Note that an SWS is derived from a WSRP so this method applies
     to SWSs.
     @param epr Endpoint reference of the service to destroy

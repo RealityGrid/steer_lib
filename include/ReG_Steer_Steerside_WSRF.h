@@ -27,9 +27,6 @@
   AND PERFORMANCE OF THE PROGRAM IS WITH YOU.  SHOULD THE PROGRAM PROVE
   DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR
   CORRECTION.
-
-  Authors........: Andrew Porter
-
 ---------------------------------------------------------------------------*/
 #ifndef __REG_STEER_STEERSIDE_WSRF_H__
 #define __REG_STEER_STEERSIDE_WSRF_H__
@@ -39,7 +36,8 @@
 
 /** @file ReG_Steer_Steerside_WSRF.h
     @brief Header file for WSRF over SOAP communications for the steering client.
-  */
+    @author Andrew Porter
+*/
 
 #ifdef __cplusplus
   #define PREFIX "C"
@@ -49,37 +47,67 @@
 
 /*-------------------------------------------------------------------*/
 
-/** (For debugging.) Handler passed to gsoap to be called when get 
-    unexpected tags 
-    @internal */
+/** @internal
+    @param soap Pointer to soap runtime structure
+    @param tag The unexpected tag
+
+    (For debugging.) Handler passed to gSoap to be called when parser
+    encounters unexpected tags 
+*/
 int soapMismatchHandler(struct soap *soap, 
 			const char  *tag);
-/** Attach to a simulation 
-    @internal */
+
+/** @internal
+    @param sim Pointer to entry in main Sim_table
+    @param SimID Endpoint of the Steering Web Service representing
+    the simulation
+
+    Attach to a simulation represented by a SWS
+*/
 int Sim_attach_wsrf (Sim_entry_type *sim, 
                      char           *SimID);
-/** Send a control msg to a simulation 
-    @internal */
+
+/** @internal
+    @param sim Pointer to entry in main Sim_table
+    @param buf The control message to send
+
+    Send a control msg to a simulation 
+*/
 int Send_control_msg_wsrf (Sim_entry_type *sim,
 			   char           *buf);
-/** Send a detach msg to a simulation */
+
+/** @internal
+    @param sim Pointer to entry in main Sim_table
+
+    Send a detach msg to a simulation */
 int Send_detach_msg_wsrf (Sim_entry_type *sim);
-/** Get the next status message from the simulation 
-    @internal */
+
+/** @internal
+    @param sim Pointer to entry in main Sim_table
+
+    Get the next status message from the simulation 
+*/
 struct msg_struct *Get_status_msg_wsrf(Sim_entry_type *sim);
-/** Retrieve the next stored message (if any) from the simulation.
+
+/** @internal 
+    @param sim Pointer to entry in main Sim_table
     @return NULL if no stored msg otherwise ptr to next message.
-    @internal */
+
+    Retrieve the next stored message (if any) from the simulation.
+*/
 struct msg_struct *Get_next_stored_msg(Sim_entry_type *sim);
-/** Get the value of the specified resource property 
-    @internal 
-    @param soapStruct Pointer to soap struct
-    @param epr     Pointer to array of char holding EPR of service
-    @param username Ptr to array of char holding WSSE username (if any)
-    @param passwd  Ptr to array of char holding WSSE passphrase (if any)
-    @param name    Ptr to array of char holding name of RP to get
-    @param pRP     If successful, ptr to array of char 
-                    holding value of RP */
+
+/** @param soapStruct Pointer to soap struct
+    @param epr The EPR of the Steering Service to contact
+    @param username WSSE username (if any)
+    @param passwd  WSSE passphrase (if any)
+    @param name The name of the RP to get
+    @param pRP If successful, ptr to array of char holding value of 
+    RP (will be free'd when soap_end called on @p soapStruct) 
+
+    Get the value of the specified resource property. Set @p username
+    to NULL or an empty string to turn off use of WSSE.
+*/
 extern PREFIX int Get_resource_property (struct soap *soapStruct,
 					 const char  *epr,
 					 const char  *username,
@@ -87,48 +115,69 @@ extern PREFIX int Get_resource_property (struct soap *soapStruct,
 					 const char  *name,
 					 char       **pRP);
 
-/** Get the whole resource property document 
-    @param soapStruct Pointer to initalised gSoap soap struct
+/** @param soapStruct Pointer to initalised gSoap soap struct
     @param epr The EndPointReference of the SWS to query
-    @param username Ptr to array of char holding WSSE username (if any)
-    @param passwd  Ptr to array of char holding WSSE passphrase (if any)
+    @param username  WSSE username (if any)
+    @param passwd WSSE passphrase (if any)
     @param pRPDoc   If successful, ptr to array of char holding 
     contents of the ResourceProperty document (will be free'd when
-    soap_end called on soapStruct) */
+    soap_end called on @p soapStruct) 
+
+    Get the whole resource property document. Set @p username
+    to NULL or an empty string to turn off use of WSSE.
+*/
 extern PREFIX int Get_resource_property_doc(struct soap *soapStruct,
 					    const char  *epr,
 					    const char  *username,
 					    const char  *passwd,
 					    char       **pRPDoc);
-/** Calls the SetResourceProperty method and passes the supplied buffer
-    as input to call 
-    @param soapStruct Pointer to initalised gSoap soap struct
+
+/** @param soapStruct Pointer to initalised gSoap soap struct
     @param epr The EndPointReference of the SWS to query
-    @param username Ptr to array of char holding WSSE username (if any)
-    @param passwd  Ptr to array of char holding WSSE passphrase (if any)
-    @param input string to use as arg. for remote call
+    @param username WSSE username (if any)
+    @param passwd WSSE passphrase (if any)
+    @param input String to use as arg. for remote call, of form
+    '\<RPName\>value of RP\</RPName\>'.
     @returns REG_SUCCESS if call succeeds, REG_FAILURE otherwise
+
+    Calls the SetResourceProperty method and passes the supplied buffer
+    as input to call. Set @p username
+    to NULL or an empty string to turn off use of WSSE. 
 */
 extern PREFIX int Set_resource_property (struct soap *soapStruct,
 					 const char  *epr,
 					 const char  *username,
 					 const char  *passwd,
 					 char        *input);
-/** Clean up a WSRF-based steering connection 
-    @internal */
+
+/** @internal
+    @param sim Pointer to entry in main Sim_table
+
+    Clean up a WSRF-based steering connection 
+*/
 int Finalize_connection_wsrf (Sim_entry_type *sim);
-/** Retrieve the full log of the parameter with the specified
-    handle. Returns REG_SUCCESS or REG_FAILURE.  If successful
-    then log data is stored in internal buffer.
-    @internal */
+
+/** @internal
+    @param sim Pointer to entry in main Sim_table
+    @param handle Handle of the parameter to get the log of
+    @return REG_SUCCESS or REG_FAILURE.
+
+    Retrieve the full log of the parameter with the specified @p handle.
+    If successful then log data is stored in internal buffer.
+*/
 int Get_param_log_wsrf(Sim_entry_type *sim,
 		       int             handle);
-/** Instruct the simulation to restart from the specified
-    node in a checkpoint tree. 
-    @internal
-    The Restart method of the SWS, contacts the specified checkpoint
-    node and obtains the information needed to identify the checkpoint
-    files to the simulation. */
+
+/** @internal
+    @param sim Pointer to entry in main Sim_table
+    @param chkGSH Address of a node in a checkpoint tree from which
+    to restart.
+
+    Instruct the simulation to restart from the specified node in a
+    checkpoint tree.  Calls the Restart method of the SWS which in
+    turn contacts the specified checkpoint node and obtains the
+    information needed to identify the checkpoint files to the
+    simulation. */
 int Send_restart_msg_wsrf(Sim_entry_type *sim, char *chkGSH);
 
 #endif

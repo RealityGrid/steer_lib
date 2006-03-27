@@ -1,7 +1,4 @@
 /*----------------------------------------------------------------------------
-  This file contains routines and data structures for SOAP-based 
-  steering communication using the WSRF specification.
-
   (C) Copyright 2005, University of Manchester, United Kingdom,
   all rights reserved.
 
@@ -45,8 +42,8 @@ long int ReG_lastModTime = 0;
 /* Actual declaration is in ReG_Steer_Appside.c */
 extern struct msg_store_struct  Msg_store;
 extern struct msg_store_struct *Msg_store_tail;
-/* Table holding general configuration info. is declared in 
-   ReG_Steer_Steerside.c */
+/** Table holding general configuration info. is declared in 
+    ReG_Steer_Steerside.c */
 extern Steerer_config_table_type Steer_config;
 
 /*------------------------------------------------------------------*/
@@ -60,7 +57,6 @@ int soapMismatchHandler(struct soap *soap,
 }
 
 /*------------------------------------------------------------------*/
-/** Attach to a simulation */
 int Sim_attach_wsrf (Sim_entry_type *sim, char *SimID){
 
   struct sws__AttachResponse response;
@@ -143,11 +139,9 @@ int Sim_attach_wsrf (Sim_entry_type *sim, char *SimID){
 }
 
 /*------------------------------------------------------------------*/
-/** Send a control msg to a simulation */
 int Send_control_msg_wsrf (Sim_entry_type *sim, char *buf){
 
   char   inputBuf[REG_MAX_MSG_SIZE + 32];
-  /*struct wsrp__SetResourcePropertiesResponse out;*/
 
   snprintf(inputBuf, REG_MAX_MSG_SIZE + 32,
 	   "<controlMsg>%s</controlMsg>", buf);
@@ -157,20 +151,9 @@ int Send_control_msg_wsrf (Sim_entry_type *sim, char *buf){
 				sim->SGS_info.username,
 				sim->SGS_info.passwd,
 				inputBuf);
-  /*
-  if(soap_call_wsrp__SetResourceProperties((sim->SGS_info.soap), 
-					   sim->SGS_info.address, 
-					   "", inputBuf, &out) != SOAP_OK){
-    soap_print_fault((sim->SGS_info.soap), stderr);
-    return REG_FAILURE;
-  }
-
-  return REG_SUCCESS;
-  */
 }
 
 /*------------------------------------------------------------------*/
-/** Get the latest status msg from the simulation */
 struct msg_struct *Get_status_msg_wsrf(Sim_entry_type *sim)
 {
   char *pRPDoc;
@@ -231,7 +214,6 @@ struct msg_struct *Get_status_msg_wsrf(Sim_entry_type *sim)
 }
 
 /*------------------------------------------------------------------*/
-/** Retrieve the next stored message (if any) from the simulation */
 struct msg_struct *Get_next_stored_msg(Sim_entry_type *sim)
 {
   struct msg_struct *msg = NULL;
@@ -292,7 +274,6 @@ struct msg_struct *Get_next_stored_msg(Sim_entry_type *sim)
 }
 
 /*------------------------------------------------------------------*/
-/** Get the value of the specified resource property */
 int Get_resource_property (struct soap *soapStruct,
                            const char  *epr,
 			   const char  *username,
@@ -345,7 +326,6 @@ int Get_resource_property (struct soap *soapStruct,
 }
 
 /*------------------------------------------------------------------*/
-/** Get the whole resource property document */
 int Get_resource_property_doc(struct soap *soapStruct,
 			      const char  *epr,
 			      const char  *username,
@@ -391,7 +371,6 @@ int Get_resource_property_doc(struct soap *soapStruct,
 }
 
 /*------------------------------------------------------------------*/
-
 int Set_resource_property (struct soap *soapStruct,
                            const char  *epr,
 			   const char  *username,
@@ -424,7 +403,6 @@ int Set_resource_property (struct soap *soapStruct,
 }
 
 /*------------------------------------------------------------------*/
-/** Send a detach msg to a simulation */
 int Send_detach_msg_wsrf (Sim_entry_type *sim){
 
 #if REG_DEBUG
@@ -446,8 +424,7 @@ int Send_detach_msg_wsrf (Sim_entry_type *sim){
   return REG_SUCCESS;
 }
 
-/*------------------------------------------------------------------
- * Clean up a WSRF-based steering connection - free memory */
+/*------------------------------------------------------------------*/
 int Finalize_connection_wsrf (Sim_entry_type *sim)
 {
   /* Remove temporary data and deserialized data except
@@ -462,8 +439,7 @@ int Finalize_connection_wsrf (Sim_entry_type *sim)
   return REG_SUCCESS;  
 }
 
-/*------------------------------------------------------------------
- * Retrieve the full log of the specified parameter */
+/*------------------------------------------------------------------*/
 int Get_param_log_wsrf(Sim_entry_type *sim,
 		       int             handle)
 {
@@ -620,8 +596,6 @@ int Get_param_log_wsrf(Sim_entry_type *sim,
 }
 
 /*------------------------------------------------------------------*/
-/** Instruct the simulation to restart from the specified node
-    of a checkpoint tree */
 int Send_restart_msg_wsrf(Sim_entry_type *sim, char *chkGSH)
 {
   fprintf(stderr, "STEER: Send_restart_msg_wsrf: IMPLEMENT ME\n");
