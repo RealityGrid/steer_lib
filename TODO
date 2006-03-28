@@ -19,8 +19,6 @@ update steerer manual
 
 update launcher manual?
 
-Is Record_checkpoint_set_wsrf OK?
-
 Are Write_sockets and Emit_data_sockets essentially the same?
 Ditto for Write_proxy and Emit_data_proxy...
 
