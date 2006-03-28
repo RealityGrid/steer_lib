@@ -365,9 +365,14 @@ int Get_resource_property_doc(struct soap *soapStruct,
 #endif
 #endif
 
-  *pDoc = out;
-
-  return REG_SUCCESS;
+  if( !(*pDoc = out) ){
+    fprintf(stderr, "STEER: ERROR: Get_resource_property_doc: gSoap call "
+	    "successful but have NULL pointer to document!\n");
+    return REG_FAILURE;
+  }
+  else{
+    return REG_SUCCESS;
+  }
 }
 
 /*------------------------------------------------------------------*/
