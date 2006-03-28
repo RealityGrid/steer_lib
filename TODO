@@ -13,8 +13,6 @@ Utils routine for IOType browsing?
 
 Make the Msg_type an ENUM?
 
-Full API doc in Doxygen form
-
 Doxygen for reg_steer_tools?
 
 update steerer manual
@@ -25,3 +23,5 @@ Is Record_checkpoint_set_wsrf OK?
 
 Are Write_sockets and Emit_data_sockets essentially the same?
 Ditto for Write_proxy and Emit_data_proxy...
+
+Is LD_FLAGS actually used anywhere?
