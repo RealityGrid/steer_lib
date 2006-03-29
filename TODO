@@ -23,3 +23,9 @@ Are Write_sockets and Emit_data_sockets essentially the same?
 Ditto for Write_proxy and Emit_data_proxy...
 
 Is LD_FLAGS actually used anywhere?
+
+pruneChkTree.pl - check for "service?" in supplied GSH and, if present, split to get
+the trailing /4783837/37338/39 etc.
+
+Another script to delete a single node from a tree.  Put into ChkTree WS...
+
