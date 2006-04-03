@@ -1609,6 +1609,7 @@ struct soap
   void *rpmreqid;
 #endif
 #ifndef WITH_LEAN
+  /*
 #ifdef __cplusplus
   soap();
   soap(soap_mode);
@@ -1616,6 +1617,7 @@ struct soap
   soap(struct soap&);
   ~soap();
 #endif
+  */
 #endif
 };
 
