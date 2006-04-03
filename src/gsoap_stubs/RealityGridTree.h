@@ -1,17 +1,9 @@
 //gsoap rgt schema namespace: http://www.RealityGrid.org/RealityGridTree
-/*//gsoap rgt schema namespace: http://www.RealityGrid.org/RealityGridTree/service*/
 //gsoap apachesoap schema namespace: http://xml.apache.org/xml-soap
 //gsoap soapenc schema namespace: http://schemas.xmlsoap.org/soap/encoding/
-
 //gsoap rgt service namespace: http://www.RealityGrid.org/RealityGridTree
-
 //gsoap rgt service location: http://foo.bar/
 //gsoap rgt service name: soapRealityGridTree
-
-/*start primitive data types*/
-//typedef char * xsd__string;
-
-/*end primitive data types*/
 
 struct rgt__getParentNodeResponse {
 	xsd__string  _getParentNodeReturn;
@@ -58,24 +50,39 @@ struct rgt__destroyResponse {
 };
 
 //gsoap rgt service method-action: requestTerminationAfter ""
-rgt__requestTerminationAfter( xsd__string  in0, struct rgt__requestTerminationAfterResponse * out );
+rgt__requestTerminationAfter(xsd__string  in0, 
+			     struct rgt__requestTerminationAfterResponse *out);
 //gsoap rgt service method-action: getChildNodes ""
-rgt__getChildNodes( void *_, struct rgt__getChildNodesResponse * out );
+rgt__getChildNodes( void *_, 
+		    struct rgt__getChildNodesResponse * out );
 //gsoap rgt service method-action: getInputFile ""
-rgt__getInputFile( void *_, struct rgt__getInputFileResponse * out );
+rgt__getInputFile( void *_, 
+		   struct rgt__getInputFileResponse * out );
 //gsoap rgt service method-action: findServiceData ""
-rgt__findServiceData( xsd__string  in0, struct rgt__findServiceDataResponse * out );
+rgt__findServiceData( xsd__string  in0, 
+		      struct rgt__findServiceDataResponse * out );
 //gsoap rgt service method-action: setCheckPointData ""
-rgt__setCheckPointData( void *_, struct rgt__setCheckPointDataResponse * out );
+rgt__setCheckPointData( void *_, 
+			struct rgt__setCheckPointDataResponse * out );
 //gsoap rgt service method-action: destroy ""
-rgt__destroy( void *_, struct rgt__destroyResponse * out );
+rgt__destroy( void *_, 
+	      struct rgt__destroyResponse * out );
 //gsoap rgt service method-action: getSteeringCommands ""
-rgt__getSteeringCommands( void *_, struct rgt__getSteeringCommandsResponse * out );
+rgt__getSteeringCommands( void *_, 
+			  struct rgt__getSteeringCommandsResponse * out );
 //gsoap rgt service method-action: requestTerminationBefore ""
-rgt__requestTerminationBefore( xsd__string  in0, struct rgt__requestTerminationBeforeResponse * out );
+rgt__requestTerminationBefore(xsd__string  in0, 
+			      struct rgt__requestTerminationBeforeResponse *out);
 //gsoap rgt service method-action: getCheckPointData ""
-rgt__getCheckPointData( void *_, struct rgt__getCheckPointDataResponse * out );
+rgt__getCheckPointData( void *_, 
+			struct rgt__getCheckPointDataResponse * out );
 //gsoap rgt service method-action: getParentNode ""
-rgt__getParentNode( void *_, struct rgt__getParentNodeResponse * out );
+rgt__getParentNode( void *_, 
+		    struct rgt__getParentNodeResponse * out );
 //gsoap rgt service method-action: addNode ""
-rgt__addNode( xsd__string  in0, xsd__string  in1, xsd__string  in2, xsd__string  in3, xsd__string  in4, struct rgt__addNodeResponse * out );
+rgt__addNode( xsd__string  in0, 
+	      xsd__string  in1, 
+	      xsd__string  in2, 
+	      xsd__string  in3, 
+	      xsd__string  in4, 
+	      struct rgt__addNodeResponse * out );
