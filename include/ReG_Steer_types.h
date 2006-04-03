@@ -198,6 +198,17 @@
     more general area of checkpoint management.
     @see Register_ChkTypes(), Add_checkpoint_file(), Record_checkpoint_set()
 
+    @section sec_EnvVars Environment Variables
+
+    Some of the behaviour of the steering library, particularly on the 
+    application/simulation side can be configured using certain 
+    environment variables.  These can be particularly important when
+    using socket-based IOTypes on machines with complex network
+    configurations. Each of these environment variables
+    is described below:
+
+    @verbinclude Environment_variables.txt
+
     @section sec_Acks Acknowledgements
 
     This work was funded by the Engineering and Physical Sciences

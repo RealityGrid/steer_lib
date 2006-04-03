@@ -311,6 +311,8 @@ extern PREFIX int Parse_xml_buf(char*              buf,
 
 /** @internal
     Parse the DOM document and put the results in msg_struct
+    @param doc The DOM document to parse
+    @param msg Pointer to message struct to hold results
     @param sim Pointer to Sim_entry struct or NULL (if not called by
     a steering client) */
 int Parse_xml(xmlDocPtr          doc, 
@@ -516,7 +518,7 @@ void               Delete_control_struct(struct control_struct *ctrl);
 void 		   Delete_supp_cmd_struct(struct supp_cmd_struct *supp_cmd);
 /** @internal
     Delete a param_struct and all its constituents
-    @param param_struct Pointer to param_struct to delete */
+    @param param Pointer to param_struct to delete */
 void 		   Delete_param_struct(struct param_struct *param);
 /** @internal 
     Delete a cmd_struct and all its constituents 
@@ -567,12 +569,12 @@ void 		   Print_cmd_struct(struct cmd_struct *cmd);
 void 		   Print_supp_cmd_struct(struct supp_cmd_struct *supp_cmd);
 /** @internal
     Print out the contents of an io_def_struct to stderr
-    @param supp_cmd Pointer to the io_def_struct to print */
-void 		   Print_io_def_struct(struct io_def_struct   *io_def);
+    @param io_def Pointer to the io_def_struct to print */
+void 		   Print_io_def_struct(struct io_def_struct *io_def);
 /** @internal
     Print out the contents of an io_struct to stderr 
     @param io Pointer to the io_struct to print */
-void 		   Print_io_struct(struct io_struct   *io);
+void 		   Print_io_struct(struct io_struct *io);
 /** @internal
     Print out the contents of a log_struct to stderr
     @param log Pointer to the log_struct to print */
@@ -593,8 +595,9 @@ int  String_contains_xml_chars(char *string);
 
 /** @internal
     Enumeration of the various possible states of our SAX parser
-    for the results of an OGSI findServiceData
-    - corresponds to the elements of the doc we're interested in */
+    for the results of an OGSI findServiceData or WSRF 
+    GetResourceProperty("entry") - corresponds to the elements of 
+    the doc we're interested in */
 enum doc_state {UNKNOWN, STARTING, 
 		OGSI_ENTRY, MEMBER_SERVICE_LOCATOR, 
 		GS_HANDLE, CONTENT, SERVICE_TYPE, COMPONENT_CONTENT, 

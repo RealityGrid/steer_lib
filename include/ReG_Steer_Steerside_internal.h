@@ -167,7 +167,10 @@ int Consume_supp_cmds_local(Sim_entry_type *sim);
 int Send_control_msg(int SimIndex, char* buf);
 
 /** @internal
+    @deprecated
     @param sim Pointer to simulation entry in Sim_table
+    @param buf Buffer containing message to send
+
     Send the supplied control message to the simulation with the
     supplied index via the java proxy */
 int Send_control_msg_proxy(Sim_entry_type *sim, char* buf);

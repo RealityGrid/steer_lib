@@ -120,11 +120,12 @@ extern PREFIX int Get_registry_entries_filtered(const char *registryGSH,
 /** Queries the specified, secure registry using SSL
     The pointer held in *entries must be free'd once the data
     has been used.
+    @param registryGSH Endpoint of the registry to query
     @param sec Pointer to reg_security_info struct holding information
-needed to authenticate user to the registry (using either ssl or wsse)
+    needed to authenticate user to the registry (using either ssl or wsse)
     @param num_entries The number of entries found
     @param entries Pointer to array of registry_entry structs containing
-details on the entries found.  Must be free'd by calling code.
+    details on the entries found.  Must be free'd by calling code.
 */
 extern PREFIX int Get_registry_entries_secure(const char *registryGSH, 
 					      const struct reg_security_info *sec,

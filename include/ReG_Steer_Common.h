@@ -447,7 +447,7 @@ extern PREFIX int IOdef_index_from_handle(IOdef_table_type *table,
 					  int IOdefHandle);
 
 /** @internal
-    @table Pointer to table of registered parameters
+    @param table Pointer to table of registered parameters
     @return REG_SUCCESS, REG_FAILURE
 
     Increment the count of parameters registered and allocate
@@ -511,7 +511,7 @@ extern PREFIX int Write_xml_footer(char **pchar,
 /** @internal
     @param filename Name of file to read
     @param buf Buffer containing contents of file
-    @param size Size of @buf (because it is malloc'd by this routine)
+    @param size Size of @p buf (because it is malloc'd by this routine)
     @param retain_newlines If REG_TRUE then routine retains any newline 
     ('\n') characters
 

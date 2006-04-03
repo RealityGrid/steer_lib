@@ -110,11 +110,13 @@ extern PREFIX char *Create_checkpoint_tree(const char *factory,
     user's certificate to get their DN.
     The security config. file is of the form: @n
     <tt>
-    <?xml version="1.0"?> @n
-    <Security_config> @n
-      <caCertsPath value="/etc/grid-security/certificates"/> @n
-      <privateKeyCertFile value="/home/me/.globus/mycertnkey.pem"/> @n
+    @verbatim
+    <?xml version="1.0"?>
+    <Security_config>
+      <caCertsPath value="/etc/grid-security/certificates"/>
+      <privateKeyCertFile value="/home/me/.globus/mycertnkey.pem"/>
     </Security_config>
+    @endverbatim
     </tt>
  */ 
 extern PREFIX int Get_security_config(const char               *configFile,
