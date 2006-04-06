@@ -20,6 +20,8 @@ struct epr {
 #import "RealityGridTreeFactory.h"
 #import "RealityGridTree.h"
 #import "regServiceGroup.h"
+#import "CheckPointTree.h"
+#import "CheckPointTreeNode.h"
 
 struct stringWithAttr {
    char*  __item;
