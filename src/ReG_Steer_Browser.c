@@ -198,6 +198,7 @@ int Get_registry_entries_filtered_secure(const char             *registryGSH,
   int status;
   int i, j;
   int count;
+  *entries = NULL;
 
   if( (status = Get_registry_entries_secure(registryGSH, 
 					    sec,
