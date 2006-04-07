@@ -391,7 +391,8 @@ int Set_resource_property (struct soap *soapStruct,
     fprintf(stderr, "STEER: Set_resource_property: failed to set RP:\n");
     soap_print_fault(soapStruct, stderr);
 
-    if(soapStruct->fault && soapStruct->fault->detail){
+    if(soapStruct->fault && soapStruct->fault->detail &&
+       soapStruct->fault->detail->__any){
 	fprintf(stderr, "STEER: Set_resource_property: Soap error detail"
 		" any = %s\n", soapStruct->fault->detail->__any);
 	if(strstr(soapStruct->fault->detail->__any, "deadlock")){
