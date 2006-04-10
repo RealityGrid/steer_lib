@@ -620,6 +620,9 @@ struct ParserState {
   int num_entries;
   /** How many entries we can store */
   int max_entries;
+  /** Index to current possition in job_description string of entry
+      currently being parsed */
+  int jdIndex;
   /** Where we are in the document tree */
   enum doc_state depth;
   /** Pointer to array of structs holding entry details */

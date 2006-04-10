@@ -1834,6 +1834,8 @@ void Start_element_handler(void * 	user_data,
   </registryEntry>
   /wssg:Content
   */
+  fprintf(stderr, "Start_element_handler, name = %s\n", 
+	  (const char*)name);
   if( !xmlStrcmp(name, (const xmlChar *) "ogsi:entry") ){
 
     if (state->depth == STARTING){
@@ -1848,10 +1850,17 @@ void Start_element_handler(void * 	user_data,
       state->entries[state->num_entries].job_description[0] = '\0';
     }
   }
+  else if(state->depth == COMPONENT_TASK_DESCRIPTION){
+    snprintf(&(state->entries[state->num_entries].job_description[state->jdIndex]),
+	     (REG_MAX_STRING_LENGTH - state->jdIndex - xmlStrlen(name)),
+	     "<%s>", (char *)name);
+    state->jdIndex += xmlStrlen(name) + 2;
+  }
   else if( !xmlStrcmp(name, (const xmlChar *) "wssg:Entry") ){
 
     if (state->depth == STARTING){
       state->depth = WSRF_ENTRY;
+      state->jdIndex = 0;
       /* Initialise table to hold this content */
       state->entries[state->num_entries].service_type[0] = '\0';
       state->entries[state->num_entries].gsh[0] = '\0';
@@ -1900,7 +1909,10 @@ void Start_element_handler(void * 	user_data,
   }
   else if( !xmlStrcmp(name, (const xmlChar *) "componentTaskDescription") ){
 
-    if(state->depth == COMPONENT_CONTENT) state->depth = COMPONENT_TASK_DESCRIPTION;
+    if(state->depth == COMPONENT_CONTENT){
+      state->depth = COMPONENT_TASK_DESCRIPTION;
+      state->jdIndex = 0;
+    }
   }
   /* WSRF section */
   else if( !xmlStrcmp(name, (const xmlChar *) "wssg:ServiceGroupEntryEPR") ){
@@ -1973,6 +1985,12 @@ void End_element_handler(void          *user_data,
       }
     }
   }
+  else if(state->depth == COMPONENT_TASK_DESCRIPTION){
+    snprintf(&(state->entries[state->num_entries].job_description[state->jdIndex]),
+	     (REG_MAX_STRING_LENGTH - state->jdIndex - xmlStrlen(name)),
+	     "</%s>", (char *)name);
+    state->jdIndex += xmlStrlen(name) + 3;
+  }
   else if( !xmlStrcmp(name, (const xmlChar *) "ogsi:memberServiceLocator") ){
 
     if(state->depth == MEMBER_SERVICE_LOCATOR) state->depth = OGSI_ENTRY;
@@ -2011,7 +2029,10 @@ void End_element_handler(void          *user_data,
   }
   else if( !xmlStrcmp(name, (const xmlChar *) "componentTaskDescription") ){
 
-    if(state->depth == COMPONENT_TASK_DESCRIPTION) state->depth = COMPONENT_CONTENT;
+    if(state->depth == COMPONENT_TASK_DESCRIPTION) {
+      state->depth = COMPONENT_CONTENT;
+      state->jdIndex = 0;
+    }
   }
   /* WSRF section */
   else if( !xmlStrcmp(name, (const xmlChar *) "wssg:Entry") ){
@@ -2119,8 +2140,18 @@ void Characters_handler(void          *user_data,
     state->entries[state->num_entries].application[len] = '\0';
   }
   else if (state->depth == COMPONENT_TASK_DESCRIPTION){
-    strncpy(state->entries[state->num_entries].job_description, (char *)ch, len);
-    state->entries[state->num_entries].job_description[len] = '\0';
+    fprintf(stderr, "jdIndex = %d\n", state->jdIndex);
+    if((state->jdIndex + len) < REG_MAX_STRING_LENGTH){
+      strncpy(&(state->entries[state->num_entries].job_description[state->jdIndex]), 
+	      (char *)ch, len);
+      state->entries[state->num_entries].job_description[len] = '\0';
+      fprintf(stderr, "description0 >>%s<<\n", state->entries[state->num_entries].job_description);
+      state->jdIndex += len;
+    }
+    else{
+      fprintf(stderr, "WARNING: truncating job description in parser\n");
+      fprintf(stderr, "description >>%s<<\n", state->entries[state->num_entries].job_description);
+    }
   }
 }
 
