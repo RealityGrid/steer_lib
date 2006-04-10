@@ -51,23 +51,43 @@
 */
 struct registry_entry {
 
-  /** The type of service (SWS, SGS, SGSFactory etc.) */
-  char service_type[REG_MAX_STRING_LENGTH];
-  /** The endpoint of the service */
-  char gsh[REG_MAX_STRING_LENGTH];
-  /** The endpoint of the service modelling the registry entry */
-  char entry_gsh[REG_MAX_STRING_LENGTH];
-  /** Name of the application */
-  char application[REG_MAX_STRING_LENGTH];
-  /** Date and time at which application started */
-  char start_date_time[REG_MAX_STRING_LENGTH];
-  /** User who lauched the application */
-  char user[REG_MAX_STRING_LENGTH];
-  /** The group to which the user belongs */
-  char group[REG_MAX_STRING_LENGTH];
-  /** Description of purpose of job */
-  char job_description[REG_MAX_STRING_LENGTH];
-
+  /** Index of the type of service (SWS, SGS, SGSFactory etc.)  in 
+      string pointed to by @p pBuf
+  char service_type[REG_MAX_STRING_LENGTH];*/
+  char *service_type;
+  /** Index of the endpoint of the service in string pointed to
+      by @p pBuf
+  char gsh[REG_MAX_STRING_LENGTH]; */
+  char *gsh;
+  /** Index of the endpoint of the service modelling the registry entry 
+      in string pointed to by @p pBuf
+  char entry_gsh[REG_MAX_STRING_LENGTH]; */
+  char *entry_gsh;
+  /** Index of the Name of the application in string pointed to
+      by @p pBuf
+  char application[REG_MAX_STRING_LENGTH];*/
+  char *application;
+  /** Index of the Date and time at which application started in string
+      pointed to by @p pBuf
+  char start_date_time[REG_MAX_STRING_LENGTH];*/
+  char *start_date_time;
+  /** Index of the User who lauched the application in string pointed to
+      by @p pBuf
+  char user[REG_MAX_STRING_LENGTH];*/
+  char *user;
+  /** Index of the group to which the user belongs in string pointed to
+      by @p pBuf
+  char group[REG_MAX_STRING_LENGTH];*/
+  char *group;
+  /** Index of description of purpose of job in string pointed to
+      by @p pBuf
+  char job_description[REG_MAX_STRING_LENGTH]; */
+  char *job_description;
+  /** Pointer to buffer containing data */
+  char *pBuf;
+  /** Length of the buffer pointed to by @p pBuf */
+  int   bufLen;
+  int   bufIndex;
 };
 
 /*-------------------------------------------------------------------*/
