@@ -643,31 +643,6 @@ int Parse_registry_entries(char*                   buf,
 			   struct registry_entry **entries);
 
 /** @internal 
-    SAX event handler for OGSI findServiceData results 
-    @param user_data Pointer to struct ParserState
-    @param name The name of the element that is starting
-    @param attrs Attributes of the element @p name */
-void Start_element_handler(void           *user_data,
-			   const xmlChar  *name,
-			   const xmlChar **attrs);
-
-/** @internal 
-    SAX event handler for OGSI findServiceData results 
-    @param user_data Pointer to struct ParserState
-    @param name The name of the element that is ending */
-void End_element_handler(void          *user_data,
-			 const xmlChar *name);
-
-/** @internal 
-    SAX event handler for OGSI findServiceData results 
-    @param user_data Pointer to struct ParserState 
-    @param ch Pointer to character data
-    @param len Length of the character data */
-void Characters_handler(void          *user_data,
-			const xmlChar *ch,
-			int  	       len);
-
-/** @internal 
     Parse the supplied resource property document and pull out the
     value of the specified resource property 
     @param pRPDoc Buffer containing the ResourceProperty document 
@@ -701,5 +676,17 @@ int Delete_msg_store(struct msg_store_struct *msgStore);
     Delete the store of message UIDs
     @param uidHist Pointer to the UID store to delete */
 int Delete_msg_uid_store(struct msg_uid_history_struct *uidHist);
+
+/** @internal
+    Store the value of the specified node in the string pointed
+    to by @p dest, which is a member of the specified @p entry struct 
+    @param doc The XML document being parsed
+    @param cur Pointer to the current node in the DOM tree
+    @param dest Pointer to the char* to put string into
+    @param entry Pointer to the entry struct that @p dest belongs to */
+int Store_xml_string(xmlDocPtr doc, 
+		     xmlNodePtr cur, 
+		     char **dest, 
+		     struct registry_entry *entry);
 
 #endif
