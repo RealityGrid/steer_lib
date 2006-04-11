@@ -47,8 +47,7 @@
     @param entries Array of structs holding details on each entry */
 int Get_registry_entries_wsrf(const char             *registryEPR, 
 			      const struct reg_security_info *sec,
-			      int                    *num_entries,  
-			      struct registry_entry **entries);
+			      struct registry_contents *contents);
 
 /** @internal
     Create a Steering Web Service and return its address 

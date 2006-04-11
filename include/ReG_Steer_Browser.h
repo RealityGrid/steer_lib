@@ -46,48 +46,47 @@
   #define PREFIX 
 #endif
 
-/**
-  Holds details on an entry in the registry 
-*/
+/** Holds details on a single entry in a registry */
 struct registry_entry {
 
-  /** Index of the type of service (SWS, SGS, SGSFactory etc.)  in 
-      string pointed to by @p pBuf
-  char service_type[REG_MAX_STRING_LENGTH];*/
+  /** Type of service (SWS, SGS, SGSFactory etc.) - points to 
+      string stored somewhere in @p pBuf */
   char *service_type;
-  /** Index of the endpoint of the service in string pointed to
-      by @p pBuf
-  char gsh[REG_MAX_STRING_LENGTH]; */
+  /** Endpoint of the service - points to string stored somewhere
+      in @p pBuf */
   char *gsh;
-  /** Index of the endpoint of the service modelling the registry entry 
-      in string pointed to by @p pBuf
-  char entry_gsh[REG_MAX_STRING_LENGTH]; */
+  /** Endpoint of the service modelling the registry entry - points
+      to string somewhere in @p pBuf */
   char *entry_gsh;
-  /** Index of the Name of the application in string pointed to
-      by @p pBuf
-  char application[REG_MAX_STRING_LENGTH];*/
+  /** Name of the application - points to string stored somewhere 
+      in @p pBuf */
   char *application;
-  /** Index of the Date and time at which application started in string
-      pointed to by @p pBuf
-  char start_date_time[REG_MAX_STRING_LENGTH];*/
+  /** Date and time at which application started - points to string
+      somewhere in @p pBuf */
   char *start_date_time;
-  /** Index of the User who lauched the application in string pointed to
-      by @p pBuf
-  char user[REG_MAX_STRING_LENGTH];*/
+  /** User who lauched the application - points to string stored 
+      somewhere in @p pBuf*/
   char *user;
-  /** Index of the group to which the user belongs in string pointed to
-      by @p pBuf
-  char group[REG_MAX_STRING_LENGTH];*/
+  /** The group to which the user belongs - points to string stored
+      somewhere in @p pBuf*/
   char *group;
-  /** Index of description of purpose of job in string pointed to
-      by @p pBuf
-  char job_description[REG_MAX_STRING_LENGTH]; */
+  /** Description of purpose of job - actually points to string held in 
+      @p pBuf */
   char *job_description;
   /** Pointer to buffer containing data */
   char *pBuf;
   /** Length of the buffer pointed to by @p pBuf */
   int   bufLen;
+  /** Current position in @p pBuf array to append data */
   int   bufIndex;
+};
+
+/** Holds details on every entry in a registry */
+struct registry_contents {
+  /** Number of entries in the registry */
+  int numEntries;
+  /** Array of entries */
+  struct registry_entry *entries;
 };
 
 /*-------------------------------------------------------------------*/
@@ -117,12 +116,11 @@ extern PREFIX int Get_sim_list(int   *nSims,
     The pointer held in *entries must be free'd once the data
     has been used.
     @param registryGSH Address of the ServiceGroup/Registry to query
-    @param num_entries Number of entries in the registry
-    @param entries Array of structs holding details for each entry
+    @param contents Table holding details of registry entries. Must be 
+    free'd by calling Delete_registry_table().
  */
-extern PREFIX int Get_registry_entries(const char *registryGSH, 
-				       int *num_entries,  
-				       struct registry_entry **entries);
+extern PREFIX int Get_registry_entries(const char               *registryGSH, 
+				       struct registry_contents *contents);
 
 /** Queries specified registry and filters results using the
     supplied string.
@@ -132,10 +130,9 @@ extern PREFIX int Get_registry_entries(const char *registryGSH,
     @see Get_registry_entries
     @param pattern String holding pattern to be used in filtering
  */
-extern PREFIX int Get_registry_entries_filtered(const char *registryGSH, 
-						int *num_entries,  
-						struct registry_entry **entries,
-						char *pattern);
+extern PREFIX int Get_registry_entries_filtered(const char               *registryGSH, 
+						struct registry_contents *contents,
+						char                     *pattern);
 
 /** Queries the specified, secure registry using SSL
     The pointer held in *entries must be free'd once the data
@@ -143,21 +140,22 @@ extern PREFIX int Get_registry_entries_filtered(const char *registryGSH,
     @param registryGSH Endpoint of the registry to query
     @param sec Pointer to reg_security_info struct holding information
     needed to authenticate user to the registry (using either ssl or wsse)
-    @param num_entries The number of entries found
-    @param entries Pointer to array of registry_entry structs containing
-    details on the entries found.  Must be free'd by calling code.
+    @param contents Pointer to table holding details of registry entries. 
+    Must be free'd by calling Delete_registry_table().
 */
-extern PREFIX int Get_registry_entries_secure(const char *registryGSH, 
+extern PREFIX int Get_registry_entries_secure(const char                  *registryGSH,
 					      const struct reg_security_info *sec,
-					      int *num_entries,  
-					      struct registry_entry **entries);
+					      struct registry_contents    *contents);
 
 /** @see Get_registry_entries_filtered
     @see Get_registry_entries_secure */
 extern PREFIX int Get_registry_entries_filtered_secure(const char             *registryGSH, 
 						       const struct reg_security_info *sec,
-						       int                    *num_entries,  
-						       struct registry_entry **entries,
+						       struct registry_contents *contents,
 						       char                   *pattern);
+
+/** Free's the memory associated with the supplied table
+    @param contents Pointer to the table to clean up */
+extern PREFIX int Delete_registry_table(struct registry_contents *contents);
 
 #endif

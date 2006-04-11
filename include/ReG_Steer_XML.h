@@ -40,6 +40,7 @@
 
 #include "libxml/xmlmemory.h"
 #include "libxml/parser.h"
+#include "ReG_Steer_Browser.h"
 
 #ifdef __cplusplus
   #define PREFIX "C"
@@ -610,37 +611,16 @@ enum doc_state {UNKNOWN, STARTING,
 		FINISHING};
 
 /** @internal
-    Holds the state of the SAX parser for the results of
-    an OGSI findServiceData */
-struct ParserState {
-  /** The return value of the parser (used by the various 
-      different handlers) */
-  int return_val;
-  /** How many entries we currently have */
-  int num_entries;
-  /** How many entries we can store */
-  int max_entries;
-  /** Index to current possition in job_description string of entry
-      currently being parsed */
-  int jdIndex;
-  /** Where we are in the document tree */
-  enum doc_state depth;
-  /** Pointer to array of structs holding entry details */
-  struct registry_entry *entries;
-};
-
-/** @internal
-    Uses SAX to parse the document returned by doing a findServiceData
-    on a serviceGroupRegistration service.
+    Parse the document returned by doing a findServiceData
+    on a serviceGroupRegistration service (OGSI) or a GetResourceProperty
+    on a ServiceGroup (WSRF).
     @param buf Buffer to parse
     @param size Length of @p buf in bytes
-    @param num_entries On return, the no. of registry entries found
-    @param entries On return, Array of details on registry entries
+    @param contents On return, table of details of registry entries
  */
-int Parse_registry_entries(char*                   buf, 
-			   int                     size, 
-			   int                    *num_entries, 
-			   struct registry_entry **entries);
+int Parse_registry_entries(char*                     buf, 
+			   int                       size, 
+			   struct registry_contents *contents);
 
 /** @internal 
     Parse the supplied resource property document and pull out the

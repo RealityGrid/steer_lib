@@ -61,7 +61,7 @@ int Get_sim_list(int   *nSims,
   int   status;
   int   i;
   char  registry_address[256];
-  struct registry_entry *entries;
+  struct registry_contents contents;
 
   *nSims = 0;
 
@@ -81,10 +81,11 @@ int Get_sim_list(int   *nSims,
 
     /* Contact a registry here
        and ask it for the location of any SGSs it knows of */
-    status = Get_registry_entries(registry_address, 
-				  nSims, &entries);
+    status = Get_registry_entries(registry_address, &contents);
 
     if(status == REG_SUCCESS){
+
+      *nSims = contents.numEntries;
 
       /* Hard limit on no. of sims we can return details on */
       if(*nSims > REG_MAX_NUM_STEERED_SIM)*nSims = REG_MAX_NUM_STEERED_SIM;
@@ -93,21 +94,20 @@ int Get_sim_list(int   *nSims,
       for(i=0; i<*nSims; i++){
 
 
-	if((strlen(entries[i].application) > 0) && 
-	   (!strcmp(entries[i].service_type, "SWS") || 
-	   !strcmp(entries[i].service_type, "SGS")) ){
+	if((strlen(contents.entries[i].application) > 0) && 
+	   (!strcmp(contents.entries[i].service_type, "SWS") || 
+	   !strcmp(contents.entries[i].service_type, "SGS")) ){
 
-	  sprintf(simName[count], "%s %s %s", entries[i].user, 
-		  entries[i].application, 
-		  entries[i].start_date_time);
-	  strcpy(simGSH[count], entries[i].gsh);
+	  sprintf(simName[count], "%s %s %s", contents.entries[i].user, 
+		  contents.entries[i].application, 
+		  contents.entries[i].start_date_time);
+	  strcpy(simGSH[count], contents.entries[i].gsh);
 	  count++;
 	}
       }
       *nSims = count;
 
-      free(entries);
-      entries = NULL;
+      Delete_registry_table(&contents);
     }
     else {
       if( (ptr = getenv("REG_SGS_ADDRESS")) ){
@@ -178,32 +178,27 @@ int Get_sim_list(int   *nSims,
 
 /*-------------------------------------------------------------------------*/
 
-int Get_registry_entries(const char             *registryGSH, 
-			 int                    *num_entries,  
-			 struct registry_entry **entries){
+int Get_registry_entries(const char               *registryGSH, 
+			 struct registry_contents *contents){
 
   struct reg_security_info sec;
   Wipe_security_info(&sec);
-  return Get_registry_entries_secure(registryGSH, &sec, 
-				     num_entries, entries);
+  return Get_registry_entries_secure(registryGSH, &sec, contents);
 }
 
 /*-------------------------------------------------------------------------*/
 
 int Get_registry_entries_filtered_secure(const char             *registryGSH,
 					 const struct reg_security_info *sec,
-					 int                    *num_entries,  
-					 struct registry_entry **entries,
+					 struct registry_contents *contents,
 					 char                   *pattern){
   int status;
   int i, j;
   int count;
-  *entries = NULL;
 
   if( (status = Get_registry_entries_secure(registryGSH, 
 					    sec,
-					    num_entries,  
-					    entries)) != REG_SUCCESS ){
+					    contents)) != REG_SUCCESS ){
     return status;
   }
 
@@ -214,28 +209,30 @@ int Get_registry_entries_filtered_secure(const char             *registryGSH,
   }
 
   j=0; /* j will index the filtered entries */
-  count = *num_entries;
+  count = contents->numEntries;
 
-  for(i=0; i<*num_entries; i++){
+  for(i=0; i<contents->numEntries; i++){
 
     /* Does this entry match the supplied pattern? */
-    if(strstr((*entries)[i].service_type, pattern) ||
-       strstr((*entries)[i].application, pattern) ||
-       strstr((*entries)[i].user, pattern) ||
-       strstr((*entries)[i].group, pattern) ||
-       strstr((*entries)[i].start_date_time, pattern) ||
-       strstr((*entries)[i].job_description, pattern)){
+    if(strstr(contents->entries[i].service_type, pattern) ||
+       strstr(contents->entries[i].application, pattern) ||
+       strstr(contents->entries[i].user, pattern) ||
+       strstr(contents->entries[i].group, pattern) ||
+       strstr(contents->entries[i].start_date_time, pattern) ||
+       strstr(contents->entries[i].job_description, pattern)){
 
       /* It does */
       if(j<i){
-	strcpy((*entries)[j].service_type, (*entries)[i].service_type);
-	strcpy((*entries)[j].gsh, (*entries)[i].gsh);
-	strcpy((*entries)[j].entry_gsh, (*entries)[i].entry_gsh);
-	strcpy((*entries)[j].application, (*entries)[i].application);
-	strcpy((*entries)[j].user, (*entries)[i].user);
-	strcpy((*entries)[j].group, (*entries)[i].group);
-	strcpy((*entries)[j].start_date_time, (*entries)[i].start_date_time);
-	strcpy((*entries)[j].job_description, (*entries)[i].job_description);
+	strcpy(contents->entries[j].service_type, contents->entries[i].service_type);
+	strcpy(contents->entries[j].gsh, contents->entries[i].gsh);
+	strcpy(contents->entries[j].entry_gsh, contents->entries[i].entry_gsh);
+	strcpy(contents->entries[j].application, contents->entries[i].application);
+	strcpy(contents->entries[j].user, contents->entries[i].user);
+	strcpy(contents->entries[j].group, contents->entries[i].group);
+	strcpy(contents->entries[j].start_date_time, 
+	       contents->entries[i].start_date_time);
+	strcpy(contents->entries[j].job_description, 
+	       contents->entries[i].job_description);
       }
 
       j++;
@@ -246,21 +243,28 @@ int Get_registry_entries_filtered_secure(const char             *registryGSH,
     }
   }
 
-  *num_entries = count;
+  /* Delete the unwanted entries */
+  for(i=count; i<contents->numEntries; i++){
+    free(contents->entries[i].pBuf);
+    contents->entries[i].pBuf = NULL;
+    contents->entries[i].bufLen = 0;
+  }
+
+  contents->numEntries = count;
 
 #if REG_DEBUG
   fprintf(stderr,
 	  "\nGet_registry_entries_filtered_secure, got %d filtered "
-	  "entries...\n", *num_entries);
+	  "entries...\n", count);
 
-  for(i=0; i<*num_entries; i++){
+  for(i=0; i<contents->numEntries; i++){
     fprintf(stderr,"Entry %d:\n", i);
-    fprintf(stderr,"          GSH: %s\n", (*entries)[i].gsh);
-    fprintf(stderr,"          App: %s\n", (*entries)[i].application);
-    fprintf(stderr,"         user: %s, %s\n", (*entries)[i].user, 
-	    (*entries)[i].group);
-    fprintf(stderr,"   Start time: %s\n", (*entries)[i].start_date_time);
-    fprintf(stderr,"  Description: %s\n", (*entries)[i].job_description);
+    fprintf(stderr,"          GSH: %s\n", contents->entries[i].gsh);
+    fprintf(stderr,"          App: %s\n", contents->entries[i].application);
+    fprintf(stderr,"         user: %s, %s\n", contents->entries[i].user, 
+	    contents->entries[i].group);
+    fprintf(stderr,"   Start time: %s\n", contents->entries[i].start_date_time);
+    fprintf(stderr,"  Description: %s\n", contents->entries[i].job_description);
   }
 #endif
 
@@ -269,10 +273,9 @@ int Get_registry_entries_filtered_secure(const char             *registryGSH,
 
 /*-------------------------------------------------------------------------*/
 
-int Get_registry_entries_secure(const char *registryGSH, 
+int Get_registry_entries_secure(const char                     *registryGSH, 
 				const struct reg_security_info *sec,
-				int *num_entries,  
-				struct registry_entry **entries){
+				struct registry_contents       *contents){
   int status;
 
 #ifndef REG_WSRF
@@ -309,30 +312,47 @@ int Get_registry_entries_secure(const char *registryGSH,
 
   status = Parse_registry_entries(out._findServiceDataReturn, 
 				  strlen(out._findServiceDataReturn),
-				  num_entries, entries);
+				  contents);
   soap_destroy(&soap);
   soap_end(&soap);
 
 #else /* WSRF, not OGSI */
 
-  status = Get_registry_entries_wsrf(registryGSH, sec, 
-				     num_entries, entries);
-  return status;
+  status = Get_registry_entries_wsrf(registryGSH, sec, contents);
+
 #endif /* !defined REG_WSRF */
+
+  return status;
 }
 
 /*-------------------------------------------------------------------------*/
 
-int Get_registry_entries_filtered(const char             *registryGSH, 
-				  int                    *num_entries,  
-				  struct registry_entry **entries,
-				  char                   *pattern){
+int Get_registry_entries_filtered(const char               *registryGSH, 
+				  struct registry_contents *contents,
+				  char                     *pattern){
   struct reg_security_info sec;
   Wipe_security_info(&sec);
 
   return Get_registry_entries_filtered_secure(registryGSH,
 					      &sec,
-					      num_entries,
-					      entries,
+					      contents,
 					      pattern);
+}
+
+/*------------------------------------------------------------------*/
+
+int Delete_registry_table(struct registry_contents *contents)
+{
+  int i;
+
+  if(!contents)return REG_FAILURE;
+
+  for(i=0; i<contents->numEntries; i++){
+    free(contents->entries[i].pBuf);
+  }
+  free(contents->entries);
+  contents->entries = NULL;
+  contents->numEntries = 0;
+
+  return REG_SUCCESS;
 }

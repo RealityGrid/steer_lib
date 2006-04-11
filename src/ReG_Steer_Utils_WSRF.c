@@ -49,8 +49,7 @@ extern char Global_scratch_buffer[];
 
 int Get_registry_entries_wsrf(const char *registryEPR, 
 			      const struct reg_security_info *sec,
-			      int *num_entries,  
-			      struct registry_entry **entries){
+			      struct registry_contents *contents){
 
   struct wsrp__GetMultipleResourcePropertiesRequest in;
   struct soap soap;
@@ -60,7 +59,7 @@ int Get_registry_entries_wsrf(const char *registryEPR,
 #ifdef USE_REG_TIMING
   double time0, time1;
 #endif
-  *num_entries = 0;
+  contents->numEntries = 0;
 
   soap_init(&soap);
 
@@ -135,7 +134,7 @@ int Get_registry_entries_wsrf(const char *registryEPR,
   if(strlen(out) > 0){
     status = Parse_registry_entries(out, 
 				    strlen(out),
-				    num_entries, entries);
+				    contents);
   }
 
   soap_end(&soap);

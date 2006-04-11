@@ -80,7 +80,6 @@ int main(int argc, char **argv){
   int    ioTypeSel;
   int    new_freq;
 
-  int    nsims;
   char  *char_ptr;
   char  *pchar;
   char  *sim_name[REG_MAX_NUM_STEERED_SIM];
@@ -93,11 +92,10 @@ int main(int argc, char **argv){
 
   char                     registryAddr[REG_MAX_STRING_LENGTH];
   char                     confFile[REG_MAX_STRING_LENGTH];
-  struct registry_entry   *entries;
+  struct registry_contents content;
   struct reg_security_info sec;
 
   pchar = NULL;
-  entries = NULL;
 
   /* Initialise arrays for querying param values */
 
@@ -233,8 +231,7 @@ int main(int argc, char **argv){
 
       Get_registry_entries_filtered_secure(registryAddr,
 					   &sec,
-					   &nsims,
-					   &entries,
+					   &content,
 #ifdef REG_WSRF
 					   "SWS");
 #else
@@ -251,18 +248,18 @@ int main(int argc, char **argv){
 
 	/* If we got one from the framework then attempt to talk to that,
 	   otherwise default to old behaviour */
-	if(nsims > 0){
+	if(content.numEntries > 0){
 
-	  printf("\n%d steerable applications available:\n", nsims);
-	  for(i=0; i<nsims; i++){
+	  printf("\n%d steerable applications available:\n", content.numEntries);
+	  for(i=0; i<content.numEntries; i++){
 
-	    printf("    %d: %s, gsh = %s\n", i, entries[i].application, 
-		   entries[i].gsh);
+	    printf("    %d: %s, gsh = %s\n", i, content.entries[i].application, 
+		   content.entries[i].gsh);
 	  }
 
 	  i = -1;
-	  while(i<0 || i>(nsims-1)){
-	    printf("\nWhich one to attach to (0 - %d): ", nsims-1);
+	  while(i<0 || i>(content.numEntries-1)){
+	    printf("\nWhich one to attach to (0 - %d): ", content.numEntries-1);
 	    while(REG_TRUE){
 	      if(scanf("%d", &i) == 1)break;
 	    }
@@ -276,7 +273,7 @@ int main(int argc, char **argv){
 	  else{
 	    strncpy(sec.passphrase, passPtr, REG_MAX_STRING_LENGTH);
 	    strncpy(sec.userDN, getenv("USER"), REG_MAX_STRING_LENGTH);
-	    status = Sim_attach_secure(entries[i].gsh, &sec, 
+	    status = Sim_attach_secure(content.entries[i].gsh, &sec, 
 				       &sim_handle);
 	  }
 	}
@@ -293,7 +290,7 @@ int main(int argc, char **argv){
 
   /* Done with malloc'd memory */
   if(pchar)free(pchar);
-  if(entries)free(entries);
+  Delete_registry_table(&content);
 
   if(status != REG_SUCCESS){
 

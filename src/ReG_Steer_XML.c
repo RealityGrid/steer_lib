@@ -1728,10 +1728,10 @@ int String_contains_xml_chars(char *string)
 /*-----------------------------------------------------------------*/
 
 /* For handling the xml returned by a findServiceData on a
- * serviceGroupRegistration - uses SAX rather than DOM.
+ * serviceGroupRegistration
  */
-int Parse_registry_entries(char* buf, int size, int *num_entries, 
-			   struct registry_entry **entries)
+int Parse_registry_entries(char* buf, int size,
+			   struct registry_contents *contents)
 { 
   char                  *pChar;
   char                  *pNext;
@@ -1746,9 +1746,9 @@ int Parse_registry_entries(char* buf, int size, int *num_entries,
   void                  *pDum;
 
   /* malloc memory to hold content */
-  *entries = (struct registry_entry *)malloc(maxEntries*
-					     sizeof(struct registry_entry));
-  if( !(myEntries = *entries) ){
+  myEntries = (struct registry_entry *)malloc(maxEntries*
+					      sizeof(struct registry_entry));
+  if( !myEntries ){
     fprintf(stderr, "Parse_registry_entries: failed to malloc memory\n");
     return REG_FAILURE;
   }
@@ -1928,6 +1928,8 @@ ogsi:entry
 	  cur = cur->next;
 	  continue;
 	}
+	printf("ARPDBG: child of MemberServiceEPR is %s\n", 
+	       (char*)(child->name));
 	child = child->xmlChildrenNode;
 	while( xmlIsBlankNode ( child ) ){
 	  child = child -> next;
@@ -2047,7 +2049,8 @@ ogsi:entry
   }
   numEntries++;
 
-  *num_entries = numEntries;
+  contents->numEntries = numEntries;
+  contents->entries = myEntries;
 
   /* Clean-up */
   xmlCleanupParser();
@@ -2055,7 +2058,7 @@ ogsi:entry
   fprintf(stderr, "Parse_registry_entries: got %d entries from registry:\n", 
 	  numEntries);
   for(i=0; i<numEntries;i++){
-    printf("      GSH %d: %s\n", i, myEntries[i].gsh);
+    printf("      GSH %02d: %s\n", i, myEntries[i].gsh);
     printf("        app : %s\n", myEntries[i].application);
     printf("   entry gsh: %s\n", myEntries[i].entry_gsh);
     printf("Service type: %s\n", myEntries[i].service_type);
@@ -2072,15 +2075,36 @@ ogsi:entry
 
 int Store_xml_string(xmlDocPtr doc, xmlNodePtr cur, char **dest, 
 		     struct registry_entry *entry){
-  int      len;
-  int      newLen;
-  xmlChar *pXMLChar;
-  char    *pDum;
+  int        len, newLen;
+  char      *pDum;
+  xmlChar   *pXMLChar;
+  xmlDocPtr  newDoc = NULL;
+  xmlNodePtr tmpNode;
+  int i;
 
-  pXMLChar = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
-  len = xmlStrlen(pXMLChar);
+  printf("ARPDBG: Store_xml_string for %s\n", cur->name);
+  tmpNode = cur->xmlChildrenNode;
+  while( xmlIsBlankNode(tmpNode) ){
+    tmpNode = tmpNode->next;
+  }
+  if(!tmpNode) return REG_FAILURE;
+
+  if(tmpNode->type == XML_TEXT_NODE){
+    /* Content is just text so grab it... */
+    pXMLChar = xmlNodeListGetString(doc, tmpNode, 1);
+    len = xmlStrlen(pXMLChar);
+  }
+  else{
+    /* Otherwise we have xml so convert it back to text... */
+    newDoc = xmlNewDoc(BAD_CAST "1.0");
+    xmlDocSetRootElement(newDoc, tmpNode);
+    xmlDocDumpFormatMemory(newDoc, &pXMLChar, &len, 1);
+  }
+
   if(entry->bufLen - entry->bufIndex - len <= 0){
-    newLen = (int)(1.5*entry->bufLen);
+    newLen = (entry->bufLen + 2*len);
+    fprintf(stderr, "ARPDBG: Store_xml_string, reallocing %d bytes...\n",
+	    newLen);
     if( (pDum = (char*)realloc((void*)(entry->pBuf), newLen)) ){
       entry->pBuf = pDum;
       entry->bufLen = newLen;
@@ -2090,11 +2114,21 @@ int Store_xml_string(xmlDocPtr doc, xmlNodePtr cur, char **dest,
       return REG_FAILURE;
     }
   }
+  printf("ARPDBG: Store_xml_string - value >>%s<<\n", (char*)pXMLChar);
+  printf("ARPDBG: pBuf currently holds >>");
+  for(i=0;i<entry->bufIndex;i++){
+    printf("%c", entry->pBuf[i]);
+  }
+  printf("<<\n");
+
   *dest = &(entry->pBuf[entry->bufIndex]);
   strncpy(*dest, pXMLChar, len);
   (*dest)[len] = '\0';
   entry->bufIndex += len + 1;
   xmlFree(pXMLChar);
+
+  if (newDoc) xmlFreeDoc(newDoc);
+
   return REG_SUCCESS;
 }
 
