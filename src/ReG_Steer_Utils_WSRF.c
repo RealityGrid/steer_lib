@@ -81,8 +81,6 @@ int Get_registry_entries_wsrf(const char *registryEPR,
   }
   else{
     /* Otherwise we just use WSSE */
-    printf("ARPDBG: using WSSE, user = %s, pass = %s\n",
-	   sec->userDN, sec->passphrase);
     Create_WSRF_header(&soap, registryEPR,
 		       sec->userDN, sec->passphrase);
   }

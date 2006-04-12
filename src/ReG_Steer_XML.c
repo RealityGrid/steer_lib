@@ -1798,6 +1798,8 @@ int Parse_registry_entries(char* buf, int size,
 	xmlStrcmp(cur->name, (const xmlChar *) "entry") ){
       fprintf(stderr, "STEER: Parse_registry_entries: root node is not "
 	      "an entry\n");
+      xmlFreeDoc(doc);
+      xmlCleanupParser();
       return REG_FAILURE;
     }
 
@@ -1838,12 +1840,12 @@ ogsi:entry
       if(pDum){
 	myEntries = (struct registry_entry *)pDum;
 	maxEntries = (int)(1.5*maxEntries);
-	printf("ARPDBG: REALLOC'd entries array, maxEntries = %d\n", 
-	       maxEntries);
       }
       else{
 	fprintf(stderr, "STEER: ERROR: Parse_registry_entries - realloc "
 		"failed for entries array\n");
+	xmlFreeDoc(doc);
+	xmlCleanupParser();
 	return REG_FAILURE;
       }
     }
@@ -1851,7 +1853,9 @@ ogsi:entry
     if(!(myEntries[numEntries].pBuf)){
       fprintf(stderr, "STEER: ERROR: Parse_registry_entries - "
 	      "malloc failed\n");
-	return REG_FAILURE;
+      xmlFreeDoc(doc);
+      xmlCleanupParser();
+      return REG_FAILURE;
     }
     myEntries[numEntries].bufLen = BUFFER_SIZE;
     memset(myEntries[numEntries].pBuf, '\0', BUFFER_SIZE);
@@ -1863,7 +1867,6 @@ ogsi:entry
     myEntries[numEntries].user = NULL;
     myEntries[numEntries].group = NULL;
     myEntries[numEntries].job_description = NULL;
-    printf("ARPDBG: parsing entry %d...\n", numEntries);
 
     /* Walk the tree */
     cur = cur->xmlChildrenNode;
@@ -1872,7 +1875,8 @@ ogsi:entry
       while( xmlIsBlankNode ( cur ) ){
 	cur = cur -> next;
       }
-      printf("ARPDBG: name = >>%s<<\n", (char *) cur->name);
+      if(!cur)continue;
+
       /* ogsi - get GSH of registered service */
       if( !xmlStrcmp(cur->name, (const xmlChar *) "memberServiceLocator") ){
 	child = cur->xmlChildrenNode;
@@ -1928,8 +1932,6 @@ ogsi:entry
 	  cur = cur->next;
 	  continue;
 	}
-	printf("ARPDBG: child of MemberServiceEPR is %s\n", 
-	       (char*)(child->name));
 	child = child->xmlChildrenNode;
 	while( xmlIsBlankNode ( child ) ){
 	  child = child -> next;
@@ -2045,6 +2047,8 @@ ogsi:entry
       } /* if node == "Content" */
       cur = cur -> next;
     } /* while(cur) */
+
+    xmlFreeDoc(doc);
     pChar = pNext;
   }
   numEntries++;
@@ -2055,9 +2059,11 @@ ogsi:entry
   /* Clean-up */
   xmlCleanupParser();
 
-  fprintf(stderr, "Parse_registry_entries: got %d entries from registry:\n", 
-	  numEntries);
+#if REG_DEBUG_FULL
+  fprintf(stderr, "STEER: Parse_registry_entries: got %d entries "
+	  "from registry:\n", numEntries);
   for(i=0; i<numEntries;i++){
+    printf("--------------------------------------\n");
     printf("      GSH %02d: %s\n", i, myEntries[i].gsh);
     printf("        app : %s\n", myEntries[i].application);
     printf("   entry gsh: %s\n", myEntries[i].entry_gsh);
@@ -2067,7 +2073,8 @@ ogsi:entry
     printf("       Group: %s\n", myEntries[i].group);
     printf(" Description: %s\n", myEntries[i].job_description);
   }
-    
+#endif
+
   return REG_SUCCESS;
 }
 
@@ -2080,9 +2087,9 @@ int Store_xml_string(xmlDocPtr doc, xmlNodePtr cur, char **dest,
   xmlChar   *pXMLChar;
   xmlDocPtr  newDoc = NULL;
   xmlNodePtr tmpNode;
-  int i;
+  /*int        i; for debug output */
+  long       ptrShift;
 
-  printf("ARPDBG: Store_xml_string for %s\n", cur->name);
   tmpNode = cur->xmlChildrenNode;
   while( xmlIsBlankNode(tmpNode) ){
     tmpNode = tmpNode->next;
@@ -2103,24 +2110,32 @@ int Store_xml_string(xmlDocPtr doc, xmlNodePtr cur, char **dest,
 
   if(entry->bufLen - entry->bufIndex - len <= 0){
     newLen = (entry->bufLen + 2*len);
-    fprintf(stderr, "ARPDBG: Store_xml_string, reallocing %d bytes...\n",
-	    newLen);
     if( (pDum = (char*)realloc((void*)(entry->pBuf), newLen)) ){
+      ptrShift = pDum - entry->pBuf;
       entry->pBuf = pDum;
       entry->bufLen = newLen;
+      /* Need to update other stored pointers...*/
+      if(entry->application) entry->application += ptrShift;
+      if(entry->gsh) entry->gsh += ptrShift;
+      if(entry->entry_gsh) entry->entry_gsh += ptrShift;
+      if(entry->user) entry->user += ptrShift;
+      if(entry->group) entry->group += ptrShift;
+      if(entry->job_description) entry->job_description += ptrShift;
+      if(entry->service_type) entry->service_type += ptrShift;
+      if(entry->start_date_time) entry->start_date_time += ptrShift;
     }
     else{
       fprintf(stderr, "STEER: ERROR: Store_xml_string - realloc failed\n");
       return REG_FAILURE;
     }
   }
-  printf("ARPDBG: Store_xml_string - value >>%s<<\n", (char*)pXMLChar);
+  /*
   printf("ARPDBG: pBuf currently holds >>");
   for(i=0;i<entry->bufIndex;i++){
     printf("%c", entry->pBuf[i]);
   }
   printf("<<\n");
-
+  */
   *dest = &(entry->pBuf[entry->bufIndex]);
   strncpy(*dest, pXMLChar, len);
   (*dest)[len] = '\0';

@@ -156,6 +156,8 @@ int Get_security_config(const char               *configFile,
   if (xmlStrcmp(cur->name, (const xmlChar *) "Security_config")){
     printf("Error parsing xml from security.conf: root element "
            "is not 'Security_config'\n");
+    xmlFreeDoc(doc);
+    xmlCleanupParser();
     return 1;
   }
   cur = cur->xmlChildrenNode;
@@ -193,6 +195,8 @@ int Get_security_config(const char               *configFile,
 
     fprintf(stderr, "Failed to open key and cert file >>%s<<\n",
             sec->myKeyCertFile);
+    xmlFreeDoc(doc);
+    xmlCleanupParser();
     return REG_FAILURE;
   }
 
@@ -207,8 +211,10 @@ int Get_security_config(const char               *configFile,
     }
   }
   fclose(fp);
+  printf("ARPDBG User's DN >>%s<<\n\n", sec->userDN);
 
-  printf("User's DN >>%s<<\n\n", sec->userDN);
+  xmlFreeDoc(doc);
+  xmlCleanupParser();
 
   return REG_SUCCESS;
 }
