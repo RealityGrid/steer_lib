@@ -195,6 +195,7 @@ int Get_registry_entries_filtered_secure(const char             *registryGSH,
   int status;
   int i, j;
   int count;
+  struct registry_entry *entry;
 
   if( (status = Get_registry_entries_secure(registryGSH, 
 					    sec,
@@ -213,26 +214,31 @@ int Get_registry_entries_filtered_secure(const char             *registryGSH,
 
   for(i=0; i<contents->numEntries; i++){
 
+    entry = &(contents->entries[i]);
+
     /* Does this entry match the supplied pattern? */
-    if(strstr(contents->entries[i].service_type, pattern) ||
-       strstr(contents->entries[i].application, pattern) ||
-       strstr(contents->entries[i].user, pattern) ||
-       strstr(contents->entries[i].group, pattern) ||
-       strstr(contents->entries[i].start_date_time, pattern) ||
-       strstr(contents->entries[i].job_description, pattern)){
+    if((entry->service_type && strstr(entry->service_type, pattern)) ||
+       (entry->application && strstr(entry->application, pattern)) ||
+       (entry->user && strstr(entry->user, pattern)) ||
+       (entry->group && strstr(entry->group, pattern)) ||
+       (entry->start_date_time && strstr(entry->start_date_time, pattern)) ||
+       (entry->job_description && strstr(entry->job_description, pattern))){
 
       /* It does */
       if(j<i){
-	strcpy(contents->entries[j].service_type, contents->entries[i].service_type);
-	strcpy(contents->entries[j].gsh, contents->entries[i].gsh);
-	strcpy(contents->entries[j].entry_gsh, contents->entries[i].entry_gsh);
-	strcpy(contents->entries[j].application, contents->entries[i].application);
-	strcpy(contents->entries[j].user, contents->entries[i].user);
-	strcpy(contents->entries[j].group, contents->entries[i].group);
+	strcpy(contents->entries[j].service_type, 
+	       entry->service_type);
+	strcpy(contents->entries[j].gsh, entry->gsh);
+	strcpy(contents->entries[j].entry_gsh, 
+	       entry->entry_gsh);
+	strcpy(contents->entries[j].application, 
+	       entry->application);
+	strcpy(contents->entries[j].user, entry->user);
+	strcpy(contents->entries[j].group, entry->group);
 	strcpy(contents->entries[j].start_date_time, 
-	       contents->entries[i].start_date_time);
+	       entry->start_date_time);
 	strcpy(contents->entries[j].job_description, 
-	       contents->entries[i].job_description);
+	       entry->job_description);
       }
 
       j++;
