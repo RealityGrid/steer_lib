@@ -60,6 +60,7 @@ int Get_registry_entries_wsrf(const char *registryEPR,
   double time0, time1;
 #endif
   contents->numEntries = 0;
+  contents->entries = NULL;
 
   soap_init(&soap);
 
