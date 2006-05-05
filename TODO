@@ -27,6 +27,8 @@ Is LD_FLAGS actually used anywhere?
 pruneChkTree.pl - check for "service?" in supplied GSH and, if present, split to get
 the trailing /4783837/37338/39 etc.
 
-delete a single node from a tree into ChkTree WS...
+Get_registry_entries on a Chk node to get its children.  Problem because node
+metadata is XML and can be big.  Current Parse_registry_entries does not cope
+with either.
 
 
