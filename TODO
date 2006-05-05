@@ -1,21 +1,14 @@
-Upgrade to using gSoap 2.7.6.e because that should(??) fix problems
-on AIX... - TEST, esp. on Bez etc. Robin to do hpcx.
-
 Continue working on altering reg_wsrf_tools to 
 work with latest form of secure api. - TEST
 
 Remove some unecessary malloc's from the
 WSRF steering code.
 
-Continue work on wrapping proxy IO
-
 Utils routine for IOType browsing?
 
 Make the Msg_type an ENUM?
 
 Doxygen for reg_steer_tools?
-
-update steerer manual
 
 update launcher manual?
 
@@ -24,11 +17,9 @@ Ditto for Write_proxy and Emit_data_proxy...
 
 Is LD_FLAGS actually used anywhere?
 
-pruneChkTree.pl - check for "service?" in supplied GSH and, if present, split to get
-the trailing /4783837/37338/39 etc.
+Continue work on wrapping proxy IO
 
-Get_registry_entries on a Chk node to get its children.  Problem because node
-metadata is XML and can be big.  Current Parse_registry_entries does not cope
-with either.
-
+Work on Get_security_config so defaults to checking
+~/.realitygrid/security.conf unless otherwise specified.  Ditto for
+steerer.conf and launcher.conf
 
