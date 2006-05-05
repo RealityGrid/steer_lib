@@ -54,7 +54,7 @@
 #endif
 
 /* Need access to these tables which are actually declared in 
-   ReG_Steer_Appside_internal.h */
+   ReG_Steer_Appside.c */
 extern IOdef_table_type IOTypes_table;
 
 extern Steerer_connection_table_type Steerer_connection;
@@ -306,6 +306,7 @@ int Read_proxy(const int index, int *size, void** buffer){
   char             readBuf[REG_PACKET_SIZE];
   char            *pchar;
   char            *pnext;
+  int              nbytes;
   socket_io_type  *sock_info;
   sock_info = &(IOTypes_table.io_def[index].socket_info);
 
@@ -342,18 +343,18 @@ int Read_proxy(const int index, int *size, void** buffer){
 
 		fgetc( con->fd );
 */
-  pchar = strstr(readBuf, "#");
-  pchar = strchr(++pchar, '\n');/* End of destination label */
-  pchar = strchr(++pchar, '\n');/* End of msg code */
-  pnext = strchr(++pchar, '\n');/* End of msg length */
-  memcpy(tmpBuf, ++pchar, (pnext-pchar));
+  pchar = strstr(readBuf, "#"); pchar++;
+  pchar = strchr(pchar, '\n'); pchar++; /* End of destination label */
+  pchar = strchr(pchar, '\n'); pchar++; /* End of msg code */
+  pnext = strchr(pchar, '\n'); pchar++;/* End of msg length */
+  memcpy(tmpBuf, pchar, (pnext-pchar));
   tmpBuf[(pnext-pchar)] = '\0';
   *size = atoi(tmpBuf);
   pchar++; /* Allow one more character (following hybrid_comms.c) */
 
   /* ARPDBG - optimise; use scratch instead of malloc?? */
   if( !(*buffer = malloc(*size)) ){
-    fprintf("Read_proxy: ERROR: malloc of %d bytes failed\n", *size);
+    fprintf(stderr, "Read_proxy: ERROR: malloc of %d bytes failed\n", *size);
   }
 
   /* Blocks until *size bytes received */
@@ -553,308 +554,6 @@ int Consume_msg_header_proxy(int index, int* datatype, int* count,
 
   free(inBuffer);
   return REG_SUCCESS;
-}
-
-/*---------------------------------------------------*/
-
-int Consume_start_data_check_sockets(const int index) {  
-  char buffer[REG_PACKET_SIZE];
-  char* pstart;
-  int nbytes = 0;
-  int nbytes1 = 0;
-  int attempt_reconnect;
-
-  socket_io_type  *sock_info;
-  sock_info = &(IOTypes_table.io_def[index].socket_info);
-
-  /* if not connected attempt to connect now */
-  if(sock_info->comms_status != REG_COMMS_STATUS_CONNECTED) {
-    attempt_connector_connect(index);
-  }
-
-  /* check if socket connection has been made */
-  if(sock_info->comms_status != REG_COMMS_STATUS_CONNECTED) {
-#if REG_DEBUG
-    fprintf(stderr, "INFO: Consume_start_data_check_socket: socket is NOT "
-	    "connected, index = %d\n", index);
-#endif
-    return REG_FAILURE;
-  }
-
-#if REG_DEBUG
-  fprintf(stderr, "INFO: Consume_start_data_check_socket: socket status "
-	  "is connected, index = %d\n", index);
-#endif
-
-  /* Drain socket until start tag found */
-  attempt_reconnect = 1;
-  memset(buffer, '\0', 1);
-
-#if REG_DEBUG
-  fprintf(stderr, "Consume_start_data_check_socket: searching for start tag\n");
-#endif
-
-  while(!(pstart = strstr(buffer, REG_DATA_HEADER))) {
-
-    if( (nbytes = recv_non_block(sock_info, buffer, REG_PACKET_SIZE)) <= 0){
-
-      if(nbytes < 0) {
-	if(errno == EAGAIN) {
-	  /* Call would have blocked because no data to read */
-#if REG_DEBUG
-	  fprintf(stderr, "\n");
-#endif
-	  /* Call was OK but there's no data to read... */
-	  return REG_FAILURE;
-	}
-	else {
-	  /* Some error occurred */
-#if REG_DEBUG
-	  fprintf(stderr, "\n");
-#endif
-	  perror("recv");
-	}
-      }
-#if REG_DEBUG
-      else {
-	/* recv returned 0 bytes => closed connection */
-	fprintf(stderr, "Consume_start_data_check_sockets: hung up!\n");
-      }
-#endif
-
-      /* We're in the middle of a while loop here so don't keep trying
-	 to reconnect ad infinitum */
-      if(!attempt_reconnect) {
-	return REG_FAILURE;
-      }
-
-#if REG_DEBUG
-      fprintf(stderr, "\nConsume_start_data_check_sockets: recv failed - "
-	      "try immediate reconnect for index %d\n", index);
-#endif
-
-      retry_connect(index);
-
-      /* check if socket reconnection has been made and check for 
-	 data if it has */
-      if (IOTypes_table.io_def[index].socket_info.comms_status 
-	  != REG_COMMS_STATUS_CONNECTED) {
-	return REG_FAILURE;
-      }
-    
-      attempt_reconnect = 0;
-      memset(buffer, '\0', 1);
-    }
-
-#if REG_DEBUG
-    fprintf(stderr, "!");
-#endif
-  } /* !while */
-
-#if REG_DEBUG
-  fprintf(stderr, "\n");
-#endif
-
-  if(nbytes > 0) {
-
-#if REG_DEBUG
-    fprintf(stderr, "Consume_start_data_check_sockets: read >>%s<< "
-	    "from socket\n", buffer);
-#endif
-
-    /* Need to make sure we've read the full packet marking the 
-       beginning of the next data slice */
-    nbytes1 = (int) (pstart - buffer) + (REG_PACKET_SIZE - nbytes);
-
-    if(nbytes1 > 0) {
-
-      if((nbytes = recv(sock_info->connector_handle, buffer, 
-			nbytes1, 0)) <= 0) {
-	if(nbytes == 0) {
-	  /* closed connection */
-	  fprintf(stderr, "Consume_start_data_check_sockets: hung up!\n");
-	}
-	else {
-	  /* error */
-	  perror("recv");
-	}
-
-	if(nbytes != nbytes1) {
-	  fprintf(stderr, "ERROR: Consume_start_data_check_sockets: failed "
-		  "to read remaining %d bytes of header\n", (int) nbytes1);
-	  return REG_FAILURE;
-	}
-      }
-    }
-
-    IOTypes_table.io_def[index].buffer_max_bytes = REG_IO_BUFSIZE;
-    IOTypes_table.io_def[index].buffer = (void*) malloc(REG_IO_BUFSIZE);
-    if(!IOTypes_table.io_def[index].buffer) {
-      IOTypes_table.io_def[index].buffer_max_bytes = 0;
-      fprintf(stderr, "ERROR: Consume_start_data_check_sockets: malloc "
-	      "of IO buffer failed\n");
-      return REG_FAILURE;
-    }
-
-    return REG_SUCCESS;
-  }
-  return REG_FAILURE;
-}
-
-/*--------------------------------------------------------------*/
-
-int Consume_data_read_sockets(const int index, const int datatype, 
-			      const int num_bytes_to_read, 
-			      void *pData) {
-  int nbytes;
-  socket_io_type  *sock_info;
-
-#if REG_DEBUG
-
-#ifdef USE_REG_TIMING
-  double time0, time1;
-#endif
-
-  fprintf(stderr, "Consume_data_read_sockets: calling recv for %d bytes\n", 
-	  (int) num_bytes_to_read);
-
-#ifdef USE_REG_TIMING
-  Get_current_time_seconds(&time0);
-#endif
-
-#endif /* REG_DEBUG */
-
-  sock_info = &(IOTypes_table.io_def[index].socket_info);
-
-  if(IOTypes_table.io_def[index].use_xdr || IOTypes_table.io_def[index].convert_array_order == REG_TRUE) {
-    nbytes = recv(sock_info->connector_handle, 
-		  IOTypes_table.io_def[index].buffer, num_bytes_to_read, 
-		  MSG_WAITALL);
-  }
-  else {
-    nbytes = recv(sock_info->connector_handle, pData, num_bytes_to_read, 
-		  MSG_WAITALL);
-  }
-
-#if REG_DEBUG
-  fprintf(stderr, "Consume_data_read_sockets: recv read %d bytes\n", 
-	  (int) nbytes);
-
-#ifdef USE_REG_TIMING
-  Get_current_time_seconds(&time1);
-  fprintf(stderr, "                          in %.3f seconds\n", 
-	  (float) (time1-time0));
-#endif
-#endif /* REG_DEBUG */
-
-  if(nbytes <= 0) {
-      if(nbytes == 0) {
-	/* closed connection */
-	fprintf(stderr, "INFO: Consume_data_read_sockets: hung up!\n");
-      }
-      else {
-	/* error */
-	perror("recv");
-      }
-      
-      /* Reset use_xdr flag set as only valid on a per-slice basis */
-      IOTypes_table.io_def[index].use_xdr = REG_FALSE;
-
-      return REG_FAILURE;
-    }
-
-  return REG_SUCCESS;
-}
-
-/*---------------------------------------------------*/
-
-#ifndef __linux
-void signal_handler_sockets(int a_signal) {
-
-#if REG_DEBUG
-  fprintf(stderr, "INFO: Caught SIGPIPE!\n");
-#endif
-
-  signal(SIGPIPE, signal_handler_sockets);
-
-}
-#endif
-
-/*---------------------------------------------------*/
-
-int Emit_ack_sockets(int index){
-
-  /* Send a 16-byte acknowledgement message */
-  char *ack_msg = "<ACK/>          ";
-  return Write_sockets(index, strlen(ack_msg), (void*)ack_msg);
-}
-
-/*---------------------------------------------------*/
-
-int Consume_ack_sockets(int index){
-
-  char *ack_msg = "<ACK/>";
-  char  buf[32];
-  char *pchar;
-  int   nbytes;
-
-  /* If no acknowledgement is currently required (e.g. this is the
-     first time Emit_start has been called) then return success */
-  if(IOTypes_table.io_def[index].ack_needed == REG_FALSE)return REG_SUCCESS;
-
-  /* Buffer is twice as long as ack message to allow us to deal with
-     getting a truncated message */
-  memset(buf, '\0', 32);
-
-  /* Search for an ACK tag */
-  if((nbytes = recv_non_block(&(IOTypes_table.io_def[index].socket_info), 
-			      (void *)buf, 16)) == 16){
-    pchar = strchr(buf, '<');
-
-    if(pchar){
-      if(strstr(pchar, ack_msg)){
-	return REG_SUCCESS;
-      }
-      else{
-	if( (&(buf[15])- pchar + 1) > strlen(ack_msg) ){
-
-	  /* We found the opening angle bracket but the rest of the tag
-	     is missing so we fail */
-	  return REG_FAILURE;
-	}
-	else{
-	  /* Looks like our ack msg drops off end of buffer so get another
-	     16 bytes */
-	  if(recv_non_block(&(IOTypes_table.io_def[index].socket_info), 
-			    (void *)&(buf[16]), 16) == 16){
-
-	    if( strstr(buf, ack_msg) ) return REG_SUCCESS;
-	  }
-	}
-      }
-    }
-  }
-
-  if(nbytes < 0) {
-    if(errno == EAGAIN) {
-      /* Call would have blocked because no data to read
-       * Call was OK but there's no data to read... */
-      return REG_FAILURE;
-    }
-    else {
-      /* Some error occurred */
-      IOTypes_table.io_def[index].ack_needed = REG_FALSE;
-    }
-  }
-  else {
-    /* recv returned 0 bytes => closed connection */
-    IOTypes_table.io_def[index].ack_needed = REG_FALSE;
-  }
-
-#if REG_DEBUG_FULL
-  fprintf(stderr, "INFO: Consume_ack_sockets: no ack received\n");
-#endif
-  return REG_FAILURE;
 }
 
 /*---------------------------------------------------*/

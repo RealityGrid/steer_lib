@@ -43,7 +43,7 @@
 #endif
 #endif
 
-#if REG_SOCKET_SAMPLES || defined(DOXYGEN)
+#if REG_SOCKET_SAMPLES || REG_PROXY_SAMPLES || defined(DOXYGEN)
 
 #include <errno.h>
 #if defined(TRU64)

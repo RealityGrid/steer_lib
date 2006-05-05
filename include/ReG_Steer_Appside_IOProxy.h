@@ -45,7 +45,7 @@
 #endif
 #endif
 
-#if REG_PROXY_SAMPLES
+#if REG_PROXY_SAMPLES || defined(DOXYGEN)
 
 #include <errno.h>
 #if defined(TRU64)

@@ -284,7 +284,7 @@ typedef struct {
   int                           buffer_bytes;
   /** Size of the @p buffer */
   int				buffer_max_bytes;
-#if REG_SOCKET_SAMPLES || defined(DOXYGEN)
+#if REG_SOCKET_SAMPLES || REG_PROXY_SAMPLES || defined(DOXYGEN)
   /** structure used to hold all socket information */
   socket_io_type		socket_info;
 #endif

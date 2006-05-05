@@ -33,7 +33,7 @@
     @author Robert Haines
   */
 
-#if REG_SOCKET_SAMPLES || defined(DOXYGEN)
+#if REG_SOCKET_SAMPLES || REG_PROXY_SAMPLES || defined(DOXYGEN)
 
 #include "ReG_Steer_Common.h"
 #include "ReG_Steer_Appside_internal.h"
@@ -1262,7 +1262,10 @@ int Consume_start_data_check_sockets(const int index) {
 
 /*--------------------------------------------------------------*/
 
-int Consume_data_read_sockets(const int index, const int datatype, const int num_bytes_to_read, void *pData) {
+int Consume_data_read_sockets(const int index, 
+			      const int datatype, 
+			      const int num_bytes_to_read, 
+			      void *pData) {
   int nbytes;
 
   socket_io_type  *sock_info;
