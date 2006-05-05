@@ -1739,11 +1739,13 @@ int Parse_registry_entries(char* buf, int size,
   xmlDocPtr              doc;
   xmlNodePtr             cur, child, child1;
   int                    numEntries = -1;
-  int                    i;
   const int              BUFFER_SIZE = 1024;
   int                    maxEntries = 20;
   struct registry_entry *myEntries;
   void                  *pDum;
+#if REG_DEBUG_FULL
+  int                    i;
+#endif
 
   /* malloc memory to hold content */
   myEntries = (struct registry_entry *)malloc(maxEntries*
