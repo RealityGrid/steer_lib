@@ -225,10 +225,26 @@ int Get_security_config(const char               *configFile,
     }
   }
   fclose(fp);
-  printf("ARPDBG User's DN >>%s<<\n\n", sec->userDN);
+  /*printf("ARPDBG User's DN >>%s<<\n\n", sec->userDN);*/
 
   xmlFreeDoc(doc);
   xmlCleanupParser();
 
   return REG_SUCCESS;
+}
+
+/*----------------------------------------------------------------*/
+
+int Get_IOTypes(const char                     *address,
+		const struct reg_security_info *sec,
+		struct reg_iotype_list         *list){
+#ifdef REG_WSRF
+  return Get_IOTypes_WSRF(address, 
+			  sec,
+			  list);
+#else
+  fprintf(stderr, "Destroy_steering_service: not implemented for OGSI :-(\n");
+  return REG_FAILURE;
+#endif
+
 }

@@ -72,3 +72,7 @@ char *Create_SWS(const struct reg_job_details   *job,
     (if any) and necessary details for SSL (if being used) */
 int Destroy_WSRP(const char *epr, 
 		 const struct reg_security_info *sec);
+
+int Get_IOTypes_WSRF(const char                     *address,
+		     const struct reg_security_info *sec,
+		     struct reg_iotype_list         *list);

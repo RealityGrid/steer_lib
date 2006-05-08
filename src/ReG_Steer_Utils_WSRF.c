@@ -38,6 +38,7 @@
 #include "ReG_Steer_Browser.h"
 #include "ReG_Steer_Utils.h"
 #include "ReG_Steer_Utils_WSRF.h"
+#include "ReG_Steer_Steerside_WSRF.h"
 #include "ReG_Steer_Common.h"
 #include "ReG_Steer_XML.h"
 #include "soapH.h"
@@ -381,7 +382,8 @@ int Destroy_WSRP(const char                     *epr,
 			       NULL, /* char *passphrase,*/
 			       sec->caCertsPath) == REG_FAILURE){
 
-	fprintf(stderr, "ERROR: call to initialize soap SSL context failed\n");
+	fprintf(stderr, "Destroy_WSRP: ERROR: call to initialize soap "
+		"SSL context failed\n");
 	return REG_FAILURE;
       }
     }
@@ -397,4 +399,106 @@ int Destroy_WSRP(const char                     *epr,
     soap_done(&soap); /* cleanup and detach soap struct */
   }
   return return_status;
+}
+
+/*-----------------------------------------------------------------*/
+
+int Get_IOTypes_WSRF(const char                     *address,
+		     const struct reg_security_info *sec,
+		     struct reg_iotype_list         *list){
+
+  struct soap        mySoap;
+  struct msg_struct *msg;
+  struct io_struct  *ioPtr;
+  xmlDocPtr          doc;
+  xmlNsPtr           ns;
+  xmlNodePtr         cur;
+  char              *ioTypes;
+  int                i;
+
+  if(!list){
+    fprintf(stderr, "Get_IOTypes: ERROR: pointer to iotype_list is NULL\n");
+    return REG_FAILURE;
+  }
+
+  list->numEntries = 0;
+
+  soap_init(&mySoap);
+  if( Get_resource_property (&mySoap,
+			     address,
+			     sec->userDN,
+			     sec->passphrase,
+			     "ioTypeDefinitions",
+			     &ioTypes) != REG_SUCCESS ){
+
+    fprintf(stderr, "Get_IOTypes: ERROR: Call to get ioTypeDefinitions "
+	    "ResourceProperty on %s failed\n", address);
+    soap_end(&mySoap);
+    soap_done(&mySoap);
+    return REG_FAILURE;
+  }
+
+  if( !(doc = xmlParseMemory(ioTypes, strlen(ioTypes))) ||
+      !(cur = xmlDocGetRootElement(doc)) ){
+    fprintf(stderr, "Get_IOTypes: ERROR: Hit error parsing buffer\n");
+    xmlFreeDoc(doc);
+    xmlCleanupParser();
+    soap_end(&mySoap);
+    soap_done(&mySoap);
+    return REG_FAILURE;
+  }
+
+  ns = xmlSearchNsByHref(doc, cur,
+            (const xmlChar *) "http://www.realitygrid.org/xml/steering");
+
+  if ( xmlStrcmp(cur->name, (const xmlChar *) "ioTypeDefinitions") ){
+    fprintf(stderr, "ioTypeDefinitions not the root element\n");
+    xmlFreeDoc(doc);
+    xmlCleanupParser();
+    soap_end(&mySoap);
+    soap_done(&mySoap);
+    return REG_FAILURE;
+  }
+  /* Step down to ReG_steer_message and then to IOType_defs */
+  cur = cur->xmlChildrenNode->xmlChildrenNode;
+
+  msg = New_msg_struct();
+  msg->io_def = New_io_def_struct();
+  parseIOTypeDef(doc, ns, cur, msg->io_def);
+
+  if(!(ioPtr = msg->io_def->first_io) ){
+    fprintf(stderr, "Get_IOTypes: ERROR: Got no IOType definitions from %s\n",
+	    address);
+    xmlFreeDoc(doc);   xmlCleanupParser();
+    soap_end(&mySoap); soap_done(&mySoap);
+    return REG_FAILURE;
+  }
+
+  i = 0;
+  fprintf(stdout, "Available IOTypes:\n");
+  while(ioPtr){
+    fprintf(stdout, "  %d: %s\n", i++, (char *)ioPtr->label);
+    ioPtr = ioPtr->next;
+  }
+  list->iotype = (struct iotype_detail*)malloc(i * sizeof(struct iotype_detail));
+  if(!list->iotype){
+    fprintf(stderr, "Get_IOTypes: ERROR: malloc failed\n");
+    xmlFreeDoc(doc);   xmlCleanupParser();
+    soap_end(&mySoap); soap_done(&mySoap);
+    return REG_FAILURE;
+  }
+  list->numEntries = i;
+
+  ioPtr = msg->io_def->first_io;
+  i = 0;
+  while(ioPtr){
+    strncpy(list->iotype[i].label, (char *)ioPtr->label, 
+	    REG_MAX_STRING_LENGTH);
+
+    ioPtr = ioPtr->next; i++;
+  }
+
+  xmlFreeDoc(doc);   xmlCleanupParser();
+  soap_end(&mySoap); soap_done(&mySoap);
+  return REG_SUCCESS;
 }

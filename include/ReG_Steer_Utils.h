@@ -48,8 +48,7 @@
 #include "ReG_Steer_types.h"
 #include "ReG_Steer_Common.h"
 
-/** @internal 
-    Holds details on the job associated with an SWS */
+/** Holds details on the job associated with an SWS */
 struct reg_job_details {
   /** How long the SWS should live for once its associated job
       has contacted it for the first time */
@@ -72,7 +71,25 @@ struct reg_job_details {
   char passphrase[REG_MAX_STRING_LENGTH];
 };
 
-/** @internal
+/** Holds details on a single iotype */
+struct iotype_detail {
+  /** The label given to this IOType at registration */
+  char label[REG_MAX_STRING_LENGTH];
+  /** The direction of this IOType (REG_IN or REG_OUT) */
+  int  direction;
+  /** The interval between automatic emit/consume events */
+  int  frequency;
+};
+
+/** Holds details on the IOTypes of a steerable app */
+struct reg_iotype_list {
+  /** Number of entries in this list */
+  int numEntries;
+  /** Array of entries */
+  struct iotype_detail *iotype;
+};
+
+/** 
     Creates either an SGS or SWS
     @param job Ptr to struct holding details on the job.  @p userName 
     and @p passphrase are used for the SWS, not the registry.
@@ -85,7 +102,7 @@ extern PREFIX char* Create_steering_service(const struct reg_job_details *job,
 					    const char *registryAddress,
 					    const struct reg_security_info *sec);
 
-/** @internal
+/** 
     Destroy either an SGS or SWS 
     @param address The address of the service to destroy 
     @param sec Pointer to struct holding details for 
@@ -93,20 +110,20 @@ extern PREFIX char* Create_steering_service(const struct reg_job_details *job,
 extern PREFIX int Destroy_steering_service(char *address,
 					   const struct reg_security_info *sec);
 
-/** @internal
+/** 
     Creates a new checkpoint tree and returns its GSH 
     @param factory The address of the factory to use
     @param metadata Text describing the experiment that the tree will record */
 extern PREFIX char *Create_checkpoint_tree(const char *factory, 
 					   const char *metadata);
 
-/** @internal
-    @param configFile Location of RealityGrid security config file
+/** 
+    @param configFile Location of RealityGrid security config file or NULL/emptry string to use default of ~/.realitygrid/security.conf.
     @param sec Pointer to reg_security_info struct to populate
 
     Reads the specified RealityGrid security configuration file to get
     location of the PEM file containing BOTH the user's key and certificate
-    and the path to the directory containing CA certificates.  Parses 
+    and the path to the directory containing CA certificates. Parses 
     user's certificate to get their DN.
     The security config. file is of the form: @n
     <tt>
@@ -122,5 +139,8 @@ extern PREFIX char *Create_checkpoint_tree(const char *factory,
 extern PREFIX int Get_security_config(const char               *configFile,
 				      struct reg_security_info *sec);
 
+extern PREFIX int Get_IOTypes(const char                     *address,
+			      const struct reg_security_info *sec,
+			      struct reg_iotype_list         *list);
 #endif
 
