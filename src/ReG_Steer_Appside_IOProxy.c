@@ -35,7 +35,7 @@
     @author Andrew Porter
  */
 
-#if REG_PROXY_SAMPLES
+#if REG_PROXY_SAMPLES || defined(DOXYGEN)
 
 #include "ReG_Steer_Common.h"
 #include "ReG_Steer_Appside_internal.h"
