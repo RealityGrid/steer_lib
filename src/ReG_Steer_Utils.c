@@ -131,6 +131,7 @@ int Destroy_steering_service(char                           *address,
 int Get_security_config(const char               *configFile,
 			struct reg_security_info *sec){
   char      *pChar;
+  char      *pFile = configFile;
   int        len;
   xmlDocPtr  doc;
   xmlNodePtr cur;
@@ -138,15 +139,28 @@ int Get_security_config(const char               *configFile,
   FILE      *fp;
   char       bufline[512];
 
+  /* Default to using ~/.realitygrid/security.conf unless we're told
+     otherwise */
+  if(!configFile || (strlen(configFile) == 0)){
+    pChar = getenv("HOME");
+    if(!pChar){
+      fprintf(stderr, "Get_security_config: cannot get HOME environment "
+	      "variable and no alternative config. file specified\n");
+      return REG_FAILURE;
+    }
+    snprintf(bufline, 512, "%s/.realitygrid/security.conf", pChar);
+    pFile = bufline;
+  }
+
   /* Set the username to the value of the USER environment variable
      in case we fail to get/parse the certificate for the DN */
   if( (pChar = getenv("USER")) ){
     snprintf(sec->userDN, REG_MAX_STRING_LENGTH, "%s", pChar);
   }
 
-  /* Parse the RealityGrid/etc/security.conf file */
+  /* Parse the security.conf file */
 
-  doc = xmlParseFile(configFile);
+  doc = xmlParseFile(pFile);
   if( !(cur = xmlDocGetRootElement(doc)) ){
     printf("Error parsing xml from security.conf: empty document\n");
     xmlFreeDoc(doc);
