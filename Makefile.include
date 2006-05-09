@@ -49,12 +49,16 @@ REG_SOAP_STEERING_FLAG = 1
 
 #------------------------------------
 # Medium to use for data set transfer - you have a choice of 
-# tcp socket or files.  Setting the flag below to zero means
-# that data transfer will use files (written to either the current working
-# directory or to that specified by REG_DATA_DIRECTORY if set).
+# direct tcp socket, socket via a proxy or files.  Setting both flags 
+# below to zero means that data transfer will use files (written to 
+# either the current working directory or to that specified by 
+# REG_DATA_DIRECTORY if set).
 
 # Set flag to 1 to use sockets for iotype samples communication, 0 to not 
 REG_SOCKET_SAMPLES_FLAG = 1
+
+# Set flag to 1 to use an IOProxy for iotype samples communication, 0 to not
+REG_PROXY_SAMPLES_FLAG = 0
 
 #------------------------------------
 # Whether or not to build with OpenSSL support.  If no SSL is available
