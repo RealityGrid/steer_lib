@@ -61,11 +61,8 @@ extern Steerer_connection_table_type Steerer_connection;
 
 /*--------------------------------------------------------------------*/
 
-/*--------------------------------------------------------------------*
- *                         EXTERNAL METHODS                           *
- *--------------------------------------------------------------------*/
-
-int Initialize_IOType_transport_proxy(const int direction, const int index) {
+int Initialize_IOType_transport_proxy(const int direction, 
+				      const int index) {
 
   int return_status = REG_SUCCESS;
 

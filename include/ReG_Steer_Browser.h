@@ -38,8 +38,6 @@
     @author Robert Haines
 */
 
-#include "ReG_Steer_Utils.h"
-
 #ifdef __cplusplus
   #define PREFIX "C"
 #else
@@ -88,6 +86,8 @@ struct registry_contents {
   /** Array of entries */
   struct registry_entry *entries;
 };
+
+#include "ReG_Steer_Utils.h"
 
 /*-------------------------------------------------------------------*/
 

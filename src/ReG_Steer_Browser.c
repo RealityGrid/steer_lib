@@ -40,7 +40,7 @@
 #include "ReG_Steer_Browser.h"
 #include "ReG_Steer_Common.h"
 #include "ReG_Steer_XML.h"
-#include "ReG_Steer_Utils_WSRF.h"
+#include "ReG_Steer_Utils.h"
 #include "soapH.h"
 
 #ifdef REG_WSRF

@@ -647,7 +647,20 @@ int Get_data_source_address_wsrf(int   index,
 			   "dataSource", &pBuf) != REG_SUCCESS){
     return REG_FAILURE;
   }
-
+  /*
+<xs:element name="dataSource">
+  <xs:complexType>
+    <xs:choice>
+      <xs:element name="Proxy"/>
+        <xs:element name="address" type="xs:string"/>
+	<xs:element name="port" type="xs:integer"/>
+      </xs:element>
+      <xs:element type="xs:string" name="sourceEPR"/>
+     </xs:choice>
+    <xs:element type="xs:string" name="sourceLabel"/>
+  </xs:complexType>
+</xs:element>
+  */
   epr[0]='\0';
   label[0]='\0';
   count = 1;
@@ -766,7 +779,7 @@ int Get_data_source_address_wsrf(int   index,
       if(count == index){
 	/* Pull out the hostname and port of the proxy that will
 	   provide our data */
-	pchar = strstr(pLast, "<sourceProxy>");
+	pchar = strstr(pLast, "<Proxy>");
 	pchar = strstr(++pchar, "<address>");
 	pchar += 9; /* = strlen("<address>") */
 	pLast = strchr(pchar, '<');
@@ -783,11 +796,13 @@ int Get_data_source_address_wsrf(int   index,
 	*port = (unsigned short int)atoi(epr);
 	/* Pull out the label used to identify our data by
 	   the proxy */
-	pchar = strstr(pLast, "<sourceLabel>");
-	pchar += 13; /* = strlen("<sourceLabel>") */
-	pLast = strchr(pchar, '<');
-	count = pLast - pchar;
-	strncpy(label, pchar, count);
+	count = 0;
+	if( (pchar = strstr(pLast, "<sourceLabel>")) ){
+	  pchar += 13; /* = strlen("<sourceLabel>") */
+	  pLast = strchr(pchar, '<');
+	  count = pLast - pchar;
+	  strncpy(label, pchar, count);
+	}
 	label[count]='\0';
 	break;
       }
@@ -808,6 +823,64 @@ int Get_data_source_address_wsrf(int   index,
   return REG_SUCCESS;
 }
 
+/*-------------------------------------------------------------------------*/
+
+int Get_data_sink_address_wsrf(const int           index, 
+			       char               *hostname,
+			       unsigned short int *port)
+{
+  char  *pBuf;
+  char  *pchar;
+  char  *pLast;
+  char   tmpBuf[REG_MAX_STRING_LENGTH];
+  int    count;
+
+  /* Port returned as zero on failure */
+  *port = 0;
+
+  if(Get_resource_property(Steerer_connection.SGS_info.soap,
+			   Steerer_connection.SGS_info.address,
+			   Steerer_connection.SGS_info.username,
+			   Steerer_connection.SGS_info.passwd,
+			   "dataSink", &pBuf) != REG_SUCCESS){
+    return REG_FAILURE;
+  }
+
+  pLast = pBuf;
+  count = 1;
+  if(strstr(pLast, "<Proxy>")){
+    while( (pLast = strstr(pLast, "<sws:dataSink")) ){
+      if(count == index){
+	/* Pull out the hostname and port of the proxy that will
+	   provide our data */
+	pchar = strstr(pLast, "<Proxy>");
+	pchar = strstr(++pchar, "<address>");
+	pchar += 9; /* = strlen("<address>") */
+	pLast = strchr(pchar, '<');
+	count = pLast - pchar;
+	strncpy(hostname, pchar, count);
+	hostname[count]='\0';
+	pchar = strstr(pLast, "<port>");
+	pchar += 6; /* = strlen("<port>") */
+	pLast = strchr(pchar, '<');
+	count = pLast - pchar;
+	strncpy(tmpBuf, pchar, count);
+	tmpBuf[count]='\0';
+	*port = (unsigned short int)atoi(tmpBuf);
+	break;
+      }
+      pLast++;
+    }
+#if REG_DEBUG
+    fprintf(stderr, "Get_data_sink_address_wsrf: proxy host = %s\n"
+  	            "                            proxy port = %d\n",
+	    hostname, *port);
+#endif /* REG_DEBUG */
+
+  }
+
+  return REG_SUCCESS;
+}
 /*----------------------------------------------------------------------*/
 
 int Record_checkpoint_set_wsrf(char *chk_data,

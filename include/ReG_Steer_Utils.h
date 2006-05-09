@@ -89,6 +89,8 @@ struct reg_iotype_list {
   struct iotype_detail *iotype;
 };
 
+#include "ReG_Steer_Utils_WSRF.h"
+
 /** 
     Creates either an SGS or SWS
     @param job Ptr to struct holding details on the job.  @p userName 

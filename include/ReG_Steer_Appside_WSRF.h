@@ -83,6 +83,17 @@ int Save_log_wsrf (char *log_data);
     @param hostname The fully-qualified hostname of machine to connect to
     @param port     The port on that machine to connect to
 
+    Query the SWS for the address to SEND data to for the
+    specified IO channel */
+int Get_data_sink_address_wsrf(const int           index, 
+			       char               *hostname,
+			       unsigned short int *port);
+
+/** @internal
+    @param index Index of IOType for which to get address
+    @param hostname The fully-qualified hostname of machine to connect to
+    @param port     The port on that machine to connect to
+
     Query the SWS for the address to connect to for the
     specified IO channel */
 int Get_data_source_address_wsrf (int index, char *hostname, 

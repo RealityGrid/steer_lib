@@ -282,11 +282,20 @@ int connect_connector(const int index) {
   /* get a remote address if we need to */
   if(IOTypes_table.io_def[index].socket_info.connector_port == 0) {
 #if REG_SOAP_STEERING	  
-    /* Go out into the world of grid services... */
+    /* Go out into the world of grid/web services... */
 #ifdef REG_WSRF /* use WSRF */
-    return_status = Get_data_source_address_wsrf(IOTypes_table.io_def[index].input_index, 
+    if(IOTypes_table.io_def[index].direction = REG_IO_IN){
+      return_status = Get_data_source_address_wsrf(IOTypes_table.io_def[index].input_index, 
+						   IOTypes_table.io_def[index].socket_info.connector_hostname,
+						   &(IOTypes_table.io_def[index].socket_info.connector_port));
+    }
+    else{
+      /* (We'll only be attempting to connect a connector for an IOType of 
+	 direction REG_IO_OUT when using an IOProxy.) */
+      return_status = Get_data_sink_address_wsrf(IOTypes_table.io_def[index].input_index, 
 						 IOTypes_table.io_def[index].socket_info.connector_hostname,
 						 &(IOTypes_table.io_def[index].socket_info.connector_port));
+    }
 #else /* use OGSI */
     return_status = Get_data_source_address_soap(IOTypes_table.io_def[index].input_index, 
 						 IOTypes_table.io_def[index].socket_info.connector_hostname,

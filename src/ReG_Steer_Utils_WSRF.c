@@ -37,7 +37,6 @@
 #include "ReG_Steer_types.h"
 #include "ReG_Steer_Browser.h"
 #include "ReG_Steer_Utils.h"
-#include "ReG_Steer_Utils_WSRF.h"
 #include "ReG_Steer_Steerside_WSRF.h"
 #include "ReG_Steer_Common.h"
 #include "ReG_Steer_XML.h"

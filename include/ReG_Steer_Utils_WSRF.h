@@ -26,8 +26,11 @@
   CORRECTION.
 
 ---------------------------------------------------------------------------*/
+
+#ifndef __REG_STEER_UTILS_WSRF_H__
+#define __REG_STEER_UTILS_WSRF_H__
+
 #include <ReG_Steer_Browser.h>
-#include <ReG_Steer_Utils.h>
 #include "soapH.h"
 
 /** @internal
@@ -76,3 +79,5 @@ int Destroy_WSRP(const char *epr,
 int Get_IOTypes_WSRF(const char                     *address,
 		     const struct reg_security_info *sec,
 		     struct reg_iotype_list         *list);
+
+#endif /* !defined __REG_STEER_UTILS_WSRF_H__ */

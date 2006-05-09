@@ -28,12 +28,12 @@
   AND PERFORMANCE OF THE PROGRAM IS WITH YOU.  SHOULD THE PROGRAM PROVE
   DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR
   CORRECTION.
-
-  Authors........: Andrew Porter, Robert Haines
 ---------------------------------------------------------------------------*/
 
 /** @file ReG_Steer_Appside.c 
     @brief File containing main application-side routines
+    @author Andrew Porter
+    @author Robert Haines
   */
 #include "ReG_Steer_Appside.h"
 #include "ReG_Steer_Appside_internal.h"
