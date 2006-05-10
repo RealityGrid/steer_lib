@@ -2010,7 +2010,8 @@ int Emit_start(int  IOType,
   /* Check that this IOType can be emitted */
   if(IOTypes_table.io_def[*IOTypeIndex].direction == REG_IO_IN){
 
-    fprintf(stderr, "Emit_start: ERROR - IOType has direction REG_IO_IN\n");
+    fprintf(stderr, "Emit_start: ERROR - IOType with index %d has "
+	    "direction REG_IO_IN\n", *IOTypeIndex);
     return REG_FAILURE;
   }
 

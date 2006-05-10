@@ -847,7 +847,10 @@ int Get_data_sink_address_wsrf(const int           index,
   }
 
   pLast = pBuf;
-  count = 1;
+  count = index; /* ARPDBG - remove check for multiple sinks for now
+		    - we take the first we find. Effectively this means
+		    that an application can only use one IOProxy for
+		    output, irrespective of how many output IOTypes it has */
   if(strstr(pLast, "<Proxy>")){
     while( (pLast = strstr(pLast, "<sws:dataSink")) ){
       if(count == index){

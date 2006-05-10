@@ -63,16 +63,35 @@ extern Steerer_connection_table_type Steerer_connection;
 
 int socket_info_init(const int index) {
 
-  char* pchar;
+  char* pchar = NULL;
   char* ip_addr;
-  int min = 21370;
-  int max = 65535;
+  IOTypes_table.io_def[index].socket_info.min_port = 0;
+  IOTypes_table.io_def[index].socket_info.max_port = 0;
 
-  if( (pchar = getenv("GLOBUS_TCP_PORT_RANGE")) ) {
-    if(sscanf(pchar, "%d,%d", &(min), &(max)) != 2) {
-      min = 21370;
-      max = 65535;
-    }
+#if REG_PROXY_SAMPLES
+  /* We always connect OUT to the IOProxy */
+  pchar = getenv("GLOBUS_TCP_SOURCE_RANGE");
+
+#elif REG_SOCKET_SAMPLES
+
+  if(IOTypes_table.io_def[index].direction == REG_IO_OUT){
+    pchar = getenv("GLOBUS_TCP_PORT_RANGE");
+    /* We want to do a bind if we're going to have to listen so we
+       know where which port we're listening on - ARP being lazy */
+    IOTypes_table.io_def[index].socket_info.min_port = 21370;
+    IOTypes_table.io_def[index].socket_info.max_port = 65535;
+  }
+  else{
+    /* We only connect outwards if the IOType 
+       is of REG_IO_IN direction */
+    pchar = getenv("GLOBUS_TCP_SOURCE_RANGE");
+  }
+
+#endif
+
+  if( pchar && (sscanf(pchar, "%d,%d", &(min), &(max)) == 2) ) {
+    IOTypes_table.io_def[index].socket_info.min_port = min;
+    IOTypes_table.io_def[index].socket_info.max_port = max;
   }
 
 #if REG_DEBUG
@@ -92,8 +111,6 @@ int socket_info_init(const int index) {
 	  IOTypes_table.io_def[index].socket_info.tcp_interface);
 #endif
 
-  IOTypes_table.io_def[index].socket_info.min_port = min;
-  IOTypes_table.io_def[index].socket_info.max_port = max;
   IOTypes_table.io_def[index].socket_info.listener_port = 0;
   IOTypes_table.io_def[index].socket_info.listener_handle = -1;
   IOTypes_table.io_def[index].socket_info.listener_status = REG_COMMS_STATUS_NULL;
@@ -243,24 +260,38 @@ int create_connector(const int index) {
     myAddr.sin_addr.s_addr = INADDR_ANY;
   }
   else {
-    inet_aton(IOTypes_table.io_def[index].socket_info.tcp_interface, 
-	      &(myAddr.sin_addr));
+    if( !inet_aton(IOTypes_table.io_def[index].socket_info.tcp_interface, 
+		   &(myAddr.sin_addr)) ){
+      fprintf(stderr, "STEER: create_connector: inet_aton failed "
+	      "for interface >>%s<<\n", 
+	      IOTypes_table.io_def[index].socket_info.tcp_interface);
+      return REG_FAILURE;
+    }
   }
   memset(&(myAddr.sin_zero), '\0', 8); /* zero the rest */
 
-  /* ...and bind connector so we can punch out of firewalls... */
-  i = IOTypes_table.io_def[index].socket_info.min_port;
-  myAddr.sin_port = htons((short) i);
-
-  while(bind(connector, (struct sockaddr*) &myAddr, 
-	     sizeof(struct sockaddr)) == REG_SOCKETS_ERROR) {
-    if(++i > IOTypes_table.io_def[index].socket_info.max_port) {
-      perror("bind");
-      close(connector);
-      IOTypes_table.io_def[index].socket_info.comms_status=REG_COMMS_STATUS_FAILURE;
-      return REG_FAILURE;
-    }
+  /* ...and bind connector so we can punch out of firewalls (if necessary)... */
+  if( (i = IOTypes_table.io_def[index].socket_info.min_port) ){
     myAddr.sin_port = htons((short) i);
+
+    fprintf(stderr, "STEER: create_connector: using range %d -- %d for bind\n",
+	    IOTypes_table.io_def[index].socket_info.min_port,
+	    IOTypes_table.io_def[index].socket_info.max_port);
+
+    while(bind(connector, (struct sockaddr*) &myAddr, 
+	       sizeof(struct sockaddr)) == REG_SOCKETS_ERROR) {
+      if(++i > IOTypes_table.io_def[index].socket_info.max_port) {
+	fprintf(stderr, "STEER: create_connector: failed to find free local port to "
+		"bind to in range %d -- %d\n",
+		IOTypes_table.io_def[index].socket_info.min_port,
+		IOTypes_table.io_def[index].socket_info.max_port);
+	close(connector);
+	IOTypes_table.io_def[index].socket_info.comms_status=REG_COMMS_STATUS_FAILURE;
+	return REG_FAILURE;
+      }
+      myAddr.sin_port = htons((short) i);
+    }
+    printf("***ARPDBG: bound socket to port %d\n", (int)i);
   }
   IOTypes_table.io_def[index].socket_info.comms_status=REG_COMMS_STATUS_WAITING_TO_CONNECT;
 
@@ -284,7 +315,7 @@ int connect_connector(const int index) {
 #if REG_SOAP_STEERING	  
     /* Go out into the world of grid/web services... */
 #ifdef REG_WSRF /* use WSRF */
-    if(IOTypes_table.io_def[index].direction = REG_IO_IN){
+    if(IOTypes_table.io_def[index].direction == REG_IO_IN){
       return_status = Get_data_source_address_wsrf(IOTypes_table.io_def[index].input_index, 
 						   IOTypes_table.io_def[index].socket_info.connector_hostname,
 						   &(IOTypes_table.io_def[index].socket_info.connector_port));
