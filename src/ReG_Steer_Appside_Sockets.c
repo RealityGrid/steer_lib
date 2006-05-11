@@ -59,12 +59,16 @@ extern IOdef_table_type IOTypes_table;
 
 extern Steerer_connection_table_type Steerer_connection;
 
+/** Global scratch buffer - declared in ReG_Steer_Appside.c */
+extern char Global_scratch_buffer[];
+
 /*--------------------------------------------------------------------*/
 
 int socket_info_init(const int index) {
 
   char* pchar = NULL;
   char* ip_addr;
+  int   min, max;
   IOTypes_table.io_def[index].socket_info.min_port = 0;
   IOTypes_table.io_def[index].socket_info.max_port = 0;
 
@@ -318,7 +322,8 @@ int connect_connector(const int index) {
     if(IOTypes_table.io_def[index].direction == REG_IO_IN){
       return_status = Get_data_source_address_wsrf(IOTypes_table.io_def[index].input_index, 
 						   IOTypes_table.io_def[index].socket_info.connector_hostname,
-						   &(IOTypes_table.io_def[index].socket_info.connector_port));
+						   &(IOTypes_table.io_def[index].socket_info.connector_port),
+						   IOTypes_table.io_def[index].proxySourceLabel);
     }
     else{
       /* (We'll only be attempting to connect a connector for an IOType of 
@@ -368,7 +373,34 @@ int connect_connector(const int index) {
       IOTypes_table.io_def[index].socket_info.connector_port = 0;
       return REG_FAILURE;
     }
-    IOTypes_table.io_def[index].socket_info.comms_status=REG_COMMS_STATUS_CONNECTED;
+    IOTypes_table.io_def[index].socket_info.comms_status = 
+      REG_COMMS_STATUS_CONNECTED;
+
+#if REG_PROXY_SAMPLES
+    if(IOTypes_table.io_def[index].direction == REG_IO_IN){
+      sprintf(Global_scratch_buffer, "%s\n%s\n", 
+	      IOTypes_table.io_def[index].label,
+	      IOTypes_table.io_def[index].proxySourceLabel);
+    }
+    else{
+      /* If this is an output channel then we aren't subscribing to 
+	 any data source */
+      sprintf(Global_scratch_buffer, "%s\nNO_DATA\n",
+	      IOTypes_table.io_def[index].label);
+    }
+
+    if(Emit_data_sockets(index, 
+			 strlen(Global_scratch_buffer), 
+			 (void*)(Global_scratch_buffer)) !=
+       REG_SUCCESS){
+
+      close_connector_handle(index);
+      fprintf(stderr, 
+	      "STEER: connect_connector: failed to send ID to proxy\n");
+      IOTypes_table.io_def[index].socket_info.connector_port = 0;
+      return REG_FAILURE;
+    }
+#endif
   }
   else {
     fprintf(stderr, "connect_connector: cannot get remote address\n");
@@ -940,7 +972,9 @@ int Emit_header_sockets(const int index) {
 }
 /*---------------------------------------------------*/
 
-int Emit_data_sockets(const int index, const size_t num_bytes_to_send, void* pData) {
+int Emit_data_sockets(const int index, 
+		      const size_t num_bytes_to_send, 
+		      void* pData) {
   if(Write_sockets(index, num_bytes_to_send, (void*) pData) != REG_SUCCESS) {
     fprintf(stderr, "Emit_data_sockets: error in send\n");
     return REG_FAILURE;

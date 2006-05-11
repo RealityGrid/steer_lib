@@ -311,6 +311,9 @@ typedef struct {
      attempting to emit the next data set. Setting @p use_ack to REG_FALSE
      OVERRIDES this flag. */
   int                           ack_needed;
+  /** For use with IOProxy - specifies label by which proxy knows the data
+      that we want to read - for REG_IO_IN channels only */
+  char                          proxySourceLabel[REG_MAX_STRING_LENGTH];
 
 } IOdef_entry;
 

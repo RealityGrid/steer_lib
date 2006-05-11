@@ -622,9 +622,10 @@ int Finalize_steering_connection_wsrf ()
 
 /*-------------------------------------------------------------------------*/
 
-int Get_data_source_address_wsrf(int   index, 
-				 char *hostname,
-				 unsigned short int  *port)
+int Get_data_source_address_wsrf(const int          index, 
+				 char               *hostname,
+				 unsigned short int *port,
+				 char               *label)
 {
   char  *pBuf;
   char  *pchar;
@@ -633,7 +634,6 @@ int Get_data_source_address_wsrf(int   index,
   char  *pLabel;
   int    count;
   char   epr[REG_MAX_STRING_LENGTH];
-  char   label[REG_MAX_STRING_LENGTH];
   char   address[REG_MAX_STRING_LENGTH];
   struct soap mySoap;
 

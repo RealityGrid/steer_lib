@@ -5422,12 +5422,13 @@ int Consume_iotype_msg_header(int  IOTypeIndex,
     return REG_FAILURE;
   }
 
-#if REG_SOCKET_SAMPLES
+#if REG_SOCKET_SAMPLES || REG_PROXY_SAMPLES
   return Consume_msg_header_sockets(IOTypeIndex,
 				    DataType,
 				    Count,
 				    NumBytes,
 				    IsFortranArray);
+  /*
 #elif REG_PROXY_SAMPLES
 
   return Consume_msg_header_proxy(IOTypeIndex,
@@ -5435,6 +5436,7 @@ int Consume_iotype_msg_header(int  IOTypeIndex,
 				    Count,
 				    NumBytes,
 				    IsFortranArray);
+  */
 #else
   return Consume_msg_header_file(IOTypeIndex,
 				 DataType,
