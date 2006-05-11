@@ -4,7 +4,7 @@ work with latest form of secure api. - TEST
 Remove some unecessary malloc's from the
 WSRF steering code.
 
-Utils routine for IOType browsing?
+Utils routine for IOType browsing - Rob working on this?
 
 Make the Msg_type an ENUM?
 
@@ -17,9 +17,5 @@ Ditto for Write_proxy and Emit_data_proxy...
 
 Is LD_FLAGS actually used anywhere?
 
-Continue work on wrapping proxy IO
-
-Work on Get_security_config so defaults to checking
-~/.realitygrid/security.conf unless otherwise specified.  Ditto for
-steerer.conf and launcher.conf
+Continue work on wrapping proxy IO - ACKS with a proxy??
 
