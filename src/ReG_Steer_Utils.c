@@ -151,6 +151,25 @@ int Get_security_config(const char               *configFile,
     snprintf(bufline, 512, "%s/.realitygrid/security.conf", pChar);
     pFile = bufline;
   }
+  else {
+    int replace = 0;
+    if(strncmp(configFile, "$HOME", 5) == 0)
+      replace = 5;
+    else if(strncmp(configFile, "~", 1) == 0)
+      replace = 1;
+
+    if(replace != 0) {
+      pChar = getenv("HOME");
+      if(!pChar) {
+	fprintf(stderr, "Get_security_config: cannot get HOME environment "
+		"variable for ~ or $HOME substitution\n");
+	return REG_FAILURE;
+      }
+      snprintf(bufline, 512, "%s%s", pChar, &configFile[replace]);
+      pFile = bufline;
+    }
+    
+  }
 
   /* Set the username to the value of the USER environment variable
      in case we fail to get/parse the certificate for the DN */
