@@ -122,22 +122,6 @@ int Emit_data_proxy(const int index, const size_t num_bytes_to_send,
 		    void* pData);
 
 /** @internal
-    @param index Index of IOType from which to get data
-    @param datatype Type of data in the following slice
-    @param count No. of data objects in the following slice
-    @param num_bytes No. of bytes of data in the following slice
-    @param is_fortran_array Whether data in following slice is from
-    a Fortran array
-
-    Reads a message header from the socket for the 
-    IOType with the supplied index. */
-int Consume_msg_header_proxy(int  index, 
-			     int* datatype, 
-			     int* count, 
-			     int* num_bytes, 
-			     int* is_fortran_array);
-
-/** @internal
     @param index Index of IOType on which to check for data
 
     Check to see whether data is available on the socket
@@ -171,24 +155,6 @@ int Emit_ack_proxy(int index);
     Attempt to read an acknowledgement from the consumer of the 
     IOType with the supplied index.*/
 int Consume_ack_proxy(int index);
-
-/*
- ************************************
- * Internal Methods.
- * Should NOT be called from outside
- * of ReG_Steer_Appside_Proxy.h
- ************************************/
-
-/** @internal
-    @param index Index of IOType to read data from
-    @param size No. of bytes read
-    @param buffer Pointer to malloc'd buffer containing received data
-
-    Read the next message received from the proxy - removes the 
-    proxy-specific header and passes back pointer to data */
-int Read_proxy(const int index, 
-	       int *size, 
-	       void** buffer);
 
 #endif /* REG_PROXY_SAMPLES */
 #endif /* __REG_STEER_SOCKETS_IO_H__ */
