@@ -151,7 +151,7 @@ int Get_security_config(const char               *configFile,
     snprintf(bufline, 512, "%s/.realitygrid/security.conf", pChar);
     pFile = bufline;
   }
-  else {
+  else if(strlen(configFile) > 2) { /* minimum length will be ~/a ie 3 */
     int replace = 0;
     if(strncmp(configFile, "$HOME", 5) == 0)
       replace = 5;
