@@ -2089,7 +2089,7 @@ int Store_xml_string(xmlDocPtr doc, xmlNodePtr cur, char **dest,
   xmlChar   *pXMLChar;
   xmlDocPtr  newDoc = NULL;
   xmlNodePtr tmpNode;
-  /*int        i; for debug output */
+  /* int        i; for debug output */
   long       ptrShift;
 
   tmpNode = cur->xmlChildrenNode;
@@ -2110,7 +2110,8 @@ int Store_xml_string(xmlDocPtr doc, xmlNodePtr cur, char **dest,
     xmlDocDumpFormatMemory(newDoc, &pXMLChar, &len, 1);
   }
 
-  if(entry->bufLen - entry->bufIndex - len <= 0){
+  /* '-1' allows for terminating '\0' */
+  if(entry->bufLen - entry->bufIndex - len - 1 <= 0){
     newLen = (entry->bufLen + 2*len);
     if( (pDum = (char*)realloc((void*)(entry->pBuf), newLen)) ){
       ptrShift = pDum - entry->pBuf;
@@ -2143,7 +2144,6 @@ int Store_xml_string(xmlDocPtr doc, xmlNodePtr cur, char **dest,
   (*dest)[len] = '\0';
   entry->bufIndex += len + 1;
   xmlFree(pXMLChar);
-
   if (newDoc) xmlFreeDoc(newDoc);
 
   return REG_SUCCESS;
