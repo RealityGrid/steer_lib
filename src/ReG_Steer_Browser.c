@@ -195,7 +195,9 @@ int Get_registry_entries_filtered_secure(const char             *registryGSH,
   int status;
   int i, j;
   int count;
+  int len;
   struct registry_entry *entry;
+  char *pTmp;
 
   if( (status = Get_registry_entries_secure(registryGSH, 
 					    sec,
@@ -226,19 +228,47 @@ int Get_registry_entries_filtered_secure(const char             *registryGSH,
 
       /* It does */
       if(j<i){
-	strcpy(contents->entries[j].service_type, 
-	       entry->service_type);
-	strcpy(contents->entries[j].gsh, entry->gsh);
-	strcpy(contents->entries[j].entry_gsh, 
-	       entry->entry_gsh);
-	strcpy(contents->entries[j].application, 
-	       entry->application);
-	strcpy(contents->entries[j].user, entry->user);
-	strcpy(contents->entries[j].group, entry->group);
-	strcpy(contents->entries[j].start_date_time, 
-	       entry->start_date_time);
-	strcpy(contents->entries[j].job_description, 
-	       entry->job_description);
+	pTmp = contents->entries[j].pBuf;
+	contents->entries[j].pBuf = entry->pBuf;
+	entry->pBuf = pTmp;
+	len = contents->entries[j].bufLen;
+	contents->entries[j].bufLen = entry->bufLen;
+	entry->bufLen = len;
+	len = contents->entries[j].bufIndex;
+	contents->entries[j].bufIndex = entry->bufIndex;
+	entry->bufIndex = len;
+
+        pTmp = contents->entries[j].service_type;
+	contents->entries[j].service_type = entry->service_type;
+	entry->service_type = pTmp;
+
+        pTmp = contents->entries[j].gsh;
+	contents->entries[j].gsh = entry->gsh;
+	entry->gsh = pTmp;
+
+        pTmp = contents->entries[j].entry_gsh;
+	contents->entries[j].entry_gsh = entry->entry_gsh;
+	entry->entry_gsh = pTmp;
+
+        pTmp = contents->entries[j].application;
+	contents->entries[j].application = entry->application;
+	entry->application = pTmp;
+
+        pTmp = contents->entries[j].user;
+	contents->entries[j].user = entry->user;
+	entry->user = pTmp;
+
+        pTmp = contents->entries[j].group;
+	contents->entries[j].group = entry->group;
+	entry->group = pTmp;
+
+        pTmp = contents->entries[j].start_date_time;
+	contents->entries[j].start_date_time = entry->start_date_time;
+	entry->start_date_time = pTmp;
+
+        pTmp = contents->entries[j].job_description;
+	contents->entries[j].job_description = entry->job_description;
+	entry->job_description = pTmp;
       }
 
       j++;

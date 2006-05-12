@@ -476,7 +476,8 @@ int Get_IOTypes_WSRF(const char                     *address,
   i = 0;
   fprintf(stdout, "Available IOTypes:\n");
   while(ioPtr){
-    fprintf(stdout, "  %d: %s\n", i++, (char *)ioPtr->label);
+    fprintf(stdout, "    %d: %s\n", i++, (char *)ioPtr->label);
+    fprintf(stdout, " Dir'n: %s\n", (char *)ioPtr->direction);
     ioPtr = ioPtr->next;
   }
   list->iotype = (struct iotype_detail*)malloc(i * sizeof(struct iotype_detail));
@@ -493,7 +494,13 @@ int Get_IOTypes_WSRF(const char                     *address,
   while(ioPtr){
     strncpy(list->iotype[i].label, (char *)ioPtr->label, 
 	    REG_MAX_STRING_LENGTH);
-
+    if( !xmlStrcmp(ioPtr->direction, (const xmlChar *)"IN") ){
+      list->iotype[i].direction = REG_IO_IN;
+    }
+    else{
+      list->iotype[i].direction = REG_IO_OUT;
+    }
+      /*  list->iotype[i].frequency*/
     ioPtr = ioPtr->next; i++;
   }
 

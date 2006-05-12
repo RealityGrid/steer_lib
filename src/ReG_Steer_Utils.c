@@ -267,3 +267,16 @@ int Get_IOTypes(const char                     *address,
 #endif
 
 }
+
+/*----------------------------------------------------------------*/
+
+int Delete_iotype_list(struct reg_iotype_list *list)
+{
+  if(!list)return REG_FAILURE;
+
+  if(list->iotype)free(list->iotype);
+  list->iotype = NULL;
+  list->numEntries = 0;
+
+  return REG_SUCCESS;
+}
