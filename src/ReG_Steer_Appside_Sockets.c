@@ -99,7 +99,9 @@ int socket_info_init(const int index) {
   }
 
 #if REG_DEBUG
-  fprintf(stderr, "socket_info_init: port range %d - %d\n", min, max);
+  fprintf(stderr, "socket_info_init: port range %d - %d\n", 
+	  IOTypes_table.io_def[index].socket_info.min_port,
+	  IOTypes_table.io_def[index].socket_info.max_port);
 #endif
 
   /* set local TCP interface to use */
