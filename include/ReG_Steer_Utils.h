@@ -77,8 +77,6 @@ struct iotype_detail {
   char label[REG_MAX_STRING_LENGTH];
   /** The direction of this IOType (REG_IN or REG_OUT) */
   int  direction;
-  /** The interval between automatic emit/consume events */
-  int  frequency;
 };
 
 /** Holds details on the IOTypes of a steerable app */
@@ -141,8 +139,24 @@ extern PREFIX char *Create_checkpoint_tree(const char *factory,
 extern PREFIX int Get_security_config(const char               *configFile,
 				      struct reg_security_info *sec);
 
+/**
+   @param address Endpoint of the SWS from which to get IOTypes
+   @param sec     Pointer to struct containing data required to authenticate to the SWS
+   @param list    Pointer to reg_iotype_list to fill with details on IOTypes.  Must be cleaned up once finished with by calling Delete_iotype_list()
+
+   A utility to get the IOTypes published by an application.
+*/
 extern PREFIX int Get_IOTypes(const char                     *address,
 			      const struct reg_security_info *sec,
 			      struct reg_iotype_list         *list);
+
+/**
+   @param list Pointer to reg_iotype_list to clean up
+
+   Frees memory associated with the reg_iotype_list and resets
+   member variables
+*/
+extern PREFIX int Delete_iotype_list(struct reg_iotype_list *list);
+
 #endif
 
