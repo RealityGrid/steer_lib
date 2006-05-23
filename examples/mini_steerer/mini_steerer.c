@@ -81,7 +81,7 @@ int main(int argc, char **argv){
   int    new_freq;
 
   char  *char_ptr;
-  char  *pchar;
+  char  *pchar = NULL;
   char  *sim_name[REG_MAX_NUM_STEERED_SIM];
   char  *sim_gsh[REG_MAX_NUM_STEERED_SIM];
   char  *passPtr;
@@ -94,8 +94,6 @@ int main(int argc, char **argv){
   char                     confFile[REG_MAX_STRING_LENGTH];
   struct registry_contents content;
   struct reg_security_info sec;
-
-  pchar = NULL;
 
   /* Initialise arrays for querying param values */
 
