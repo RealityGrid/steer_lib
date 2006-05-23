@@ -131,13 +131,15 @@ int Destroy_steering_service(char                           *address,
 int Get_security_config(const char               *configFile,
 			struct reg_security_info *sec){
   char      *pChar;
-  char      *pFile = configFile;
   int        len;
   xmlDocPtr  doc;
   xmlNodePtr cur;
   xmlChar   *attrValue;
   FILE      *fp;
   char       bufline[512];
+
+  sec->myKeyCertFile[0] = '\0';
+  sec->caCertsPath[0] = '\0';
 
   /* Default to using ~/.realitygrid/security.conf unless we're told
      otherwise */
@@ -149,11 +151,12 @@ int Get_security_config(const char               *configFile,
       return REG_FAILURE;
     }
     snprintf(bufline, 512, "%s/.realitygrid/security.conf", pChar);
-    pFile = bufline;
   }
   else if(strlen(configFile) > 2) { /* minimum length will be ~/a ie 3 */
     int replace = 0;
     if(strncmp(configFile, "$HOME", 5) == 0)
+      replace = 5;
+    else if(strncmp(configFile, "${HOME}", 7) == 0)
       replace = 5;
     else if(strncmp(configFile, "~", 1) == 0)
       replace = 1;
@@ -166,9 +169,10 @@ int Get_security_config(const char               *configFile,
 	return REG_FAILURE;
       }
       snprintf(bufline, 512, "%s%s", pChar, &configFile[replace]);
-      pFile = bufline;
+    }    
+    else{
+      strncpy(bufline, configFile, 512);
     }
-    
   }
 
   /* Set the username to the value of the USER environment variable
@@ -179,19 +183,19 @@ int Get_security_config(const char               *configFile,
 
   /* Parse the security.conf file */
 
-  doc = xmlParseFile(pFile);
+  doc = xmlParseFile(bufline);
   if( !(cur = xmlDocGetRootElement(doc)) ){
     printf("Error parsing xml from security.conf: empty document\n");
     xmlFreeDoc(doc);
     xmlCleanupParser();
-    return 1;
+    return REG_FAILURE;
   }
   if (xmlStrcmp(cur->name, (const xmlChar *) "Security_config")){
     printf("Error parsing xml from security.conf: root element "
            "is not 'Security_config'\n");
     xmlFreeDoc(doc);
     xmlCleanupParser();
-    return 1;
+    return REG_FAILURE;
   }
   cur = cur->xmlChildrenNode;
   /* Walk the tree - search for first non-blank node */
@@ -221,6 +225,14 @@ int Get_security_config(const char               *configFile,
       }
     }
     cur = cur->next;
+  }
+
+  /* Config file exists but does not specify any path to CA certs
+     or key+cert file */
+  if(!(sec->myKeyCertFile[0]) || !(sec->caCertsPath[0])){
+    xmlFreeDoc(doc);
+    xmlCleanupParser();
+    return REG_FAILURE;    
   }
 
   /* Extract user's DN from their certificate */
