@@ -918,11 +918,5 @@ int Record_checkpoint_set_wsrf(char *chk_data,
   }
 #endif
 
-  if(response._RecordCheckpointReturn && 
-     strstr(response._RecordCheckpointReturn, REG_SGS_SUCCESS)){
-
-    return REG_SUCCESS;
-  }
-
-  return REG_FAILURE;
+  return REG_SUCCESS;
 }
