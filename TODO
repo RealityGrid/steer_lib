@@ -4,8 +4,6 @@ work with latest form of secure api. - TEST
 Remove some unecessary malloc's from the
 WSRF steering code.
 
-Utils routine for IOType browsing - Rob working on this?
-
 Make the Msg_type an ENUM?
 
 Doxygen for reg_steer_tools?
