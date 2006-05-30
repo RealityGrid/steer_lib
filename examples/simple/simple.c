@@ -67,6 +67,7 @@ int main(){
   status = Steering_initialize("simple v.1.0", numCommands, commands);
 
   if(status != REG_SUCCESS){
+    printf("simple: call to Steering_initialize failed - quitting\n");
     return 1;
   }
 
@@ -78,7 +79,7 @@ int main(){
 					REG_MAX_NUM_STR_CMDS);
 
   if(!changed_param_labels || !recvd_cmd_params){
-    printf("Failed to allocate string arrays :-(\n");
+    printf("simple: failed to allocate string arrays :-(\n");
     return 1;
   }
 
@@ -86,7 +87,7 @@ int main(){
   status = Register_param("TEMP", REG_TRUE, (void *)(&temp),
 			  REG_FLOAT, "", "");
   if(status != REG_SUCCESS){
-    printf("Failed to register parameter\n");
+    printf("Failed to register parameter 'TEMP'\n");
   }
 
   /* Register a binary blob */
@@ -94,7 +95,7 @@ int main(){
   status = Register_bin_param("blob", (void *)(&float_array),
 			      REG_FLOAT, 50);
   if(status != REG_SUCCESS){
-    printf("Failed to register parameter\n");
+    printf("Failed to register parameter 'blob'\n");
   }
 
   /* Enter main 'simulation' loop */

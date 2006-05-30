@@ -110,6 +110,7 @@ int main(){
   status = Steering_initialize("sink v1.0", numCommands, commands);
 
   if(status != REG_SUCCESS){
+    printf("sink: call to Steering_initialize failed - quitting\n");
     return REG_FAILURE;
   }
 
