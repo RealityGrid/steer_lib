@@ -1170,8 +1170,10 @@ int Log_columns_to_xml(char **buf, char* out_buf, int out_buf_size,
      key++ <handle 0> <value 0> <handle 1> <value 1>... \n
      etc.
   */
-  char *fields[REG_MAX_NUM_STR_PARAMS];
-  const int max_field_length = 24;
+  /* '2*' to allow for handle & value of each parameter */
+  const int max_num_fields = 2*REG_MAX_NUM_STR_PARAMS;
+  const int max_field_length = 32;
+  char *fields[max_num_fields];
   char *pbuf;
   char *ptr1;
   char *ptr2;
@@ -1184,12 +1186,12 @@ int Log_columns_to_xml(char **buf, char* out_buf, int out_buf_size,
 
   sprintf(handle_str, "%d", handle);
 
-  fields[0] = malloc(REG_MAX_NUM_STR_PARAMS*max_field_length*sizeof(char));
+  fields[0] = malloc(max_num_fields*max_field_length*sizeof(char));
   if(!fields[0]){
     return REG_FAILURE;
   }
 
-  for(i=1;i<REG_MAX_NUM_STR_PARAMS;i++){
+  for(i=1;i<max_num_fields;i++){
     fields[i] = (char *)(fields[0] + i*max_field_length);
   }
 
@@ -1202,9 +1204,20 @@ int Log_columns_to_xml(char **buf, char* out_buf, int out_buf_size,
 
     ptr3 = ptr1;
     count = 0;
-    while( (ptr4 = strstr(ptr3, " ")) && ((void*)ptr4 < (void*)ptr2) ){
-      memcpy(fields[count], ptr3, ptr4-ptr3);
-      (fields[count])[ptr4-ptr3] = '\0';
+    while( (count < max_num_fields) &&
+	   ((ptr4 = strstr(ptr3, " ")) && ((void*)ptr4 < (void*)ptr2)) ){
+      if( (i = (int)(ptr4 - ptr3)) > max_field_length){
+	/* So we can output the problematic field */
+	strncpy(fields[0], ptr3, i);
+	fields[0][i] = '\0';
+	fprintf(stderr, "STEER: Log_columns_to_xml: ERROR: field "
+		">>%s<< exceeds maximum width of %d characters\n", 
+		 fields[0], max_field_length);
+	free(fields[0]);
+	return REG_FAILURE;
+      }
+      memcpy(fields[count], ptr3, i);
+      (fields[count])[i] = '\0';
       ptr3 = ptr4;
       while(*(++ptr3) == ' '){}/* Cope with multiple blank spaces */
       count++;
