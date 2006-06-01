@@ -1170,8 +1170,9 @@ int Log_columns_to_xml(char **buf, char* out_buf, int out_buf_size,
      key++ <handle 0> <value 0> <handle 1> <value 1>... \n
      etc.
   */
-  /* '2*' to allow for handle & value of each parameter */
-  const int max_num_fields = 2*REG_MAX_NUM_STR_PARAMS;
+  /* '2*' to allow for handle & value of each parameter and '+1'
+     for key of each log entry */
+  const int max_num_fields = 2*REG_MAX_NUM_STR_PARAMS + 1;
   const int max_field_length = 32;
   char *fields[max_num_fields];
   char *pbuf;
@@ -1183,6 +1184,12 @@ int Log_columns_to_xml(char **buf, char* out_buf, int out_buf_size,
   int   nbytes = 0;
   int   bytes_left = out_buf_size;
   char  handle_str[16];
+
+  if(!out_buf){
+    fprintf(stderr, "STEER: Log_columns_to_xml: ERROR: supplied ptr to "
+	    "output buffer is NULL\n");
+    return REG_FAILURE;
+  }
 
   sprintf(handle_str, "%d", handle);
 
