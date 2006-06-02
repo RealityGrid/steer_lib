@@ -40,7 +40,7 @@ all: soap_stubs
 
 soap_stubs: all_hdrs.h SWS.h SGS.h SGSFactory.h SWSFactory.h \
            ServiceGroupRegistration.h RealityGridTreeFactory.h \
-           RealityGridTree.h
+           RealityGridTree.h CheckPointTree.h CheckPointTreeNode.h
 	${SOAP_CPP2} -c all_hdrs.h
 
 install:
