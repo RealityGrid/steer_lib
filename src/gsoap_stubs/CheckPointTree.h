@@ -24,8 +24,7 @@ struct cpt__destroyResponse {
 };
 
 //gsoap cpt service method-action: createNewTree ""
-cpt__createNewTree( xsd__string  in0, xsd__string  in1, 
-		    xsd__string  in2, xsd__string  in3, 
+cpt__createNewTree( xsd__string  in0, 
 		    struct cpt__createNewTreeResponse * out );
 //gsoap cpt service method-action: findByHandle ""
 cpt__findByHandle( xsd__string  in0, xsd__string  in1, 
