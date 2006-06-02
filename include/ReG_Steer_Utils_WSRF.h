@@ -76,8 +76,25 @@ char *Create_SWS(const struct reg_job_details   *job,
 int Destroy_WSRP(const char *epr, 
 		 const struct reg_security_info *sec);
 
+/** @internal
+    Queries the specified SWS and returns a list of its IOTypes
+    @param address Endpoint of the SWS to query
+    @param sec Pointer to struct holding WSSE username & password
+    @param list Pointer to struct holding list of IOType definitions */
 int Get_IOTypes_WSRF(const char                     *address,
 		     const struct reg_security_info *sec,
 		     struct reg_iotype_list         *list);
+
+/** internal
+    Calls the createNewTree method on the specified factory service
+    to create a new CheckPointTree with the metadata specified in
+    metadata. Returned pointer is to a static string which will remain
+    valid until this routine is called again.
+    @param factory Endpoint of the checkpoint factory to call
+    @param metadata Label to give new checkpoint tree
+    @returns Pointer to string containing endpoint of new checkpoint 
+    tree or NULL on failure */
+char *Create_checkpoint_tree_wsrf(const char *factory, 
+				  const char *metadata);
 
 #endif /* !defined __REG_STEER_UTILS_WSRF_H__ */

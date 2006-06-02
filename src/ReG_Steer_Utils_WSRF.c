@@ -432,6 +432,7 @@ int Get_IOTypes_WSRF(const char                     *address,
 
     fprintf(stderr, "Get_IOTypes: ERROR: Call to get ioTypeDefinitions "
 	    "ResourceProperty on %s failed\n", address);
+    soap_print_fault(&mySoap, stderr);
     soap_end(&mySoap);
     soap_done(&mySoap);
     return REG_FAILURE;
@@ -507,4 +508,42 @@ int Get_IOTypes_WSRF(const char                     *address,
   xmlFreeDoc(doc);   xmlCleanupParser();
   soap_end(&mySoap); soap_done(&mySoap);
   return REG_SUCCESS;
+}
+
+/*-----------------------------------------------------------------*/
+
+char *Create_checkpoint_tree_wsrf(const char *factory, 
+				  const char *metadata){
+
+  struct soap                        mySoap;
+  struct cpt__createNewTreeResponse  out;
+  char       *pchar;
+  static char epr[REG_MAX_STRING_LENGTH];
+
+  soap_init(&mySoap);
+
+  if(soap_call_cpt__createNewTree(&mySoap, 
+				  factory, 
+				  "", /* soap Action */
+				  (char *)metadata, 
+				  &out) != SOAP_OK){
+    fprintf(stderr, "Create_checkpoint_tree_wsrf: ERROR: Call to "
+	    "createNewTree on %s failed\n", factory);
+    soap_print_fault(&mySoap, stderr);
+    soap_end(&mySoap); soap_done(&mySoap);
+    return NULL;
+  }
+
+  if(strstr(out._createNewTreeReturn, "Address>")){
+
+    pchar = strstr(out._createNewTreeReturn, "</");
+    if(pchar)*pchar = '\0';
+    pchar = strchr(out._createNewTreeReturn, '>');
+    strncpy(epr, ++pchar, REG_MAX_STRING_LENGTH);
+  }
+  else{
+    strncpy(epr, out._createNewTreeReturn, REG_MAX_STRING_LENGTH);
+  }
+  soap_end(&mySoap); soap_done(&mySoap);
+  return epr;
 }

@@ -71,6 +71,12 @@ char* Create_steering_service(const struct reg_job_details *job,
 char *Create_checkpoint_tree(const char *factory, 
 			     const char *metadata)
 {
+#ifdef REG_WSRF
+
+  return Create_checkpoint_tree_wsrf(factory, metadata);
+
+#else
+
   struct rgtf__createNewTreeResponse out;
   char                              *pchar;
   char                              *pend;
@@ -111,6 +117,8 @@ char *Create_checkpoint_tree(const char *factory,
   soap_done(&soap); /* cleanup and detach soap struct */
 
   return epr;
+
+#endif /* !defined REG_WSRF */
 }
 
 /*----------------------------------------------------------------*/
