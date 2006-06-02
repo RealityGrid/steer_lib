@@ -9,7 +9,7 @@
 extern "C" {
 #endif
 
-SOAP_SOURCE_STAMP("@(#) soapClient.c ver 2.7.6e 2006-03-17 14:06:02 GMT")
+SOAP_SOURCE_STAMP("@(#) soapClient.c ver 2.7.6e 2006-06-02 12:43:34 GMT")
 
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_call_wsrp__GetResourceProperty(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct GetResourcePropertyRequest *in_, char **out_)
@@ -3070,6 +3070,319 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call_rsg__Add(struct soap *soap, const char *soap
 	 || soap_body_begin_in(soap))
 		return soap_closesock(soap);
 	soap_get_rsg__AddResponse(soap, _out, "rsg:AddResponse", "");
+	if (soap->error)
+	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
+			return soap_recv_fault(soap);
+		return soap_closesock(soap);
+	}
+	if (soap_body_end_in(soap)
+	 || soap_envelope_end_in(soap)
+	 || soap_end_recv(soap))
+		return soap_closesock(soap);
+	return soap_closesock(soap);
+}
+
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_cpt__createNewTree(struct soap *soap, const char *soap_endpoint, const char *soap_action, char *in0, struct cpt__createNewTreeResponse *out)
+{	struct cpt__createNewTree soap_tmp_cpt__createNewTree;
+	if (!soap_endpoint)
+		soap_endpoint = "http://vermont.mvc.mcc.ac.uk:50000/Session/CheckPointTree";
+	if (!soap_action)
+		soap_action = "";
+	soap->encodingStyle = NULL;
+	soap_tmp_cpt__createNewTree.in0 = in0;
+	soap_begin(soap);
+	soap_serializeheader(soap);
+	soap_serialize_cpt__createNewTree(soap, &soap_tmp_cpt__createNewTree);
+	if (soap_begin_count(soap))
+		return soap->error;
+	if (soap->mode & SOAP_IO_LENGTH)
+	{	if (soap_envelope_begin_out(soap)
+		 || soap_putheader(soap)
+		 || soap_body_begin_out(soap)
+		 || soap_put_cpt__createNewTree(soap, &soap_tmp_cpt__createNewTree, "cpt:createNewTree", "")
+		 || soap_body_end_out(soap)
+		 || soap_envelope_end_out(soap))
+			 return soap->error;
+	}
+	if (soap_end_count(soap))
+		return soap->error;
+	if (soap_connect(soap, soap_endpoint, soap_action)
+	 || soap_envelope_begin_out(soap)
+	 || soap_putheader(soap)
+	 || soap_body_begin_out(soap)
+	 || soap_put_cpt__createNewTree(soap, &soap_tmp_cpt__createNewTree, "cpt:createNewTree", "")
+	 || soap_body_end_out(soap)
+	 || soap_envelope_end_out(soap)
+	 || soap_end_send(soap))
+		return soap_closesock(soap);
+	soap_default_cpt__createNewTreeResponse(soap, out);
+	if (soap_begin_recv(soap)
+	 || soap_envelope_begin_in(soap)
+	 || soap_recv_header(soap)
+	 || soap_body_begin_in(soap))
+		return soap_closesock(soap);
+	soap_get_cpt__createNewTreeResponse(soap, out, "cpt:createNewTreeResponse", "");
+	if (soap->error)
+	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
+			return soap_recv_fault(soap);
+		return soap_closesock(soap);
+	}
+	if (soap_body_end_in(soap)
+	 || soap_envelope_end_in(soap)
+	 || soap_end_recv(soap))
+		return soap_closesock(soap);
+	return soap_closesock(soap);
+}
+
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_cpt__findByHandle(struct soap *soap, const char *soap_endpoint, const char *soap_action, char *in0, char *in1, struct cpt__findByHandleResponse *out)
+{	struct cpt__findByHandle soap_tmp_cpt__findByHandle;
+	if (!soap_endpoint)
+		soap_endpoint = "http://vermont.mvc.mcc.ac.uk:50000/Session/CheckPointTree";
+	if (!soap_action)
+		soap_action = "";
+	soap->encodingStyle = NULL;
+	soap_tmp_cpt__findByHandle.in0 = in0;
+	soap_tmp_cpt__findByHandle.in1 = in1;
+	soap_begin(soap);
+	soap_serializeheader(soap);
+	soap_serialize_cpt__findByHandle(soap, &soap_tmp_cpt__findByHandle);
+	if (soap_begin_count(soap))
+		return soap->error;
+	if (soap->mode & SOAP_IO_LENGTH)
+	{	if (soap_envelope_begin_out(soap)
+		 || soap_putheader(soap)
+		 || soap_body_begin_out(soap)
+		 || soap_put_cpt__findByHandle(soap, &soap_tmp_cpt__findByHandle, "cpt:findByHandle", "")
+		 || soap_body_end_out(soap)
+		 || soap_envelope_end_out(soap))
+			 return soap->error;
+	}
+	if (soap_end_count(soap))
+		return soap->error;
+	if (soap_connect(soap, soap_endpoint, soap_action)
+	 || soap_envelope_begin_out(soap)
+	 || soap_putheader(soap)
+	 || soap_body_begin_out(soap)
+	 || soap_put_cpt__findByHandle(soap, &soap_tmp_cpt__findByHandle, "cpt:findByHandle", "")
+	 || soap_body_end_out(soap)
+	 || soap_envelope_end_out(soap)
+	 || soap_end_send(soap))
+		return soap_closesock(soap);
+	soap_default_cpt__findByHandleResponse(soap, out);
+	if (soap_begin_recv(soap)
+	 || soap_envelope_begin_in(soap)
+	 || soap_recv_header(soap)
+	 || soap_body_begin_in(soap))
+		return soap_closesock(soap);
+	soap_get_cpt__findByHandleResponse(soap, out, "cpt:findByHandleResponse", "");
+	if (soap->error)
+	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
+			return soap_recv_fault(soap);
+		return soap_closesock(soap);
+	}
+	if (soap_body_end_in(soap)
+	 || soap_envelope_end_in(soap)
+	 || soap_end_recv(soap))
+		return soap_closesock(soap);
+	return soap_closesock(soap);
+}
+
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_cpt__destroy(struct soap *soap, const char *soap_endpoint, const char *soap_action, void *_, struct cpt__destroyResponse *out)
+{	struct cpt__destroy soap_tmp_cpt__destroy;
+	if (!soap_endpoint)
+		soap_endpoint = "http://vermont.mvc.mcc.ac.uk:50000/Session/CheckPointTree";
+	if (!soap_action)
+		soap_action = "";
+	soap->encodingStyle = NULL;
+	soap_tmp_cpt__destroy._ = _;
+	soap_begin(soap);
+	soap_serializeheader(soap);
+	soap_serialize_cpt__destroy(soap, &soap_tmp_cpt__destroy);
+	if (soap_begin_count(soap))
+		return soap->error;
+	if (soap->mode & SOAP_IO_LENGTH)
+	{	if (soap_envelope_begin_out(soap)
+		 || soap_putheader(soap)
+		 || soap_body_begin_out(soap)
+		 || soap_put_cpt__destroy(soap, &soap_tmp_cpt__destroy, "cpt:destroy", "")
+		 || soap_body_end_out(soap)
+		 || soap_envelope_end_out(soap))
+			 return soap->error;
+	}
+	if (soap_end_count(soap))
+		return soap->error;
+	if (soap_connect(soap, soap_endpoint, soap_action)
+	 || soap_envelope_begin_out(soap)
+	 || soap_putheader(soap)
+	 || soap_body_begin_out(soap)
+	 || soap_put_cpt__destroy(soap, &soap_tmp_cpt__destroy, "cpt:destroy", "")
+	 || soap_body_end_out(soap)
+	 || soap_envelope_end_out(soap)
+	 || soap_end_send(soap))
+		return soap_closesock(soap);
+	soap_default_cpt__destroyResponse(soap, out);
+	if (soap_begin_recv(soap)
+	 || soap_envelope_begin_in(soap)
+	 || soap_recv_header(soap)
+	 || soap_body_begin_in(soap))
+		return soap_closesock(soap);
+	soap_get_cpt__destroyResponse(soap, out, "cpt:destroyResponse", "");
+	if (soap->error)
+	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
+			return soap_recv_fault(soap);
+		return soap_closesock(soap);
+	}
+	if (soap_body_end_in(soap)
+	 || soap_envelope_end_in(soap)
+	 || soap_end_recv(soap))
+		return soap_closesock(soap);
+	return soap_closesock(soap);
+}
+
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_cpt__getActiveTrees(struct soap *soap, const char *soap_endpoint, const char *soap_action, void *_, struct cpt__getActiveTreesResponse *out)
+{	struct cpt__getActiveTrees soap_tmp_cpt__getActiveTrees;
+	if (!soap_endpoint)
+		soap_endpoint = "http://vermont.mvc.mcc.ac.uk:50000/Session/CheckPointTree";
+	if (!soap_action)
+		soap_action = "";
+	soap->encodingStyle = NULL;
+	soap_tmp_cpt__getActiveTrees._ = _;
+	soap_begin(soap);
+	soap_serializeheader(soap);
+	soap_serialize_cpt__getActiveTrees(soap, &soap_tmp_cpt__getActiveTrees);
+	if (soap_begin_count(soap))
+		return soap->error;
+	if (soap->mode & SOAP_IO_LENGTH)
+	{	if (soap_envelope_begin_out(soap)
+		 || soap_putheader(soap)
+		 || soap_body_begin_out(soap)
+		 || soap_put_cpt__getActiveTrees(soap, &soap_tmp_cpt__getActiveTrees, "cpt:getActiveTrees", "")
+		 || soap_body_end_out(soap)
+		 || soap_envelope_end_out(soap))
+			 return soap->error;
+	}
+	if (soap_end_count(soap))
+		return soap->error;
+	if (soap_connect(soap, soap_endpoint, soap_action)
+	 || soap_envelope_begin_out(soap)
+	 || soap_putheader(soap)
+	 || soap_body_begin_out(soap)
+	 || soap_put_cpt__getActiveTrees(soap, &soap_tmp_cpt__getActiveTrees, "cpt:getActiveTrees", "")
+	 || soap_body_end_out(soap)
+	 || soap_envelope_end_out(soap)
+	 || soap_end_send(soap))
+		return soap_closesock(soap);
+	soap_default_cpt__getActiveTreesResponse(soap, out);
+	if (soap_begin_recv(soap)
+	 || soap_envelope_begin_in(soap)
+	 || soap_recv_header(soap)
+	 || soap_body_begin_in(soap))
+		return soap_closesock(soap);
+	soap_get_cpt__getActiveTreesResponse(soap, out, "cpt:getActiveTreesResponse", "");
+	if (soap->error)
+	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
+			return soap_recv_fault(soap);
+		return soap_closesock(soap);
+	}
+	if (soap_body_end_in(soap)
+	 || soap_envelope_end_in(soap)
+	 || soap_end_recv(soap))
+		return soap_closesock(soap);
+	return soap_closesock(soap);
+}
+
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_cptn__destroy(struct soap *soap, const char *soap_endpoint, const char *soap_action, void *_, struct cptn__destroyResponse *out)
+{	struct cptn__destroy soap_tmp_cptn__destroy;
+	if (!soap_endpoint)
+		soap_endpoint = "http://foo.bar/";
+	soap->encodingStyle = NULL;
+	soap_tmp_cptn__destroy._ = _;
+	soap_begin(soap);
+	soap_serializeheader(soap);
+	soap_serialize_cptn__destroy(soap, &soap_tmp_cptn__destroy);
+	if (soap_begin_count(soap))
+		return soap->error;
+	if (soap->mode & SOAP_IO_LENGTH)
+	{	if (soap_envelope_begin_out(soap)
+		 || soap_putheader(soap)
+		 || soap_body_begin_out(soap)
+		 || soap_put_cptn__destroy(soap, &soap_tmp_cptn__destroy, "cptn:destroy", "")
+		 || soap_body_end_out(soap)
+		 || soap_envelope_end_out(soap))
+			 return soap->error;
+	}
+	if (soap_end_count(soap))
+		return soap->error;
+	if (soap_connect(soap, soap_endpoint, soap_action)
+	 || soap_envelope_begin_out(soap)
+	 || soap_putheader(soap)
+	 || soap_body_begin_out(soap)
+	 || soap_put_cptn__destroy(soap, &soap_tmp_cptn__destroy, "cptn:destroy", "")
+	 || soap_body_end_out(soap)
+	 || soap_envelope_end_out(soap)
+	 || soap_end_send(soap))
+		return soap_closesock(soap);
+	soap_default_cptn__destroyResponse(soap, out);
+	if (soap_begin_recv(soap)
+	 || soap_envelope_begin_in(soap)
+	 || soap_recv_header(soap)
+	 || soap_body_begin_in(soap))
+		return soap_closesock(soap);
+	soap_get_cptn__destroyResponse(soap, out, "cptn:destroyResponse", "");
+	if (soap->error)
+	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
+			return soap_recv_fault(soap);
+		return soap_closesock(soap);
+	}
+	if (soap_body_end_in(soap)
+	 || soap_envelope_end_in(soap)
+	 || soap_end_recv(soap))
+		return soap_closesock(soap);
+	return soap_closesock(soap);
+}
+
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_cptn__addNode(struct soap *soap, const char *soap_endpoint, const char *soap_action, char *in0, char *in1, char *in2, char *in3, char *in4, struct cptn__addNodeResponse *out)
+{	struct cptn__addNode soap_tmp_cptn__addNode;
+	if (!soap_endpoint)
+		soap_endpoint = "http://foo.bar/";
+	soap->encodingStyle = NULL;
+	soap_tmp_cptn__addNode.in0 = in0;
+	soap_tmp_cptn__addNode.in1 = in1;
+	soap_tmp_cptn__addNode.in2 = in2;
+	soap_tmp_cptn__addNode.in3 = in3;
+	soap_tmp_cptn__addNode.in4 = in4;
+	soap_begin(soap);
+	soap_serializeheader(soap);
+	soap_serialize_cptn__addNode(soap, &soap_tmp_cptn__addNode);
+	if (soap_begin_count(soap))
+		return soap->error;
+	if (soap->mode & SOAP_IO_LENGTH)
+	{	if (soap_envelope_begin_out(soap)
+		 || soap_putheader(soap)
+		 || soap_body_begin_out(soap)
+		 || soap_put_cptn__addNode(soap, &soap_tmp_cptn__addNode, "cptn:addNode", "")
+		 || soap_body_end_out(soap)
+		 || soap_envelope_end_out(soap))
+			 return soap->error;
+	}
+	if (soap_end_count(soap))
+		return soap->error;
+	if (soap_connect(soap, soap_endpoint, soap_action)
+	 || soap_envelope_begin_out(soap)
+	 || soap_putheader(soap)
+	 || soap_body_begin_out(soap)
+	 || soap_put_cptn__addNode(soap, &soap_tmp_cptn__addNode, "cptn:addNode", "")
+	 || soap_body_end_out(soap)
+	 || soap_envelope_end_out(soap)
+	 || soap_end_send(soap))
+		return soap_closesock(soap);
+	soap_default_cptn__addNodeResponse(soap, out);
+	if (soap_begin_recv(soap)
+	 || soap_envelope_begin_in(soap)
+	 || soap_recv_header(soap)
+	 || soap_body_begin_in(soap))
+		return soap_closesock(soap);
+	soap_get_cptn__addNodeResponse(soap, out, "cptn:addNodeResponse", "");
 	if (soap->error)
 	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
 			return soap_recv_fault(soap);
