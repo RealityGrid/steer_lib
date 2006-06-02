@@ -1173,8 +1173,121 @@ struct rsg__Add
 };
 #endif
 
+#ifndef SOAP_TYPE_cpt__findByHandleResponse
+#define SOAP_TYPE_cpt__findByHandleResponse (257)
+/* cpt:findByHandleResponse */
+struct cpt__findByHandleResponse
+{
+	char *_findByHandleReturn;	/* RPC return element */	/* optional element of type xsd:string */
+};
+#endif
+
+#ifndef SOAP_TYPE_cpt__getActiveTreesResponse
+#define SOAP_TYPE_cpt__getActiveTreesResponse (258)
+/* cpt:getActiveTreesResponse */
+struct cpt__getActiveTreesResponse
+{
+	char *_getActiveTreesReturn;	/* RPC return element */	/* optional element of type xsd:string */
+};
+#endif
+
+#ifndef SOAP_TYPE_cpt__createNewTreeResponse
+#define SOAP_TYPE_cpt__createNewTreeResponse (259)
+/* cpt:createNewTreeResponse */
+struct cpt__createNewTreeResponse
+{
+	char *_createNewTreeReturn;	/* RPC return element */	/* optional element of type xsd:string */
+};
+#endif
+
+#ifndef SOAP_TYPE_cpt__destroyResponse
+#define SOAP_TYPE_cpt__destroyResponse (260)
+/* cpt:destroyResponse */
+struct cpt__destroyResponse
+{
+	void *_;	/* RPC return element */	/* transient */
+};
+#endif
+
+#ifndef SOAP_TYPE_cpt__createNewTree
+#define SOAP_TYPE_cpt__createNewTree (263)
+/* cpt:createNewTree */
+struct cpt__createNewTree
+{
+	char *in0;	/* optional element of type xsd:string */
+};
+#endif
+
+#ifndef SOAP_TYPE_cpt__findByHandle
+#define SOAP_TYPE_cpt__findByHandle (266)
+/* cpt:findByHandle */
+struct cpt__findByHandle
+{
+	char *in0;	/* optional element of type xsd:string */
+	char *in1;	/* optional element of type xsd:string */
+};
+#endif
+
+#ifndef SOAP_TYPE_cpt__destroy
+#define SOAP_TYPE_cpt__destroy (269)
+/* cpt:destroy */
+struct cpt__destroy
+{
+	void *_;	/* transient */
+};
+#endif
+
+#ifndef SOAP_TYPE_cpt__getActiveTrees
+#define SOAP_TYPE_cpt__getActiveTrees (272)
+/* cpt:getActiveTrees */
+struct cpt__getActiveTrees
+{
+	void *_;	/* transient */
+};
+#endif
+
+#ifndef SOAP_TYPE_cptn__addNodeResponse
+#define SOAP_TYPE_cptn__addNodeResponse (273)
+/* cptn:addNodeResponse */
+struct cptn__addNodeResponse
+{
+	char *_addNodeReturn;	/* RPC return element */	/* optional element of type xsd:string */
+};
+#endif
+
+#ifndef SOAP_TYPE_cptn__destroyResponse
+#define SOAP_TYPE_cptn__destroyResponse (274)
+/* cptn:destroyResponse */
+struct cptn__destroyResponse
+{
+	void *_;	/* RPC return element */	/* transient */
+};
+#endif
+
+#ifndef SOAP_TYPE_cptn__destroy
+#define SOAP_TYPE_cptn__destroy (277)
+/* cptn:destroy */
+struct cptn__destroy
+{
+	void *_;	/* transient */
+};
+#endif
+
+#ifndef SOAP_TYPE_cptn__addNode
+#define SOAP_TYPE_cptn__addNode (280)
+/* cptn:addNode */
+struct cptn__addNode
+{
+	char *in0;	/* optional element of type xsd:string */
+	char *in1;	/* optional element of type xsd:string */
+	char *in2;	/* optional element of type xsd:string */
+	char *in3;	/* optional element of type xsd:string */
+	char *in4;	/* optional element of type xsd:string */
+};
+#endif
+
 #ifndef SOAP_TYPE_stringWithAttr
-#define SOAP_TYPE_stringWithAttr (257)
+#define SOAP_TYPE_stringWithAttr (281)
 /* Primitive stringWithAttr schema type: */
 struct stringWithAttr
 {
@@ -1184,7 +1297,7 @@ struct stringWithAttr
 #endif
 
 #ifndef SOAP_TYPE_UsernameToken
-#define SOAP_TYPE_UsernameToken (258)
+#define SOAP_TYPE_UsernameToken (282)
 /* UsernameToken */
 struct UsernameToken
 {
@@ -1196,7 +1309,7 @@ struct UsernameToken
 #endif
 
 #ifndef SOAP_TYPE_Security
-#define SOAP_TYPE_Security (259)
+#define SOAP_TYPE_Security (283)
 /* Security */
 struct Security
 {
@@ -1205,7 +1318,7 @@ struct Security
 #endif
 
 #ifndef SOAP_TYPE_SOAP_ENV__Header
-#define SOAP_TYPE_SOAP_ENV__Header (260)
+#define SOAP_TYPE_SOAP_ENV__Header (284)
 /* SOAP Header: */
 struct SOAP_ENV__Header
 {
@@ -1215,7 +1328,7 @@ struct SOAP_ENV__Header
 #endif
 
 #ifndef SOAP_TYPE_SOAP_ENV__Code
-#define SOAP_TYPE_SOAP_ENV__Code (261)
+#define SOAP_TYPE_SOAP_ENV__Code (285)
 /* SOAP Fault Code: */
 struct SOAP_ENV__Code
 {
@@ -1225,7 +1338,7 @@ struct SOAP_ENV__Code
 #endif
 
 #ifndef SOAP_TYPE_SOAP_ENV__Detail
-#define SOAP_TYPE_SOAP_ENV__Detail (263)
+#define SOAP_TYPE_SOAP_ENV__Detail (287)
 /* SOAP-ENV:Detail */
 struct SOAP_ENV__Detail
 {
@@ -1236,7 +1349,7 @@ struct SOAP_ENV__Detail
 #endif
 
 #ifndef SOAP_TYPE_SOAP_ENV__Reason
-#define SOAP_TYPE_SOAP_ENV__Reason (264)
+#define SOAP_TYPE_SOAP_ENV__Reason (288)
 /* SOAP-ENV:Reason */
 struct SOAP_ENV__Reason
 {
@@ -1245,7 +1358,7 @@ struct SOAP_ENV__Reason
 #endif
 
 #ifndef SOAP_TYPE_SOAP_ENV__Fault
-#define SOAP_TYPE_SOAP_ENV__Fault (265)
+#define SOAP_TYPE_SOAP_ENV__Fault (289)
 /* SOAP Fault: */
 struct SOAP_ENV__Fault
 {
@@ -1439,6 +1552,18 @@ SOAP_FMAC5 int SOAP_FMAC6 rgt__addNode(struct soap*, char *in0, char *in1, char 
 
 SOAP_FMAC5 int SOAP_FMAC6 rsg__Add(struct soap*, char *_in, struct rsg__AddResponse *_out);
 
+SOAP_FMAC5 int SOAP_FMAC6 cpt__createNewTree(struct soap*, char *in0, struct cpt__createNewTreeResponse *out);
+
+SOAP_FMAC5 int SOAP_FMAC6 cpt__findByHandle(struct soap*, char *in0, char *in1, struct cpt__findByHandleResponse *out);
+
+SOAP_FMAC5 int SOAP_FMAC6 cpt__destroy(struct soap*, void *_, struct cpt__destroyResponse *out);
+
+SOAP_FMAC5 int SOAP_FMAC6 cpt__getActiveTrees(struct soap*, void *_, struct cpt__getActiveTreesResponse *out);
+
+SOAP_FMAC5 int SOAP_FMAC6 cptn__destroy(struct soap*, void *_, struct cptn__destroyResponse *out);
+
+SOAP_FMAC5 int SOAP_FMAC6 cptn__addNode(struct soap*, char *in0, char *in1, char *in2, char *in3, char *in4, struct cptn__addNodeResponse *out);
+
 /******************************************************************************\
  *                                                                            *
  * Stubs                                                                      *
@@ -1563,6 +1688,18 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgt__getParentNode(struct soap *soap, const 
 SOAP_FMAC5 int SOAP_FMAC6 soap_call_rgt__addNode(struct soap *soap, const char *soap_endpoint, const char *soap_action, char *in0, char *in1, char *in2, char *in3, char *in4, struct rgt__addNodeResponse *out);
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_call_rsg__Add(struct soap *soap, const char *soap_endpoint, const char *soap_action, char *_in, struct rsg__AddResponse *_out);
+
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_cpt__createNewTree(struct soap *soap, const char *soap_endpoint, const char *soap_action, char *in0, struct cpt__createNewTreeResponse *out);
+
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_cpt__findByHandle(struct soap *soap, const char *soap_endpoint, const char *soap_action, char *in0, char *in1, struct cpt__findByHandleResponse *out);
+
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_cpt__destroy(struct soap *soap, const char *soap_endpoint, const char *soap_action, void *_, struct cpt__destroyResponse *out);
+
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_cpt__getActiveTrees(struct soap *soap, const char *soap_endpoint, const char *soap_action, void *_, struct cpt__getActiveTreesResponse *out);
+
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_cptn__destroy(struct soap *soap, const char *soap_endpoint, const char *soap_action, void *_, struct cptn__destroyResponse *out);
+
+SOAP_FMAC5 int SOAP_FMAC6 soap_call_cptn__addNode(struct soap *soap, const char *soap_endpoint, const char *soap_action, char *in0, char *in1, char *in2, char *in3, char *in4, struct cptn__addNodeResponse *out);
 
 /******************************************************************************\
  *                                                                            *
@@ -1691,6 +1828,18 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_serve_rgt__getParentNode(struct soap*);
 SOAP_FMAC5 int SOAP_FMAC6 soap_serve_rgt__addNode(struct soap*);
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_serve_rsg__Add(struct soap*);
+
+SOAP_FMAC5 int SOAP_FMAC6 soap_serve_cpt__createNewTree(struct soap*);
+
+SOAP_FMAC5 int SOAP_FMAC6 soap_serve_cpt__findByHandle(struct soap*);
+
+SOAP_FMAC5 int SOAP_FMAC6 soap_serve_cpt__destroy(struct soap*);
+
+SOAP_FMAC5 int SOAP_FMAC6 soap_serve_cpt__getActiveTrees(struct soap*);
+
+SOAP_FMAC5 int SOAP_FMAC6 soap_serve_cptn__destroy(struct soap*);
+
+SOAP_FMAC5 int SOAP_FMAC6 soap_serve_cptn__addNode(struct soap*);
 
 #ifdef __cplusplus
 }

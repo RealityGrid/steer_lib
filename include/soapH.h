@@ -50,7 +50,7 @@ SOAP_FMAC3 int * SOAP_FMAC4 soap_in_int(struct soap*, const char*, int *, const 
 #ifndef WITH_NOGLOBAL
 
 #ifndef SOAP_TYPE_SOAP_ENV__Fault
-#define SOAP_TYPE_SOAP_ENV__Fault (265)
+#define SOAP_TYPE_SOAP_ENV__Fault (289)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_SOAP_ENV__Fault(struct soap*, const struct SOAP_ENV__Fault *);
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_SOAP_ENV__Fault(struct soap*, struct SOAP_ENV__Fault *);
@@ -64,7 +64,7 @@ SOAP_FMAC3 struct SOAP_ENV__Fault * SOAP_FMAC4 soap_in_SOAP_ENV__Fault(struct so
 #ifndef WITH_NOGLOBAL
 
 #ifndef SOAP_TYPE_SOAP_ENV__Reason
-#define SOAP_TYPE_SOAP_ENV__Reason (264)
+#define SOAP_TYPE_SOAP_ENV__Reason (288)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_SOAP_ENV__Reason(struct soap*, const struct SOAP_ENV__Reason *);
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_SOAP_ENV__Reason(struct soap*, struct SOAP_ENV__Reason *);
@@ -78,7 +78,7 @@ SOAP_FMAC3 struct SOAP_ENV__Reason * SOAP_FMAC4 soap_in_SOAP_ENV__Reason(struct 
 #ifndef WITH_NOGLOBAL
 
 #ifndef SOAP_TYPE_SOAP_ENV__Detail
-#define SOAP_TYPE_SOAP_ENV__Detail (263)
+#define SOAP_TYPE_SOAP_ENV__Detail (287)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_SOAP_ENV__Detail(struct soap*, const struct SOAP_ENV__Detail *);
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_SOAP_ENV__Detail(struct soap*, struct SOAP_ENV__Detail *);
@@ -92,7 +92,7 @@ SOAP_FMAC3 struct SOAP_ENV__Detail * SOAP_FMAC4 soap_in_SOAP_ENV__Detail(struct 
 #ifndef WITH_NOGLOBAL
 
 #ifndef SOAP_TYPE_SOAP_ENV__Code
-#define SOAP_TYPE_SOAP_ENV__Code (261)
+#define SOAP_TYPE_SOAP_ENV__Code (285)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_SOAP_ENV__Code(struct soap*, const struct SOAP_ENV__Code *);
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_SOAP_ENV__Code(struct soap*, struct SOAP_ENV__Code *);
@@ -106,7 +106,7 @@ SOAP_FMAC3 struct SOAP_ENV__Code * SOAP_FMAC4 soap_in_SOAP_ENV__Code(struct soap
 #ifndef WITH_NOGLOBAL
 
 #ifndef SOAP_TYPE_SOAP_ENV__Header
-#define SOAP_TYPE_SOAP_ENV__Header (260)
+#define SOAP_TYPE_SOAP_ENV__Header (284)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_SOAP_ENV__Header(struct soap*, const struct SOAP_ENV__Header *);
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_SOAP_ENV__Header(struct soap*, struct SOAP_ENV__Header *);
@@ -118,7 +118,7 @@ SOAP_FMAC3 struct SOAP_ENV__Header * SOAP_FMAC4 soap_in_SOAP_ENV__Header(struct 
 #endif
 
 #ifndef SOAP_TYPE_Security
-#define SOAP_TYPE_Security (259)
+#define SOAP_TYPE_Security (283)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_Security(struct soap*, const struct Security *);
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_Security(struct soap*, struct Security *);
@@ -128,7 +128,7 @@ SOAP_FMAC3 struct Security * SOAP_FMAC4 soap_get_Security(struct soap*, struct S
 SOAP_FMAC3 struct Security * SOAP_FMAC4 soap_in_Security(struct soap*, const char*, struct Security *, const char*);
 
 #ifndef SOAP_TYPE_UsernameToken
-#define SOAP_TYPE_UsernameToken (258)
+#define SOAP_TYPE_UsernameToken (282)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_UsernameToken(struct soap*, const struct UsernameToken *);
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_UsernameToken(struct soap*, struct UsernameToken *);
@@ -138,7 +138,7 @@ SOAP_FMAC3 struct UsernameToken * SOAP_FMAC4 soap_get_UsernameToken(struct soap*
 SOAP_FMAC3 struct UsernameToken * SOAP_FMAC4 soap_in_UsernameToken(struct soap*, const char*, struct UsernameToken *, const char*);
 
 #ifndef SOAP_TYPE_stringWithAttr
-#define SOAP_TYPE_stringWithAttr (257)
+#define SOAP_TYPE_stringWithAttr (281)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_stringWithAttr(struct soap*, const struct stringWithAttr *);
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_stringWithAttr(struct soap*, struct stringWithAttr *);
@@ -146,6 +146,126 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_put_stringWithAttr(struct soap*, const struct str
 SOAP_FMAC3 int SOAP_FMAC4 soap_out_stringWithAttr(struct soap*, const char*, int, const struct stringWithAttr *, const char*);
 SOAP_FMAC3 struct stringWithAttr * SOAP_FMAC4 soap_get_stringWithAttr(struct soap*, struct stringWithAttr *, const char*, const char*);
 SOAP_FMAC3 struct stringWithAttr * SOAP_FMAC4 soap_in_stringWithAttr(struct soap*, const char*, struct stringWithAttr *, const char*);
+
+#ifndef SOAP_TYPE_cptn__addNode
+#define SOAP_TYPE_cptn__addNode (280)
+#endif
+SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_cptn__addNode(struct soap*, const struct cptn__addNode *);
+SOAP_FMAC3 void SOAP_FMAC4 soap_default_cptn__addNode(struct soap*, struct cptn__addNode *);
+SOAP_FMAC3 int SOAP_FMAC4 soap_put_cptn__addNode(struct soap*, const struct cptn__addNode *, const char*, const char*);
+SOAP_FMAC3 int SOAP_FMAC4 soap_out_cptn__addNode(struct soap*, const char*, int, const struct cptn__addNode *, const char*);
+SOAP_FMAC3 struct cptn__addNode * SOAP_FMAC4 soap_get_cptn__addNode(struct soap*, struct cptn__addNode *, const char*, const char*);
+SOAP_FMAC3 struct cptn__addNode * SOAP_FMAC4 soap_in_cptn__addNode(struct soap*, const char*, struct cptn__addNode *, const char*);
+
+#ifndef SOAP_TYPE_cptn__destroy
+#define SOAP_TYPE_cptn__destroy (277)
+#endif
+SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_cptn__destroy(struct soap*, const struct cptn__destroy *);
+SOAP_FMAC3 void SOAP_FMAC4 soap_default_cptn__destroy(struct soap*, struct cptn__destroy *);
+SOAP_FMAC3 int SOAP_FMAC4 soap_put_cptn__destroy(struct soap*, const struct cptn__destroy *, const char*, const char*);
+SOAP_FMAC3 int SOAP_FMAC4 soap_out_cptn__destroy(struct soap*, const char*, int, const struct cptn__destroy *, const char*);
+SOAP_FMAC3 struct cptn__destroy * SOAP_FMAC4 soap_get_cptn__destroy(struct soap*, struct cptn__destroy *, const char*, const char*);
+SOAP_FMAC3 struct cptn__destroy * SOAP_FMAC4 soap_in_cptn__destroy(struct soap*, const char*, struct cptn__destroy *, const char*);
+
+#ifndef SOAP_TYPE_cptn__destroyResponse
+#define SOAP_TYPE_cptn__destroyResponse (274)
+#endif
+SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_cptn__destroyResponse(struct soap*, const struct cptn__destroyResponse *);
+SOAP_FMAC3 void SOAP_FMAC4 soap_default_cptn__destroyResponse(struct soap*, struct cptn__destroyResponse *);
+SOAP_FMAC3 int SOAP_FMAC4 soap_put_cptn__destroyResponse(struct soap*, const struct cptn__destroyResponse *, const char*, const char*);
+SOAP_FMAC3 int SOAP_FMAC4 soap_out_cptn__destroyResponse(struct soap*, const char*, int, const struct cptn__destroyResponse *, const char*);
+SOAP_FMAC3 struct cptn__destroyResponse * SOAP_FMAC4 soap_get_cptn__destroyResponse(struct soap*, struct cptn__destroyResponse *, const char*, const char*);
+SOAP_FMAC3 struct cptn__destroyResponse * SOAP_FMAC4 soap_in_cptn__destroyResponse(struct soap*, const char*, struct cptn__destroyResponse *, const char*);
+
+#ifndef SOAP_TYPE_cptn__addNodeResponse
+#define SOAP_TYPE_cptn__addNodeResponse (273)
+#endif
+SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_cptn__addNodeResponse(struct soap*, const struct cptn__addNodeResponse *);
+SOAP_FMAC3 void SOAP_FMAC4 soap_default_cptn__addNodeResponse(struct soap*, struct cptn__addNodeResponse *);
+SOAP_FMAC3 int SOAP_FMAC4 soap_put_cptn__addNodeResponse(struct soap*, const struct cptn__addNodeResponse *, const char*, const char*);
+SOAP_FMAC3 int SOAP_FMAC4 soap_out_cptn__addNodeResponse(struct soap*, const char*, int, const struct cptn__addNodeResponse *, const char*);
+SOAP_FMAC3 struct cptn__addNodeResponse * SOAP_FMAC4 soap_get_cptn__addNodeResponse(struct soap*, struct cptn__addNodeResponse *, const char*, const char*);
+SOAP_FMAC3 struct cptn__addNodeResponse * SOAP_FMAC4 soap_in_cptn__addNodeResponse(struct soap*, const char*, struct cptn__addNodeResponse *, const char*);
+
+#ifndef SOAP_TYPE_cpt__getActiveTrees
+#define SOAP_TYPE_cpt__getActiveTrees (272)
+#endif
+SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_cpt__getActiveTrees(struct soap*, const struct cpt__getActiveTrees *);
+SOAP_FMAC3 void SOAP_FMAC4 soap_default_cpt__getActiveTrees(struct soap*, struct cpt__getActiveTrees *);
+SOAP_FMAC3 int SOAP_FMAC4 soap_put_cpt__getActiveTrees(struct soap*, const struct cpt__getActiveTrees *, const char*, const char*);
+SOAP_FMAC3 int SOAP_FMAC4 soap_out_cpt__getActiveTrees(struct soap*, const char*, int, const struct cpt__getActiveTrees *, const char*);
+SOAP_FMAC3 struct cpt__getActiveTrees * SOAP_FMAC4 soap_get_cpt__getActiveTrees(struct soap*, struct cpt__getActiveTrees *, const char*, const char*);
+SOAP_FMAC3 struct cpt__getActiveTrees * SOAP_FMAC4 soap_in_cpt__getActiveTrees(struct soap*, const char*, struct cpt__getActiveTrees *, const char*);
+
+#ifndef SOAP_TYPE_cpt__destroy
+#define SOAP_TYPE_cpt__destroy (269)
+#endif
+SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_cpt__destroy(struct soap*, const struct cpt__destroy *);
+SOAP_FMAC3 void SOAP_FMAC4 soap_default_cpt__destroy(struct soap*, struct cpt__destroy *);
+SOAP_FMAC3 int SOAP_FMAC4 soap_put_cpt__destroy(struct soap*, const struct cpt__destroy *, const char*, const char*);
+SOAP_FMAC3 int SOAP_FMAC4 soap_out_cpt__destroy(struct soap*, const char*, int, const struct cpt__destroy *, const char*);
+SOAP_FMAC3 struct cpt__destroy * SOAP_FMAC4 soap_get_cpt__destroy(struct soap*, struct cpt__destroy *, const char*, const char*);
+SOAP_FMAC3 struct cpt__destroy * SOAP_FMAC4 soap_in_cpt__destroy(struct soap*, const char*, struct cpt__destroy *, const char*);
+
+#ifndef SOAP_TYPE_cpt__findByHandle
+#define SOAP_TYPE_cpt__findByHandle (266)
+#endif
+SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_cpt__findByHandle(struct soap*, const struct cpt__findByHandle *);
+SOAP_FMAC3 void SOAP_FMAC4 soap_default_cpt__findByHandle(struct soap*, struct cpt__findByHandle *);
+SOAP_FMAC3 int SOAP_FMAC4 soap_put_cpt__findByHandle(struct soap*, const struct cpt__findByHandle *, const char*, const char*);
+SOAP_FMAC3 int SOAP_FMAC4 soap_out_cpt__findByHandle(struct soap*, const char*, int, const struct cpt__findByHandle *, const char*);
+SOAP_FMAC3 struct cpt__findByHandle * SOAP_FMAC4 soap_get_cpt__findByHandle(struct soap*, struct cpt__findByHandle *, const char*, const char*);
+SOAP_FMAC3 struct cpt__findByHandle * SOAP_FMAC4 soap_in_cpt__findByHandle(struct soap*, const char*, struct cpt__findByHandle *, const char*);
+
+#ifndef SOAP_TYPE_cpt__createNewTree
+#define SOAP_TYPE_cpt__createNewTree (263)
+#endif
+SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_cpt__createNewTree(struct soap*, const struct cpt__createNewTree *);
+SOAP_FMAC3 void SOAP_FMAC4 soap_default_cpt__createNewTree(struct soap*, struct cpt__createNewTree *);
+SOAP_FMAC3 int SOAP_FMAC4 soap_put_cpt__createNewTree(struct soap*, const struct cpt__createNewTree *, const char*, const char*);
+SOAP_FMAC3 int SOAP_FMAC4 soap_out_cpt__createNewTree(struct soap*, const char*, int, const struct cpt__createNewTree *, const char*);
+SOAP_FMAC3 struct cpt__createNewTree * SOAP_FMAC4 soap_get_cpt__createNewTree(struct soap*, struct cpt__createNewTree *, const char*, const char*);
+SOAP_FMAC3 struct cpt__createNewTree * SOAP_FMAC4 soap_in_cpt__createNewTree(struct soap*, const char*, struct cpt__createNewTree *, const char*);
+
+#ifndef SOAP_TYPE_cpt__destroyResponse
+#define SOAP_TYPE_cpt__destroyResponse (260)
+#endif
+SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_cpt__destroyResponse(struct soap*, const struct cpt__destroyResponse *);
+SOAP_FMAC3 void SOAP_FMAC4 soap_default_cpt__destroyResponse(struct soap*, struct cpt__destroyResponse *);
+SOAP_FMAC3 int SOAP_FMAC4 soap_put_cpt__destroyResponse(struct soap*, const struct cpt__destroyResponse *, const char*, const char*);
+SOAP_FMAC3 int SOAP_FMAC4 soap_out_cpt__destroyResponse(struct soap*, const char*, int, const struct cpt__destroyResponse *, const char*);
+SOAP_FMAC3 struct cpt__destroyResponse * SOAP_FMAC4 soap_get_cpt__destroyResponse(struct soap*, struct cpt__destroyResponse *, const char*, const char*);
+SOAP_FMAC3 struct cpt__destroyResponse * SOAP_FMAC4 soap_in_cpt__destroyResponse(struct soap*, const char*, struct cpt__destroyResponse *, const char*);
+
+#ifndef SOAP_TYPE_cpt__createNewTreeResponse
+#define SOAP_TYPE_cpt__createNewTreeResponse (259)
+#endif
+SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_cpt__createNewTreeResponse(struct soap*, const struct cpt__createNewTreeResponse *);
+SOAP_FMAC3 void SOAP_FMAC4 soap_default_cpt__createNewTreeResponse(struct soap*, struct cpt__createNewTreeResponse *);
+SOAP_FMAC3 int SOAP_FMAC4 soap_put_cpt__createNewTreeResponse(struct soap*, const struct cpt__createNewTreeResponse *, const char*, const char*);
+SOAP_FMAC3 int SOAP_FMAC4 soap_out_cpt__createNewTreeResponse(struct soap*, const char*, int, const struct cpt__createNewTreeResponse *, const char*);
+SOAP_FMAC3 struct cpt__createNewTreeResponse * SOAP_FMAC4 soap_get_cpt__createNewTreeResponse(struct soap*, struct cpt__createNewTreeResponse *, const char*, const char*);
+SOAP_FMAC3 struct cpt__createNewTreeResponse * SOAP_FMAC4 soap_in_cpt__createNewTreeResponse(struct soap*, const char*, struct cpt__createNewTreeResponse *, const char*);
+
+#ifndef SOAP_TYPE_cpt__getActiveTreesResponse
+#define SOAP_TYPE_cpt__getActiveTreesResponse (258)
+#endif
+SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_cpt__getActiveTreesResponse(struct soap*, const struct cpt__getActiveTreesResponse *);
+SOAP_FMAC3 void SOAP_FMAC4 soap_default_cpt__getActiveTreesResponse(struct soap*, struct cpt__getActiveTreesResponse *);
+SOAP_FMAC3 int SOAP_FMAC4 soap_put_cpt__getActiveTreesResponse(struct soap*, const struct cpt__getActiveTreesResponse *, const char*, const char*);
+SOAP_FMAC3 int SOAP_FMAC4 soap_out_cpt__getActiveTreesResponse(struct soap*, const char*, int, const struct cpt__getActiveTreesResponse *, const char*);
+SOAP_FMAC3 struct cpt__getActiveTreesResponse * SOAP_FMAC4 soap_get_cpt__getActiveTreesResponse(struct soap*, struct cpt__getActiveTreesResponse *, const char*, const char*);
+SOAP_FMAC3 struct cpt__getActiveTreesResponse * SOAP_FMAC4 soap_in_cpt__getActiveTreesResponse(struct soap*, const char*, struct cpt__getActiveTreesResponse *, const char*);
+
+#ifndef SOAP_TYPE_cpt__findByHandleResponse
+#define SOAP_TYPE_cpt__findByHandleResponse (257)
+#endif
+SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_cpt__findByHandleResponse(struct soap*, const struct cpt__findByHandleResponse *);
+SOAP_FMAC3 void SOAP_FMAC4 soap_default_cpt__findByHandleResponse(struct soap*, struct cpt__findByHandleResponse *);
+SOAP_FMAC3 int SOAP_FMAC4 soap_put_cpt__findByHandleResponse(struct soap*, const struct cpt__findByHandleResponse *, const char*, const char*);
+SOAP_FMAC3 int SOAP_FMAC4 soap_out_cpt__findByHandleResponse(struct soap*, const char*, int, const struct cpt__findByHandleResponse *, const char*);
+SOAP_FMAC3 struct cpt__findByHandleResponse * SOAP_FMAC4 soap_get_cpt__findByHandleResponse(struct soap*, struct cpt__findByHandleResponse *, const char*, const char*);
+SOAP_FMAC3 struct cpt__findByHandleResponse * SOAP_FMAC4 soap_in_cpt__findByHandleResponse(struct soap*, const char*, struct cpt__findByHandleResponse *, const char*);
 
 #ifndef SOAP_TYPE_rsg__Add
 #define SOAP_TYPE_rsg__Add (256)
@@ -1400,7 +1520,7 @@ SOAP_FMAC3 struct epr * SOAP_FMAC4 soap_in_epr(struct soap*, const char*, struct
 #ifndef WITH_NOGLOBAL
 
 #ifndef SOAP_TYPE_PointerToSOAP_ENV__Reason
-#define SOAP_TYPE_PointerToSOAP_ENV__Reason (267)
+#define SOAP_TYPE_PointerToSOAP_ENV__Reason (291)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_PointerToSOAP_ENV__Reason(struct soap*, struct SOAP_ENV__Reason *const*);
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_PointerToSOAP_ENV__Reason(struct soap*, struct SOAP_ENV__Reason *const*, const char*, const char*);
@@ -1413,7 +1533,7 @@ SOAP_FMAC3 struct SOAP_ENV__Reason ** SOAP_FMAC4 soap_in_PointerToSOAP_ENV__Reas
 #ifndef WITH_NOGLOBAL
 
 #ifndef SOAP_TYPE_PointerToSOAP_ENV__Detail
-#define SOAP_TYPE_PointerToSOAP_ENV__Detail (266)
+#define SOAP_TYPE_PointerToSOAP_ENV__Detail (290)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_PointerToSOAP_ENV__Detail(struct soap*, struct SOAP_ENV__Detail *const*);
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_PointerToSOAP_ENV__Detail(struct soap*, struct SOAP_ENV__Detail *const*, const char*, const char*);
@@ -1426,7 +1546,7 @@ SOAP_FMAC3 struct SOAP_ENV__Detail ** SOAP_FMAC4 soap_in_PointerToSOAP_ENV__Deta
 #ifndef WITH_NOGLOBAL
 
 #ifndef SOAP_TYPE_PointerToSOAP_ENV__Code
-#define SOAP_TYPE_PointerToSOAP_ENV__Code (262)
+#define SOAP_TYPE_PointerToSOAP_ENV__Code (286)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_PointerToSOAP_ENV__Code(struct soap*, struct SOAP_ENV__Code *const*);
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_PointerToSOAP_ENV__Code(struct soap*, struct SOAP_ENV__Code *const*, const char*, const char*);
@@ -1435,6 +1555,60 @@ SOAP_FMAC3 struct SOAP_ENV__Code ** SOAP_FMAC4 soap_get_PointerToSOAP_ENV__Code(
 SOAP_FMAC3 struct SOAP_ENV__Code ** SOAP_FMAC4 soap_in_PointerToSOAP_ENV__Code(struct soap*, const char*, struct SOAP_ENV__Code **, const char*);
 
 #endif
+
+#ifndef SOAP_TYPE_PointerTocptn__addNodeResponse
+#define SOAP_TYPE_PointerTocptn__addNodeResponse (278)
+#endif
+SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_PointerTocptn__addNodeResponse(struct soap*, struct cptn__addNodeResponse *const*);
+SOAP_FMAC3 int SOAP_FMAC4 soap_put_PointerTocptn__addNodeResponse(struct soap*, struct cptn__addNodeResponse *const*, const char*, const char*);
+SOAP_FMAC3 int SOAP_FMAC4 soap_out_PointerTocptn__addNodeResponse(struct soap*, const char *, int, struct cptn__addNodeResponse *const*, const char *);
+SOAP_FMAC3 struct cptn__addNodeResponse ** SOAP_FMAC4 soap_get_PointerTocptn__addNodeResponse(struct soap*, struct cptn__addNodeResponse **, const char*, const char*);
+SOAP_FMAC3 struct cptn__addNodeResponse ** SOAP_FMAC4 soap_in_PointerTocptn__addNodeResponse(struct soap*, const char*, struct cptn__addNodeResponse **, const char*);
+
+#ifndef SOAP_TYPE_PointerTocptn__destroyResponse
+#define SOAP_TYPE_PointerTocptn__destroyResponse (275)
+#endif
+SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_PointerTocptn__destroyResponse(struct soap*, struct cptn__destroyResponse *const*);
+SOAP_FMAC3 int SOAP_FMAC4 soap_put_PointerTocptn__destroyResponse(struct soap*, struct cptn__destroyResponse *const*, const char*, const char*);
+SOAP_FMAC3 int SOAP_FMAC4 soap_out_PointerTocptn__destroyResponse(struct soap*, const char *, int, struct cptn__destroyResponse *const*, const char *);
+SOAP_FMAC3 struct cptn__destroyResponse ** SOAP_FMAC4 soap_get_PointerTocptn__destroyResponse(struct soap*, struct cptn__destroyResponse **, const char*, const char*);
+SOAP_FMAC3 struct cptn__destroyResponse ** SOAP_FMAC4 soap_in_PointerTocptn__destroyResponse(struct soap*, const char*, struct cptn__destroyResponse **, const char*);
+
+#ifndef SOAP_TYPE_PointerTocpt__getActiveTreesResponse
+#define SOAP_TYPE_PointerTocpt__getActiveTreesResponse (270)
+#endif
+SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_PointerTocpt__getActiveTreesResponse(struct soap*, struct cpt__getActiveTreesResponse *const*);
+SOAP_FMAC3 int SOAP_FMAC4 soap_put_PointerTocpt__getActiveTreesResponse(struct soap*, struct cpt__getActiveTreesResponse *const*, const char*, const char*);
+SOAP_FMAC3 int SOAP_FMAC4 soap_out_PointerTocpt__getActiveTreesResponse(struct soap*, const char *, int, struct cpt__getActiveTreesResponse *const*, const char *);
+SOAP_FMAC3 struct cpt__getActiveTreesResponse ** SOAP_FMAC4 soap_get_PointerTocpt__getActiveTreesResponse(struct soap*, struct cpt__getActiveTreesResponse **, const char*, const char*);
+SOAP_FMAC3 struct cpt__getActiveTreesResponse ** SOAP_FMAC4 soap_in_PointerTocpt__getActiveTreesResponse(struct soap*, const char*, struct cpt__getActiveTreesResponse **, const char*);
+
+#ifndef SOAP_TYPE_PointerTocpt__destroyResponse
+#define SOAP_TYPE_PointerTocpt__destroyResponse (267)
+#endif
+SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_PointerTocpt__destroyResponse(struct soap*, struct cpt__destroyResponse *const*);
+SOAP_FMAC3 int SOAP_FMAC4 soap_put_PointerTocpt__destroyResponse(struct soap*, struct cpt__destroyResponse *const*, const char*, const char*);
+SOAP_FMAC3 int SOAP_FMAC4 soap_out_PointerTocpt__destroyResponse(struct soap*, const char *, int, struct cpt__destroyResponse *const*, const char *);
+SOAP_FMAC3 struct cpt__destroyResponse ** SOAP_FMAC4 soap_get_PointerTocpt__destroyResponse(struct soap*, struct cpt__destroyResponse **, const char*, const char*);
+SOAP_FMAC3 struct cpt__destroyResponse ** SOAP_FMAC4 soap_in_PointerTocpt__destroyResponse(struct soap*, const char*, struct cpt__destroyResponse **, const char*);
+
+#ifndef SOAP_TYPE_PointerTocpt__findByHandleResponse
+#define SOAP_TYPE_PointerTocpt__findByHandleResponse (264)
+#endif
+SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_PointerTocpt__findByHandleResponse(struct soap*, struct cpt__findByHandleResponse *const*);
+SOAP_FMAC3 int SOAP_FMAC4 soap_put_PointerTocpt__findByHandleResponse(struct soap*, struct cpt__findByHandleResponse *const*, const char*, const char*);
+SOAP_FMAC3 int SOAP_FMAC4 soap_out_PointerTocpt__findByHandleResponse(struct soap*, const char *, int, struct cpt__findByHandleResponse *const*, const char *);
+SOAP_FMAC3 struct cpt__findByHandleResponse ** SOAP_FMAC4 soap_get_PointerTocpt__findByHandleResponse(struct soap*, struct cpt__findByHandleResponse **, const char*, const char*);
+SOAP_FMAC3 struct cpt__findByHandleResponse ** SOAP_FMAC4 soap_in_PointerTocpt__findByHandleResponse(struct soap*, const char*, struct cpt__findByHandleResponse **, const char*);
+
+#ifndef SOAP_TYPE_PointerTocpt__createNewTreeResponse
+#define SOAP_TYPE_PointerTocpt__createNewTreeResponse (261)
+#endif
+SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_PointerTocpt__createNewTreeResponse(struct soap*, struct cpt__createNewTreeResponse *const*);
+SOAP_FMAC3 int SOAP_FMAC4 soap_put_PointerTocpt__createNewTreeResponse(struct soap*, struct cpt__createNewTreeResponse *const*, const char*, const char*);
+SOAP_FMAC3 int SOAP_FMAC4 soap_out_PointerTocpt__createNewTreeResponse(struct soap*, const char *, int, struct cpt__createNewTreeResponse *const*, const char *);
+SOAP_FMAC3 struct cpt__createNewTreeResponse ** SOAP_FMAC4 soap_get_PointerTocpt__createNewTreeResponse(struct soap*, struct cpt__createNewTreeResponse **, const char*, const char*);
+SOAP_FMAC3 struct cpt__createNewTreeResponse ** SOAP_FMAC4 soap_in_PointerTocpt__createNewTreeResponse(struct soap*, const char*, struct cpt__createNewTreeResponse **, const char*);
 
 #ifndef SOAP_TYPE_PointerTorsg__AddResponse
 #define SOAP_TYPE_PointerTorsg__AddResponse (254)
