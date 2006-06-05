@@ -14,7 +14,7 @@ struct cptn__destroyResponse {
 };
 
 //gsoap rgt service method-action: destroy ""
-cptn__destroy( void *_, 
+cptn__Destroy( void *_, 
 	       struct cptn__destroyResponse * out );
 
 //gsoap rgt service method-action: addNode ""

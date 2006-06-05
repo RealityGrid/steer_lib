@@ -30,7 +30,7 @@
 #
 #------------------------------------------------------------------------
 
-SOAP_CPP2 = ${HOME}/projects/gsoap-2.7/soapcpp2/src/soapcpp2
+SOAP_CPP2 = /usr/local/bin/soapcpp2
 include ../../Makefile.include
 include ../../make/Makefile.${ARCH}
 

@@ -30,7 +30,7 @@ cpt__createNewTree( xsd__string  in0,
 cpt__findByHandle( xsd__string  in0, xsd__string  in1, 
 		   struct cpt__findByHandleResponse * out );
 //gsoap cpt service method-action: destroy ""
-cpt__destroy( void *_, 
+cpt__Destroy( void *_, 
 	      struct cpt__destroyResponse * out );
 //gsoap cpt service method-action: getActiveTrees ""
 cpt__getActiveTrees( void *_, 
