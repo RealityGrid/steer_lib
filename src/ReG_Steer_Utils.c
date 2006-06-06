@@ -123,7 +123,7 @@ char *Create_checkpoint_tree(const char *factory,
 
 /*----------------------------------------------------------------*/
 
-int Destroy_steering_service(char                           *address,
+int Destroy_steering_service(const char                     *address,
                              const struct reg_security_info *sec){
 #ifdef REG_WSRF
   return Destroy_WSRP(address, sec);

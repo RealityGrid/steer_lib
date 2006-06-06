@@ -107,7 +107,7 @@ extern PREFIX char* Create_steering_service(const struct reg_job_details *job,
     @param address The address of the service to destroy 
     @param sec Pointer to struct holding details for 
     authentication to the service (using SSL or WSSE) */
-extern PREFIX int Destroy_steering_service(char *address,
+extern PREFIX int Destroy_steering_service(const char                     *address,
 					   const struct reg_security_info *sec);
 
 /** 
