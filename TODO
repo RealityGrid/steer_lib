@@ -17,3 +17,8 @@ Is LD_FLAGS actually used anywhere?
 
 Continue work on wrapping proxy IO - ACKS with a proxy??
 
+Investigate use of gSoap to generate XML parsing code
+
+Investigate libxml's configure scripts to see if can implement for
+the steering lib.
+
