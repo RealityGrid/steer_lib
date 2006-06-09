@@ -218,7 +218,9 @@ int Get_security_config(const char               *configFile,
         len = xmlStrlen(attrValue);
         strncpy(sec->caCertsPath, (char *)attrValue, len);
         sec->caCertsPath[len] = '\0';
-        printf("caCertsPath >>%s<<\n", sec->caCertsPath);
+#if REG_DEBUG
+        printf("Get_security_config: caCertsPath >>%s<<\n", sec->caCertsPath);
+#endif
         xmlFree(attrValue);
       }
     }
@@ -228,7 +230,10 @@ int Get_security_config(const char               *configFile,
         len = xmlStrlen(attrValue);
         strncpy(sec->myKeyCertFile, (char *)attrValue, len);
         sec->myKeyCertFile[len] = '\0';
-        printf("myKeyCertFile >>%s<<\n", sec->myKeyCertFile);
+#if REG_DEBUG
+        printf("Get_security_config: myKeyCertFile >>%s<<\n", 
+	       sec->myKeyCertFile);
+#endif
         xmlFree(attrValue);
       }
     }
@@ -264,7 +269,9 @@ int Get_security_config(const char               *configFile,
     }
   }
   fclose(fp);
-  /*printf("ARPDBG User's DN >>%s<<\n\n", sec->userDN);*/
+#if REG_DEBUG
+  printf("Get_security_config: User's DN >>%s<<\n\n", sec->userDN);
+#endif
 
   xmlFreeDoc(doc);
   xmlCleanupParser();
