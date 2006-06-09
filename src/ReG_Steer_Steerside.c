@@ -2646,14 +2646,16 @@ int Get_iotypes(int    sim_handle,
 			   "%d", &(io_freqs[count]) );
 	  if(nitem != 1){
 
-	    fprintf(stderr, "Get_iotypes: failed to retrieve freq value\n");
+	    fprintf(stderr, "STEER: Get_iotypes: failed to retrieve "
+		    "freq value\n");
 	    io_freqs[count] = 0;
 	    return_status = REG_FAILURE;
 	  }
 	}
 	else{
 
-	  fprintf(stderr, "Get_iotypes: failed to match param handle\n");
+	  fprintf(stderr, "STEER: Get_iotypes: failed to match param "
+		  "handle\n");
 	  io_freqs[count] = 0;
 	  return_status = REG_FAILURE;
 	}
@@ -2666,7 +2668,8 @@ int Get_iotypes(int    sim_handle,
   }
   else{
 
-    fprintf(stderr, "Get_iotypes: unknown sim handle: %d\n", sim_handle);
+    fprintf(stderr, "STEER: Get_iotypes: unknown sim handle: %d\n", 
+	    sim_handle);
     return_status = REG_FAILURE;
   }
 
