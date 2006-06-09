@@ -60,13 +60,7 @@ int soapMismatchHandler(struct soap *soap,
 int Sim_attach_wsrf (Sim_entry_type *sim, char *SimID){
 
   struct sws__AttachResponse response;
-  /*
-  struct msg_struct *msg;
-  struct cmd_struct *cmd;
-  int                return_status;
-  int                len;
-  */
-  int                i;
+  int i;
 
   /* malloc memory for soap struct for this connection and then
      initialise it */
@@ -105,7 +99,6 @@ int Sim_attach_wsrf (Sim_entry_type *sim, char *SimID){
 		     sim->SGS_info.username, 
 		     sim->SGS_info.passwd);
 
-  fprintf(stderr, "STEER: Calling Attach...\n");
   if(soap_call_sws__Attach(sim->SGS_info.soap, SimID, "", NULL, 
 			   &response) != SOAP_OK){
     soap_print_fault((sim->SGS_info.soap), stderr);
@@ -117,9 +110,6 @@ int Sim_attach_wsrf (Sim_entry_type *sim, char *SimID){
   sprintf(sim->SGS_info.address, SimID);
 
   for(i=0; i<response.ReG_USCOREsteer_USCOREmessage.Supported_USCOREcommands.__size; i++){
-    fprintf(stderr, "STEER: Sim_attach_wsrf, cmd %d = %d\n", i, 
-	   response.ReG_USCOREsteer_USCOREmessage.Supported_USCOREcommands.__ptr[i].Cmd_USCOREid);
-
     sim->Cmds_table.cmd[sim->Cmds_table.num_registered].cmd_id = 
       response.ReG_USCOREsteer_USCOREmessage.Supported_USCOREcommands.__ptr[i].Cmd_USCOREid;
 
