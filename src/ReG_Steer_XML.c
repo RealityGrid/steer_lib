@@ -316,10 +316,12 @@ int parseResourceProperties(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 	curMsg = curMsg->next;
       }
     }
+#if REG_DEBUG_FULL
     else{
       fprintf(stderr, "STEER: parseResourceProperties: ignoring node: %s\n", 
 	      (char *)(cur->name));
     }
+#endif
 
     cur = cur -> next;
   }
