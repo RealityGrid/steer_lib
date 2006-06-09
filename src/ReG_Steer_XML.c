@@ -81,7 +81,13 @@ int Parse_xml_buf(char* buf, int size, struct msg_struct *msg,
     return REG_FAILURE;
   }
 
+#if REG_DEBUG_FULL
   doc = xmlParseMemory(buf, size);
+#else
+  /* Use alternate call so can turn off error messages from parser */
+  doc = xmlReadMemory(buf, size, "http://www.realitygrid.org", NULL,
+		      XML_PARSE_NOWARNING | XML_PARSE_NOERROR );
+#endif
 
   if (doc == NULL){
     fprintf(stderr, "Parse_xml_buf: Hit error parsing buffer\n");
@@ -104,7 +110,7 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg,
 
   cur = xmlDocGetRootElement(doc);
   if (cur == NULL) {
-      fprintf(stderr,"Parse_xml: empty document\n");
+      fprintf(stderr,"STEER: Parse_xml: empty document\n");
       xmlFreeDoc(doc);
       xmlCleanupParser();
       return REG_FAILURE;
@@ -123,7 +129,7 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg,
 
   if (!xmlStrcmp(cur->name, (const xmlChar *) "ReG_steer_message")) {
 #if REG_DEBUG_FULL
-    fprintf(stderr,"Parse_xml: Have ReG_steer_message doc\n");
+    fprintf(stderr,"STEER: Parse_xml: Have ReG_steer_message doc\n");
 #endif
 
     if(parseSteerMessage(doc, ns, cur, msg, sim) != REG_SUCCESS){
@@ -135,7 +141,7 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg,
     /* Print out what we've got */
 #if REG_DEBUG_FULL
     if(msg && msg->msg_type != MSG_NOTSET){
-      fprintf(stderr, "Parse_xml: Calling Print_msg...\n");
+      fprintf(stderr, "STEER: Parse_xml: Calling Print_msg...\n");
       Print_msg(msg);
     }
 #endif
@@ -143,8 +149,8 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg,
   else if (!xmlStrcmp(cur->name, (const xmlChar *) "ResourceProperties") ||
 	   !xmlStrcmp(cur->name, (const xmlChar *) "controlMsg")) {
 #if REG_DEBUG_FULL
-    fprintf(stderr,"Parse_xml: passing %s to parseResourceProperties...\n",
-	    (char *)(cur->name));
+    fprintf(stderr,"STEER: Parse_xml: passing %s to "
+	    "parseResourceProperties...\n", (char *)(cur->name));
 #endif
     parseResourceProperties(doc, ns, cur, sim);
 
@@ -153,7 +159,7 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg,
     if(sim){
       cur_msg = &(sim->Msg_store);
       while(cur_msg){
-	fprintf(stderr, "Parse_xml: Calling Print_msg...\n");
+	fprintf(stderr, "STEER: Parse_xml: Calling Print_msg...\n");
 	if(cur_msg->msg)Print_msg(cur_msg->msg);
 	cur_msg = cur_msg->next;
       }
@@ -161,7 +167,7 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg,
 #endif
   }
   else{
-    fprintf(stderr,"Parse_xml: document of the wrong type, root node "
+    fprintf(stderr,"STEER: Parse_xml: document of the wrong type, root node "
 	    "= >%s< != ReG_steer_message or ResourceProperties or "
 	    "controlMsg\n", (char *)(cur->name));
     xmlFreeDoc(doc);
@@ -189,15 +195,18 @@ int Extract_resource_property(char *pRPDoc,
   int   len;
 
   if(!pRPDoc){
-
+#if REG_DEBUG
     fprintf(stderr, "STEER: Extract_resource_property: ptr to RP "
 	    "document is NULL\n");
+#endif
     return REG_FAILURE;
   }
 
   if( !(pStart = strstr(pRPDoc, name)) ){
+#if REG_DEBUG
     fprintf(stderr, "STEER: Extract_resource_property: RP %s not found\n",
 	    name);
+#endif
     return REG_FAILURE;
   }
   /* Move ptr forwards to point to beginning of content - allow for closing
@@ -206,8 +215,10 @@ int Extract_resource_property(char *pRPDoc,
   pStart++;
 
   if(!(pStop = strstr(pStart, name))){
-    fprintf(stderr, "STEER: Extract_resource_property: closing tag for "
+ #if REG_DEBUG
+   fprintf(stderr, "STEER: Extract_resource_property: closing tag for "
 	    "RP %s not found\n", name);
+#endif
     return REG_FAILURE;
   }
 
@@ -217,12 +228,12 @@ int Extract_resource_property(char *pRPDoc,
   strncpy(resultBuf, pStart, len);
   resultBuf[len] = '\0';
 
-#if REG_DEBUG_FULL
   /*
+#if REG_DEBUG_FULL
   fprintf(stderr, "STEER: Extract_resource_property: Value of RP "
 	  "%s = >>%s<<\n", name, resultBuf);
-  */
 #endif
+  */
   return REG_SUCCESS;
 }
 
@@ -358,7 +369,7 @@ int parseSteerMessage(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
   /* Get the msg UID if present */
   if( (msg->msg_uid = xmlGetProp(cur, "Msg_UID")) ){
 #if REG_DEBUG_FULL
-    fprintf(stderr, "parseSteerMessage: msg UID = %s\n",
+    fprintf(stderr, "STEER: INFO: parseSteerMessage: msg UID = %s\n",
 	    (char*)(msg->msg_uid));
 #endif /* REG_DEBUG_FULL */
     /* Check that we haven't already seen this message 
@@ -401,7 +412,8 @@ int parseSteerMessage(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 
   case STATUS:
 #if REG_DEBUG_FULL
-    fprintf(stderr, "parseSteerMessage: Calling parseStatus...\n");
+    fprintf(stderr, "STEER: INFO: parseSteerMessage: Calling "
+	    "parseStatus...\n");
 #endif
     msg->status = New_status_struct();
     parseStatus(doc, ns, cur, msg->status);
@@ -409,7 +421,8 @@ int parseSteerMessage(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 
   case CONTROL:
 #if REG_DEBUG_FULL
-    fprintf(stderr, "parseSteerMessage: Calling parseControl...\n");
+    fprintf(stderr, "STEER: INFO: parseSteerMessage: Calling "
+	    "parseControl...\n");
 #endif
     msg->control = New_control_struct();
     parseControl(doc, ns, cur, msg->control);
@@ -417,7 +430,8 @@ int parseSteerMessage(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 
   case SUPP_CMDS:
 #if REG_DEBUG_FULL
-    fprintf(stderr, "parseSteerMessage: Calling parseSuppCmd...\n");
+    fprintf(stderr, "STEER: INFO: parseSteerMessage: Calling "
+	    "parseSuppCmd...\n");
 #endif
     msg->supp_cmd = New_supp_cmd_struct();
     parseSuppCmd(doc, ns, cur, msg->supp_cmd);
@@ -425,7 +439,8 @@ int parseSteerMessage(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 
   case PARAM_DEFS:
 #if REG_DEBUG_FULL
-    fprintf(stderr, "parseSteerMessage: Calling parseStatus...\n");
+    fprintf(stderr, "STEER: INFO: parseSteerMessage: Calling "
+	    "parseStatus...\n");
 #endif
     /* Use code for 'status' messages because one 
        encapsulates the other */
@@ -435,7 +450,8 @@ int parseSteerMessage(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 
   case IO_DEFS:
 #if REG_DEBUG_FULL
-    fprintf(stderr, "parseSteerMessage: Calling parseIOTypeDef...\n");
+    fprintf(stderr, "STEER: INFO: parseSteerMessage: Calling "
+	    "parseIOTypeDef...\n");
 #endif
     msg->io_def = New_io_def_struct();
     parseIOTypeDef(doc, ns, cur, msg->io_def);
@@ -443,7 +459,8 @@ int parseSteerMessage(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 
   case CHK_DEFS:
 #if REG_DEBUG_FULL
-    fprintf(stderr, "Parse_xml: Calling parseChkTypeDef...\n");
+    fprintf(stderr, "STEER: INFO: parseSteerMessage: Calling "
+	    "parseChkTypeDef...\n");
 #endif
     msg->chk_def = New_io_def_struct();
     parseChkTypeDef(doc, ns, cur, msg->chk_def);
@@ -451,15 +468,15 @@ int parseSteerMessage(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 
   case STEER_LOG:
 #if REG_DEBUG_FULL
-    fprintf(stderr, "Parse_xml: Calling parseLog...\n");
+    fprintf(stderr, "STEER: INFO: parseSteerMessage: Calling parseLog...\n");
 #endif
     msg->log = New_log_struct();
     parseLog(doc, ns, cur, msg->log);
     break;
 
   default:
-    fprintf(stderr, "Parse_xml: Unrecognised message type %d for "
-	    "message name >>%s<<\n",
+    fprintf(stderr, "STEER: INFO: parseSteerMessage: Unrecognised message"
+	    " type %d for message name >>%s<<\n",
 	    msg->msg_type, (const char *)(cur->name));
     break;
   }
