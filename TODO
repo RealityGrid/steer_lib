@@ -22,3 +22,4 @@ Investigate use of gSoap to generate XML parsing code
 Investigate libxml's configure scripts to see if can implement for
 the steering lib.
 
+Add calc's container to registry list
