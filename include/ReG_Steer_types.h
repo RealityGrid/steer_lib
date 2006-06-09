@@ -222,6 +222,11 @@
     instead */
 #define REG_WSRF
 
+/** Comment out the below if yours is an old version of libxml2 that
+    doesn't have XML_PARSE_NOERROR defined (to go with the xmlReadMemory
+    in Parse_xml) */
+#define REG_HAVE_XMLREADMEMORY
+
 /** Whether or not to use timing routines - these are not very portable
 #define USE_REG_TIMING */
 

@@ -81,7 +81,7 @@ int Parse_xml_buf(char* buf, int size, struct msg_struct *msg,
     return REG_FAILURE;
   }
 
-#if REG_DEBUG_FULL
+#if REG_DEBUG_FULL || !defined(REG_HAVE_XMLREADMEMORY)
   doc = xmlParseMemory(buf, size);
 #else
   /* Use alternate call so can turn off error messages from parser */
