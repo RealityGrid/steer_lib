@@ -816,7 +816,8 @@ int Enable_IOType_sockets(int index) {
   else if(IOTypes_table.io_def[index].direction == REG_IO_IN) {
     if (create_connector(index) != REG_SUCCESS) {
 #if REG_DEBUG
-      fprintf(stderr, "Enable_IOType_sockets: failed to register connector for IOType\n");
+      fprintf(stderr, "Enable_IOType_sockets: failed to register "
+	      "connector for IOType\n");
 #endif
       return REG_FAILURE;
     }
@@ -828,7 +829,8 @@ int Enable_IOType_sockets(int index) {
 /*---------------------------------------------------*/
 
 int Get_communication_status_sockets(const int index) {
-  if(IOTypes_table.io_def[index].socket_info.comms_status != REG_COMMS_STATUS_CONNECTED)
+  if(IOTypes_table.io_def[index].socket_info.comms_status != 
+     REG_COMMS_STATUS_CONNECTED)
     return REG_FAILURE;
   
   return REG_SUCCESS;
@@ -836,27 +838,126 @@ int Get_communication_status_sockets(const int index) {
 
 /*---------------------------------------------------*/
 
-int Write_sockets(const int index, const int size, void* buffer) {
+int Emit_data_non_blocking_sockets(const int index, const int size, 
+				   void* buffer) {
 
+  struct timeval timeout;
+  int connector = IOTypes_table.io_def[index].socket_info.connector_handle;
+  fd_set sock;
+
+  timeout.tv_sec  = 0;
+  timeout.tv_usec = 0;
+
+  FD_ZERO(&sock);
+  FD_SET(connector, &sock);
+
+  if(select(connector + 1, NULL, &sock, NULL, &timeout) == -1) {
+    perror("select");
+    return REG_FAILURE;
+  }
+
+  /* are we free to write? */
+  if(FD_ISSET(connector, &sock)) {
+    return Emit_data_sockets(index, size, buffer);
+  }
+
+  return REG_FAILURE;
+}
+
+/*---------------------------------------------------*/
+
+int Emit_header_sockets(const int index) {
+
+  char buffer[REG_PACKET_SIZE];
+  int status;
+
+  /* check if socket connection has been made */
+  if(IOTypes_table.io_def[index].socket_info.comms_status != 
+     REG_COMMS_STATUS_CONNECTED) {
+    attempt_listener_connect(index);
+  }
+
+  /* now are we connected? */
+  if(IOTypes_table.io_def[index].socket_info.comms_status == 
+     REG_COMMS_STATUS_CONNECTED) {
+#if REG_DEBUG
+    fprintf(stderr, "Emit_header_sockets: socket status is connected, index = %d\n", index );
+#endif
+
+    /* send header */
+    sprintf(buffer, REG_PACKET_FORMAT, REG_DATA_HEADER);
+    buffer[REG_PACKET_SIZE - 1] = '\0';
+#if REG_DEBUG
+    fprintf(stderr, "Emit_header_sockets: Sending >>%s<<\n", buffer);
+#endif
+    status = Emit_data_non_blocking_sockets(index, REG_PACKET_SIZE, 
+					    (void*) buffer);
+
+    if(status == REG_SUCCESS) {
+#if REG_DEBUG
+      fprintf(stderr, "Emit_header_sockets: Sent %d bytes\n", REG_PACKET_SIZE);
+#endif
+      return REG_SUCCESS;
+    }
+    else if(status == REG_FAILURE) {
+#if REG_DEBUG
+      fprintf(stderr, "Emit_header_sockets: Write_sockets failed - "
+	      "immediate retry connect\n");
+#endif
+      retry_accept_connect(index);
+
+      if(IOTypes_table.io_def[index].socket_info.comms_status == 
+	 REG_COMMS_STATUS_CONNECTED) {
+#if REG_DEBUG
+	fprintf(stderr, "Emit_header_sockets: Sending >>%s<<\n", buffer);
+#endif    
+	if(Emit_data_sockets(index, REG_PACKET_SIZE, 
+			     (void*) buffer) == REG_SUCCESS) {
+	  return REG_SUCCESS;
+	}
+      }
+    }
+#if REG_DEBUG
+    else{
+      fprintf(stderr, "Emit_header_sockets: attempt to write to "
+	      "socket timed out\n");
+    }
+#endif
+  }
+#if REG_DEBUG
+  else {
+    fprintf(stderr, "Emit_header_sockets: socket not connected, "
+	    "index = %d\n", index );
+  }
+#endif
+
+  return REG_FAILURE;
+}
+/*---------------------------------------------------*/
+
+int Emit_data_sockets(const int    index, 
+		      const size_t num_bytes_to_send, 
+		      void*        pData)
+{
   int bytes_left;
   int result;
   char* pchar;
   int connector = IOTypes_table.io_def[index].socket_info.connector_handle;
 
-  if(size < 0) {
-    fprintf(stderr, "Write_sockets: requested to write < 0 bytes!\n");
+  if(num_bytes_to_send < 0) {
+    fprintf(stderr, "Emit_data_sockets: requested to write < 0 bytes!\n");
     return REG_FAILURE;
   }
-  else if(size == 0) {
-    fprintf(stderr, "Write_sockets: asked to send 0 bytes!\n");
+  else if(num_bytes_to_send == 0) {
+    fprintf(stderr, "Emit_data_sockets: asked to send 0 bytes!\n");
     return REG_SUCCESS;
   }
 
-  bytes_left = size;
-  pchar = (char*) buffer;
+  bytes_left = num_bytes_to_send;
+  pchar = (char*) pData;
 
 #if REG_DEBUG
-  fprintf(stderr, "Write_sockets: writing...\n");
+  fprintf(stderr, "Emit_data_sockets: writing...\n");
 #endif
   while(bytes_left > 0) {
 #ifndef __linux
@@ -876,110 +977,9 @@ int Write_sockets(const int index, const int size, void* buffer) {
 
   if(bytes_left > 0) {
 #if REG_DEBUG
-    fprintf(stderr, "Write_sockets: timed-out trying to write data\n");
+    fprintf(stderr, "Emit_data_sockets: timed-out trying to write data\n");
 #endif
     return REG_TIMED_OUT;
-  }
-
-  return REG_SUCCESS;
-}
-
-/*---------------------------------------------------*/
-
-int Write_non_blocking_sockets(const int index, const int size, void* buffer) {
-
-  struct timeval timeout;
-  int connector = IOTypes_table.io_def[index].socket_info.connector_handle;
-  fd_set sock;
-
-  timeout.tv_sec  = 0;
-  timeout.tv_usec = 0;
-
-  FD_ZERO(&sock);
-  FD_SET(connector, &sock);
-
-  if(select(connector + 1, NULL, &sock, NULL, &timeout) == -1) {
-    perror("select");
-    return REG_FAILURE;
-  }
-
-  /* are we free to write? */
-  if(FD_ISSET(connector, &sock)) {
-    return Write_sockets(index, size, buffer);
-  }
-
-  return REG_FAILURE;
-}
-
-/*---------------------------------------------------*/
-
-int Emit_header_sockets(const int index) {
-
-  char buffer[REG_PACKET_SIZE];
-  int status;
-
-  /* check if socket connection has been made */
-  if(IOTypes_table.io_def[index].socket_info.comms_status != REG_COMMS_STATUS_CONNECTED) {
-    attempt_listener_connect(index);
-  }
-
-  /* now are we connected? */
-  if(IOTypes_table.io_def[index].socket_info.comms_status == REG_COMMS_STATUS_CONNECTED) {
-#if REG_DEBUG
-    fprintf(stderr, "Emit_header_sockets: socket status is connected, index = %d\n", index );
-#endif
-
-    /* send header */
-    sprintf(buffer, REG_PACKET_FORMAT, REG_DATA_HEADER);
-    buffer[REG_PACKET_SIZE - 1] = '\0';
-#if REG_DEBUG
-    fprintf(stderr, "Emit_header_sockets: Sending >>%s<<\n", buffer);
-#endif
-    status = Write_non_blocking_sockets(index, REG_PACKET_SIZE, (void*) buffer);
-
-    if(status == REG_SUCCESS) {
-#if REG_DEBUG
-      fprintf(stderr, "Emit_header_sockets: Sent %d bytes\n", REG_PACKET_SIZE);
-#endif
-      return REG_SUCCESS;
-    }
-    else if(status == REG_FAILURE) {
-#if REG_DEBUG
-      fprintf(stderr, "Emit_header_sockets: Write_sockets failed - immediate retry connect\n");
-#endif
-      retry_accept_connect(index);
-
-      if(IOTypes_table.io_def[index].socket_info.comms_status == REG_COMMS_STATUS_CONNECTED) {
-#if REG_DEBUG
-	fprintf(stderr, "Emit_header_sockets: Sending >>%s<<\n", buffer);
-#endif    
-	if(Write_sockets(index, REG_PACKET_SIZE, (void*) buffer) == REG_SUCCESS) {
-	  return REG_SUCCESS;
-	}
-      }
-    }
-#if REG_DEBUG
-    else{
-      fprintf(stderr, "Emit_header_sockets: attempt to write to socket timed out\n");
-    }
-#endif
-  }
-#if REG_DEBUG
-  else {
-    fprintf(stderr, "Emit_header_sockets: socket not connected, index = %d\n", index );
-  }
-#endif
-
-  return REG_FAILURE;
-}
-/*---------------------------------------------------*/
-
-int Emit_data_sockets(const int index, 
-		      const size_t num_bytes_to_send, 
-		      void* pData) {
-  if(Write_sockets(index, num_bytes_to_send, (void*) pData) != REG_SUCCESS) {
-    fprintf(stderr, "Emit_data_sockets: error in send\n");
-    return REG_FAILURE;
   }
 
 #if REG_DEBUG
@@ -1417,7 +1417,7 @@ int Emit_ack_sockets(int index){
 
   /* Send a 16-byte acknowledgement message */
   char *ack_msg = "<ACK/>          ";
-  return Write_sockets(index, strlen(ack_msg), (void*)ack_msg);
+  return Emit_data_sockets(index, strlen(ack_msg), (void*)ack_msg);
 }
 
 /*---------------------------------------------------*/

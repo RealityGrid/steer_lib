@@ -126,21 +126,13 @@ int Disable_IOType_sockets(const int index);
     Queries the status of the connection of an IOType */
 int Get_communication_status_sockets(const int index);
 
-/** @internal 
-    @param index Index of IOType to write data to
-    @param size No. of bytes to write
-    @param buffer Pointer to buffer containing data to write
-
-    Writes the specified no. of bytes to the socket for the 
-    IOType with the supplied index.*/
-int Write_sockets(const int index, const int size, void* buffer);
-
 /** @internal
     A non-blocking version of Write_sockets().
     Uses a select call to check the status of the socket 
-    before attempting to write to it.
-    @see Write_sockets() */
-int Write_non_blocking_sockets(const int index, const int size, void* buffer);
+    before attempting to write to it. 
+    @see Emit_data_sockets() */
+int Emit_data_non_blocking_sockets(const int index, const int size, 
+				   void* buffer);
 
 /** @internal
     @param index Index of IOType to write header to
@@ -153,8 +145,7 @@ int Emit_header_sockets(const int index);
     @param index Index of IOType to use to send data
     @param num_bytes_to_send No. of bytes of data to send
     @param pData Pointer to buffer containing data to send
-
-    Wraps Write_sockets.  Is required?? */
+*/
 int Emit_data_sockets(const int index, const size_t num_bytes_to_send, 
 		      void* pData);
 
