@@ -213,9 +213,9 @@ struct msg_struct{
     Structure for storing multiple steering messages generated
     by parsing @e e.g. a ResourceProperties document */
 struct msg_store_struct {
-  /** Pointer to details of a single message */
+  /** @internal Pointer to details of a single message */
   struct msg_struct *msg;
-  /** Pointer to next entry in message store list (if any) */
+  /** @internal Pointer to next entry in message store list (if any) */
   struct msg_store_struct *next;
 };
 
