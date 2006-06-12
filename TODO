@@ -10,11 +10,6 @@ Doxygen for reg_steer_tools?
 
 update launcher manual?
 
-Are Write_sockets and Emit_data_sockets essentially the same?
-Ditto for Write_proxy and Emit_data_proxy...
-
-Is LD_FLAGS actually used anywhere?
-
 Continue work on wrapping proxy IO - ACKS with a proxy??
 
 Investigate use of gSoap to generate XML parsing code
@@ -22,4 +17,4 @@ Investigate use of gSoap to generate XML parsing code
 Investigate libxml's configure scripts to see if can implement for
 the steering lib.
 
-Add calc's container to registry list
+flickering legend in history plots

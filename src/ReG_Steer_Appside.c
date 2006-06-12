@@ -5486,7 +5486,7 @@ int Emit_iotype_msg_header(int IOTypeIndex,
   return Emit_data_sockets(IOTypeIndex, (int) (pchar-buffer), 
 			   (void*) buffer);
 #elif REG_PROXY_SAMPLES
-  return Write_proxy(IOTypeIndex, (int) (pchar-buffer), (void*) buffer);
+  return Emit_data_proxy(IOTypeIndex, (int) (pchar-buffer), (void*) buffer);
 
 #else
 

@@ -94,20 +94,16 @@ int Disable_IOType_proxy(const int index);
 int Get_communication_status_proxy(const int index);
 
 /** @internal
-    Writes the specified no. of bytes to the socket for the 
-    IOType with the supplied index.*/
-int Write_proxy(const int index, const int size, void* buffer);
-
-/** @internal
     @param index Index of IOType to write to
     @param size No. of bytes to write
     @param buffer Pointer to buffer containing data to write
 
-    A non-blocking version of Write_proxy().
+    A non-blocking version of Emit_data_proxy().
     Uses a select call to check the status of the socket 
     before attempting to write to it.
-    @see Write_proxy() */
-int Write_non_blocking_proxy(const int index, const int size, void* buffer);
+    @see Emit_data_proxy() */
+int Emit_data_non_blocking_proxy(const int index, const int size, 
+				 void* buffer);
 
 /** @internal
     @param index Index of IOType to write to
@@ -117,7 +113,8 @@ int Write_non_blocking_proxy(const int index, const int size, void* buffer);
 int Emit_header_proxy(const int index);
 
 /** @internal
-    Wraps Write_proxy().  Is required?? */
+    Writes the specified no. of bytes to the socket for the 
+    IOType with the supplied index.*/
 int Emit_data_proxy(const int index, const size_t num_bytes_to_send, 
 		    void* pData);
 
