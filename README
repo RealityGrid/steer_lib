@@ -97,8 +97,7 @@ steering.  (Uses file-based steering if not.)
 
 Choose whether or not you want the library to supply debugging output.
 
-Type 'make' in the current directory...bear in mind that the makefiles etc.
-are not currently platform independent and may require tweaking.
+Type 'make' in the current directory...
 
 Type 'make install' to install the example binaries in the directory
 specified in Makefile.include.
@@ -128,17 +127,22 @@ includes a step-by-step guide to getting started with the examples.
 
 The docs directory contains information on the environment variables
 used by the steering library (docs/Environment_variables.txt) and its
-dependencies on other software (docs/Dependencies.txt).  In addition,
-there is an MS Word document describing the steering API
-(docs/ReG_steering_api.doc).  The majority of the library code has 
-been annotated with comments for use with doxygen.  If you have 
-doxygen installed on your system then run:
+dependencies on other software (docs/Dependencies.txt).  The 
+library code has been annotated with comments for use with
+doxygen.  The resulting html documentation is available at
+http://kato.mvc.mcc.ac.uk/reg_steer_lib/docs/html/index.html
+
+You can generate this locally if you have doxygen and the graphviz 
+package installed on your system:
          cd <blah>/reg_steer_lib
-         doxygen docs/Doxyfile 
+         make doc
 This will produce both html and latex documentation in the docs
 directory.  Point a web browser at
 <blah>/reg_steer_lib/docs/html/index.html to see the html
-documentation.
+documentation.  To make up the latex-based documentation:
+         cd <blah>/reg_steer_lib/docs/latex
+         make
+         <pdf viewer> refman.pdf
 
 Finally, there is some documentation on the protocols used by the
 steering library, both for steering itself and for emitting data sets
@@ -150,8 +154,9 @@ The xml schema used for all steering messages is in
 xml_schema/reg_steer_comm.xsd.
 
 A Qt-based steering client written in C++ and built with the RealityGrid
-steering library is also available for Linux and Windows.  Contact
-Andrew Porter (see below) for more information. 
+steering library is also available for Linux and Windows from the same 
+site as the steering library:
+          http://www.sve.man.ac.uk/Research/AtoZ/RealityGrid
 
 The steering library is able to make use of a Web-Services framework
 for remote steering and checkpoint control (this is determined at
