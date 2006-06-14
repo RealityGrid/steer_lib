@@ -61,7 +61,7 @@
 
     @latexonly
     \begin{figure}
-    \centerline{\includegraphics{../steer_arch_symm.png}}
+    \centerline{\includegraphics{steer_arch_symm.png}}
     \caption{Basic architecture for RealityGrid steering.  Each ellipse
     represents a distinct application, the location of which is not
     constrained.  The client can dynamically attach to the running
@@ -71,7 +71,7 @@
     \end{figure}
     @endlatexonly
 
-    <IMG SRC="../steer_arch_symm.png" alt="Illustrative architecture diagram"
+    <IMG SRC="steer_arch_symm.png" alt="Illustrative architecture diagram"
          title="Illustrative architecture of a steering scenario"/>
 
     The figure shows an example use case for computational steering.

@@ -147,6 +147,7 @@ clean:
 
 doc:
 	doxygen docs/Doxyfile
+	cd docs/html; cp -f ../steer_arch_symm.png .
 
 tar:
 	$(MAKE) clean
