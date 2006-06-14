@@ -40,6 +40,16 @@
 
     @mainpage
 
+    @section starting_sec Getting Started
+
+    If you are impatient to actually use the steering library rather
+    than just read about it then I recommend that you read at least
+    the @ref intro_sec and @ref sec_background sections. After that,
+    take a look at the source code of the simple.c example or one of
+    the others from the @ref sec_example section.  The code generated
+    by Doxygen includes links to the documentation for each of the
+    steering-library routines used by this example.
+
     @section intro_sec Introduction 
 
     A number of people contributed to the initial design of the
