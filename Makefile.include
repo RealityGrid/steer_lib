@@ -72,7 +72,7 @@ REG_SSL_INCDIR = .
 
 #------------------------------------
 # Set flag to 1 to get (a lot of) debug output, 0 otherwise.
-REG_DEBUG_FLAG 	= 1
+REG_DEBUG_FLAG 	= 0
 
 #------------------------------------
 # Set flag to 1 to get additional debug output, 0 otherwise.
@@ -87,4 +87,4 @@ LIB_UTILS_NAME=libReG_Steer_Utils.a
 # Don't edit anything below this line
 
 # Pass version information to compile
-REG_STEER_LIB_VERSION = 2.0a
+REG_STEER_LIB_VERSION = 2.0
