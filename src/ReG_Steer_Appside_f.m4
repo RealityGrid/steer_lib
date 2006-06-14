@@ -1984,7 +1984,7 @@ INT_KIND_1_DECL(Status);
   int type;
 
   if(Ptr2 < Ptr1){
-    fprintf(stderr, "set_type_size: ERROR: Ptr2 < Ptr1; arguments"
+    fprintf(stderr, "STEER: set_type_size: ERROR: Ptr2 < Ptr1; arguments"
             " ordered incorrectly?\n");
     *Status = INT_KIND_1_CAST(REG_FAILURE);
     return;
@@ -1996,60 +1996,80 @@ INT_KIND_1_DECL(Status);
   switch(type){
 
     case REG_CHAR:
-      fprintf(stderr, "Sizeof REG_CHAR = %d, ", size);
+#if REG_DEBUG
+      fprintf(stderr, "STEER: Sizeof REG_CHAR = %d, ", size);
+#endif
       sizeof_type[REG_CHAR] = size;
       break;
 
     case REG_INT:
-      fprintf(stderr, "Sizeof REG_INT = %d\n, ", size);
+#if REG_DEBUG
+      fprintf(stderr, "STEER: Sizeof REG_INT = %d\n, ", size);
+#endif
       sizeof_type[REG_INT] = size;
       break;
 
     case REG_LONG:
-      fprintf(stderr, "Sizeof REG_LONG = %d\n, ", size);
+#if REG_DEBUG
+      fprintf(stderr, "STEER: Sizeof REG_LONG = %d\n, ", size);
+#endif
       sizeof_type[REG_LONG] = size;
       break;
 
     case REG_FLOAT:
-      fprintf(stderr, "Sizeof REG_FLOAT = %d, ", size);
+#if REG_DEBUG
+      fprintf(stderr, "STEER: Sizeof REG_FLOAT = %d, ", size);
+#endif
       sizeof_type[REG_FLOAT] = size;
       break;
 
     case REG_DBL:
-      fprintf(stderr, "Sizeof REG_DBL = %d, ", size);
+#if REG_DEBUG
+      fprintf(stderr, "STEER: Sizeof REG_DBL = %d, ", size);
+#endif
       sizeof_type[REG_DBL] = size;
       break;
 
     default:
-      fprintf(stderr, "set_type_size: ERROR: unrecognised type: %d\n",
+      fprintf(stderr, "STEER: set_type_size: ERROR: unrecognised type: %d\n",
               type);
       *Status = INT_KIND_1_CAST(REG_FAILURE);
       break;
   }
 
   if(size == sizeof(char)){
+#if REG_DEBUG
     fprintf(stderr, "equivalent to a C char\n");
+#endif
     f90_to_c_type[type] = REG_CHAR;
   }
 
   if((type == REG_INT) || (type == REG_LONG)){
     if(size == sizeof(int)){
+#if REG_DEBUG
       fprintf(stderr, "equivalent to a C int\n");
+#endif
       f90_to_c_type[type] = REG_INT;
     }
     else if(size == sizeof(long)){
+#if REG_DEBUG
       fprintf(stderr, "equivalent to a C long\n");
+#endif
       f90_to_c_type[type] = REG_LONG;
     }
   }
 
   if((type == REG_FLOAT) || (type == REG_DBL)){
     if(size == sizeof(float)){
+#if REG_DEBUG
       fprintf(stderr, "equivalent to a C float\n");
+#endif
       f90_to_c_type[(int)*Type] = REG_FLOAT;
     }
     else if(size == sizeof(double)){
+#if REG_DEBUG
       fprintf(stderr, "equivalent to a C double\n");
+#endif
       f90_to_c_type[(int)*Type] = REG_DBL;
     }
   }
