@@ -725,7 +725,6 @@ int Get_data_source_address_wsrf(const int          index,
 			     "ioTypeDefinitions", &pBuf) != REG_SUCCESS){
       return REG_FAILURE;
     }
-    printf("ARPDBG, pBuf contains >>%s<<\n", pBuf);
 
     /* Parse the IOtypes */
 
@@ -755,7 +754,6 @@ int Get_data_source_address_wsrf(const int          index,
       }
       *pchar = '<';
       pIOType++;
-      printf("ARPDBG, Label didn't match, looping...\n");
     }
 
     soap_end(&mySoap);
