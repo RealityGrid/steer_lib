@@ -307,3 +307,40 @@ int Delete_iotype_list(struct reg_iotype_list *list)
 
   return REG_SUCCESS;
 }
+
+/*----------------------------------------------------------------*/
+
+int Set_service_data_source(const char *EPR, 
+			    const char *sourceAddress, 
+			    const int   sourcePort, 
+			    const char *label,
+			    const struct reg_security_info *sec)
+{
+  char        buf[1024];
+  struct soap mySoap;
+  int         status;
+
+  if(sourcePort == 0){
+    /* No proxy being used */
+    snprintf(buf, 1024, "<dataSource><sourceEPR>%s</sourceEPR>"
+	     "<sourceLabel>%s</sourceLabel></dataSource>",
+	     sourceAddress, label);
+  }
+  else{
+    /* A proxy has been specified */
+    snprintf(buf, 1024, "<dataSource><Proxy><address>%s"
+	     "</address><port>%d</port></Proxy><sourceLabel>%s"
+	     "</sourceLabel></dataSource>",
+	     sourceAddress, sourcePort, label);
+  }
+
+  soap_init(&mySoap);
+
+  status = Set_resource_property(&mySoap, EPR, sec->userDN,
+				 sec->passphrase, buf);
+
+  soap_end(&mySoap);
+  soap_done(&mySoap);
+
+  return status;
+}

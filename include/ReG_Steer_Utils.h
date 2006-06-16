@@ -154,9 +154,28 @@ extern PREFIX int Get_IOTypes(const char                     *address,
    @param list Pointer to reg_iotype_list to clean up
 
    Frees memory associated with the reg_iotype_list and resets
-   member variables
+   member variables.
 */
 extern PREFIX int Delete_iotype_list(struct reg_iotype_list *list);
+
+/**
+   @param EPR EndPointReference (address) of the service to configure
+   @param sourceAddress Address of service representing data source OR
+address of IOProxy if @p sourcePort != 0
+   @param sourcePort Port on which to connect to IOProxy or 0 if using
+direct socket connection
+   @param label Label of the IOType from which to get data
+   @sec Pointer to struct containing data required to authenticate to the SWS
+
+   Configures the specified service with information on a data source 
+   (either direct socket connection between source and sink or a socket 
+   connection to an IOProxy).
+*/
+extern PREFIX int Set_service_data_source(const char *EPR, 
+					  const char *sourceAddress, 
+					  const int   sourcePort, 
+					  const char *label,
+					  const struct reg_security_info *sec);
 
 #endif
 
