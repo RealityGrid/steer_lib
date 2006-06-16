@@ -739,7 +739,13 @@ int Get_data_source_address_wsrf(const int          index,
       if(!strncmp(pLast, label, count)){
 	/* This is the one we want */
 	*pchar = '<';
-	pLast = strstr(pIOType, "<Address>");
+	if( !(pLast = strstr(pIOType, "<Address>")) ){
+	  fprintf(stderr, "STEER: Get_data_source_address_wsrf: ERROR: "
+		  "IOType %s does not have an Address element\n",
+		  label);
+	  label[0] = '\0';
+	  break;
+	}
 	pLast += 9; /* strlen("<Address>") = 9 */
 	pchar = strstr(pLast, "</Address>");
 	count = pchar - pLast;
