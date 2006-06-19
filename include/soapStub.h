@@ -183,17 +183,17 @@ struct sws__DetachResponse
 };
 #endif
 
-#ifndef SOAP_TYPE_wsrp__GetResourceProperty
-#define SOAP_TYPE_wsrp__GetResourceProperty (33)
-/* wsrp:GetResourceProperty */
-struct wsrp__GetResourceProperty
+#ifndef SOAP_TYPE___wsrp__GetResourceProperty
+#define SOAP_TYPE___wsrp__GetResourceProperty (32)
+/* Operation wrapper: */
+struct __wsrp__GetResourceProperty
 {
-	struct GetResourcePropertyRequest *in_;	/* optional element of type GetResourcePropertyRequest */
+	char *wsrp__GetResourceProperty;	/* optional element of type xsd:string */
 };
 #endif
 
 #ifndef SOAP_TYPE_wsrp__GetMultipleResourceProperties
-#define SOAP_TYPE_wsrp__GetMultipleResourceProperties (35)
+#define SOAP_TYPE_wsrp__GetMultipleResourceProperties (34)
 /* wsrp:GetMultipleResourceProperties */
 struct wsrp__GetMultipleResourceProperties
 {
@@ -202,7 +202,7 @@ struct wsrp__GetMultipleResourceProperties
 #endif
 
 #ifndef SOAP_TYPE_wsrp__SetResourceProperties
-#define SOAP_TYPE_wsrp__SetResourceProperties (38)
+#define SOAP_TYPE_wsrp__SetResourceProperties (37)
 /* wsrp:SetResourceProperties */
 struct wsrp__SetResourceProperties
 {
@@ -211,7 +211,7 @@ struct wsrp__SetResourceProperties
 #endif
 
 #ifndef SOAP_TYPE_wsrp__GetResourcePropertyDocument
-#define SOAP_TYPE_wsrp__GetResourcePropertyDocument (40)
+#define SOAP_TYPE_wsrp__GetResourcePropertyDocument (39)
 /* wsrp:GetResourcePropertyDocument */
 struct wsrp__GetResourcePropertyDocument
 {
@@ -220,7 +220,7 @@ struct wsrp__GetResourcePropertyDocument
 #endif
 
 #ifndef SOAP_TYPE_sws__AddChild
-#define SOAP_TYPE_sws__AddChild (43)
+#define SOAP_TYPE_sws__AddChild (42)
 /* sws:AddChild */
 struct sws__AddChild
 {
@@ -229,7 +229,7 @@ struct sws__AddChild
 #endif
 
 #ifndef SOAP_TYPE_sws__Attach
-#define SOAP_TYPE_sws__Attach (46)
+#define SOAP_TYPE_sws__Attach (45)
 /* sws:Attach */
 struct sws__Attach
 {
@@ -238,7 +238,7 @@ struct sws__Attach
 #endif
 
 #ifndef SOAP_TYPE_sws__Detach
-#define SOAP_TYPE_sws__Detach (49)
+#define SOAP_TYPE_sws__Detach (48)
 /* sws:Detach */
 struct sws__Detach
 {
@@ -247,7 +247,7 @@ struct sws__Detach
 #endif
 
 #ifndef SOAP_TYPE_sws__RecordCheckpoint
-#define SOAP_TYPE_sws__RecordCheckpoint (52)
+#define SOAP_TYPE_sws__RecordCheckpoint (51)
 /* sws:RecordCheckpoint */
 struct sws__RecordCheckpoint
 {
@@ -257,7 +257,7 @@ struct sws__RecordCheckpoint
 #endif
 
 #ifndef SOAP_TYPE_sws__GetParamLog
-#define SOAP_TYPE_sws__GetParamLog (55)
+#define SOAP_TYPE_sws__GetParamLog (54)
 /* sws:GetParamLog */
 struct sws__GetParamLog
 {
@@ -266,7 +266,7 @@ struct sws__GetParamLog
 #endif
 
 #ifndef SOAP_TYPE_sws__PutParamLog
-#define SOAP_TYPE_sws__PutParamLog (58)
+#define SOAP_TYPE_sws__PutParamLog (57)
 /* sws:PutParamLog */
 struct sws__PutParamLog
 {
@@ -275,7 +275,7 @@ struct sws__PutParamLog
 #endif
 
 #ifndef SOAP_TYPE_wsrp__Destroy
-#define SOAP_TYPE_wsrp__Destroy (61)
+#define SOAP_TYPE_wsrp__Destroy (60)
 /* wsrp:Destroy */
 struct wsrp__Destroy
 {
@@ -284,7 +284,7 @@ struct wsrp__Destroy
 #endif
 
 #ifndef SOAP_TYPE_sgs__GetParamLogResponse
-#define SOAP_TYPE_sgs__GetParamLogResponse (62)
+#define SOAP_TYPE_sgs__GetParamLogResponse (61)
 /* sgs:GetParamLogResponse */
 struct sgs__GetParamLogResponse
 {
@@ -293,7 +293,7 @@ struct sgs__GetParamLogResponse
 #endif
 
 #ifndef SOAP_TYPE_sgs__DetachResponse
-#define SOAP_TYPE_sgs__DetachResponse (63)
+#define SOAP_TYPE_sgs__DetachResponse (62)
 /* sgs:DetachResponse */
 struct sgs__DetachResponse
 {
@@ -302,7 +302,7 @@ struct sgs__DetachResponse
 #endif
 
 #ifndef SOAP_TYPE_sgs__AppRecordChkpointResponse
-#define SOAP_TYPE_sgs__AppRecordChkpointResponse (64)
+#define SOAP_TYPE_sgs__AppRecordChkpointResponse (63)
 /* sgs:AppRecordChkpointResponse */
 struct sgs__AppRecordChkpointResponse
 {
@@ -311,7 +311,7 @@ struct sgs__AppRecordChkpointResponse
 #endif
 
 #ifndef SOAP_TYPE_sgs__PutStatusResponse
-#define SOAP_TYPE_sgs__PutStatusResponse (65)
+#define SOAP_TYPE_sgs__PutStatusResponse (64)
 /* sgs:PutStatusResponse */
 struct sgs__PutStatusResponse
 {
@@ -320,7 +320,7 @@ struct sgs__PutStatusResponse
 #endif
 
 #ifndef SOAP_TYPE_sgs__setServiceDataResponse
-#define SOAP_TYPE_sgs__setServiceDataResponse (66)
+#define SOAP_TYPE_sgs__setServiceDataResponse (65)
 /* sgs:setServiceDataResponse */
 struct sgs__setServiceDataResponse
 {
@@ -329,7 +329,7 @@ struct sgs__setServiceDataResponse
 #endif
 
 #ifndef SOAP_TYPE_sgs__PauseResponse
-#define SOAP_TYPE_sgs__PauseResponse (67)
+#define SOAP_TYPE_sgs__PauseResponse (66)
 /* sgs:PauseResponse */
 struct sgs__PauseResponse
 {
@@ -338,7 +338,7 @@ struct sgs__PauseResponse
 #endif
 
 #ifndef SOAP_TYPE_sgs__findServiceDataResponse
-#define SOAP_TYPE_sgs__findServiceDataResponse (68)
+#define SOAP_TYPE_sgs__findServiceDataResponse (67)
 /* sgs:findServiceDataResponse */
 struct sgs__findServiceDataResponse
 {
@@ -347,7 +347,7 @@ struct sgs__findServiceDataResponse
 #endif
 
 #ifndef SOAP_TYPE_sgs__RestartResponse
-#define SOAP_TYPE_sgs__RestartResponse (69)
+#define SOAP_TYPE_sgs__RestartResponse (68)
 /* sgs:RestartResponse */
 struct sgs__RestartResponse
 {
@@ -356,7 +356,7 @@ struct sgs__RestartResponse
 #endif
 
 #ifndef SOAP_TYPE_sgs__PutControlResponse
-#define SOAP_TYPE_sgs__PutControlResponse (70)
+#define SOAP_TYPE_sgs__PutControlResponse (69)
 /* sgs:PutControlResponse */
 struct sgs__PutControlResponse
 {
@@ -365,7 +365,7 @@ struct sgs__PutControlResponse
 #endif
 
 #ifndef SOAP_TYPE_sgs__ResumeResponse
-#define SOAP_TYPE_sgs__ResumeResponse (71)
+#define SOAP_TYPE_sgs__ResumeResponse (70)
 /* sgs:ResumeResponse */
 struct sgs__ResumeResponse
 {
@@ -374,7 +374,7 @@ struct sgs__ResumeResponse
 #endif
 
 #ifndef SOAP_TYPE_sgs__AttachResponse
-#define SOAP_TYPE_sgs__AttachResponse (72)
+#define SOAP_TYPE_sgs__AttachResponse (71)
 /* sgs:AttachResponse */
 struct sgs__AttachResponse
 {
@@ -383,7 +383,7 @@ struct sgs__AttachResponse
 #endif
 
 #ifndef SOAP_TYPE_sgs__GetNotificationsResponse
-#define SOAP_TYPE_sgs__GetNotificationsResponse (73)
+#define SOAP_TYPE_sgs__GetNotificationsResponse (72)
 /* sgs:GetNotificationsResponse */
 struct sgs__GetNotificationsResponse
 {
@@ -392,7 +392,7 @@ struct sgs__GetNotificationsResponse
 #endif
 
 #ifndef SOAP_TYPE_sgs__StopResponse
-#define SOAP_TYPE_sgs__StopResponse (74)
+#define SOAP_TYPE_sgs__StopResponse (73)
 /* sgs:StopResponse */
 struct sgs__StopResponse
 {
@@ -401,7 +401,7 @@ struct sgs__StopResponse
 #endif
 
 #ifndef SOAP_TYPE_sgs__GetControlResponse
-#define SOAP_TYPE_sgs__GetControlResponse (75)
+#define SOAP_TYPE_sgs__GetControlResponse (74)
 /* sgs:GetControlResponse */
 struct sgs__GetControlResponse
 {
@@ -410,7 +410,7 @@ struct sgs__GetControlResponse
 #endif
 
 #ifndef SOAP_TYPE_sgs__GetStatusResponse
-#define SOAP_TYPE_sgs__GetStatusResponse (76)
+#define SOAP_TYPE_sgs__GetStatusResponse (75)
 /* sgs:GetStatusResponse */
 struct sgs__GetStatusResponse
 {
@@ -419,7 +419,7 @@ struct sgs__GetStatusResponse
 #endif
 
 #ifndef SOAP_TYPE_sgs__AppStopResponse
-#define SOAP_TYPE_sgs__AppStopResponse (77)
+#define SOAP_TYPE_sgs__AppStopResponse (76)
 /* sgs:AppStopResponse */
 struct sgs__AppStopResponse
 {
@@ -428,7 +428,7 @@ struct sgs__AppStopResponse
 #endif
 
 #ifndef SOAP_TYPE_sgs__destroyResponse
-#define SOAP_TYPE_sgs__destroyResponse (78)
+#define SOAP_TYPE_sgs__destroyResponse (77)
 /* sgs:destroyResponse */
 struct sgs__destroyResponse
 {
@@ -437,7 +437,7 @@ struct sgs__destroyResponse
 #endif
 
 #ifndef SOAP_TYPE_sgs__ClearStatusMsgQueueResponse
-#define SOAP_TYPE_sgs__ClearStatusMsgQueueResponse (79)
+#define SOAP_TYPE_sgs__ClearStatusMsgQueueResponse (78)
 /* sgs:ClearStatusMsgQueueResponse */
 struct sgs__ClearStatusMsgQueueResponse
 {
@@ -446,7 +446,7 @@ struct sgs__ClearStatusMsgQueueResponse
 #endif
 
 #ifndef SOAP_TYPE_sgs__AppPutLogResponse
-#define SOAP_TYPE_sgs__AppPutLogResponse (80)
+#define SOAP_TYPE_sgs__AppPutLogResponse (79)
 /* sgs:AppPutLogResponse */
 struct sgs__AppPutLogResponse
 {
@@ -455,7 +455,7 @@ struct sgs__AppPutLogResponse
 #endif
 
 #ifndef SOAP_TYPE_sgs__GetNthDataSourceResponse
-#define SOAP_TYPE_sgs__GetNthDataSourceResponse (81)
+#define SOAP_TYPE_sgs__GetNthDataSourceResponse (80)
 /* sgs:GetNthDataSourceResponse */
 struct sgs__GetNthDataSourceResponse
 {
@@ -464,7 +464,7 @@ struct sgs__GetNthDataSourceResponse
 #endif
 
 #ifndef SOAP_TYPE_sgs__AppStartResponse
-#define SOAP_TYPE_sgs__AppStartResponse (82)
+#define SOAP_TYPE_sgs__AppStartResponse (81)
 /* sgs:AppStartResponse */
 struct sgs__AppStartResponse
 {
@@ -473,7 +473,7 @@ struct sgs__AppStartResponse
 #endif
 
 #ifndef SOAP_TYPE_sgs__AppDetachResponse
-#define SOAP_TYPE_sgs__AppDetachResponse (83)
+#define SOAP_TYPE_sgs__AppDetachResponse (82)
 /* sgs:AppDetachResponse */
 struct sgs__AppDetachResponse
 {
@@ -482,7 +482,7 @@ struct sgs__AppDetachResponse
 #endif
 
 #ifndef SOAP_TYPE_sgs__Attach
-#define SOAP_TYPE_sgs__Attach (86)
+#define SOAP_TYPE_sgs__Attach (85)
 /* sgs:Attach */
 struct sgs__Attach
 {
@@ -491,7 +491,7 @@ struct sgs__Attach
 #endif
 
 #ifndef SOAP_TYPE_sgs__GetStatus
-#define SOAP_TYPE_sgs__GetStatus (89)
+#define SOAP_TYPE_sgs__GetStatus (88)
 /* sgs:GetStatus */
 struct sgs__GetStatus
 {
@@ -500,7 +500,7 @@ struct sgs__GetStatus
 #endif
 
 #ifndef SOAP_TYPE_sgs__Stop
-#define SOAP_TYPE_sgs__Stop (92)
+#define SOAP_TYPE_sgs__Stop (91)
 /* sgs:Stop */
 struct sgs__Stop
 {
@@ -509,7 +509,7 @@ struct sgs__Stop
 #endif
 
 #ifndef SOAP_TYPE_sgs__ClearStatusMsgQueue
-#define SOAP_TYPE_sgs__ClearStatusMsgQueue (95)
+#define SOAP_TYPE_sgs__ClearStatusMsgQueue (94)
 /* sgs:ClearStatusMsgQueue */
 struct sgs__ClearStatusMsgQueue
 {
@@ -518,7 +518,7 @@ struct sgs__ClearStatusMsgQueue
 #endif
 
 #ifndef SOAP_TYPE_sgs__Detach
-#define SOAP_TYPE_sgs__Detach (98)
+#define SOAP_TYPE_sgs__Detach (97)
 /* sgs:Detach */
 struct sgs__Detach
 {
@@ -527,7 +527,7 @@ struct sgs__Detach
 #endif
 
 #ifndef SOAP_TYPE_sgs__Resume
-#define SOAP_TYPE_sgs__Resume (101)
+#define SOAP_TYPE_sgs__Resume (100)
 /* sgs:Resume */
 struct sgs__Resume
 {
@@ -536,7 +536,7 @@ struct sgs__Resume
 #endif
 
 #ifndef SOAP_TYPE_sgs__AppRecordChkpoint
-#define SOAP_TYPE_sgs__AppRecordChkpoint (104)
+#define SOAP_TYPE_sgs__AppRecordChkpoint (103)
 /* sgs:AppRecordChkpoint */
 struct sgs__AppRecordChkpoint
 {
@@ -546,7 +546,7 @@ struct sgs__AppRecordChkpoint
 #endif
 
 #ifndef SOAP_TYPE_sgs__PutStatus
-#define SOAP_TYPE_sgs__PutStatus (107)
+#define SOAP_TYPE_sgs__PutStatus (106)
 /* sgs:PutStatus */
 struct sgs__PutStatus
 {
@@ -555,7 +555,7 @@ struct sgs__PutStatus
 #endif
 
 #ifndef SOAP_TYPE_sgs__AppStart
-#define SOAP_TYPE_sgs__AppStart (110)
+#define SOAP_TYPE_sgs__AppStart (109)
 /* sgs:AppStart */
 struct sgs__AppStart
 {
@@ -564,7 +564,7 @@ struct sgs__AppStart
 #endif
 
 #ifndef SOAP_TYPE_sgs__GetParamLog
-#define SOAP_TYPE_sgs__GetParamLog (113)
+#define SOAP_TYPE_sgs__GetParamLog (112)
 /* sgs:GetParamLog */
 struct sgs__GetParamLog
 {
@@ -573,7 +573,7 @@ struct sgs__GetParamLog
 #endif
 
 #ifndef SOAP_TYPE_sgs__setServiceData
-#define SOAP_TYPE_sgs__setServiceData (116)
+#define SOAP_TYPE_sgs__setServiceData (115)
 /* sgs:setServiceData */
 struct sgs__setServiceData
 {
@@ -582,7 +582,7 @@ struct sgs__setServiceData
 #endif
 
 #ifndef SOAP_TYPE_sgs__AppPutLog
-#define SOAP_TYPE_sgs__AppPutLog (119)
+#define SOAP_TYPE_sgs__AppPutLog (118)
 /* sgs:AppPutLog */
 struct sgs__AppPutLog
 {
@@ -591,7 +591,7 @@ struct sgs__AppPutLog
 #endif
 
 #ifndef SOAP_TYPE_sgs__AppDetach
-#define SOAP_TYPE_sgs__AppDetach (122)
+#define SOAP_TYPE_sgs__AppDetach (121)
 /* sgs:AppDetach */
 struct sgs__AppDetach
 {
@@ -600,7 +600,7 @@ struct sgs__AppDetach
 #endif
 
 #ifndef SOAP_TYPE_sgs__Pause
-#define SOAP_TYPE_sgs__Pause (125)
+#define SOAP_TYPE_sgs__Pause (124)
 /* sgs:Pause */
 struct sgs__Pause
 {
@@ -609,7 +609,7 @@ struct sgs__Pause
 #endif
 
 #ifndef SOAP_TYPE_sgs__PutControl
-#define SOAP_TYPE_sgs__PutControl (128)
+#define SOAP_TYPE_sgs__PutControl (127)
 /* sgs:PutControl */
 struct sgs__PutControl
 {
@@ -618,7 +618,7 @@ struct sgs__PutControl
 #endif
 
 #ifndef SOAP_TYPE_sgs__Restart
-#define SOAP_TYPE_sgs__Restart (131)
+#define SOAP_TYPE_sgs__Restart (130)
 /* sgs:Restart */
 struct sgs__Restart
 {
@@ -627,7 +627,7 @@ struct sgs__Restart
 #endif
 
 #ifndef SOAP_TYPE_sgs__GetNthDataSource
-#define SOAP_TYPE_sgs__GetNthDataSource (134)
+#define SOAP_TYPE_sgs__GetNthDataSource (133)
 /* sgs:GetNthDataSource */
 struct sgs__GetNthDataSource
 {
@@ -636,7 +636,7 @@ struct sgs__GetNthDataSource
 #endif
 
 #ifndef SOAP_TYPE_sgs__findServiceData
-#define SOAP_TYPE_sgs__findServiceData (137)
+#define SOAP_TYPE_sgs__findServiceData (136)
 /* sgs:findServiceData */
 struct sgs__findServiceData
 {
@@ -645,7 +645,7 @@ struct sgs__findServiceData
 #endif
 
 #ifndef SOAP_TYPE_sgs__destroy
-#define SOAP_TYPE_sgs__destroy (140)
+#define SOAP_TYPE_sgs__destroy (139)
 /* sgs:destroy */
 struct sgs__destroy
 {
@@ -654,7 +654,7 @@ struct sgs__destroy
 #endif
 
 #ifndef SOAP_TYPE_sgs__GetControl
-#define SOAP_TYPE_sgs__GetControl (143)
+#define SOAP_TYPE_sgs__GetControl (142)
 /* sgs:GetControl */
 struct sgs__GetControl
 {
@@ -663,7 +663,7 @@ struct sgs__GetControl
 #endif
 
 #ifndef SOAP_TYPE_sgs__GetNotifications
-#define SOAP_TYPE_sgs__GetNotifications (146)
+#define SOAP_TYPE_sgs__GetNotifications (145)
 /* sgs:GetNotifications */
 struct sgs__GetNotifications
 {
@@ -672,7 +672,7 @@ struct sgs__GetNotifications
 #endif
 
 #ifndef SOAP_TYPE_sgs__AppStop
-#define SOAP_TYPE_sgs__AppStop (149)
+#define SOAP_TYPE_sgs__AppStop (148)
 /* sgs:AppStop */
 struct sgs__AppStop
 {
@@ -681,7 +681,7 @@ struct sgs__AppStop
 #endif
 
 #ifndef SOAP_TYPE_sgsf__createServiceResponse
-#define SOAP_TYPE_sgsf__createServiceResponse (150)
+#define SOAP_TYPE_sgsf__createServiceResponse (149)
 /* sgsf:createServiceResponse */
 struct sgsf__createServiceResponse
 {
@@ -690,7 +690,7 @@ struct sgsf__createServiceResponse
 #endif
 
 #ifndef SOAP_TYPE_sgsf__destroyResponse
-#define SOAP_TYPE_sgsf__destroyResponse (151)
+#define SOAP_TYPE_sgsf__destroyResponse (150)
 /* sgsf:destroyResponse */
 struct sgsf__destroyResponse
 {
@@ -699,7 +699,7 @@ struct sgsf__destroyResponse
 #endif
 
 #ifndef SOAP_TYPE_sgsf__registerSelfResponse
-#define SOAP_TYPE_sgsf__registerSelfResponse (152)
+#define SOAP_TYPE_sgsf__registerSelfResponse (151)
 /* sgsf:registerSelfResponse */
 struct sgsf__registerSelfResponse
 {
@@ -708,7 +708,7 @@ struct sgsf__registerSelfResponse
 #endif
 
 #ifndef SOAP_TYPE_sgsf__registerSelf
-#define SOAP_TYPE_sgsf__registerSelf (155)
+#define SOAP_TYPE_sgsf__registerSelf (154)
 /* sgsf:registerSelf */
 struct sgsf__registerSelf
 {
@@ -718,7 +718,7 @@ struct sgsf__registerSelf
 #endif
 
 #ifndef SOAP_TYPE_sgsf__destroy
-#define SOAP_TYPE_sgsf__destroy (158)
+#define SOAP_TYPE_sgsf__destroy (157)
 /* sgsf:destroy */
 struct sgsf__destroy
 {
@@ -727,7 +727,7 @@ struct sgsf__destroy
 #endif
 
 #ifndef SOAP_TYPE_sgsf__createService
-#define SOAP_TYPE_sgsf__createService (161)
+#define SOAP_TYPE_sgsf__createService (160)
 /* sgsf:createService */
 struct sgsf__createService
 {
@@ -737,7 +737,7 @@ struct sgsf__createService
 #endif
 
 #ifndef SOAP_TYPE_swsf__createSWSResourceResponse
-#define SOAP_TYPE_swsf__createSWSResourceResponse (162)
+#define SOAP_TYPE_swsf__createSWSResourceResponse (161)
 /* swsf:createSWSResourceResponse */
 struct swsf__createSWSResourceResponse
 {
@@ -746,7 +746,7 @@ struct swsf__createSWSResourceResponse
 #endif
 
 #ifndef SOAP_TYPE_swsf__createSWSResource
-#define SOAP_TYPE_swsf__createSWSResource (165)
+#define SOAP_TYPE_swsf__createSWSResource (164)
 /* swsf:createSWSResource */
 struct swsf__createSWSResource
 {
@@ -757,7 +757,7 @@ struct swsf__createSWSResource
 #endif
 
 #ifndef SOAP_TYPE_sgr__findServiceDataResponse
-#define SOAP_TYPE_sgr__findServiceDataResponse (166)
+#define SOAP_TYPE_sgr__findServiceDataResponse (165)
 /* sgr:findServiceDataResponse */
 struct sgr__findServiceDataResponse
 {
@@ -766,7 +766,7 @@ struct sgr__findServiceDataResponse
 #endif
 
 #ifndef SOAP_TYPE_sgr__addResponse
-#define SOAP_TYPE_sgr__addResponse (167)
+#define SOAP_TYPE_sgr__addResponse (166)
 /* sgr:addResponse */
 struct sgr__addResponse
 {
@@ -775,7 +775,7 @@ struct sgr__addResponse
 #endif
 
 #ifndef SOAP_TYPE_ArrayOf_USCORE_xsd_USCORE_string
-#define SOAP_TYPE_ArrayOf_USCORE_xsd_USCORE_string (168)
+#define SOAP_TYPE_ArrayOf_USCORE_xsd_USCORE_string (167)
 /* SOAP encoded array of xsd:string schema type: */
 struct ArrayOf_USCORE_xsd_USCORE_string
 {
@@ -786,7 +786,7 @@ struct ArrayOf_USCORE_xsd_USCORE_string
 #endif
 
 #ifndef SOAP_TYPE_sgr__removeResponse
-#define SOAP_TYPE_sgr__removeResponse (171)
+#define SOAP_TYPE_sgr__removeResponse (170)
 /* sgr:removeResponse */
 struct sgr__removeResponse
 {
@@ -795,7 +795,7 @@ struct sgr__removeResponse
 #endif
 
 #ifndef SOAP_TYPE_sgr__remove
-#define SOAP_TYPE_sgr__remove (174)
+#define SOAP_TYPE_sgr__remove (173)
 /* sgr:remove */
 struct sgr__remove
 {
@@ -804,7 +804,7 @@ struct sgr__remove
 #endif
 
 #ifndef SOAP_TYPE_sgr__add
-#define SOAP_TYPE_sgr__add (177)
+#define SOAP_TYPE_sgr__add (176)
 /* sgr:add */
 struct sgr__add
 {
@@ -815,7 +815,7 @@ struct sgr__add
 #endif
 
 #ifndef SOAP_TYPE_sgr__findServiceData
-#define SOAP_TYPE_sgr__findServiceData (180)
+#define SOAP_TYPE_sgr__findServiceData (179)
 /* sgr:findServiceData */
 struct sgr__findServiceData
 {
@@ -824,7 +824,7 @@ struct sgr__findServiceData
 #endif
 
 #ifndef SOAP_TYPE_rgtf__requestTerminationBeforeResponse
-#define SOAP_TYPE_rgtf__requestTerminationBeforeResponse (181)
+#define SOAP_TYPE_rgtf__requestTerminationBeforeResponse (180)
 /* rgtf:requestTerminationBeforeResponse */
 struct rgtf__requestTerminationBeforeResponse
 {
@@ -833,7 +833,7 @@ struct rgtf__requestTerminationBeforeResponse
 #endif
 
 #ifndef SOAP_TYPE_rgtf__findServiceDataResponse
-#define SOAP_TYPE_rgtf__findServiceDataResponse (182)
+#define SOAP_TYPE_rgtf__findServiceDataResponse (181)
 /* rgtf:findServiceDataResponse */
 struct rgtf__findServiceDataResponse
 {
@@ -842,7 +842,7 @@ struct rgtf__findServiceDataResponse
 #endif
 
 #ifndef SOAP_TYPE_rgtf__findByHandleResponse
-#define SOAP_TYPE_rgtf__findByHandleResponse (183)
+#define SOAP_TYPE_rgtf__findByHandleResponse (182)
 /* rgtf:findByHandleResponse */
 struct rgtf__findByHandleResponse
 {
@@ -851,7 +851,7 @@ struct rgtf__findByHandleResponse
 #endif
 
 #ifndef SOAP_TYPE_rgtf__getActiveTreesResponse
-#define SOAP_TYPE_rgtf__getActiveTreesResponse (184)
+#define SOAP_TYPE_rgtf__getActiveTreesResponse (183)
 /* rgtf:getActiveTreesResponse */
 struct rgtf__getActiveTreesResponse
 {
@@ -860,7 +860,7 @@ struct rgtf__getActiveTreesResponse
 #endif
 
 #ifndef SOAP_TYPE_rgtf__createNewTreeResponse
-#define SOAP_TYPE_rgtf__createNewTreeResponse (185)
+#define SOAP_TYPE_rgtf__createNewTreeResponse (184)
 /* rgtf:createNewTreeResponse */
 struct rgtf__createNewTreeResponse
 {
@@ -869,7 +869,7 @@ struct rgtf__createNewTreeResponse
 #endif
 
 #ifndef SOAP_TYPE_rgtf__requestTerminationAfterResponse
-#define SOAP_TYPE_rgtf__requestTerminationAfterResponse (186)
+#define SOAP_TYPE_rgtf__requestTerminationAfterResponse (185)
 /* rgtf:requestTerminationAfterResponse */
 struct rgtf__requestTerminationAfterResponse
 {
@@ -878,7 +878,7 @@ struct rgtf__requestTerminationAfterResponse
 #endif
 
 #ifndef SOAP_TYPE_rgtf__destroyResponse
-#define SOAP_TYPE_rgtf__destroyResponse (187)
+#define SOAP_TYPE_rgtf__destroyResponse (186)
 /* rgtf:destroyResponse */
 struct rgtf__destroyResponse
 {
@@ -887,7 +887,7 @@ struct rgtf__destroyResponse
 #endif
 
 #ifndef SOAP_TYPE_rgtf__createNewTree
-#define SOAP_TYPE_rgtf__createNewTree (190)
+#define SOAP_TYPE_rgtf__createNewTree (189)
 /* rgtf:createNewTree */
 struct rgtf__createNewTree
 {
@@ -899,7 +899,7 @@ struct rgtf__createNewTree
 #endif
 
 #ifndef SOAP_TYPE_rgtf__findByHandle
-#define SOAP_TYPE_rgtf__findByHandle (193)
+#define SOAP_TYPE_rgtf__findByHandle (192)
 /* rgtf:findByHandle */
 struct rgtf__findByHandle
 {
@@ -909,7 +909,7 @@ struct rgtf__findByHandle
 #endif
 
 #ifndef SOAP_TYPE_rgtf__destroy
-#define SOAP_TYPE_rgtf__destroy (196)
+#define SOAP_TYPE_rgtf__destroy (195)
 /* rgtf:destroy */
 struct rgtf__destroy
 {
@@ -918,7 +918,7 @@ struct rgtf__destroy
 #endif
 
 #ifndef SOAP_TYPE_rgtf__findServiceData
-#define SOAP_TYPE_rgtf__findServiceData (199)
+#define SOAP_TYPE_rgtf__findServiceData (198)
 /* rgtf:findServiceData */
 struct rgtf__findServiceData
 {
@@ -927,7 +927,7 @@ struct rgtf__findServiceData
 #endif
 
 #ifndef SOAP_TYPE_rgtf__getActiveTrees
-#define SOAP_TYPE_rgtf__getActiveTrees (202)
+#define SOAP_TYPE_rgtf__getActiveTrees (201)
 /* rgtf:getActiveTrees */
 struct rgtf__getActiveTrees
 {
@@ -936,7 +936,7 @@ struct rgtf__getActiveTrees
 #endif
 
 #ifndef SOAP_TYPE_rgtf__requestTerminationBefore
-#define SOAP_TYPE_rgtf__requestTerminationBefore (205)
+#define SOAP_TYPE_rgtf__requestTerminationBefore (204)
 /* rgtf:requestTerminationBefore */
 struct rgtf__requestTerminationBefore
 {
@@ -945,7 +945,7 @@ struct rgtf__requestTerminationBefore
 #endif
 
 #ifndef SOAP_TYPE_rgtf__requestTerminationAfter
-#define SOAP_TYPE_rgtf__requestTerminationAfter (208)
+#define SOAP_TYPE_rgtf__requestTerminationAfter (207)
 /* rgtf:requestTerminationAfter */
 struct rgtf__requestTerminationAfter
 {
@@ -954,7 +954,7 @@ struct rgtf__requestTerminationAfter
 #endif
 
 #ifndef SOAP_TYPE_rgt__getParentNodeResponse
-#define SOAP_TYPE_rgt__getParentNodeResponse (209)
+#define SOAP_TYPE_rgt__getParentNodeResponse (208)
 /* rgt:getParentNodeResponse */
 struct rgt__getParentNodeResponse
 {
@@ -963,7 +963,7 @@ struct rgt__getParentNodeResponse
 #endif
 
 #ifndef SOAP_TYPE_rgt__requestTerminationAfterResponse
-#define SOAP_TYPE_rgt__requestTerminationAfterResponse (210)
+#define SOAP_TYPE_rgt__requestTerminationAfterResponse (209)
 /* rgt:requestTerminationAfterResponse */
 struct rgt__requestTerminationAfterResponse
 {
@@ -972,7 +972,7 @@ struct rgt__requestTerminationAfterResponse
 #endif
 
 #ifndef SOAP_TYPE_rgt__addNodeResponse
-#define SOAP_TYPE_rgt__addNodeResponse (211)
+#define SOAP_TYPE_rgt__addNodeResponse (210)
 /* rgt:addNodeResponse */
 struct rgt__addNodeResponse
 {
@@ -981,7 +981,7 @@ struct rgt__addNodeResponse
 #endif
 
 #ifndef SOAP_TYPE_rgt__getCheckPointDataResponse
-#define SOAP_TYPE_rgt__getCheckPointDataResponse (212)
+#define SOAP_TYPE_rgt__getCheckPointDataResponse (211)
 /* rgt:getCheckPointDataResponse */
 struct rgt__getCheckPointDataResponse
 {
@@ -990,7 +990,7 @@ struct rgt__getCheckPointDataResponse
 #endif
 
 #ifndef SOAP_TYPE_rgt__findServiceDataResponse
-#define SOAP_TYPE_rgt__findServiceDataResponse (213)
+#define SOAP_TYPE_rgt__findServiceDataResponse (212)
 /* rgt:findServiceDataResponse */
 struct rgt__findServiceDataResponse
 {
@@ -999,7 +999,7 @@ struct rgt__findServiceDataResponse
 #endif
 
 #ifndef SOAP_TYPE_rgt__setCheckPointDataResponse
-#define SOAP_TYPE_rgt__setCheckPointDataResponse (214)
+#define SOAP_TYPE_rgt__setCheckPointDataResponse (213)
 /* rgt:setCheckPointDataResponse */
 struct rgt__setCheckPointDataResponse
 {
@@ -1008,7 +1008,7 @@ struct rgt__setCheckPointDataResponse
 #endif
 
 #ifndef SOAP_TYPE_rgt__getChildNodesResponse
-#define SOAP_TYPE_rgt__getChildNodesResponse (215)
+#define SOAP_TYPE_rgt__getChildNodesResponse (214)
 /* rgt:getChildNodesResponse */
 struct rgt__getChildNodesResponse
 {
@@ -1017,7 +1017,7 @@ struct rgt__getChildNodesResponse
 #endif
 
 #ifndef SOAP_TYPE_rgt__requestTerminationBeforeResponse
-#define SOAP_TYPE_rgt__requestTerminationBeforeResponse (216)
+#define SOAP_TYPE_rgt__requestTerminationBeforeResponse (215)
 /* rgt:requestTerminationBeforeResponse */
 struct rgt__requestTerminationBeforeResponse
 {
@@ -1026,7 +1026,7 @@ struct rgt__requestTerminationBeforeResponse
 #endif
 
 #ifndef SOAP_TYPE_rgt__getSteeringCommandsResponse
-#define SOAP_TYPE_rgt__getSteeringCommandsResponse (217)
+#define SOAP_TYPE_rgt__getSteeringCommandsResponse (216)
 /* rgt:getSteeringCommandsResponse */
 struct rgt__getSteeringCommandsResponse
 {
@@ -1035,7 +1035,7 @@ struct rgt__getSteeringCommandsResponse
 #endif
 
 #ifndef SOAP_TYPE_rgt__getInputFileResponse
-#define SOAP_TYPE_rgt__getInputFileResponse (218)
+#define SOAP_TYPE_rgt__getInputFileResponse (217)
 /* rgt:getInputFileResponse */
 struct rgt__getInputFileResponse
 {
@@ -1044,7 +1044,7 @@ struct rgt__getInputFileResponse
 #endif
 
 #ifndef SOAP_TYPE_rgt__destroyResponse
-#define SOAP_TYPE_rgt__destroyResponse (219)
+#define SOAP_TYPE_rgt__destroyResponse (218)
 /* rgt:destroyResponse */
 struct rgt__destroyResponse
 {
@@ -1053,7 +1053,7 @@ struct rgt__destroyResponse
 #endif
 
 #ifndef SOAP_TYPE_rgt__requestTerminationAfter
-#define SOAP_TYPE_rgt__requestTerminationAfter (222)
+#define SOAP_TYPE_rgt__requestTerminationAfter (221)
 /* rgt:requestTerminationAfter */
 struct rgt__requestTerminationAfter
 {
@@ -1062,7 +1062,7 @@ struct rgt__requestTerminationAfter
 #endif
 
 #ifndef SOAP_TYPE_rgt__getChildNodes
-#define SOAP_TYPE_rgt__getChildNodes (225)
+#define SOAP_TYPE_rgt__getChildNodes (224)
 /* rgt:getChildNodes */
 struct rgt__getChildNodes
 {
@@ -1071,7 +1071,7 @@ struct rgt__getChildNodes
 #endif
 
 #ifndef SOAP_TYPE_rgt__getInputFile
-#define SOAP_TYPE_rgt__getInputFile (228)
+#define SOAP_TYPE_rgt__getInputFile (227)
 /* rgt:getInputFile */
 struct rgt__getInputFile
 {
@@ -1080,7 +1080,7 @@ struct rgt__getInputFile
 #endif
 
 #ifndef SOAP_TYPE_rgt__findServiceData
-#define SOAP_TYPE_rgt__findServiceData (231)
+#define SOAP_TYPE_rgt__findServiceData (230)
 /* rgt:findServiceData */
 struct rgt__findServiceData
 {
@@ -1089,7 +1089,7 @@ struct rgt__findServiceData
 #endif
 
 #ifndef SOAP_TYPE_rgt__setCheckPointData
-#define SOAP_TYPE_rgt__setCheckPointData (234)
+#define SOAP_TYPE_rgt__setCheckPointData (233)
 /* rgt:setCheckPointData */
 struct rgt__setCheckPointData
 {
@@ -1098,7 +1098,7 @@ struct rgt__setCheckPointData
 #endif
 
 #ifndef SOAP_TYPE_rgt__destroy
-#define SOAP_TYPE_rgt__destroy (237)
+#define SOAP_TYPE_rgt__destroy (236)
 /* rgt:destroy */
 struct rgt__destroy
 {
@@ -1107,7 +1107,7 @@ struct rgt__destroy
 #endif
 
 #ifndef SOAP_TYPE_rgt__getSteeringCommands
-#define SOAP_TYPE_rgt__getSteeringCommands (240)
+#define SOAP_TYPE_rgt__getSteeringCommands (239)
 /* rgt:getSteeringCommands */
 struct rgt__getSteeringCommands
 {
@@ -1116,7 +1116,7 @@ struct rgt__getSteeringCommands
 #endif
 
 #ifndef SOAP_TYPE_rgt__requestTerminationBefore
-#define SOAP_TYPE_rgt__requestTerminationBefore (243)
+#define SOAP_TYPE_rgt__requestTerminationBefore (242)
 /* rgt:requestTerminationBefore */
 struct rgt__requestTerminationBefore
 {
@@ -1125,7 +1125,7 @@ struct rgt__requestTerminationBefore
 #endif
 
 #ifndef SOAP_TYPE_rgt__getCheckPointData
-#define SOAP_TYPE_rgt__getCheckPointData (246)
+#define SOAP_TYPE_rgt__getCheckPointData (245)
 /* rgt:getCheckPointData */
 struct rgt__getCheckPointData
 {
@@ -1134,7 +1134,7 @@ struct rgt__getCheckPointData
 #endif
 
 #ifndef SOAP_TYPE_rgt__getParentNode
-#define SOAP_TYPE_rgt__getParentNode (249)
+#define SOAP_TYPE_rgt__getParentNode (248)
 /* rgt:getParentNode */
 struct rgt__getParentNode
 {
@@ -1143,7 +1143,7 @@ struct rgt__getParentNode
 #endif
 
 #ifndef SOAP_TYPE_rgt__addNode
-#define SOAP_TYPE_rgt__addNode (252)
+#define SOAP_TYPE_rgt__addNode (251)
 /* rgt:addNode */
 struct rgt__addNode
 {
@@ -1156,7 +1156,7 @@ struct rgt__addNode
 #endif
 
 #ifndef SOAP_TYPE_rsg__AddResponse
-#define SOAP_TYPE_rsg__AddResponse (253)
+#define SOAP_TYPE_rsg__AddResponse (252)
 /* rsg:AddResponse */
 struct rsg__AddResponse
 {
@@ -1165,7 +1165,7 @@ struct rsg__AddResponse
 #endif
 
 #ifndef SOAP_TYPE_rsg__Add
-#define SOAP_TYPE_rsg__Add (256)
+#define SOAP_TYPE_rsg__Add (255)
 /* rsg:Add */
 struct rsg__Add
 {
@@ -1174,7 +1174,7 @@ struct rsg__Add
 #endif
 
 #ifndef SOAP_TYPE_cpt__findByHandleResponse
-#define SOAP_TYPE_cpt__findByHandleResponse (257)
+#define SOAP_TYPE_cpt__findByHandleResponse (256)
 /* cpt:findByHandleResponse */
 struct cpt__findByHandleResponse
 {
@@ -1183,7 +1183,7 @@ struct cpt__findByHandleResponse
 #endif
 
 #ifndef SOAP_TYPE_cpt__getActiveTreesResponse
-#define SOAP_TYPE_cpt__getActiveTreesResponse (258)
+#define SOAP_TYPE_cpt__getActiveTreesResponse (257)
 /* cpt:getActiveTreesResponse */
 struct cpt__getActiveTreesResponse
 {
@@ -1192,7 +1192,7 @@ struct cpt__getActiveTreesResponse
 #endif
 
 #ifndef SOAP_TYPE_cpt__createNewTreeResponse
-#define SOAP_TYPE_cpt__createNewTreeResponse (259)
+#define SOAP_TYPE_cpt__createNewTreeResponse (258)
 /* cpt:createNewTreeResponse */
 struct cpt__createNewTreeResponse
 {
@@ -1201,7 +1201,7 @@ struct cpt__createNewTreeResponse
 #endif
 
 #ifndef SOAP_TYPE_cpt__destroyResponse
-#define SOAP_TYPE_cpt__destroyResponse (260)
+#define SOAP_TYPE_cpt__destroyResponse (259)
 /* cpt:destroyResponse */
 struct cpt__destroyResponse
 {
@@ -1210,7 +1210,7 @@ struct cpt__destroyResponse
 #endif
 
 #ifndef SOAP_TYPE_cpt__createNewTree
-#define SOAP_TYPE_cpt__createNewTree (263)
+#define SOAP_TYPE_cpt__createNewTree (262)
 /* cpt:createNewTree */
 struct cpt__createNewTree
 {
@@ -1219,7 +1219,7 @@ struct cpt__createNewTree
 #endif
 
 #ifndef SOAP_TYPE_cpt__findByHandle
-#define SOAP_TYPE_cpt__findByHandle (266)
+#define SOAP_TYPE_cpt__findByHandle (265)
 /* cpt:findByHandle */
 struct cpt__findByHandle
 {
@@ -1229,7 +1229,7 @@ struct cpt__findByHandle
 #endif
 
 #ifndef SOAP_TYPE_cpt__Destroy
-#define SOAP_TYPE_cpt__Destroy (269)
+#define SOAP_TYPE_cpt__Destroy (268)
 /* cpt:Destroy */
 struct cpt__Destroy
 {
@@ -1238,7 +1238,7 @@ struct cpt__Destroy
 #endif
 
 #ifndef SOAP_TYPE_cpt__getActiveTrees
-#define SOAP_TYPE_cpt__getActiveTrees (272)
+#define SOAP_TYPE_cpt__getActiveTrees (271)
 /* cpt:getActiveTrees */
 struct cpt__getActiveTrees
 {
@@ -1247,7 +1247,7 @@ struct cpt__getActiveTrees
 #endif
 
 #ifndef SOAP_TYPE_cptn__addNodeResponse
-#define SOAP_TYPE_cptn__addNodeResponse (273)
+#define SOAP_TYPE_cptn__addNodeResponse (272)
 /* cptn:addNodeResponse */
 struct cptn__addNodeResponse
 {
@@ -1256,7 +1256,7 @@ struct cptn__addNodeResponse
 #endif
 
 #ifndef SOAP_TYPE_cptn__destroyResponse
-#define SOAP_TYPE_cptn__destroyResponse (274)
+#define SOAP_TYPE_cptn__destroyResponse (273)
 /* cptn:destroyResponse */
 struct cptn__destroyResponse
 {
@@ -1265,7 +1265,7 @@ struct cptn__destroyResponse
 #endif
 
 #ifndef SOAP_TYPE_cptn__Destroy
-#define SOAP_TYPE_cptn__Destroy (277)
+#define SOAP_TYPE_cptn__Destroy (276)
 /* cptn:Destroy */
 struct cptn__Destroy
 {
@@ -1274,7 +1274,7 @@ struct cptn__Destroy
 #endif
 
 #ifndef SOAP_TYPE_cptn__addNode
-#define SOAP_TYPE_cptn__addNode (280)
+#define SOAP_TYPE_cptn__addNode (279)
 /* cptn:addNode */
 struct cptn__addNode
 {
@@ -1287,7 +1287,7 @@ struct cptn__addNode
 #endif
 
 #ifndef SOAP_TYPE_stringWithAttr
-#define SOAP_TYPE_stringWithAttr (281)
+#define SOAP_TYPE_stringWithAttr (280)
 /* Primitive stringWithAttr schema type: */
 struct stringWithAttr
 {
@@ -1297,7 +1297,7 @@ struct stringWithAttr
 #endif
 
 #ifndef SOAP_TYPE_UsernameToken
-#define SOAP_TYPE_UsernameToken (282)
+#define SOAP_TYPE_UsernameToken (281)
 /* UsernameToken */
 struct UsernameToken
 {
@@ -1309,7 +1309,7 @@ struct UsernameToken
 #endif
 
 #ifndef SOAP_TYPE_Security
-#define SOAP_TYPE_Security (283)
+#define SOAP_TYPE_Security (282)
 /* Security */
 struct Security
 {
@@ -1318,7 +1318,7 @@ struct Security
 #endif
 
 #ifndef SOAP_TYPE_SOAP_ENV__Header
-#define SOAP_TYPE_SOAP_ENV__Header (284)
+#define SOAP_TYPE_SOAP_ENV__Header (283)
 /* SOAP Header: */
 struct SOAP_ENV__Header
 {
@@ -1328,7 +1328,7 @@ struct SOAP_ENV__Header
 #endif
 
 #ifndef SOAP_TYPE_SOAP_ENV__Code
-#define SOAP_TYPE_SOAP_ENV__Code (285)
+#define SOAP_TYPE_SOAP_ENV__Code (284)
 /* SOAP Fault Code: */
 struct SOAP_ENV__Code
 {
@@ -1338,7 +1338,7 @@ struct SOAP_ENV__Code
 #endif
 
 #ifndef SOAP_TYPE_SOAP_ENV__Detail
-#define SOAP_TYPE_SOAP_ENV__Detail (287)
+#define SOAP_TYPE_SOAP_ENV__Detail (286)
 /* SOAP-ENV:Detail */
 struct SOAP_ENV__Detail
 {
@@ -1349,7 +1349,7 @@ struct SOAP_ENV__Detail
 #endif
 
 #ifndef SOAP_TYPE_SOAP_ENV__Reason
-#define SOAP_TYPE_SOAP_ENV__Reason (288)
+#define SOAP_TYPE_SOAP_ENV__Reason (287)
 /* SOAP-ENV:Reason */
 struct SOAP_ENV__Reason
 {
@@ -1358,7 +1358,7 @@ struct SOAP_ENV__Reason
 #endif
 
 #ifndef SOAP_TYPE_SOAP_ENV__Fault
-#define SOAP_TYPE_SOAP_ENV__Fault (289)
+#define SOAP_TYPE_SOAP_ENV__Fault (288)
 /* SOAP Fault: */
 struct SOAP_ENV__Fault
 {
@@ -1434,7 +1434,7 @@ typedef char *XML;
 \******************************************************************************/
 
 
-SOAP_FMAC5 int SOAP_FMAC6 wsrp__GetResourceProperty(struct soap*, struct GetResourcePropertyRequest *in_, char **out_);
+SOAP_FMAC5 int SOAP_FMAC6 __wsrp__GetResourceProperty(struct soap*, char *wsrp__GetResourceProperty, char **out_);
 
 SOAP_FMAC5 int SOAP_FMAC6 wsrp__GetMultipleResourceProperties(struct soap*, struct wsrp__GetMultipleResourcePropertiesRequest in, char **_out);
 
@@ -1571,7 +1571,7 @@ SOAP_FMAC5 int SOAP_FMAC6 cptn__addNode(struct soap*, char *in0, char *in1, char
 \******************************************************************************/
 
 
-SOAP_FMAC5 int SOAP_FMAC6 soap_call_wsrp__GetResourceProperty(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct GetResourcePropertyRequest *in_, char **out_);
+SOAP_FMAC5 int SOAP_FMAC6 soap_call___wsrp__GetResourceProperty(struct soap *soap, const char *soap_endpoint, const char *soap_action, char *wsrp__GetResourceProperty, char **out_);
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_call_wsrp__GetMultipleResourceProperties(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct wsrp__GetMultipleResourcePropertiesRequest in, char **_out);
 
@@ -1711,7 +1711,7 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_serve(struct soap*);
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_serve_request(struct soap*);
 
-SOAP_FMAC5 int SOAP_FMAC6 soap_serve_wsrp__GetResourceProperty(struct soap*);
+SOAP_FMAC5 int SOAP_FMAC6 soap_serve___wsrp__GetResourceProperty(struct soap*);
 
 SOAP_FMAC5 int SOAP_FMAC6 soap_serve_wsrp__GetMultipleResourceProperties(struct soap*);
 

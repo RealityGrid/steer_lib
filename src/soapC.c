@@ -10,7 +10,7 @@
 extern "C" {
 #endif
 
-SOAP_SOURCE_STAMP("@(#) soapC.c ver 2.7.7 2006-06-05 15:09:23 GMT")
+SOAP_SOURCE_STAMP("@(#) soapC.c ver 2.7.7 2006-06-19 09:16:47 GMT")
 
 
 #ifndef WITH_NOGLOBAL
@@ -394,8 +394,6 @@ SOAP_FMAC3 void * SOAP_FMAC4 soap_getelement(struct soap *soap, int *type)
 		return soap_in_wsrp__SetResourceProperties(soap, NULL, NULL, "wsrp:SetResourceProperties");
 	case SOAP_TYPE_wsrp__GetMultipleResourceProperties:
 		return soap_in_wsrp__GetMultipleResourceProperties(soap, NULL, NULL, "wsrp:GetMultipleResourceProperties");
-	case SOAP_TYPE_wsrp__GetResourceProperty:
-		return soap_in_wsrp__GetResourceProperty(soap, NULL, NULL, "wsrp:GetResourceProperty");
 	case SOAP_TYPE_sws__DetachResponse:
 		return soap_in_sws__DetachResponse(soap, NULL, NULL, "sws:DetachResponse");
 	case SOAP_TYPE_sws__AddChildResponse:
@@ -558,8 +556,6 @@ SOAP_FMAC3 void * SOAP_FMAC4 soap_getelement(struct soap *soap, int *type)
 		return soap_in_PointerTosws__AddChildResponse(soap, NULL, NULL, "sws:AddChildResponse");
 	case SOAP_TYPE_PointerTowsrp__SetResourcePropertiesResponse:
 		return soap_in_PointerTowsrp__SetResourcePropertiesResponse(soap, NULL, NULL, "wsrp:SetResourcePropertiesResponse");
-	case SOAP_TYPE_PointerToGetResourcePropertyRequest:
-		return soap_in_PointerToGetResourcePropertyRequest(soap, NULL, NULL, "GetResourcePropertyRequest");
 	case SOAP_TYPE_PointerTowsrp__ResourcePropertyStruct:
 		return soap_in_PointerTowsrp__ResourcePropertyStruct(soap, NULL, NULL, "wsrp:ResourcePropertyStruct");
 	case SOAP_TYPE_PointerToCommand:
@@ -1078,10 +1074,6 @@ SOAP_FMAC3 void * SOAP_FMAC4 soap_getelement(struct soap *soap, int *type)
 		{	*type = SOAP_TYPE_wsrp__GetMultipleResourceProperties;
 			return soap_in_wsrp__GetMultipleResourceProperties(soap, NULL, NULL, NULL);
 		}
-		if (!soap_match_tag(soap, t, "wsrp:GetResourceProperty"))
-		{	*type = SOAP_TYPE_wsrp__GetResourceProperty;
-			return soap_in_wsrp__GetResourceProperty(soap, NULL, NULL, NULL);
-		}
 		if (!soap_match_tag(soap, t, "sws:DetachResponse"))
 		{	*type = SOAP_TYPE_sws__DetachResponse;
 			return soap_in_sws__DetachResponse(soap, NULL, NULL, NULL);
@@ -1474,8 +1466,6 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_putelement(struct soap *soap, const void *ptr, co
 		return soap_out_wsrp__SetResourceProperties(soap, tag, id, (const struct wsrp__SetResourceProperties *)ptr, "wsrp:SetResourceProperties");
 	case SOAP_TYPE_wsrp__GetMultipleResourceProperties:
 		return soap_out_wsrp__GetMultipleResourceProperties(soap, tag, id, (const struct wsrp__GetMultipleResourceProperties *)ptr, "wsrp:GetMultipleResourceProperties");
-	case SOAP_TYPE_wsrp__GetResourceProperty:
-		return soap_out_wsrp__GetResourceProperty(soap, tag, id, (const struct wsrp__GetResourceProperty *)ptr, "wsrp:GetResourceProperty");
 	case SOAP_TYPE_sws__DetachResponse:
 		return soap_out_sws__DetachResponse(soap, tag, id, (const struct sws__DetachResponse *)ptr, "sws:DetachResponse");
 	case SOAP_TYPE_sws__AddChildResponse:
@@ -1638,8 +1628,6 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_putelement(struct soap *soap, const void *ptr, co
 		return soap_out_PointerTosws__AddChildResponse(soap, tag, id, (struct sws__AddChildResponse *const*)ptr, "sws:AddChildResponse");
 	case SOAP_TYPE_PointerTowsrp__SetResourcePropertiesResponse:
 		return soap_out_PointerTowsrp__SetResourcePropertiesResponse(soap, tag, id, (struct wsrp__SetResourcePropertiesResponse *const*)ptr, "wsrp:SetResourcePropertiesResponse");
-	case SOAP_TYPE_PointerToGetResourcePropertyRequest:
-		return soap_out_PointerToGetResourcePropertyRequest(soap, tag, id, (struct GetResourcePropertyRequest *const*)ptr, "GetResourcePropertyRequest");
 	case SOAP_TYPE_PointerTowsrp__ResourcePropertyStruct:
 		return soap_out_PointerTowsrp__ResourcePropertyStruct(soap, tag, id, (struct wsrp__ResourcePropertyStruct *const*)ptr, "wsrp:ResourcePropertyStruct");
 	case SOAP_TYPE_PointerToCommand:
@@ -2027,8 +2015,8 @@ SOAP_FMAC3 void SOAP_FMAC4 soap_markelement(struct soap *soap, const void *ptr, 
 	case SOAP_TYPE_wsrp__GetMultipleResourceProperties:
 		soap_serialize_wsrp__GetMultipleResourceProperties(soap, (const struct wsrp__GetMultipleResourceProperties *)ptr);
 		break;
-	case SOAP_TYPE_wsrp__GetResourceProperty:
-		soap_serialize_wsrp__GetResourceProperty(soap, (const struct wsrp__GetResourceProperty *)ptr);
+	case SOAP_TYPE___wsrp__GetResourceProperty:
+		soap_serialize___wsrp__GetResourceProperty(soap, (const struct __wsrp__GetResourceProperty *)ptr);
 		break;
 	case SOAP_TYPE_sws__DetachResponse:
 		soap_serialize_sws__DetachResponse(soap, (const struct sws__DetachResponse *)ptr);
@@ -2272,9 +2260,6 @@ SOAP_FMAC3 void SOAP_FMAC4 soap_markelement(struct soap *soap, const void *ptr, 
 		break;
 	case SOAP_TYPE_PointerTowsrp__SetResourcePropertiesResponse:
 		soap_serialize_PointerTowsrp__SetResourcePropertiesResponse(soap, (struct wsrp__SetResourcePropertiesResponse *const*)ptr);
-		break;
-	case SOAP_TYPE_PointerToGetResourcePropertyRequest:
-		soap_serialize_PointerToGetResourcePropertyRequest(soap, (struct GetResourcePropertyRequest *const*)ptr);
 		break;
 	case SOAP_TYPE_PointerTowsrp__ResourcePropertyStruct:
 		soap_serialize_PointerTowsrp__ResourcePropertyStruct(soap, (struct wsrp__ResourcePropertyStruct *const*)ptr);
@@ -12192,61 +12177,51 @@ SOAP_FMAC3 struct wsrp__GetMultipleResourceProperties * SOAP_FMAC4 soap_in_wsrp_
 	return a;
 }
 
-SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_wsrp__GetResourceProperty(struct soap *soap, const struct wsrp__GetResourceProperty *a)
+SOAP_FMAC3 void SOAP_FMAC4 soap_serialize___wsrp__GetResourceProperty(struct soap *soap, const struct __wsrp__GetResourceProperty *a)
 {
 	(void)soap; (void)a; /* appease -Wall -Werror */
-	soap_serialize_PointerToGetResourcePropertyRequest(soap, &a->in_);
+	soap_serialize_xsd__string(soap, &a->wsrp__GetResourceProperty);
 }
 
-SOAP_FMAC3 void SOAP_FMAC4 soap_default_wsrp__GetResourceProperty(struct soap *soap, struct wsrp__GetResourceProperty *a)
+SOAP_FMAC3 void SOAP_FMAC4 soap_default___wsrp__GetResourceProperty(struct soap *soap, struct __wsrp__GetResourceProperty *a)
 {
 	(void)soap; (void)a; /* appease -Wall -Werror */
-	a->in_ = NULL;
+	soap_default_xsd__string(soap, &a->wsrp__GetResourceProperty);
 }
 
-SOAP_FMAC3 int SOAP_FMAC4 soap_put_wsrp__GetResourceProperty(struct soap *soap, const struct wsrp__GetResourceProperty *a, const char *tag, const char *type)
+SOAP_FMAC3 int SOAP_FMAC4 soap_put___wsrp__GetResourceProperty(struct soap *soap, const struct __wsrp__GetResourceProperty *a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_wsrp__GetResourceProperty);
-	if (soap_out_wsrp__GetResourceProperty(soap, tag, id, a, type))
+	register int id = 0;
+	if (soap_out___wsrp__GetResourceProperty(soap, tag, id, a, type))
 		return soap->error;
-	return soap_putindependent(soap);
-}
-
-SOAP_FMAC3 int SOAP_FMAC4 soap_out_wsrp__GetResourceProperty(struct soap *soap, const char *tag, int id, const struct wsrp__GetResourceProperty *a, const char *type)
-{
-	soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_wsrp__GetResourceProperty), type);
-	soap_out_PointerToGetResourcePropertyRequest(soap, "in", -1, &a->in_, "");
-	soap_element_end_out(soap, tag);
 	return SOAP_OK;
 }
 
-SOAP_FMAC3 struct wsrp__GetResourceProperty * SOAP_FMAC4 soap_get_wsrp__GetResourceProperty(struct soap *soap, struct wsrp__GetResourceProperty *p, const char *tag, const char *type)
+SOAP_FMAC3 int SOAP_FMAC4 soap_out___wsrp__GetResourceProperty(struct soap *soap, const char *tag, int id, const struct __wsrp__GetResourceProperty *a, const char *type)
 {
-	if ((p = soap_in_wsrp__GetResourceProperty(soap, tag, p, type)))
+	soap_out_xsd__string(soap, "wsrp:GetResourceProperty", -1, &a->wsrp__GetResourceProperty, "");
+	return SOAP_OK;
+}
+
+SOAP_FMAC3 struct __wsrp__GetResourceProperty * SOAP_FMAC4 soap_get___wsrp__GetResourceProperty(struct soap *soap, struct __wsrp__GetResourceProperty *p, const char *tag, const char *type)
+{
+	if ((p = soap_in___wsrp__GetResourceProperty(soap, tag, p, type)))
 		soap_getindependent(soap);
 	return p;
 }
 
-SOAP_FMAC3 struct wsrp__GetResourceProperty * SOAP_FMAC4 soap_in_wsrp__GetResourceProperty(struct soap *soap, const char *tag, struct wsrp__GetResourceProperty *a, const char *type)
+SOAP_FMAC3 struct __wsrp__GetResourceProperty * SOAP_FMAC4 soap_in___wsrp__GetResourceProperty(struct soap *soap, const char *tag, struct __wsrp__GetResourceProperty *a, const char *type)
 {
-	short soap_flag_in_ = 1;
-	if (soap_element_begin_in(soap, tag, 0))
-		return NULL;
-	if (*soap->type && soap_match_tag(soap, soap->type, type))
-	{	soap->error = SOAP_TYPE;
-		return NULL;
-	}
-	a = (struct wsrp__GetResourceProperty *)soap_id_enter(soap, soap->id, a, SOAP_TYPE_wsrp__GetResourceProperty, sizeof(struct wsrp__GetResourceProperty), 0, NULL, NULL, NULL);
+	short soap_flag_wsrp__GetResourceProperty = 1;
+	a = (struct __wsrp__GetResourceProperty *)soap_id_enter(soap, soap->id, a, SOAP_TYPE___wsrp__GetResourceProperty, sizeof(struct __wsrp__GetResourceProperty), 0, NULL, NULL, NULL);
 	if (!a)
 		return NULL;
-	soap_default_wsrp__GetResourceProperty(soap, a);
-	if (soap->body && !*soap->href)
-	{
+	soap_default___wsrp__GetResourceProperty(soap, a);
 		for (;;)
 		{	soap->error = SOAP_TAG_MISMATCH;
-			if (soap_flag_in_ && soap->error == SOAP_TAG_MISMATCH)
-				if (soap_in_PointerToGetResourcePropertyRequest(soap, "in", &a->in_, "GetResourcePropertyRequest"))
-				{	soap_flag_in_--;
+			if (soap_flag_wsrp__GetResourceProperty && (soap->error == SOAP_TAG_MISMATCH || soap->error == SOAP_NO_TAG))
+				if (soap_in_xsd__string(soap, "wsrp:GetResourceProperty", &a->wsrp__GetResourceProperty, "xsd:string"))
+				{	soap_flag_wsrp__GetResourceProperty--;
 					continue;
 				}
 			if (soap->error == SOAP_TAG_MISMATCH)
@@ -12256,14 +12231,6 @@ SOAP_FMAC3 struct wsrp__GetResourceProperty * SOAP_FMAC4 soap_in_wsrp__GetResour
 			if (soap->error)
 				return NULL;
 		}
-		if (soap_element_end_in(soap, tag))
-			return NULL;
-	}
-	else
-	{	a = (struct wsrp__GetResourceProperty *)soap_id_forward(soap, soap->href, (void**)a, 0, SOAP_TYPE_wsrp__GetResourceProperty, 0, sizeof(struct wsrp__GetResourceProperty), 0, NULL);
-		if (soap->body && soap_element_end_in(soap, tag))
-			return NULL;
-	}
 	return a;
 }
 
@@ -16993,56 +16960,6 @@ SOAP_FMAC3 struct wsrp__SetResourcePropertiesResponse ** SOAP_FMAC4 soap_in_Poin
 	}
 	else
 	{	a = (struct wsrp__SetResourcePropertiesResponse **)soap_id_lookup(soap, soap->href, (void**)a, SOAP_TYPE_wsrp__SetResourcePropertiesResponse, sizeof(struct wsrp__SetResourcePropertiesResponse), 0);
-		if (soap->body && soap_element_end_in(soap, tag))
-			return NULL;
-	}
-	return a;
-}
-
-SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_PointerToGetResourcePropertyRequest(struct soap *soap, struct GetResourcePropertyRequest *const*a)
-{
-	if (!soap_reference(soap, *a, SOAP_TYPE_GetResourcePropertyRequest))
-		soap_serialize_GetResourcePropertyRequest(soap, *a);
-}
-
-SOAP_FMAC3 int SOAP_FMAC4 soap_put_PointerToGetResourcePropertyRequest(struct soap *soap, struct GetResourcePropertyRequest *const*a, const char *tag, const char *type)
-{
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_PointerToGetResourcePropertyRequest);
-	if (soap_out_PointerToGetResourcePropertyRequest(soap, tag, id, a, type))
-		return soap->error;
-	return soap_putindependent(soap);
-}
-
-SOAP_FMAC3 int SOAP_FMAC4 soap_out_PointerToGetResourcePropertyRequest(struct soap *soap, const char *tag, int id, struct GetResourcePropertyRequest *const*a, const char *type)
-{
-	id = soap_element_id(soap, tag, id, *a, NULL, 0, type, SOAP_TYPE_GetResourcePropertyRequest);
-	if (id < 0)
-		return soap->error;
-	return soap_out_GetResourcePropertyRequest(soap, tag, id, *a, type);
-}
-
-SOAP_FMAC3 struct GetResourcePropertyRequest ** SOAP_FMAC4 soap_get_PointerToGetResourcePropertyRequest(struct soap *soap, struct GetResourcePropertyRequest **p, const char *tag, const char *type)
-{
-	if ((p = soap_in_PointerToGetResourcePropertyRequest(soap, tag, p, type)))
-		soap_getindependent(soap);
-	return p;
-}
-
-SOAP_FMAC3 struct GetResourcePropertyRequest ** SOAP_FMAC4 soap_in_PointerToGetResourcePropertyRequest(struct soap *soap, const char *tag, struct GetResourcePropertyRequest **a, const char *type)
-{
-	if (soap_element_begin_in(soap, tag, 1))
-		return NULL;
-	if (!a)
-		if (!(a = (struct GetResourcePropertyRequest **)soap_malloc(soap, sizeof(struct GetResourcePropertyRequest *))))
-			return NULL;
-	*a = NULL;
-	if (!soap->null && *soap->href != '#')
-	{	soap_revert(soap);
-		if (!(*a = soap_in_GetResourcePropertyRequest(soap, tag, *a, type)))
-			return NULL;
-	}
-	else
-	{	a = (struct GetResourcePropertyRequest **)soap_id_lookup(soap, soap->href, (void**)a, SOAP_TYPE_GetResourcePropertyRequest, sizeof(struct GetResourcePropertyRequest), 0);
 		if (soap->body && soap_element_end_in(soap, tag))
 			return NULL;
 	}

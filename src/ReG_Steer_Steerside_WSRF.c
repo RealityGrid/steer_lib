@@ -271,30 +271,22 @@ int Get_resource_property (struct soap *soapStruct,
 			   const char  *name,
 			   char       **pRP)
 {
-  struct wsrp__GetMultipleResourcePropertiesRequest in;
   char  *out;
 #ifdef USE_REG_TIMING
   double time0, time1;
 #endif
 
   *pRP = NULL;
-  in.__size = 1;
-  in.__ptr = (struct wsrp__ResourcePropertyStruct *)malloc(sizeof(struct wsrp__ResourcePropertyStruct));
-
-  in.__ptr[0].ResourceProperty = (char *)malloc(REG_MAX_STRING_LENGTH*sizeof(char));
-  strncpy(in.__ptr[0].ResourceProperty, name, REG_MAX_STRING_LENGTH);
-
   Create_WSRF_header(soapStruct, epr, username, passwd);
 
 #ifdef USE_REG_TIMING
   Get_current_time_seconds(&time0);
 #endif
 
-  if(soap_call_wsrp__GetMultipleResourceProperties(soapStruct, epr, 
-						   "", in,
-						   &out) != SOAP_OK){
+  if(soap_call___wsrp__GetResourceProperty(soapStruct, epr, 
+					 "", (char*)name,
+					 &out) != SOAP_OK){
     soap_print_fault(soapStruct, stderr);
-    free(in.__ptr[0].ResourceProperty);
     return REG_FAILURE;
   }
 #ifdef USE_REG_TIMING
@@ -308,8 +300,6 @@ int Get_resource_property (struct soap *soapStruct,
   fprintf(stderr, "STEER: Get_resource_property for %s returned >>%s<<\n", 
 	  name, out);
 #endif
-  free(in.__ptr[0].ResourceProperty);
-  free(in.__ptr);
 
   *pRP = out;
   return REG_SUCCESS;

@@ -9,25 +9,25 @@
 extern "C" {
 #endif
 
-SOAP_SOURCE_STAMP("@(#) soapClient.c ver 2.7.7 2006-06-05 15:09:22 GMT")
+SOAP_SOURCE_STAMP("@(#) soapClient.c ver 2.7.7 2006-06-19 09:16:46 GMT")
 
 
-SOAP_FMAC5 int SOAP_FMAC6 soap_call_wsrp__GetResourceProperty(struct soap *soap, const char *soap_endpoint, const char *soap_action, struct GetResourcePropertyRequest *in_, char **out_)
-{	struct wsrp__GetResourceProperty soap_tmp_wsrp__GetResourceProperty;
+SOAP_FMAC5 int SOAP_FMAC6 soap_call___wsrp__GetResourceProperty(struct soap *soap, const char *soap_endpoint, const char *soap_action, char *wsrp__GetResourceProperty, char **out_)
+{	struct __wsrp__GetResourceProperty soap_tmp___wsrp__GetResourceProperty;
 	if (!soap_action)
-		soap_action = "";
+		soap_action = "http://www.ibm.com/xmlns/stdw";
 	soap->encodingStyle = NULL;
-	soap_tmp_wsrp__GetResourceProperty.in_ = in_;
+	soap_tmp___wsrp__GetResourceProperty.wsrp__GetResourceProperty = wsrp__GetResourceProperty;
 	soap_begin(soap);
 	soap_serializeheader(soap);
-	soap_serialize_wsrp__GetResourceProperty(soap, &soap_tmp_wsrp__GetResourceProperty);
+	soap_serialize___wsrp__GetResourceProperty(soap, &soap_tmp___wsrp__GetResourceProperty);
 	if (soap_begin_count(soap))
 		return soap->error;
 	if (soap->mode & SOAP_IO_LENGTH)
 	{	if (soap_envelope_begin_out(soap)
 		 || soap_putheader(soap)
 		 || soap_body_begin_out(soap)
-		 || soap_put_wsrp__GetResourceProperty(soap, &soap_tmp_wsrp__GetResourceProperty, "wsrp:GetResourceProperty", "")
+		 || soap_put___wsrp__GetResourceProperty(soap, &soap_tmp___wsrp__GetResourceProperty, "-wsrp:GetResourceProperty", "")
 		 || soap_body_end_out(soap)
 		 || soap_envelope_end_out(soap))
 			 return soap->error;
@@ -38,7 +38,7 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call_wsrp__GetResourceProperty(struct soap *soap,
 	 || soap_envelope_begin_out(soap)
 	 || soap_putheader(soap)
 	 || soap_body_begin_out(soap)
-	 || soap_put_wsrp__GetResourceProperty(soap, &soap_tmp_wsrp__GetResourceProperty, "wsrp:GetResourceProperty", "")
+	 || soap_put___wsrp__GetResourceProperty(soap, &soap_tmp___wsrp__GetResourceProperty, "-wsrp:GetResourceProperty", "")
 	 || soap_body_end_out(soap)
 	 || soap_envelope_end_out(soap)
 	 || soap_end_send(soap))

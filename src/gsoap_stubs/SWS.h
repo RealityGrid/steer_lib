@@ -78,12 +78,11 @@ struct sws__DetachResponse {
   void *rubbish;
 };
 
-//gsoap wsrp service method-action: GetResourceProperty ""
-wsrp__GetResourceProperty(//xsd__string _,
-			  struct GetResourcePropertyRequest *in_,
-			  // char *name,		  
-			  XML *out_);
-//			   struct wsrp__GetResourcePropertyResponse * out );
+//gsoap wsrp service method-style:     GetResourceProperty document
+//gsoap wsrp service method-encoding:  GetResourceProperty literal
+//gsoap wsrp service method-action:    GetResourceProperty http://www.ibm.com/xmlns/stdw
+__wsrp__GetResourceProperty(xsd__string wsrp__GetResourceProperty,
+			    XML *out_);
 //gsoap wsrp service method-action: GetMultipleResourceProperties ""
 wsrp__GetMultipleResourceProperties( struct wsrp__GetMultipleResourcePropertiesRequest in,
 				     XML *_out);
