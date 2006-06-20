@@ -1,6 +1,6 @@
 #  File to set up environment for RealityGrid steering
 #
-#  (C) Copyright 2002, 2004, University of Manchester, United Kingdom,
+#  (C) Copyright 2006, University of Manchester, United Kingdom,
 #  all rights reserved.
 #
 #  This software is produced by the Supercomputing, Visualization and
@@ -64,16 +64,7 @@ setenv REG_XML_INCDIR /usr/include/libxml2
 
 # For socket connections - need to set port to that reported
 # by library when application launched
-setenv REG_CONNECTOR_HOSTNAME  vermont.mvc.mcc.ac.uk
-setenv REG_CONNECTOR_PORT      2566
-setenv GLOBUS_TCP_PORT_RANGE   2566,2666
-
-#---------------------------------------------------------------
-# This section needed when steering via SOAP and the Steering
-# Grid Service (or SGS).
-
-# Location of steering grid service that application will attach to
-# This is an example - it will need to be set to the GSH of an
-# application's SGS immediately before running the application. 
-setenv REG_SGS_ADDRESS http://vermont.mvc.mcc.ac.uk:50000/1234567
+#setenv REG_CONNECTOR_HOSTNAME  vermont.mvc.mcc.ac.uk
+#setenv REG_CONNECTOR_PORT      2566
+#setenv GLOBUS_TCP_PORT_RANGE   2566,2666
 
