@@ -1315,19 +1315,41 @@ int Init_random()
 #ifdef WITH_OPENSSL
 
   struct stat stbuf;
-  char *randBuf = "/dev/random";
+  char randBuf[REG_MAX_STRING_LENGTH];
 
   if(ReG_ssl_random_initialized == REG_TRUE)return REG_SUCCESS;
 
-  if(stat(randBuf, &stbuf) == -1){
-    fprintf(stderr, "STEER: Init_random: %s does not exist on this "
-	    "system - cannot initalize random sequence\n", randBuf);
+  if(!RAND_file_name(randBuf, (size_t)REG_MAX_STRING_LENGTH)){
+#if REG_DEBUG_FULL
+    fprintf(stderr, "STEER: WARNING: Init_random: RAND_file_name failed to "
+	    "return name of file for use in initializing randome "
+	    "sequence - trying /dev/urandom\n");
+#endif
+    sprintf(randBuf, "/dev/urandom");
+  }
+
+  if(stat(randBuf, &stbuf) != -1){
+  }
+  else if(stat("/dev/urandom", &stbuf) != -1){
+    sprintf(randBuf, "/dev/urandom");
+  }
+  else if(stat("/dev/random", &stbuf) != -1){
+    sprintf(randBuf, "/dev/random");
+  }
+  else{
+    fprintf(stderr, "STEER: Init_random: %s, /dev/urandom and /dev/random "
+	    "do not exist on this system - cannot initalize random "
+	    "sequence\n", randBuf);
     return REG_FAILURE;
   }
 
-  /* Use contents of /dev/random to initialise sequence of pseudo
+#if REG_DEBUG_FULL
+  fprintf(stderr, "STEER: Init_random: seed file is %s\n", randBuf);
+#endif
+
+  /* Use contents of randBuf file to initialise sequence of pseudo
      random numbers from OpenSSL */
-  if(!RAND_load_file(randBuf, 128)){
+  if(!RAND_load_file(randBuf, 16)){
     fprintf(stderr, "STEER: Init_random: Failed to initialize pseudo-random "
 	    "number sequence from %s\n", randBuf);
     return REG_FAILURE;
