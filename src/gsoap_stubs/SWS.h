@@ -44,14 +44,6 @@ struct sws__PutParamLogResponse {
   void *_rubbish;
 };
 
-struct GetResourcePropertyRequest {
-  xsd__string in_;
-};
-
-struct wsrp__GetResourcePropertyResponse {
-  xsd__string ResourceProperty;
-};
-
 struct wsrp__ResourcePropertyStruct {
   xsd__string ResourceProperty;
 };
