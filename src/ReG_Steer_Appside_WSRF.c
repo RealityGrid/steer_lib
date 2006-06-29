@@ -3,7 +3,7 @@
   steering communication from the application side using the 
   WSRF specification.
 
-  (C) Copyright 2005, University of Manchester, United Kingdom,
+  (C) Copyright 2006, University of Manchester, United Kingdom,
   all rights reserved.
 
   This software was developed by the RealityGrid project
@@ -289,12 +289,12 @@ int Steerer_connected_wsrf ()
 				 STEER_STATUS_RP,
 				 &steer_status);
   if(status != REG_SUCCESS){
-    fprintf(stderr, "Steerer_connected_wsrf: Get_resource_property failed\n");
+    fprintf(stderr, "STEER: Steerer_connected_wsrf: Get_resource_property failed\n");
     return REG_FAILURE;
   }
 #if REG_DEBUG
   else{
-    fprintf(stderr, "Steerer_connected_wsrf: Get_resource_property "
+    fprintf(stderr, "STEER: Steerer_connected_wsrf: Get_resource_property "
 	    "returned: %s\n", steer_status);
   }
 #endif
@@ -540,7 +540,7 @@ int Save_log_wsrf (char *log_data)
 
   if(strlen(log_data) > REG_SCRATCH_BUFFER_SIZE){
 
-    fprintf(stderr, "Save_log_wsrf: log data exceeds scratch buffer "
+    fprintf(stderr, "STEER: Save_log_wsrf: log data exceeds scratch buffer "
 	    "size of %d btes.  More code needed here...\n", 
 	    REG_SCRATCH_BUFFER_SIZE);
     return REG_FAILURE;
@@ -568,13 +568,13 @@ int Save_log_wsrf (char *log_data)
 				Steerer_connection.SGS_info.address, 
 				"", Global_scratch_buffer,  
 				&out)){
-    fprintf(stderr, "Save_log_wsrf: soap call failed:\n");
+    fprintf(stderr, "STEER: Save_log_wsrf: soap call failed:\n");
     soap_print_fault(Steerer_connection.SGS_info.soap, stderr);
     return REG_FAILURE;
   }
 #ifdef USE_REG_TIMING
   Get_current_time_seconds(&time1);
-  fprintf(stderr, "TIMING: soap_call_sws__PutParamLog "
+  fprintf(stderr, "STEER: TIMING: soap_call_sws__PutParamLog "
 	  "took %f seconds\n", (time1-time0));
 #endif
 
@@ -604,7 +604,7 @@ int Finalize_steering_connection_wsrf ()
   if(soap_call_wsrp__Destroy(Steerer_connection.SGS_info.soap, 
 			    Steerer_connection.SGS_info.address, 
 			    "",  NULL, &out)){
-    fprintf(stderr, "Finalize_steering_connection_wsrf: call to Destroy"
+    fprintf(stderr, "STEER: Finalize_steering_connection_wsrf: call to Destroy"
 	    " failed:\n");
     soap_print_fault(Steerer_connection.SGS_info.soap, stderr);
     return_status = REG_FAILURE;
@@ -697,8 +697,8 @@ int Get_data_source_address_wsrf(const int          index,
     }
 
 #if REG_DEBUG
-    fprintf(stderr, "Get_data_source_address_wsrf: Got EPR = %s\n"
-	    "                                label = %s\n",
+    fprintf(stderr, "STEER: Get_data_source_address_wsrf: Got EPR = %s\n"
+	    "                                               label = %s\n",
 	    epr, label);
 #endif
 
@@ -767,14 +767,14 @@ int Get_data_source_address_wsrf(const int          index,
       pchar++;
       *port = (unsigned short int)atoi(pchar);
 #if REG_DEBUG
-      fprintf(stderr, "Get_data_source_address_wsrf: host = %s\n"
-	      "                              port = %d\n",
+      fprintf(stderr, "STEER: Get_data_source_address_wsrf: host = %s\n"
+	      "                                             port = %d\n",
 	      hostname, *port);
 #endif
       return REG_SUCCESS;
     }
 
-    fprintf(stderr, "Get_data_source_address_wsrf: failed to match "
+    fprintf(stderr, "STEER: Get_data_source_address_wsrf: failed to match "
 	    "IOType label\n");  
   }
   else{ /* Using a proxy for IO */
@@ -813,9 +813,9 @@ int Get_data_source_address_wsrf(const int          index,
       pLast++;
     }
 #if REG_DEBUG
-    fprintf(stderr, "Get_data_source_address_wsrf: proxy host = %s\n"
-	            "                              proxy port = %d\n"
- 	            "                                   label = %s\n",
+    fprintf(stderr, "STEER: Get_data_source_address_wsrf: proxy host = %s\n"
+	            "                                     proxy port = %d\n"
+ 	            "                                          label = %s\n",
 	    hostname, *port, label);
 #endif /* REG_DEBUG */
   } /* end if(strstr("sourceEPR")) */
@@ -879,8 +879,8 @@ int Get_data_sink_address_wsrf(const int           index,
       pLast++;
     }
 #if REG_DEBUG
-    fprintf(stderr, "Get_data_sink_address_wsrf: proxy host = %s\n"
-  	            "                            proxy port = %d\n",
+    fprintf(stderr, "STEER: Get_data_sink_address_wsrf: proxy host = %s\n"
+  	            "                                   proxy port = %d\n",
 	    hostname, *port);
 #endif /* REG_DEBUG */
 
@@ -905,19 +905,19 @@ int Record_checkpoint_set_wsrf(char *chk_data,
 				      Steerer_connection.SGS_info.address, 
 				      "", chk_data, node_data,  
 				      &response)){
-    fprintf(stderr, "Record_checkpoint_set_wsrf: soap call failed:\n");
+    fprintf(stderr, "STEER: Record_checkpoint_set_wsrf: soap call failed:\n");
     soap_print_fault(Steerer_connection.SGS_info.soap, stderr);
     return REG_FAILURE;
   }
 
 #if REG_DEBUG
   if(response._RecordCheckpointReturn){
-    fprintf(stderr, "Record_checkpoint_set_wsrf: "
+    fprintf(stderr, "STEER: Record_checkpoint_set_wsrf: "
 	    "RecordCheckpoint returned: >>%s<<\n", 
 	    response._RecordCheckpointReturn);
   }
   else{
-    fprintf(stderr, "Record_checkpoint_set_wsrf: RecordCheckpoint "
+    fprintf(stderr, "STEER: Record_checkpoint_set_wsrf: RecordCheckpoint "
 	    "returned null\n");
   }
 #endif
