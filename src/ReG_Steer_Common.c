@@ -130,7 +130,7 @@ FILE *Open_next_file(char* base_name)
       }
       else{
 
-	fprintf(stderr, "Open_next_file: failed to stat %s\n", tmp_filename);
+	fprintf(stderr, "STEER: Open_next_file: failed to stat %s\n", tmp_filename);
       }
     }
 
@@ -173,7 +173,7 @@ FILE *Open_next_file(char* base_name)
       }
       else{
 
-	fprintf(stderr, "Open_next_file: failed to stat %s\n", tmp_filename);
+	fprintf(stderr, "STEER: Open_next_file: failed to stat %s\n", tmp_filename);
       }
     }
 
@@ -189,7 +189,7 @@ FILE *Open_next_file(char* base_name)
     if( (fp = fopen(filename1, "r")) ){
 
 #if REG_DEBUG
-      fprintf(stderr, "Open_next_file: opening %s\n", filename1);
+      fprintf(stderr, "STEER: Open_next_file: opening %s\n", filename1);
 #endif
       /* Return the name of the file actually opened */
       strcpy(base_name, filename1);
@@ -230,11 +230,11 @@ int Delete_file(char *filename)
   sprintf(long_filename, "%s.lock", filename);
 
 #if REG_DEBUG
-  fprintf(stderr, "Delete_file: removing %s\n", long_filename);
+  fprintf(stderr, "STEER: Delete_file: removing %s\n", long_filename);
 #endif
 
   if(remove(long_filename)){
-    perror("Delete_file, deleting lock file");
+    perror("STEER: Delete_file, deleting lock file");
     return_status = REG_FAILURE;
   }
 
@@ -246,11 +246,11 @@ int Delete_file(char *filename)
   /* Remove the data file */
 
 #if REG_DEBUG
-  fprintf(stderr, "Delete_file: removing %s\n", filename);
+  fprintf(stderr, "STEER: Delete_file: removing %s\n", filename);
 #endif
 
   if(remove(filename)){
-    perror("Delete_file, deleting data file");
+    perror("STEER: Delete_file, deleting data file");
     return_status = REG_FAILURE;
   }
   return return_status;
@@ -268,7 +268,7 @@ int Remove_files(char* base_name)
   strcpy(filename, base_name);
 
 #if REG_DEBUG
-  fprintf(stderr, "Remove_files: looking for files beginning: %s\n", filename);
+  fprintf(stderr, "STEER: Remove_files: looking for files beginning: %s\n", filename);
 #endif
 
   while( (fp = Open_next_file(filename)) ){
@@ -278,7 +278,7 @@ int Remove_files(char* base_name)
     /* Remove lock file */
     sprintf(lock_name, "%s.lock", filename);
 #if REG_DEBUG
-    fprintf(stderr, "Remove_files: deleting %s\n", lock_name);
+    fprintf(stderr, "STEER: Remove_files: deleting %s\n", lock_name);
 #endif
     remove(lock_name);
 
@@ -289,7 +289,7 @@ int Remove_files(char* base_name)
 
     /* Remove associated data file */
 #if REG_DEBUG
-    fprintf(stderr, "Remove_files: deleting %s\n", filename);
+    fprintf(stderr, "STEER: Remove_files: deleting %s\n", filename);
 #endif
     remove(filename);
 
@@ -308,56 +308,56 @@ int Get_message_type(const char *name)
   if(strcmp(name, "Param_defs") == 0){
   
 #if REG_DEBUG_FULL
-    fprintf(stderr, "Setting msg type to PARAM_DEFS\n");
+    fprintf(stderr, "STEER: Setting msg type to PARAM_DEFS\n");
 #endif
     return PARAM_DEFS;
   }
   else if(strcmp(name, "IOType_defs") == 0){
   
 #if REG_DEBUG_FULL
-    fprintf(stderr, "Setting msg type to IO_DEFS\n");
+    fprintf(stderr, "STEER: Setting msg type to IO_DEFS\n");
 #endif
     return IO_DEFS;
   }
   else if(strcmp(name, "ChkType_defs") == 0){
   
 #if REG_DEBUG_FULL
-    fprintf(stderr, "Setting msg type to CHK_DEFS\n");
+    fprintf(stderr, "STEER: Setting msg type to CHK_DEFS\n");
 #endif
     return CHK_DEFS;
   }
   else if(strcmp(name, "Supported_commands") == 0){
     
 #if REG_DEBUG_FULL
-    fprintf(stderr, "Setting msg type to SUPP_CMDS\n");
+    fprintf(stderr, "STEER: Setting msg type to SUPP_CMDS\n");
 #endif
     return SUPP_CMDS;
   }
   else if(strcmp(name, "Steer_control") == 0){
   
 #if REG_DEBUG_FULL
-    fprintf(stderr, "Setting msg type to CONTROL\n");
+    fprintf(stderr, "STEER: Setting msg type to CONTROL\n");
 #endif
     return CONTROL;
   }
   else if(strcmp(name, "App_status") == 0){
   
 #if REG_DEBUG_FULL
-    fprintf(stderr, "Setting msg type to STATUS\n");
+    fprintf(stderr, "STEER: Setting msg type to STATUS\n");
 #endif
     return STATUS;
   }
   else if(strcmp(name, "Steer_log") == 0){
 
 #if REG_DEBUG_FULL
-    fprintf(stderr, "Setting msg type to STEER_LOG\n");
+    fprintf(stderr, "STEER: Setting msg type to STEER_LOG\n");
 #endif
     return STEER_LOG;
   }
   else{
 
 #if REG_DEBUG  
-    fprintf(stderr, "Get_message_type: unrecognised message type: %s\n", name);
+    fprintf(stderr, "STEER: Get_message_type: unrecognised message type: %s\n", name);
 #endif /* REG_DEBUG */
 
     return MSG_NOTSET;
@@ -477,7 +477,7 @@ int Increment_param_registered(Param_table_type *table)
       }
     }
     else{
-      fprintf(stderr, "Increment_param_registered: failed to "
+      fprintf(stderr, "STEER: Increment_param_registered: failed to "
 	      "allocate more param memory\n");
       table->num_registered--;
       return_status = REG_FAILURE;
@@ -510,7 +510,7 @@ int Increment_cmd_registered(Supp_cmd_table_type *table)
       table->max_entries = new_size;
     }
     else{
-      fprintf(stderr, "Increment_cmd_registered: failed to allocate "
+      fprintf(stderr, "STEER: Increment_cmd_registered: failed to allocate "
 	      "more cmd memory\n");
       table->num_registered--;
       return_status = REG_FAILURE;
@@ -549,7 +549,7 @@ int Increment_iodef_registered(IOdef_table_type *table)
       }
     }
     else{
-      fprintf(stderr, "Increment_iodef_registered: failed to allocate "
+      fprintf(stderr, "STEER: Increment_iodef_registered: failed to allocate "
 	      "more IOdef memory\n");
       table->num_registered--;
       return_status = REG_FAILURE;
@@ -591,7 +591,7 @@ int Increment_log_entry(Chk_log_type *log)
       }
     }
     else{
-      fprintf(stderr, "Increment_log_entry: failed to allocate more "
+      fprintf(stderr, "STEER: Increment_log_entry: failed to allocate more "
 	      "memory\n");
       log->num_entries--;
       return_status = REG_FAILURE;
@@ -713,12 +713,13 @@ int Read_file(const char *filename,
 
   if( !(fp = fopen(filename, "r")) ){
 
-    fprintf(stderr, "Read_file: failed to open file: %s\n", filename);
+    fprintf(stderr, "STEER: Read_file: failed to open file: %s\n", 
+	    filename);
     return REG_FAILURE;
   }
 
   if(!(*buf = (char *)malloc(bufsize*sizeof(char)))){
-    fprintf(stderr, "Read_file: malloc failed\n");
+    fprintf(stderr, "STEER: Read_file: malloc failed\n");
     return REG_FAILURE;
   }
 
@@ -741,7 +742,8 @@ int Read_file(const char *filename,
       ptr = realloc(*buf, (size_t)bufsize);
       if(!ptr){
 
-	fprintf(stderr, "Read_file: realloc failed, size = %d\n", bufsize);
+	fprintf(stderr, "STEER: Read_file: realloc failed, size = %d\n", 
+		bufsize);
 	free(*buf);
 	*buf = NULL;
 	fclose(fp);
@@ -806,7 +808,7 @@ int Reorder_decode_array(IOdef_entry *io,
   if(io->use_xdr){
 
 #if REG_DEBUG
-    fprintf(stderr, "Reorder_decode_array: doing XDR decode for type = %d\n",
+    fprintf(stderr, "STEER: Reorder_decode_array: doing XDR decode for type = %d\n",
 	    type);
 #endif
 
@@ -825,7 +827,7 @@ int Reorder_decode_array(IOdef_entry *io,
       
       if(1 != xdr_vector(&xdrs, (char *)pData, (unsigned int)count, 
 			 (unsigned int)sizeof(int), (xdrproc_t)xdr_int)){
-	fprintf(stderr, "Reorder_decode_array: xdr_vector decode "
+	fprintf(stderr, "STEER: Reorder_decode_array: xdr_vector decode "
 		"failed for REG_INT\n");
 	return_status = REG_FAILURE;
       }
@@ -835,7 +837,7 @@ int Reorder_decode_array(IOdef_entry *io,
       
       if(1 != xdr_vector(&xdrs, (char *)pData, (unsigned int)count, 
 			 (unsigned int)sizeof(int), (xdrproc_t)xdr_long)){
-	fprintf(stderr, "Reorder_decode_array: xdr_vector decode "
+	fprintf(stderr, "STEER: Reorder_decode_array: xdr_vector decode "
 		"failed for REG_LONG\n");
 	return_status = REG_FAILURE;
       }
@@ -845,7 +847,7 @@ int Reorder_decode_array(IOdef_entry *io,
 
       if(1 != xdr_vector(&xdrs, (char *)pData, (unsigned int)count, 
 			 (unsigned int)sizeof(float), (xdrproc_t)xdr_float)){
-	fprintf(stderr, "Reorder_decode_array: xdr_vector decode "
+	fprintf(stderr, "STEER: Reorder_decode_array: xdr_vector decode "
 		"failed for REG_FLOAT\n");
 	return_status = REG_FAILURE;
       }
@@ -855,14 +857,14 @@ int Reorder_decode_array(IOdef_entry *io,
       
       if(1 != xdr_vector(&xdrs, (char *)pData, (unsigned int)count, 
 			 (unsigned int)sizeof(double), (xdrproc_t)xdr_double)){
-	fprintf(stderr, "Reorder_decode_array: xdr_vector decode "
+	fprintf(stderr, "STEER: Reorder_decode_array: xdr_vector decode "
 		"failed for REG_DBL\n");
 	return_status = REG_FAILURE;
       }
       break;
 
     default:
-      fprintf(stderr, "Reorder_decode_array: unexpected datatype\n");
+      fprintf(stderr, "STEER: Reorder_decode_array: unexpected datatype\n");
       return_status = REG_FAILURE;
       break;
     }
@@ -1251,7 +1253,7 @@ int Get_fully_qualified_hostname(char **hostname, char **ip_addr_ptr)
 
     if(uname(&name) < 0){
 
-      fprintf(stderr, "Get_fully_qualified_hostname: uname failed\n");
+      fprintf(stderr, "STEER: Get_fully_qualified_hostname: uname failed\n");
       return REG_FAILURE;
     }
 
@@ -1260,7 +1262,7 @@ int Get_fully_qualified_hostname(char **hostname, char **ip_addr_ptr)
 
   if(!host){
 
-    fprintf(stderr, "Get_fully_qualified_hostname: gethostbyname failed\n");
+    fprintf(stderr, "STEER: Get_fully_qualified_hostname: gethostbyname failed\n");
     return REG_FAILURE;
   }
 
@@ -1272,7 +1274,7 @@ int Get_fully_qualified_hostname(char **hostname, char **ip_addr_ptr)
 	    (unsigned char)(host->h_addr_list[0][3]));
   }
   else{
-    fprintf(stderr, "Get_fully_qualified_hostname: address not four "
+    fprintf(stderr, "STEER: Get_fully_qualified_hostname: address not four "
 	    "bytes long\n");
     return REG_FAILURE;
   }
@@ -1283,9 +1285,9 @@ int Get_fully_qualified_hostname(char **hostname, char **ip_addr_ptr)
   * end of ARPDBG */
 
 #if REG_DEBUG
-  fprintf(stderr, "Get_fully_qualified_hostname: hostname = %s\n", 
+  fprintf(stderr, "STEER: Get_fully_qualified_hostname: hostname = %s\n", 
 	  host->h_name);
-  fprintf(stderr, "                              IP       = %s\n",
+  fprintf(stderr, "                                     IP       = %s\n",
 	  ip_addr);
 #endif
 
