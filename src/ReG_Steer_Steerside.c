@@ -4,7 +4,7 @@
   intended to inter-operate with an interface constructed for an
   application using the routines in ReG_Steer_Appside.c.
 
-  (C) Copyright 2005, University of Manchester, United Kingdom,
+  (C) Copyright 2006, University of Manchester, United Kingdom,
   all rights reserved.
 
   This software was developed by the RealityGrid project
@@ -29,13 +29,12 @@
   AND PERFORMANCE OF THE PROGRAM IS WITH YOU.  SHOULD THE PROGRAM PROVE
   DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR
   CORRECTION.
-
-  Authors........: Andrew Porter, Robert Haines
-
 ---------------------------------------------------------------------------*/
 
 /** @file ReG_Steer_Steerside.c
     @brief Source file for steering-client routines
+    @author Andrew Porter
+    @author Robert Haines
   */
 
 #include "ReG_Steer_Steerside.h"
@@ -115,7 +114,7 @@ int Steerer_initialize()
 
     /* Instead of failing, set the schema location to some nonsense value
        and continue */
-    fprintf(stderr, "Steerer_initialize: WARNING: failed to get schema location\n");
+    fprintf(stderr, "STEER: WARNING: Steerer_initialize: failed to get schema location\n");
     sprintf(ReG_Steer_Schema_Locn, "/tmp/xml_schema/reg_steer_comm.xsd");
   }
 
@@ -126,7 +125,7 @@ int Steerer_initialize()
 
   if(Sim_table.sim == NULL){
     
-    fprintf(stderr, "Steerer_initialize: failed to allocate memory\n");
+    fprintf(stderr, "STEER: Steerer_initialize: failed to allocate memory\n");
     return REG_FAILURE;
   }
 
@@ -158,7 +157,7 @@ int Steerer_initialize()
 
   if(status != REG_SUCCESS){
 
-    fprintf(stderr, "Steerer_initialize: Create_proxy failed\n");
+    fprintf(stderr, "STEER: Steerer_initialize: Create_proxy failed\n");
     Proxy.available = REG_FALSE;    
   }
   else{
@@ -238,7 +237,7 @@ int Sim_attach_secure(const char                     *SimID,
 
   if( (current_sim = Next_free_sim_index()) == -1){
 
-    fprintf(stderr, "Sim_attach: failed to find free sim. table entry\n");
+    fprintf(stderr, "STEER: Sim_attach: failed to find free sim. table entry\n");
     return REG_FAILURE;
   }
   sim_ptr = &(Sim_table.sim[current_sim]);
@@ -266,7 +265,7 @@ int Sim_attach_secure(const char                     *SimID,
 
   if(sim_ptr->Params_table.param == NULL){
 
-    fprintf(stderr, "Sim_attach: failed to allocate memory\n");
+    fprintf(stderr, "STEER: Sim_attach: failed to allocate memory\n");
     return REG_MEM_FAIL;
   }
 
@@ -287,7 +286,7 @@ int Sim_attach_secure(const char                     *SimID,
 
   if(sim_ptr->Cmds_table.cmd == NULL){
 
-    fprintf(stderr, "Sim_attach: failed to allocate memory\n");
+    fprintf(stderr, "STEER: Sim_attach: failed to allocate memory\n");
     free(sim_ptr->Params_table.param);
     sim_ptr->Params_table.param = NULL;
     return REG_MEM_FAIL;
@@ -310,7 +309,7 @@ int Sim_attach_secure(const char                     *SimID,
 
   if(sim_ptr->IOdef_table.io_def == NULL){
 
-    fprintf(stderr, "Sim_attach: failed to allocate memory\n");
+    fprintf(stderr, "STEER: Sim_attach: failed to allocate memory\n");
     free(sim_ptr->Params_table.param);
     sim_ptr->Params_table.param = NULL;
     free(sim_ptr->Cmds_table.cmd);
@@ -333,7 +332,7 @@ int Sim_attach_secure(const char                     *SimID,
 
   if(sim_ptr->Chkdef_table.io_def == NULL){
 
-    fprintf(stderr, "sim_attach: failed to allocate memory for Chk types\n");
+    fprintf(stderr, "STEER: Sim_attach: failed to allocate memory for Chk types\n");
     free(sim_ptr->Params_table.param);
     sim_ptr->Params_table.param = NULL;
     free(sim_ptr->Cmds_table.cmd);
@@ -360,7 +359,7 @@ int Sim_attach_secure(const char                     *SimID,
 					  *sizeof(Chk_log_entry_type));
   if(sim_ptr->Chk_log.entry == NULL){
 
-    fprintf(stderr, "sim_attach: failed to allocate memory for log table\n");
+    fprintf(stderr, "STEER: Sim_attach: failed to allocate memory for log table\n");
     free(sim_ptr->Params_table.param);
     sim_ptr->Params_table.param = NULL;
     free(sim_ptr->Cmds_table.cmd);
@@ -406,7 +405,7 @@ int Sim_attach_secure(const char                     *SimID,
 
     /* Use a proxy to interact with the 'grid' */
 #if REG_DEBUG
-    fprintf(stderr, "Sim_attach: calling Sim_attach_proxy...\n");
+    fprintf(stderr, "STEER: Sim_attach: calling Sim_attach_proxy...\n");
 #endif
     return_status = Sim_attach_proxy(&(Sim_table.sim[current_sim]), 
 				     (char *)SimID);
@@ -419,7 +418,7 @@ int Sim_attach_secure(const char                     *SimID,
       /* Try to use SOAP (and Steering Grid Service) - if this fails
 	 then SimID isn't a valid GSH so we revert to file-based steering */
 #if REG_DEBUG
-      fprintf(stderr, "Sim_attach: calling Sim_attach_soap, "
+      fprintf(stderr, "STEER: Sim_attach: calling Sim_attach_soap, "
 	      "current_sim = %d\n", current_sim);
 #endif
 
@@ -442,7 +441,7 @@ int Sim_attach_secure(const char                     *SimID,
 
       /* Use local file system */
 #if REG_DEBUG
-      fprintf(stderr, "Sim_attach: calling Sim_attach_local...\n");
+      fprintf(stderr, "STEER: Sim_attach: calling Sim_attach_local...\n");
 #endif
       return_status = Sim_attach_local(&(Sim_table.sim[current_sim]), 
 				       (char *)SimID);
@@ -686,7 +685,7 @@ int Consume_param_defs(int SimHandle)
 
   if( (index = Sim_index_from_handle(SimHandle)) == REG_SIM_HANDLE_NOTSET){
 
-    fprintf(stderr, "Consume_param_defs: failed to find sim table entry\n");
+    fprintf(stderr, "STEER: Consume_param_defs: failed to find sim table entry\n");
     return REG_FAILURE;
   }
 
@@ -697,7 +696,7 @@ int Consume_param_defs(int SimHandle)
     ptr = Sim_table.sim[index].msg->status->first_param;
   }
   else{
-    fprintf(stderr, "Consume_param_defs: ERROR: msg is not of "
+    fprintf(stderr, "STEER: ERROR: Consume_param_defs: msg is not of "
 	    "param_defs type\n");
     return REG_FAILURE;
   }
@@ -714,7 +713,7 @@ int Consume_param_defs(int SimHandle)
       j = Next_free_param_index(&(Sim_table.sim[index].Params_table));
 
       if(j == -1){
-	fprintf(stderr, "Consume_param_defs: failed to add param to table\n");
+	fprintf(stderr, "STEER: Consume_param_defs: failed to add param to table\n");
 	return_status = REG_FAILURE;
 	break;
       }
@@ -852,7 +851,7 @@ int Consume_IOType_defs(int SimHandle)
 
   if( (index = Sim_index_from_handle(SimHandle)) == REG_SIM_HANDLE_NOTSET){
 
-    fprintf(stderr, "Consume_IOType_defs: failed to find sim table entry\n");
+    fprintf(stderr, "STEER: Consume_IOType_defs: failed to find sim table entry\n");
     return REG_FAILURE;
   }
 
@@ -862,7 +861,7 @@ int Consume_IOType_defs(int SimHandle)
     ptr = Sim_table.sim[index].msg->io_def->first_io;
   }
   else{
-    fprintf(stderr, "Consume_IOType_defs: ERROR: msg is not of "
+    fprintf(stderr, "STEER: ERROR: Consume_IOType_defs: msg is not of "
 	    "IOType_defs type\n");
     return REG_FAILURE;
   }
@@ -878,7 +877,7 @@ int Consume_IOType_defs(int SimHandle)
       j = Next_free_iodef_index(&(Sim_table.sim[index].IOdef_table));
 
       if(j==-1){
-	fprintf(stderr, "Consume_IOdefs: failed to add IOdef to table\n");
+	fprintf(stderr, "STEER: Consume_IOdefs: failed to add IOdef to table\n");
 	return_status = REG_FAILURE;
 	break;
       }
@@ -902,7 +901,7 @@ int Consume_IOType_defs(int SimHandle)
 	  Sim_table.sim[index].IOdef_table.io_def[j].direction = REG_IO_OUT;
 	}
 	else{
-	  fprintf(stderr, "Consume_IOType_defs: ERROR: unrecognised "
+	  fprintf(stderr, "STEER: ERROR: Consume_IOType_defs: unrecognised "
 		  "direction value\n");
 	}
       }
@@ -969,12 +968,12 @@ int Consume_ChkType_defs(int SimHandle)
 
   if( (index = Sim_index_from_handle(SimHandle)) == REG_SIM_HANDLE_NOTSET){
 
-    fprintf(stderr, "Consume_ChkType_defs: failed to find sim table entry\n");
+    fprintf(stderr, "STEER: Consume_ChkType_defs: failed to find sim table entry\n");
     return REG_FAILURE;
   }
 
   if(!(Sim_table.sim[index].msg) || !Sim_table.sim[index].msg->chk_def){
-    fprintf(stderr, "Consume_ChkType_defs: ERROR: msg is not of "
+    fprintf(stderr, "STEER: ERROR: Consume_ChkType_defs: msg is not of "
 	    "ChkType_defs type\n");
     return REG_FAILURE;
   }
@@ -994,7 +993,7 @@ int Consume_ChkType_defs(int SimHandle)
       j = Next_free_iodef_index(&(Sim_table.sim[index].Chkdef_table));
 
       if(j==-1){
-	fprintf(stderr, "Consume_Chkdefs: failed to add Chkdef to table\n");
+	fprintf(stderr, "STEER: Consume_Chkdefs: failed to add Chkdef to table\n");
 	return_status = REG_FAILURE;
 	break;
       }
@@ -1022,7 +1021,7 @@ int Consume_ChkType_defs(int SimHandle)
 	  Sim_table.sim[index].Chkdef_table.io_def[j].direction = REG_IO_IN;
 	}
 	else{
-	  fprintf(stderr, "Consume_ChkType_defs: ERROR: unrecognised "
+	  fprintf(stderr, "STEER: ERROR: Consume_ChkType_defs: unrecognised "
 		  "direction value: %s\n", (char *)(ptr->direction));
 	}
       }
@@ -1089,7 +1088,7 @@ int Consume_log(int SimHandle)
   if( (index = Sim_index_from_handle(SimHandle)) == 
                                           REG_SIM_HANDLE_NOTSET){
 
-    fprintf(stderr, "Consume_log: failed to find sim table entry\n");
+    fprintf(stderr, "STEER: Consume_log: failed to find sim table entry\n");
     return REG_FAILURE;
   }
 
@@ -1099,7 +1098,7 @@ int Consume_log(int SimHandle)
      it in the structure pointed to by sim->msg */
 
   if(!sim->msg || !sim->msg->log){
-    fprintf(stderr, "Consume_log: ERROR: message is not of "
+    fprintf(stderr, "STEER: ERROR: Consume_log: message is not of "
 	    "log type\n");
     return REG_FAILURE;
   }
@@ -1174,7 +1173,7 @@ int Consume_chk_log(Sim_entry_type *sim,
 
     if(++count >= REG_MAX_NUM_STR_PARAMS){
 
-      fprintf(stderr, "Consume_chk_log: WARNING: discarding parameter "
+      fprintf(stderr, "STEER: WARNING: Consume_chk_log: discarding parameter "
 	      "because max. no. of %d exceeded\n", 
 	      REG_MAX_NUM_STR_PARAMS);
       break;
@@ -1217,8 +1216,8 @@ int Consume_param_log(Sim_entry_type *sim,
     if( (i=Param_index_from_handle(&(sim->Params_table),
 				   handle)) == -1){
 
-      fprintf(stderr, "Consume_param_log: failed to match param handles\n");
-      fprintf(stderr, "                   handle = %d\n", handle);
+      fprintf(stderr, "STEER: Consume_param_log: failed to match param handles\n");
+      fprintf(stderr, "                          handle = %d\n", handle);
 
       param_ptr = param_ptr->next;
       continue;
@@ -1260,7 +1259,7 @@ int Consume_param_log(Sim_entry_type *sim,
       case REG_CHAR:
 	/* This not implemented yet */
 #if REG_DEBUG
-	fprintf(stderr, "Consume_param_log: logging of char params not "
+	fprintf(stderr, "STEER: Consume_param_log: logging of char params not "
 		"implemented!\n");
 #endif
 	break;
@@ -1273,7 +1272,7 @@ int Consume_param_log(Sim_entry_type *sim,
 
       case REG_CHAR:
 	/* This not implemented yet */
-	fprintf(stderr, "Consume_param_log: logging of char params not "
+	fprintf(stderr, "STEER: Consume_param_log: logging of char params not "
 		"implemented!\n");
 	break;
       default:
@@ -1319,7 +1318,7 @@ int Consume_status(int   SimHandle,
 
   if( (index = Sim_index_from_handle(SimHandle)) == REG_SIM_HANDLE_NOTSET){
 
-    fprintf(stderr, "Consume_status: failed to find sim table entry\n");
+    fprintf(stderr, "STEER: Consume_status: failed to find sim table entry\n");
     return REG_FAILURE;
   }
 
@@ -1331,7 +1330,7 @@ int Consume_status(int   SimHandle,
     cmd_ptr = Sim_table.sim[index].msg->status->first_cmd;
   }
   else{
-    fprintf(stderr, "Consume_status: ERROR: msg is not of status type\n");
+    fprintf(stderr, "STEER: ERROR: Consume_status: msg is not of status type\n");
     return REG_FAILURE;
   }
 
@@ -1356,13 +1355,13 @@ int Consume_status(int   SimHandle,
 	    Commands[count] = REG_STR_RESUME;
 	  }
 	  else{
-	    fprintf(stderr, "Consume_status: unrecognised cmd name: %s\n", 
+	    fprintf(stderr, "STEER: Consume_status: unrecognised cmd name: %s\n", 
 		    (char *)cmd_ptr->name);
 	    cmd_ptr = cmd_ptr->next;
 	  }
     }
     else{
-      fprintf(stderr, "Consume_status: error - skipping cmd because is missing "
+      fprintf(stderr, "STEER: ERROR: Consume_status: skipping cmd because is missing "
 	      "both id and name\n");
       cmd_ptr = cmd_ptr->next;
     }
@@ -1371,7 +1370,7 @@ int Consume_status(int   SimHandle,
 
     if(count >= REG_MAX_NUM_STR_CMDS){
 
-      fprintf(stderr, "Consume_status: WARNING: truncating list of cmds\n");
+      fprintf(stderr, "STEER: WARNING: Consume_status: truncating list of cmds\n");
       break;
     }
     cmd_ptr = cmd_ptr->next;
@@ -1380,7 +1379,7 @@ int Consume_status(int   SimHandle,
   *NumCmds = count;
 
 #if REG_DEBUG
-  fprintf(stderr, "Consume_status: got %d commands\n", (*NumCmds));
+  fprintf(stderr, "STEER: Consume_status: got %d commands\n", (*NumCmds));
 #endif
 
   /* ...and now the parameters... */
@@ -1397,8 +1396,8 @@ int Consume_status(int   SimHandle,
     if( (j=Param_index_from_handle(&(Sim_table.sim[index].Params_table),
 				   handle)) == -1){
 
-      fprintf(stderr, "Consume_status: failed to match param handles\n");
-      fprintf(stderr, "                handle = %d\n", handle);
+      fprintf(stderr, "STEER: Consume_status: failed to match param handles\n");
+      fprintf(stderr, "                       handle = %d\n", handle);
 
       param_ptr = param_ptr->next;
       continue;
@@ -1414,7 +1413,7 @@ int Consume_status(int   SimHandle,
 			 (char **)&(Sim_table.sim[index].Params_table.param[j].ptr_raw),
 			 &Sim_table.sim[index].Params_table.param[j].raw_buf_size)
 	   != REG_SUCCESS){
-	  fprintf(stderr, "Consume_status: Base64 decode failed\n");
+	  fprintf(stderr, "STEER: Consume_status: Base64 decode failed\n");
 	  continue;
 	}
 	/*
@@ -1445,7 +1444,7 @@ int Consume_status(int   SimHandle,
 
   if( (j=Param_index_from_handle(&(Sim_table.sim[index].Params_table),
 			    REG_SEQ_NUM_HANDLE)) == -1){
-    fprintf(stderr, "Consume_status: failed to find SeqNum entry\n");
+    fprintf(stderr, "STEER: Consume_status: failed to find SeqNum entry\n");
   }
   else{
 
@@ -1670,7 +1669,7 @@ int Emit_control(int    SimHandle,
 
   if( (simid = Sim_index_from_handle(SimHandle)) == REG_SIM_HANDLE_NOTSET){
 
-    fprintf(stderr, "Emit_control: failed to find sim table entry\n");
+    fprintf(stderr, "STEER: Emit_control: failed to find sim table entry\n");
     return REG_FAILURE;
   }
 
@@ -1687,7 +1686,7 @@ int Emit_control(int    SimHandle,
   if(NumCommands >= REG_MAX_NUM_STR_CMDS){
 
     num_to_emit = REG_MAX_NUM_STR_CMDS;
-    fprintf(stderr, "Emit_control: WARNING - no. of emitted commands is "
+    fprintf(stderr, "STEER: WARNING: Emit_control: no. of emitted commands is "
 	    "limited to %d\n", REG_MAX_NUM_STR_CMDS);
   }
 
@@ -1733,7 +1732,7 @@ int Emit_control(int    SimHandle,
 
       if(count == REG_MAX_NUM_STR_PARAMS){
 
-	fprintf(stderr, "Emit_control: WARNING - no. of emitted params is "
+	fprintf(stderr, "STEER: WARNING: Emit_control: no. of emitted params is "
 	        "limited to %d\n", REG_MAX_NUM_STR_PARAMS);
 	break;
       }
@@ -1756,7 +1755,7 @@ int Emit_control(int    SimHandle,
   if(count==0 && num_to_emit==0){
 
 #if REG_DEBUG
-    fprintf(stderr, "Emit_control: nothing to send\n");
+    fprintf(stderr, "STEER: Emit_control: nothing to send\n");
 #endif
     return REG_SUCCESS;
   }
@@ -1768,7 +1767,7 @@ int Emit_control(int    SimHandle,
   Write_xml_footer(&pbuf, REG_MAX_MSG_SIZE);
 
 #if REG_DEBUG
-  fprintf(stderr, "Emit_control: sending:\n>>%s<<\n", buf);
+  fprintf(stderr, "STEER: Emit_control: sending:\n>>%s<<\n", buf);
 #endif
 
   return Send_control_msg(simid, buf);
@@ -1833,13 +1832,13 @@ int Send_control_msg_file(int SimIndex, char* buf)
 
   if( Generate_control_filename(SimIndex, filename) != REG_SUCCESS){
 
-    fprintf(stderr, "Send_control_msg_file: failed to create filename\n");
+    fprintf(stderr, "STEER: Send_control_msg_file: failed to create filename\n");
     return REG_FAILURE;
   }
 
   if( (fp = fopen(filename, "w")) == NULL){
 
-    fprintf(stderr, "Send_control_msg_file: failed to open file\n");
+    fprintf(stderr, "STEER: Send_control_msg_file: failed to open file\n");
     return REG_FAILURE;
   }
 
@@ -1988,7 +1987,7 @@ int Sim_index_from_handle(int SimHandle)
   }
 
   if(index == REG_SIM_HANDLE_NOTSET){
-    fprintf(stderr, "Sim_index_from_handle: failed to find matching handle\n");
+    fprintf(stderr, "STEER: Sim_index_from_handle: failed to find matching handle\n");
   }
 
   return index;
@@ -2197,7 +2196,7 @@ int Get_param_values(int    sim_handle,
      (0) then return monitoring params */
 
   if(!param_details) {
-    fprintf(stderr, "Get_param_values: ptr to param_details is NULL\n");
+    fprintf(stderr, "STEER: Get_param_values: ptr to param_details is NULL\n");
     return REG_FAILURE;
   }
 
@@ -2325,7 +2324,7 @@ int Set_param_values(int    sim_handle,
 	    if (ivalue > imax) outside_range = REG_TRUE;
 	  }
 	  if(outside_range == REG_TRUE){
-	    fprintf(stderr, "Set_param_values: new value (%d) of %s is outside\n"
+	    fprintf(stderr, "STEER: Set_param_values: new value (%d) of %s is outside\n"
 		    "permitted range (%s,%s) - skipping...\n", 
 		    ivalue, 
 		    Sim_table.sim[isim].Params_table.param[index].label, 
@@ -2348,7 +2347,7 @@ int Set_param_values(int    sim_handle,
 	    if (lvalue > llimit) outside_range = REG_TRUE;
 	  }
 	  if(outside_range == REG_TRUE){
-	    fprintf(stderr, "Set_param_values: new value (%ld) of %s is "
+	    fprintf(stderr, "STEER: Set_param_values: new value (%ld) of %s is "
 		    "outside\npermitted range (%s,%s) - skipping...\n", 
 		    lvalue, 
 		    Sim_table.sim[isim].Params_table.param[index].label, 
@@ -2372,7 +2371,7 @@ int Set_param_values(int    sim_handle,
 	  }
 
 	  if(outside_range == REG_TRUE){
-	    fprintf(stderr, "Set_param_values: new value (%f) of %s is outside\n"
+	    fprintf(stderr, "STEER: Set_param_values: new value (%f) of %s is outside\n"
 		    "permitted range (%s,%s) - skipping...\n", 
 		    fvalue, 
 		    Sim_table.sim[isim].Params_table.param[index].label, 
@@ -2396,7 +2395,7 @@ int Set_param_values(int    sim_handle,
 	  }
 
 	  if(outside_range == REG_TRUE){
-	    fprintf(stderr, "Set_param_values: new value (%f) of %s is outside\n"
+	    fprintf(stderr, "STEER: Set_param_values: new value (%f) of %s is outside\n"
 		    "permitted range (%s,%s) - skipping...\n", 
 		    (float)dvalue, 
 		    Sim_table.sim[isim].Params_table.param[index].label, 
@@ -2414,7 +2413,7 @@ int Set_param_values(int    sim_handle,
 		   &imax);
 	    if (strlen(vals[i]) > imax) {
 
-	      fprintf(stderr, "Set_param_values: new string (%s) of %s exceeds\n"
+	      fprintf(stderr, "STEER: Set_param_values: new string (%s) of %s exceeds\n"
 		      "maximum length (%s) - skipping...\n", 
 		      vals[i], 
 		      Sim_table.sim[isim].Params_table.param[index].label, 
@@ -2434,7 +2433,7 @@ int Set_param_values(int    sim_handle,
 	Sim_table.sim[isim].Params_table.param[index].modified = REG_TRUE;
       }
       else{
-	fprintf(stderr, "Set_param_values: can only edit steerable parameters\n");
+	fprintf(stderr, "STEER: Set_param_values: can only edit steerable parameters\n");
       }
     }
   }
@@ -2708,7 +2707,7 @@ int Set_iotype_freq(int sim_handle,
       if(i==Sim_table.sim[isim].IOdef_table.max_entries){
 
 #if REG_DEBUG
-	fprintf(stderr, "Set_iotype_freq: failed to match iotype handle\n");
+	fprintf(stderr, "STEER: Set_iotype_freq: failed to match iotype handle\n");
 #endif
 	return_status = REG_FAILURE;
 	continue;
@@ -2730,7 +2729,7 @@ int Set_iotype_freq(int sim_handle,
   else{
 
 #if REG_DEBUG
-    fprintf(stderr, "Set_iotype_freq: failed to match sim_handle\n");
+    fprintf(stderr, "STEER: Set_iotype_freq: failed to match sim_handle\n");
 #endif
     return_status = REG_FAILURE;
   }
@@ -2835,7 +2834,7 @@ int Get_chktypes(int    sim_handle,
 	    if(nitem != 1){
 
 #if REG_DEBUG
-	      fprintf(stderr, "Get_chktypes: failed to retrieve freq value\n");
+	      fprintf(stderr, "STEER: Get_chktypes: failed to retrieve freq value\n");
 #endif
 	      chk_freqs[count] = 0;
 	      return_status = REG_FAILURE;
@@ -2843,7 +2842,7 @@ int Get_chktypes(int    sim_handle,
 	  }
 	  else{
 #if REG_DEBUG
-	    fprintf(stderr, "Get_chktypes: failed to match param handle\n");
+	    fprintf(stderr, "STEER: Get_chktypes: failed to match param handle\n");
 #endif
 	    chk_freqs[count] = 0;
 	    return_status = REG_FAILURE;
@@ -2901,7 +2900,7 @@ int Set_chktype_freq(int  sim_handle,
       if(i==Sim_table.sim[isim].Chkdef_table.max_entries){
 
 #if REG_DEBUG
-	fprintf(stderr, "Set_chktype_freq: failed to match iotype handle\n");
+	fprintf(stderr, "STEER: Set_chktype_freq: failed to match iotype handle\n");
 #endif
 	return_status = REG_FAILURE;
 	continue;
@@ -2910,7 +2909,7 @@ int Set_chktype_freq(int  sim_handle,
       if(Sim_table.sim[isim].Chkdef_table.io_def[i].direction == REG_IO_IN){
 
 #if REG_DEBUG
-	fprintf(stderr, "Set_chktype_freq: frequency ignored for ChkTypes"
+	fprintf(stderr, "STEER: Set_chktype_freq: frequency ignored for ChkTypes"
 		"with direction 'IN'\n");
 #endif
 	continue;
@@ -2932,7 +2931,7 @@ int Set_chktype_freq(int  sim_handle,
   else{
 
 #if REG_DEBUG
-    fprintf(stderr, "Set_chktype_freq: failed to match sim_handle\n");
+    fprintf(stderr, "STEER: Set_chktype_freq: failed to match sim_handle\n");
 #endif
     return_status = REG_FAILURE;
   }
@@ -2994,7 +2993,7 @@ int Command_supported(int sim_id,
   if(return_status != REG_SUCCESS){
 
     fprintf(stderr, 
-	    "Command_supported: command %d is not supported by the sim.\n", 
+	    "STEER: Command_supported: command %d is not supported by the sim.\n", 
 	    cmd_id);
   }
 #endif
@@ -3197,7 +3196,7 @@ int Get_log_entry_details(Param_table_type *param_table,
 				    in->param[i].handle);
 
     if(index == -1){
-      fprintf(stderr, "Get_log_entry_details: error - failed"
+      fprintf(stderr, "STEER: Get_log_entry_details: error - failed"
 	      " to match param handle: %d\n", 
 	      in->param[i].handle);
       continue;
@@ -3255,7 +3254,7 @@ int Sim_attach_local(Sim_entry_type *sim, char *SimID)
     return_status = Directory_valid(file_root);
 #if REG_DEBUG
     if(return_status != REG_SUCCESS){
-      fprintf(stderr, "Sim_attach_local: invalid dir for "
+      fprintf(stderr, "STEER: Sim_attach_local: invalid dir for "
 	      "steering messages: %s\n", file_root);
     }
 #endif
@@ -3266,7 +3265,7 @@ int Sim_attach_local(Sim_entry_type *sim, char *SimID)
   if(return_status != REG_SUCCESS){
     
     if(!(pchar = getenv("REG_STEER_DIRECTORY"))){
-      fprintf(stderr, "Sim_attach_local: failed to get scratch directory\n");
+      fprintf(stderr, "STEER: Sim_attach_local: failed to get scratch directory\n");
       return REG_FAILURE;
     }
     
@@ -3282,19 +3281,19 @@ int Sim_attach_local(Sim_entry_type *sim, char *SimID)
     return_status = Directory_valid(file_root);
 #if REG_DEBUG
     if(return_status != REG_SUCCESS){
-      fprintf(stderr, "Sim_attach_local: invalid dir for "
+      fprintf(stderr, "STEER: Sim_attach_local: invalid dir for "
 	      "steering messages: %s\n", file_root);
     }
 #endif
   }
 
   if(return_status != REG_SUCCESS){
-    fprintf(stderr, "Sim_attach_local: failed to get scratch directory\n");    
+    fprintf(stderr, "STEER: Sim_attach_local: failed to get scratch directory\n");    
     return REG_FAILURE;
   }
 #if REG_DEBUG
   else{
-    fprintf(stderr, "Sim_attach_local: using following dir for "
+    fprintf(stderr, "STEER: Sim_attach_local: using following dir for "
 	    "steering messages: %s\n", file_root);
   }
 #endif
@@ -3342,7 +3341,7 @@ int Sim_attach_proxy(Sim_entry_type *sim, char *SimID)
 
   if(return_status != REG_SUCCESS){
 
-    fprintf(stderr, "Sim_attach_proxy: failed to launch proxy\n");
+    fprintf(stderr, "STEER: Sim_attach_proxy: failed to launch proxy\n");
     
     return REG_FAILURE;
   }
@@ -3358,7 +3357,7 @@ int Sim_attach_proxy(Sim_entry_type *sim, char *SimID)
 
   if(strncmp(buf, OK_MSG, nbytes) != 0){
 
-    fprintf(stderr, "Sim_attach_proxy: proxy failed to attach to application\n");
+    fprintf(stderr, "STEER: Sim_attach_proxy: proxy failed to attach to application\n");
 
     /* Signal proxy to stop */
     Send_proxy_message(sim->pipe_to_proxy, QUIT_MSG);
@@ -3371,7 +3370,7 @@ int Sim_attach_proxy(Sim_entry_type *sim, char *SimID)
 
   if(return_status != REG_SUCCESS){
 
-    fprintf(stderr, "Sim_attach_proxy: failed to get list of cmds from proxy\n");
+    fprintf(stderr, "STEER: Sim_attach_proxy: failed to get list of cmds from proxy\n");
     /* Signal proxy to stop */
     Send_proxy_message(sim->pipe_to_proxy, QUIT_MSG);
 
@@ -3383,7 +3382,7 @@ int Sim_attach_proxy(Sim_entry_type *sim, char *SimID)
 
   if(!msg){
 
-    fprintf(stderr, "Sim_attach_proxy: failed to get new message struct\n");
+    fprintf(stderr, "STEER: Sim_attach_proxy: failed to get new message struct\n");
 
     /* Signal proxy to stop */
     Send_proxy_message(sim->pipe_to_proxy, QUIT_MSG);
@@ -3402,7 +3401,7 @@ int Sim_attach_proxy(Sim_entry_type *sim, char *SimID)
 		&(sim->Cmds_table.cmd[sim->Cmds_table.num_registered].cmd_id))
 		!= 1){
 
-	fprintf(stderr, "Sim_attach_proxy: error reading cmd_id\n");
+	fprintf(stderr, "STEER: Sim_attach_proxy: error reading cmd_id\n");
 	return_status = REG_FAILURE;
 	break;
       }
@@ -3477,7 +3476,7 @@ int Consume_supp_cmds_local(Sim_entry_type *sim)
     }
     else{
 
-      fprintf(stderr, "Consume_supp_cmds_local: error parsing <%s>\n",
+      fprintf(stderr, "STEER: Consume_supp_cmds_local: error parsing <%s>\n",
 	      filename);
     }
 
@@ -3574,7 +3573,7 @@ int Realloc_param_log(param_entry *param)
       param->log = NULL;
       param->log_size = 0;
       param->log_index = 0;
-      fprintf(stderr, "Realloc_param_log: realloc failed for %d"
+      fprintf(stderr, "STEER: Realloc_param_log: realloc failed for %d"
 	      " bytes\n", (int)(param->log_size*sizeof(double)));
       return REG_FAILURE;
     }
@@ -3586,7 +3585,7 @@ int Realloc_param_log(param_entry *param)
 
     if( !(param->log = (double *)malloc(param->log_size*sizeof(double))) ){
       param->log_size = 0;
-      fprintf(stderr, "Realloc_param_log: failed to malloc mem for log\n");
+      fprintf(stderr, "STEER: Realloc_param_log: failed to malloc mem for log\n");
       return REG_FAILURE;
     }
   }

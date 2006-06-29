@@ -2,7 +2,7 @@
   This file contains routines and data structures for file-based
   steering communication and sample transfer.
 
-  (C) Copyright 2005, University of Manchester, United Kingdom,
+  (C) Copyright 2006, University of Manchester, United Kingdom,
   all rights reserved.
 
   This software was developed by the RealityGrid project
@@ -81,7 +81,7 @@ int Detach_from_steerer_file(){
 
   if(nbytes >= (REG_MAX_STRING_LENGTH-1) || (nbytes < 1)){
 
-    fprintf(stderr, "Detach_from_steerer_file: name of lock-file exceeds %d"
+    fprintf(stderr, "STEER: Detach_from_steerer_file: name of lock-file exceeds %d"
 	    " characters - increase REG_MAX_STRING_LENGTH\n", 
 	    REG_MAX_STRING_LENGTH);
     return REG_FAILURE;
@@ -98,7 +98,7 @@ int Detach_from_steerer_file(){
 
   if( nbytes >= (REG_MAX_STRING_LENGTH-1) || (nbytes < 1)){
 
-    fprintf(stderr, "Detach_from_steerer_file: name of steerer ctrl files "
+    fprintf(stderr, "STEER: Detach_from_steerer_file: name of steerer ctrl files "
 	    "exceeds %d characters - increase REG_MAX_STRING_LENGTH\n", 
 	    REG_MAX_STRING_LENGTH);
     return REG_FAILURE;
@@ -122,7 +122,7 @@ int Steerer_connected_file()
 
   if( nbytes >= (REG_MAX_STRING_LENGTH-1) || (nbytes < 1)){
 
-    fprintf(stderr, "Steerer_connected_file: full path name of lockfile "
+    fprintf(stderr, "STEER: Steerer_connected_file: full path name of lockfile "
 	    "indicating steerrer connected exceeds %d chars - increase "
 	    "REG_MAX_STRING_LENGTH\n", REG_MAX_STRING_LENGTH);
     return REG_FAILURE;
@@ -177,7 +177,7 @@ int Send_status_msg_file(char *buf)
 
   if( (fp = fopen(filename, "w")) == NULL){
 
-    fprintf(stderr, "Send_status_msg: failed to open file <%s>\n",
+    fprintf(stderr, "STEER: Send_status_msg: failed to open file <%s>\n",
 	    filename);
     return REG_FAILURE;
   }
@@ -205,7 +205,7 @@ struct msg_struct *Get_control_msg_file()
 
   if( nbytes >= (REG_MAX_STRING_LENGTH-1) || (nbytes < 1)){
 
-    fprintf(stderr, "Get_control_msg_file: length of ctrl msg filename "
+    fprintf(stderr, "STEER: Get_control_msg_file: length of ctrl msg filename "
 	    "exceeds %d chars - increase REG_MAX_STRING_LENGTH\n", 
 	    REG_MAX_STRING_LENGTH);
   }
@@ -220,14 +220,14 @@ struct msg_struct *Get_control_msg_file()
        a Sim_entry struct */
     if(Parse_xml_file(filename, msg, NULL) != REG_SUCCESS){
 
-      fprintf(stderr, "Get_control_msg_file: failed to parse <%s>\n", filename);
+      fprintf(stderr, "STEER: Get_control_msg_file: failed to parse <%s>\n", filename);
       Delete_msg_struct(&msg);
     }
 
     /* Delete the file once we've read it */
     if( Delete_file(filename) != REG_SUCCESS){
 
-      fprintf(stderr, "Get_control_msg_file: failed to delete %s\n",filename);
+      fprintf(stderr, "STEER: Get_control_msg_file: failed to delete %s\n",filename);
     }
   }
 
@@ -251,7 +251,7 @@ int Finalize_steering_connection_file()
   max += strlen(Steerer_connection.file_root);
   if(max > REG_MAX_STRING_LENGTH ){
 
-    fprintf(stderr, "Finalize_steering_connection_file: WARNING: truncating "
+    fprintf(stderr, "STEER: Finalize_steering_connection_file: WARNING: truncating "
 	    "filename\n");
   }
 #endif
@@ -261,7 +261,7 @@ int Finalize_steering_connection_file()
 	  APP_STEERABLE_FILENAME);
   if(remove(sys_command)){
 
-    fprintf(stderr, "Finalize_steering_connection_file: failed to remove "
+    fprintf(stderr, "STEER: Finalize_steering_connection_file: failed to remove "
 	    "%s\n", sys_command);
   }
 
@@ -270,7 +270,7 @@ int Finalize_steering_connection_file()
 	  STR_CONNECTED_FILENAME);
   if(remove(sys_command)){
 #if REG_DEBUG    
-    fprintf(stderr, "Finalize_steering_connection_file: failed to remove "
+    fprintf(stderr, "STEER: Finalize_steering_connection_file: failed to remove "
 	    "%s\n", sys_command);
 #endif
   }
@@ -310,12 +310,12 @@ int Initialize_steering_connection_file(int  NumSupportedCmds,
     fclose(fp);
     if(remove(filename)){
 
-      fprintf(stderr, "Initialize_steering_connection_file: failed to "
+      fprintf(stderr, "STEER: Initialize_steering_connection_file: failed to "
 	      "remove %s\n",filename);
     }
 #if REG_DEBUG
     else{
-      fprintf(stderr, "Initialize_steering_connection_file: removed "
+      fprintf(stderr, "STEER: Initialize_steering_connection_file: removed "
 	      "%s\n", filename);
     }
 #endif
@@ -335,13 +335,13 @@ int Initialize_steering_connection_file(int  NumSupportedCmds,
 
   if(fp == NULL){
 
-    fprintf(stderr, "Initialize_steering_connection_file: failed to open %s\n",
+    fprintf(stderr, "STEER: Initialize_steering_connection_file: failed to open %s\n",
 	    filename);
     return REG_FAILURE;
   }
 
 #if REG_DEBUG
-  fprintf(stderr, "Initialize_steering_connection_file: writing file: %s\n", 
+  fprintf(stderr, "STEER: Initialize_steering_connection_file: writing file: %s\n", 
 	  filename);
 #endif
 
@@ -374,7 +374,7 @@ int Get_data_source_address_file(int                 dummy,
       sprintf(hostname, pchar);
     }
     else{
-      fprintf(stderr, "Get_data_source_address_file: content of "
+      fprintf(stderr, "STEER: Get_data_source_address_file: content of "
 	      "REG_CONNECTOR_HOSTNAME exceeds max. string length of "
 	      "%d chars\n", REG_MAX_STRING_LENGTH);
       return REG_FAILURE;
@@ -382,7 +382,7 @@ int Get_data_source_address_file(int                 dummy,
   }
   else{
     fprintf(stderr, 
-	    "Get_data_source_address_file: REG_CONNECTOR_HOSTNAME not set\n");
+	    "STEER: Get_data_source_address_file: REG_CONNECTOR_HOSTNAME not set\n");
     return REG_FAILURE;
   }
 
@@ -392,7 +392,7 @@ int Get_data_source_address_file(int                 dummy,
   }
   else{
     fprintf(stderr, 
-	    "Get_data_source_address_file: REG_CONNECTOR_PORT not set\n");
+	    "STEER: Get_data_source_address_file: REG_CONNECTOR_PORT not set\n");
     return REG_FAILURE;
   }
 
@@ -451,7 +451,7 @@ int Consume_start_data_check_file(int index){
   pchar = (char*) strstr(IOTypes_table.io_def[index].filename, ".lock");
 
   if(!pchar){
-    fprintf(stderr, "Consume_start_data_check_file: failed to strip .lock!\n");
+    fprintf(stderr, "STEER: Consume_start_data_check_file: failed to strip .lock!\n");
     return REG_FAILURE;
   }
 
@@ -459,7 +459,7 @@ int Consume_start_data_check_file(int index){
   if( !(IOTypes_table.io_def[index].fp = 
 	fopen(IOTypes_table.io_def[index].filename, "r")) ){
 
-    fprintf(stderr, "Consume_start_data_check_file: failed to open file: %s\n",
+    fprintf(stderr, "STEER: Consume_start_data_check_file: failed to open file: %s\n",
 	    IOTypes_table.io_def[index].filename);
     return REG_FAILURE;
   }
@@ -471,7 +471,7 @@ int Consume_start_data_check_file(int index){
 	   REG_PACKET_SIZE, 
 	   IOTypes_table.io_def[index].fp) != (size_t)REG_PACKET_SIZE){
 
-    fprintf(stderr, "Consume_start_data_check_file: failed to read "
+    fprintf(stderr, "STEER: Consume_start_data_check_file: failed to read "
 	    "header from file: %s\n",
 	    IOTypes_table.io_def[index].filename);
     remove(IOTypes_table.io_def[index].filename);
@@ -480,7 +480,7 @@ int Consume_start_data_check_file(int index){
 
   if(!strstr(fileroot, REG_DATA_HEADER)){
 
-    fprintf(stderr, "Consume_start_data_check_file: wrong "
+    fprintf(stderr, "STEER: Consume_start_data_check_file: wrong "
 	    "header from file: %s\n",
 	    IOTypes_table.io_def[index].filename);
     remove(IOTypes_table.io_def[index].filename);
@@ -513,7 +513,7 @@ int Get_file_list(char *fileroot,
 
   if( !(pchar = (char *)malloc(len)) ){
 
-    fprintf(stderr, "Get_file_list: malloc of %d bytes failed\n",
+    fprintf(stderr, "STEER: Get_file_list: malloc of %d bytes failed\n",
 	    len);
     return REG_FAILURE;
   }
@@ -546,7 +546,7 @@ int Get_file_list(char *fileroot,
       len = (int)strlen(bufline);
       if(!((*names)[i] = (char *)malloc(len))){
 
-	fprintf(stderr, "Get_checkpoint_files: malloc failed\n");
+	fprintf(stderr, "STEER: Get_checkpoint_files: malloc failed\n");
 	for(j=i; j>=0; j--){
 	  free((*names)[i]);
 	  (*names)[i] = NULL;
@@ -580,7 +580,7 @@ int Consume_data_read_file(const int	 index,
 
   if(!IOTypes_table.io_def[index].fp){
 
-    fprintf(stderr, "Consume_data_read_file: ERROR: null file pointer\n");
+    fprintf(stderr, "STEER: ERROR: Consume_data_read_file: null file pointer\n");
     return REG_FAILURE;
   }
 
@@ -599,13 +599,13 @@ int Consume_data_read_file(const int	 index,
 		   IOTypes_table.io_def[index].fp);
   }
 #if REG_DEBUG
-  fprintf(stderr, "Consume_data_read_file: read %d bytes\n",
+  fprintf(stderr, "STEER: Consume_data_read_file: read %d bytes\n",
 	  (int) nbytes);
 #endif /* REG_DEBUG */
 
   if((int)nbytes != num_bytes_to_read){
 
-    fprintf(stderr, "Consume_data_read_file: failed to read expected "
+    fprintf(stderr, "STEER: Consume_data_read_file: failed to read expected "
 	    "quantity of data\n");
     /* Reset use_xdr flag set as only valid on a per-slice basis */
     IOTypes_table.io_def[index].use_xdr = REG_FALSE;
@@ -648,14 +648,14 @@ int Consume_msg_header_file(int  index,
 
   if(!IOTypes_table.io_def[index].fp){
 
-    fprintf(stderr, "Consume_iotype_msg_header: file pointer is null\n");
+    fprintf(stderr, "STEER: Consume_iotype_msg_header: file pointer is null\n");
     return REG_FAILURE;
   }
 
   if(fread(buffer, 1, REG_PACKET_SIZE, IOTypes_table.io_def[index].fp) 
      != (size_t)REG_PACKET_SIZE){
 
-    fprintf(stderr, "Consume_iotype_msg_header: fread failed for header\n");
+    fprintf(stderr, "STEER: Consume_iotype_msg_header: fread failed for header\n");
     fclose(IOTypes_table.io_def[index].fp);
     IOTypes_table.io_def[index].fp = NULL;
     remove(IOTypes_table.io_def[index].filename);
@@ -663,7 +663,7 @@ int Consume_msg_header_file(int  index,
   }
 
 #if REG_DEBUG
-  fprintf(stderr, "Consume_iotype_msg_header: read >%s< from file\n",
+  fprintf(stderr, "STEER: Consume_iotype_msg_header: read >%s< from file\n",
 	  buffer);
 #endif
 
@@ -674,7 +674,7 @@ int Consume_msg_header_file(int  index,
   }
   else if(strncmp(buffer, BEGIN_SLICE_HEADER, strlen(BEGIN_SLICE_HEADER))){
 
-    fprintf(stderr, "Consume_iotype_msg_header: incorrect header on slice\n");
+    fprintf(stderr, "STEER: Consume_iotype_msg_header: incorrect header on slice\n");
     fclose(IOTypes_table.io_def[index].fp);
     IOTypes_table.io_def[index].fp = NULL;
     remove(IOTypes_table.io_def[index].filename);
@@ -686,7 +686,7 @@ int Consume_msg_header_file(int  index,
   if(fread(buffer, 1, REG_PACKET_SIZE, IOTypes_table.io_def[index].fp) 
      != (size_t)REG_PACKET_SIZE){
 
-    fprintf(stderr, "Consume_iotype_msg_header: fread failed for object type\n");
+    fprintf(stderr, "STEER: Consume_iotype_msg_header: fread failed for object type\n");
     fclose(IOTypes_table.io_def[index].fp);
     IOTypes_table.io_def[index].fp = NULL;
     remove(IOTypes_table.io_def[index].filename);
@@ -694,7 +694,7 @@ int Consume_msg_header_file(int  index,
   }
 
 #if REG_DEBUG
-  fprintf(stderr, "Consume_iotype_msg_header: read >%s< from file\n", 
+  fprintf(stderr, "STEER: Consume_iotype_msg_header: read >%s< from file\n", 
 	  buffer);
 #endif
 
@@ -719,7 +719,7 @@ int Consume_msg_header_file(int  index,
   }
 
 #if REG_DEBUG
-  fprintf(stderr, "Consume_iotype_msg_header: read >%s< from file\n", 
+  fprintf(stderr, "STEER: Consume_iotype_msg_header: read >%s< from file\n", 
 	  buffer);
 #endif
 
@@ -733,7 +733,7 @@ int Consume_msg_header_file(int  index,
 
   if( sscanf(buffer, "<Num_objects>%d</Num_objects>", Count) != 1){
 
-    fprintf(stderr, "Consume_iotype_msg_header: failed to read Num_objects\n");
+    fprintf(stderr, "STEER: Consume_iotype_msg_header: failed to read Num_objects\n");
     fclose(IOTypes_table.io_def[index].fp);
     IOTypes_table.io_def[index].fp = NULL;
     remove(IOTypes_table.io_def[index].filename);
@@ -745,7 +745,7 @@ int Consume_msg_header_file(int  index,
   if(fread(buffer, 1, REG_PACKET_SIZE, IOTypes_table.io_def[index].fp) 
      != (size_t)REG_PACKET_SIZE){
 
-    fprintf(stderr, "Consume_iotype_msg_header: fread failed for num bytes\n");
+    fprintf(stderr, "STEER: Consume_iotype_msg_header: fread failed for num bytes\n");
     fclose(IOTypes_table.io_def[index].fp);
     IOTypes_table.io_def[index].fp = NULL;
     remove(IOTypes_table.io_def[index].filename);
@@ -753,7 +753,7 @@ int Consume_msg_header_file(int  index,
   }
 
 #if REG_DEBUG
-  fprintf(stderr, "Consume_iotype_msg_header: read >%s< from file\n", 
+  fprintf(stderr, "STEER: Consume_iotype_msg_header: read >%s< from file\n", 
 	  buffer);
 #endif
 
@@ -767,7 +767,7 @@ int Consume_msg_header_file(int  index,
 
   if( sscanf(buffer, "<Num_bytes>%d</Num_bytes>", NumBytes) != 1){
 
-    fprintf(stderr, "Consume_iotype_msg_header: failed to read Num_bytes\n");
+    fprintf(stderr, "STEER: Consume_iotype_msg_header: failed to read Num_bytes\n");
     fclose(IOTypes_table.io_def[index].fp);
     IOTypes_table.io_def[index].fp = NULL;
     remove(IOTypes_table.io_def[index].filename);
@@ -779,7 +779,7 @@ int Consume_msg_header_file(int  index,
   if(fread(buffer, 1, REG_PACKET_SIZE, IOTypes_table.io_def[index].fp) 
      != (size_t)REG_PACKET_SIZE){
 
-    fprintf(stderr, "Consume_iotype_msg_header: fread failed for array ordering\n");
+    fprintf(stderr, "STEER: Consume_iotype_msg_header: fread failed for array ordering\n");
     fclose(IOTypes_table.io_def[index].fp);
     IOTypes_table.io_def[index].fp = NULL;
     remove(IOTypes_table.io_def[index].filename);
@@ -787,7 +787,7 @@ int Consume_msg_header_file(int  index,
   }
 
 #if REG_DEBUG
-  fprintf(stderr, "Consume_iotype_msg_header: read >%s< from file\n", 
+  fprintf(stderr, "STEER: Consume_iotype_msg_header: read >%s< from file\n", 
 	  buffer);
 #endif
 
@@ -814,7 +814,7 @@ int Consume_msg_header_file(int  index,
   if(fread(buffer, 1, REG_PACKET_SIZE, IOTypes_table.io_def[index].fp) 
      != (size_t)REG_PACKET_SIZE){
 
-    fprintf(stderr, "Consume_iotype_msg_header: fread failed for header end\n");
+    fprintf(stderr, "STEER: Consume_iotype_msg_header: fread failed for header end\n");
     fclose(IOTypes_table.io_def[index].fp);
     IOTypes_table.io_def[index].fp = NULL;
     remove(IOTypes_table.io_def[index].filename);
@@ -822,13 +822,13 @@ int Consume_msg_header_file(int  index,
   }
 
 #if REG_DEBUG
-  fprintf(stderr, "Consume_msg_header: read >%s< from file\n", 
+  fprintf(stderr, "STEER: Consume_msg_header: read >%s< from file\n", 
 	  buffer);
 #endif
 
   if(strncmp(buffer, END_SLICE_HEADER, strlen(END_SLICE_HEADER))){
 
-    fprintf(stderr, "Consume_msg_header: failed to find "
+    fprintf(stderr, "STEER: Consume_msg_header: failed to find "
 	    "end of header\n");
     fclose(IOTypes_table.io_def[index].fp);
     IOTypes_table.io_def[index].fp = NULL;
@@ -854,7 +854,7 @@ int Initialize_IOType_transport_file(int direction,
     len = strlen(pchar);
     if(len > REG_MAX_STRING_LENGTH){
 
-      fprintf(stderr, "Initialize_IOType_transport_file: content of "
+      fprintf(stderr, "STEER: Initialize_IOType_transport_file: content of "
 	      "REG_DATA_DIRECTORY env. variable exceeds %d\n"
 	      "characters - increase REG_MAX_STRING_LENGTH\n", 
 	      REG_MAX_STRING_LENGTH);
@@ -870,7 +870,7 @@ int Initialize_IOType_transport_file(int direction,
       strcpy(IOTypes_table.io_def[index].directory, pchar);
     }
 #if REG_DEBUG
-    fprintf(stderr, "Initialize_IOType_transport_file: will use following"
+    fprintf(stderr, "STEER: Initialize_IOType_transport_file: will use following"
 	    " directory for data files: %s\n", 
 	    IOTypes_table.io_def[index].directory);
 #endif    
@@ -878,7 +878,7 @@ int Initialize_IOType_transport_file(int direction,
   else{
     IOTypes_table.io_def[index].directory[0] = '\0';
 #if REG_DEBUG
-    fprintf(stderr, "Initialize_IOType_transport_file: will use current"
+    fprintf(stderr, "STEER: Initialize_IOType_transport_file: will use current"
 	    " working directory for data files\n");
 #endif    
   }
