@@ -2,7 +2,7 @@
   This file contains routines and data structures for SOAP-based 
   steering communication.
 
-  (C) Copyright 2005, University of Manchester, United Kingdom,
+  (C) Copyright 2006, University of Manchester, United Kingdom,
   all rights reserved.
 
   This software was developed by the RealityGrid project
@@ -106,7 +106,7 @@ int Initialize_steering_connection_soap(int  NumSupportedCmds,
   if(!(Steerer_connection.SGS_info.soap = 
                 (struct soap*)malloc(sizeof(struct soap)))){
 
-    fprintf(stderr, "Initialize_steering_connection_soap: failed to "
+    fprintf(stderr, "STEER: Initialize_steering_connection_soap: failed to "
 	    "malloc memory for soap struct\n");
     return REG_FAILURE;
   }
@@ -114,7 +114,7 @@ int Initialize_steering_connection_soap(int  NumSupportedCmds,
   /* Set location of steering scratch directory */
   if(Set_steering_directory() != REG_SUCCESS){
 
-    fprintf(stderr, "Initialize_steering_connection_soap: failed to set "
+    fprintf(stderr, "STEER: Initialize_steering_connection_soap: failed to set "
 	    "steering scratch directory - checkpoint info. will be "
 	    "written to ./\n");
   }
@@ -128,13 +128,13 @@ int Initialize_steering_connection_soap(int  NumSupportedCmds,
     snprintf(Steerer_connection.SGS_info.address, REG_MAX_STRING_LENGTH, 
 	     "%s", pchar);
 #if REG_DEBUG
-    fprintf(stderr, "Initialize_steering_connection_soap: SGS address = %s\n",
+    fprintf(stderr, "STEER: Initialize_steering_connection_soap: SGS address = %s\n",
 	    Steerer_connection.SGS_info.address);
 #endif
   }
   else{
 
-    fprintf(stderr, "Initialize_steering_connection_soap: REG_SGS_ADDRESS "
+    fprintf(stderr, "STEER: Initialize_steering_connection_soap: REG_SGS_ADDRESS "
 	    "environment variable not set\n");
     return REG_FAILURE;
   }
@@ -164,7 +164,7 @@ int Initialize_steering_connection_soap(int  NumSupportedCmds,
 			      Steerer_connection.SGS_info.address, "", 
 			      NULL, &appStart_response)){
 
-    fprintf(stderr, "Initialize_steering_connection_soap: failed to "
+    fprintf(stderr, "STEER: Initialize_steering_connection_soap: failed to "
 	    "attach to SGS: %s\n", Steerer_connection.SGS_info.address);
     soap_print_fault(Steerer_connection.SGS_info.soap, stderr);
     return REG_FAILURE;
@@ -173,7 +173,7 @@ int Initialize_steering_connection_soap(int  NumSupportedCmds,
   if(!appStart_response._AppStartReturn || 
            strstr(appStart_response._AppStartReturn, REG_SGS_ERROR)){
 
-    fprintf(stderr, "Initialize_steering_connection_soap: AppStart "
+    fprintf(stderr, "STEER: Initialize_steering_connection_soap: AppStart "
 	    "returned error\n");
     return REG_FAILURE;
   }
@@ -196,18 +196,18 @@ int Initialize_steering_connection_soap(int  NumSupportedCmds,
 				    query_buf, 
 				    &setSDE_response)){
 
-    fprintf(stderr, "Initialize_steering_connection_soap: failure\n");
+    fprintf(stderr, "STEER: Initialize_steering_connection_soap: failure\n");
     soap_print_fault(Steerer_connection.SGS_info.soap, stderr);
     return REG_FAILURE;
   }
 
 #if REG_DEBUG
   if(setSDE_response._setServiceDataReturn){
-    fprintf(stderr, "Initialize_steering_connection_soap: setServiceData "
+    fprintf(stderr, "STEER: Initialize_steering_connection_soap: setServiceData "
 	    "returned: %s\n", setSDE_response._setServiceDataReturn);
   }
   else{
-    fprintf(stderr, "Initialize_steering_connection_soap: setServiceData "
+    fprintf(stderr, "STEER: Initialize_steering_connection_soap: setServiceData "
 	    "returned null\n");
   }
 #endif
@@ -226,18 +226,18 @@ int Initialize_steering_connection_soap(int  NumSupportedCmds,
 				    query_buf, 
 				    &setSDE_response)){
 
-    fprintf(stderr, "Initialize_steering_connection_soap: failure\n");
+    fprintf(stderr, "STEER: Initialize_steering_connection_soap: failure\n");
     soap_print_fault(Steerer_connection.SGS_info.soap, stderr);
     return REG_FAILURE;
   }
 
 #if REG_DEBUG
   if(setSDE_response._setServiceDataReturn){
-    fprintf(stderr, "Initialize_steering_connection_soap: setServiceData "
+    fprintf(stderr, "STEER: Initialize_steering_connection_soap: setServiceData "
 	    "returned: %s\n", setSDE_response._setServiceDataReturn);
   }
   else{
-    fprintf(stderr, "Initialize_steering_connection_soap: setServiceData "
+    fprintf(stderr, "STEER: Initialize_steering_connection_soap: setServiceData "
 	    "returned null\n");
   }
 #endif
@@ -256,7 +256,7 @@ int Detach_from_steerer_soap()
 			      Steerer_connection.SGS_info.address, 
 			      "", NULL, &appDetach_response )){
 
-    fprintf(stderr, "Detach_from_steerer_soap: AppDetach failed:\n");
+    fprintf(stderr, "STEER: Detach_from_steerer_soap: AppDetach failed:\n");
     soap_print_fault(Steerer_connection.SGS_info.soap, stderr);
 
     return REG_FAILURE;
@@ -287,7 +287,7 @@ int Steerer_connected_soap()
 				    "", query_buf, 
 				    &findServiceData_response )){
 
-    fprintf(stderr, "Steerer_connected_soap: findServiceData failed:\n");
+    fprintf(stderr, "STEER: Steerer_connected_soap: findServiceData failed:\n");
     soap_print_fault(Steerer_connection.SGS_info.soap, stderr);
 
     return REG_FAILURE;
@@ -295,11 +295,11 @@ int Steerer_connected_soap()
 
 #if REG_DEBUG
   if(findServiceData_response._findServiceDataReturn){
-    fprintf(stderr, "Steerer_connected_soap: findServiceData returned: %s\n", 
+    fprintf(stderr, "STEER: Steerer_connected_soap: findServiceData returned: %s\n", 
 	    findServiceData_response._findServiceDataReturn);
   }
   else{
-    fprintf(stderr, "Steerer_connected_soap: findServiceData returned null\n");
+    fprintf(stderr, "STEER: Steerer_connected_soap: findServiceData returned null\n");
   }
 #endif
 
@@ -349,11 +349,11 @@ int Send_status_msg_soap(char* msg)
 
 #if REG_DEBUG
       if(putStatus_response._PutStatusReturn){
-	fprintf(stderr, "Send_status_msg_soap: PutStatus returned: %s\n", 
+	fprintf(stderr, "STEER: Send_status_msg_soap: PutStatus returned: %s\n", 
 		putStatus_response._PutStatusReturn);
       }
       else{
-	fprintf(stderr, "Send_status_msg_soap: PutStatus returned null\n");
+	fprintf(stderr, "STEER: Send_status_msg_soap: PutStatus returned null\n");
       }
 #endif
 
@@ -384,7 +384,7 @@ int Send_status_msg_soap(char* msg)
       sde_name = CHKTYPE_DEFS_SDE;
     }
     else{
-      fprintf(stderr, "Send_status_msg_soap: not a status or log msg and"
+      fprintf(stderr, "STEER: Send_status_msg_soap: not a status or log msg and"
 	      "no matching SDE name found either\n");
       return REG_FAILURE;
     }
@@ -402,7 +402,7 @@ int Send_status_msg_soap(char* msg)
       new_size = strlen(msg) + 512;
       if(!(pbuf = (char *)malloc(new_size)) ){
 
-	fprintf(stderr, "Send_status_msg_soap: malloc failed\n");
+	fprintf(stderr, "STEER: Send_status_msg_soap: malloc failed\n");
 	return REG_FAILURE;
       }
 
@@ -415,7 +415,7 @@ int Send_status_msg_soap(char* msg)
       
 	free(pbuf);
 	pbuf = NULL;
-	fprintf(stderr, "Send_status_msg_soap: ERROR - msg truncated\n");
+	fprintf(stderr, "STEER: Send_status_msg_soap: ERROR - msg truncated\n");
 	return REG_FAILURE;
       }
       status = soap_call_sgs__setServiceData(Steerer_connection.SGS_info.soap, 
@@ -433,7 +433,7 @@ int Send_status_msg_soap(char* msg)
     }
 
     if(status){
-      fprintf(stderr, "Send_status_msg_soap: setServiceData failed:\n");
+      fprintf(stderr, "STEER: Send_status_msg_soap: setServiceData failed:\n");
       soap_print_fault(Steerer_connection.SGS_info.soap,stderr);
       return REG_FAILURE;
     }
@@ -455,7 +455,7 @@ struct msg_struct *Get_control_msg_soap()
   struct msg_struct *msg = NULL;
 
 #if REG_DEBUG
-    fprintf(stderr, "Get_control_msg_soap: address = %s\n", 
+    fprintf(stderr, "STEER: Get_control_msg_soap: address = %s\n", 
 	    Steerer_connection.SGS_info.address);
 #endif
     getControl_response._GetControlReturn = NULL;
@@ -468,11 +468,11 @@ struct msg_struct *Get_control_msg_soap()
 
 #if REG_DEBUG
   if(getControl_response._GetControlReturn){
-    fprintf(stderr, "Get_control_msg_soap: GetControl returned: %s\n", 
+    fprintf(stderr, "STEER: Get_control_msg_soap: GetControl returned: %s\n", 
 	    getControl_response._GetControlReturn);
   }
   else{
-    fprintf(stderr, "Get_control_msg_soap: GetControl returned null\n");
+    fprintf(stderr, "STEER: Get_control_msg_soap: GetControl returned null\n");
   }
 #endif
 
@@ -539,19 +539,19 @@ int Get_data_source_address_soap(int   index,
 				     Steerer_connection.SGS_info.address, 
 				     "", (xsd__int)index,
 				     &getNthDataSource_response)){
-    fprintf(stderr, "Get_data_source_address_soap: soap call failed:\n");
+    fprintf(stderr, "STEER: Get_data_source_address_soap: soap call failed:\n");
     soap_print_fault(Steerer_connection.SGS_info.soap, stderr);
     return REG_FAILURE;
   }
 
 #if REG_DEBUG
   if(getNthDataSource_response._GetNthDataSourceReturn){
-    fprintf(stderr, "Get_data_source_address_soap: GetNthDataSource "
+    fprintf(stderr, "STEER: Get_data_source_address_soap: GetNthDataSource "
 	    "(for n=%d)\nreturned: >>%s<<\n", 
 	    index, getNthDataSource_response._GetNthDataSourceReturn);
   }
   else{
-    fprintf(stderr, "Get_data_source_address_soap: GetNthDataSource "
+    fprintf(stderr, "STEER: Get_data_source_address_soap: GetNthDataSource "
 	    "(for n=%d)\nreturned null\n", index);
   }
 #endif
@@ -588,19 +588,19 @@ int Record_checkpoint_set_soap(char *chk_data,
 				      Steerer_connection.SGS_info.address, 
 				      "", chk_data, node_data,  
 				      &AppRecordChkpoint_response)){
-    fprintf(stderr, "Record_checkpoint_set_soap: soap call failed:\n");
+    fprintf(stderr, "STEER: Record_checkpoint_set_soap: soap call failed:\n");
     soap_print_fault(Steerer_connection.SGS_info.soap, stderr);
     return REG_FAILURE;
   }
 
 #if REG_DEBUG
   if(AppRecordChkpoint_response._AppRecordChkpointReturn){
-    fprintf(stderr, "Record_checkpoint_set_soap: "
+    fprintf(stderr, "STEER: Record_checkpoint_set_soap: "
 	    "AppRecordChkpoint returned: >>%s<<\n", 
 	    AppRecordChkpoint_response._AppRecordChkpointReturn);
   }
   else{
-    fprintf(stderr, "Record_checkpoint_set_soap: AppRecordChkpoint "
+    fprintf(stderr, "STEER: Record_checkpoint_set_soap: AppRecordChkpoint "
 	    "returned null\n");
   }
 #endif
@@ -625,7 +625,7 @@ int Save_log_soap(char *log_data)
 
   if(strlen(log_data) > REG_SCRATCH_BUFFER_SIZE){
 
-    fprintf(stderr, "Save_log_soap: log data exceeds scratch buffer "
+    fprintf(stderr, "STEER: Save_log_soap: log data exceeds scratch buffer "
 	    "size of %d btes.  More code needed here...\n", 
 	    REG_SCRATCH_BUFFER_SIZE);
     return REG_FAILURE;
@@ -644,7 +644,7 @@ int Save_log_soap(char *log_data)
 			      Steerer_connection.SGS_info.address, 
 			      "", Global_scratch_buffer,  
 			      &AppPutLog_response)){
-    fprintf(stderr, "Save_log_soap: soap call failed:\n");
+    fprintf(stderr, "STEER: Save_log_soap: soap call failed:\n");
     soap_print_fault(Steerer_connection.SGS_info.soap, stderr);
     return REG_FAILURE;
   }
