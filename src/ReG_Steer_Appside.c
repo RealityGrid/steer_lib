@@ -204,7 +204,7 @@ int Steering_initialize(char *AppName,
 
   /* Don't do anything if steering is not enabled */
   if (!ReG_SteeringEnabled){
-    fprintf(stderr, "Steering_initialize: WARNING: steering library "
+    fprintf(stderr, "STEER: WARNING: Steering_initialize:  steering library "
 	    "not enabled - no steering will be possible\n");
     return REG_SUCCESS;
   }
@@ -223,7 +223,7 @@ int Steering_initialize(char *AppName,
        put aside for it */
     if((i + strlen(schema_path) + 1) > REG_MAX_STRING_LENGTH){
 
-      fprintf(stderr, "Steering_initialize: WARNING: schema path exceeds "
+      fprintf(stderr, "STEER: WARNING: Steering_initialize: schema path exceeds "
 	      "REG_MAX_STRING_LENGTH (%d chars) - truncating\n", 
 	      REG_MAX_STRING_LENGTH);
     }
@@ -245,7 +245,7 @@ int Steering_initialize(char *AppName,
     /* ARP - changed so that failure to get a (file) location for
        the XML schema is no longer fatal.  We just use some made-up
        path. */
-    fprintf(stderr, "Steering_initialize: WARNING: REG_STEER_HOME "
+    fprintf(stderr, "STEER: WARNING: Steering_initialize: REG_STEER_HOME "
 	    "environment variable not set\n");
     sprintf(ReG_Steer_Schema_Locn, "/tmp/%s", schema_path);
   }
@@ -255,7 +255,7 @@ int Steering_initialize(char *AppName,
   if( !(pchar = getcwd(ReG_CurrentDir, REG_MAX_STRING_LENGTH)) ){
 
     ReG_CurrentDir[0] = '\0';
-    fprintf(stderr, "Steering_initialize: failed to get working "
+    fprintf(stderr, "STEER: Steering_initialize: failed to get working "
 	    "directory\n");
   } 
 
@@ -263,7 +263,7 @@ int Steering_initialize(char *AppName,
      application */
   if(strlen(AppName) > REG_MAX_STRING_LENGTH){
 
-    fprintf(stderr, "Steering_initialize: Error - tag specifying "
+    fprintf(stderr, "STEER: Steering_initialize: Error - tag specifying "
 	    "application name and version exceeds %d chars\n",
             REG_MAX_STRING_LENGTH);
     Steering_enable(REG_FALSE);
@@ -287,11 +287,11 @@ int Steering_initialize(char *AppName,
   }
   else{
     ReG_Hostname[0] = '\0';
-    fprintf(stderr, "Steering_initialize: failed to get machine name\n");
+    fprintf(stderr, "STEER: Steering_initialize: failed to get machine name\n");
   }
 
 #if REG_DEBUG
-  fprintf(stderr, "Steering_initialize: machine name = %s\n", 
+  fprintf(stderr, "STEER: Steering_initialize: machine name = %s\n", 
 	  ReG_Hostname);
 #endif
 
@@ -315,7 +315,7 @@ int Steering_initialize(char *AppName,
  
   if(IOTypes_table.io_def == NULL){
     
-    fprintf(stderr, "Steering_initialize: failed to allocate memory "
+    fprintf(stderr, "STEER: Steering_initialize: failed to allocate memory "
 	    "for IOType table\n");
     Steering_enable(REG_FALSE);
     return REG_FAILURE;
@@ -346,7 +346,7 @@ int Steering_initialize(char *AppName,
  
   if(ChkTypes_table.io_def == NULL){
     
-    fprintf(stderr, "Steering_initialize: failed to allocate memory "
+    fprintf(stderr, "STEER: Steering_initialize: failed to allocate memory "
 	    "for ChkType table\n");
     free(IOTypes_table.io_def);
     IOTypes_table.io_def = NULL;
@@ -370,7 +370,7 @@ int Steering_initialize(char *AppName,
 
   if(Params_table.param == NULL){
 
-    fprintf(stderr, "Steering_initialize: failed to allocate memory "
+    fprintf(stderr, "STEER: Steering_initialize: failed to allocate memory "
 	    "for param table\n");
 
     free(IOTypes_table.io_def);
@@ -491,7 +491,7 @@ int Steering_initialize(char *AppName,
 
   if( Initialize_log(&Chk_log, CHKPT) != REG_SUCCESS ){
 
-    fprintf(stderr, "Steering_initialize: failed to allocate memory "
+    fprintf(stderr, "STEER: Steering_initialize: failed to allocate memory "
 	    "for checkpoint logging\n");
     free(IOTypes_table.io_def);
     IOTypes_table.io_def = NULL;
@@ -508,7 +508,7 @@ int Steering_initialize(char *AppName,
   strcat(Param_log.filename, REG_PARAM_LOG_FILENAME);
 
   if( Initialize_log(&Param_log, PARAM) != REG_SUCCESS ){
-    fprintf(stderr, "Steering_initialize: failed to allocate memory "
+    fprintf(stderr, "STEER: Steering_initialize: failed to allocate memory "
 	    "for param logging\n");
     free(IOTypes_table.io_def);
     IOTypes_table.io_def = NULL;
@@ -752,7 +752,7 @@ int Register_IOType(char* IOLabel,
 
   if(String_contains_xml_chars(IOLabel) == REG_TRUE){
 
-    fprintf(stderr, "Register_IOType: ERROR: IO label contains "
+    fprintf(stderr, "STEER: ERROR: Register_IOType: IO label contains "
 	    "reserved xml characters (<,>,&): %s\n", IOLabel);
     return REG_FAILURE;
   }
@@ -796,7 +796,7 @@ int Register_IOType(char* IOLabel,
   else{
 
 #if REG_DEBUG
-    fprintf(stderr, "Register_IOTypes: failed to get handle for param\n");
+    fprintf(stderr, "STEER: Register_IOTypes: failed to get handle for param\n");
 #endif
     return REG_FAILURE;
   }
@@ -839,7 +839,7 @@ int Register_IOType(char* IOLabel,
 
     if(dum_ptr == NULL){
 
-      fprintf(stderr, "Register_IOTypes: failed to allocate memory\n");
+      fprintf(stderr, "STEER: Register_IOTypes: failed to allocate memory\n");
       return REG_FAILURE;
     }
     else{
@@ -875,7 +875,7 @@ int Disable_IOType(int IOType){
   index = IOdef_index_from_handle(&IOTypes_table, IOType);
   if(index == REG_IODEF_HANDLE_NOTSET){
 
-    fprintf(stderr, "Disable_IOType: failed to find matching IOType\n");
+    fprintf(stderr, "STEER: Disable_IOType: failed to find matching IOType\n");
     return REG_FAILURE;
   }
 
@@ -933,7 +933,7 @@ int Enable_IOType(int IOType){
 
   /* Can only call this function if steering lib initialised */
   if(!ReG_SteeringInit){
-    fprintf(stderr, "Enable_IOType: error: steering library not "
+    fprintf(stderr, "STEER: Enable_IOType: error: steering library not "
 	    "initialised\n");
     return REG_FAILURE;
   }
@@ -942,7 +942,7 @@ int Enable_IOType(int IOType){
   index = IOdef_index_from_handle(&IOTypes_table, IOType);
   if(index == REG_IODEF_HANDLE_NOTSET){
 
-    fprintf(stderr, "Enable_IOType: failed to find matching IOType\n");
+    fprintf(stderr, "STEER: Enable_IOType: failed to find matching IOType\n");
     return REG_FAILURE;
   }
 
@@ -968,7 +968,7 @@ int Enable_IOType(int IOType){
   }
 #if REG_DEBUG
   else{
-    fprintf(stderr, "Enable_IOType: IOType %d already enabled\n", 
+    fprintf(stderr, "STEER: Enable_IOType: IOType %d already enabled\n", 
 	    IOType);
   }
 #endif
@@ -987,7 +987,7 @@ int Enable_IOType_acks(int IOType){
 
   /* Can only call this function if steering lib initialised */
   if(!ReG_SteeringInit){
-    fprintf(stderr, "ERROR: Enable_IOType_acks: "
+    fprintf(stderr, "STEER: ERROR: Enable_IOType_acks: "
 	    "steering library not initialised\n");
     return REG_FAILURE;
   }
@@ -996,7 +996,7 @@ int Enable_IOType_acks(int IOType){
   index = IOdef_index_from_handle(&IOTypes_table, IOType);
   if(index == REG_IODEF_HANDLE_NOTSET){
 
-    fprintf(stderr, "ERROR: Enable_IOType_acks: "
+    fprintf(stderr, "STEER: ERROR: Enable_IOType_acks: "
 	    "failed to find matching IOType\n");
     return REG_FAILURE;
   }
@@ -1018,7 +1018,7 @@ int Disable_IOType_acks(int IOType){
 
   /* Can only call this function if steering lib initialised */
   if(!ReG_SteeringInit){
-    fprintf(stderr, "ERROR: Disable_IOType_acks: "
+    fprintf(stderr, "STEER: ERROR: Disable_IOType_acks: "
 	    "steering library not initialised\n");
     return REG_FAILURE;
   }
@@ -1027,7 +1027,7 @@ int Disable_IOType_acks(int IOType){
   index = IOdef_index_from_handle(&IOTypes_table, IOType);
   if(index == REG_IODEF_HANDLE_NOTSET){
 
-    fprintf(stderr, "ERROR: Disable_IOType_acks: "
+    fprintf(stderr, "STEER: ERROR: Disable_IOType_acks: "
 	    "failed to find matching IOType\n");
     return REG_FAILURE;
   }
@@ -1049,7 +1049,7 @@ int Set_f90_array_ordering(int IOTypeIndex, int flag){
   if (!ReG_SteeringInit) return REG_FAILURE;
 
   if(IOTypeIndex < 0){
-    fprintf(stderr, "Set_f90_ordering: IOTypeIndex is < 0\n");
+    fprintf(stderr, "STEER: Set_f90_ordering: IOTypeIndex is < 0\n");
     return REG_FAILURE;
   }
 
@@ -1069,7 +1069,7 @@ int Called_from_f90(int flag){
     ReG_CalledFromF90 = REG_FALSE;
   }
   else{
-    fprintf(stderr, "Called_from_f90: flag is neither REG_TRUE or REG_FALSE\n");
+    fprintf(stderr, "STEER: Called_from_f90: flag is neither REG_TRUE or REG_FALSE\n");
     return REG_FAILURE;
   }
 
@@ -1145,7 +1145,7 @@ int Register_ChkType(char* ChkLabel,
 
   if(String_contains_xml_chars(ChkLabel) == REG_TRUE){
 
-    fprintf(stderr, "Register_ChkType: ERROR: Chk label contains "
+    fprintf(stderr, "STEER: ERROR: Register_ChkType: Chk label contains "
 	    "reserved xml characters (<,>,&): %s\n", ChkLabel);
     return REG_FAILURE;
   }
@@ -1189,7 +1189,7 @@ int Register_ChkType(char* ChkLabel,
     }
     else{
 #if REG_DEBUG
-      fprintf(stderr, "Register_ChkType: failed to get handle for param\n");
+      fprintf(stderr, "STEER: Register_ChkType: failed to get handle for param\n");
 #endif
       *ChkType = REG_IODEF_HANDLE_NOTSET;
       return REG_FAILURE;
@@ -1222,7 +1222,7 @@ int Register_ChkType(char* ChkLabel,
 
     if(dum_ptr == NULL){
 
-      fprintf(stderr, "Register_ChkType: failed to allocate memory\n");
+      fprintf(stderr, "STEER: Register_ChkType: failed to allocate memory\n");
       return REG_FAILURE;
     }
     else{
@@ -1266,7 +1266,7 @@ int Record_Chkpt(int   ChkType,
     /* Save_log also resets Chk_log.num_entries to zero */
     if(Save_log(&Chk_log) != REG_SUCCESS){
 
-      fprintf(stderr, "Record_Chkpt: Save_log failed\n");
+      fprintf(stderr, "STEER: Record_Chkpt: Save_log failed\n");
       return REG_FAILURE;
     }
   }
@@ -1376,7 +1376,7 @@ int Record_checkpoint_set(int   ChkType,
 
     if( !(pchar = (char *)malloc(len)) ){
 
-      fprintf(stderr, "Record_checkpoint_set: malloc of %d bytes failed\n",
+      fprintf(stderr, "STEER: Record_checkpoint_set: malloc of %d bytes failed\n",
 	      len);
       return REG_FAILURE;
     }
@@ -1397,7 +1397,7 @@ int Record_checkpoint_set(int   ChkType,
     }
 
     if(j == -1){
-      fprintf(stderr, "Record_checkpoint_set: ChkTag is blank\n");
+      fprintf(stderr, "STEER: Record_checkpoint_set: ChkTag is blank\n");
       return REG_FAILURE;
     }
 
@@ -1417,7 +1417,7 @@ int Record_checkpoint_set(int   ChkType,
 
     if( (status != REG_SUCCESS) || !nfiles){
 
-      fprintf(stderr, "Record_checkpoint_set: failed to find checkpoint "
+      fprintf(stderr, "STEER: Record_checkpoint_set: failed to find checkpoint "
 	      "files with tag >%s<\n", ChkTag);
       return REG_FAILURE;
     }
@@ -1438,7 +1438,7 @@ int Record_checkpoint_set(int   ChkType,
     if(nfiles > 0){
       filenames = (char **)malloc(nfiles * sizeof(char*));
       if(!filenames){
-	fprintf(stderr, "Record_checkpoint_set: failed to malloc "
+	fprintf(stderr, "STEER: Record_checkpoint_set: failed to malloc "
 		"filenames array\n");
 	return REG_FAILURE;
       }
@@ -1449,7 +1449,7 @@ int Record_checkpoint_set(int   ChkType,
 	pTag = strchr(pchar, ' ');
 	filenames[i] = (char *)malloc((pTag - pchar) + 2 + len);
 	if(!filenames[i]){
-	  fprintf(stderr, "Record_checkpoint_set: malloc for filename "
+	  fprintf(stderr, "STEER: Record_checkpoint_set: malloc for filename "
 		  "%d failed\n", i);
 	  return REG_FAILURE;
 	}
@@ -1486,7 +1486,7 @@ int Record_checkpoint_set(int   ChkType,
 
     /* Check for truncation */
     if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
-      fprintf(stderr, "Record_checkpoint_set: data exceeds %d chars\n", 
+      fprintf(stderr, "STEER: Record_checkpoint_set: data exceeds %d chars\n", 
 	      REG_SCRATCH_BUFFER_SIZE);
       return REG_FAILURE;
     }
@@ -1550,7 +1550,7 @@ int Record_checkpoint_set(int   ChkType,
 
     /* Check for truncation */
     if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
-      fprintf(stderr, "Record_checkpoint_set: node metadata "
+      fprintf(stderr, "STEER: Record_checkpoint_set: node metadata "
 	      "exceeds %d chars\n", REG_MAX_MSG_SIZE);
       return REG_FAILURE;
     }
@@ -1561,15 +1561,15 @@ int Record_checkpoint_set(int   ChkType,
 
   nbytes = snprintf(pchar, bytes_left, "</Checkpoint_node_data>\n");
   if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
-    fprintf(stderr, "Record_checkpoint_set: node metadata "
+    fprintf(stderr, "STEER: Record_checkpoint_set: node metadata "
 	    "exceeds %d chars\n", REG_MAX_MSG_SIZE);
     return REG_FAILURE;
   }
 
 #if REG_DEBUG_FULL
-  fprintf(stderr, "Record_checkpoint_set: node meta data >>%s<<\n",
+  fprintf(stderr, "STEER: Record_checkpoint_set: node meta data >>%s<<\n",
 	  node_data);
-  fprintf(stderr, "Record_checkpoint_set: cp_data >>%s<<\n",
+  fprintf(stderr, "STEER: Record_checkpoint_set: cp_data >>%s<<\n",
 	  cp_data);
 #endif
 
@@ -1614,7 +1614,7 @@ int Add_checkpoint_file(int   ChkType,
      list to store the filenames) */
   if(strchr(filename, ' ')){
 
-    fprintf(stderr, "ERROR: Add_checkpoint_file - filenames must not "
+    fprintf(stderr, "STEER: ERROR: Add_checkpoint_file - filenames must not "
 	    "contain spaces (file >>%s<<)\n", filename);
     return REG_FAILURE;
   }
@@ -1667,7 +1667,7 @@ int Consume_start(int  IOType,
   /* Find corresponding entry in table of IOtypes */
   *IOTypeIndex = IOdef_index_from_handle(&IOTypes_table, IOType);
   if(*IOTypeIndex == REG_IODEF_HANDLE_NOTSET){
-    fprintf(stderr, "Consume_start: failed to find matching IOType, "
+    fprintf(stderr, "STEER: Consume_start: failed to find matching IOType, "
 	    "handle = %d\n", IOType);
     return REG_FAILURE;
   }
@@ -1680,7 +1680,7 @@ int Consume_start(int  IOType,
   /* Check that this IOType can be consumed */
   if(IOTypes_table.io_def[*IOTypeIndex].direction == REG_IO_OUT){
 
-    fprintf(stderr, "Consume_start: ERROR - IOType has direction REG_IO_OUT\n");
+    fprintf(stderr, "STEER: ERROR: Consume_start: IOType has direction REG_IO_OUT\n");
     return REG_FAILURE;
   }
 
@@ -1724,7 +1724,7 @@ int Consume_start_blocking(int   IOType,
     usleep(blocked_poll_interval);
     if((wait_time += blocked_poll_interval) > time_out_uS){
 #if REG_DEBUG
-      fprintf(stderr, "Consume_start_blocking: timed out\n");
+      fprintf(stderr, "STEER: Consume_start_blocking: timed out\n");
 #endif
       status = REG_TIMED_OUT;
       break;
@@ -1747,7 +1747,7 @@ int Consume_stop(int *IOTypeIndex)
 
   if(*IOTypeIndex < 0 || *IOTypeIndex >= IOTypes_table.num_registered){
 
-    fprintf(stderr, "Consume_stop: IOType index out of range\n");
+    fprintf(stderr, "STEER: Consume_stop: IOType index out of range\n");
     return REG_FAILURE;
   }
 
@@ -1925,7 +1925,7 @@ int Consume_data_slice(int    IOTypeIndex,
     break;
 
   default:
-    fprintf(stderr, "Consume_data_slice: Unrecognised data type specified "
+    fprintf(stderr, "STEER: Consume_data_slice: Unrecognised data type specified "
 	    "in slice header\n");
 
     /* Reset use_xdr flag set as only valid on a per-slice basis */
@@ -1998,7 +1998,7 @@ int Emit_start(int  IOType,
   *IOTypeIndex = IOdef_index_from_handle(&IOTypes_table, IOType);
   if(*IOTypeIndex == REG_IODEF_HANDLE_NOTSET){
 
-    fprintf(stderr, "Emit_start: failed to find matching IOType\n");
+    fprintf(stderr, "STEER: Emit_start: failed to find matching IOType\n");
     return REG_FAILURE;
   }
 
@@ -2010,7 +2010,7 @@ int Emit_start(int  IOType,
   /* Check that this IOType can be emitted */
   if(IOTypes_table.io_def[*IOTypeIndex].direction == REG_IO_IN){
 
-    fprintf(stderr, "Emit_start: ERROR - IOType with index %d has "
+    fprintf(stderr, "STEER: ERROR: Emit_start: IOType with index %d has "
 	    "direction REG_IO_IN\n", *IOTypeIndex);
     return REG_FAILURE;
   }
@@ -2036,7 +2036,7 @@ int Emit_start(int  IOType,
 
   if(len > REG_MAX_STRING_LENGTH){
 
-    fprintf(stderr, "Emit_start: combination of filename + "
+    fprintf(stderr, "STEER: Emit_start: combination of filename + "
 	    "directory path exceeds %d characters: increase "
 	    "REG_MAX_STRING_LENGTH\n", REG_MAX_STRING_LENGTH);
     return REG_FAILURE;
@@ -2068,7 +2068,7 @@ int Emit_start(int  IOType,
   if( !(IOTypes_table.io_def[*IOTypeIndex].fp = 
 	fopen(IOTypes_table.io_def[*IOTypeIndex].filename, "w")) ){
 
-    fprintf(stderr, "Emit_start: failed to open file %s\n", 
+    fprintf(stderr, "STEER: Emit_start: failed to open file %s\n", 
 	    IOTypes_table.io_def[*IOTypeIndex].filename);
     return REG_FAILURE;
   }
@@ -2109,7 +2109,7 @@ int Emit_start_blocking(int    IOType,
     usleep(blocked_poll_interval);
     if((wait_time += blocked_poll_interval) > time_out_uS){
 #if REG_DEBUG
-      fprintf(stderr, "Emit_start_blocking: timed out\n");
+      fprintf(stderr, "STEER: Emit_start_blocking: timed out\n");
 #endif
       status = REG_TIMED_OUT;
       break;
@@ -2158,15 +2158,15 @@ int Emit_stop(int *IOTypeIndex)
   if(return_status == REG_SUCCESS){
     IOTypes_table.io_def[*IOTypeIndex].ack_needed = REG_TRUE;
 #if REG_DEBUG_FULL
-    printf("INFO: Emit_stop: set ack_needed = REG_TRUE for index %d\n", 
-	   *IOTypeIndex);
+    fprintf(stderr, "STEER: INFO: Emit_stop: set ack_needed = "
+	    "REG_TRUE for index %d\n", *IOTypeIndex);
 #endif
   }
   else{
     IOTypes_table.io_def[*IOTypeIndex].ack_needed = REG_FALSE;
 #if REG_DEBUG_FULL
-    printf("INFO: Emit_stop: set ack_needed = REG_FALSE for index %d\n", 
-	   *IOTypeIndex);
+    fprintf(stderr, "STEER: INFO: Emit_stop: set ack_needed = "
+	    "REG_FALSE for index %d\n", *IOTypeIndex);
 #endif
   }
 
@@ -2350,7 +2350,7 @@ int Emit_data_slice(int		      IOTypeIndex,
     break;
 
   default:
-    fprintf(stderr, "Emit_data_slice: Unrecognised data type\n");
+    fprintf(stderr, "STEER: Emit_data_slice: Unrecognised data type\n");
     IOTypes_table.io_def[IOTypeIndex].ack_needed = REG_FALSE;
     return REG_FAILURE;
     break;
@@ -2403,14 +2403,14 @@ int Register_param(char* ParamLabel,
 
   if(current == -1){
 
-    fprintf(stderr, "Register_param: failed to find free "
+    fprintf(stderr, "STEER: Register_param: failed to find free "
             "param entry\n");
     return REG_FAILURE;
   }
 
   if(String_contains_xml_chars(ParamLabel) == REG_TRUE){
 
-    fprintf(stderr, "Register_param: ERROR: Param label "
+    fprintf(stderr, "STEER: ERROR: Register_param: Param label "
             "contains reserved xml characters (<,>,&): %s\n"
             "     - skipping this parameter.\n", ParamLabel);
     return REG_FAILURE;
@@ -2418,7 +2418,7 @@ int Register_param(char* ParamLabel,
 
   if(ParamSteerable == REG_TRUE && ParamType == REG_BIN){
 
-    fprintf(stderr, "Register_param: ERROR: a parameter of type"
+    fprintf(stderr, "STEER: ERROR: Register_param: a parameter of type"
 	    " REG_BIN cannot be steerable\n");
     return REG_FAILURE;
   }
@@ -2505,7 +2505,7 @@ int Register_param(char* ParamLabel,
     break;
 
   default:
-    fprintf(stderr, "Register_param: unrecognised parameter "
+    fprintf(stderr, "STEER: Register_param: unrecognised parameter "
             "type - skipping parameter >%s<\n", ParamLabel);
     return REG_FAILURE;
   }
@@ -2621,7 +2621,7 @@ int Register_bin_param(char *ParamLabel, void *ParamPtr,
       break;
 
     default:
-      fprintf(stderr, "Register_bin_param: ERROR: "
+      fprintf(stderr, "STEER: ERROR: Register_bin_param: "
 	      "unrecognised variable type\n");
       return REG_FAILURE;
       break;
@@ -2715,7 +2715,7 @@ int Toggle_param_logging(char *ParamLabel,
 
   if (found) return REG_SUCCESS;
 
-  fprintf(stderr, "Toggle_param_logging: param with label %s not "
+  fprintf(stderr, "STEER: Toggle_param_logging: param with label %s not "
 	  "found.\n", ParamLabel);
   return REG_FAILURE;
 }
@@ -2771,10 +2771,10 @@ int Steering_control(int     SeqNum,
   if(time1 > -1.0){
     ReG_WallClockPerStep = (float)(time0 - time1);
 #if REG_DEBUG
-    fprintf(stderr, "TIMING: Spent %.5f seconds working\n",
+    fprintf(stderr, "STEER: TIMING: Spent %.5f seconds working\n",
 	    ReG_WallClockPerStep);
     if(ReG_WallClockPerStep > REG_TOL_ZERO){
-      fprintf(stderr, "TIMING: Steering overhead = %.3f%%\n", 
+      fprintf(stderr, "STEER: TIMING: Steering overhead = %.3f%%\n", 
 	      100.0*(steer_time/ReG_WallClockPerStep));
     }
 #endif
@@ -2816,7 +2816,7 @@ int Steering_control(int     SeqNum,
               Params_table.param[time_step_index].value);*/
     if(sscanf(Params_table.param[time_step_index].value, "%lg", 
 	      &ReG_SimTimeStepSecs) != 1){
-      fprintf(stderr, "Steering_control - sscanf failed!\n");
+      fprintf(stderr, "STEER: Steering_control - sscanf failed!\n");
     }
 
     ReG_TotalSimTimeSecs += ReG_SimTimeStepSecs;
@@ -2912,7 +2912,7 @@ int Steering_control(int     SeqNum,
 	ReG_SteeringActive = REG_TRUE;
 	first_time = REG_TRUE;
 #if REG_DEBUG
-	fprintf(stderr, "Steering_control: steerer has connected\n");
+	fprintf(stderr, "STEER: Steering_control: steerer has connected\n");
 #endif
 	/* Save-out parameter log when steerer attaches - this forces
 	   an update of the cache of log entries on the SGS (if we're
@@ -2949,11 +2949,11 @@ int Steering_control(int     SeqNum,
       
       if(Emit_param_defs() != REG_SUCCESS){
 
-	fprintf(stderr, "Steering_control: Emit_param_defs "
+	fprintf(stderr, "STEER: Steering_control: Emit_param_defs "
 		"failed\n");
       }
 #if REG_DEBUG
-      fprintf(stderr, "Steering_control: done Emit_param_defs\n");
+      fprintf(stderr, "STEER: Steering_control: done Emit_param_defs\n");
 #endif
       ReG_ParamsChanged  = REG_FALSE;
     }
@@ -2965,7 +2965,7 @@ int Steering_control(int     SeqNum,
       Emit_IOType_defs();
 
 #if REG_DEBUG
-      fprintf(stderr, "Steering_control: done Emit_IOType_defs\n");
+      fprintf(stderr, "STEER: Steering_control: done Emit_IOType_defs\n");
 #endif
       ReG_IOTypesChanged = REG_FALSE;
     }
@@ -2977,7 +2977,7 @@ int Steering_control(int     SeqNum,
       Emit_ChkType_defs();
 
 #if REG_DEBUG
-      fprintf(stderr, "Steering_control: done Emit_ChkType_defs\n");
+      fprintf(stderr, "STEER: Steering_control: done Emit_ChkType_defs\n");
 #endif
       ReG_ChkTypesChanged = REG_FALSE;
     }
@@ -3003,7 +3003,7 @@ int Steering_control(int     SeqNum,
       return_status = REG_FAILURE;
 
 #if REG_DEBUG
-      fprintf(stderr, "Steering_control: call to Consume_control failed\n");
+      fprintf(stderr, "STEER: Steering_control: call to Consume_control failed\n");
 #endif
     }
 
@@ -3016,16 +3016,16 @@ int Steering_control(int     SeqNum,
 
     if( Emit_log(&Chk_log, 0) != REG_SUCCESS ){
 
-      fprintf(stderr, "Steering_control: Emit chk log failed\n");
+      fprintf(stderr, "STEER: Steering_control: Emit chk log failed\n");
     }
 #if REG_DEBUG_FULL
     else{
-      fprintf(stderr, "Steering_control: done Emit_log for chk log\n");
+      fprintf(stderr, "STEER: Steering_control: done Emit_log for chk log\n");
     }
 #endif
 
 #if REG_DEBUG_FULL
-    fprintf(stderr, "Steering_control: done Consume_control\n");
+    fprintf(stderr, "STEER: Steering_control: done Consume_control\n");
 #endif
   }
   else{
@@ -3046,7 +3046,7 @@ int Steering_control(int     SeqNum,
     case REG_STR_DETACH:
 
 #if REG_DEBUG
-      fprintf(stderr, "Steering_control: got detach command\n");
+      fprintf(stderr, "STEER: Steering_control: got detach command\n");
 #endif
 
       if( Detach_from_steerer() != REG_SUCCESS){
@@ -3069,11 +3069,11 @@ int Steering_control(int     SeqNum,
       /* Emit the requested parameter log */
       if(sscanf(SteerCmdParams[i], "%d", &status) != 1)break;
       if( Emit_log(&Param_log, status) != REG_SUCCESS ){
-	fprintf(stderr, "Steering_control: Emit param log failed\n");
+	fprintf(stderr, "STEER: Steering_control: Emit param log failed\n");
       }
 #if REG_DEBUG_FULL
       else{
-	fprintf(stderr, "Steering_control: done Emit_log\n");
+	fprintf(stderr, "STEER: Steering_control: done Emit_log\n");
       }
 #endif
       break;
@@ -3111,7 +3111,7 @@ int Steering_control(int     SeqNum,
     default:
 
 #if REG_DEBUG
-      fprintf(stderr, "Steering_control: got command %d\n", commands[i]);
+      fprintf(stderr, "STEER: Steering_control: got command %d\n", commands[i]);
 #endif
 
       SteerCommands[cmd_count] = commands[i];
@@ -3171,7 +3171,7 @@ int Steering_control(int     SeqNum,
 
     if(status != REG_SUCCESS){
 
-      fprintf(stderr, "Steering_control: call to Emit_status failed\n");
+      fprintf(stderr, "STEER: Steering_control: call to Emit_status failed\n");
       return_status = REG_FAILURE;
     }
   }
@@ -3180,7 +3180,7 @@ int Steering_control(int     SeqNum,
   Get_current_time_seconds(&time1);
   steer_time = (float)(time1 - time0);
 #if REG_DEBUG
-  fprintf(stderr, "TIMING: Spent %.5f seconds in Steering_control\n",
+  fprintf(stderr, "STEER: TIMING: Spent %.5f seconds in Steering_control\n",
 	  steer_time);
 #endif
 #endif
@@ -3216,7 +3216,7 @@ int Auto_generate_steer_cmds(int    SeqNum,
     if((SeqNum % IOTypes_table.io_def[i].frequency) != 0)continue;
 
     if( *posn >= REG_MAX_NUM_STR_CMDS ){
-      fprintf(stderr, "Auto_generate_steer_cmds: WARNING: discarding "
+      fprintf(stderr, "STEER: WARNING: Auto_generate_steer_cmds: discarding "
 	      "steering cmds as max number (%d) exceeded\n", 
 	      REG_MAX_NUM_STR_CMDS);
 
@@ -3254,7 +3254,7 @@ int Auto_generate_steer_cmds(int    SeqNum,
     if( (SeqNum % ChkTypes_table.io_def[i].frequency) != 0)continue;
 
     if( *posn >= REG_MAX_NUM_STR_CMDS ){
-      fprintf(stderr, "Auto_generate_steer_cmds: WARNING: discarding "
+      fprintf(stderr, "STEER: WARNING: Auto_generate_steer_cmds: discarding "
 	      "steering cmds as max number (%d) exceeded\n", 
 	      REG_MAX_NUM_STR_CMDS);
 
@@ -3371,13 +3371,13 @@ int Steering_pause(int   *NumSteerParams,
       return_status = REG_FAILURE;
       paused = REG_FALSE;
 #if REG_DEBUG
-      fprintf(stderr, "Steering_pause: call to Consume_control failed\n");
+      fprintf(stderr, "STEER: Steering_pause: call to Consume_control failed\n");
 #endif
     }
     else{
 
 #if REG_DEBUG
-      fprintf(stderr,"Steering_pause: got %d cmds and %d params\n", 
+      fprintf(stderr,"STEER: Steering_pause: got %d cmds and %d params\n", 
 	      num_commands,
 	      *NumSteerParams);
 #endif
@@ -3393,7 +3393,7 @@ int Steering_pause(int   *NumSteerParams,
 	}
 	else{
 
-	  fprintf(stderr, "Steering_pause: no. of parameters edited "
+	  fprintf(stderr, "STEER: Steering_pause: no. of parameters edited "
 	          "exceeds %d\n", REG_MAX_NUM_STR_PARAMS);
 	  fprintf(stderr, "                Only returning the first %d\n",
 		  REG_MAX_NUM_STR_PARAMS);
@@ -3489,7 +3489,7 @@ int Emit_param_defs()
 
   if( !(buf=(char *)malloc(buf_size)) ){
 
-    fprintf(stderr,"Emit_param_defs: malloc failed\n");
+    fprintf(stderr,"STEER: Emit_param_defs: malloc failed\n");
     return REG_FAILURE;
   }
 
@@ -3523,7 +3523,7 @@ int Emit_param_defs()
 	  
 	  free(buf);
 	  buf = NULL;
-	  fprintf(stderr, "Emit_param_defs: realloc failed for %d "
+	  fprintf(stderr, "STEER: Emit_param_defs: realloc failed for %d "
 		  "bytes\n", buf_size);
 	  return REG_FAILURE;
 	}
@@ -3676,7 +3676,7 @@ int Emit_param_defs()
 
       free(buf);
       buf = NULL;
-      fprintf(stderr, "Emit_param_defs: realloc failed for %d "
+      fprintf(stderr, "STEER: Emit_param_defs: realloc failed for %d "
 	      "bytes\n", buf_size);
       return REG_FAILURE;
     }
@@ -3700,7 +3700,7 @@ int Emit_param_defs()
     return REG_SUCCESS;
   }
   else{
-    fprintf(stderr, "Emit_param_defs: ran out of space for footer\n");
+    fprintf(stderr, "STEER: Emit_param_defs: ran out of space for footer\n");
     free(buf);
     buf = NULL;
     return REG_FAILURE;
@@ -3744,7 +3744,7 @@ int Emit_IOType_defs(){
       /* Check for truncation */
       if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
 
-	fprintf(stderr, "Emit_IOType_defs: message exceeds max. "
+	fprintf(stderr, "STEER: Emit_IOType_defs: message exceeds max. "
 		"msg. size of %d bytes\n", REG_MAX_MSG_SIZE);
 	return REG_FAILURE;
       }
@@ -3765,7 +3765,7 @@ int Emit_IOType_defs(){
       default:
 #if REG_DEBUG
 	fprintf(stderr, 
-		"Emit_IOType_defs: Unrecognised IOType direction\n");
+		"STEER: Emit_IOType_defs: Unrecognised IOType direction\n");
 #endif
 	return REG_FAILURE;
       }
@@ -3779,7 +3779,7 @@ int Emit_IOType_defs(){
       /* Check for truncation */
       if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
 
-	fprintf(stderr, "Emit_IOType_defs: message exceeds max. "
+	fprintf(stderr, "STEER: Emit_IOType_defs: message exceeds max. "
 		"msg. size of %d bytes\n", REG_MAX_MSG_SIZE);
 	return REG_FAILURE;
       }
@@ -3801,7 +3801,7 @@ int Emit_IOType_defs(){
 	  /* Check for truncation */
 	  if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
 
-	    fprintf(stderr, "Emit_IOType_defs: message exceeds max. "
+	    fprintf(stderr, "STEER: Emit_IOType_defs: message exceeds max. "
 		    "msg. size of %d bytes\n", REG_MAX_MSG_SIZE);
 	    return REG_FAILURE;
 	  }
@@ -3830,7 +3830,7 @@ int Emit_IOType_defs(){
     return Send_status_msg(buf);
   }
 
-  fprintf(stderr, "Emit_IOType_defs: ran out of space for footer\n");
+  fprintf(stderr, "STEER: Emit_IOType_defs: ran out of space for footer\n");
   return REG_FAILURE;
 }
 
@@ -3870,7 +3870,7 @@ int Emit_ChkType_defs(){
       /* Check for truncation */
       if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
 
-	fprintf(stderr, "Emit_ChkType_defs: message exceeds max. "
+	fprintf(stderr, "STEER: Emit_ChkType_defs: message exceeds max. "
 		"msg. size of %d bytes\n", REG_MAX_MSG_SIZE);
 	return REG_FAILURE;
       }
@@ -3897,7 +3897,7 @@ int Emit_ChkType_defs(){
 #if REG_DEBUG
 
 	fprintf(stderr, 
-		"Emit_ChkType_defs: Unrecognised ChkType direction\n");
+		"STEER: Emit_ChkType_defs: Unrecognised ChkType direction\n");
 #endif /* REG_DEBUG */
 	return REG_FAILURE;
       }
@@ -3905,7 +3905,7 @@ int Emit_ChkType_defs(){
       /* Check for truncation */
       if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
 
-	fprintf(stderr, "Emit_ChkType_defs: message exceeds max. "
+	fprintf(stderr, "STEER: Emit_ChkType_defs: message exceeds max. "
 		"msg. size of %d bytes\n", REG_MAX_MSG_SIZE);
 	return REG_FAILURE;
       }
@@ -3920,7 +3920,7 @@ int Emit_ChkType_defs(){
 #if REG_DEBUG
       /* Check for truncation */
       if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
-	fprintf(stderr, "Emit_ChkType_defs: message exceeds max. "
+	fprintf(stderr, "STEER: Emit_ChkType_defs: message exceeds max. "
 		"msg. size of %d bytes\n", REG_MAX_MSG_SIZE);
 	return REG_FAILURE;
       }
@@ -3934,7 +3934,7 @@ int Emit_ChkType_defs(){
 #if REG_DEBUG
   /* Check for truncation */
   if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
-    fprintf(stderr, "Emit_ChkType_defs: message exceeds max. "
+    fprintf(stderr, "STEER: Emit_ChkType_defs: message exceeds max. "
 	    "msg. size of %d bytes\n", REG_MAX_MSG_SIZE);
     return REG_FAILURE;
   }
@@ -3947,7 +3947,7 @@ int Emit_ChkType_defs(){
     /* Physically send message */
     return Send_status_msg(buf);
   }
-  fprintf(stderr, "Emit_ChkType_defs: ran out of space for footer\n");
+  fprintf(stderr, "STEER: Emit_ChkType_defs: ran out of space for footer\n");
   return REG_FAILURE;
 }
 
@@ -4006,7 +4006,7 @@ int Consume_control(int    *NumCommands,
 			 SteerParamLabels+param_count);
     }
     else{
-      fprintf(stderr, "Consume_control: error, no control data in msg\n");
+      fprintf(stderr, "STEER: ERROR: Consume_control: no control data in msg\n");
       *NumSteerParams = 0;
       *NumCommands    = 0;
       return_status   = REG_FAILURE;
@@ -4017,7 +4017,7 @@ int Consume_control(int    *NumCommands,
   }
 #if REG_DEBUG
   else{
-    fprintf(stderr, "Consume_control: no message from steerer\n");
+    fprintf(stderr, "STEER: Consume_control: no message from steerer\n");
   }
 #endif
 
@@ -4067,7 +4067,7 @@ int Unpack_control_msg(struct control_struct *ctrl,
 	Commands[count] = REG_STR_RESUME;
       }
       else{
-	fprintf(stderr, "Unpack_control_msg: unrecognised cmd name: %s\n", 
+	fprintf(stderr, "STEER: Unpack_control_msg: unrecognised cmd name: %s\n", 
 		(char *)cmd->name);
 	cmd = cmd->next;
 	continue;
@@ -4077,7 +4077,7 @@ int Unpack_control_msg(struct control_struct *ctrl,
       Steer_log.cmd[count].id = Commands[count];
     }
     else{
-      fprintf(stderr, "Unpack_control_msg: error - skipping cmd because "
+      fprintf(stderr, "STEER: Unpack_control_msg: error - skipping cmd because "
 	      "is missing both id and name\n");
       cmd = cmd->next;
       continue;
@@ -4108,9 +4108,9 @@ int Unpack_control_msg(struct control_struct *ctrl,
     strcpy(Steer_log.cmd[count].params, CommandParams[count]);
 
 #if REG_DEBUG
-    fprintf(stderr, "Unpack_control_msg: cmd[%d] = %d\n", count,
+    fprintf(stderr, "STEER: Unpack_control_msg: cmd[%d] = %d\n", count,
 	    Commands[count]);
-    fprintf(stderr, "                    params  = %s\n", 
+    fprintf(stderr, "                           params  = %s\n", 
 	    CommandParams[count]);
 #endif
     count++;
@@ -4118,7 +4118,7 @@ int Unpack_control_msg(struct control_struct *ctrl,
     if(count >= REG_MAX_NUM_STR_CMDS){
 
       fprintf(stderr, 
-	      "Unpack_control_msg: WARNING: truncating list of commands\n");
+	      "STEER: Unpack_control_msg: WARNING: truncating list of commands\n");
       break;
     }
 
@@ -4131,7 +4131,7 @@ int Unpack_control_msg(struct control_struct *ctrl,
 
 
 #if REG_DEBUG
-  fprintf(stderr, "Unpack_control_msg: received %d commands\n", 
+  fprintf(stderr, "STEER: Unpack_control_msg: received %d commands\n", 
 	  *NumCommands);
 #endif
 
@@ -4150,7 +4150,7 @@ int Unpack_control_msg(struct control_struct *ctrl,
 
     if(j == Params_table.max_entries){
   
-      fprintf(stderr, "Unpack_control_msg: failed to match param "
+      fprintf(stderr, "STEER: Unpack_control_msg: failed to match param "
 	      "handles\n");
       return_status = REG_FAILURE;
     }
@@ -4178,7 +4178,7 @@ int Unpack_control_msg(struct control_struct *ctrl,
 	log_count++;
       }
       else{
-	fprintf(stderr, "Unpack_control_msg: empty parameter value "
+	fprintf(stderr, "STEER: Unpack_control_msg: empty parameter value "
 		"field\n");
       }
     }
@@ -4194,7 +4194,7 @@ int Unpack_control_msg(struct control_struct *ctrl,
   *NumSteerParams = count;
 
 #if REG_DEBUG
-  fprintf(stderr, "Unpack_control_msg: received %d params\n", 
+  fprintf(stderr, "STEER: Unpack_control_msg: received %d params\n", 
 	  *NumSteerParams);
 #endif
 
@@ -4324,7 +4324,7 @@ int Emit_status(int   SeqNum,
 	    /* Check for truncation */
 	    if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
 
-	      fprintf(stderr, "Emit_status: message exceeds max. "
+	      fprintf(stderr, "STEER: Emit_status: message exceeds max. "
 		      "msg. size of %d bytes\n", REG_MAX_MSG_SIZE);
 	      return REG_FAILURE;
 	    }
@@ -4356,7 +4356,7 @@ int Emit_status(int   SeqNum,
 	  /* Check for truncation */
 	  if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
 
-	    fprintf(stderr, "Emit_status: message exceeds max. "
+	    fprintf(stderr, "STEER: Emit_status: message exceeds max. "
 		    "msg. size of %d bytes\n", REG_MAX_MSG_SIZE);
 	    return REG_FAILURE;
 	  }
@@ -4381,7 +4381,7 @@ int Emit_status(int   SeqNum,
     if(!cmddone){
 
 #if REG_DEBUG
-      fprintf(stderr, "Emit_status: NumCommands = %d, ccount = %d\n", 
+      fprintf(stderr, "STEER: Emit_status: NumCommands = %d, ccount = %d\n", 
 	      NumCommands, ccount);
 #endif
 
@@ -4394,7 +4394,7 @@ int Emit_status(int   SeqNum,
 	/* Check for truncation */
 	if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
 
-	  fprintf(stderr, "Emit_status: message exceeds max. "
+	  fprintf(stderr, "STEER: Emit_status: message exceeds max. "
 		  "msg. size of %d bytes\n", REG_MAX_MSG_SIZE);
 	  return REG_FAILURE;
 	}
@@ -4415,7 +4415,7 @@ int Emit_status(int   SeqNum,
     /* Check for truncation */
     if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
 
-      fprintf(stderr, "Emit_status: message exceeds max. "
+      fprintf(stderr, "STEER: Emit_status: message exceeds max. "
 	      "msg. size of %d bytes\n", REG_MAX_MSG_SIZE);
       return REG_FAILURE;
     }
@@ -4429,7 +4429,7 @@ int Emit_status(int   SeqNum,
       Send_status_msg(buf);
     }
     else{
-      fprintf(stderr, "Emit_status: failed to write footer\n");
+      fprintf(stderr, "STEER: Emit_status: failed to write footer\n");
     }
   }  /* end of while(!paramdone || !cmddone){ */
 
@@ -4479,7 +4479,7 @@ int Update_ptr_value(param_entry *param)
     break;
 
   default:
-    fprintf(stderr, "Update_ptr_value: unrecognised parameter type\n");
+    fprintf(stderr, "STEER: Update_ptr_value: unrecognised parameter type\n");
     return REG_FAILURE;
   }
 
@@ -4545,10 +4545,10 @@ int Get_ptr_value(param_entry *param)
     break;
 
   default:
-    fprintf(stderr, "Get_ptr_value: unrecognised parameter type\n");
-    fprintf(stderr, "Param type   = %d\n", param->type);
-    fprintf(stderr, "Param handle = %d\n", param->handle);
-    fprintf(stderr, "Param label  = %s\n", param->label);
+    fprintf(stderr, "STEER: Get_ptr_value: unrecognised parameter type\n");
+    fprintf(stderr, "STEER: Param type   = %d\n", param->type);
+    fprintf(stderr, "STEER: Param handle = %d\n", param->handle);
+    fprintf(stderr, "STEER: Param label  = %s\n", param->label);
 
     return_status = REG_FAILURE;
     break;
@@ -4578,60 +4578,60 @@ void Steering_signal_handler(int aSignal)
   switch(aSignal){
 
     case SIGINT:
-      fprintf(stderr, "Steering_signal_handler: Interrupt signal received (signal %d)\n", 
+      fprintf(stderr, "STEER: Steering_signal_handler: Interrupt signal received (signal %d)\n", 
               aSignal);
       break;
       
     case SIGTERM:
-      fprintf(stderr, "Steering_signal_handler: Kill signal received (signal %d)\n", 
+      fprintf(stderr, "STEER: Steering_signal_handler: Kill signal received (signal %d)\n", 
               aSignal);
       break;
       
     case SIGSEGV:
-      fprintf(stderr, "Steering_signal_handler: Illegal Access caught (signal %d)\n", 
+      fprintf(stderr, "STEER: Steering_signal_handler: Illegal Access caught (signal %d)\n", 
               aSignal);
       break;
 
     case  SIGILL:
-      fprintf(stderr, "Steering_signal_handler: Illegal Exception caught (signal %d)\n", 
+      fprintf(stderr, "STEER: Steering_signal_handler: Illegal Exception caught (signal %d)\n", 
               aSignal);
       break;
 
       /* note: abort called if exception not caught (and hence calls 
 	 terminate) */
     case SIGABRT:
-      fprintf(stderr, "Steering_signal_handler: Abort signal caught (signal %d)\n", 
+      fprintf(stderr, "STEER: Steering_signal_handler: Abort signal caught (signal %d)\n", 
               aSignal);
       break;
 
     case SIGFPE:
-      fprintf(stderr, "Steering_signal_handler: Arithmetic Exception caught (signal %d)\n", 
+      fprintf(stderr, "STEER: Steering_signal_handler: Arithmetic Exception caught (signal %d)\n", 
               aSignal);
       break;
 
 #ifndef WIN32
     case SIGXCPU:
-      fprintf(stderr, "Steering_signal_handler: CPU usuage exceeded (signal %d)\n", 
+      fprintf(stderr, "STEER: Steering_signal_handler: CPU usuage exceeded (signal %d)\n", 
               aSignal);
       break;
 
     case SIGUSR2:
       /* This is for the benefit of LSF - it sends us this when we hit
          our wall-clock limit */
-      fprintf(stderr, "Steering_signal_handler: USR2 signal caught (signal %d)\n", 
+      fprintf(stderr, "STEER: Steering_signal_handler: USR2 signal caught (signal %d)\n", 
               aSignal);
       break;
 #endif
 
     default:
-      fprintf(stderr, "Steering_signal_handler: Signal caught (signal %d)\n", 
+      fprintf(stderr, "STEER: Steering_signal_handler: Signal caught (signal %d)\n", 
               aSignal);
   }
 
-  fprintf(stderr, "Steering_signal_handler: steering library quitting...\n");
+  fprintf(stderr, "STEER: Steering_signal_handler: steering library quitting...\n");
 
   if (Steering_finalize() != REG_SUCCESS){
-    fprintf(stderr, "Steering_signal_handler: Steerer_finalize failed\n");
+    fprintf(stderr, "STEER: Steering_signal_handler: Steerer_finalize failed\n");
   }
 
   exit(0);
@@ -4724,13 +4724,13 @@ int Make_vtk_buffer(int    nx,
     }
   }
   else{
-    fprintf(stderr, "Make_vtk_buffer: error, only  1 <= veclen <= 3 "
+    fprintf(stderr, "STEER: Make_vtk_buffer: error, only  1 <= veclen <= 3 "
 	    "supported\n");
     return REG_FAILURE;
   }
 
 #if REG_DEBUG
-  fprintf(stderr, "Make_vtk_buffer: checksum = %f\n", sum/((float) count));
+  fprintf(stderr, "STEER: Make_vtk_buffer: checksum = %f\n", sum/((float) count));
 #endif
 
   return REG_SUCCESS;
@@ -4758,7 +4758,7 @@ int Make_vtk_header(char  *header,
 
   if(veclen != 1 && veclen != 3){
 
-    fprintf(stderr, "Make_vtk_header: only veclen of 1 or 3 supported\n");
+    fprintf(stderr, "STEER: Make_vtk_header: only veclen of 1 or 3 supported\n");
     return REG_FAILURE;
   }
 
@@ -4787,7 +4787,7 @@ int Make_vtk_header(char  *header,
       sprintf(type_text, "long");
     }
     else{
-      fprintf(stderr, "Make_vtk_header: Unrecognised data type\n");
+      fprintf(stderr, "STEER: Make_vtk_header: Unrecognised data type\n");
       return REG_FAILURE;
     }
     pchar += sprintf(pchar, "data=%s\n", type_text);
@@ -4842,7 +4842,7 @@ int Make_vtk_header(char  *header,
     }
     else{
 
-      fprintf(stderr, "Make_vtk_header: Unrecognised data type\n");
+      fprintf(stderr, "STEER: Make_vtk_header: Unrecognised data type\n");
       return REG_FAILURE;
     }
 
@@ -4856,7 +4856,7 @@ int Make_vtk_header(char  *header,
     }
     else{
 
-      fprintf(stderr, "Make_vtk_header: invalid veclen value: %d\n", veclen);
+      fprintf(stderr, "STEER: Make_vtk_header: invalid veclen value: %d\n", veclen);
       return REG_FAILURE;
     }
 
@@ -4910,7 +4910,7 @@ int Steerer_connected()
 int Send_status_msg(char *buf)
 {
 #if REG_DEBUG_FULL
-  fprintf(stderr, "Send_status_msg: sending:\n>>%s<<\n", buf);
+  fprintf(stderr, "STEER: Send_status_msg: sending:\n>>%s<<\n", buf);
 #endif
 
 #if REG_SOAP_STEERING
@@ -4977,7 +4977,7 @@ int Initialize_steering_connection(int  NumSupportedCmds,
   }
 
 #if REG_DEBUG
-  fprintf(stderr, "Initialize_steering_connection: polling "
+  fprintf(stderr, "STEER: Initialize_steering_connection: polling "
 	  "interval = %d\n", (int)Steerer_connection.polling_interval);
 #endif
 
@@ -5033,7 +5033,7 @@ int Set_steering_directory()
 
     if((i + max_len + 1) > REG_MAX_STRING_LENGTH){
 
-      fprintf(stderr, "Set_steering_directory: "
+      fprintf(stderr, "STEER: Set_steering_directory: "
 	      "REG_MAX_STRING_LENGTH (%d chars) less\nthan predicted "
 	      "string length of %d chars\n", REG_MAX_STRING_LENGTH, 
 	      (i+max_len+1));
@@ -5051,19 +5051,19 @@ int Set_steering_directory()
 
     if(Directory_valid(Steerer_connection.file_root) != REG_SUCCESS){
 
-      fprintf(stderr, "Set_steering_directory: invalid scratch dir for "
+      fprintf(stderr, "STEER: Set_steering_directory: invalid scratch dir for "
 	      "steering: %s\n                        Using ./ instead\n", 
 	      Steerer_connection.file_root);
       sprintf(Steerer_connection.file_root, "./");
       return REG_FAILURE;
     }
     else{
-      fprintf(stderr, "Using following dir for steering scratch: %s\n", 
+      fprintf(stderr, "STEER: Using following dir for steering scratch: %s\n", 
 	     Steerer_connection.file_root);
     }
   }
   else{
-    fprintf(stderr, "Set_steering_directory: failed to get "
+    fprintf(stderr, "STEER: Set_steering_directory: failed to get "
 	    "scratch directory - using ./\n");
     sprintf(Steerer_connection.file_root, "./");
     return REG_FAILURE;
@@ -5128,7 +5128,7 @@ int Make_supp_cmds_msg(int   NumSupportedCmds,
 		      "</Command>\n", SupportedCmds[i]);
     /* Check for truncation */
     if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
-      fprintf(stderr, "Make_supp_cmds_msg: supplied buffer of "
+      fprintf(stderr, "STEER: Make_supp_cmds_msg: supplied buffer of "
 	      "%d bytes is too small!\n", max_msg_size);
       return REG_FAILURE;
     }
@@ -5161,7 +5161,7 @@ int Make_supp_cmds_msg(int   NumSupportedCmds,
 		      REG_STR_EMIT_PARAM_LOG, REG_STR_DETACH);
   }
   if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
-    fprintf(stderr, "Make_supp_cmds_msg: supplied buffer of "
+    fprintf(stderr, "STEER: Make_supp_cmds_msg: supplied buffer of "
 	      "%d bytes is too small!\n", max_msg_size);
     return REG_FAILURE;
   }
@@ -5231,7 +5231,7 @@ int Consume_data_read(const int		index,
 {
   if(index < 0 || index >= IOTypes_table.num_registered){
 
-    fprintf(stderr, "Consume_data_read: ERROR: IOType index out of range\n");
+    fprintf(stderr, "STEER: ERROR: Consume_data_read: IOType index out of range\n");
     return REG_FAILURE;
   }
 
@@ -5322,7 +5322,7 @@ int Emit_header(const int index)
   sprintf(Global_scratch_buffer, REG_PACKET_FORMAT, REG_DATA_HEADER);
   Global_scratch_buffer[REG_PACKET_SIZE-1] = '\0';
 #if REG_DEBUG
-  fprintf(stderr, "Emit_header: Sending >>%s<<\n", Global_scratch_buffer);
+  fprintf(stderr, "STEER: Emit_header: Sending >>%s<<\n", Global_scratch_buffer);
 #endif
 
   return Emit_data_file(index,
@@ -5418,7 +5418,7 @@ int Consume_iotype_msg_header(int  IOTypeIndex,
 {
   
   if(IOTypeIndex < 0 || IOTypeIndex >= IOTypes_table.num_registered){
-    fprintf(stderr, "Consume_iotype_msg_header: IOType index out of range\n");
+    fprintf(stderr, "STEER: Consume_iotype_msg_header: IOType index out of range\n");
     return REG_FAILURE;
   }
 
@@ -5528,11 +5528,11 @@ int Realloc_IOdef_entry_buffer(IOdef_entry *iodef,
 
 #if REG_DEBUG
   if(iodef->buffer){
-    fprintf(stderr, "Realloc_IOdef_entry_buffer: realloc'ing "
+    fprintf(stderr, "STEER: Realloc_IOdef_entry_buffer: realloc'ing "
 	    "pointer %p\n", iodef->buffer);
   }
   else{
-    fprintf(stderr, "Realloc_IOdef_entry_buffer: doing "
+    fprintf(stderr, "STEER: Realloc_IOdef_entry_buffer: doing "
 	    "malloc for IO buffer\n");
   }
 #endif
@@ -5547,7 +5547,7 @@ int Realloc_IOdef_entry_buffer(IOdef_entry *iodef,
       iodef->buffer_bytes = 0;
       iodef->buffer_max_bytes = 0;
  
-      fprintf(stderr, "Realloc_IOdef_entry_buffer: realloc "
+      fprintf(stderr, "STEER: Realloc_IOdef_entry_buffer: realloc "
 	      "failed for %d bytes\n", num_bytes);
       return REG_FAILURE;
     }
@@ -5559,7 +5559,7 @@ int Realloc_IOdef_entry_buffer(IOdef_entry *iodef,
 
       iodef->buffer_max_bytes = 0;
  
-      fprintf(stderr, "Realloc_IOdef_entry_buffer: malloc "
+      fprintf(stderr, "STEER: Realloc_IOdef_entry_buffer: malloc "
 	      "failed for %d bytes\n", num_bytes);
       return REG_FAILURE;
     }
@@ -5591,7 +5591,7 @@ int Reorder_array(int          ndims,
 
   if(ndims != 3){
 
-    fprintf(stderr, "Reorder_array: only 3D arrays supported\n");
+    fprintf(stderr, "STEER: Reorder_array: only 3D arrays supported\n");
     return REG_FAILURE;
   }
 
@@ -5738,7 +5738,7 @@ int Reorder_array(int          ndims,
     break;
     
   default:
-    fprintf(stderr, "Reorder_array: unrecognised data type: %d\n",
+    fprintf(stderr, "STEER: Reorder_array: unrecognised data type: %d\n",
 	    type);
     break;
   }
@@ -5779,7 +5779,7 @@ char **Alloc_string_array(int String_len,
 
   if(!(new_array->array)){
 
-    fprintf(stderr, "Alloc_string_array: array malloc failed\n");
+    fprintf(stderr, "STEER: Alloc_string_array: array malloc failed\n");
     free(new_array->array);
     free(new_array);
     return NULL;
