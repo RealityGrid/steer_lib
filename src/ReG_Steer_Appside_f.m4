@@ -129,7 +129,7 @@ INT_KIND_1_DECL(Status);
 
   if(len > REG_MAX_STRING_LENGTH){
 
-    fprintf(stderr, "steering_initialize_f: ERROR - length of tag "
+    fprintf(stderr, "STEER: ERROR: steering_initialize_f: length of tag "
             "exceeds REG_MAX_STRING_LENGTH (%d) chars\n", 
             REG_MAX_STRING_LENGTH);
 
@@ -151,7 +151,7 @@ INT_KIND_1_DECL(Status);
     }
     if(!found){
 
-      fprintf(stderr, "steering_initialize_f: ERROR - length of tag "
+      fprintf(stderr, "STEER: ERROR: steering_initialize_f: length of tag "
                 "is REG_MAX_STRING_LENGTH (%d) chars long\nbut contains "
                 "no termination character - shorten label (or its len "
                 "declaration)\n", 
@@ -336,7 +336,7 @@ INT_KIND_1_DECL(Status);
   len = STRING_LEN(IOLabel);
   if(len >= REG_MAX_STRING_LENGTH){
     fprintf(stderr, 
-            "register_iotypes_f: WARNING: truncating label\n");
+            "STEER: WARNING: register_iotypes_f: truncating label\n");
     /* Allow space for terminating '/0' */
     len = REG_MAX_STRING_LENGTH - 1;
   }
@@ -350,7 +350,7 @@ INT_KIND_1_DECL(Status);
 
   if(!str_array  || !typeArray || !dirnArray || !freqArray){
 
-    fprintf(stderr, "Register_IOTypes_f: malloc failed\n");
+    fprintf(stderr, "STEER: Register_IOTypes_f: malloc failed\n");
     *Status = INT_KIND_1_CAST( REG_FAILURE );
     return;
   }
@@ -420,7 +420,7 @@ INT_KIND_1_DECL(Status);
   len = STRING_LEN(IOLabel);
   if(len >= REG_MAX_STRING_LENGTH){
     fprintf(stderr, 
-            "register_iotype_f: WARNING: truncating label\n");
+            "STEER: WARNING: register_iotype_f: truncating label\n");
     /* Allow space for terminating '/0' */
     len = REG_MAX_STRING_LENGTH - 1;
   }
@@ -478,7 +478,7 @@ INT_KIND_1_DECL(Status);
   len = STRING_LEN(ChkLabel);
   if(len >= REG_MAX_STRING_LENGTH){
     fprintf(stderr, 
-            "register_chktypes_f: WARNING: truncating label\n");
+            "STEER: WARNING: register_chktypes_f: truncating label\n");
     /* Allow space for terminating '/0' */
     len = REG_MAX_STRING_LENGTH - 1;
   }
@@ -489,7 +489,7 @@ INT_KIND_1_DECL(Status);
 
   if(!str_array || !buf){
 
-    fprintf(stderr, "Register_ChkTypes_f: malloc failed\n");
+    fprintf(stderr, "STEER: Register_ChkTypes_f: malloc failed\n");
     *Status = INT_KIND_1_CAST( REG_FAILURE );
     return;
   }
@@ -550,7 +550,7 @@ INT_KIND_1_DECL(Status);
   len = STRING_LEN(ChkLabel);
   if(len >= REG_MAX_STRING_LENGTH){
     fprintf(stderr, 
-            "register_chktypes_f: WARNING: truncating label\n");
+            "STEER: WARNING: register_chktypes_f: truncating label\n");
     /* Allow space for terminating '/0' */
     len = REG_MAX_STRING_LENGTH - 1;
   }
@@ -595,7 +595,7 @@ INT_KIND_1_DECL(Status);
 
   if(len > REG_MAX_STRING_LENGTH){
 
-    fprintf(stderr, "record_chkpt_f: ERROR - length of tag "
+    fprintf(stderr, "STEER: ERROR: record_chkpt_f: length of tag "
             "exceeds REG_MAX_STRING_LENGTH (%d) chars\n", 
             REG_MAX_STRING_LENGTH);
 
@@ -617,7 +617,7 @@ INT_KIND_1_DECL(Status);
     }
     if(!found){
 
-      fprintf(stderr, "record_chkpt_f: ERROR - length of label "
+      fprintf(stderr, "STEER: ERROR: record_chkpt_f: length of label "
                 "is REG_MAX_STRING_LENGTH (%d) chars long\nbut contains "
                 "no termination character - shorten label (or its len "
                 "declaration)\n", 
@@ -667,7 +667,7 @@ INT_KIND_1_DECL(Status);
 
   if(len > REG_MAX_STRING_LENGTH){
 
-    fprintf(stderr, "add_checkpoint_file_f: ERROR - length of filename "
+    fprintf(stderr, "STEER: ERROR: add_checkpoint_file_f: length of filename "
             "exceeds REG_MAX_STRING_LENGTH (%d) chars\n", 
             REG_MAX_STRING_LENGTH);
 
@@ -689,7 +689,7 @@ INT_KIND_1_DECL(Status);
     }
     if(!found){
 
-      fprintf(stderr, "add_checkpoint_file_f: ERROR - length of filename "
+      fprintf(stderr, "STEER: ERROR: add_checkpoint_file_f: length of filename "
                 "is REG_MAX_STRING_LENGTH (%d) chars long\nbut contains "
                 "no termination character - shorten label (or its len "
                 "declaration)\n", 
@@ -742,7 +742,7 @@ INT_KIND_1_DECL(Status);
 
   if(len > REG_MAX_STRING_LENGTH){
 
-    fprintf(stderr, "record_checkpoint_set_f: ERROR - length of tag "
+    fprintf(stderr, "STEER: ERROR: record_checkpoint_set_f: length of tag "
             "exceeds REG_MAX_STRING_LENGTH (%d) chars\n", 
             REG_MAX_STRING_LENGTH);
 
@@ -764,7 +764,7 @@ INT_KIND_1_DECL(Status);
     }
     if(!found){
 
-      fprintf(stderr, "record_checkpoint_set_f: ERROR - length of label "
+      fprintf(stderr, "STEER: ERROR: record_checkpoint_set_f: length of label "
                 "is REG_MAX_STRING_LENGTH (%d) chars long\nbut contains "
                 "no termination character - shorten label (or its len "
                 "declaration)\n", 
@@ -783,7 +783,7 @@ INT_KIND_1_DECL(Status);
 
   if(len > REG_MAX_STRING_LENGTH){
 
-    fprintf(stderr, "record_checkpoint_set_f: ERROR - length of path "
+    fprintf(stderr, "STEER: ERROR: record_checkpoint_set_f: length of path "
             "exceeds REG_MAX_STRING_LENGTH (%d) chars\n", 
             REG_MAX_STRING_LENGTH);
 
@@ -805,7 +805,7 @@ INT_KIND_1_DECL(Status);
     }
     if(!found){
 
-      fprintf(stderr, "record_checkpoint_set_f: ERROR - length of path "
+      fprintf(stderr, "STEER: ERROR: record_checkpoint_set_f: length of path "
                 "is REG_MAX_STRING_LENGTH (%d) chars long\nbut contains "
                 "no termination character - shorten label (or its len "
                 "declaration)\n", 
@@ -870,7 +870,7 @@ INT_KIND_1_DECL(Status);
 
   if(STRING_LEN(ParamLabel) > REG_MAX_STRING_LENGTH){
 
-    fprintf(stderr, "register_param_f: ERROR - length of label "
+    fprintf(stderr, "STEER: ERROR: register_param_f: length of label "
             "exceeds REG_MAX_STRING_LENGTH (%d) chars\n", 
             REG_MAX_STRING_LENGTH);
 
@@ -889,7 +889,7 @@ INT_KIND_1_DECL(Status);
     }
     if(!found){
 
-      fprintf(stderr, "register_param_f: ERROR - length of label "
+      fprintf(stderr, "STEER: ERROR: register_param_f: length of label "
               "is REG_MAX_STRING_LENGTH (%d) chars long\nbut contains "
               "no termination character - shorten label (or its len "
               "declaration)\n", 
@@ -904,7 +904,7 @@ INT_KIND_1_DECL(Status);
      if these strings are REG_MAX_STRING_LENGTH long */
   if( (STRING_LEN(ParamMin) >= REG_MAX_STRING_LENGTH) ||
       (STRING_LEN(ParamMax) >= REG_MAX_STRING_LENGTH) ){
-    fprintf(stderr, "register_param_f: ERROR - string specifying "
+    fprintf(stderr, "STEER: ERROR: register_param_f: string specifying "
             "max. and/or min. param. value exceeds "
             "REG_MAX_STRING_LENGTH (%d) chars in length\n", 
             REG_MAX_STRING_LENGTH);
@@ -921,7 +921,7 @@ INT_KIND_1_DECL(Status);
 /*
   if(!(pbuf[0] = (char*)malloc(3*REG_MAX_STRING_LENGTH)) ){
 
-    fprintf(stderr, "register_param_f: ERROR - malloc failed\n");
+    fprintf(stderr, "STEER: ERROR: register_param_f: malloc failed\n");
     *Status = INT_KIND_1_CAST(REG_FAILURE);
     return;
   }
@@ -994,7 +994,7 @@ INT_KIND_1_DECL(Status);
 
   if(STRING_LEN(ParamLabel) > REG_MAX_STRING_LENGTH){
 
-    fprintf(stderr, "register_string_param_f: ERROR - length of label "
+    fprintf(stderr, "STEER: ERROR: register_string_param_f: length of label "
             "exceeds REG_MAX_STRING_LENGTH (%d) chars\n", 
             REG_MAX_STRING_LENGTH);
 
@@ -1013,7 +1013,7 @@ INT_KIND_1_DECL(Status);
     }
     if(!found){
 
-      fprintf(stderr, "register_string_param_f: ERROR - length of label "
+      fprintf(stderr, "STEER: ERROR: register_string_param_f: length of label "
               "is REG_MAX_STRING_LENGTH (%d) chars long\nbut contains "
               "no termination character - shorten label (or its len "
               "declaration)\n", 
@@ -1031,7 +1031,7 @@ INT_KIND_1_DECL(Status);
 /*
   if(!(pbuf[0] = (char*)malloc(2*REG_MAX_STRING_LENGTH)) ){
 
-    fprintf(stderr, "register_string_param_f: ERROR - malloc failed\n");
+    fprintf(stderr, "STEER: ERROR: register_string_param_f: malloc failed\n");
     *Status = INT_KIND_1_CAST(REG_FAILURE);
     return;
   }
@@ -1091,7 +1091,7 @@ INT_KIND_1_DECL(Status);
 
   if(STRING_LEN(ParamLabel) > REG_MAX_STRING_LENGTH){
 
-    fprintf(stderr, "register_bin_param_f: ERROR - length of label "
+    fprintf(stderr, "STEER: ERROR: register_bin_param_f: length of label "
             "exceeds REG_MAX_STRING_LENGTH (%d) chars\n", 
             REG_MAX_STRING_LENGTH);
 
@@ -1109,7 +1109,7 @@ INT_KIND_1_DECL(Status);
       }
     }
     if(!found){
-      fprintf(stderr, "register_bin_param_f: ERROR - length of label "
+      fprintf(stderr, "STEER: ERROR: register_bin_param_f: length of label "
               "is REG_MAX_STRING_LENGTH (%d) chars long\nbut contains "
               "no termination character - shorten label (or its len "
               "declaration)\n", 
@@ -1122,7 +1122,7 @@ INT_KIND_1_DECL(Status);
 
   if(!(pbuf = (char*)malloc(REG_MAX_STRING_LENGTH)) ){
 
-    fprintf(stderr, "register_bin_param_f: ERROR - malloc failed\n");
+    fprintf(stderr, "STEER: ERROR: register_bin_param_f: malloc failed\n");
     *Status = INT_KIND_1_CAST(REG_FAILURE);
     return;
   }
@@ -1145,7 +1145,7 @@ INT_KIND_1_DECL(Status);
                                                len_buf ) );
   }
   else{
-    fprintf(stderr, "Register_bin_param_f: sizeof type %d is unknown\n", 
+    fprintf(stderr, "STEER: Register_bin_param_f: sizeof type %d is unknown\n", 
             *ParamType);
     *Status = INT_KIND_1_CAST( REG_FAILURE );
   }
@@ -1195,7 +1195,7 @@ INT_KIND_1_DECL(Status);
   len = STRING_LEN(ParamLabel);
   if(len > REG_MAX_STRING_LENGTH){
 
-    fprintf(stderr, "enable_param_logging_f: ERROR - length of param "
+    fprintf(stderr, "STEER: ERROR: enable_param_logging_f: length of param "
             "label exceeds REG_MAX_STRING_LENGTH (%d) chars\n", 
             REG_MAX_STRING_LENGTH);
 
@@ -1217,7 +1217,7 @@ INT_KIND_1_DECL(Status);
     }
     if(!found){
 
-      fprintf(stderr, "enable_param_logging_f: ERROR - length of label "
+      fprintf(stderr, "STEER: ERROR: enable_param_logging_f: length of label "
               "is REG_MAX_STRING_LENGTH (%d) chars long\nbut contains "
               "no termination character - shorten label (or its len "
               "declaration)\n", REG_MAX_STRING_LENGTH);
@@ -1255,7 +1255,7 @@ INT_KIND_1_DECL(Status);
   len = STRING_LEN(ParamLabel);
   if(len > REG_MAX_STRING_LENGTH){
 
-    fprintf(stderr, "disable_param_logging_f: ERROR - length of param "
+    fprintf(stderr, "STEER: ERROR: disable_param_logging_f: length of param "
             "label exceeds REG_MAX_STRING_LENGTH (%d) chars\n", 
             REG_MAX_STRING_LENGTH);
 
@@ -1277,7 +1277,7 @@ INT_KIND_1_DECL(Status);
     }
     if(!found){
 
-      fprintf(stderr, "disable_param_logging_f: ERROR - length of label "
+      fprintf(stderr, "STEER: ERROR: disable_param_logging_f: length of label "
               "is REG_MAX_STRING_LENGTH (%d) chars long\nbut contains "
               "no termination character - shorten label (or its len "
               "declaration)\n", REG_MAX_STRING_LENGTH);
@@ -1755,7 +1755,7 @@ INT_KIND_1_DECL(Status);
   int i, len, pos;
 
 #if REG_DEBUG
-  fprintf(stderr, "steering_control_f: Calling Steering_control...\n");
+  fprintf(stderr, "STEER: steering_control_f: Calling Steering_control...\n");
 #endif
 
   *Status = INT_KIND_1_CAST( Steering_control((int)*SeqNum,
@@ -1766,7 +1766,7 @@ INT_KIND_1_DECL(Status);
                                               str_array_params) );
 #if REG_DEBUG
   fprintf(stderr, 
-          "steering_control_f: got %d params and %d cmds\n", 
+          "STEER: steering_control_f: got %d params and %d cmds\n", 
           num_params, num_commands);
 #endif
 
@@ -1947,14 +1947,14 @@ INT_KIND_1D0_DECL(ptr);
      to be passed to register_params_f as type void*. */
 
 #if REG_DEBUG
-  fprintf(stderr, "steering_char_to_ptr_f: Entered routine, "
+  fprintf(stderr, "STEER: steering_char_to_ptr_f: Entered routine, "
 	  "string = %s\n", STRING_PTR(string));
 #endif
 
   *ptr = INT_KIND_1D0_CAST(STRING_PTR(string));
 
 #if REG_DEBUG
-  fprintf(stderr, "steering_char_to_ptr_f: Leaving routine\n");
+  fprintf(stderr, "STEER: steering_char_to_ptr_f: Leaving routine\n");
 #endif
 }
 
@@ -2039,7 +2039,7 @@ INT_KIND_1_DECL(Status);
 
   if(size == sizeof(char)){
 #if REG_DEBUG
-    fprintf(stderr, "equivalent to a C char\n");
+    fprintf(stderr, "STEER: equivalent to a C char\n");
 #endif
     f90_to_c_type[type] = REG_CHAR;
   }
@@ -2047,13 +2047,13 @@ INT_KIND_1_DECL(Status);
   if((type == REG_INT) || (type == REG_LONG)){
     if(size == sizeof(int)){
 #if REG_DEBUG
-      fprintf(stderr, "equivalent to a C int\n");
+      fprintf(stderr, "STEER: equivalent to a C int\n");
 #endif
       f90_to_c_type[type] = REG_INT;
     }
     else if(size == sizeof(long)){
 #if REG_DEBUG
-      fprintf(stderr, "equivalent to a C long\n");
+      fprintf(stderr, "STEER: equivalent to a C long\n");
 #endif
       f90_to_c_type[type] = REG_LONG;
     }
@@ -2062,13 +2062,13 @@ INT_KIND_1_DECL(Status);
   if((type == REG_FLOAT) || (type == REG_DBL)){
     if(size == sizeof(float)){
 #if REG_DEBUG
-      fprintf(stderr, "equivalent to a C float\n");
+      fprintf(stderr, "STEER: equivalent to a C float\n");
 #endif
       f90_to_c_type[(int)*Type] = REG_FLOAT;
     }
     else if(size == sizeof(double)){
 #if REG_DEBUG
-      fprintf(stderr, "equivalent to a C double\n");
+      fprintf(stderr, "STEER: equivalent to a C double\n");
 #endif
       f90_to_c_type[(int)*Type] = REG_DBL;
     }
