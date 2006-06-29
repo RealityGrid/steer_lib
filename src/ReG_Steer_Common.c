@@ -1360,8 +1360,8 @@ int Init_random()
 
 #else /* No OpenSSL available */
 
-  fprintf(stderr, "STEER: Init_random: library not built with SSL support "
-	  "so cannot initialize OpenSSL random no. generator\n");
+  fprintf(stderr, "STEER: WARNING: Init_random: library not built with "
+	  "SSL support so NO SECURITY possible\n");
   return REG_FAILURE;
 
 #endif /* defined WITH_OPENSSL */
@@ -1522,8 +1522,6 @@ int Create_WSRF_header(struct soap *aSoap,
 
 #else /* WITH_OPENSSL not defined */
 
-  fprintf(stderr, "STEER: WARNING: Create_WSRF_header: library not "
-	  "compiled with OpenSSL so no security possible\n");
   aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Username = NULL;
   aSoap->header->wsse__Security.wsse__UsernameToken.wsu__Created = NULL;
   aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.Type = NULL;
