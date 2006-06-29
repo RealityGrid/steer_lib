@@ -2,7 +2,7 @@
   This file contains utility routines and data structures related to
   WSRF(SOAP)-based steering.
 
-  (C) Copyright 2005, University of Manchester, United Kingdom,
+  (C) Copyright 2006, University of Manchester, United Kingdom,
   all rights reserved.
 
   This software was developed by the RealityGrid project
@@ -73,7 +73,7 @@ int Get_registry_entries_wsrf(const char *registryEPR,
 			     sec->passphrase,
 			     sec->caCertsPath) == REG_FAILURE){
 
-      fprintf(stderr, "Get_registry_entries_wsrf: call to initialize "
+      fprintf(stderr, "STEERUtils: Get_registry_entries_wsrf: call to initialize "
 	      "soap SSL context failed\n");
       return REG_FAILURE;
     }
@@ -90,7 +90,7 @@ int Get_registry_entries_wsrf(const char *registryEPR,
   in.__ptr = (struct wsrp__ResourcePropertyStruct *)malloc(in.__size*
 							  sizeof(struct wsrp__ResourcePropertyStruct));
   if(!in.__ptr){
-    fprintf(stderr, "STEER: Get_registry_entries_wsrf: ERROR: "
+    fprintf(stderr, "STEERUtils: ERROR: Get_registry_entries_wsrf: "
 	    "malloc failed\n");
     return REG_MEM_FAIL;
   }
@@ -122,12 +122,12 @@ int Get_registry_entries_wsrf(const char *registryEPR,
 
 #ifdef USE_REG_TIMING
   Get_current_time_seconds(&time1);
-  fprintf(stderr, "TIMING: soap_call_wsrp__GetMultipleResourceProperties "
+  fprintf(stderr, "STEERUtils: TIMING: soap_call_wsrp__GetMultipleResourceProperties "
 	  "took %f seconds\n", (time1-time0));
 #endif
 
 #if REG_DEBUG_FULL
-  fprintf(stderr, "STEER: Get_registry_entries_wsrf: "
+  fprintf(stderr, "STEERUtils: Get_registry_entries_wsrf: "
 	  "Get_resource_property for Entry returned >>%s<<\n\n", out);
 #endif
   if(strlen(out) > 0){
@@ -165,7 +165,7 @@ char *Create_SWS(const struct reg_job_details   *job,
      struct contains information to allow us to authenticate to the
      registry */
 #if REG_DEBUG_FULL
-  fprintf(stderr,"\nCreate_SWS args:\n");
+  fprintf(stderr,"\nSTEERUtils: Create_SWS args:\n");
   fprintf(stderr," - lifetimeMinutes: %d\n", job->lifetimeMinutes);
   fprintf(stderr," - containerAddress: %s\n", containerAddress);
   fprintf(stderr," - registryAddress: %s\n", registryAddress);
@@ -181,7 +181,7 @@ char *Create_SWS(const struct reg_job_details   *job,
 	  containerAddress);
 
 #if REG_DEBUG_FULL
-  fprintf(stderr, "\nCreate_SWS: using factory >>%s<<\n",
+  fprintf(stderr, "\nSTEERUtils: Create_SWS: using factory >>%s<<\n",
 	  factoryAddr);
 #endif
 
@@ -197,7 +197,7 @@ char *Create_SWS(const struct reg_job_details   *job,
 			     sec->passphrase,
 			     sec->caCertsPath) == REG_FAILURE){
 
-      fprintf(stderr, "ERROR: call to initialize soap SSL context failed\n");
+      fprintf(stderr, "STEERUtils: ERROR: call to initialize soap SSL context failed\n");
       return NULL;
     }
     ssl_initialized = 1;
@@ -205,7 +205,7 @@ char *Create_SWS(const struct reg_job_details   *job,
 
 #if REG_DEBUG_FULL
   if(sec->passphrase[0]){
-    printf("Create_SWS: userName for call to createSWSResource >>%s<<\n", 
+    printf("STEERUtils: Create_SWS: userName for call to createSWSResource >>%s<<\n", 
 	   sec->userDN);
   }
 #endif /* REG_DEBUG_FULL */
@@ -222,7 +222,7 @@ char *Create_SWS(const struct reg_job_details   *job,
 				       &response) != SOAP_OK){
     if(soap.fault && soap.fault->detail){
 
-      fprintf(stderr, "Call to createSWSResource failed: Soap error "
+      fprintf(stderr, "STEERUtils: Call to createSWSResource failed: Soap error "
 	      "detail any = %s\n", soap.fault->detail->__any);
     }
     soap_print_fault(&soap, stderr);
@@ -264,7 +264,7 @@ char *Create_SWS(const struct reg_job_details   *job,
 			     sec->passphrase,
 			     sec->caCertsPath) == REG_FAILURE){
 
-      fprintf(stderr, "Create_SWS: ERROR: call to initialize soap SSL"
+      fprintf(stderr, "STEERUtils: ERROR: Create_SWS: call to initialize soap SSL"
 	      " context for call to regServiceGroup::Add failed\n");
       Destroy_WSRP(epr, sec);
       return NULL;
@@ -278,7 +278,7 @@ char *Create_SWS(const struct reg_job_details   *job,
   if(soap_call_rsg__Add(&soap, registryAddress, 
 			"", jobDescription,
 			&addResponse) != SOAP_OK){
-    fprintf(stderr, "Create_SWS: ERROR: call to Add service to "
+    fprintf(stderr, "STEERUtils: ERROR: Create_SWS: call to Add service to "
 	    "registry failed:\n");
     soap_print_fault(&soap, stderr);
     Destroy_WSRP(epr, sec);
@@ -288,7 +288,7 @@ char *Create_SWS(const struct reg_job_details   *job,
   /* Print out address of the ServiceGroupEntry
      that represents our SWS's entry in the registry */
 #if REG_DEBUG_FULL
-  fprintf(stderr, "Create_SWS: Address of SGE >>%s<<\n", 
+  fprintf(stderr, "STEERUtils: Create_SWS: Address of SGE >>%s<<\n", 
 	  addResponse.wsa__EndpointReference.wsa__Address);
 #endif /* REG_DEBUG_FULL */
 
@@ -305,8 +305,8 @@ char *Create_SWS(const struct reg_job_details   *job,
 
 #if REG_DEBUG_FULL
   fprintf(stderr,
-	  "\nCreate_SWS: Calling SetResourceProperties with >>%s<<\n",
-	  jobDescription);
+	  "\nSTEERUtils: Create_SWS: Calling SetResourceProperties "
+	  "with >>%s<<\n", jobDescription);
 #endif
   if(soap_call_wsrp__SetResourceProperties(&soap, epr, "", jobDescription,
 					   &setRPresponse) != SOAP_OK){
@@ -336,7 +336,7 @@ char *Create_SWS(const struct reg_job_details   *job,
     Create_WSRF_header(&soap, epr, job->userName, job->passphrase);
 #if REG_DEBUG_FULL
     fprintf(stderr,
-	    "\nCreate_SWS: Calling SetResourceProperties with >>%s<<\n",
+	    "\nSTEERUtils: Create_SWS: Calling SetResourceProperties with >>%s<<\n",
 	    Global_scratch_buffer);
 #endif
     if(soap_call_wsrp__SetResourceProperties(&soap, epr, "", 
@@ -381,14 +381,14 @@ int Destroy_WSRP(const char                     *epr,
 			       NULL, /* char *passphrase,*/
 			       sec->caCertsPath) == REG_FAILURE){
 
-	fprintf(stderr, "Destroy_WSRP: ERROR: call to initialize soap "
+	fprintf(stderr, "STEERUtils: ERROR: Destroy_WSRP: call to initialize soap "
 		"SSL context failed\n");
 	return REG_FAILURE;
       }
     }
 
     if(soap_call_wsrp__Destroy(&soap, epr, NULL, NULL, &out) != SOAP_OK){
-      fprintf(stderr, "Destroy_WSRP: call to Destroy on %s failed:\n   ",
+      fprintf(stderr, "STEERUtils: Destroy_WSRP: call to Destroy on %s failed:\n   ",
 	      epr);
       soap_print_fault(&soap, stderr);
       return_status = REG_FAILURE;
@@ -416,7 +416,7 @@ int Get_IOTypes_WSRF(const char                     *address,
   int                i;
 
   if(!list){
-    fprintf(stderr, "Get_IOTypes: ERROR: pointer to iotype_list is NULL\n");
+    fprintf(stderr, "STEERUtils: ERROR: Get_IOTypes: pointer to iotype_list is NULL\n");
     return REG_FAILURE;
   }
 
@@ -430,7 +430,7 @@ int Get_IOTypes_WSRF(const char                     *address,
 			     "ioTypeDefinitions",
 			     &ioTypes) != REG_SUCCESS ){
 
-    fprintf(stderr, "Get_IOTypes: ERROR: Call to get ioTypeDefinitions "
+    fprintf(stderr, "STEERUtils: ERROR: Get_IOTypes: Call to get ioTypeDefinitions "
 	    "ResourceProperty on %s failed\n", address);
     soap_print_fault(&mySoap, stderr);
     soap_end(&mySoap);
@@ -440,7 +440,7 @@ int Get_IOTypes_WSRF(const char                     *address,
 
   if( !(doc = xmlParseMemory(ioTypes, strlen(ioTypes))) ||
       !(cur = xmlDocGetRootElement(doc)) ){
-    fprintf(stderr, "Get_IOTypes: ERROR: Hit error parsing buffer\n");
+    fprintf(stderr, "STEERUtils: ERROR: Get_IOTypes: Hit error parsing buffer\n");
     xmlFreeDoc(doc);
     xmlCleanupParser();
     soap_end(&mySoap);
@@ -452,7 +452,7 @@ int Get_IOTypes_WSRF(const char                     *address,
             (const xmlChar *) "http://www.realitygrid.org/xml/steering");
 
   if ( xmlStrcmp(cur->name, (const xmlChar *) "ioTypeDefinitions") ){
-    fprintf(stderr, "ioTypeDefinitions not the root element\n");
+    fprintf(stderr, "STEERUtils: ERROR: Get_IOTypes: ioTypeDefinitions not the root element\n");
     xmlFreeDoc(doc);
     xmlCleanupParser();
     soap_end(&mySoap);
@@ -467,7 +467,7 @@ int Get_IOTypes_WSRF(const char                     *address,
   parseIOTypeDef(doc, ns, cur, msg->io_def);
 
   if(!(ioPtr = msg->io_def->first_io) ){
-    fprintf(stderr, "Get_IOTypes: ERROR: Got no IOType definitions from %s\n",
+    fprintf(stderr, "STEERUtils: ERROR: Get_IOTypes: Got no IOType definitions from %s\n",
 	    address);
     xmlFreeDoc(doc);   xmlCleanupParser();
     soap_end(&mySoap); soap_done(&mySoap);
@@ -475,7 +475,7 @@ int Get_IOTypes_WSRF(const char                     *address,
   }
 
   i = 0;
-  fprintf(stdout, "Available IOTypes:\n");
+  fprintf(stdout, "STEERUtils: Available IOTypes:\n");
   while(ioPtr){
     fprintf(stdout, "    %d: %s\n", i++, (char *)ioPtr->label);
     fprintf(stdout, " Dir'n: %s\n", (char *)ioPtr->direction);
@@ -483,7 +483,7 @@ int Get_IOTypes_WSRF(const char                     *address,
   }
   list->iotype = (struct iotype_detail*)malloc(i * sizeof(struct iotype_detail));
   if(!list->iotype){
-    fprintf(stderr, "Get_IOTypes: ERROR: malloc failed\n");
+    fprintf(stderr, "STEERUtils: ERROR: Get_IOTypes: malloc failed\n");
     xmlFreeDoc(doc);   xmlCleanupParser();
     soap_end(&mySoap); soap_done(&mySoap);
     return REG_FAILURE;
@@ -527,7 +527,7 @@ char *Create_checkpoint_tree_wsrf(const char *factory,
 				  "", /* soap Action */
 				  (char *)metadata, 
 				  &out) != SOAP_OK){
-    fprintf(stderr, "Create_checkpoint_tree_wsrf: ERROR: Call to "
+    fprintf(stderr, "STEERUtils: ERROR: Create_checkpoint_tree_wsrf: Call to "
 	    "createNewTree on %s failed\n", factory);
     soap_print_fault(&mySoap, stderr);
     soap_end(&mySoap); soap_done(&mySoap);

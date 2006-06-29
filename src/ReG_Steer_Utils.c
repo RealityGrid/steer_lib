@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------
-  (C) Copyright 2005, University of Manchester, United Kingdom,
+  (C) Copyright 2006, University of Manchester, United Kingdom,
   all rights reserved.
 
   This software was developed by the RealityGrid project
@@ -61,7 +61,7 @@ char* Create_steering_service(const struct reg_job_details *job,
 		    registryAddress,
 		    sec);
 #else
-  fprintf(stderr, "Create_steering_service: NOT IMPLEMENTED for OGSI\n");
+  fprintf(stderr, "STEERUtils: Create_steering_service: NOT IMPLEMENTED for OGSI\n");
   return NULL;
 #endif /* REG_WSRF */
 }
@@ -93,7 +93,7 @@ char *Create_checkpoint_tree(const char *factory,
 				   "<ogsi:terminationTime />", "", "", 
 				   (char *)metadata, 
 				   &out) != SOAP_OK){
-    fprintf(stderr, "Create_checkpoint_tree: soap call failed:\n");
+    fprintf(stderr, "STEERUtils: Create_checkpoint_tree: soap call failed:\n");
     soap_print_fault(&soap, stderr);
     soap_end(&soap); /* dealloc deserialized data */
     soap_done(&soap); /* cleanup and detach soap struct */
@@ -101,7 +101,7 @@ char *Create_checkpoint_tree(const char *factory,
   }
 
   if( !(pchar = strstr(out._createNewTreeReturn, "<ogsi:handle>")) ){
-    fprintf(stderr, "Create_checkpoint_tree: failed to find "
+    fprintf(stderr, "STEERUtils: Create_checkpoint_tree: failed to find "
 	    "<ogsi:handle> in >>%s<< returned by createNewTree on %s\n", 
 	    out._createNewTreeReturn, factory);
     soap_end(&soap); /* dealloc deserialized data */
@@ -128,7 +128,7 @@ int Destroy_steering_service(const char                     *address,
 #ifdef REG_WSRF
   return Destroy_WSRP(address, sec);
 #else
-  fprintf(stderr, "Destroy_steering_service: not implemented for OGSI :-(\n");
+  fprintf(stderr, "STEERUtils: Destroy_steering_service: not implemented for OGSI :-(\n");
   return REG_FAILURE;
 #endif
 
@@ -154,7 +154,7 @@ int Get_security_config(const char               *configFile,
   if(!configFile || (strlen(configFile) == 0)){
     pChar = getenv("HOME");
     if(!pChar){
-      fprintf(stderr, "Get_security_config: cannot get HOME environment "
+      fprintf(stderr, "STEERUtils: Get_security_config: cannot get HOME environment "
 	      "variable and no alternative config. file specified\n");
       return REG_FAILURE;
     }
@@ -172,7 +172,7 @@ int Get_security_config(const char               *configFile,
     if(replace != 0) {
       pChar = getenv("HOME");
       if(!pChar) {
-	fprintf(stderr, "Get_security_config: cannot get HOME environment "
+	fprintf(stderr, "STEERUtils: Get_security_config: cannot get HOME environment "
 		"variable for ~ or $HOME substitution\n");
 	return REG_FAILURE;
       }
@@ -251,7 +251,7 @@ int Get_security_config(const char               *configFile,
   /* Extract user's DN from their certificate */
   if( !(fp = fopen(sec->myKeyCertFile, "r")) ){
 
-    fprintf(stderr, "Failed to open key and cert file >>%s<<\n",
+    fprintf(stderr, "STEERUtils: Failed to open key and cert file >>%s<<\n",
             sec->myKeyCertFile);
     xmlFreeDoc(doc);
     xmlCleanupParser();
@@ -289,7 +289,8 @@ int Get_IOTypes(const char                     *address,
 			  sec,
 			  list);
 #else
-  fprintf(stderr, "Destroy_steering_service: not implemented for OGSI :-(\n");
+  fprintf(stderr, "STEERUtils: Destroy_steering_service: not "
+	  "implemented for OGSI :-(\n");
   return REG_FAILURE;
 #endif
 

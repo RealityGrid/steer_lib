@@ -2,7 +2,7 @@
   This file contains routines and data structures for SOAP-based 
   steering communication.
 
-  (C) Copyright 2005, University of Manchester, United Kingdom,
+  (C) Copyright 2006, University of Manchester, United Kingdom,
   all rights reserved.
 
   This software was developed by the RealityGrid project
@@ -118,7 +118,7 @@ int Get_sim_list(int   *nSims,
       }
       else{
 
-	fprintf(stderr, "Get_sim_list: REG_SGS_ADDRESS environment variable "
+	fprintf(stderr, "STEERUtils: Get_sim_list: REG_SGS_ADDRESS environment variable "
 		"is not set\n");
 	*nSims = 0;
 	sprintf(simName[0], " ");
@@ -136,7 +136,7 @@ int Get_sim_list(int   *nSims,
 
   if(nbytes == 0){
 #if REG_DEBUG
-    fprintf(stderr, "Get_sim_list: no steerable apps available\n");
+    fprintf(stderr, "STEERUtils: Get_sim_list: no steerable apps available\n");
 #endif
     return REG_SUCCESS;
   }
@@ -165,7 +165,7 @@ int Get_sim_list(int   *nSims,
 
       if(count == REG_MAX_NUM_STEERED_SIM){
 
-	fprintf(stderr, "Get_sim_list: truncating list of steerable apps\n");
+	fprintf(stderr, "STEERUtils: Get_sim_list: truncating list of steerable apps\n");
 	break;
       }
     }
@@ -290,7 +290,7 @@ int Get_registry_entries_filtered_secure(const char             *registryGSH,
 
 #if REG_DEBUG
   fprintf(stderr,
-	  "\nGet_registry_entries_filtered_secure, got %d filtered "
+	  "\nSTEERUtils: Get_registry_entries_filtered_secure, got %d filtered "
 	  "entries...\n", count);
 
   for(i=0; i<contents->numEntries; i++){
@@ -316,7 +316,7 @@ int Get_registry_entries_secure(const char                     *registryGSH,
 
 #ifndef REG_WSRF
 
-  fprintf(stderr, "Get_registry_entries_secure: WARNING: no secure version "
+  fprintf(stderr, "STEERUtils: Get_registry_entries_secure: WARNING: no secure version "
 	  "available for OGSI implementation!\n");
 
   struct sgr__findServiceDataResponse out;
@@ -334,13 +334,13 @@ int Get_registry_entries_secure(const char                     *registryGSH,
   }
   else{
     if(!(out._findServiceDataReturn)){
-      fprintf(stderr, "Get_registry_entries_secure: findServiceData "
+      fprintf(stderr, "STEERUtils: Get_registry_entries_secure: findServiceData "
 	      "returned null\n");
       return REG_FAILURE;
     }
 #if REG_DEBUG_FULL
     else{
-      fprintf(stderr, "Get_registry_entries_secure: findServiceData "
+      fprintf(stderr, "STEERUtils: Get_registry_entries_secure: findServiceData "
 	      "returned: %s\n", out._findServiceDataReturn);
     }
 #endif /* REG_DEBUG_FULL */

@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------
-  (C) Copyright 2005, University of Manchester, United Kingdom,
+  (C) Copyright 2006, University of Manchester, United Kingdom,
   all rights reserved.
 
   This software was developed by the RealityGrid project
@@ -51,7 +51,7 @@ int Sim_attach_soap(Sim_entry_type *sim, char *SimID)
   sim->SGS_info.soap = (struct soap*)malloc(sizeof(struct soap));
   if(!(sim->SGS_info.soap)){
 
-    fprintf(stderr, "Sim_attach_soap: failed to malloc memory for "
+    fprintf(stderr, "STEER: Sim_attach_soap: failed to malloc memory for "
 	    "soap struct\n");
     return REG_FAILURE;
   }
@@ -64,7 +64,7 @@ int Sim_attach_soap(Sim_entry_type *sim, char *SimID)
   if(soap_call_sgs__Attach(sim->SGS_info.soap, SimID, 
 			   "", NULL, &attach_response )){
 
-    fprintf(stderr, "Sim_attach_soap: Attach to %s failed with message: \n",
+    fprintf(stderr, "STEER: Sim_attach_soap: Attach to %s failed with message: \n",
 	    SimID);
     soap_print_fault(sim->SGS_info.soap, stderr);
 
@@ -76,11 +76,11 @@ int Sim_attach_soap(Sim_entry_type *sim, char *SimID)
 
 #if REG_DEBUG
   if(attach_response._AttachReturn){
-    fprintf(stderr, "Sim_attach_soap: Attach returned:\n>>%s<<\n",
+    fprintf(stderr, "STEER: Sim_attach_soap: Attach returned:\n>>%s<<\n",
 	    attach_response._AttachReturn);
   }
   else{
-    fprintf(stderr, "Sim_attach_soap: Attach returned null\n");
+    fprintf(stderr, "STEER: Sim_attach_soap: Attach returned null\n");
   }
 #endif
 
@@ -102,7 +102,7 @@ int Sim_attach_soap(Sim_entry_type *sim, char *SimID)
     if (pchar) pchar1= strstr(attach_response._AttachReturn, 
 				 "</ReG_steer_message>");
     if (!pchar1) {
-      fprintf(stderr, "Sim_attach_soap: failed to strip root-element tags "
+      fprintf(stderr, "STEER: Sim_attach_soap: failed to strip root-element tags "
 	      "from data:\n>>%s<<\n", attach_response._AttachReturn);
       Finalize_connection_soap(sim);
       return REG_FAILURE;
@@ -110,7 +110,7 @@ int Sim_attach_soap(Sim_entry_type *sim, char *SimID)
 
     if(!(msg = New_msg_struct())){
 
-      fprintf(stderr, "Sim_attach_soap: failed to get new msg struct\n");
+      fprintf(stderr, "STEER: Sim_attach_soap: failed to get new msg struct\n");
       Finalize_connection_soap(sim);
       return REG_FAILURE;
     }
@@ -136,7 +136,7 @@ int Sim_attach_soap(Sim_entry_type *sim, char *SimID)
     }
     else{
 
-      fprintf(stderr, "Sim_attach_soap: error parsing supported cmds\n");
+      fprintf(stderr, "STEER: Sim_attach_soap: error parsing supported cmds\n");
     }
 
     Delete_msg_struct(&msg);
@@ -161,7 +161,7 @@ int Send_control_msg_soap(Sim_entry_type *sim, char* buf)
   if(soap_call_sgs__PutControl(sim->SGS_info.soap, sim->SGS_info.address, 
 			       "", buf, &putControl_response )){
 
-    fprintf(stderr, "Send_control_msg_soap: PutControl failed:\n");
+    fprintf(stderr, "STEER: Send_control_msg_soap: PutControl failed:\n");
     soap_print_fault(sim->SGS_info.soap, stderr);
 
     return REG_FAILURE;
@@ -195,7 +195,7 @@ struct msg_struct *Get_status_msg_soap(Sim_entry_type *sim)
   if(soap_call_sgs__GetNotifications(sim->SGS_info.soap, sim->SGS_info.address, 
 				     "", NULL, &getNotifications_response )){
 
-    fprintf(stderr, "Get_status_msg_soap: GetNotifications failed:\n");
+    fprintf(stderr, "STEER: Get_status_msg_soap: GetNotifications failed:\n");
     soap_print_fault(sim->SGS_info.soap, stderr);
 
     /* Flag that we hit an error as opposed to just failed to get a msg */
@@ -206,11 +206,11 @@ struct msg_struct *Get_status_msg_soap(Sim_entry_type *sim)
   
 #if REG_DEBUG
   if(getNotifications_response._GetNotificationsReturn){
-    fprintf(stderr, "Get_status_msg_soap: GetNotifications returned >>%s<<\n",
+    fprintf(stderr, "STEER: Get_status_msg_soap: GetNotifications returned >>%s<<\n",
 	    getNotifications_response._GetNotificationsReturn);
   }
   else{
-    fprintf(stderr, "Get_status_msg_soap: GetNotifications returned null\n");
+    fprintf(stderr, "STEER: Get_status_msg_soap: GetNotifications returned null\n");
   }
 #endif
 
@@ -227,7 +227,7 @@ struct msg_struct *Get_status_msg_soap(Sim_entry_type *sim)
 
         if(sim->SGS_info.sde_count >= REG_MAX_NUM_SGS_SDE){
 
-	  fprintf(stderr, "Get_status_msg_soap: ERROR - max. no. of "
+	  fprintf(stderr, "STEER: ERROR: Get_status_msg_soap: max. no. of "
 		  "service data elements (%d) exceeded\n", 
 		  REG_MAX_NUM_SGS_SDE);
 	  break;
@@ -252,7 +252,7 @@ struct msg_struct *Get_status_msg_soap(Sim_entry_type *sim)
   if(soap_call_sgs__GetStatus(sim->SGS_info.soap, sim->SGS_info.address, 
 			       "", NULL, &getStatus_response )){
 
-    fprintf(stderr, "Get_status_msg_soap: GetStatus failed:\n");
+    fprintf(stderr, "STEER: Get_status_msg_soap: GetStatus failed:\n");
     soap_print_fault(sim->SGS_info.soap, stderr);
 
     /* Flag that we hit an error as opposed to just failed to get a msg */
@@ -263,11 +263,11 @@ struct msg_struct *Get_status_msg_soap(Sim_entry_type *sim)
 
 #if REG_DEBUG
   if(getStatus_response._GetStatusReturn){
-    fprintf(stderr, "Get_status_msg_soap: response: %s\n", 
+    fprintf(stderr, "STEER: Get_status_msg_soap: response: %s\n", 
 	    getStatus_response._GetStatusReturn);
   }
   else{
-    fprintf(stderr, "Get_status_msg_soap: null response\n");
+    fprintf(stderr, "STEER: Get_status_msg_soap: null response\n");
   }
 #endif
 
@@ -303,7 +303,7 @@ struct msg_struct *Get_service_data(Sim_entry_type *sim, char *sde_name)
 				    "", query_buf, 
 				    &findServiceData_response )){
 
-    fprintf(stderr, "Get_service_data: findServiceData failed:\n");
+    fprintf(stderr, "STEER: Get_service_data: findServiceData failed:\n");
     soap_print_fault(sim->SGS_info.soap, stderr);
 
     msg = New_msg_struct();
@@ -313,11 +313,11 @@ struct msg_struct *Get_service_data(Sim_entry_type *sim, char *sde_name)
 
 #if REG_DEBUG
   if(findServiceData_response._findServiceDataReturn){
-    fprintf(stderr, "Get_service_data: findServiceData returned: %s\n", 
+    fprintf(stderr, "STEER: Get_service_data: findServiceData returned: %s\n", 
 	    findServiceData_response._findServiceDataReturn);
   }
   else{
-    fprintf(stderr, "Get_service_data: findServiceData returned null\n");
+    fprintf(stderr, "STEER: Get_service_data: findServiceData returned null\n");
   }
 #endif
 
@@ -362,7 +362,7 @@ struct msg_struct *Get_service_data(Sim_entry_type *sim, char *sde_name)
       if (pchar) pchar1= strstr(findServiceData_response._findServiceDataReturn, 
 				 "</ReG_steer_message>");
       if (!pchar1) {
-	fprintf(stderr, "Get_service_data: failed to strip root-element tags "
+	fprintf(stderr, "STEER: Get_service_data: failed to strip root-element tags "
 		"from data:\n>>%s<<\n", findServiceData_response._findServiceDataReturn);
 	return NULL;
       }
@@ -386,13 +386,13 @@ int Send_pause_msg_soap(Sim_entry_type *sim)
   struct sgs__PauseResponse  pause_response;
 
 #if REG_DEBUG
-  fprintf(stderr, "Send_pause_msg_soap: calling Pause...\n");
+  fprintf(stderr, "STEER: Send_pause_msg_soap: calling Pause...\n");
 #endif
   pause_response._PauseReturn = NULL;
   if(soap_call_sgs__Pause(sim->SGS_info.soap, sim->SGS_info.address, 
 			   "", NULL, &pause_response )){
 
-    fprintf(stderr, "Send_pause_msg_soap: Pause failed:\n");
+    fprintf(stderr, "STEER: Send_pause_msg_soap: Pause failed:\n");
     soap_print_fault(sim->SGS_info.soap, stderr);
 
     return REG_FAILURE;
@@ -413,13 +413,13 @@ int Send_resume_msg_soap(Sim_entry_type *sim)
   struct sgs__ResumeResponse  resume_response;
 
 #if REG_DEBUG
-  fprintf(stderr, "Send_resume_msg_soap: calling Resume...\n");
+  fprintf(stderr, "STEER: Send_resume_msg_soap: calling Resume...\n");
 #endif
   resume_response._ResumeReturn = NULL;
   if(soap_call_sgs__Resume(sim->SGS_info.soap, sim->SGS_info.address, 
 			   "", NULL, &resume_response )){
 
-    fprintf(stderr, "Send_resume_msg_soap: Resume failed:\n");
+    fprintf(stderr, "STEER: Send_resume_msg_soap: Resume failed:\n");
     soap_print_fault(sim->SGS_info.soap, stderr);
 
     return REG_FAILURE;
@@ -440,13 +440,13 @@ int Send_detach_msg_soap(Sim_entry_type *sim)
   struct sgs__DetachResponse  detach_response;
 
 #if REG_DEBUG
-  fprintf(stderr, "Send_detach_msg_soap: calling Detach...\n");
+  fprintf(stderr, "STEER: Send_detach_msg_soap: calling Detach...\n");
 #endif
   detach_response._DetachReturn = NULL;
   if(soap_call_sgs__Detach(sim->SGS_info.soap, sim->SGS_info.address, 
 			   "", NULL, &detach_response )){
 
-    fprintf(stderr, "Send_detach_msg_soap: Detach failed:\n");
+    fprintf(stderr, "STEER: Send_detach_msg_soap: Detach failed:\n");
     soap_print_fault(sim->SGS_info.soap, stderr);
 
     return REG_FAILURE;
@@ -467,13 +467,13 @@ int Send_stop_msg_soap(Sim_entry_type *sim)
   struct sgs__StopResponse  stop_response;
 
 #if REG_DEBUG
-  fprintf(stderr, "Send_stop_msg_soap: calling Stop...\n");
+  fprintf(stderr, "STEER: Send_stop_msg_soap: calling Stop...\n");
 #endif
   stop_response._StopReturn = NULL;
   if(soap_call_sgs__Stop(sim->SGS_info.soap, sim->SGS_info.address, 
 			   "", NULL, &stop_response )){
 
-    fprintf(stderr, "Send_stop_msg_soap: Stop failed:\n");
+    fprintf(stderr, "STEER: Send_stop_msg_soap: Stop failed:\n");
     soap_print_fault(sim->SGS_info.soap, stderr);
 
     return REG_FAILURE;
@@ -497,7 +497,7 @@ int Send_restart_msg_soap(Sim_entry_type *sim, char *chkGSH)
   if(soap_call_sgs__Restart(sim->SGS_info.soap, sim->SGS_info.address, 
 			   "", chkGSH, &restart_response )){
 
-    fprintf(stderr, "Send_restart_msg_soap: Restart failed:\n");
+    fprintf(stderr, "STEER: Send_restart_msg_soap: Restart failed:\n");
     soap_print_fault(sim->SGS_info.soap, stderr);
 
     return REG_FAILURE;
@@ -538,8 +538,8 @@ int Get_param_log_soap(Sim_entry_type *sim, int handle)
   if( (index=Param_index_from_handle(&(sim->Params_table),
 				     handle)) == -1){
 
-      fprintf(stderr, "Get_param_log_soap: failed to match param handle\n");
-      fprintf(stderr, "                    handle = %d\n", handle);
+      fprintf(stderr, "STEER: Get_param_log_soap: failed to match param handle\n");
+      fprintf(stderr, "                           handle = %d\n", handle);
 
       return REG_FAILURE;
   }
@@ -559,7 +559,7 @@ int Get_param_log_soap(Sim_entry_type *sim, int handle)
   if(soap_call_sgs__GetParamLog(sim->SGS_info.soap, sim->SGS_info.address, 
 				"", (xsd__int)handle, &response )){
 
-    fprintf(stderr, "Get_param_log_soap: failed for handle %d:\n",
+    fprintf(stderr, "STEER: Get_param_log_soap: failed for handle %d:\n",
 	    handle);
     soap_print_fault(sim->SGS_info.soap, stderr);
 
@@ -571,8 +571,8 @@ int Get_param_log_soap(Sim_entry_type *sim, int handle)
      return REG_FAILURE;
   }
 
-  fprintf(stderr, "ARPDBG, got log from SGS>>%s<<", 
-	  (char*)response._GetParamLogReturn);
+  /*  fprintf(stderr, "ARPDBG, got log from SGS>>%s<<", 
+      (char*)response._GetParamLogReturn); */
   ptr1 = (char*)response._GetParamLogReturn;
 
   switch(sim->Params_table.param[index].type){
@@ -649,7 +649,7 @@ int Get_param_log_soap(Sim_entry_type *sim, int handle)
   case REG_CHAR:
     /* This not implemented yet */
 #if REG_DEBUG
-    fprintf(stderr, "Get_param_log_soap: logging of char params not "
+    fprintf(stderr, "STEER: Get_param_log_soap: logging of char params not "
 	    "implemented!\n");
 #endif
     break;

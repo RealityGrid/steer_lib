@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------
-  (C) Copyright 2005, University of Manchester, United Kingdom,
+  (C) Copyright 2006, University of Manchester, United Kingdom,
   all rights reserved.
 
   This software was developed by the RealityGrid project
@@ -801,7 +801,7 @@ int Reorder_decode_array(IOdef_entry *io,
   /*
   if( (io->convert_array_order == REG_TRUE) && (array->nx == 0) ){
 
-    fprintf(stderr, "Reorder_decode_array: array has zero dimension\n");
+    fprintf(stderr, "STEER: Reorder_decode_array: array has zero dimension\n");
     return REG_FAILURE;
   }
   */
@@ -1567,7 +1567,7 @@ int REG_Init_ssl_context(struct soap *aSoap,
 			 const char *caCertPath)
 {
   /*
-  fprintf(stderr, "REG_Init_ssl_context arguments:\n"
+  fprintf(stderr, "STEER: REG_Init_ssl_context arguments:\n"
 	          " - authenticateSWS = %d\n"
                   " - certKeyPemFile = >>%s<<\n"
 	          " - passphrase = >>%s<<\n"

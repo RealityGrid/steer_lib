@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------
-  (C) Copyright 2005, University of Manchester, United Kingdom,
+  (C) Copyright 2006, University of Manchester, United Kingdom,
   all rights reserved.
 
   This software was developed by the RealityGrid project
@@ -75,7 +75,7 @@ int Create_proxy(int *to_proxy, int *from_proxy)
      the java proxy */
   if( (class_path = getenv("CLASSPATH")) == NULL){
 
-    fprintf(stderr, "Create_proxy: failed to get CLASSPATH env. variable\n");
+    fprintf(stderr, "STEER: Create_proxy: failed to get CLASSPATH env. variable\n");
     return REG_FAILURE;
   }
 
@@ -83,7 +83,7 @@ int Create_proxy(int *to_proxy, int *from_proxy)
      classpath - otherwise we get stuck after the execlp */
   if( Proxy_is_in_path(class_path, exec_path) != REG_SUCCESS ){
 
-    fprintf(stderr, "Create_proxy: proxy is not on specified CLASSPATH\n");
+    fprintf(stderr, "STEER: Create_proxy: proxy is not on specified CLASSPATH\n");
     return REG_FAILURE;
   }
 
@@ -92,7 +92,7 @@ int Create_proxy(int *to_proxy, int *from_proxy)
      bind to */
   if( (registry_gsh = getenv("REGISTRY_GSH")) == NULL){
 
-    fprintf(stderr, "Create_proxy: failed to get REGISTRY_GSH env. "
+    fprintf(stderr, "STEER: Create_proxy: failed to get REGISTRY_GSH env. "
 	            "variable\n");
     return REG_FAILURE;
   }
@@ -102,7 +102,7 @@ int Create_proxy(int *to_proxy, int *from_proxy)
   /* Create pipe for sending messages _to_ proxy */
   if(pipe(pipe_to_proxy)){
 
-    fprintf(stderr, "Create_proxy: failed to create pipe_to_proxy...\n");
+    fprintf(stderr, "STEER: Create_proxy: failed to create pipe_to_proxy...\n");
     return REG_FAILURE;
   }
 
@@ -111,7 +111,7 @@ int Create_proxy(int *to_proxy, int *from_proxy)
   /* Create pipe for receiving messages _from_ proxy */
   if(pipe(pipe_from_proxy)){
 
-    fprintf(stderr, "Create_proxy: failed to create pipe_from_proxy...\n");
+    fprintf(stderr, "STEER: Create_proxy: failed to create pipe_from_proxy...\n");
     return REG_FAILURE;
   }
 
@@ -122,7 +122,7 @@ int Create_proxy(int *to_proxy, int *from_proxy)
 
   if(my_id == -1){
 
-    fprintf(stderr, "Create_proxy: call to fork() failed...\n");
+    fprintf(stderr, "STEER: Create_proxy: call to fork() failed...\n");
     return REG_FAILURE;
   }
   else if(my_id == 0){
@@ -137,7 +137,7 @@ int Create_proxy(int *to_proxy, int *from_proxy)
        is the one we just freed via the call to close... */
     if( (status = dup(pipe_to_proxy[0])) != stdin_fd){
 
-      fprintf(stderr, "Failed to attach to stdin, status = %d\n", status);
+      fprintf(stderr, "STEER: Failed to attach to stdin, status = %d\n", status);
       Send_proxy_message(pipe_from_proxy[1], ERR_MSG);
       exit(1);
     }
@@ -149,7 +149,7 @@ int Create_proxy(int *to_proxy, int *from_proxy)
        descriptor */
     if( (status = dup(pipe_from_proxy[1])) != stdout_fd){
 
-      fprintf(stderr, "Failed to attach to stdout, status = %d\n", status);
+      fprintf(stderr, "STEER: Failed to attach to stdout, status = %d\n", status);
       Send_proxy_message(pipe_from_proxy[1], ERR_MSG);
       exit(1);
     }
@@ -159,7 +159,7 @@ int Create_proxy(int *to_proxy, int *from_proxy)
 	   "-classpath", class_path, exec_path, (char *)0);
 
     /* If execlp returned then it failed... */
-    fprintf(stderr, "Create_proxy: execv failed...\n");
+    fprintf(stderr, "STEER: Create_proxy: execv failed...\n");
 
     Send_proxy_message(pipe_from_proxy[1], ERR_MSG);
     exit(1);
@@ -227,7 +227,7 @@ int Send_proxy_message(int pipe_to_proxy, const char *buf)
 
   if(nbytes != tot_len){
 
-    fprintf(stderr, "Send_proxy_message: error writing to pipe\n");
+    fprintf(stderr, "STEER: Send_proxy_message: error writing to pipe\n");
     return REG_FAILURE;
   }
 
@@ -240,7 +240,7 @@ int Send_proxy_message(int pipe_to_proxy, const char *buf)
 
   if(nbytes != REG_HEADER_BYTES){
 
-    fprintf(stderr, "Send_proxy_message: error writing to pipe\n");
+    fprintf(stderr, "STEER: Send_proxy_message: error writing to pipe\n");
     return REG_FAILURE;
   }
 
@@ -249,7 +249,7 @@ int Send_proxy_message(int pipe_to_proxy, const char *buf)
 
   if(nbytes != buf_len){
 
-    fprintf(stderr, "Send_proxy_message: error writing to pipe\n");
+    fprintf(stderr, "STEER: Send_proxy_message: error writing to pipe\n");
     return REG_FAILURE;
   }
   */
@@ -272,7 +272,7 @@ int Get_proxy_message(int pipe_from_proxy, char *buf, int *nbytes)
      message */
   if(!buf){
 
-    fprintf(stderr, "Get_proxy_message: NULL ptr to data buffer\n");
+    fprintf(stderr, "STEER: Get_proxy_message: NULL ptr to data buffer\n");
     return REG_FAILURE;
   }
 
@@ -281,7 +281,7 @@ int Get_proxy_message(int pipe_from_proxy, char *buf, int *nbytes)
 
   /* Block until message received */
 #if REG_DEBUG
-  fprintf(stderr, "Get_proxy_message: waiting for msg from proxy...\n");
+  fprintf(stderr, "STEER: Get_proxy_message: waiting for msg from proxy...\n");
 #endif
 
   while( (len = getline(line_buf, REG_MAX_LINE_LEN, pipe_from_proxy)) == 0){
@@ -292,13 +292,13 @@ int Get_proxy_message(int pipe_from_proxy, char *buf, int *nbytes)
  
   if(len == -1){
 
-    fprintf(stderr, "Get_proxy_message: error reading from pipe\n");
+    fprintf(stderr, "STEER: Get_proxy_message: error reading from pipe\n");
     return REG_FAILURE;
   }
 
 #if REG_DEBUG
-  fprintf(stderr, "Get_proxy_message: got: <%s>\n", line_buf);
-  fprintf(stderr, "Get_proxy_message: len = %d\n", len);
+  fprintf(stderr, "STEER: Get_proxy_message: got: <%s>\n", line_buf);
+  fprintf(stderr, "STEER: Get_proxy_message: len = %d\n", len);
 #endif
 
   pbuf  = buf;
@@ -319,32 +319,32 @@ int Get_proxy_message(int pipe_from_proxy, char *buf, int *nbytes)
     len = getline(line_buf, REG_MAX_LINE_LEN, pipe_from_proxy);
 
 #if REG_DEBUG
-    fprintf(stderr, "Get_proxy_message: got: <%s>\n", line_buf);
-    fprintf(stderr, "Get_proxy_message: len = %d\n", len);
+    fprintf(stderr, "STEER: Get_proxy_message: got: <%s>\n", line_buf);
+    fprintf(stderr, "STEER: Get_proxy_message: len = %d\n", len);
 #endif
 
     if(len == 0){
 
-      fprintf(stderr, "Get_proxy_message: hit EOD while reading message\n");
+      fprintf(stderr, "STEER: Get_proxy_message: hit EOD while reading message\n");
       return REG_FAILURE;
     }
     else if(len == -1){
 
-      fprintf(stderr, "Get_proxy_message: hit error while reading message\n");
+      fprintf(stderr, "STEER: Get_proxy_message: hit error while reading message\n");
       return REG_FAILURE;
     }
   }
 
   if(count >= REG_MAX_MSG_SIZE){
 
-    fprintf(stderr, "Get_proxy_message: WARNING: truncating message\n");
+    fprintf(stderr, "STEER: Get_proxy_message: WARNING: truncating message\n");
     return REG_FAILURE;
   }
 
   *nbytes = count;
 
 #if REG_DEBUG
-  fprintf(stderr, "Get_proxy_message: received: %s\n", buf);
+  fprintf(stderr, "STEER: Get_proxy_message: received: %s\n", buf);
 #endif
 
 #endif
@@ -403,7 +403,7 @@ int Proxy_is_in_path(const char *class_path, const char *exec)
     if(stat(full_path, &stbuf) != -1){
 
 #if REG_DEBUG
-      fprintf(stderr, "Proxy_is_in_path: found >%s<\n", full_path);
+      fprintf(stderr, "STEER: Proxy_is_in_path: found >%s<\n", full_path);
 #endif
       return_status = REG_SUCCESS;
       break;

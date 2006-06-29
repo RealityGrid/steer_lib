@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------
-  (C) Copyright 2005, University of Manchester, United Kingdom,
+  (C) Copyright 2006, University of Manchester, United Kingdom,
   all rights reserved.
 
   This software was developed by the RealityGrid project
@@ -105,7 +105,7 @@ int Initialize_log(Chk_log_type *log, log_type_type log_type)
   Set_log_primary_key(log);
 
   if( Open_log_file(log) != REG_SUCCESS ){
-    fprintf(stderr, "Initialize_log: failed to create log file, "
+    fprintf(stderr, "STEER: Initialize_log: failed to create log file, "
 	    "log will not be saved to file\n");
   }
 
@@ -117,7 +117,7 @@ int Initialize_log(Chk_log_type *log, log_type_type log_type)
 
   if(!(log->entry) || !(log->pSteer_cmds) ){
 
-    fprintf(stderr, "Initialize_log: failed to allocate memory "
+    fprintf(stderr, "STEER: Initialize_log: failed to allocate memory "
 	    "for checkpoint logging\n");
     return REG_FAILURE;
   }
@@ -267,7 +267,7 @@ int Log_to_xml(Chk_log_type *log, int handle, char **pchar,
 
   if( !(*pchar = (char *)malloc(size*sizeof(char))) ){
 
-    fprintf(stderr, "Log_to_xml: malloc failed\n");
+    fprintf(stderr, "STEER: Log_to_xml: malloc failed\n");
     return REG_FAILURE;
   }
 
@@ -282,7 +282,7 @@ int Log_to_xml(Chk_log_type *log, int handle, char **pchar,
   else{
     free(*pchar);
     *pchar = NULL;
-    fprintf(stderr, "Log_to_xml: ERROR, unknown log type\n");
+    fprintf(stderr, "STEER: ERROR: Log_to_xml: unknown log type\n");
     return REG_FAILURE;
   }
 }
@@ -322,7 +322,7 @@ int Chk_log_to_xml(Chk_log_type *log, char **pchar, int *count,
 #if REG_DEBUG
     /* Check for truncation of message */
     if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
-      fprintf(stderr, "Chk_log_to_xml: message size exceeds BUFSIZ (%d)\n", 
+      fprintf(stderr, "STEER: Chk_log_to_xml: message size exceeds BUFSIZ (%d)\n", 
 	      BUFSIZ);
       free(*pchar);
       *pchar = NULL;
@@ -346,7 +346,7 @@ int Chk_log_to_xml(Chk_log_type *log, char **pchar, int *count,
 #if REG_DEBUG
       /* Check for truncation of message */
       if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
-	fprintf(stderr, "Chk_log_to_xml: message size exceeds BUFSIZ (%d)\n", 
+	fprintf(stderr, "STEER: Chk_log_to_xml: message size exceeds BUFSIZ (%d)\n", 
 		BUFSIZ);
 	free(*pchar);
 	*pchar = NULL;
@@ -362,7 +362,7 @@ int Chk_log_to_xml(Chk_log_type *log, char **pchar, int *count,
 #if REG_DEBUG
     /* Check for truncation of message */
     if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
-      fprintf(stderr, "Chk_log_to_xml: message size exceeds BUFSIZ (%d)\n", 
+      fprintf(stderr, "STEER: Chk_log_to_xml: message size exceeds BUFSIZ (%d)\n", 
 	      BUFSIZ);
       free(*pchar);
       *pchar = NULL;
@@ -379,7 +379,7 @@ int Chk_log_to_xml(Chk_log_type *log, char **pchar, int *count,
       size += ((len/BUFSIZ) + 1)*BUFSIZ;
       if( !(ptr = realloc(*pchar, size*sizeof(char))) ){
 
-	fprintf(stderr, "Chk_log_to_xml: realloc failed\n");
+	fprintf(stderr, "STEER: Chk_log_to_xml: realloc failed\n");
 	free(*pchar);
 	*pchar = NULL;
 	return REG_FAILURE;
@@ -432,7 +432,7 @@ int Param_log_to_xml(Chk_log_type *log, int handle, char **pchar,
 #if REG_DEBUG
     /* Check for truncation of message */
     if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
-      fprintf(stderr, "Param_log_to_xml: message size exceeds BUFSIZ (%d)\n", 
+      fprintf(stderr, "STEER: Param_log_to_xml: message size exceeds BUFSIZ (%d)\n", 
 	      BUFSIZ);
       free(*pchar);
       *pchar = NULL;
@@ -457,7 +457,7 @@ int Param_log_to_xml(Chk_log_type *log, int handle, char **pchar,
 #if REG_DEBUG
 	/* Check for truncation of message */
 	if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
-	  fprintf(stderr, "Param_log_to_xml: message size "
+	  fprintf(stderr, "STEER: Param_log_to_xml: message size "
 		  "exceeds BUFSIZ (%d)\n", BUFSIZ);
 	  free(*pchar);
 	  *pchar = NULL;
@@ -476,7 +476,7 @@ int Param_log_to_xml(Chk_log_type *log, int handle, char **pchar,
 #if REG_DEBUG
     /* Check for truncation of message */
     if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
-      fprintf(stderr, "Param_log_to_xml: message size "
+      fprintf(stderr, "STEER: Param_log_to_xml: message size "
 	      "exceeds BUFSIZ (%d)\n", BUFSIZ);
       free(*pchar);
       *pchar = NULL;
@@ -493,7 +493,7 @@ int Param_log_to_xml(Chk_log_type *log, int handle, char **pchar,
       size += ((len/BUFSIZ) + 1)*BUFSIZ;
       if( !(ptr = realloc(*pchar, size*sizeof(char))) ){
 
-	fprintf(stderr, "Param_log_to_xml: realloc failed\n");
+	fprintf(stderr, "STEER: Param_log_to_xml: realloc failed\n");
 	free(*pchar);
 	*pchar = NULL;
 	return REG_FAILURE;
@@ -532,7 +532,7 @@ int Log_to_columns(Chk_log_type *log, char **pchar, int *count,
 
   if( !(*pchar = (char *)malloc(size*sizeof(char))) ){
 
-    fprintf(stderr, "Log_to_columns: malloc failed\n");
+    fprintf(stderr, "STEER: Log_to_columns: malloc failed\n");
     return REG_FAILURE;
   }
 
@@ -550,7 +550,7 @@ int Log_to_columns(Chk_log_type *log, char **pchar, int *count,
 #if REG_DEBUG
     /* Check for truncation of message */
     if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
-      fprintf(stderr, "Log_to_columns: message size exceeds BUFSIZ (%d)\n", 
+      fprintf(stderr, "STEER: Log_to_columns: message size exceeds BUFSIZ (%d)\n", 
 	      BUFSIZ);
       free(*pchar);
       *pchar = NULL;
@@ -571,7 +571,7 @@ int Log_to_columns(Chk_log_type *log, char **pchar, int *count,
 #if REG_DEBUG
       /* Check for truncation of message */
       if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
-	fprintf(stderr, "Log_to_columns: message size exceeds BUFSIZ (%d)\n", 
+	fprintf(stderr, "STEER: Log_to_columns: message size exceeds BUFSIZ (%d)\n", 
 		BUFSIZ);
 	free(*pchar);
 	*pchar = NULL;
@@ -586,7 +586,7 @@ int Log_to_columns(Chk_log_type *log, char **pchar, int *count,
 #if REG_DEBUG
     /* Check for truncation of message */
     if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
-      fprintf(stderr, "Log_to_columns: message size exceeds BUFSIZ (%d)\n", 
+      fprintf(stderr, "STEER: Log_to_columns: message size exceeds BUFSIZ (%d)\n", 
 	      BUFSIZ);
       free(*pchar);
       *pchar = NULL;
@@ -603,7 +603,7 @@ int Log_to_columns(Chk_log_type *log, char **pchar, int *count,
       size += ((len/BUFSIZ) + 1)*BUFSIZ;
       if( !(ptr = realloc(*pchar, size*sizeof(char))) ){
 
-	fprintf(stderr, "Log_to_columns: realloc failed\n");
+	fprintf(stderr, "STEER: Log_to_columns: realloc failed\n");
 	free(*pchar);
 	*pchar = NULL;
 	return REG_FAILURE;
@@ -668,7 +668,7 @@ int Set_log_primary_key(Chk_log_type *log)
     }
 
 #if REG_DEBUG
-    fprintf(stderr, "Set_log_primary_key: last chunk = >>%s<<\n", old_ptr);
+    fprintf(stderr, "STEER: Set_log_primary_key: last chunk = >>%s<<\n", old_ptr);
 #endif
 
     if(2 != sscanf(old_ptr, "%d %s", &(log->primary_key_value), 
@@ -688,7 +688,7 @@ int Set_log_primary_key(Chk_log_type *log)
     }
 
 #if REG_DEBUG
-    fprintf(stderr, "Set_log_primary_key: last chunk = >>%s<<\n", old_ptr);
+    fprintf(stderr, "STEER: Set_log_primary_key: last chunk = >>%s<<\n", old_ptr);
 #endif
 
     if( 1 != sscanf(old_ptr, "<Key>%d</Key>", &(log->primary_key_value))){
@@ -725,7 +725,7 @@ int Log_param_values()
     /* Save_log also resets Param_log.num_entries to zero */
     if(Save_log(&Param_log) != REG_SUCCESS){
 
-      fprintf(stderr, "Log_param_values: Save_log failed\n");
+      fprintf(stderr, "STEER: Log_param_values: Save_log failed\n");
       return REG_FAILURE;
     }
   }
@@ -815,7 +815,7 @@ int Emit_log(Chk_log_type *log, int handle)
 	  (log->log_type == PARAM && log->param_send_all[index] == REG_TRUE)){
 
 #if REG_DEBUG_FULL
-    fprintf(stderr, "Emit_log: sending all saved log entries...\n");
+    fprintf(stderr, "STEER: Emit_log: sending all saved log entries...\n");
 #endif
     /* Then we have to send any entries we've saved to file too... */
     Close_log_file(log);
@@ -843,7 +843,7 @@ int Emit_log(Chk_log_type *log, int handle)
     if( Open_log_file(log) != REG_SUCCESS){
 
 #if REG_DEBUG
-      fprintf(stderr, "Emit_log: Open_log_file failed\n");
+      fprintf(stderr, "STEER: Emit_log: Open_log_file failed\n");
 #endif
     }
 
@@ -877,7 +877,7 @@ int Emit_log(Chk_log_type *log, int handle)
   else{
 
 #if REG_DEBUG_FULL
-    fprintf(stderr, "Emit_log: sending unsent log entries...\n");
+    fprintf(stderr, "STEER: Emit_log: sending unsent log entries...\n");
 #endif
     /* Fifth argument specifies that we only want those entries that haven't
        already been sent to the steerer */
@@ -888,7 +888,7 @@ int Emit_log(Chk_log_type *log, int handle)
   }
 
 #if REG_DEBUG_FULL
-  fprintf(stderr, "Emit_log: calling Emit_log_entries...\n");
+  fprintf(stderr, "STEER: Emit_log: calling Emit_log_entries...\n");
 #endif
 
   /* Pull the entries out of the buffer returned by Log_to_xml and
@@ -903,7 +903,7 @@ int Emit_log(Chk_log_type *log, int handle)
   log->file_content = NULL;
 
 #if REG_DEBUG_FULL
-  fprintf(stderr, "Emit_log: sending logged steering commands...\n");
+  fprintf(stderr, "STEER: Emit_log: sending logged steering commands...\n");
 #endif
 
   /* Send log of steering commands */
@@ -1003,7 +1003,7 @@ int Pack_send_log_entries(char **pBuf, int *msg_count)
   msg_buf_size = REG_MAX_MSG_SIZE;
   if(!(msg_buf = (char *)malloc(msg_buf_size))){
 
-    fprintf(stderr, "Pack_send_log_entries: malloc failed\n");
+    fprintf(stderr, "STEER: Pack_send_log_entries: malloc failed\n");
     return REG_FAILURE;
   }
 
@@ -1054,7 +1054,7 @@ int Pack_send_log_entries(char **pBuf, int *msg_count)
 
 	free(msg_buf);
 	msg_buf = NULL;
-	fprintf(stderr, "Pack_send_log_entries: realloc failed\n");
+	fprintf(stderr, "STEER: Pack_send_log_entries: realloc failed\n");
 	return REG_FAILURE;
       }
       /* Allow for fact that realloc can return a ptr to a diff't
@@ -1095,7 +1095,7 @@ int Pack_send_log_entries(char **pBuf, int *msg_count)
 
 	if(Write_xml_footer(&pmsg_buf, (msg_buf_size-tot_len)) 
 	                                             != REG_SUCCESS){
-	  fprintf(stderr, "Pack_send_log_entries: error writing footer\n");
+	  fprintf(stderr, "STEER: Pack_send_log_entries: error writing footer\n");
 	  free(msg_buf);
 	  msg_buf = NULL;
 	  return REG_FAILURE;
@@ -1150,7 +1150,7 @@ int Pack_send_log_entries(char **pBuf, int *msg_count)
       (*msg_count)++;
     }
     else{
-      fprintf(stderr, "Pack_send_log_entries: error writing final footer\n");
+      fprintf(stderr, "STEER: Pack_send_log_entries: error writing final footer\n");
       return_status = REG_FAILURE;
     }
   }
@@ -1295,7 +1295,7 @@ int Log_control_msg(struct control_struct *control)
     seq_num_index = Param_index_from_handle(&(Params_table), 
 					    REG_SEQ_NUM_HANDLE);
     if(seq_num_index == -1){
-      fprintf(stderr, "Log_control_msg: failed to find "
+      fprintf(stderr, "STEER: Log_control_msg: failed to find "
 	      "index of sequence no.\n");
       return REG_FAILURE;
     }
@@ -1313,7 +1313,7 @@ int Log_control_msg(struct control_struct *control)
 
     if(!(pdum = realloc(Chk_log.pSteer_cmds, 2*Chk_log.steer_cmds_bytes))){
 
-      fprintf(stderr, "Log_control_msg: failed to realloc log buffer\n");
+      fprintf(stderr, "STEER: Log_control_msg: failed to realloc log buffer\n");
       /* Terminate buffer at end of last complete entry */
       *(Chk_log.pSteer_cmds_slot) = '\0';
       return REG_FAILURE;
@@ -1401,7 +1401,7 @@ int Log_control_msg(char *msg_txt)
   int        bytes_free;
   void      *pdum;
 
-  *fprintf(stderr, "Log_control_msg: got >>%s<<\n", msg_txt);*
+  *fprintf(stderr, "STEER: Log_control_msg: got >>%s<<\n", msg_txt);*
 
   * If this is the first time we've been called then calculate
      the index of the Sequence No. in the table of parameters *
@@ -1409,7 +1409,7 @@ int Log_control_msg(char *msg_txt)
     seq_num_index = Param_index_from_handle(&(Params_table), 
 					    REG_SEQ_NUM_HANDLE);
     if(seq_num_index == -1){
-      fprintf(stderr, "Log_control_msg: failed to find "
+      fprintf(stderr, "STEER: Log_control_msg: failed to find "
 	      "index of sequence no.\n");
       return REG_FAILURE;
     }
@@ -1420,7 +1420,7 @@ int Log_control_msg(char *msg_txt)
 
   if(  !(pstart = strstr(msg_txt, "<Steer_control>")) ){
 
-    fprintf(stderr, "Log_control_msg: failed to find <Steer_control>\n");
+    fprintf(stderr, "STEER: Log_control_msg: failed to find <Steer_control>\n");
     pbuf[0] = '\0';
     return REG_FAILURE;
   }
@@ -1441,7 +1441,7 @@ int Log_control_msg(char *msg_txt)
 
     if(!(pdum = realloc(Chk_log.pSteer_cmds, 2*Chk_log.steer_cmds_bytes))){
 
-      fprintf(stderr, "Log_control_msg: failed to realloc log buffer\n");
+      fprintf(stderr, "STEER: Log_control_msg: failed to realloc log buffer\n");
       * Terminate buffer at end of last complete entry *
       *(Chk_log.pSteer_cmds_slot) = '\0';
       return REG_FAILURE;
