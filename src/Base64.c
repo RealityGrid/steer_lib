@@ -79,7 +79,7 @@ int Base64_encode(const char *data,
 
   *out_data = (char *)malloc(len*2.5);
   if(!*out_data){
-    fprintf(stderr, "Base64_encode: malloc failed\n");
+    fprintf(stderr, "STEER: Base64_encode: malloc failed\n");
     return REG_FAILURE;
   }
 
@@ -135,7 +135,7 @@ int Base64_decode(const char *data,
   if(!*out_data){
     *out_data = (char *)malloc(len);
     if(!*out_data){
-      fprintf(stderr, "Base64_decode: malloc failed\n");
+      fprintf(stderr, "STEER: Base64_decode: malloc failed\n");
       return REG_FAILURE;
     }
   }

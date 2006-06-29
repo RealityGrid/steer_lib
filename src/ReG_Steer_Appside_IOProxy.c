@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------
-  (C) Copyright 2005, University of Manchester, United Kingdom,
+  (C) Copyright 2006, University of Manchester, United Kingdom,
   all rights reserved.
 
   This software was developed by the RealityGrid project
@@ -69,7 +69,7 @@ int Initialize_IOType_transport_proxy(const int direction,
   /* set up socket info stuff */
   if(socket_info_init(index) != REG_SUCCESS) {
 #if REG_DEBUG
-    fprintf(stderr, "Initialize_IOType_transport_proxy: failed to init "
+    fprintf(stderr, "STEER: Initialize_IOType_transport_proxy: failed to init "
 	    "socket info for IOType\n");
 #endif
     return_status = REG_FAILURE;
@@ -89,14 +89,14 @@ int Initialize_IOType_transport_proxy(const int direction,
       /* Connect to the proxy */
       if(create_connector(index) != REG_SUCCESS) {
 #if REG_DEBUG
-	fprintf(stderr, "Initialize_IOType_transport_sockets: failed to "
+	fprintf(stderr, "STEER: Initialize_IOType_transport_sockets: failed to "
 		"connect to proxy for IOType\n");
 #endif
 	return_status = REG_FAILURE;
       }
 #if REG_DEBUG
       else {
-	fprintf(stderr, "Initialize_IOType_transport_sockets: "
+	fprintf(stderr, "STEER: Initialize_IOType_transport_sockets: "
 		"registered connector to proxy on port %d, hostname = %s, "
 		"index %d, label %s\n", 
 		IOTypes_table.io_def[index].socket_info.connector_port,
@@ -115,14 +115,14 @@ int Initialize_IOType_transport_proxy(const int direction,
       /* Connect to the proxy */
       if(create_connector(index) != REG_SUCCESS) {
 #if REG_DEBUG
-	fprintf(stderr, "Initialize_IOType_transport_sockets: failed to "
+	fprintf(stderr, "STEER: Initialize_IOType_transport_sockets: failed to "
 		"register connector for IOType\n");
 #endif
 	return_status = REG_FAILURE;
       }
 #if REG_DEBUG
       else {
-	fprintf(stderr, "Initialize_IOType_transport_sockets: "
+	fprintf(stderr, "STEER: Initialize_IOType_transport_sockets: "
 		"registered connector on port %d, hostname = %s, "
 		"index %d, label %s\n", 
 		IOTypes_table.io_def[index].socket_info.connector_port,
@@ -154,7 +154,7 @@ void Finalize_IOType_transport_proxy() {
 int Disable_IOType_proxy(const int index) {
   /* check index is valid */
   if(index < 0 || index >= IOTypes_table.num_registered) {
-    fprintf(stderr, "Disable_IOType_sockets: index out of range\n");
+    fprintf(stderr, "STEER: Disable_IOType_sockets: index out of range\n");
     return REG_FAILURE;
   }
 
@@ -172,7 +172,7 @@ int Enable_IOType_proxy(int index) {
 
   if (create_connector(index) != REG_SUCCESS) {
 #if REG_DEBUG
-    fprintf(stderr, "Enable_IOType_sockets: failed to register "
+    fprintf(stderr, "STEER: Enable_IOType_sockets: failed to register "
 	    "connector for IOType\n");
 #endif
     return REG_FAILURE;
@@ -203,16 +203,16 @@ int Emit_data_proxy(const int index, const int size, void* buffer) {
   char  header[128];
 
   if(size < 0) {
-    fprintf(stderr, "Emit_data_proxy: requested to write < 0 bytes!\n");
+    fprintf(stderr, "STEER: Emit_data_proxy: requested to write < 0 bytes!\n");
     return REG_FAILURE;
   }
   else if(size == 0) {
-    fprintf(stderr, "Emit_data_proxy: asked to send 0 bytes!\n");
+    fprintf(stderr, "STEER: Emit_data_proxy: asked to send 0 bytes!\n");
     return REG_SUCCESS;
   }
 
 #if REG_DEBUG
-  fprintf(stderr, "Emit_data_proxy: writing...\n");
+  fprintf(stderr, "STEER: Emit_data_proxy: writing...\n");
 #endif
   /*
 		fprintf( con->fd, "#%s\n", msg->dest );
@@ -261,13 +261,13 @@ int Emit_data_proxy(const int index, const int size, void* buffer) {
 
   if(bytes_left > 0) {
 #if REG_DEBUG
-    fprintf(stderr, "Emit_data_proxy: timed-out trying to write data\n");
+    fprintf(stderr, "STEER: Emit_data_proxy: timed-out trying to write data\n");
 #endif
     return REG_TIMED_OUT;
   }
 
 #if REG_DEBUG
-  fprintf(stderr, "Emit_data_proxy: sent %d bytes...\n", (int) size);
+  fprintf(stderr, "STEER: Emit_data_proxy: sent %d bytes...\n", (int) size);
 #endif
 
   return REG_SUCCESS;
@@ -318,7 +318,7 @@ int Emit_header_proxy(const int index) {
   if(IOTypes_table.io_def[index].socket_info.comms_status == 
      REG_COMMS_STATUS_CONNECTED) {
 #if REG_DEBUG
-    fprintf(stderr, "Emit_header_proxy: socket status is "
+    fprintf(stderr, "STEER: Emit_header_proxy: socket status is "
 	    "connected, index = %d\n", index );
 #endif
 
@@ -326,20 +326,20 @@ int Emit_header_proxy(const int index) {
     sprintf(buffer, REG_PACKET_FORMAT, REG_DATA_HEADER);
     buffer[REG_PACKET_SIZE - 1] = '\0';
 #if REG_DEBUG
-    fprintf(stderr, "Emit_header_proxy: Sending >>%s<<\n", buffer);
+    fprintf(stderr, "STEER: Emit_header_proxy: Sending >>%s<<\n", buffer);
 #endif
     status = Emit_data_non_blocking_proxy(index, REG_PACKET_SIZE, 
 					  (void*) buffer);
 
     if(status == REG_SUCCESS) {
 #if REG_DEBUG
-      fprintf(stderr, "Emit_header_proxy: Sent %d bytes\n", REG_PACKET_SIZE);
+      fprintf(stderr, "STEER: Emit_header_proxy: Sent %d bytes\n", REG_PACKET_SIZE);
 #endif
       return REG_SUCCESS;
     }
     else if(status == REG_FAILURE) {
 #if REG_DEBUG
-      fprintf(stderr, "Emit_header_proxy: Emit_data_non_blocking_proxy "
+      fprintf(stderr, "STEER: Emit_header_proxy: Emit_data_non_blocking_proxy "
 	      "failed - immediate retry connect\n");
 #endif
       retry_accept_connect(index);
@@ -347,7 +347,7 @@ int Emit_header_proxy(const int index) {
       if(IOTypes_table.io_def[index].socket_info.comms_status == 
 	 REG_COMMS_STATUS_CONNECTED) {
 #if REG_DEBUG
-	fprintf(stderr, "Emit_header_proxy: Sending >>%s<<\n", buffer);
+	fprintf(stderr, "STEER: Emit_header_proxy: Sending >>%s<<\n", buffer);
 #endif    
 	if(Emit_data_proxy(index, REG_PACKET_SIZE, (void*) buffer) == 
 	   REG_SUCCESS) {
@@ -357,14 +357,14 @@ int Emit_header_proxy(const int index) {
     }
 #if REG_DEBUG
     else{
-      fprintf(stderr, "Emit_header_sockets: attempt to write to "
+      fprintf(stderr, "STEER: Emit_header_sockets: attempt to write to "
 	      "socket timed out\n");
     }
 #endif
   }
 #if REG_DEBUG
   else {
-    fprintf(stderr, "Emit_header_proxy: socket not connected, index = %d\n", 
+    fprintf(stderr, "STEER: Emit_header_proxy: socket not connected, index = %d\n", 
 	    index );
   }
 #endif

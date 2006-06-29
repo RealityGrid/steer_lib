@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------
-  (C) Copyright 2005, University of Manchester, United Kingdom,
+  (C) Copyright 2006, University of Manchester, United Kingdom,
   all rights reserved.
 
   This software was developed by the RealityGrid project
@@ -61,7 +61,8 @@ int Parse_xml_file(char* filename, struct msg_struct *msg,
   doc = xmlParseFile(filename);
 
   if (doc == NULL){
-    fprintf(stderr, "Parse_xml_file: Hit error parsing file %s\n", filename);
+    fprintf(stderr, "STEER: Parse_xml_file: Hit error parsing file %s\n", 
+	    filename);
     return REG_FAILURE;
   }
 
@@ -77,7 +78,7 @@ int Parse_xml_buf(char* buf, int size, struct msg_struct *msg,
 
   if(!buf){
 
-    fprintf(stderr, "Parse_xml_buf: ptr to buffer is NULL\n");
+    fprintf(stderr, "STEER: Parse_xml_buf: ptr to buffer is NULL\n");
     return REG_FAILURE;
   }
 
@@ -90,7 +91,7 @@ int Parse_xml_buf(char* buf, int size, struct msg_struct *msg,
 #endif
 
   if (doc == NULL){
-    fprintf(stderr, "Parse_xml_buf: Hit error parsing buffer\n");
+    fprintf(stderr, "STEER: Parse_xml_buf: Hit error parsing buffer\n");
     return REG_FAILURE;
   }
 
@@ -121,7 +122,7 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg,
   /* Relax our conditions to generalize this parser------------
   if (ns == NULL) {
       fprintf(stderr,
-              "Parse_xml: document of the wrong type, ReG namespace not found\n");
+              "STEER: Parse_xml: document of the wrong type, ReG namespace not found\n");
       xmlFreeDoc(doc);
       return REG_FAILURE;
   }
@@ -510,7 +511,7 @@ int parseStatus(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
       }
 
 #if REG_DEBUG
-      fprintf(stderr, "Calling parseParam...\n");
+      fprintf(stderr, "STEER: Calling parseParam...\n");
 #endif
       parseParam(doc, ns, cur, status->param);
     }
@@ -527,7 +528,7 @@ int parseStatus(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
       }
 
 #if REG_DEBUG
-      fprintf(stderr, "Calling parseCmd...\n");
+      fprintf(stderr, "STEER: Calling parseCmd...\n");
 #endif
       parseCmd(doc, ns, cur, status->cmd);
     }
@@ -567,7 +568,7 @@ int parseControl(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
       }
 
 #if REG_DEBUG
-      fprintf(stderr, "Calling parseParam...\n");
+      fprintf(stderr, "STEER: Calling parseParam...\n");
 #endif
       parseParam(doc, ns, cur, ctrl->param);
     }
@@ -584,7 +585,7 @@ int parseControl(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
       }
 
 #if REG_DEBUG
-      fprintf(stderr, "Calling parseCmd...\n");
+      fprintf(stderr, "STEER: Calling parseCmd...\n");
 #endif
       parseCmd(doc, ns, cur, ctrl->cmd);
     }
@@ -623,7 +624,7 @@ int parseIOTypeDef(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
       }
 
 #if REG_DEBUG
-      fprintf(stderr, "parseIOTypeDef: Calling parseIOType...\n");
+      fprintf(stderr, "STEER: parseIOTypeDef: Calling parseIOType...\n");
 #endif
       parseIOType(doc, ns, cur, io_def->io);
     }
@@ -662,7 +663,7 @@ int parseChkTypeDef(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
       }
 
 #if REG_DEBUG
-      fprintf(stderr, "parseChkTypeDef: Calling parseIOType...\n");
+      fprintf(stderr, "STEER: parseChkTypeDef: Calling parseIOType...\n");
 #endif
       parseIOType(doc, ns, cur, chk_def->io);
     }
@@ -735,13 +736,13 @@ int parseSuppCmd(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
       }
 
 #if REG_DEBUG_FULL
-      fprintf(stderr, "parseSuppCmd: Calling parseCmd...\n");
+      fprintf(stderr, "STEER: parseSuppCmd: Calling parseCmd...\n");
 #endif
       parseCmd(doc, ns, cur, supp_cmd->cmd);
     }
 #if REG_DEBUG
     else{
-      fprintf(stderr, "parseSuppCmd: name = %s <> Command\n", cur->name);
+      fprintf(stderr, "STEER: parseSuppCmd: name = %s <> Command\n", cur->name);
     }
 #endif
 
@@ -775,7 +776,7 @@ int parseLog(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
       }
 
 #if REG_DEBUG
-      fprintf(stderr, "parseLog: calling parseLogEntry\n");
+      fprintf(stderr, "STEER: parseLog: calling parseLogEntry\n");
 #endif
       parseLogEntry(doc, ns, cur, log->entry);
 
@@ -816,7 +817,7 @@ int parseLogEntry(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 	log->chk_log = log->chk_log->next;
       }
 #if REG_DEBUG
-      fprintf(stderr, "parseLogEntry: calling parseChkLogEntry\n");
+      fprintf(stderr, "STEER: parseLogEntry: calling parseChkLogEntry\n");
 #endif
       return_status = parseChkLogEntry(doc, ns, cur, log->chk_log);
     }
@@ -833,7 +834,7 @@ int parseLogEntry(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
       }
 
 #if REG_DEBUG
-      fprintf(stderr, "parseLogEntry: calling parseParam\n");
+      fprintf(stderr, "STEER: parseLogEntry: calling parseParam\n");
 #endif
       return_status = parseParam(doc, ns, cur, log->param_log);
     }
@@ -1467,36 +1468,36 @@ void Print_msg(struct msg_struct *msg)
 {
   if (!msg) {
 
-    fprintf(stderr, "Print_msg: ptr to msg struct is null\n");
+    fprintf(stderr, "STEER: Print_msg: ptr to msg struct is null\n");
     return;
   }
 
   if(msg->msg_type == MSG_ERROR){
-    fprintf(stderr, "Print_msg: msg is ERROR message\n");    
+    fprintf(stderr, "STEER: Print_msg: msg is ERROR message\n");    
   }
   else if(msg->msg_type == MSG_NOTSET){
-    fprintf(stderr, "Print_msg: msg type is unset\n");
+    fprintf(stderr, "STEER: Print_msg: msg type is unset\n");
   }
   else if(msg->msg_type == SUPP_CMDS){
-    fprintf(stderr, "Print_msg: msg type is SUPP_CMDS\n");
+    fprintf(stderr, "STEER: Print_msg: msg type is SUPP_CMDS\n");
   }
   else if(msg->msg_type == IO_DEFS){
-    fprintf(stderr, "Print_msg: msg type is IO_DEFS\n");
+    fprintf(stderr, "STEER: Print_msg: msg type is IO_DEFS\n");
   }
   else if(msg->msg_type == PARAM_DEFS){
-    fprintf(stderr, "Print_msg: msg type is PARAM_DEFS\n");
+    fprintf(stderr, "STEER: Print_msg: msg type is PARAM_DEFS\n");
   }
   else if(msg->msg_type == STATUS){
-    fprintf(stderr, "Print_msg: msg type is STATUS\n");
+    fprintf(stderr, "STEER: Print_msg: msg type is STATUS\n");
   }
   else if(msg->msg_type == CONTROL){
-    fprintf(stderr, "Print_msg: msg type is CONTROL\n");
+    fprintf(stderr, "STEER: Print_msg: msg type is CONTROL\n");
   }
   else if(msg->msg_type == CHK_DEFS){
-    fprintf(stderr, "Print_msg: msg type is CHK_DEFS\n");
+    fprintf(stderr, "STEER: Print_msg: msg type is CHK_DEFS\n");
   }
   else if(msg->msg_type == STEER_LOG){
-    fprintf(stderr, "Print_msg: msg type is STEER_LOG\n");
+    fprintf(stderr, "STEER: Print_msg: msg type is STEER_LOG\n");
   }
 
   if(msg->status){
@@ -1529,7 +1530,7 @@ void Print_msg(struct msg_struct *msg)
     Print_log_struct(msg->log);
   }
 
-  fprintf(stderr, "Print_msg: done\n");
+  fprintf(stderr, "STEER: Print_msg: done\n");
 }
 
 /*-----------------------------------------------------------------*/
@@ -1578,7 +1579,7 @@ void Print_param_struct(struct param_struct *param)
   count = 0;
 
   while(ptr){
-    fprintf(stderr, "Param no. %d:\n", count);
+    fprintf(stderr, "STEER: Param no. %d:\n", count);
     if(ptr->handle)     fprintf(stderr, "   Handle = %s\n", 
 				(char *)(ptr->handle));
     if(ptr->label)      fprintf(stderr, "   Label  = %s\n", 
@@ -1607,7 +1608,7 @@ void Print_cmd_struct(struct cmd_struct *cmd)
   count = 0;
 
   while(ptr){
-    fprintf(stderr, "Command no. %d:\n", count);
+    fprintf(stderr, "STEER: Command no. %d:\n", count);
     if(ptr->id)   fprintf(stderr, "   ID = %s\n", (char *)(ptr->id));
     if(ptr->name) fprintf(stderr, " name = %s\n", (char *)(ptr->name));
     if(ptr->first_param) Print_param_struct(cmd->first_param);
@@ -1624,7 +1625,7 @@ void Print_supp_cmd_struct(struct supp_cmd_struct *supp_cmd)
 
   if(supp_cmd->first_cmd){
 
-    fprintf(stderr, "Supported commands:\n");
+    fprintf(stderr, "STEER: Supported commands:\n");
     Print_cmd_struct(supp_cmd->first_cmd);
   }
 }
@@ -1637,7 +1638,7 @@ void Print_io_def_struct(struct io_def_struct   *io_def)
 
   if(io_def->first_io){
 
-    fprintf(stderr, "IOType definitions:\n");
+    fprintf(stderr, "STEER: IOType definitions:\n");
     Print_io_struct(io_def->first_io);
   }
 }
@@ -1672,7 +1673,7 @@ void Print_log_struct(struct log_struct *log)
 
   if(log->first_entry){
 
-    fprintf(stderr, "Log entries:\n");
+    fprintf(stderr, "STEER: Log entries:\n");
     Print_log_entry_struct(log->first_entry);
   }
 }
@@ -1686,7 +1687,7 @@ void Print_log_entry_struct(struct log_entry_struct *entry)
 
   while(ptr){
 
-    fprintf(stderr, "Log entry no. %d:\n", count);
+    fprintf(stderr, "STEER: Log entry no. %d:\n", count);
 
     if(ptr->key) fprintf(stderr, "  Key = %s\n", 
 			 (char *)ptr->key);
@@ -1711,7 +1712,7 @@ void Print_chk_log_entry_struct(struct chk_log_entry_struct *entry)
   int                        count = 0;
 
   while(ptr){
-    fprintf(stderr, "Chk log entry no. %d:\n", count);
+    fprintf(stderr, "STEER: Chk log entry no. %d:\n", count);
 
     if(ptr->chk_handle)fprintf(stderr, "  Chk handle = %s\n", 
 			       (char *)ptr->chk_handle);
@@ -1770,7 +1771,7 @@ int Parse_registry_entries(char* buf, int size,
   myEntries = (struct registry_entry *)malloc(maxEntries*
 					      sizeof(struct registry_entry));
   if( !myEntries ){
-    fprintf(stderr, "Parse_registry_entries: failed to malloc memory\n");
+    fprintf(stderr, "STEER: Parse_registry_entries: failed to malloc memory\n");
     return REG_FAILURE;
   }
 
