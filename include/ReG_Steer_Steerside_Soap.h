@@ -2,7 +2,7 @@
   This header file contains routines and data structures for
   steerside SOAP-based communication.
 
-  (C) Copyright 2005, University of Manchester, United Kingdom,
+  (C) Copyright 2006, University of Manchester, United Kingdom,
   all rights reserved.
 
   This software was developed by the RealityGrid project

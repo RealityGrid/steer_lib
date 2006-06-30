@@ -2,7 +2,7 @@
   Header file defining the routines used to create and communicate
   with a steering-proxy process.
 
-  (C) Copyright 2005, University of Manchester, United Kingdom,
+  (C) Copyright 2006, University of Manchester, United Kingdom,
   all rights reserved.
 
   This software was developed by the RealityGrid project
