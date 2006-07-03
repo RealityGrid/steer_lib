@@ -2,7 +2,7 @@ c---------------------------------------------------------------------
 c  F77 include file intended to give F77 applications access to 
 c  the RealityGrid computational-steering API.
 c
-c  (C) Copyright 2005, University of Manchester, United Kingdom,
+c  (C) Copyright 2006, University of Manchester, United Kingdom,
 c  all rights reserved.
 c
 c  This software was developed by the RealityGrid project

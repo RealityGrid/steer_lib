@@ -2,7 +2,7 @@
   Stub for steering_initialize_f: included in case platform has
   no f90 compiler.
 
-  (C) Copyright 2005, University of Manchester, United Kingdom,
+  (C) Copyright 2006, University of Manchester, United Kingdom,
   all rights reserved.
 
   This software was developed by the RealityGrid project
