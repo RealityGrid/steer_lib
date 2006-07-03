@@ -1,7 +1,7 @@
 #  Top-level makefile for the RealityGrid steering library and
 #  associated example applications.
 #
-#  (C) Copyright 2002, 2004, University of Manchester, United Kingdom,
+#  (C) Copyright 2006, University of Manchester, United Kingdom,
 #  all rights reserved.
 #
 #  This software is produced by the Supercomputing, Visualization and
