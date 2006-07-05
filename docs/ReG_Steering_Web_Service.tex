@@ -35,6 +35,7 @@ Version & Author & Notes & Date \\
 \hline
 0.1 & A.~R.~Porter & Initial draft --- work in progress alongside implementation & 06/07/2005\\
 0.2 & A.~R.~Porter & Work following addition of security and implementation of registry & 13/03/2006\\
+0.3 A.~R.~Porter & Updating prior to release of 2.0 of library & 05/07/2006\\
 \hline\hline
 \end{tabular}
 \end{center}
@@ -66,11 +67,9 @@ Mc Keown which may be obtained from
 \url{http://www.sve.man.ac.uk/Research/AtoZ/ILCT}.  In order to run
 the WSRF::Lite container you will need Perl (either version 5.6 or
 one more recent than version 5.8.0).  You will also need SOAP::Lite version
-0.65\_5 or higher plus associated pre-requisites.  Note that this
-version of SOAP::Lite does not yet seem to be available from CPAN and
-must therefore be installed manually.
+0.65\_5 or higher plus associated pre-requisites.
 
-The application to be steered must be instrumented with version 2.0a or
+The application to be steered must be instrumented with version 2.0 or
 greater of the RealityGrid steering library.
 \end{section}
 
@@ -86,8 +85,7 @@ table~\ref{tab:resourceProps}.  WSRF provides standard methods for
 interacting with the ResourceProperties document which we describe
 below with examples from Perl using the WSRF::Lite and SOAP::Lite
 packages.  The RealityGrid steering library version 2.0 and greater
-also includes gSoap bindings for these methods (with the exception
-of GetResourceProperty which has so far proved problematic).
+also includes gSoap bindings for these methods.
 
 \begin{table}
 \begin{center}
@@ -295,15 +293,17 @@ passphrase from the REG\_PASSPHRASE environment variable.
 
 
 \begin{subsection}{On-line visualization}
-On-line visualization (or any other configuration requiring data be sent from one
-component to another) is achieved by direct socket connection between the 
-simulation and visualization components.  Achieving such a connection requires
-that the visualization component know where to connect to.  It retrieves this
-information from the SWS associated with the simulation (indicated by the arrow labelled ``Connect'' in figure~\ref{fig:arch}).  Since it has no
-certificate, it must use WSSE to authenticate to the simulation SWS and therefore
-must have its passphrase.  This requirement is satisfied by ensuring that the same 
-passphrase is given to each of the SWSs representing components that will be 
-connected in some way.
+On-line visualization (or any other configuration requiring that data
+be sent from one component to another) is achieved by direct socket
+connection between the simulation and visualization components.
+Achieving such a connection requires that the visualization component
+know where to connect to.  It retrieves this information from the SWS
+associated with the simulation (indicated by the arrow labelled
+``Connect'' in figure~\ref{fig:arch}).  Since it has no certificate,
+it must use WSSE to authenticate to the simulation SWS and therefore
+must have its passphrase.  This requirement is satisfied by ensuring
+that the {\em same} passphrase is given to each of the SWSs representing
+components that will be connected in some way.
 \end{subsection} 
 
 \begin{subsection}{Clean-up on job completion}
@@ -376,11 +376,12 @@ the \texttt{regSecurity} part of an entry's Content).
 \end{subsection}
 
 \begin{subsection}{Attaching to the application}
-In order to be able to steer a job, a user must be able to authenticate to the
-SWS.  If the SWS is hosted by a secure container then the user can authenticate
-using SSL and will be granted access provided their DN is in the list of the SWS' 
-allowed users.  If SSL is not available then the user may authenticate using
-WSSE which of course requires that they know the passphrase of the SWS.
+In order to be able to steer a job, a user must be able to
+authenticate to the SWS.  If the SWS is hosted by a secure container
+then the user can authenticate using SSL and will be granted access
+provided their DN is in the list of the SWS' allowed users.  If SSL is
+not available then the user may authenticate using WSSE which of
+course requires that they know the passphrase of the SWS.
 
 A user may be added to an SWS' list of allowed users by using the 
 \texttt{SetResourceProperties} method to add their DN to the {\bf user}
@@ -393,14 +394,14 @@ supports.  This document conforms to the RealityGrid steering schema.
 \end{subsection}
 
 \begin{subsection}{Getting the parameter definitions}
-Once successfully attached to the SWS, the next stage is to get the
-information published by the application.  The most important aspect
-of this is the various monitored and steerable parameters supported by
-the application.  This information is held on the SWS in the {\bf
-paramDefinitions} ResourceProperty and therefore can be accessed using
-some of the methods described in section~\ref{sec:RPDoc}.  The
-information itself is an XML document conforming to the RealityGrid
-steering schema.
+Once a client has successfully attached to the SWS, the next stage is
+to get the information published by the application.  The most
+important aspect of this is the various monitored and steerable
+parameters supported by the application.  This information is held on
+the SWS in the {\bf paramDefinitions} ResourceProperty and therefore
+can be accessed using some of the methods described in
+section~\ref{sec:RPDoc}.  The information itself is an XML document
+conforming to the RealityGrid steering schema.
 \end{subsection}
 
 \begin{subsection}{Getting the IOType and ChkType definitions}
@@ -412,10 +413,10 @@ Again, the definitions are in the form of XML documents conforming to
 the RealityGrid steering schema.  Note that all of these definitions
 may be obtained in one go by getting the complete ResourceProperties
 document of the service.  However, be aware that there may be a delay
-in an application actually setting some of these ResourceProperties
-and that the Steering API permits a program to change these
-definitions during execution.  It is therefore essential to check for
-updates --- see section~\ref{sec:notification}.
+between an application beginning execution and it actually setting
+some of these ResourceProperties. Also, the Steering API permits a
+program to change these definitions during execution.  It is therefore
+essential to check for updates --- see section~\ref{sec:notification}.
 \end{subsection}
 
 \begin{subsection}{Getting status messages from the application}
@@ -542,7 +543,7 @@ GetParamLog & Called by a steering client to retrieve logged parameter values
 & Space-delimited list of values (cast as doubles), string \\
 
 PutParamLog & Called by the application to save logged parameter values 
-& Logged parameter values as a CDATA block
+& Logged parameter values as a space-delimited list in CDATA block
 & Fault on failure \\
 
 RecordCheckpoint & Called by the application to register a checkpoint 
