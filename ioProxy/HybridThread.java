@@ -31,7 +31,7 @@ public HybridThread( Socket s, HybridSwitch sw ) {
 
 	// The ID of this connection
 	this_id = new String( buffer );
-	System.out.println( "--["+this_id+"]" ); 
+	System.out.println( "New connection --["+this_id+"]" ); 
 	this_id = this_id.trim();
 
         int max = idx;
@@ -52,7 +52,7 @@ public HybridThread( Socket s, HybridSwitch sw ) {
 	// The ID of the data source it's subscribing to (or "NO_DATA"
 	// if we're output only)
 	src_id = new String( buffer );
-	System.out.println( "--["+src_id+"]" ); 
+	System.out.println( "subscribing to --["+src_id+"]" ); 
 	src_id = src_id.trim();
 
 	sw.register_thread( src_id, this );
@@ -64,90 +64,89 @@ public HybridThread( Socket s, HybridSwitch sw ) {
 
 
 public void run() {
-	try {
+    try {
 	byte buffer[] = new byte[1024];
 
 	for(;;) {
 
-		byte c = ' ';
+	    byte c = ' ';
 
-System.out.println( "Reading..." ); 
-		while( c!='#' ) {
-			c = (byte) in.read();
-			if( c==-1 ) { throw new Exception(); }
-System.out.println( "B " ); 
-		}
+	    System.out.println( "Reading..." ); 
+	    while( c!='#' ) {
+		c = (byte) in.read();
+		if( c==-1 ) { throw new Exception(); }
+		System.out.println( "B " ); 
+	    }
 		
-System.out.println( "Reading...B" ); 
-		int idx=0;
-		buffer = new byte[1024];
-		while( c!='\n' && idx < buffer.length ) {
-				c = (byte) in.read();
-			if( c==-1 ) { throw new Exception(); }
-				if( c!='\n' ) {
-					buffer[idx++] = c;
-				}
-		}		
-
-		String to     = new String( buffer );
-		System.out.println( "--["+to+"]" ); 
-
-		c = ' ';
-		idx=0;
-		buffer = new byte[1024];
-		while( c!='\n' && idx < buffer.length ) {
-				c = (byte) in.read();
-			if( c==-1 ) { throw new Exception(); }
-				if( c!='\n' ) {
-					buffer[idx++] = c;
-				}
-		}		
-
-
-		String id     = new String( buffer );
-		System.out.println( "--["+id+"]" ); 
-
-		c = ' ';
-		idx=0;
-		buffer = new byte[1024];
-		while( c!='\n' && idx < buffer.length ) {
-				c = (byte) in.read();
-			if( c==-1 ) { throw new Exception(); }
-				if( c!='\n' ) {
-					buffer[idx++] = c;
-				}
-		}		
-
-
-		String length_s = new String( buffer );
-		length_s = length_s.trim();
-		System.out.println( "--["+length_s+"]" ); 
-
-		int length = Integer.parseInt( length_s );
-		int cur = 0;
-		int j;
-
-		byte[] b = new byte[ length ];
-
-		while( length-cur > 0 ) {
-			j = in.read( b, cur, length-cur );
-
-			if( j==-1 ) {
-				throw new Exception();
-			}
-			cur+=j;
-			System.out.println( "Read "+cur +" of "+ length ); 
+	    System.out.println( "Reading...B" ); 
+	    int idx=0;
+	    buffer = new byte[1024];
+	    while( c!='\n' && idx < buffer.length ) {
+		c = (byte) in.read();
+		if( c==-1 ) { throw new Exception(); }
+		if( c!='\n' ) {
+		    buffer[idx++] = c;
 		}
+	    }		
 
-		to = to.trim();
-		id = id.trim();
+	    String to     = new String( buffer );
+	    System.out.println( "--["+to+"]" ); 
 
-		sw.send( this_id, to, id, length, b );
+	    c = ' ';
+	    idx=0;
+	    buffer = new byte[1024];
+	    while( c!='\n' && idx < buffer.length ) {
+		c = (byte) in.read();
+		if( c==-1 ) { throw new Exception(); }
+		if( c!='\n' ) {
+		    buffer[idx++] = c;
+		}
+	    }		
+
+
+	    String id     = new String( buffer );
+	    System.out.println( "--["+id+"]" ); 
+
+	    c = ' ';
+	    idx=0;
+	    buffer = new byte[1024];
+	    while( c!='\n' && idx < buffer.length ) {
+		c = (byte) in.read();
+		if( c==-1 ) { throw new Exception(); }
+		if( c!='\n' ) {
+		    buffer[idx++] = c;
+		}
+	    }		
+
+	    String length_s = new String( buffer );
+	    length_s = length_s.trim();
+	    System.out.println( "--["+length_s+"]" ); 
+
+	    int length = Integer.parseInt( length_s );
+	    int cur = 0;
+	    int j;
+
+	    byte[] b = new byte[ length ];
+	    
+	    while( length-cur > 0 ) {
+		j = in.read( b, cur, length-cur );
+
+		if( j==-1 ) {
+		    throw new Exception();
+		}
+		cur+=j;
+		System.out.println( "Read "+cur +" of "+ length ); 
+	    }
+
+	    to = to.trim();
+	    id = id.trim();
+	    
+	    sw.send( this_id, to, id, length, b );
 	}
-	} catch( Exception ex ) {
-		ex.printStackTrace(System.err);
-		close();
-	} 
+    } catch( Exception ex ) {
+	ex.printStackTrace(System.err);
+	close();
+    } 
 }
 
 public synchronized void send( String from, String id, byte[] data ) {

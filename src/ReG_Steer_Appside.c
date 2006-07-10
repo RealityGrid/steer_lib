@@ -2022,7 +2022,7 @@ int Emit_start(int  IOType,
   IOTypes_table.io_def[*IOTypeIndex].convert_array_order = REG_FALSE;
 
   if(Consume_ack(*IOTypeIndex) != REG_SUCCESS){
-
+    printf("ARPDBG: Emit_start: Consume_ack not succesful\n");
     return REG_NOT_READY;
   }
 
@@ -5260,14 +5260,13 @@ int Emit_ack(const int index)
 
     return REG_FAILURE;
   }
-#if REG_SOCKET_SAMPLES || REG_PROXY_SAMPLES
 
+#if REG_SOCKET_SAMPLES
   return Emit_ack_sockets(index);
-
+#elif REG_PROXY_SAMPLES
+  return Emit_ack_proxy(index);
 #else
-
   return Emit_ack_file(index);
-
 #endif
 }
 

@@ -27,10 +27,10 @@ protected void send( String from,
 		     int length, 
 		     byte[] data ) {
 
-	HybridThread thr = (HybridThread) threads_by_id.get( from );
+	HybridThread thr = (HybridThread) threads_by_id.get(to);
 
 	if( thr!=null ) {
-		System.out.println( "Sending from ["+from+"]" );
+		System.out.println( "Sending from ["+from+"] to ["+to+"]" );
 		thr.send( from, id, data );
 	}
 	else {
@@ -52,8 +52,6 @@ protected void deregister_thread( String id ) {
 		threads_by_id.remove( id );
 	}
 }
-
-
 
 public static void main( String args[] ) {
 	try {

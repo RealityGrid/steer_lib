@@ -384,10 +384,15 @@ int connect_connector(const int index) {
 	      IOTypes_table.io_def[index].proxySourceLabel);
     }
     else{
-      /* If this is an output channel then we aren't subscribing to 
-	 any data source */
-      sprintf(Global_scratch_buffer, "%s\nNO_DATA\n",
+      /* If this is an output channel then we subscribe to 
+	 acknowledgements */
+      sprintf(Global_scratch_buffer, "%s\n%s_REG_ACK\n",
+	      IOTypes_table.io_def[index].label,
 	      IOTypes_table.io_def[index].label);
+      /* If this is an output channel then we aren't subscribing to 
+	 any data source
+      sprintf(Global_scratch_buffer, "%s\nNO_DATA\n",
+      IOTypes_table.io_def[index].label);*/
     }
 
     if(Emit_data_sockets(index, 
@@ -1428,10 +1433,13 @@ int Consume_ack_sockets(int index){
   char  buf[32];
   char *pchar;
   int   nbytes;
-
+  printf("ARPDBG: Consume_ack_sockets for index %d\n", index);
   /* If no acknowledgement is currently required (e.g. this is the
      first time Emit_start has been called) then return success */
-  if(IOTypes_table.io_def[index].ack_needed == REG_FALSE)return REG_SUCCESS;
+  if(IOTypes_table.io_def[index].ack_needed == REG_FALSE){
+    printf("ARPDBG: Consume_ack_sockets - no ack needed\n");
+    return REG_SUCCESS;
+  }
 
   /* Buffer is twice as long as ack message to allow us to deal with
      getting a truncated message */
@@ -1451,6 +1459,7 @@ int Consume_ack_sockets(int index){
 
 	  /* We found the opening angle bracket but the rest of the tag
 	     is missing so we fail */
+	  printf("ARPDBG: missing angle bracket: %s\n", buf);
 	  return REG_FAILURE;
 	}
 	else{
@@ -1470,6 +1479,10 @@ int Consume_ack_sockets(int index){
     if(errno == EAGAIN) {
       /* Call would have blocked because no data to read
        * Call was OK but there's no data to read... */
+#if REG_DEBUG_FULL
+      fprintf(stderr, "STEER: Consume_ack_sockets: no data on socket to "
+	      "read for ack\n");
+#endif
       return REG_FAILURE;
     }
     else {

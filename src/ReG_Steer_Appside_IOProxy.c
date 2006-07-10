@@ -374,4 +374,69 @@ int Emit_header_proxy(const int index) {
 
 /*---------------------------------------------------*/
 
+int Emit_ack_proxy(int index){
+
+  /* Send a 16-byte acknowledgement message */
+  char *ack_msg = "<ACK/>          ";
+  const int size = 16;
+  int   bytes_left;
+  int   result;
+  int   connector = IOTypes_table.io_def[index].socket_info.connector_handle;
+  char  header[REG_MAX_STRING_LENGTH];
+  char *label = IOTypes_table.io_def[index].label;
+  char* pchar;
+
+  snprintf(header, REG_MAX_STRING_LENGTH, "#%s_REG_ACK\n%d\n%d\n", 
+	   label, 1, size);
+  printf("ARPDBG: emitting ack: %s\n", header);
+  bytes_left = strlen(header);
+  pchar = header;
+
+  while(bytes_left > 0) {
+#ifndef __linux
+    result = send(connector, pchar, bytes_left, 0);
+#else
+    result = send(connector, pchar, bytes_left, MSG_NOSIGNAL);
+#endif
+    if(result == REG_SOCKETS_ERROR) {
+      perror("send");
+      return REG_FAILURE;
+    }
+    else {
+      bytes_left -= result;
+      pchar += result;
+    }
+  }
+
+  bytes_left = size;
+  pchar = ack_msg;
+
+  while(bytes_left > 0) {
+#ifndef __linux
+    result = send(connector, pchar, bytes_left, 0);
+#else
+    result = send(connector, pchar, bytes_left, MSG_NOSIGNAL);
+#endif
+    if(result == REG_SOCKETS_ERROR) {
+      perror("send");
+      return REG_FAILURE;
+    }
+    else {
+      bytes_left -= result;
+      pchar += result;
+    }
+  }
+
+  if(bytes_left > 0) {
+#if REG_DEBUG
+    fprintf(stderr, "STEER: Emit_ack_proxy: timed-out trying to write data\n");
+#endif
+    return REG_TIMED_OUT;
+  }
+  printf("ARPDBG: emitted ack OK\n");
+  return REG_SUCCESS;
+}
+
+/*---------------------------------------------------*/
+
 #endif /* REG_PROXY_SAMPLES */
