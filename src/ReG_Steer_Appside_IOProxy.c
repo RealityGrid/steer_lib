@@ -266,6 +266,12 @@ int Emit_data_proxy(const int index, const int size, void* buffer) {
     return REG_TIMED_OUT;
   }
 
+  /* Check that the IOProxy had a destination for the data ARPDBG */
+  result = recv(connector, buffer, (size_t) 2, MSG_WAITALL);
+  if(result == -1){
+    fprintf(stderr, "STEER: Emit_data_proxy: check for proxy OK failed\n");
+  }
+
 #if REG_DEBUG
   fprintf(stderr, "STEER: Emit_data_proxy: sent %d bytes...\n", (int) size);
 #endif

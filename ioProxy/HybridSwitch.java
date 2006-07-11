@@ -28,15 +28,24 @@ protected void send( String from,
 		     byte[] data ) {
 
 	HybridThread thr = (HybridThread) threads_by_id.get(to);
+	byte[] ackMsg = new byte[2];
 
 	if( thr!=null ) {
 		System.out.println( "Sending from ["+from+"] to ["+to+"]" );
 		thr.send( from, id, data );
+		ackMsg[0] = '1';
 	}
 	else {
-		System.out.println( "Sending from ["+from+"] failed: NO destination" ); 	
+		System.out.println( "Sending from ["+from+"] failed: NO destination" );
+		ackMsg[0] = '0';
 	}
 
+	thr = (HybridThread) threads_by_id.get(from);
+
+	if(thr != null){
+	    ackMsg[1] = '\n';
+	    thr.send(from, id, ackMsg);
+	}
 }
 
 protected void register_thread( String srcID, HybridThread thr ) {
