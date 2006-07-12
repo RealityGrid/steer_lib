@@ -40,7 +40,7 @@ protected void send( String from,
 		ackMsg[0] = '0';
 	}
 
-	thr = (HybridThread) threads_by_id.get(from);
+	thr = (HybridThread) threads_by_id.get(from+"_REG_ACK");
 
 	if(thr != null){
 	    ackMsg[1] = '\n';

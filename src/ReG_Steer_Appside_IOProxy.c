@@ -261,15 +261,23 @@ int Emit_data_proxy(const int index, const int size, void* buffer) {
 
   if(bytes_left > 0) {
 #if REG_DEBUG
-    fprintf(stderr, "STEER: Emit_data_proxy: timed-out trying to write data\n");
+    fprintf(stderr, "STEER: Emit_data_proxy: timed-out trying to "
+	    "write data\n");
 #endif
     return REG_TIMED_OUT;
   }
 
+  printf("ARPDBG - check for response from proxy...\n");
   /* Check that the IOProxy had a destination for the data ARPDBG */
   result = recv(connector, buffer, (size_t) 2, MSG_WAITALL);
   if(result == -1){
     fprintf(stderr, "STEER: Emit_data_proxy: check for proxy OK failed\n");
+  }
+  printf("proxy OK returned: %c\n", ((char *)buffer)[0]);
+  if(((char *)buffer)[0] == '0'){
+    fprintf(stderr, "STEER: Emit_data_proxy: proxy had no "
+	    "destination address\n");
+    return REG_NOT_READY;
   }
 
 #if REG_DEBUG

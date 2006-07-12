@@ -150,15 +150,15 @@ public void run() {
 }
 
 public synchronized void send( String from, String id, byte[] data ) {
-	try {
+    try {
 	    //os.print("\n#"+from+"\n"+id+"\n"+data.length+"\n" );
-		os.write( data );	
+	System.out.println("send, from: " + from);
+	os.write( data );	
 
-	
-	} catch( Exception ex ) { 
-		ex.printStackTrace( System.err ); 
-		close();
-	} 
+    } catch( Exception ex ) { 
+	ex.printStackTrace( System.err ); 
+	close();
+    } 
 }
 
 private void close() {
