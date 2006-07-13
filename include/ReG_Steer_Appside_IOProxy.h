@@ -153,5 +153,13 @@ int Emit_ack_proxy(int index);
     IOType with the supplied index.*/
 int Consume_ack_proxy(int index);
 
+/** @internal
+    @param index Index of IOType on which to check for acknowledgement
+    @return REG_SUCCESS if proxy had a destination, REG_NOT_READY otherwise
+
+    Check for acknowledgement back from proxy itself to say whether or not
+    it had a destination for the last data it was sent. */
+int Consume_proxy_destination_ack(const int index);
+
 #endif /* REG_PROXY_SAMPLES */
 #endif /* __REG_STEER_SOCKETS_IO_H__ */

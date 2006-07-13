@@ -41,6 +41,7 @@
 #include "ReG_Steer_Appside_internal.h"
 #include "ReG_Steer_Appside_Sockets.h"
 #include "ReG_Steer_Appside_WSRF.h"
+#include "ReG_Steer_Appside_IOProxy.h"
 #include <string.h>
 #include <signal.h>
 #include <sys/time.h>
@@ -193,7 +194,7 @@ int Get_communication_status_proxy(const int index) {
 
 /*---------------------------------------------------*/
 
-int Emit_data_proxy(const int index, const int size, void* buffer) {
+int Emit_data_proxy(const int index, const size_t size, void* buffer) {
 
   int   bytes_left;
   int   result;
@@ -214,12 +215,7 @@ int Emit_data_proxy(const int index, const int size, void* buffer) {
 #if REG_DEBUG
   fprintf(stderr, "STEER: Emit_data_proxy: writing...\n");
 #endif
-  /*
-		fprintf( con->fd, "#%s\n", msg->dest );
-		fprintf( con->fd, "%d\n", msg->code );
-		fprintf( con->fd, "%d\n", msg->length );
-		fwrite( msg->data, msg->length, 1, con->fd );
-  */
+
   sprintf(header, "#%s\n%d\n%d\n", label, 1, size);
   bytes_left = strlen(header);
   pchar = header;
@@ -267,24 +263,16 @@ int Emit_data_proxy(const int index, const int size, void* buffer) {
     return REG_TIMED_OUT;
   }
 
-  printf("ARPDBG - check for response from proxy...\n");
   /* Check that the IOProxy had a destination for the data ARPDBG */
-  result = recv(connector, buffer, (size_t) 2, MSG_WAITALL);
-  if(result == -1){
-    fprintf(stderr, "STEER: Emit_data_proxy: check for proxy OK failed\n");
-  }
-  printf("proxy OK returned: %c\n", ((char *)buffer)[0]);
-  if(((char *)buffer)[0] == '0'){
-    fprintf(stderr, "STEER: Emit_data_proxy: proxy had no "
-	    "destination address\n");
-    return REG_NOT_READY;
-  }
+  result = Consume_proxy_destination_ack(index);
 
 #if REG_DEBUG
-  fprintf(stderr, "STEER: Emit_data_proxy: sent %d bytes...\n", (int) size);
+  if(result == REG_SUCCESS){
+    fprintf(stderr, "STEER: Emit_data_proxy: sent %d bytes...\n", (int) size);
+  }
 #endif
 
-  return REG_SUCCESS;
+  return result;
 }
 
 /*---------------------------------------------------*/
@@ -313,6 +301,34 @@ int Emit_data_non_blocking_proxy(const int index, const int size,
   }
 
   return REG_FAILURE;
+}
+
+/*---------------------------------------------------*/
+
+int Consume_proxy_destination_ack(const int index) {
+
+  int  result;
+  int  connector = IOTypes_table.io_def[index].socket_info.connector_handle;
+  char buffer[2];
+
+  result = recv(connector, buffer, (size_t) 2, MSG_WAITALL);
+  if(result == -1){
+    fprintf(stderr, "STEER: Consume_proxy_destination_ack: check for proxy OK failed\n");
+  }
+  printf("proxy OK returned: %c\n", buffer[0]);
+  if(buffer[0] == '1'){
+    return REG_SUCCESS;
+  }
+  else{
+#if REG_DEBUG
+    fprintf(stderr, "STEER: Consume_proxy_destination_ack: proxy had no "
+	    "destination address\n");
+#endif
+    /* The recipient of our data has disappeared so we won't be getting an
+       acknowledgement back from them... */
+    IOTypes_table.io_def[index].ack_needed = REG_FALSE;
+    return REG_NOT_READY;
+  }
 }
 
 /*---------------------------------------------------*/
@@ -363,23 +379,22 @@ int Emit_header_proxy(const int index) {
 #if REG_DEBUG
 	fprintf(stderr, "STEER: Emit_header_proxy: Sending >>%s<<\n", buffer);
 #endif    
-	if(Emit_data_proxy(index, REG_PACKET_SIZE, (void*) buffer) == 
-	   REG_SUCCESS) {
-	  return REG_SUCCESS;
-	}
+	return Emit_data_proxy(index, REG_PACKET_SIZE, (void*) buffer);
       }
     }
 #if REG_DEBUG
+    else if(status == REG_NOT_READY){
+    }
     else{
-      fprintf(stderr, "STEER: Emit_header_sockets: attempt to write to "
+      fprintf(stderr, "STEER: Emit_header_proxy: attempt to write to "
 	      "socket timed out\n");
     }
 #endif
   }
 #if REG_DEBUG
   else {
-    fprintf(stderr, "STEER: Emit_header_proxy: socket not connected, index = %d\n", 
-	    index );
+    fprintf(stderr, "STEER: Emit_header_proxy: socket not connected, "
+	    "index = %d\n", index );
   }
 #endif
 
@@ -402,6 +417,7 @@ int Emit_ack_proxy(int index){
 
   snprintf(header, REG_MAX_STRING_LENGTH, "#%s_REG_ACK\n%d\n%d\n", 
 	   label, 1, size);
+
   printf("ARPDBG: emitting ack: %s\n", header);
   bytes_left = strlen(header);
   pchar = header;
@@ -447,8 +463,12 @@ int Emit_ack_proxy(int index){
 #endif
     return REG_TIMED_OUT;
   }
-  printf("ARPDBG: emitted ack OK\n");
-  return REG_SUCCESS;
+
+  /* Check that the IOProxy had a destination for the data ARPDBG */
+  result = Consume_proxy_destination_ack(index);
+  if(result == REG_SUCCESS)printf("ARPDBG: emitted ack OK\n");
+
+  return result;
 }
 
 /*---------------------------------------------------*/

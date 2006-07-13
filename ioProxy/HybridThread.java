@@ -140,8 +140,18 @@ public void run() {
 
 	    to = to.trim();
 	    id = id.trim();
-	    
-	    sw.send( this_id, to, id, length, b );
+
+	    byte[] ackMsg = new byte[2];
+
+	    if( sw.destination_valid( to ) ){
+		sw.send( this_id, to, id, length, b );
+		ackMsg[0] = '1';
+	    }
+	    else{
+		ackMsg[0] = '0';
+	    }
+	    ackMsg[1] = '\n';
+	    os.write(ackMsg);
 	}
     } catch( Exception ex ) {
 	ex.printStackTrace(System.err);
