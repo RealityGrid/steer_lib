@@ -225,6 +225,29 @@ int main(int argc, char **argv){
 	}
 	strncpy(sec.passphrase, passPtr, REG_MAX_STRING_LENGTH);
       }
+      else{
+	/* No SSL - get the passphrase for the registry */
+	snprintf(user_str, REG_MAX_STRING_LENGTH, 
+		 "Enter your username [%s]: ", getenv("USER"));
+	if( !(passPtr = getpass(user_str)) ){
+	  printf("Failed to get username from command line\n");
+	  return 1;
+	}
+	printf("\n");
+	if(strlen(passPtr) > 0){
+	  strncpy(sec.userDN, passPtr, REG_MAX_STRING_LENGTH);
+	}
+	else{
+	  strncpy(sec.userDN, getenv("USER"), REG_MAX_STRING_LENGTH);
+	}
+
+	printf("\n");
+	if( !(passPtr = getpass("Enter passphrase for registry: ")) ){
+	  printf("Failed to get registry passphrase from command line\n");
+	  return 1;
+	}
+	strncpy(sec.passphrase, passPtr, REG_MAX_STRING_LENGTH);
+      }
       printf("\n");
 
       Get_registry_entries_filtered_secure(registryAddr,
