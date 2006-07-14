@@ -1419,17 +1419,27 @@ int Create_WSRF_header(struct soap *aSoap,
     return REG_SUCCESS;
   }
 
-#ifdef WITH_OPENSSL
-
+  /* Set up the username element of the header irrespective of whether
+     or not the library has been built with openSSL support */
   aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Username = 
                                        (char *)soap_malloc(aSoap, 128);
+
+  if(!(aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Username)){
+    fprintf(stderr, "STEER: Create_WSRF_header: Failed to malloc space "
+	    "for Username element\n");
+    return REG_FAILURE;
+  }
+  snprintf(aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Username, 
+	   128, username);
+
+#ifdef WITH_OPENSSL
+
   aSoap->header->wsse__Security.wsse__UsernameToken.wsu__Created = 
                                        (char *)soap_malloc(aSoap, 128);
   aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.Type = 
                                        (char *)soap_malloc(aSoap, 128);
 
-  if( !(aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Username) ||
-      !(aSoap->header->wsse__Security.wsse__UsernameToken.wsu__Created) ||
+  if( !(aSoap->header->wsse__Security.wsse__UsernameToken.wsu__Created) ||
       !(aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.Type) ){
     fprintf(stderr, "STEER: Create_WSRF_header: Failed to malloc space "
 	    "for header elements\n");
@@ -1459,9 +1469,6 @@ int Create_WSRF_header(struct soap *aSoap,
   /* Base64-encode this random sequence to make our nonce a nice
      ASCII string (XML friendly) */
   Base64_encode(randBuf, 16, &pBase64Buf, &len);
-
-  snprintf(aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Username, 
-	   128, username);
 
   aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Nonce = 
                                        (char *)soap_malloc(aSoap, len+1);
@@ -1524,7 +1531,6 @@ int Create_WSRF_header(struct soap *aSoap,
 
 #else /* WITH_OPENSSL not defined */
 
-  aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Username = NULL;
   aSoap->header->wsse__Security.wsse__UsernameToken.wsu__Created = NULL;
   aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.Type = NULL;
   aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.__item = NULL;
