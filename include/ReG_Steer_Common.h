@@ -296,7 +296,7 @@ typedef struct {
   /** Details on incoming array (if available) */
   Array_type                    array;
   /** Whether or not (1 or 0) we'll need to convert the ordering of 
-     the array */
+      the array */
   int                           convert_array_order;
   /** Whether IOType is enabled or not (for sockets - whether socket
      has been created) */
@@ -311,6 +311,10 @@ typedef struct {
      attempting to emit the next data set. Setting @p use_ack to REG_FALSE
      OVERRIDES this flag. */
   int                           ack_needed;
+  /** Whether (REG_TRUE) or not (REG_FALSE) we are in the process of
+      consuming data.  For use with ioProxy in event of unexpected
+      shut down */
+  int                           consuming;
   /** For use with IOProxy - specifies label by which proxy knows the data
       that we want to read - for REG_IO_IN channels only */
   char                          proxySourceLabel[REG_MAX_STRING_LENGTH];

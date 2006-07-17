@@ -46,7 +46,7 @@ protected void register_thread( String srcID, HybridThread thr ) {
 }
 
 protected void deregister_thread( String id ) {
-	System.out.println( "Deregistering ["+id+"]" ); 
+	System.out.println( "Deregistering subscriber to ["+id+"]" ); 
 	if( id!=null ) {
 		threads_by_id.remove( id );
 	}

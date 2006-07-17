@@ -815,9 +815,12 @@ int Register_IOType(char* IOLabel,
   IOTypes_table.io_def[current].convert_array_order = REG_FALSE;
   IOTypes_table.io_def[current].is_enabled = IOTypes_table.enable_on_registration;
   /* Use acknowledgements by default */
-  IOTypes_table.io_def[current].use_ack = REG_TRUE;
+  IOTypes_table.io_def[current].use_ack    = REG_TRUE;
   /* No ack needed for first data set to be emitted */
   IOTypes_table.io_def[current].ack_needed = REG_FALSE;
+  /* For use with ioProxy so that we know whether we were in the 
+     process of consuming data when we hit the signal handler */
+  IOTypes_table.io_def[current].consuming  = REG_FALSE;
 
   /* set up transport for sample data - eg sockets */
   if(Initialize_IOType_transport(direction, current) != REG_SUCCESS){
@@ -1755,6 +1758,9 @@ int Consume_stop(int *IOTypeIndex)
   if(IOTypes_table.io_def[*IOTypeIndex].is_enabled == REG_FALSE){
     return REG_FAILURE;
   }
+
+  /* We are no longer in the process of consuming data */
+  IOTypes_table.io_def[*IOTypeIndex].consuming = REG_FALSE;
 
   /* Set flag that we should signal data source that we are ready for new data
      when we next call Consume_start */
@@ -5194,7 +5200,6 @@ int Initialize_IOType_transport(const int direction,
 
 void Finalize_IOType_transport()
 {
-
 #if REG_SOCKET_SAMPLES
 
   Finalize_IOType_transport_sockets();
@@ -5204,7 +5209,6 @@ void Finalize_IOType_transport()
   Finalize_IOType_transport_proxy();
 
 #endif
-
 }
 
 /*---------------------------------------------------*/
@@ -5213,9 +5217,11 @@ int Consume_start_data_check(const int index)
 {
 
 #if REG_SOCKET_SAMPLES || REG_PROXY_SAMPLES
-
-  return Consume_start_data_check_sockets(index);
-
+  int status = Consume_start_data_check_sockets(index);
+  if(status == REG_SUCCESS){
+    IOTypes_table.io_def[index].consuming = REG_TRUE;
+  }
+  return status;
 #else
 
   return Consume_start_data_check_file(index);

@@ -141,9 +141,22 @@ int Initialize_IOType_transport_proxy(const int direction,
 
 void Finalize_IOType_transport_proxy() {
   int index;
+  fprintf(stderr, "ARPDBG: Finalize_IOType_transport_proxy...\n");
 
   /* For proxy, we only have connectors - no listeners */
   for(index = 0; index < IOTypes_table.num_registered; index++) {
+    fprintf(stderr, "ARPDBG: Finalize_IOType_transport_proxy index %d\n", index);
+
+    if(IOTypes_table.io_def[index].ack_needed == REG_TRUE || 
+       IOTypes_table.io_def[index].consuming == REG_TRUE){
+
+      /* Signal that we have read this data and are ready for
+	 the next set */
+      fprintf(stderr, "ARPDBG: emitting ack for index %d\n", index);
+      Emit_ack_proxy(index);
+      IOTypes_table.io_def[index].ack_needed = REG_FALSE;
+    }
+
     /* close sockets */
     cleanup_connector_connection(index);
     socket_info_cleanup(index);
