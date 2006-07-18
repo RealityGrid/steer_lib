@@ -260,6 +260,19 @@ int create_connector(const int index) {
     return REG_FAILURE;
   }
 
+#if REG_PROXY_SAMPLES
+  /* Turn off NAGLE's algorithm if using an ioProxy so that the (small)
+     acknowledgement messages get sent immediately instead of being buffered
+     - helps to ensure ack is received before socket is shutdown when consumer
+     is shutdown */
+  yes = 1;
+  if(setsockopt(connector, IPPROTO_TCP, TCP_NODELAY, &yes, 
+		sizeof(int)) == REG_SOCKETS_ERROR) {
+    perror("setsockopt");
+    return REG_FAILURE;
+  }
+#endif /* REG_PROXY_SAMPLES */
+
   /* ...build local address struct... */
   myAddr.sin_family = AF_INET;
   if(strlen(IOTypes_table.io_def[index].socket_info.tcp_interface) == 1) {
