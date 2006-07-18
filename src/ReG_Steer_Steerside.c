@@ -1639,7 +1639,9 @@ int Emit_restart_cmd(int SimHandle, char *chkGSH)
 
   if(Sim_table.sim[index].SGS_info.active){
 #ifdef REG_WSRF
-    return Send_restart_msg_wsrf(&(Sim_table.sim[index]), chkGSH);
+    fprintf(stderr, "STEER: ERROR: Emit_restart_cmd: this "
+	    "routine has been superceded. Send standard control "
+	    "message instead\n");
 #else
     return Send_restart_msg_soap(&(Sim_table.sim[index]), chkGSH);
 #endif

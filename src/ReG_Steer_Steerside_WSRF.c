@@ -580,10 +580,3 @@ int Get_param_log_wsrf(Sim_entry_type *sim,
 
   return REG_SUCCESS;
 }
-
-/*------------------------------------------------------------------*/
-int Send_restart_msg_wsrf(Sim_entry_type *sim, char *chkGSH)
-{
-  fprintf(stderr, "STEER: Send_restart_msg_wsrf: IMPLEMENT ME\n");
-  return REG_FAILURE;
-}

@@ -168,16 +168,4 @@ int Finalize_connection_wsrf (Sim_entry_type *sim);
 int Get_param_log_wsrf(Sim_entry_type *sim,
 		       int             handle);
 
-/** @internal
-    @param sim Pointer to entry in main Sim_table
-    @param chkGSH Address of a node in a checkpoint tree from which
-    to restart.
-
-    Instruct the simulation to restart from the specified node in a
-    checkpoint tree.  Calls the Restart method of the SWS which in
-    turn contacts the specified checkpoint node and obtains the
-    information needed to identify the checkpoint files to the
-    simulation. */
-int Send_restart_msg_wsrf(Sim_entry_type *sim, char *chkGSH);
-
 #endif
