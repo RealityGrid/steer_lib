@@ -71,14 +71,17 @@ public void run() {
 
 	    byte c = ' ';
 
-	    System.out.println( "Reading..." ); 
+	    System.out.println( "Searching for tag..." ); 
 	    while( c!='#' ) {
 		c = (byte) in.read();
-		if( c==-1 ) { throw new Exception(); }
+		if( c==-1 ) { 
+		    System.out.println( "...read failed");
+		    throw new Exception(); 
+		}
 		System.out.println( "B " ); 
 	    }
 		
-	    System.out.println( "Reading...B" ); 
+	    System.out.println( "Reading tag..." ); 
 	    int idx=0;
 	    buffer = new byte[1024];
 	    while( c!='\n' && idx < buffer.length ) {
@@ -90,7 +93,7 @@ public void run() {
 	    }		
 
 	    String to     = new String( buffer );
-	    System.out.println( "--["+to+"]" ); 
+	    System.out.println( "--Dest. tag: "+to ); 
 
 	    c = ' ';
 	    idx=0;
@@ -105,7 +108,7 @@ public void run() {
 
 
 	    String id     = new String( buffer );
-	    System.out.println( "--["+id+"]" ); 
+	    System.out.println( "--ID: "+id ); 
 
 	    c = ' ';
 	    idx=0;
@@ -120,7 +123,7 @@ public void run() {
 
 	    String length_s = new String( buffer );
 	    length_s = length_s.trim();
-	    System.out.println( "--["+length_s+"]" ); 
+	    System.out.println( "--Length of data: "+length_s ); 
 
 	    int length = Integer.parseInt( length_s );
 	    int cur = 0;
