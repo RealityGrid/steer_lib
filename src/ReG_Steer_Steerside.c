@@ -44,6 +44,7 @@
 #include "ReG_Steer_Steerside_WSRF.h"
 #include "ReG_Steer_Browser.h"
 #include "Base64.h"
+#include "signal.h"
 
 #ifndef REG_DEBUG
 #define REG_DEBUG 0
@@ -88,6 +89,23 @@ int Steerer_initialize()
   /* Print out version information */
   fprintf(stderr, "**** RealityGrid Computational Steering Library "
 	  "v.%s ****\n\n", REG_STEER_LIB_VERSION);
+#endif
+
+  /* Set up signal handler so can clean up if application 
+     exits in a hurry */
+  /* ctrl-c */
+  signal(SIGINT, Steerside_signal_handler);
+  /* kill (note cannot (and should not) catch kill -9) */
+  signal(SIGTERM, Steerside_signal_handler);
+  signal(SIGSEGV, Steerside_signal_handler);
+  signal(SIGILL, Steerside_signal_handler);
+  signal(SIGABRT, Steerside_signal_handler);
+  signal(SIGFPE, Steerside_signal_handler);
+#ifndef WIN32
+  /* For CPU-limit exceeded */
+  signal(SIGXCPU, Steerside_signal_handler);
+  /* LSF sends us a SIGUSR2 signal when we reach our wall-clock limit */
+  signal(SIGUSR2, Steerside_signal_handler);
 #endif
 
   /* Set the location of the file containing the schema describing all 
@@ -3593,4 +3611,19 @@ int Realloc_param_log(param_entry *param)
   }
 
   return REG_SUCCESS;
+}
+
+/*-------------------------------------------------------------------*/
+
+void Steerside_signal_handler(int aSignal)
+{
+  Common_signal_handler(aSignal);
+
+  fprintf(stderr, "STEER: Steerside_signal_handler: steering library quitting...\n");
+
+  if (Steerer_finalize() != REG_SUCCESS){
+    fprintf(stderr, "STEER: Steering_signal_handler: Steerer_finalize failed\n");
+  }
+
+  exit(0);
 }

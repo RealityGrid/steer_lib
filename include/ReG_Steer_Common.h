@@ -601,4 +601,10 @@ extern PREFIX int REG_Init_ssl_context(struct soap *aSoap,
     @param sec Pointer to the reg_security_info structure to reset */
 extern PREFIX void Wipe_security_info(struct reg_security_info *sec);
 
+/** @internal
+    Prints out details of the specified signal - called by both the application-
+    and steerer-side parts of the library
+    @param aSignal The signal that has been caught */
+void Common_signal_handler(int aSignal);
+
 #endif

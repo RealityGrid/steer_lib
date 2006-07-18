@@ -267,4 +267,10 @@ int Next_free_sim_index();
     the parameter struct. */
 int Realloc_param_log(param_entry *param);
 
+/** @internal
+    Signal handler for steerer-side of library.  Calls Steerer_finalize()
+    to attempt to go down gracefully
+    @param aSignal The signal that has been caught. */
+void Steerside_signal_handler(int aSignal);
+
 #endif

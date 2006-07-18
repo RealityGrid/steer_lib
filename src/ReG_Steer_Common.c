@@ -57,6 +57,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #endif
+#include <signal.h>
 
 #ifndef REG_DEBUG
 #define REG_DEBUG 0
@@ -1672,4 +1673,77 @@ void Wipe_security_info(struct reg_security_info *sec){
   sec->myKeyCertFile[0] = '\0';
   sec->userDN[0] = '\0';
   sec->passphrase[0] = '\0';
+}
+
+/*----------------------------------------------------------------*/
+
+void Common_signal_handler(int aSignal){
+
+  /* caught one signal - ignore all others now as going to quit and do not
+     want the quit process to be interrupted and restarted... */
+  signal(SIGINT, SIG_IGN); 
+  signal(SIGTERM, SIG_IGN);
+  signal(SIGSEGV, SIG_IGN);
+  signal(SIGILL, SIG_IGN);
+  signal(SIGABRT, SIG_IGN);
+  signal(SIGFPE, SIG_IGN);
+#ifndef WIN32
+  signal(SIGXCPU, SIG_IGN);
+  signal(SIGUSR2, SIG_IGN);
+#endif
+
+  switch(aSignal){
+
+    case SIGINT:
+      fprintf(stderr, "STEER: Steering_signal_handler: Interrupt "
+	      "signal received (signal %d)\n", aSignal);
+      break;
+      
+    case SIGTERM:
+      fprintf(stderr, "STEER: Steering_signal_handler: Kill signal "
+	      "received (signal %d)\n", aSignal);
+      break;
+      
+    case SIGSEGV:
+      fprintf(stderr, "STEER: Steering_signal_handler: Illegal "
+	      "Access caught (signal %d)\n", aSignal);
+      break;
+
+    case  SIGILL:
+      fprintf(stderr, "STEER: Steering_signal_handler: Illegal "
+	      "Exception caught (signal %d)\n", aSignal);
+      break;
+
+      /* note: abort called if exception not caught (and hence calls 
+	 terminate) */
+    case SIGABRT:
+      fprintf(stderr, "STEER: Steering_signal_handler: Abort "
+	      "signal caught (signal %d)\n", aSignal);
+      break;
+
+    case SIGFPE:
+      fprintf(stderr, "STEER: Steering_signal_handler: Arithmetic "
+	      "Exception caught (signal %d)\n", aSignal);
+      break;
+
+#ifndef WIN32
+    case SIGXCPU:
+      fprintf(stderr, "STEER: Steering_signal_handler: CPU usuage "
+	      "exceeded (signal %d)\n", aSignal);
+      break;
+
+    case SIGUSR2:
+      /* This is for the benefit of LSF - it sends us this when we hit
+         our wall-clock limit */
+      fprintf(stderr, "STEER: Steering_signal_handler: USR2 signal "
+	      "caught (signal %d)\n", aSignal);
+      break;
+#endif
+
+    default:
+      fprintf(stderr, "STEER: Steering_signal_handler: Signal caught (signal %d)\n", 
+              aSignal);
+  }
+
+  return;
 }
