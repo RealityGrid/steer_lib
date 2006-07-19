@@ -164,7 +164,7 @@
     supports 'pause' is automatically assumed to support `resume.' 
     The relevant constants are defined in ReG_Steer_types.h
 
-    @section sec_example Example useage
+    @section sec_example Example usage
 
     Included with the RealityGrid steering library are a number of
     example applications:
