@@ -553,7 +553,7 @@ int Get_next_message(int   *SimHandle,
   loop_count = 0;
 
   while(loop_count<Sim_table.max_entries){
-    
+
     /* Wrap simulation index around */
     if(isim >= Sim_table.max_entries)isim = 0;
 
@@ -602,22 +602,23 @@ int Get_next_message(int   *SimHandle,
 
 	break;
       }
-      else{
-        Delete_msg_struct(&(Sim_table.sim[isim].msg));
-      }
 
       /* Count no. of active sim.'s we've checked so that we can
          break out of loop once Sim_table.num_registered have
          been done - this will only happen when there are no
          messages to retrieve */
-      if (++count_active == Sim_table.num_registered) break;
+      if (++count_active == Sim_table.num_registered){
+	break;
+      }
     }
     isim++;
     loop_count++;
   }
 
   /* Didn't find a message so reset last_sim */
-  if(got_msg == REG_FALSE)last_sim=-1;
+  if(got_msg == REG_FALSE){
+    last_sim=-1;
+  }
 
   return return_status;
 }
@@ -1660,6 +1661,7 @@ int Emit_restart_cmd(int SimHandle, char *chkGSH)
     fprintf(stderr, "STEER: ERROR: Emit_restart_cmd: this "
 	    "routine has been superceded. Send standard control "
 	    "message instead\n");
+    return REG_FAILURE;
 #else
     return Send_restart_msg_soap(&(Sim_table.sim[index]), chkGSH);
 #endif

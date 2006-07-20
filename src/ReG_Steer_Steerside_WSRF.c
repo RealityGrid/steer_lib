@@ -35,10 +35,6 @@
     @author Andrew Porter
 */
 
-/** The last modified time of the ResourceProperty document of our
-    associated SWS when we last looked at it. */
-long int ReG_lastModTime = 0;
-
 /* Actual declaration is in ReG_Steer_Appside.c */
 extern struct msg_store_struct  Msg_store;
 extern struct msg_store_struct *Msg_store_tail;
@@ -61,6 +57,8 @@ int Sim_attach_wsrf (Sim_entry_type *sim, char *SimID){
 
   struct sws__AttachResponse response;
   int i;
+
+  sim->SGS_info.lastModTime = 0;
 
   /* malloc memory for soap struct for this connection and then
      initialise it */
@@ -178,8 +176,8 @@ struct msg_struct *Get_status_msg_wsrf(Sim_entry_type *sim)
 
   modTime = atoi(buf);
 
-  if(modTime != ReG_lastModTime){
-    ReG_lastModTime=modTime;
+  if(modTime != sim->SGS_info.lastModTime){
+    sim->SGS_info.lastModTime=modTime;
 
     /* Parse the whole doc; messages are stored in the Msg_store struct
        associated with the sim entry */
@@ -195,7 +193,8 @@ struct msg_struct *Get_status_msg_wsrf(Sim_entry_type *sim)
       msg = New_msg_struct();
       if(Parse_xml_buf(buf, strlen(buf), msg, sim) != REG_SUCCESS){
 
-	Delete_msg_struct(&msg);
+	Delete_msg_struct(&msg);       
+	return NULL;
       }
     }
   }
@@ -217,12 +216,7 @@ struct msg_struct *Get_next_stored_msg(Sim_entry_type *sim)
   }
 
   if(msgStorePtr->msg){
-    /*
-    fprintf(stderr, "STEER: Get_next_stored_msg: ARPDBG: retrieving "
-	    "a stored msg:\n");
-    Print_msg(msgStorePtr->msg);
-    */
-
+    
     /* Take a copy of the pointer to the oldest stored message */
     msg = msgStorePtr->msg;
 

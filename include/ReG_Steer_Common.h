@@ -362,6 +362,9 @@ typedef struct {
     char username[REG_MAX_STRING_LENGTH];
     /** Passphrase (if any) used with WS-Security for this service */
     char passwd[REG_MAX_STRING_LENGTH];
+    /** The last-modified time of the ResourceProperty document of our
+	associated SWS when we last looked at it (WSRF) */
+    long int lastModTime;
 
   } SGS_info_type;
 
