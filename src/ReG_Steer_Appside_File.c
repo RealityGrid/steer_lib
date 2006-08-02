@@ -496,7 +496,7 @@ int Get_file_list(char *fileroot,
 		  int  *num,
 		  char ***names)
 {
-  char *redirection = " > ReG_files.tmp";
+  char  redirection[REG_MAX_STRING_LENGTH];
   char *pchar;
   char  bufline[REG_MAX_STRING_LENGTH];
   int   len;
@@ -504,6 +504,9 @@ int Get_file_list(char *fileroot,
   FILE *fp;
 
   *num = 0;
+
+  snprintf(redirection, REG_MAX_STRING_LENGTH, " > %s/ReG_files.tmp",
+	   Steerer_connection.file_root);
 
   /* Calc. length of string - 'ls -1' and slashes add 9 chars so
      add a few more for safety.  Ask for 2*strlen(ChkTag) so that
@@ -524,14 +527,17 @@ int Get_file_list(char *fileroot,
   free(pchar);
   pchar = NULL;
 
-  if( (fp = fopen("ReG_files.tmp", "r")) ){
+  snprintf(redirection, REG_MAX_STRING_LENGTH, "%s/ReG_files.tmp",
+	   Steerer_connection.file_root);
+
+  if( (fp = fopen(redirection, "r")) ){
 
     while(fgets(bufline, REG_MAX_STRING_LENGTH, fp)){
       (*num)++;
     }
 
     if(*num == 0){
-      remove("ReG_files.tmp");
+      remove(redirection);
       fclose(fp);
       return REG_FAILURE;
     }
@@ -546,14 +552,14 @@ int Get_file_list(char *fileroot,
       len = (int)strlen(bufline);
       if(!((*names)[i] = (char *)malloc(len))){
 
-	fprintf(stderr, "STEER: Get_checkpoint_files: malloc failed\n");
+	fprintf(stderr, "STEER: Get_file_list: malloc failed\n");
 	for(j=i; j>=0; j--){
 	  free((*names)[i]);
 	  (*names)[i] = NULL;
 	}
 	free(*names);
 	*names = NULL;
-	remove("ReG_files.tmp");
+	remove(redirection);
 	fclose(fp);
 	return REG_FAILURE;
       }
@@ -563,7 +569,7 @@ int Get_file_list(char *fileroot,
     }
 
     fclose(fp);
-    remove("ReG_files.tmp");
+    remove(redirection);
   }
 
   return REG_SUCCESS;
