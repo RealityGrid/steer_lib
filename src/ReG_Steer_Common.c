@@ -1378,10 +1378,10 @@ int Create_WSRF_header(struct soap *aSoap,
 		       const  char *passwd)
 {
 #ifdef WITH_OPENSSL
-  const int     MAX_LEN = 1024;
   int           bytesLeft, nbytes;
   int           i, len;
   int           status;
+#define MAX_LEN 1024
   unsigned char randBuf[MAX_LEN];
   char         *pBuf;
   char          buf[MAX_LEN];

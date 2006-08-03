@@ -1172,8 +1172,8 @@ int Log_columns_to_xml(char **buf, char* out_buf, int out_buf_size,
   */
   /* '2*' to allow for handle & value of each parameter and '+1'
      for key of each log entry */
-  const int max_num_fields = 2*REG_MAX_NUM_STR_PARAMS + 1;
-  const int max_field_length = 32;
+#define max_num_fields  (2*REG_MAX_NUM_STR_PARAMS + 1)
+#define max_field_length  32
   char *fields[max_num_fields];
   char *pbuf;
   char *ptr1;
