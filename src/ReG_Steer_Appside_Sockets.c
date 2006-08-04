@@ -1446,11 +1446,10 @@ int Consume_ack_sockets(int index){
   char  buf[32];
   char *pchar;
   int   nbytes;
-  printf("ARPDBG: Consume_ack_sockets for index %d\n", index);
+
   /* If no acknowledgement is currently required (e.g. this is the
      first time Emit_start has been called) then return success */
   if(IOTypes_table.io_def[index].ack_needed == REG_FALSE){
-    printf("ARPDBG: Consume_ack_sockets - no ack needed\n");
     return REG_SUCCESS;
   }
 
@@ -1472,7 +1471,6 @@ int Consume_ack_sockets(int index){
 
 	  /* We found the opening angle bracket but the rest of the tag
 	     is missing so we fail */
-	  printf("ARPDBG: missing angle bracket: %s\n", buf);
 	  return REG_FAILURE;
 	}
 	else{
