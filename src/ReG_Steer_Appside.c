@@ -1749,7 +1749,6 @@ int Consume_stop(int *IOTypeIndex)
   if (!ReG_SteeringInit) return REG_FAILURE;
 
   if(*IOTypeIndex < 0 || *IOTypeIndex >= IOTypes_table.num_registered){
-
     fprintf(stderr, "STEER: Consume_stop: IOType index out of range\n");
     return REG_FAILURE;
   }
@@ -2028,7 +2027,6 @@ int Emit_start(int  IOType,
   IOTypes_table.io_def[*IOTypeIndex].convert_array_order = REG_FALSE;
 
   if(Consume_ack(*IOTypeIndex) != REG_SUCCESS){
-    printf("ARPDBG: Emit_start: Consume_ack not succesful\n");
     return REG_NOT_READY;
   }
 
@@ -2129,7 +2127,13 @@ int Emit_start_blocking(int    IOType,
 
 int Emit_stop(int *IOTypeIndex)
 {
-  int             return_status = REG_SUCCESS;
+  int return_status = REG_SUCCESS;
+
+  if(*IOTypeIndex < 0 || *IOTypeIndex >= IOTypes_table.num_registered){
+    fprintf(stderr, "STEER: ERROR: Emit_stop: invalid IOType handle "
+	    "(%d) supplied\n", *IOTypeIndex);
+    return REG_FAILURE;
+  }
 
   /* Check that steering is enabled */
   if(!ReG_SteeringEnabled) return REG_SUCCESS;
@@ -2199,6 +2203,12 @@ int Emit_data_slice(int		      IOTypeIndex,
 
   /* Can only call this function if steering lib initialised */
   if (!ReG_SteeringInit) return REG_FAILURE;
+
+  if(IOTypeIndex < 0 || IOTypeIndex >= IOTypes_table.num_registered){
+    fprintf(stderr, "STEER: ERROR: Emit_data_slice: invalid IOType "
+	    "handle (%d) supplied\n", IOTypeIndex);
+    return REG_FAILURE;
+  }
 
   /* check comms connection has been made */
   if (Get_communication_status(IOTypeIndex) !=  REG_SUCCESS)
@@ -5172,7 +5182,8 @@ int Consume_data_read(const int		index,
 {
   if(index < 0 || index >= IOTypes_table.num_registered){
 
-    fprintf(stderr, "STEER: ERROR: Consume_data_read: IOType index out of range\n");
+    fprintf(stderr, "STEER: ERROR: Consume_data_read: IOType "
+	    "index (%d) out of range\n", index);
     return REG_FAILURE;
   }
 
@@ -5196,6 +5207,11 @@ int Consume_data_read(const int		index,
 
 int Emit_ack(const int index)
 {
+  if(index < 0 || index >= IOTypes_table.num_registered){
+    fprintf(stderr, "STEER: ERROR: Emit_ack: IOType "
+	    "index (%d) out of range\n", index);
+    return REG_FAILURE;
+  }
 
   if(IOTypes_table.io_def[index].is_enabled == REG_FALSE){
 
@@ -5215,6 +5231,11 @@ int Emit_ack(const int index)
 
 int Consume_ack(const int index)
 {
+  if(index < 0 || index >= IOTypes_table.num_registered){
+    fprintf(stderr, "STEER: ERROR: Consume_ack: IOType "
+	    "index (%d) out of range\n", index);
+    return REG_FAILURE;
+  }
 
   if(IOTypes_table.io_def[index].is_enabled == REG_FALSE){
 
@@ -5368,15 +5389,6 @@ int Consume_iotype_msg_header(int  IOTypeIndex,
 				    Count,
 				    NumBytes,
 				    IsFortranArray);
-  /*
-#elif REG_PROXY_SAMPLES
-
-  return Consume_msg_header_proxy(IOTypeIndex,
-				    DataType,
-				    Count,
-				    NumBytes,
-				    IsFortranArray);
-  */
 #else
   return Consume_msg_header_file(IOTypeIndex,
 				 DataType,
