@@ -1052,7 +1052,7 @@ int Set_f90_array_ordering(int IOTypeIndex, int flag){
   if (!ReG_SteeringInit) return REG_FAILURE;
 
   if(IOTypeIndex < 0){
-    fprintf(stderr, "STEER: Set_f90_ordering: IOTypeIndex is < 0\n");
+    fprintf(stderr, "STEER: Set_f90_array_ordering: IOTypeIndex is < 0\n");
     return REG_FAILURE;
   }
 
