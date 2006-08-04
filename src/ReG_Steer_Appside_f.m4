@@ -1315,11 +1315,11 @@ INT_KIND_1_DECL(Status);
 
   *Status = INT_KIND_1_CAST( Consume_start((int)*IOType,
 	                                   &handle) );
+  *IOHandle = INT_KIND_1_CAST(handle);
 
   if(*Status == REG_SUCCESS){
     Set_f90_array_ordering((int)*IOHandle, REG_TRUE);
   }
-  *IOHandle = INT_KIND_1_CAST(handle);
 
   return;
 }
@@ -1349,10 +1349,11 @@ INT_KIND_1_DECL(Status);
   *Status = INT_KIND_1_CAST( Consume_start_blocking((int)*IOType,
 	                                            &handle,
                                                     *TimeOut) );
+  *IOHandle = INT_KIND_1_CAST(handle);
+
   if(*Status == REG_SUCCESS){
     Set_f90_array_ordering((int)*IOHandle, REG_TRUE);
   }
-  *IOHandle = INT_KIND_1_CAST(handle);
 
   return;
 }
@@ -1461,11 +1462,10 @@ INT_KIND_1_DECL(Status);
   *Status = INT_KIND_1_CAST( Emit_start((int)*IOType, 
                                         (int)*SeqNum, 
                                         &handle) );
+  *IOHandle = INT_KIND_1_CAST(handle);
 
   if(*Status == REG_SUCCESS){
     Set_f90_array_ordering((int)*IOHandle, REG_TRUE);
-
-    *IOHandle = INT_KIND_1_CAST(handle);
   }
 
   return;
@@ -1500,11 +1500,11 @@ INT_KIND_1_DECL(Status);
                                                  (int)*SeqNum, 
                                                  &handle,
                                                  *TimeOut) );
+  *IOHandle = INT_KIND_1_CAST(handle);
 
   if(*Status == REG_SUCCESS){
     Set_f90_array_ordering((int)*IOHandle, REG_TRUE);
   }
-  *IOHandle = INT_KIND_1_CAST(handle);
 
   return;
 }
