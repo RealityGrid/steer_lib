@@ -18,22 +18,22 @@ struct sws__RecordCheckpointResponse {
   xsd__string  _RecordCheckpointReturn;
 };
 
-struct Command {
+struct reg__Command {
   xsd__int Cmd_USCOREid;
   xsd__string Cmd_USCOREname;
 };
 
-struct supp_cmds {
-  struct Command *__ptr;
-  int             __size;
+struct reg__supp_cmds {
+  struct reg__Command *__ptr;
+  int                  __size;
 };
 
-struct steerMessage {
-  struct supp_cmds Supported_USCOREcommands;
+struct reg__steerMessage {
+  struct reg__supp_cmds Supported_USCOREcommands;
 };
 
 struct sws__AttachResponse {
-  struct steerMessage ReG_USCOREsteer_USCOREmessage;
+  struct reg__steerMessage ReG_USCOREsteer_USCOREmessage;
 };
 
 struct wsrp__DestroyResponse {
