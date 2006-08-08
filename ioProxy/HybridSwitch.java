@@ -40,16 +40,20 @@ protected void send( String from,
 
 protected void register_thread( String srcID, HybridThread thr ) 
 {
-	System.out.println( "Registering subscriber to  ["+srcID+"]" ); 
-	if( srcID!=null ) {
-	    HybridThread[] thrArray = (HybridThread[]) threads_by_id.get(srcID);
-	    if(thrArray != null){
-
-	    }
-	    else{
-		threads_by_id.put( srcID, thr );
-	    }
+    ArrayList alist;
+ 
+    System.out.println( "Registering subscriber to  ["+srcID+"]" ); 
+    if( srcID!=null ) {
+	alist = (ArrayList) threads_by_id.get(srcID);
+	if(alist == null){
+	    alist = new ArrayList();
+	    alist.add(thr);
+	    threads_by_id.put( srcID, alist );
 	}
+	else{
+	    alist.add(thr);
+	}
+    }
 }
 
 protected void deregister_thread( String id ) {
