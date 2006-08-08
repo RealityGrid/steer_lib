@@ -38,6 +38,7 @@ LIB_PATH       = ${REG_STEER_HOME}/lib$(NBIT)
 
 all:
 	$(MAKE) lib
+	$(MAKE) lib_SOAP
 	$(MAKE) lib_utils
 	$(MAKE) c_examples
 	$(MAKE) f90_examples
@@ -64,6 +65,9 @@ lib:
 
 lib_utils: 
 	cd src; $(MAKE) $(LIB_PATH)/$(LIB_UTILS_NAME)
+
+lib_SOAP:
+	cd src; $(MAKE) $(LIB_PATH)/$(LIB_SOAP_NAME)
 
 libss:
 	cd src; $(MAKE) -f Makefile.ss all
