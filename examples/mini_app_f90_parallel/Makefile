@@ -38,11 +38,11 @@ TARGET   = mini_app_para
 
 ${TARGET}: ${TARGET}.o ../../include/reg_steer_f90.inc \
 ${REG_STEER_HOME}/lib$(NBIT)/$(LIB_NAME)
-	-${F90_MPI} ${F90_FLAGS} ${TARGET}.o -o $@ ${STEER_LIBS} ${GLOBUS_LDFLAGS} \
-	${MPI_FLAGS} -lReG_Steer ${STEER_LDFLAGS} ${GLOBUS_PKG_LIBS} 
+	-${F90_MPI} ${F90_FLAGS} ${TARGET}.o -o $@ ${STEER_LIBS} \
+	${MPI_FLAGS} -lReG_Steer -lReG_Steer_SOAP ${STEER_LDFLAGS}
 
 mini_app_para.o: mini_app_para.f90
-	-${F90_MPI} ${F90_FLAGS} ${STEER_INCLUDES} ${GLOBUS_INCLUDES} -c mini_app_para.f90 -o $@
+	-${F90_MPI} ${F90_FLAGS} ${STEER_INCLUDES} -c mini_app_para.f90 -o $@
 
 install:
 	-mv ${TARGET} ${LOCAL_BIN_DIR}/.

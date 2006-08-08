@@ -38,14 +38,15 @@ TARGET   = mini_steerer
 
 ${TARGET}: ${REG_STEER_HOME}/lib$(NBIT)/$(LIB_NAME) \
            ${REG_STEER_HOME}/lib$(NBIT)/$(LIB_UTILS_NAME) \
+           ${REG_STEER_HOME}/lib$(NBIT)/$(LIB_SOAP_NAME) \
            ${TARGET}.c
 
 .c.o:
 	${CC} ${C_FLAGS} ${STEER_INCLUDES} ${GLOBUS_INCLUDES} -c $< -o $@
 
 ${TARGET}: ${TARGET}.o
-	${CC} ${C_FLAGS} ${TARGET}.o -o $@ ${STEER_LIBS} ${GLOBUS_LDFLAGS} \
-	-lReG_Steer -lReG_Steer_Utils ${STEER_LDFLAGS} ${GLOBUS_PKG_LIBS}
+	${CC} ${C_FLAGS} ${TARGET}.o -o $@ ${STEER_LIBS} \
+	 -lReG_Steer_Utils -lReG_Steer -lReG_Steer_SOAP  ${STEER_LDFLAGS}
 
 install:
 	-mv -f ${TARGET} ${LOCAL_BIN_DIR}/.

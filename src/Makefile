@@ -51,7 +51,6 @@ REG_LIB_OBJECTS=ReG_Steer_Appside_f.o \
  ReG_Steer_Appside_Soap.o \
  ReG_Steer_Appside_File.o \
  ReG_Steer_Logging.o \
- stdsoap2.o soapC.o soapClient.o \
  Base64.o \
  ReG_Steering_Initialize.o \
  ReG_Steer_Steerside_WSRF.o \
@@ -60,6 +59,8 @@ REG_LIB_OBJECTS=ReG_Steer_Appside_f.o \
 REG_LIB_UTILS_OBJECTS=ReG_Steer_Utils_WSRF.o \
  ReG_Steer_Utils.o \
  ReG_Steer_Browser.o
+
+REG_LIB_SOAP_OBJECTS=stdsoap2.o soapC.o soapClient.o
 
 # The -DWITH_CDATA is to ensure gSoap retains CDATA sections in xml string
 # literals
@@ -77,7 +78,8 @@ REG_LIB_UTILS_OBJECTS=ReG_Steer_Utils_WSRF.o \
 
 all:
 	$(MAKE) ${LIB_PATH}/$(LIB_NAME)
-	$(MAKE) ${LIB_PATH}/libReG_Steer_Utils.a
+	$(MAKE) ${LIB_PATH}/$(LIB_SOAP_NAME)
+	$(MAKE) ${LIB_PATH}/$(LIB_UTILS_NAME)
 
 ${LIB_PATH}/libReG_Steer.so: ${REG_LIB_OBJECTS}
 	$(MAKE) -f Makefile.ss all
@@ -91,8 +93,8 @@ ${LIB_PATH}/libReG_Steer.so: ${REG_LIB_OBJECTS}
 	rm -f $(LIB_PATH)/libReG_Steer.so
 	ln -s libReG_SteerSoapSockets.so $(LIB_PATH)/libReG_Steer.so
 
-${LIB_PATH}/libReG_Steer.a: ${REG_LIB_OBJECTS}
-	rm -f $(LIB_PATH)/libReG_Steer.a
+${LIB_PATH}/$(LIB_NAME): ${REG_LIB_OBJECTS}
+	rm -f $(LIB_PATH)/${LIB_NAME}
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Appside_f.o
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Appside.o
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Steerside.o
@@ -105,18 +107,19 @@ ${LIB_PATH}/libReG_Steer.a: ${REG_LIB_OBJECTS}
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Appside_File.o
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Steerside_Soap.o
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Logging.o
-	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a stdsoap2.o
-	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a soapC.o
-	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a soapClient.o
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a Base64.o
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Steerside_WSRF.o
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Appside_WSRF.o
 # '-' is to allow for failure in case we don't have an F90 compiler
 	-${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steering_Initialize.o
 
-${LIB_PATH}/libReG_Steer_Utils.a: ${REG_LIB_UTILS_OBJECTS}
-	rm -f ${LIB_PATH}/libReG_Steer_Utils.a
-	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer_Utils.a ${REG_LIB_UTILS_OBJECTS}
+${LIB_PATH}/${LIB_UTILS_NAME}: ${REG_LIB_UTILS_OBJECTS}
+	rm -f ${LIB_PATH}/${LIB_UTILS_NAME}
+	${AR} ${AR_FLAGS} ${LIB_PATH}/${LIB_UTILS_NAME} ${REG_LIB_UTILS_OBJECTS}
+
+${LIB_PATH}/${LIB_SOAP_NAME}: ${REG_LIB_SOAP_OBJECTS}
+	rm -f ${LIB_PATH}/${LIB_SOAP_NAME}
+	${AR} ${AR_FLAGS} ${LIB_PATH}/${LIB_SOAP_NAME} ${REG_LIB_SOAP_OBJECTS}
 
 #---------------------------------------------------------------
 
@@ -251,9 +254,10 @@ clean:
 	rm -f *.o ReG_Steer.ln *~ 
 	rm -f ReG_Steer_Appside_f.c
 	rm -f ../include/*~
-	rm -f ${LIB_PATH}/libReG_Steer.a
+	rm -f ${LIB_PATH}/${LIB_NAME}
 	rm -f ${LIB_PATH}/libReG_Steer*.so
-	rm -f ${LIB_PATH}/libReG_Steer_Utils.a
+	rm -f ${LIB_PATH}/${LIB_UTILS_NAME}
+	rm -f ${LIB_PATH}/${LIB_SOAP_NAME}
 
 tidy:
 	rm -f ReG_Steer_Steerside.o ReG_Steer_Appside.o \

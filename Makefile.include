@@ -82,9 +82,10 @@ REG_DEBUG_FULL_FLAG = 0
 # Create a static or shared library?
 LIB_NAME=libReG_Steer.a
 LIB_UTILS_NAME=libReG_Steer_Utils.a
+LIB_SOAP_NAME=libReG_Steer_SOAP.a
 
 #--------------------------------------------------------------------
 # Don't edit anything below this line
 
 # Pass version information to compile
-REG_STEER_LIB_VERSION = 2.0
+REG_STEER_LIB_VERSION = 2.0.1
