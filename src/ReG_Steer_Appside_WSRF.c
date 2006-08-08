@@ -44,7 +44,6 @@
 #include "ReG_Steer_Logging.h"
 #include "ReG_Steer_Utils_WSRF.h"
 #include "soapH.h"
-#include "soapRealityGrid.nsmap"
 
 /* These four functions are defined in the steerside_WSRF code */
 extern int Get_resource_property (struct soap *soapStruct,

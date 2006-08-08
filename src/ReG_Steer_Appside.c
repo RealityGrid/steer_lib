@@ -44,6 +44,7 @@
 #include "ReG_Steer_Appside_File.h"
 #include "ReG_Steer_Logging.h"
 #include "Base64.h"
+#include "soapRealityGrid.nsmap"
 
 #include <signal.h>
 #include <time.h>

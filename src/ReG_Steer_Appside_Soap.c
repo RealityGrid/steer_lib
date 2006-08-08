@@ -40,7 +40,6 @@
 #include "ReG_Steer_Appside_internal.h"
 #include "ReG_Steer_Appside_Soap.h"
 #include "ReG_Steer_Logging.h"
-#include "soapRealityGrid.nsmap"
 
 #ifndef WIN32
 #else
