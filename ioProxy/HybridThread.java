@@ -11,7 +11,7 @@ String this_id;
 String src_id;
 
 public HybridThread( Socket s, HybridSwitch sw ) {
-	try {
+    try {
 
 	this.s  = s;
 	this.sw = sw;
@@ -59,7 +59,7 @@ public HybridThread( Socket s, HybridSwitch sw ) {
 
 	start();
 
-	} catch( Exception ex ) { ex.printStackTrace( System.err ); } 
+    } catch( Exception ex ) { ex.printStackTrace( System.err ); } 
 }
 
 
