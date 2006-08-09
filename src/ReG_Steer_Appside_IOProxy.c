@@ -328,7 +328,7 @@ int Consume_proxy_destination_ack(const int index) {
   if(result == -1){
     fprintf(stderr, "STEER: Consume_proxy_destination_ack: check for proxy OK failed\n");
   }
-  printf("proxy OK returned: %c\n", buffer[0]);
+  fprintf(stderr, "ARPDBG: proxy OK returned: %c\n", buffer[0]);
   if(buffer[0] == '1'){
     return REG_SUCCESS;
   }
