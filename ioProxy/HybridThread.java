@@ -71,17 +71,17 @@ public void run() {
 
 	    byte c = ' ';
 
-	    System.out.println( "Searching for tag..." ); 
+	    //System.out.println( "Searching for tag..." ); 
 	    while( c!='#' ) {
 		c = (byte) in.read();
 		if( c==-1 ) { 
 		    System.out.println( "...read failed");
 		    throw new Exception(); 
 		}
-		System.out.println( "B " ); 
+		//System.out.println( "B " ); 
 	    }
 		
-	    System.out.println( "Reading tag..." ); 
+	    //System.out.println( "Reading tag..." ); 
 	    int idx=0;
 	    buffer = new byte[1024];
 	    while( c!='\n' && idx < buffer.length ) {
@@ -106,7 +106,6 @@ public void run() {
 		}
 	    }		
 
-
 	    String id     = new String( buffer );
 	    System.out.println( "--ID: "+id ); 
 
@@ -123,7 +122,7 @@ public void run() {
 
 	    String length_s = new String( buffer );
 	    length_s = length_s.trim();
-	    System.out.println( "--Length of data: "+length_s ); 
+	    //System.out.println( "--Length of data: "+length_s ); 
 
 	    int length = Integer.parseInt( length_s );
 	    int cur = 0;
@@ -138,22 +137,34 @@ public void run() {
 		    throw new Exception();
 		}
 		cur+=j;
-		System.out.println( "Read "+cur +" of "+ length ); 
+		//System.out.println( "Read "+cur +" of "+ length ); 
 	    }
 
 	    to = to.trim();
 	    id = id.trim();
 
 	    byte[] ackMsg = new byte[2];
+	    ackMsg[0] = '0';
+	    ackMsg[1] = '\n';
 
-	    if( sw.destination_valid( to ) ){
-		sw.send( this_id, to, id, length, b );
+	    if( to.endsWith("_REG_ACK") ){
+		if( !sw.forwardAck(to) ){
+		    // Send ioProxy ack back to sender of this ack
+		    // but don't actually send ack on to the data
+		    // source because not all the subscribers
+		    // have acknowledged yet
+		    System.out.println( "ARPDBG: not everyone has ack'd yet...");
+		    ackMsg[0] = '1';
+		    os.write(ackMsg);
+		    continue;
+		}
+		System.out.println( "ARPDBG: sending ack through");
+	    }
+
+	    if( sw.send(this_id, to, id, length, b) ){
+		System.out.println( "ARPDBG: sent to ["+to+"] OK");
 		ackMsg[0] = '1';
 	    }
-	    else{
-		ackMsg[0] = '0';
-	    }
-	    ackMsg[1] = '\n';
 	    os.write(ackMsg);
 	}
     } catch( Exception ex ) {
@@ -164,8 +175,7 @@ public void run() {
 
 public synchronized void send( String from, String id, byte[] data ) {
     try {
-	    //os.print("\n#"+from+"\n"+id+"\n"+data.length+"\n" );
-	System.out.println("send, from: " + from);
+	//System.out.println("send, from: " + from);
 	os.write( data );	
 
     } catch( Exception ex ) { 
@@ -175,10 +185,11 @@ public synchronized void send( String from, String id, byte[] data ) {
 }
 
 private void close() {
-		try {
-			s.close();			
-			in.close();
-		} catch( Exception ex ) { }
-		sw.deregister_thread( src_id );
+    try {
+	s.close();			
+	in.close();
+    } catch( Exception ex ) { }
+    sw.deregister_thread( src_id, this );
 }
+
 }
