@@ -36,7 +36,7 @@
 # if there is not a corresponding Makefile.<ARCH> file in the make
 # directory, feel free to add one. It just means we haven't tested
 # on that platform yet!
-ARCH = ALTIX-GCC
+ARCH = LINUX
 
 # Directory to install executables to (mini_app, mini_steerer etc.)
 LOCAL_BIN_DIR  = ${HOME}/RealityGrid/bin
@@ -88,4 +88,4 @@ LIB_SOAP_NAME=libReG_Steer_SOAP.a
 # Don't edit anything below this line
 
 # Pass version information to compile
-REG_STEER_LIB_VERSION = 2.0
+REG_STEER_LIB_VERSION = 2.0.1
