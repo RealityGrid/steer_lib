@@ -42,10 +42,11 @@ protected boolean send( String from,
     while(it.hasNext()){
 	HybridThread thr = (HybridThread) it.next();
 
-	//System.out.println( "Sending from ["+from+"] to ["+to+"]" );
 	thr.send( from, id, data );
 	hadDest = true;
     }
+    System.out.println( "Sent "+alist.size()+"msgs from ["+from+
+			"] to ["+to+"]" );
     // Store how many messages we've sent out so that we know how
     // many acks to expect
     msgCount.put(to, new Integer(alist.size()));
@@ -97,12 +98,16 @@ protected void deregister_thread( String id, HybridThread thr )
     }
 }
 
+// Called whenever we have received an acknowledgement bound
+// for 'dest'
 protected synchronized boolean forwardAck(String dest)
 {
     // Remove the trailing "_REG_ACK" from the destination ID
     int idx = dest.lastIndexOf("_REG_ACK");
     String id = dest.substring(0, idx);
 
+    // Increment the number of acknowledgements that have been
+    // received for this data source
     Integer count = (Integer) ackCount.get(id);
     int num;
     if(count == null){
@@ -115,8 +120,8 @@ protected synchronized boolean forwardAck(String dest)
 
     System.out.println("ARPDBG: num = "+num);
 
-    //List alist = (List) threads_by_id.get( id );
-    //if(alist == null) return false;
+    // Compare the no. of acks received with the number of
+    // messages that were sent
     Integer sentCount = (Integer) msgCount.get(id);
     int numSent;
     if(sentCount == null){
