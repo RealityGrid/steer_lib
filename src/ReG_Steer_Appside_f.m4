@@ -168,6 +168,7 @@ INT_KIND_1_DECL(Status);
 
   /* We have to be careful about casting (esp. on 64-bit systems) */
   for(i=0; i<(int)(*NumSupportedCmds); i++){
+    /*printf("ARPDBG, supp. cmd %d: %ld\n", i, SupportedCmds[i]);*/
     gSteerCommands[i] = (int)(SupportedCmds[i]);
   }
 
