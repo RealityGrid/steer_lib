@@ -425,7 +425,7 @@ int Emit_ack_proxy(int index){
   int   result;
   int   connector = IOTypes_table.io_def[index].socket_info.connector_handle;
   char  header[REG_MAX_STRING_LENGTH];
-  char *label = IOTypes_table.io_def[index].label;
+  char *label = IOTypes_table.io_def[index].proxySourceLabel;
   char* pchar;
 
   snprintf(header, REG_MAX_STRING_LENGTH, "#%s_REG_ACK\n%d\n%d\n", 

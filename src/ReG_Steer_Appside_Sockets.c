@@ -324,9 +324,10 @@ int create_connector(const int index) {
 int connect_connector(const int index) {
 
   struct sockaddr_in theirAddr;
-  int connector = IOTypes_table.io_def[index].socket_info.connector_handle;
-
-  int return_status = REG_SUCCESS;
+  int  connector     = IOTypes_table.io_def[index].socket_info.connector_handle;
+  int  return_status = REG_SUCCESS;
+  char tmpBuf[REG_MAX_STRING_LENGTH];
+  int  i;
 
   /* get a remote address if we need to */
   if(IOTypes_table.io_def[index].socket_info.connector_port == 0) {
@@ -382,7 +383,8 @@ int connect_connector(const int index) {
     memset(&(theirAddr.sin_zero), '\0', 8); /* zero the rest */
     
     /* ...finally connect to the remote address! */
-    if(connect(connector, (struct sockaddr*) &theirAddr, sizeof(struct sockaddr)) == REG_SOCKETS_ERROR) {
+    if(connect(connector, (struct sockaddr*) &theirAddr, 
+	       sizeof(struct sockaddr)) == REG_SOCKETS_ERROR) {
       perror("connect_connector: connect");
       IOTypes_table.io_def[index].socket_info.connector_port = 0;
       return REG_FAILURE;
@@ -398,14 +400,22 @@ int connect_connector(const int index) {
     }
     else{
       /* If this is an output channel then we subscribe to 
-	 acknowledgements */
+	 acknowledgements but first trim off any trailing
+         white space. */
+      strncpy(tmpBuf, IOTypes_table.io_def[index].label, 
+	      REG_MAX_STRING_LENGTH);
+      i = strlen(tmpBuf) - 1;
+      while(tmpBuf[i] == ' ' && (i > -1) ){
+	tmpBuf[i] = '\0';
+	i--;
+      }
       sprintf(Global_scratch_buffer, "%s\n%s_REG_ACK\n",
-	      IOTypes_table.io_def[index].label,
-	      IOTypes_table.io_def[index].label);
+	      tmpBuf, tmpBuf);
+
       /* If this is an output channel then we aren't subscribing to 
 	 any data source
-      sprintf(Global_scratch_buffer, "%s\nNO_DATA\n",
-      IOTypes_table.io_def[index].label);*/
+      sprintf(Global_scratch_buffer, "%s\nACKS_ONLY\n",
+      IOTypes_table.io_def[index].label); */
     }
 
     if(Emit_data_sockets(index, 
