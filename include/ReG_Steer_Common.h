@@ -610,4 +610,10 @@ extern PREFIX void Wipe_security_info(struct reg_security_info *sec);
     @param aSignal The signal that has been caught */
 void Common_signal_handler(int aSignal);
 
+/** @internal
+    Removes any trailing white space from the supplied character array
+    @param pChar Pointer to character array to trim
+    @return pointer to trimmed string, NULL otherwise. */
+char *trimWhiteSpace(char *pChar);
+
 #endif

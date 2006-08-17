@@ -466,6 +466,9 @@ int Steering_initialize(char *AppName,
   Params_table.param[i].max_val_valid = REG_FALSE;
   Increment_param_registered(&Params_table);
 
+  /* Flag that we have registered some parameters */
+  ReG_ParamsChanged = REG_TRUE;
+
   /* By default, we pass any pause command that we receive up to the 
      application (provided it supports it) */
   Steerer_connection.handle_pause_cmd = REG_FALSE;
@@ -1597,7 +1600,6 @@ int Add_checkpoint_file(int   ChkType,
 {
   int index;
   int nbytes;
-  int i;
 
   /* Can only call this function if steering lib initialised */
   if (!ReG_SteeringInit) return REG_FAILURE;
@@ -1609,10 +1611,7 @@ int Add_checkpoint_file(int   ChkType,
   if (index == REG_IODEF_HANDLE_NOTSET) return REG_FAILURE;
 
   /* Remove any trailing white space from the filename */
-  i = strlen(filename)-1;
-  while( (i > -1) && (filename[i] == ' ') ){
-    filename[i--] = '\0';
-  }
+  trimWhiteSpace(filename);
 
   /* Check that it doesn't contain any spaces (since we use a space-delimited
      list to store the filenames) */
@@ -2053,11 +2052,8 @@ int Emit_start(int  IOType,
 	  IOTypes_table.io_def[*IOTypeIndex].label);
 
   /* Remove trailing white space */
-  while(IOTypes_table.io_def[*IOTypeIndex].filename[--len] == ' ');
-
-  /* Terminate string and correct length of string (since final
-     character we looked at wasn't actually blank) */
-  IOTypes_table.io_def[*IOTypeIndex].filename[++len] = '\0';
+  trimWhiteSpace(IOTypes_table.io_def[*IOTypeIndex].filename);
+  len = strlen(IOTypes_table.io_def[*IOTypeIndex].filename);
 
   /* Replace any spaces with '_' */
   pchar = strchr(IOTypes_table.io_def[*IOTypeIndex].filename, ' ');
@@ -3751,10 +3747,17 @@ int Emit_IOType_defs(){
   
     if(IOTypes_table.io_def[i].handle != REG_IODEF_HANDLE_NOTSET){
   
+      /* We don't want to actually change the label that the app
+	 has supplied to us but we don't want to publish it
+	 with trailing white space */
+      strncpy((char *)Global_scratch_buffer, 
+	      IOTypes_table.io_def[i].label,
+	      REG_SCRATCH_BUFFER_SIZE);
+
       nbytes = snprintf(pbuf, bytes_left, "<IOType>\n"
 			"<Label>%s</Label>\n"
 			"<Handle>%d</Handle>\n", 
-			IOTypes_table.io_def[i].label, 
+			trimWhiteSpace((char *)Global_scratch_buffer), 
 			IOTypes_table.io_def[i].handle);
 
 #if REG_DEBUG

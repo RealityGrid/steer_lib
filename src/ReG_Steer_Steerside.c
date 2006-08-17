@@ -2204,7 +2204,7 @@ int Get_param_values(int    sim_handle,
 {
   int return_status = REG_SUCCESS;
   int isim;
-  int i, j;
+  int i;
   int count;
 
   /* Return lists of registered parameter handles and associated
@@ -2244,13 +2244,7 @@ int Get_param_values(int    sim_handle,
 		 Sim_table.sim[isim].Params_table.param[i].label);
 	  /* Strip off any trailing space (often an issue with strings
 	     supplied from F90) */
-	  j = strlen(param_details[count].label);
-	  while(param_details[count].label[--j] == ' ');
-
-	  if(param_details[count].label[j] != '\0'){
-
-	    param_details[count].label[j+1] = '\0';
-	  }
+	  trimWhiteSpace(param_details[count].label);
 
 	  strcpy(param_details[count].value, 
 		 Sim_table.sim[isim].Params_table.param[i].value);
@@ -2618,12 +2612,11 @@ int Get_iotypes(int    sim_handle,
 		int   *io_freqs)
 {
   int isim;
-  int i, j;
+  int i;
   int count;
   int iparam;
   int nitem;
   int return_status = REG_SUCCESS;
-  char *pchar;
 
   /* Get the first num_iotype IO defs out of the table.  Assumes
      that Get_iotype_number has been called first to get the number
@@ -2646,14 +2639,7 @@ int Get_iotypes(int    sim_handle,
 	       Sim_table.sim[isim].IOdef_table.io_def[i].label);
 	/* Strip off any trailing space (often an issue with strings
 	   supplied from F90) */
-	pchar = labels[count];
-	j = strlen(pchar);
-	while(pchar[--j] == ' ');
-
-	if(pchar[j] != '\0'){
-
-	  pchar[j+1] = '\0';
-	}
+	trimWhiteSpace(labels[count]);
 
 	types[count] = Sim_table.sim[isim].IOdef_table.io_def[i].direction;
 
@@ -2803,12 +2789,11 @@ int Get_chktypes(int    sim_handle,
 		 int   *chk_freqs)
 {
   int isim;
-  int i, j;
+  int i;
   int count;
   int iparam;
   int nitem;
   int return_status = REG_SUCCESS;
-  char *pchar;
 
   /* Get the first num_chktype Chk defs out of the table.  Assumes
      that Get_chktype_number has been called first to get the number
@@ -2832,14 +2817,7 @@ int Get_chktypes(int    sim_handle,
 
 	/* Strip off any trailing space (often an issue with strings
 	   supplied from F90) */
-	pchar = labels[count];
-	j = strlen(pchar);
-	while(pchar[--j] == ' ');
-
-	if(pchar[j] != '\0'){
-
-	  pchar[j+1] = '\0';
-	}
+	trimWhiteSpace(labels[count]);
 
 	types[count] = Sim_table.sim[isim].Chkdef_table.io_def[i].direction;
 
