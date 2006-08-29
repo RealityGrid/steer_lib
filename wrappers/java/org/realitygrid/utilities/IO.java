@@ -200,4 +200,15 @@ public final class IO {
 
     return result;
   }
+
+  /**
+   * This is a stub function at the moment and <strong>does not</strong>
+   * obscure the input password in anyway!
+   *
+   * @see #readLine()
+   */
+  public static String readPassword() {
+
+    return IO.readLine();
+  }
 }
