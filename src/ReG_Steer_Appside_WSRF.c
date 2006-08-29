@@ -779,6 +779,11 @@ int Get_data_source_address_wsrf(const int          index,
   }
   else{ /* Using a proxy for IO */
 
+    count = index; /* ARPDBG - remove check for multiple sources for now
+		      - we take the first we find. Effectively this means
+		      that an application can only use one IOProxy for
+		      input, irrespective of how many output IOTypes it has */
+
     while( (pLast = strstr(pLast, "<sws:dataSource")) ){
       if(count == index){
 	/* Pull out the hostname and port of the proxy that will
