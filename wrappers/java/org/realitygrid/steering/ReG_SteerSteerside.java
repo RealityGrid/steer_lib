@@ -126,6 +126,23 @@ public class ReG_SteerSteerside implements ReG_SteerConstants {
   /**
    *
    */
+  public ReG_SteerRegistryEntry[] getRegistryEntriesSecure(String regAddress,
+						      ReG_SteerSecurity sec) {
+    return (ReG_SteerRegistryEntry[]) ReG_Steer.Get_registry_entries_secure_j(regAddress, sec);
+  }
+
+  /**
+   *
+   */
+  public ReG_SteerRegistryEntry[] getRegistryEntriesFilteredSecure(String regAddress,
+						      ReG_SteerSecurity sec,
+						      String pattern) {
+    return (ReG_SteerRegistryEntry[]) ReG_Steer.Get_registry_entries_filtered_secure_j(regAddress, sec, pattern);
+  }
+
+  /**
+   *
+   */
   public int simAttach(String simID) throws ReG_SteerException {
     Intp simHandle = new Intp();
     String where = "remote";
@@ -135,6 +152,26 @@ public class ReG_SteerSteerside implements ReG_SteerConstants {
     }
 
     status = ReG_Steer.Sim_attach(simID, simHandle.cast());
+
+    if(status != REG_SUCCESS) {
+      throw new ReG_SteerException("Could not attach to " + where + " simulation.", status);
+    }
+
+    return simHandle.value();
+  }
+
+  /**
+   *
+   */
+  public int simAttachSecure(String simID, ReG_SteerSecurity sec) throws ReG_SteerException {
+    Intp simHandle = new Intp();
+    String where = "remote";
+
+    if(simID == "") {
+      where = "local";
+    }
+
+    status = ReG_Steer.Sim_attach_secure(simID, sec, simHandle.cast());
 
     if(status != REG_SUCCESS) {
       throw new ReG_SteerException("Could not attach to " + where + " simulation.", status);
