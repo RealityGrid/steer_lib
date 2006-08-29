@@ -284,10 +284,9 @@ typedef struct {
   int                           buffer_bytes;
   /** Size of the @p buffer */
   int				buffer_max_bytes;
-#if REG_SOCKET_SAMPLES || REG_PROXY_SAMPLES || defined(DOXYGEN)
-  /** structure used to hold all socket information */
+  /** structure used to hold all socket information when using direct
+      socket connections or socket connections to an ioProxy */
   socket_io_type		socket_info;
-#endif
   /** Whether or not to encode non-ASCII data as XDR (set in Emit_start) */
   int				use_xdr;
   /** How many bytes of xdr data to read (to avoid having to work-out/guess
