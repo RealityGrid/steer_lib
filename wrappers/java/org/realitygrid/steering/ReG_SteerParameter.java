@@ -37,7 +37,7 @@ package org.realitygrid.steering;
  * REG_FLOAT or REG_DBL. The REG_CHAR data type is not supported in
  * Java at present due to the way in which SWIG treats pointers to char.
  *
- * @version 1.2b
+ * @version 2.0
  * @author Robert Haines
  */
 public class ReG_SteerParameter implements ReG_SteerConstants {
@@ -177,19 +177,31 @@ public class ReG_SteerParameter implements ReG_SteerConstants {
 
     switch(type) {
     case REG_INT:
-      Integer i = new Integer(value);
-      ((Intp) param).assign(i.intValue());
+      if(value.length() > 0) {
+	Integer i = new Integer(value);
+	((Intp) param).assign(i.intValue());
+      }
+      else
+	param = new Intp();
       break;
     case REG_CHAR:
       ((Intp) param).assign(-1);
       break;
     case REG_FLOAT:
-      Float f = new Float(value);
-      ((Floatp) param).assign(f.floatValue());
+      if(value.length() > 0) {
+	Float f = new Float(value);
+	((Floatp) param).assign(f.floatValue());
+      }
+      else
+	param = new Floatp();
       break;
     case REG_DBL:
-      Double d = new Double(value);
-      ((Doublep) param).assign(d.doubleValue());
+      if(value.length() > 0) {
+        Double d = new Double(value);
+        ((Doublep) param).assign(d.doubleValue());
+      }
+      else
+	param = new Doublep();
       break;
     }
 
