@@ -229,8 +229,18 @@ extern int Get_sim_list(int* nSims,
 			char** simName,
 			char** simGSH);
 
+/* Redefined in ReG_Steer.i for Java
+extern int Get_registry_entries_secure(const char* registryGSH, 
+				       const struct reg_security_info* secIN,
+				       struct registry_contents* contents);
+*/
+
 extern int Sim_attach(char *SimID,
 		      int  *SimHandle);
+
+extern int Sim_attach_secure(const char*                     SimID,
+		             const struct reg_security_info* secIn,
+		             int*                            SimHandle);
 
 extern int Sim_detach(int *SimHandle);
 
@@ -304,5 +314,12 @@ extern int Consume_status(int   SimHandle,
 			  int  *SeqNum,
 			  int  *NumCmds,
 			  int  *Commands);
+
+/*-------------- Utilities function prototypes -------------*/
+
+/* Redefined in ReG_Steer.i for Java
+extern int Get_security_config(const char               *configFile,
+			       struct reg_security_info *secOut);
+*/
 
 #endif // SWIGJAVA
