@@ -92,10 +92,12 @@ int Sim_attach_wsrf (Sim_entry_type *sim, char *SimID){
     }
   }
 
-  Create_WSRF_header(sim->SGS_info.soap, 
-		     SimID,
-		     sim->SGS_info.username, 
-		     sim->SGS_info.passwd);
+  if(Create_WSRF_header(sim->SGS_info.soap, 
+			SimID,
+			sim->SGS_info.username, 
+			sim->SGS_info.passwd) != REG_SUCCESS){
+    return REG_FAILURE;
+  }
 
   if(soap_call_sws__Attach(sim->SGS_info.soap, SimID, "", NULL, 
 			   &response) != SOAP_OK){
@@ -271,7 +273,10 @@ int Get_resource_property (struct soap *soapStruct,
 #endif
 
   *pRP = NULL;
-  Create_WSRF_header(soapStruct, epr, username, passwd);
+  if(Create_WSRF_header(soapStruct, epr, username, passwd) 
+     != REG_SUCCESS){
+    return REG_FAILURE;
+  }
 
 #ifdef USE_REG_TIMING
   Get_current_time_seconds(&time0);
@@ -315,7 +320,8 @@ int Get_resource_property_doc(struct soap *soapStruct,
     doc can be big */
   soap_end(soapStruct);
 
-  Create_WSRF_header(soapStruct, epr, username, passwd);
+  if(Create_WSRF_header(soapStruct, epr, username, passwd) 
+     != REG_SUCCESS) return REG_FAILURE;
 
   *pDoc = NULL;
 
@@ -358,7 +364,8 @@ int Set_resource_property (struct soap *soapStruct,
 {
   struct wsrp__SetResourcePropertiesResponse out;
 
-  Create_WSRF_header(soapStruct, epr, username, passwd);
+  if(Create_WSRF_header(soapStruct, epr, username, 
+			passwd) != REG_SUCCESS)return REG_FAILURE;
 
   if(soap_call_wsrp__SetResourceProperties(soapStruct, epr,
 					   "", input, &out) != SOAP_OK){
@@ -389,8 +396,11 @@ int Send_detach_msg_wsrf (Sim_entry_type *sim){
   fprintf(stderr, "STEER: Send_detach_msg_wsrf: calling Detach...\n");
 #endif
 
-  Create_WSRF_header(sim->SGS_info.soap, sim->SGS_info.address,
-		     sim->SGS_info.username, sim->SGS_info.passwd);
+  if(Create_WSRF_header(sim->SGS_info.soap, sim->SGS_info.address,
+			sim->SGS_info.username, 
+			sim->SGS_info.passwd) != REG_SUCCESS){
+    return REG_FAILURE;
+  }
 
   if(soap_call_sws__Detach(sim->SGS_info.soap, sim->SGS_info.address, 
 			   "", NULL, NULL )){
@@ -456,10 +466,12 @@ int Get_param_log_wsrf(Sim_entry_type *sim,
   Get_current_time_seconds(&time0);
 #endif
   if(sim->SGS_info.passwd[0]){
-    Create_WSRF_header(sim->SGS_info.soap, 
-                       sim->SGS_info.address,
-                       sim->SGS_info.username, 
-		       sim->SGS_info.passwd);
+    if(Create_WSRF_header(sim->SGS_info.soap, 
+			  sim->SGS_info.address,
+			  sim->SGS_info.username, 
+			  sim->SGS_info.passwd) != REG_SUCCESS){
+      return REG_FAILURE;
+    }
   }
   if(soap_call_sws__GetParamLog(sim->SGS_info.soap, sim->SGS_info.address, 
 				"", (xsd__int)handle, &response )){

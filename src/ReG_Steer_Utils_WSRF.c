@@ -77,13 +77,16 @@ int Get_registry_entries_wsrf(const char *registryEPR,
 	      "soap SSL context failed\n");
       return REG_FAILURE;
     }
-    Create_WSRF_header(&soap, registryEPR,
-		       NULL, NULL);
+    status = Create_WSRF_header(&soap, registryEPR,
+				NULL, NULL);
   }
   else{
     /* Otherwise we just use WSSE */
-    Create_WSRF_header(&soap, registryEPR,
-		       sec->userDN, sec->passphrase);
+    status = Create_WSRF_header(&soap, registryEPR,
+				sec->userDN, sec->passphrase);
+  }
+  if(status != REG_SUCCESS){
+    return REG_FAILURE;
   }
 
   in.__size = 1;
@@ -210,7 +213,9 @@ char *Create_SWS(const struct reg_job_details   *job,
   }
 #endif /* REG_DEBUG_FULL */
 
-  Create_WSRF_header(&soap, factoryAddr, NULL, NULL);
+  if(Create_WSRF_header(&soap, factoryAddr, NULL, NULL) != REG_SUCCESS){
+    return NULL;
+  }
 
   /* 1440 = 24hrs in minutes.  Is the default lifetime of the service
      until its associated job starts up and then the TerminationTime
@@ -272,8 +277,10 @@ char *Create_SWS(const struct reg_job_details   *job,
     ssl_initialized = 1;
   }
 
-  Create_WSRF_header(&soap, registryAddress, 
-                     sec->userDN, sec->passphrase);
+  if(Create_WSRF_header(&soap, registryAddress, 
+			sec->userDN, sec->passphrase) != REG_SUCCESS){
+    return NULL;
+  }
 
   if(soap_call_rsg__Add(&soap, registryAddress, 
 			"", jobDescription,
@@ -301,7 +308,10 @@ char *Create_SWS(const struct reg_job_details   *job,
 	   job->lifetimeMinutes, registryAddress, 
 	   addResponse.wsa__EndpointReference.wsa__Address);
 
-  Create_WSRF_header(&soap, epr, job->userName, job->passphrase);
+  if(Create_WSRF_header(&soap, epr, job->userName, job->passphrase) 
+     != REG_SUCCESS){
+    return NULL;
+  }
 
 #if REG_DEBUG_FULL
   fprintf(stderr,
@@ -333,7 +343,12 @@ char *Create_SWS(const struct reg_job_details   *job,
       
     }
 
-    Create_WSRF_header(&soap, epr, job->userName, job->passphrase);
+    if(Create_WSRF_header(&soap, epr, job->userName, 
+			  job->passphrase) != REG_SUCCESS){
+      soap_end(&soap);
+      soap_done(&soap);
+      return NULL;
+    }
 #if REG_DEBUG_FULL
     fprintf(stderr,
 	    "\nSTEERUtils: Create_SWS: Calling SetResourceProperties with >>%s<<\n",
@@ -367,11 +382,13 @@ int Destroy_WSRP(const char                     *epr,
     soap.encodingStyle = NULL;
 
     if(sec->use_ssl != REG_TRUE){
-      Create_WSRF_header(&soap, epr, sec->userDN, sec->passphrase);
+      return_status = Create_WSRF_header(&soap, epr, sec->userDN, 
+					 sec->passphrase);
     }
     else{
-      Create_WSRF_header(&soap, epr, NULL, NULL);
+      return_status = Create_WSRF_header(&soap, epr, NULL, NULL);
     }
+    if(return_status != REG_SUCCESS)return REG_FAILURE;
 
     /* If we're using https then set up the context */
     if((sec->use_ssl == 1) && (strstr(epr, "https") == epr) ){
