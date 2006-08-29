@@ -267,18 +267,19 @@
   $2 = (Param_details_struct*) malloc($1 * sizeof(Param_details_struct));
 }
 %typemap(java, argout) (int steer, int count, Param_details_struct* outdetails) {
+  jclass regParam;
+  jobjectArray paramArray;
+
+  regParam = (*jenv)->FindClass(jenv, "org/realitygrid/steering/ReG_SteerParameter");
+  paramArray = (*jenv)->NewObjectArray(jenv, $2, regParam, NULL);
 
   if($2 > 0) {
     int i;
-    jclass regParam;
-    jobjectArray paramArray;
     jmethodID regParamInit;
     jvalue args[7];
     jobject newObject;
 
     /* Set up access to the java classes and methods */
-    regParam = (*jenv)->FindClass(jenv, "org/realitygrid/steering/ReG_SteerParameter");
-    paramArray = (*jenv)->NewObjectArray(jenv, $2, regParam, NULL);
     regParamInit = (*jenv)->GetMethodID(jenv, regParam, "<init>", "(Ljava/lang/String;Ljava/lang/String;ZILjava/lang/String;Ljava/lang/String;I)V");
 
     for(i = 0; i < $2; i++) {
@@ -293,12 +294,8 @@
       newObject = (*jenv)->NewObjectA(jenv, regParam, regParamInit, args);
       (*jenv)->SetObjectArrayElement(jenv, paramArray, i, newObject);
     }
-
-    $result = paramArray;
   }
-  else {
-    $result = NULL;
-  }
+  $result = paramArray;
 }
 %typemap(freearg) Param_details_struct* outdetails {
   if($1) free($1);
@@ -310,6 +307,178 @@
 %typemap(javaout) Param_details_struct* outdetails {
   return $jnicall;
 }
+
+/*
+ * A set of typemaps to cope with reg_security_info passed in
+ */
+%typemap(java, in) const struct reg_security_info* sec_in {
+  jclass regSec;
+  jmethodID getMethod;
+  jboolean usingSSL;
+  jboolean isStringCopy;
+  jobject secString;
+  const char* cString;
+
+  // malloc C security struct
+  $1 = 0;
+  $1 = (struct reg_security_info*) malloc(sizeof(struct reg_security_info));
+  if(!$1) return 0;
+
+  // get Java security class
+  regSec = (*jenv)->FindClass(jenv, "org/realitygrid/steering/ReG_SteerSecurity");
+
+  // use_ssl?
+  getMethod = (*jenv)->GetMethodID(jenv, regSec, "isUsingSSL", "()Z");
+  usingSSL = (*jenv)->CallBooleanMethod(jenv, $input, getMethod);
+  $1->use_ssl = (usingSSL == JNI_TRUE) ? 1 : 0;
+
+  // caCertsPath
+  getMethod = (*jenv)->GetMethodID(jenv, regSec, "getCaCertsPath", "()Ljava/lang/String;");
+  secString = (*jenv)->CallObjectMethod(jenv, $input, getMethod);
+  cString = (*jenv)->GetStringUTFChars(jenv, (jstring) secString, &isStringCopy);
+  strncpy($1->caCertsPath, cString, REG_MAX_STRING_LENGTH);
+  if(isStringCopy == JNI_TRUE) {
+    (*jenv)->ReleaseStringUTFChars(jenv, secString, cString);
+  }
+
+  // myKeyCertFile
+  getMethod = (*jenv)->GetMethodID(jenv, regSec, "getMyKeyCertFile", "()Ljava/lang/String;");
+  secString = (*jenv)->CallObjectMethod(jenv, $input, getMethod);
+  cString = (*jenv)->GetStringUTFChars(jenv, (jstring) secString, &isStringCopy);
+  strncpy($1->myKeyCertFile, cString, REG_MAX_STRING_LENGTH);
+  if(isStringCopy == JNI_TRUE) {
+    (*jenv)->ReleaseStringUTFChars(jenv, secString, cString);
+  }
+
+  // userDN
+  getMethod = (*jenv)->GetMethodID(jenv, regSec, "getUserDN", "()Ljava/lang/String;");
+  secString = (*jenv)->CallObjectMethod(jenv, $input, getMethod);
+  cString = (*jenv)->GetStringUTFChars(jenv, (jstring) secString, &isStringCopy);
+  strncpy($1->userDN, cString, REG_MAX_STRING_LENGTH);
+  if(isStringCopy == JNI_TRUE) {
+    (*jenv)->ReleaseStringUTFChars(jenv, secString, cString);
+  }
+
+  // passphrase
+  getMethod = (*jenv)->GetMethodID(jenv, regSec, "getPassphrase", "()Ljava/lang/String;");
+  secString = (*jenv)->CallObjectMethod(jenv, $input, getMethod);
+  cString = (*jenv)->GetStringUTFChars(jenv, (jstring) secString, &isStringCopy);
+  strncpy($1->passphrase, cString, REG_MAX_STRING_LENGTH);
+  if(isStringCopy == JNI_TRUE) {
+    (*jenv)->ReleaseStringUTFChars(jenv, secString, cString);
+  }
+}
+%typemap(freearg) const struct reg_security_info* sec_in {
+  if($1) free($1);
+}
+%typemap(jni) const struct reg_security_info* sec_in "jobject"
+%typemap(jtype) const struct reg_security_info* sec_in "Object"
+%typemap(jstype) const struct reg_security_info* sec_in "Object"
+%typemap(javain) const struct reg_security_info* sec_in "$javainput"
+
+/*
+ * A set of typemaps to cope with reg_security_info passed out
+ */
+%typemap(java, in, numinputs=0) struct reg_security_info* sec_out {
+  /* Just throw $1 away from the inputs! */
+}
+%typemap(java, check) struct reg_security_info* sec_out {
+  $1 = 0;
+  $1 = (struct reg_security_info*) malloc(sizeof(struct reg_security_info));
+  if(!$1) {
+    return 0;
+  }
+}
+%typemap(java, argout) struct reg_security_info* sec_out {
+  jclass regSec;
+  jmethodID regSecCons;
+  jvalue args[5];
+  jobject newObject;
+
+  regSec = (*jenv)->FindClass(jenv, "org/realitygrid/steering/ReG_SteerSecurity");
+  regSecCons = (*jenv)->GetMethodID(jenv, regSec, "<init>", "(ZLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V");
+
+  args[0].z = ($1->use_ssl == 1) ? JNI_TRUE : JNI_FALSE;
+  args[1].l = (*jenv)->NewStringUTF(jenv, $1->caCertsPath);
+  args[2].l = (*jenv)->NewStringUTF(jenv, $1->myKeyCertFile);
+  args[3].l = (*jenv)->NewStringUTF(jenv, $1->userDN);
+  args[4].l = (*jenv)->NewStringUTF(jenv, $1->passphrase);
+
+  newObject = (*jenv)->NewObjectA(jenv, regSec, regSecCons, args);
+
+  $result = newObject;
+}
+%typemap(freearg) struct reg_security_info* sec_out {
+  if($1) free($1);
+}
+%typemap(jni) struct reg_security_info* sec_out "jobject"
+%typemap(jtype) struct reg_security_info* sec_out "Object"
+%typemap(jstype) struct reg_security_info* sec_out "Object"
+%typemap(javain) struct reg_security_info* sec_out "$javainput"
+%typemap(javaout) struct reg_security_info* sec_out {
+  return $jnicall;
+}
+
+/*
+ * A set of typemaps for the registry_contents struct passed out
+ */
+%typemap(java, in, numinputs=0) struct registry_contents* cont_out {
+  /* Just throw $1 away from the inputs! */
+}
+%typemap(java, check) struct registry_contents* cont_out {
+  $1 = 0;
+  $1 = (struct registry_contents*) malloc(sizeof(struct registry_contents));
+  if(!$1) {
+    return 0;
+  }
+}
+%typemap(java, argout) struct registry_contents* cont_out {
+  int num = $1->numEntries;
+  jclass regEntry;
+  jobjectArray entryArray;
+
+  regEntry = (*jenv)->FindClass(jenv, "org/realitygrid/steering/ReG_SteerRegistryEntry");
+  entryArray = (*jenv)->NewObjectArray(jenv, num, regEntry, NULL);
+
+  if(num > 0) {
+    int i;
+    jmethodID regEntryCons;
+    jvalue args[8];
+    jobject newObject;
+    
+    regEntryCons = (*jenv)->GetMethodID(jenv, regEntry, "<init>", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V");
+
+    for(i = 0; i < num; i++) {
+      args[0].l = (*jenv)->NewStringUTF(jenv, $1->entries[i].service_type);
+      args[1].l = (*jenv)->NewStringUTF(jenv, $1->entries[i].gsh);
+      args[2].l = (*jenv)->NewStringUTF(jenv, $1->entries[i].entry_gsh);
+      args[3].l = (*jenv)->NewStringUTF(jenv, $1->entries[i].application);
+      args[4].l = (*jenv)->NewStringUTF(jenv, $1->entries[i].start_date_time);
+      args[5].l = (*jenv)->NewStringUTF(jenv, $1->entries[i].user);
+      args[6].l = (*jenv)->NewStringUTF(jenv, $1->entries[i].group);
+      args[7].l = (*jenv)->NewStringUTF(jenv, $1->entries[i].job_description);
+      
+      newObject = (*jenv)->NewObjectA(jenv, regEntry, regEntryCons, args);
+      (*jenv)->SetObjectArrayElement(jenv, entryArray, i, newObject);
+    }
+  }
+
+  $result = entryArray;
+}
+%typemap(freearg) struct registry_contents* cont_out {
+  if($1) {
+    Delete_registry_table($1);
+    free($1);
+  }
+}
+%typemap(jni) struct registry_contents* cont_out "jobjectArray"
+%typemap(jtype) struct registry_contents* cont_out "Object[]"
+%typemap(jstype) struct registry_contents* cont_out "Object[]"
+%typemap(javain) struct registry_contents* cont_out "$javainput"
+%typemap(javaout) struct registry_contents* cont_out {
+  return $jnicall;
+}
+
 
 /*
  * A set of typemaps to accept arrays of Strings as arrays of char*
@@ -369,8 +538,11 @@
 %typemap(javain) int *inInts "$javainput"
 
 
+
 /* Strings and arrays stuff */
 %include "arrays_java.i"
+
+
 
 /* Apply typemaps to the required variables */
 %apply (int length, int *array) { (int NumSupportedCmds, int *SupportedCmds) }
@@ -416,14 +588,24 @@
 }
 %apply Param_details_struct* outdetails { Param_details_struct* param_details }
 
+%apply const struct reg_security_info* sec_in { const struct reg_security_info* secIn }
+
+%apply struct reg_security_info* sec_out { struct reg_security_info* secOut }
+
+%apply struct registry_contents* cont_out { struct registry_contents* regContsOut }
+
 %apply char **inStrings {
   char **SysCmdParams,
   char* *vals
 }
 %apply int *inInts { int *SysCommands }
 
+
+
 /* Pull in the common API definition file */
 %include "../ReG_Steer_API.i"
+
+
 
 /* Re-define the Consume_data_slice method to return an object
  * this is done by creating a new version of the method and
@@ -446,3 +628,46 @@ jobject Consume_data_slice_j(int IOTypeIndex, int DataType, int Count, void* pDa
   }
 %}
 jobjectArray Get_param_values_j(int sim_handle, int steerable, int num_params, Param_details_struct *param_details);
+
+/* Re-define the Get_security_config method to return an object
+ * this is done by creating a new version of the method and
+ * calling that instead.: Get_security_config_j */
+%inline %{
+  jobject Get_security_config_j(const char* configFile,
+				struct reg_security_info* secOut) {
+    Get_security_config(configFile, secOut);
+    return 0;
+  }
+%}
+jobject Get_security_config_j(const char* configFile,
+			      struct reg_security_info* secOut);
+
+/* Re-define the Get_registry_entries_secure method to return an
+ * objectArray. This is done by creating a new version of the method
+ * and calling that instead.: Get_registry_entries_secure_j */
+%inline %{
+  jobjectArray Get_registry_entries_secure_j(const char* registryGSH,
+				       const struct reg_security_info* secIn,
+				       struct registry_contents* regContsOut) {
+    Get_registry_entries_secure(registryGSH, secIn, regContsOut);
+  }
+%}
+jobjectArray Get_registry_entries_secure_j(const char* registryGSH,
+					const struct reg_security_info* secIn,
+					struct registry_contents* regContsOut);
+
+/* Re-define the Get_registry_entries_filtered_secure method to return an
+ * objectArray. This is done by creating a new version of the method
+ * and calling that instead.: Get_registry_entries_filtered_secure_j */
+%inline %{
+  jobjectArray Get_registry_entries_filtered_secure_j(const char* registryGSH,
+				       const struct reg_security_info* secIn,
+				       struct registry_contents* regContsOut,
+				       char* pattern) {
+    Get_registry_entries_filtered_secure(registryGSH, secIn, regContsOut, pattern);
+  }
+%}
+jobjectArray Get_registry_entries_filtered_secure_j(const char* registryGSH,
+					const struct reg_security_info* secIn,
+					struct registry_contents* regContsOut,
+					char* pattern);
