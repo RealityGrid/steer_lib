@@ -290,8 +290,8 @@ int Get_IOTypes(const char                     *address,
 			  sec,
 			  list);
 #else
-  fprintf(stderr, "STEERUtils: Destroy_steering_service: not "
-	  "implemented for OGSI :-(\n");
+  fprintf(stderr, "STEERUtils: Get_IOTypes: not implemented for "
+	  "OGSI :-(\n");
   return REG_FAILURE;
 #endif
 
