@@ -30,6 +30,10 @@ location and don't want to have to set LD_LIBRARY64_PATH/LD_LIBRARYN32_PATH
 then you can also specify that you only want a static library by giving the
 --enable-shared=no flag.)
 
+IMPORTANT NOTE: if you have a version of libxml2 prior to 2.6 then you
+will need to edit include/ReG_Steer_types.h and comment out the line:
+"#define REG_HAVE_XMLREADMEMORY"
+
 ----------------------------------------------------------------------------
 
 The Steering Library.
@@ -89,8 +93,9 @@ Specify compilers and compiler flags...
 Ensure that STEER_LIBS and STEER_INCLUDES point to the correct directories
 for finding the steering and libxml2 libraries and associated headers.
 
-Choose whether or not to use sockets for library-controlled sample
-emission/consumption. (Uses file-based IO if not.)
+Choose whether or not to use direct sockets, sockets via a proxy or
+neither for library-controlled sample emission/consumption. (Uses
+file-based IO if neither of these options are selected.)
 
 Choose whether or not to use SOAP (and the Web Services framework) for
 steering.  (Uses file-based steering if not.)
@@ -114,7 +119,7 @@ is a parallel (F90 and MPI) example.
 For a full description of the environment variables used by the steering
 library see the docs/Environment_variables.txt file.  These can be crucial
 when setting up socket connections on firewalled machines or on machines
-which do not have an IP address which it is possible to do a reverse 
+which have an IP address that is impossible to do a reverse 
 lookup of.
 
 ----------------------------------------------------------------------------
