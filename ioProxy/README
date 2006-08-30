@@ -1,0 +1,27 @@
+This README describes the "ioProxy" - a piece of software that allows software
+components to send data to one another using sockets without having to connect
+to one another directly.  Such functionality is useful when one or both of
+the components are running on hosts whose firewalls do not permit incoming
+socket connections.
+
+The ioProxy is derived from the "HybridSwitch" originally written by
+Matt Harvey to facilitate data exchange between the components of
+coupled models.  It has been extended to form the ioProxy by Andrew Porter
+at the University of Manchester.
+
+---------------------------------------
+
+Usage:
+
+java HybridSwitch <port on which to listen>
+
+The steering library must be compiled with the correct options in
+order for it to do its data IO via an ioProxy: edit the
+Makefile.include file and set the REG_PROXY_SAMPLES_FLAG to 1 and the
+REG_SOCKET_SAMPLES_FLAG to 0.  Finally, execute a 'make clean' followed
+by a 'make'.
+
+The Steering Web Service (SWS) representing a simulation must be configured
+with information on the location (address and port no.) of the ioProxy. See
+the README in the reg_wsrf_tools repository for information on how to use
+createSWS to do this.
