@@ -66,7 +66,8 @@ int Get_registry_entries_wsrf(const char *registryEPR,
 
   /* regServiceGroup can use SSL for authentication */
   /* If address of SWS begins with 'https' then initialize SSL context */
-  if(strstr(registryEPR, "https") == registryEPR){
+  if( (sec->use_ssl == REG_TRUE) && 
+      (strstr(registryEPR, "https") == registryEPR) ){
     if( REG_Init_ssl_context(&soap,
 			     REG_TRUE, /* Authenticate SWS */
 			     sec->myKeyCertFile,
