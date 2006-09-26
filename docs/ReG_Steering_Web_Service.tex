@@ -36,6 +36,7 @@ Version & Author & Notes & Date \\
 0.1 & A.~R.~Porter & Initial draft --- work in progress alongside implementation & 06/07/2005\\
 0.2 & A.~R.~Porter & Work following addition of security and implementation of registry & 13/03/2006\\
 0.3 & A.~R.~Porter & Updating prior to release of 2.0 of library & 05/07/2006\\
+0.4 & A.~R.~Porter & Updating to reflect changes made for AJAX client support & 26/09/2006\\
 \hline\hline
 \end{tabular}
 \end{center}
@@ -387,10 +388,15 @@ A user may be added to an SWS' list of allowed users by using the
 \texttt{SetResourceProperties} method to add their DN to the {\bf user}
 ResourceProperty (see section~\ref{sec:swsMethods}).
 
-Provided they can authenticate successfully, the client calls the 
-\texttt{Attach} method (no arguments) on the SWS.
-This returns an XML document describing the commands that the application
-supports.  This document conforms to the RealityGrid steering schema.
+Provided they can authenticate successfully, the client may either
+call the \texttt{Attach} method (no arguments) of the SWS or use
+\texttt{SetResourceProperties} to set the {\bf steererStatus} RP to
+'ATTACHED'.  The \texttt{Attach} method returns an XML document describing the
+commands that the application supports.  This document conforms to the
+RealityGrid steering schema. Of course, these supported commands can
+also be obtained by calling \texttt{GetResourceProperty} for the
+{\bf supportedCommands} RP.
+
 \end{subsection}
 
 \begin{subsection}{Getting the parameter definitions}
@@ -508,11 +514,13 @@ disappearance of the SWS.
 
 \begin{subsection}{Detaching from the application}
 The steering client notifies the SWS that it has finished steering the
-application by calling the \texttt{Detach} method.  Unlike the SGS, the
-SWS does not explicitly acknowledge this call.  (However, the value of
-the {\bf clientCount} ResourceProperty will be decremented by one upon
-a successful detach.)  If there are no steering clients attached to
-the SWS then the application ceases to emit status messages to it.
+application either by calling the \texttt{Detach} method or by calling
+\texttt{SetResourceProperty} for {\bf steererStatus} with a value of
+'DETACHED'.  Unlike the SGS, the SWS does not explicitly acknowledge
+a call to \texttt{Detach}.  (However, the value of the {\bf clientCount}
+ResourceProperty will be decremented by one upon a successful detach.)
+If there are no steering clients attached to the SWS then the
+application ceases to emit status messages to it.
 \end{subsection}
 
 \end{section}
