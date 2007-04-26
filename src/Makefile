@@ -39,7 +39,8 @@ LIB_PATH       = ${REG_STEER_HOME}/lib$(NBIT)
 
 .SUFFIXES: .o .f90 .c
 
-REG_LIB_OBJECTS=ReG_Steer_Appside_f.o \
+REG_LIB_OBJECTS=reg_steer_mod.o \
+ ReG_Steer_Appside_f.o \
  ReG_Steer_Appside.o \
  ReG_Steer_Steerside.o \
  ReG_Steer_Common.o \
@@ -65,7 +66,7 @@ REG_LIB_SOAP_OBJECTS=stdsoap2.o soapC.o soapClient.o
 # The -DWITH_CDATA is to ensure gSoap retains CDATA sections in xml string
 # literals
 .c.o:
-	${CC} ${C_FLAGS} \
+	${CC} ${LIB_C_FLAGS} \
         -DREG_SOCKET_SAMPLES=${REG_SOCKET_SAMPLES_FLAG} \
         -DREG_PROXY_SAMPLES=${REG_PROXY_SAMPLES_FLAG} \
         -DREG_SOAP_STEERING=${REG_SOAP_STEERING_FLAG} \
@@ -93,7 +94,8 @@ ${LIB_PATH}/libReG_Steer.so: ${REG_LIB_OBJECTS}
 	rm -f $(LIB_PATH)/libReG_Steer.so
 	ln -s libReG_SteerSoapSockets.so $(LIB_PATH)/libReG_Steer.so
 
-${LIB_PATH}/$(LIB_NAME): ${REG_LIB_OBJECTS}
+#${LIB_PATH}/$(LIB_NAME): ${REG_LIB_OBJECTS}
+${LIB_PATH}/libReG_Steer.a: ${REG_LIB_OBJECTS}
 	rm -f $(LIB_PATH)/${LIB_NAME}
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Appside_f.o
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Appside.o
@@ -226,6 +228,18 @@ ReG_Steer_Appside_IOProxy.o: ReG_Steer_Appside_IOProxy.c \
         ../include/ReG_Steer_Appside_IOProxy.h \
         ../include/ReG_Steer_types.h \
         ../include/ReG_Steer_Appside_Sockets.h
+
+# Leading '-' is to allow for failure in case we don't have an 
+# F90 compiler
+reg_steer_mod.o: reg_steer_mod.f90
+	-${F90} ${F90_FLAGS} \
+        -DREG_SOCKET_SAMPLES=${REG_SOCKET_SAMPLES_FLAG} \
+        -DREG_SOAP_STEERING=${REG_SOAP_STEERING_FLAG} \
+        -DREG_DEBUG=${REG_DEBUG_FLAG} \
+        -DREG_DEBUG_FULL=${REG_DEBUG_FULL_FLAG} \
+        -DREG_STEER_LIB_VERSION=\"${REG_STEER_LIB_VERSION}\" \
+        ${INCLUDE_PATH} -c reg_steer_mod.f90
+	cp -f reg_steer_module.mod ${REG_STEER_HOME}/include
 
 ReG_Steer_Browser.o: ReG_Steer_Browser.c \
         ../include/ReG_Steer_Browser.h \
