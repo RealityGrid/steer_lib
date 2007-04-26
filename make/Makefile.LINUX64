@@ -39,13 +39,14 @@ C_FLAGS = -O2
 LIB_C_FLAGS = ${C_FLAGS} -fPIC -I../include
 
 # Linker flags to use
-LD_FLAGS = -shared -soname=libReG_Steer.so -L${REG_XML_LIBDIR} -lm -lz -lxml2
+LD_FLAGS = -shared -L${REG_XML_LIBDIR} -lm -lz -lxml2
+#LD_FLAGS = -shared -soname=libReG_Steer.so -L${REG_XML_LIBDIR} -lm -lz -lxml2
 
 # Location of F90 compiler (if any) and flags to use
-F90 =
-F90_MPI = 
-F90_FLAGS = 
-MPI_FLAGS = 
+F90 = g95
+F90_MPI = g95
+F90_FLAGS = -O2 -fno-second-underscore
+MPI_FLAGS = -O2 -fno-second-underscore -lmpichf90 -lmpich -lrt
 
 # Set-up access to M4 scripts for production of F90 wrappers, this is
 # taken from the PVM project.
@@ -63,7 +64,8 @@ AR_FLAGS = rv
 
 # include directories
 STEER_INCLUDES = -I${REG_STEER_HOME}/include \
-                 -I${REG_XML_INCDIR}
+                 -I${REG_XML_INCDIR} \
+                 -I/usr/local/include
 
 # library directories
 STEER_LIBS = -L${REG_STEER_HOME}/lib${NBIT} \
