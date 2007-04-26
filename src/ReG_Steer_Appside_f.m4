@@ -1755,21 +1755,24 @@ INT_KIND_1_DECL(Status);
   int num_commands, num_params;
   int i, len, pos;
 
+/*
 #if REG_DEBUG
   fprintf(stderr, "STEER: steering_control_f: Calling Steering_control...\n");
 #endif
-
+*/
   *Status = INT_KIND_1_CAST( Steering_control((int)*SeqNum,
 			     		      &num_params,
 			     		      str_array,
 			     		      &num_commands,
 			     		      gSteerCommands,
                                               str_array_params) );
+/*
 #if REG_DEBUG
   fprintf(stderr, 
           "STEER: steering_control_f: got %d params and %d cmds\n", 
           num_params, num_commands);
 #endif
+*/
 
   if(*Status == INT_KIND_1_CAST(REG_SUCCESS) ){
 
@@ -2034,6 +2037,8 @@ INT_KIND_1_DECL(Status);
     default:
       fprintf(stderr, "STEER: set_type_size: ERROR: unrecognised type: %d\n",
               type);
+      fprintf(stderr, "STEER:                                    size = %d\n",
+              size);
       *Status = INT_KIND_1_CAST(REG_FAILURE);
       break;
   }
