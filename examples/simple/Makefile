@@ -41,7 +41,7 @@ TARGET   = simple
 
 ${TARGET}: ${REG_STEER_HOME}/lib$(NBIT)/$(LIB_NAME) ${TARGET}.o
 	${CC} ${C_FLAGS} ${TARGET}.o -o $@ ${STEER_LIBS} \
-        -lReG_Steer -lReG_Steer_SOAP ${STEER_LDFLAGS}
+        -lReG_Steer -lReG_Steer_Utils -lReG_Steer_SOAP ${STEER_LDFLAGS}
 
 install:
 	-mv -f ${TARGET} ${LOCAL_BIN_DIR}/.

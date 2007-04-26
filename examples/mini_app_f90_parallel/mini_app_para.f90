@@ -32,6 +32,8 @@
 !----------------------------------------------------------------------
 
 PROGRAM para_mini_app
+
+!  use reg_steer_module
   IMPLICIT none
 
   INCLUDE 'reg_steer_f90.inc'
