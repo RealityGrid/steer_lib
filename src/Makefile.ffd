@@ -45,7 +45,7 @@ del:
 
 make_f90:
 	cd stubs; ${MAKE}; cd ..
-	-${F90} ${LIB_C_FLAGS} \
+	-${F90} ${F90_FLAGS} ${LIB_C_FLAGS} \
         -DREG_SOCKET_SAMPLES=0 \
         -DREG_SOAP_STEERING=0 \
         -DREG_DEBUG=0 \
@@ -66,7 +66,7 @@ ReG_Steer_Appside_f.o: ReG_Steer_Appside_f.c \
 
 # Leading '-' in case we don't have an F90 compiler
 ReG_Steering_Initialize.o: ReG_Steering_Initialize.f90
-	-${F90} ${LIB_C_FLAGS} \
+	-${F90} ${F90_FLAGS} ${LIB_C_FLAGS} \
         -DREG_SOCKET_SAMPLES=0 \
         -DREG_SOAP_STEERING=0 \
         -DREG_DEBUG=0 \

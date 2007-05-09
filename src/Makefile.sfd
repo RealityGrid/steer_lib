@@ -45,7 +45,7 @@ del:
 
 make_f90:
 	cd stubs; ${MAKE}; cd ..
-	-${F90} ${LIB_C_FLAGS} \
+	-${F90} ${F90_FLAGS} ${LIB_C_FLAGS} \
         -DREG_SOCKET_SAMPLES=0 \
         -DREG_SOAP_STEERING=0 \
         -DREG_DEBUG=0 \
