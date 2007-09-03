@@ -39,26 +39,13 @@ REG_WRAP=none
 REG_WRAP_FLAGS=-DREG_DEBUG=${REG_DEBUG_FLAG}
 
 # Set REG_WRAP_LINK.
-# This should just work (at least with bash). If not extract the relevent
-# line and set REG_WRAP_LINK manually.
-REG_WRAP_LINK=-L${REG_STEER_HOME}/lib${NBIT} \
-              `if [ ${ARCH:0:5} = LINUX ] ; then \
-                 if [ ${LIB_NAME} = libReG_Steer.a ] ; then \
-                   echo -Wl,--whole-archive ${REG_STEER_HOME}/lib${NBIT}/libReG_Steer.a -Wl,--no-whole-archive -L/usr/lib -lxml2; \
-                 else \
-                   echo -lReG_Steer; \
-                 fi \
-               elif [ ${LIB_NAME} = libReG_Steer.a ] ; then \
-                 echo -lReG_Steer -L/usr/lib -lxml2; \
-               else \
-                 echo -lReG_Steer; \
-               fi`
+REG_WRAP_LINK=-L${REG_STEER_HOME}/lib${NBIT} -lReG_Steer -lReG_Steer_Utils -lReG_Steer_SOAP
 
 # swig
-REG_SWIG=/usr/local/bin/swig
+REG_SWIG=/usr/bin/swig
 
 # python
-REG_PYTHON_INC=-I/usr/include/python2.3 -I/usr/lib/python2.3/config/ -DHAVE_CONFIG_H
+REG_PYTHON_INC=-I/usr/include/python2.4 -I/usr/lib/python2.4/config/ -DHAVE_CONFIG_H
 
 # perl
 # this shouldn't need changing

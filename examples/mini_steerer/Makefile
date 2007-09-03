@@ -46,7 +46,8 @@ ${TARGET}: ${REG_STEER_HOME}/lib$(NBIT)/$(LIB_NAME) \
 
 ${TARGET}: ${TARGET}.o
 	${CC} ${C_FLAGS} ${TARGET}.o -o $@ ${STEER_LIBS} \
-	 -lReG_Steer_Utils -lReG_Steer -lReG_Steer_SOAP  ${STEER_LDFLAGS}
+	-Wl,-Bstatic -lReG_Steer_Utils -lReG_Steer -lReG_Steer_SOAP \
+	-Wl,-Bdynamic ${STEER_LDFLAGS}
 
 install:
 	-mv -f ${TARGET} ${LOCAL_BIN_DIR}/.

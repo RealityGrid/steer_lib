@@ -42,7 +42,7 @@ export PERL5LIB=$PERL5LIB:$REG_STEER_HOME/wrappers/perl
 export CLASSPATH=$CLASSPATH:$REG_STEER_HOME/wrappers/java
 
 # Set directory location to use for steering communication
-export REG_STEER_DIRECTORY=/tmp
+export REG_STEER_DIRECTORY=$HOME/tmp
 
 # Minimum time interval (integer no. of seconds) between checks on 
 # whether a steering client has connected.  If set to zero then a 

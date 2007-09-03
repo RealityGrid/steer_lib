@@ -61,53 +61,13 @@ f90_examples:
 	$(MAKE) app_f90_parallel
 
 lib: 
-	cd src; $(MAKE) $(LIB_PATH)/$(LIB_NAME)
+	cd src; $(MAKE) lib
 
 lib_utils: 
-	cd src; $(MAKE) $(LIB_PATH)/$(LIB_UTILS_NAME)
+	cd src; $(MAKE) lib_utils
 
 lib_SOAP:
-	cd src; $(MAKE) $(LIB_PATH)/$(LIB_SOAP_NAME)
-
-libss:
-	cd src; $(MAKE) -f Makefile.ss all
-	rm -f $(LIB_PATH)/libReG_Steer.so
-	ln -s libReG_SteerSoapSockets.so $(LIB_PATH)/libReG_Steer.so
-
-libssd:
-	cd src; $(MAKE) -f Makefile.ssd all
-	rm -f $(LIB_PATH)/libReG_Steer.so
-	ln -s libReG_SteerSoapSocketsDebug.so $(LIB_PATH)/libReG_Steer.so
-
-libsf:
-	cd src; $(MAKE) -f Makefile.sf all
-	rm -f $(LIB_PATH)/libReG_Steer.so
-	ln -s libReG_SteerSoapFile.so $(LIB_PATH)/libReG_Steer.so
-
-libsfd:
-	cd src; $(MAKE) -f Makefile.sfd all
-	rm -f $(LIB_PATH)/libReG_Steer.so
-	ln -s libReG_SteerSoapFileDebug.so $(LIB_PATH)/libReG_Steer.so
-
-libfs:
-	cd src; $(MAKE) -f Makefile.fs all
-	rm -f $(LIB_PATH)/libReG_Steer.so
-	ln -s libReG_SteerFileSockets.so $(LIB_PATH)/libReG_Steer.so
-
-libfsd:
-	cd src; $(MAKE) -f Makefile.fsd all
-	rm -f $(LIB_PATH)/libReG_Steer.so
-	ln -s libReG_SteerFileSocketsDebug.so $(LIB_PATH)/libReG_Steer.so
-
-libf:
-	cd src; $(MAKE) -f Makefile.f all
-	rm -f $(LIB_PATH)/libReG_Steer.so
-	ln -s libReG_SteerFile.so $(LIB_PATH)/libReG_Steer.so
-
-libfd:
-	cd src; $(MAKE) -f Makefile.fd all
-	rm -f $(LIB_PATH)/libReG_Steer.so
-	ln -s libReG_SteerFileDebug.so $(LIB_PATH)/libReG_Steer.so
+	cd src; $(MAKE) lib_SOAP
 
 wrappers: $(LIB_PATH)/$(LIB_NAME)
 	cd wrappers; $(MAKE)

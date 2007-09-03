@@ -36,28 +36,6 @@ REG_PACKAGE=org.realitygrid.steering
 REG_PACKAGE_DIR=org/realitygrid/steering
 REG_UTILS_DIR=org/realitygrid/utilities
 
-REG_LINK_OBJS=../../src/Base64.o \
-../../src/ReG_Steer_Appside_File.o \
-../../src/ReG_Steer_Appside_f.o \
-../../src/ReG_Steer_Appside_IOProxy.o \
-../../src/ReG_Steer_Appside.o \
-../../src/ReG_Steer_Appside_Soap.o \
-../../src/ReG_Steer_Appside_Sockets.o \
-../../src/ReG_Steer_Appside_WSRF.o \
-../../src/ReG_Steer_Browser.o \
-../../src/ReG_Steer_Common.o \
-../../src/ReG_Steer_Logging.o \
-../../src/ReG_Steer_Proxy_utils.o \
-../../src/ReG_Steer_Steerside.o \
-../../src/ReG_Steer_Steerside_Soap.o \
-../../src/ReG_Steer_Steerside_WSRF.o \
-../../src/ReG_Steer_Utils.o \
-../../src/ReG_Steer_Utils_WSRF.o \
-../../src/ReG_Steer_XML.o \
-../../src/soapClient.o \
-../../src/soapC.o \
-../../src/stdsoap2.o \
-
 doc: examples
 	./gendoc
 
@@ -69,7 +47,7 @@ coreclasses: libReG_SteerJava.so
 	${JAVAC} -classpath ${REG_STEER_HOME}/wrappers/java ${REG_PACKAGE_DIR}/*.java
 
 libReG_SteerJava.so: ReG_Steer_wrap.o
-	${CC} -shared ${REG_LINK_OBJS} -lxml2 -lssl -lcrypto \
+	${CC} -shared ${REG_WRAP_LINK} \
 	ReG_Steer_wrap.o -o libReG_SteerJava.so
 
 ReG_Steer_wrap.o: ReG_Steer_wrap.c

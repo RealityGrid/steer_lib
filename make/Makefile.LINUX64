@@ -43,10 +43,10 @@ LD_FLAGS = -shared -L${REG_XML_LIBDIR} -lm -lz -lxml2
 #LD_FLAGS = -shared -soname=libReG_Steer.so -L${REG_XML_LIBDIR} -lm -lz -lxml2
 
 # Location of F90 compiler (if any) and flags to use
-F90 = g95
-F90_MPI = g95
+F90 = gfortran
+F90_MPI = mpif90
 F90_FLAGS = -O2 -fno-second-underscore
-MPI_FLAGS = -O2 -fno-second-underscore -lmpichf90 -lmpich -lrt
+MPI_FLAGS = -O2 -fno-second-underscore
 
 # Set-up access to M4 scripts for production of F90 wrappers, this is
 # taken from the PVM project.

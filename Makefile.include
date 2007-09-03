@@ -78,12 +78,6 @@ REG_DEBUG_FLAG 	= 0
 # Set flag to 1 to get additional debug output, 0 otherwise.
 REG_DEBUG_FULL_FLAG = 0
 
-#------------------------------------
-# Create a static or shared library?
-LIB_NAME=libReG_Steer.a
-LIB_UTILS_NAME=libReG_Steer_Utils.a
-LIB_SOAP_NAME=libReG_Steer_SOAP.a
-
 #--------------------------------------------------------------------
 # Don't edit anything below this line
 

@@ -32,7 +32,6 @@
 
 include ../Makefile.include
 include ../make/Makefile.${ARCH}
-include Makefile.shared
 
 INCLUDE_PATH   = ${STEER_INCLUDES}
 LIB_PATH       = ${REG_STEER_HOME}/lib$(NBIT)
@@ -53,9 +52,9 @@ REG_LIB_OBJECTS=reg_steer_mod.o \
  ReG_Steer_Appside_File.o \
  ReG_Steer_Logging.o \
  Base64.o \
- ReG_Steering_Initialize.o \
  ReG_Steer_Steerside_WSRF.o \
- ReG_Steer_Appside_WSRF.o
+ ReG_Steer_Appside_WSRF.o \
+ ReG_Steering_Initialize.o
 
 REG_LIB_UTILS_OBJECTS=ReG_Steer_Utils_WSRF.o \
  ReG_Steer_Utils.o \
@@ -78,25 +77,26 @@ REG_LIB_SOAP_OBJECTS=stdsoap2.o soapC.o soapClient.o
         ${INCLUDE_PATH} -c $< -o $@
 
 all:
-	$(MAKE) ${LIB_PATH}/$(LIB_NAME)
-	$(MAKE) ${LIB_PATH}/$(LIB_SOAP_NAME)
-	$(MAKE) ${LIB_PATH}/$(LIB_UTILS_NAME)
+	$(MAKE) lib
+	$(MAKE) lib_utils
+	$(MAKE) lib_SOAP
 
-${LIB_PATH}/libReG_Steer.so: ${REG_LIB_OBJECTS}
-	$(MAKE) -f Makefile.ss all
-	$(MAKE) -f Makefile.ssd all
-	$(MAKE) -f Makefile.sf all
-	$(MAKE) -f Makefile.sfd all
-	$(MAKE) -f Makefile.fs all
-	$(MAKE) -f Makefile.fsd all
-	$(MAKE) -f Makefile.ff all
-	$(MAKE) -f Makefile.ffd all
-	rm -f $(LIB_PATH)/libReG_Steer.so
-	ln -s libReG_SteerSoapSockets.so $(LIB_PATH)/libReG_Steer.so
+#${LIB_PATH}/libReG_Steer.so: ${REG_LIB_OBJECTS}
+#	$(MAKE) -f Makefile.ss all
+#	$(MAKE) -f Makefile.ssd all
+#	$(MAKE) -f Makefile.sf all
+#	$(MAKE) -f Makefile.sfd all
+#	$(MAKE) -f Makefile.fs all
+#	$(MAKE) -f Makefile.fsd all
+#	$(MAKE) -f Makefile.ff all
+#	$(MAKE) -f Makefile.ffd all
+#	rm -f $(LIB_PATH)/libReG_Steer.so
+#	ln -s libReG_SteerSoapSockets.so $(LIB_PATH)/libReG_Steer.so
 
 #${LIB_PATH}/$(LIB_NAME): ${REG_LIB_OBJECTS}
-${LIB_PATH}/libReG_Steer.a: ${REG_LIB_OBJECTS}
-	rm -f $(LIB_PATH)/${LIB_NAME}
+#${LIB_PATH}/libReG_Steer.a: ${REG_LIB_OBJECTS}
+lib:	${REG_LIB_OBJECTS}
+	rm -f $(LIB_PATH)/libReG_Steer.*
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Appside_f.o
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Appside.o
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Steerside.o
@@ -114,14 +114,19 @@ ${LIB_PATH}/libReG_Steer.a: ${REG_LIB_OBJECTS}
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Appside_WSRF.o
 # '-' is to allow for failure in case we don't have an F90 compiler
 	-${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steering_Initialize.o
+	${CC} ${LD_FLAGS} -o ${LIB_PATH}/libReG_Steer.so ${REG_LIB_OBJECTS}
 
-${LIB_PATH}/${LIB_UTILS_NAME}: ${REG_LIB_UTILS_OBJECTS}
-	rm -f ${LIB_PATH}/${LIB_UTILS_NAME}
-	${AR} ${AR_FLAGS} ${LIB_PATH}/${LIB_UTILS_NAME} ${REG_LIB_UTILS_OBJECTS}
+#${LIB_PATH}/${LIB_UTILS_NAME}: ${REG_LIB_UTILS_OBJECTS}
+lib_utils: ${REG_LIB_UTILS_OBJECTS}
+	rm -f ${LIB_PATH}/libReG_Steer_Utils.*
+	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer_Utils.a ${REG_LIB_UTILS_OBJECTS}
+	${CC} ${LD_FLAGS} -o ${LIB_PATH}/libReG_Steer_Utils.so ${REG_LIB_UTILS_OBJECTS}
 
-${LIB_PATH}/${LIB_SOAP_NAME}: ${REG_LIB_SOAP_OBJECTS}
-	rm -f ${LIB_PATH}/${LIB_SOAP_NAME}
-	${AR} ${AR_FLAGS} ${LIB_PATH}/${LIB_SOAP_NAME} ${REG_LIB_SOAP_OBJECTS}
+#${LIB_PATH}/${LIB_SOAP_NAME}: ${REG_LIB_SOAP_OBJECTS}
+lib_SOAP:	${REG_LIB_SOAP_OBJECTS}
+	rm -f ${LIB_PATH}/libReG_Steer_SOAP.*
+	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer_SOAP.a ${REG_LIB_SOAP_OBJECTS}
+	${CC} ${LD_FLAGS} -o ${LIB_PATH}/libReG_Steer_SOAP.so ${REG_LIB_SOAP_OBJECTS}
 
 #---------------------------------------------------------------
 
@@ -216,7 +221,7 @@ Base64.o: Base64.c \
 # F90 compiler
 ReG_Steering_Initialize.o: ReG_Steering_Initialize.f90 \
         ../include/reg_steer_f90.inc
-	-${F90} ${F90_FLAGS} \
+	-${F90} -fPIC ${F90_FLAGS} \
         -DREG_SOCKET_SAMPLES=${REG_SOCKET_SAMPLES_FLAG} \
         -DREG_SOAP_STEERING=${REG_SOAP_STEERING_FLAG} \
         -DREG_DEBUG=${REG_DEBUG_FLAG} \
@@ -268,10 +273,7 @@ clean:
 	rm -f *.o ReG_Steer.ln *~ 
 	rm -f ReG_Steer_Appside_f.c
 	rm -f ../include/*~
-	rm -f ${LIB_PATH}/${LIB_NAME}
-	rm -f ${LIB_PATH}/libReG_Steer*.so
-	rm -f ${LIB_PATH}/${LIB_UTILS_NAME}
-	rm -f ${LIB_PATH}/${LIB_SOAP_NAME}
+	rm -f ${LIB_PATH}/libReG_Steer*
 
 tidy:
 	rm -f ReG_Steer_Steerside.o ReG_Steer_Appside.o \

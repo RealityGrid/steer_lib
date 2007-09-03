@@ -40,7 +40,8 @@ TARGET   = mini_app2
 ${TARGET}: ${TARGET}.o ${REG_STEER_HOME}/include/reg_steer_f90.inc \
 ${REG_STEER_HOME}/lib$(NBIT)/$(LIB_NAME)
 	-${F90} ${F90_FLAGS} ${TARGET}.o -o $@ ${STEER_LIBS} \
-	-lReG_Steer -lReG_Steer_SOAP ${STEER_LDFLAGS}
+	-Wl,-Bstatic -lReG_Steer -lReG_Steer_SOAP \
+	-Wl,-Bdynamic ${STEER_LDFLAGS}
 
 mini_app2.o: mini_app2.f90
 	-${F90} ${F90_FLAGS} -C ${STEER_INCLUDES} ${GLOBUS_INCLUDES} -c mini_app2.f90 -o $@
