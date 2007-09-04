@@ -31,15 +31,39 @@
 #---------------------------------------------------------------------
 
 # Set root directory for library installation
-export REG_STEER_HOME=$HOME/RealityGrid/reg_steer_lib
+export REG_STEER_HOME=$HOME/work/RealityGrid/file/reg_steer_lib
 
 # Set various paths needed for the wrappers
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$REG_STEER_HOME/wrappers/python
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$REG_STEER_HOME/wrappers/perl
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$REG_STEER_HOME/wrappers/java
-export PYTHONPATH=$PYTHONPATH:$REG_STEER_HOME/wrappers/python
-export PERL5LIB=$PERL5LIB:$REG_STEER_HOME/wrappers/perl
-export CLASSPATH=$CLASSPATH:$REG_STEER_HOME/wrappers/java
+if [ -n "$LD_LIBRARY_PATH" ]; then
+    LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$REG_STEER_HOME/lib
+else
+    LD_LIBRARY_PATH=$REG_STEER_HOME/lib
+fi
+LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$REG_STEER_HOME/wrappers/python
+LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$REG_STEER_HOME/wrappers/perl
+LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$REG_STEER_HOME/wrappers/java
+export LD_LIBRARY_PATH
+
+if [ -n "$PYTHONPATH" ]; then
+    PYTHONPATH=$PYTHONPATH:$REG_STEER_HOME/wrappers/python
+else
+    PYTHONPATH=$REG_STEER_HOME/wrappers/python
+fi
+export PYTHONPATH
+
+if [ -n "$PERL5LIB" ]; then
+    PERL5LIB=$PERL5LIB:$REG_STEER_HOME/wrappers/perl
+else
+    PERL5LIB=$REG_STEER_HOME/wrappers/perl
+fi
+export PERL5LIB
+
+if [ -n "$CLASSPATH" ]; then
+    CLASSPATH=$CLASSPATH:$REG_STEER_HOME/wrappers/java
+else
+    CLASSPATH=$REG_STEER_HOME/wrappers/java
+fi
+export CLASSPATH
 
 # Set directory location to use for steering communication
 export REG_STEER_DIRECTORY=$HOME/tmp
