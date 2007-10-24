@@ -122,10 +122,10 @@ public class ReG_SteerSecurity implements ReG_SteerConstants {
 	String result = "Using SSL: " + usingSSL + "\n";
 	result += "CA Certs Path: " + caCertsPath + "\n";
 	result += "User Cert and Key File: " + myKeyCertFile + "\n";
-	result += "User DN: " + userDN + "\n";
+	result += "User DN: " + userDN + "\nPassphrase: ";
 
 	if(passphrase.length() > 0)
-	    result += "********";
+	    result += "**************";
 	else
 	    result += "<not set>";
 
