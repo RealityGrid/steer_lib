@@ -275,12 +275,12 @@
 
   if($2 > 0) {
     int i;
-    jmethodID regParamInit;
+    jmethodID regParamCreate;
     jvalue args[7];
     jobject newObject;
 
     /* Set up access to the java classes and methods */
-    regParamInit = (*jenv)->GetMethodID(jenv, regParam, "<init>", "(Ljava/lang/String;Ljava/lang/String;ZILjava/lang/String;Ljava/lang/String;I)V");
+    regParamCreate = (*jenv)->GetStaticMethodID(jenv, regParam, "create", "(Ljava/lang/String;Ljava/lang/String;ZILjava/lang/String;Ljava/lang/String;I)Lorg/realitygrid/steering/ReG_SteerParameter;");
 
     for(i = 0; i < $2; i++) {
       args[0].l = (*jenv)->NewStringUTF(jenv, $3[i].label);
@@ -291,7 +291,7 @@
       args[5].l = (*jenv)->NewStringUTF(jenv, $3[i].max_val);
       args[6].i = $3[i].handle;
 
-      newObject = (*jenv)->NewObjectA(jenv, regParam, regParamInit, args);
+      newObject = (*jenv)->CallStaticObjectMethodA(jenv, regParam, regParamCreate, args);
       (*jenv)->SetObjectArrayElement(jenv, paramArray, i, newObject);
     }
   }

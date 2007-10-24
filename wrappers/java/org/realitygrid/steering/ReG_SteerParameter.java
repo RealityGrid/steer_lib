@@ -40,7 +40,7 @@ package org.realitygrid.steering;
  * @version 2.0
  * @author Robert Haines
  */
-public class ReG_SteerParameter implements ReG_SteerConstants {
+public class ReG_SteerParameter<T extends Number> implements ReG_SteerConstants {
 
   private int handle;
   private String label;
@@ -49,25 +49,20 @@ public class ReG_SteerParameter implements ReG_SteerConstants {
   private String minLabel;
   private String maxLabel;
 
-  private Object param;
+  private Intp intParam = null;
+  private Floatp floatParam = null;
+  private Doublep doubleParam = null;
 
   private boolean registered;
 
-  /**
-   * Constructs a RealityGrid Steered Parameter of the requested type
+  private ReG_SteerParameter() {}
+
+  /*
+   * Private constructor:
+   * Creates a RealityGrid Steered Parameter of the requested type
    * but does not set its value.
-   *
-   * @param label a descriptive label for the parameter.
-   * @param steer set the parameter to be steerable (if true) or just
-   * monitored (if false).
-   * @param type the type of the parameter. (<code>REG_INT</code>,
-   * <code>REG_FLOAT</code> or <code>REG_DBL</code>).
-   * @param min the minimum value that a parameter can be steered to (can
-   * be empty but not null).
-   * @param max the maximum value that a parameter can be steered to (can
-   * be empty but not null).
    */
-  public ReG_SteerParameter(String label, boolean steer, int type, String min, String max) {
+  private ReG_SteerParameter(String label, boolean steer, int type, String min, String max) {
     handle = REG_PARAM_HANDLE_NOTSET;
     this.label = label;
     steerable = steer;
@@ -78,133 +73,31 @@ public class ReG_SteerParameter implements ReG_SteerConstants {
 
     switch(type) {
     case REG_INT:
-      param = new Intp();
+      intParam = new Intp();
       break;
-    case REG_CHAR:
-      param = new Intp();
-      break;
+      //case REG_CHAR:
+      //param = new Intp();
+      //break;
     case REG_FLOAT:
-      param = new Floatp();
+      floatParam = new Floatp();
       break;
     case REG_DBL:
-      param = new Doublep();
-      break;
-    default:
-      param = null;
+      doubleParam = new Doublep();
       break;
     }
+
   }
 
-  /**
-   * Constructs a RealityGrid Steered Parameter of type <code>REG_INT</code>
-   * and sets its value.
-   *
-   * @param label a descriptive label for the parameter.
-   * @param value the value of the parameter.
-   * @param steer set the parameter to be steerable (if true) or just
-   * monitored (if false).
-   * @param min the minimum value that a parameter can be steered to (can
-   * be empty but not null).
-   * @param max the maximum value that a parameter can be steered to (can
-   * be empty but not null).
+  /*
+   * Private constructor:
+   * Creates a RealityGrid Steered Parameter of the requested type and sets
+   * all fields.
    */
-  public ReG_SteerParameter(String label, int value, boolean steer, String min, String max) {
-    this(label, steer, REG_INT, min, max);
-    ((Intp) param).assign(value);
-  }
-
-  /**
-   * Constructs a RealityGrid Steered Parameter of type <code>REG_FLOAT</code>
-   * and sets its value.
-   *
-   * @param label a descriptive label for the parameter.
-   * @param value the value of the parameter.
-   * @param steer set the parameter to be steerable (if true) or just
-   * monitored (if false).
-   * @param min the minimum value that a parameter can be steered to (can
-   * be empty but not null).
-   * @param max the maximum value that a parameter can be steered to (can
-   * be empty but not null).
-   */
-  public ReG_SteerParameter(String label, float value, boolean steer, String min, String max) {
-    this(label, steer, REG_FLOAT, min, max);
-    ((Floatp) param).assign(value);
-  }
-
-  /**
-   * Constructs a RealityGrid Steered Parameter of type <code>REG_DBL</code>
-   * and sets its value.
-   *
-   * @param label a descriptive label for the parameter.
-   * @param value the value of the parameter.
-   * @param steer set the parameter to be steerable (if true) or just
-   * monitored (if false).
-   * @param min the minimum value that a parameter can be steered to (can
-   * be empty but not null).
-   * @param max the maximum value that a parameter can be steered to (can
-   * be empty but not null).
-   */
-  public ReG_SteerParameter(String label, double value, boolean steer, String min, String max) {
-    this(label, steer, REG_DBL, min, max);
-    ((Doublep) param).assign(value);
-  }
-
-  /**
-   * Constructs a RealityGrid Steered Parameter from the data provided by
-   * the steering library when <code>getParamValues()</code> is invoked. This
-   * constructor sets this parameter's state as registered if the provided
-   * handle is not equal to <code>REG_PARAM_HANDLE_NOTSET</code>.
-   *
-   * @param label a descriptive label for the parameter.
-   * @param value the value of the parameter as a <code>String</code>. This is
-   * parsed into a numeric value internally.
-   * @param steer set the parameter to be steerable (if true) or just
-   * monitored (if false).
-   * @param type the type of the parameter. (<code>REG_INT</code>,
-   * <code>REG_FLOAT</code> or <code>REG_DBL</code>).
-   * @param min the minimum value that a parameter can be steered to (can
-   * be empty but not null).
-   * @param max the maximum value that a parameter can be steered to (can
-   * be empty but not null).
-   * @param handle the internal handle of the parameter allocated by the
-   * steering library.
-   *
-   * @see #setRegistered(boolean)
-   * @see ReG_SteerSteerside#getParamValues(int, boolean, int)
-   */
-  public ReG_SteerParameter(String label, String value, boolean steer, int type, String min, String max, int handle) {
+  private ReG_SteerParameter(String label, T value, boolean steer, int type, String min, String max, int handle) {
     this(label, steer, type, min, max);
 
-    switch(type) {
-    case REG_INT:
-      if(value.length() > 0) {
-	Integer i = new Integer(value);
-	((Intp) param).assign(i.intValue());
-      }
-      else
-	param = new Intp();
-      break;
-    case REG_CHAR:
-      ((Intp) param).assign(-1);
-      break;
-    case REG_FLOAT:
-      if(value.length() > 0) {
-	Float f = new Float(value);
-	((Floatp) param).assign(f.floatValue());
-      }
-      else
-	param = new Floatp();
-      break;
-    case REG_DBL:
-      if(value.length() > 0) {
-        Double d = new Double(value);
-        ((Doublep) param).assign(d.doubleValue());
-      }
-      else
-	param = new Doublep();
-      break;
-    }
-
+    setValue(value);
+    
     if(handle != REG_PARAM_HANDLE_NOTSET) {
       this.handle = handle;
       registered = true;
@@ -239,179 +132,44 @@ public class ReG_SteerParameter implements ReG_SteerConstants {
   }
 
   /**
-   * Set the value of the steered parameter. If the type of the parameter
-   * is not REG_INT the input value will be cast.
+   * Set the value of the steered parameter.
    *
-   * @param p the new value of the parameter.
-   * @see #setValue(float)
-   * @see #setValue(double)
+   * @param value the new value of the parameter.
    */
-  public void setValue(int p) {  
+  public void setValue(T value) {
     switch(type) {
     case REG_INT:
-      ((Intp) param).assign(p);
+      intParam.assign(value.intValue());
       break;
     case REG_FLOAT:
-      ((Floatp) param).assign(new Integer(p).floatValue());
+      floatParam.assign(value.floatValue());
       break;
     case REG_DBL:
-      ((Doublep) param).assign(new Integer(p).doubleValue());
+      doubleParam.assign(value.doubleValue());
       break;
     }
   }
 
   /**
-   * Set the value of the steered parameter. If the type of the parameter
-   * is not REG_FLOAT the input value will be cast.
+   * Get the current value of the parameter.
    *
-   * @param p the new value of the parameter.
-   * @see #setValue(int)
-   * @see #setValue(double)
+   * @return the value of the parameter.
    */
-  public void setValue(float p) {
-    switch(type) {
-    case REG_INT:
-      ((Intp) param).assign(new Float(p).intValue());
-      break;
-    case REG_FLOAT:
-      ((Floatp) param).assign(p);
-      break;
-    case REG_DBL:
-      ((Doublep) param).assign(new Float(p).doubleValue());
-      break;
-    }
-  }
-
-  /**
-   * Set the value of the steered parameter. If the type of the parameter
-   * is not REG_DBL the input value will be cast.
-   *
-   * @param p the new value of the parameter.
-   * @see #setValue(int)
-   * @see #setValue(float)
-   */
-  public void setValue(double p) {
-    switch(type) {
-    case REG_INT:
-      ((Intp) param).assign(new Double(p).intValue());
-      break;
-    case REG_FLOAT:
-      ((Floatp) param).assign(new Double(p).floatValue());
-      break;
-    case REG_DBL:
-      ((Doublep) param).assign(p);
-      break;
-    }
-  }
-
-  /**
-   * Get the current value of the parameter as an integer. If the parameter
-   * is not of type REG_INT it will be cast.
-   *
-   * @return the integer value of the parameter.
-   * @see #getValue()
-   * @see #getFloatValue()
-   * @see #getDoubleValue()
-   */
-  public int getIntValue() {
-    int result = 0;
+  public T getValue() {
+    T result;
 
     switch(type) {
     case REG_INT:
-      result = ((Intp) param).value();
+      result = (T) new Integer(intParam.value());
       break;
     case REG_FLOAT:
-      result = (new Float(((Floatp) param).value())).intValue();
+      result = (T) new Float(floatParam.value());
       break;
     case REG_DBL:
-      result = (new Double(((Doublep) param).value())).intValue();
+      result = (T) new Double(doubleParam.value());
       break;
-    }
-
-    return result;
-  }
-
-  /**
-   * Get the current value of the parameter as a float. If the parameter
-   * is not of type REG_FLOAT it will be cast.
-   *
-   * @return the float value of the parameter.
-   * @see #getValue()
-   * @see #getIntValue()
-   * @see #getDoubleValue()
-   */
-  public float getFloatValue() {
-    float result = 0.0f;
-
-    switch(type) {
-    case REG_INT:
-      result = (new Integer(((Intp) param).value())).floatValue();
-      break;
-    case REG_FLOAT:
-      result = ((Floatp) param).value();
-      break;
-    case REG_DBL:
-      result = (new Double(((Doublep) param).value())).floatValue();
-      break;
-    }
-
-    return result;
-  }
-
-  /**
-   * Get the current value of the parameter as a double. If the parameter
-   * is not of type REG_DBL it will be cast.
-   *
-   * @return the double value of the parameter.
-   * @see #getValue()
-   * @see #getIntValue()
-   * @see #getFloatValue()
-   */
-  public double getDoubleValue() {
-    double result = 0.0;
-
-    switch(type) {
-    case REG_INT:
-      result = (new Integer(((Intp) param).value())).doubleValue();
-      break;
-    case REG_FLOAT:
-      result = (new Float(((Floatp) param).value())).doubleValue();
-      break;
-    case REG_DBL:
-      result = ((Doublep) param).value();
-      break;
-    }
-
-    return result;
-  }
-
-  /**
-   * Get the current value of the parameter wrapped in an Object.
-   *
-   * @return the current value of the parameter.
-   * @see #getIntValue()
-   * @see #getFloatValue()
-   * @see #getDoubleValue()
-   */
-  public Object getValue() {
-    Object result;
-
-    switch(type) {
-    case REG_INT:
-      result = new Integer(((Intp) param).value());
-      break;      
-//     case REG_CHAR:
-//       result = new Character(((Charp) param).value());
-//       break;      
-    case REG_FLOAT:
-      result = new Float(((Floatp) param).value());
-      break;      
-    case REG_DBL:
-      result = new Double(((Doublep) param).value());
-      break;      
     default:
       result = null;
-      break;
     }
 
     return result;
@@ -425,23 +183,17 @@ public class ReG_SteerParameter implements ReG_SteerConstants {
    * @return the void pointer to this object.
    */
   public SWIGTYPE_p_void getVoidPointer() {
-    SWIGTYPE_p_void result;
-
+    SWIGTYPE_p_void result = null;
+    
     switch(type) {
     case REG_INT:
-      result = ((Intp) param).cast().getVoidPointer();
+      result = intParam.cast().getVoidPointer();
       break;
-//     case REG_CHAR:
-//       result = ((Charp) param).cast().getVoidPointer();
-//       break;
     case REG_FLOAT:
-      result = ((Floatp) param).cast().getVoidPointer();
+      result = floatParam.cast().getVoidPointer();
       break;
     case REG_DBL:
-      result = ((Doublep) param).cast().getVoidPointer();
-      break;
-    default:
-      result = null;
+      result = doubleParam.cast().getVoidPointer();
       break;
     }
 
@@ -542,23 +294,151 @@ public class ReG_SteerParameter implements ReG_SteerConstants {
     }
     result += "Label: " + label;
     result += ", Type: " + ReG_SteerUtilities.lookupType(type);
+    result += ", Bounds: (" + minLabel + ", " + maxLabel + ")";
+    result += ", Value: " + getValue();
+
+    return result;
+  }
+
+  /**
+   * A factory method to create a ReG_SteerParameter of the requested type.
+   * The value of the parameter is not set and it is not registered with the
+   * steering library.
+   *
+   * @param label a descriptive label for the parameter.
+   * @param steer set the parameter to be steerable (if true) or just
+   * monitored (if false).
+   * @param type the type of the parameter. (<code>REG_INT</code>,
+   * <code>REG_FLOAT</code> or <code>REG_DBL</code>).
+   * @param min the minimum value that a parameter can be steered to (can
+   * be empty but not null).
+   * @param max the maximum value that a parameter can be steered to (can
+   * be empty but not null).
+   * @return the created ReG_SteerParameter.
+   */
+  public static ReG_SteerParameter create(String label, boolean steer, int type, String min, String max) {
+
+    ReG_SteerParameter result;
 
     switch(type) {
     case REG_INT:
-      result += ", Value: " + getIntValue();
-      break;
-    case REG_CHAR:
-      result += ", Value: " + getIntValue() + " - UNSUPPORTED";
+      result = new ReG_SteerParameter<Integer>(label, steer, type, min, max);
       break;
     case REG_FLOAT:
-      result += ", Value: " + getFloatValue();
+      result = new ReG_SteerParameter<Float>(label, steer, type, min, max);
       break;
     case REG_DBL:
-      result += ", Value: " + getDoubleValue();
+      result = new ReG_SteerParameter<Double>(label, steer, type, min, max);
       break;
+    default:
+      result = null;
     }
 
-    result += " (" + minLabel + ", " + maxLabel + ")";
+    return result;
+  }
+
+  /**
+   * A factory method to create an integer ReG_SteerParameter. The value of the
+   * parameter is set but it is not registered with the steering library.
+   *
+   * @param label a descriptive label for the parameter.
+   * @param value the value to set the parameter to be.
+   * @param steer set the parameter to be steerable (if true) or just
+   * monitored (if false).
+   * @param min the minimum value that a parameter can be steered to (can
+   * be empty but not null).
+   * @param max the maximum value that a parameter can be steered to (can
+   * be empty but not null).
+   * @return the created ReG_SteerParameter.
+   * @see ReG_SteerParameter#create(java.lang.String,boolean,int,java.lang.String,java.lang.String)
+   */
+  public static ReG_SteerParameter create(String label, int value, boolean steer, String min, String max) {
+    return new ReG_SteerParameter<Integer>(label, value, steer, REG_INT, min, max, REG_PARAM_HANDLE_NOTSET);
+  }
+
+  /**
+   * A factory method to create a float ReG_SteerParameter. The value of the
+   * parameter is set but it is not registered with the steering library.
+   *
+   * @param label a descriptive label for the parameter.
+   * @param value the value to set the parameter to be.
+   * @param steer set the parameter to be steerable (if true) or just
+   * monitored (if false).
+   * @param min the minimum value that a parameter can be steered to (can
+   * be empty but not null).
+   * @param max the maximum value that a parameter can be steered to (can
+   * be empty but not null).
+   * @return the created ReG_SteerParameter.
+   * @see ReG_SteerParameter#create(java.lang.String,boolean,int,java.lang.String,java.lang.String)
+   */
+  public static ReG_SteerParameter create(String label, float value, boolean steer, String min, String max) {
+    return new ReG_SteerParameter<Float>(label, value, steer, REG_FLOAT, min, max, REG_PARAM_HANDLE_NOTSET);    
+  }
+
+  /**
+   * A factory method to create a double ReG_SteerParameter. The value of the
+   * parameter is set but it is not registered with the steering library.
+   *
+   * @param label a descriptive label for the parameter.
+   * @param value the value to set the parameter to be.
+   * @param steer set the parameter to be steerable (if true) or just
+   * monitored (if false).
+   * @param min the minimum value that a parameter can be steered to (can
+   * be empty but not null).
+   * @param max the maximum value that a parameter can be steered to (can
+   * be empty but not null).
+   * @return the created ReG_SteerParameter.
+   * @see ReG_SteerParameter#create(java.lang.String,boolean,int,java.lang.String,java.lang.String)
+   */
+  public static ReG_SteerParameter create(String label, double value, boolean steer, String min, String max) {
+    return new ReG_SteerParameter<Double>(label, value, steer, REG_DBL, min, max, REG_PARAM_HANDLE_NOTSET);    
+  }
+
+  /**
+   * A factory method to create a ReG_SteerParameter. This form of
+   * <code>create</code> is mainly used internally by the Java wrappers to
+   * create <code>ReG_SteerParameter</code>s when returning them from the
+   * steering library.
+   *
+   * @param label a descriptive label for the parameter.
+   * @param value the value of the parameter as a <code>String</code>. This is
+   * parsed into a numeric value internally.
+   * @param steer set the parameter to be steerable (if true) or just
+   * monitored (if false).
+   * @param type the type of the parameter. (<code>REG_INT</code>,
+   * <code>REG_FLOAT</code> or <code>REG_DBL</code>).
+   * @param min the minimum value that a parameter can be steered to (can
+   * be empty but not null).
+   * @param max the maximum value that a parameter can be steered to (can
+   * be empty but not null).
+   * @return the created ReG_SteerParameter.
+   * @see ReG_SteerParameter#create(java.lang.String,boolean,int,java.lang.String,java.lang.String)
+   */
+  public static ReG_SteerParameter create(String label, String value, boolean steer, int type, String min, String max, int handle) {
+
+    ReG_SteerParameter result;
+
+    switch(type) {
+    case REG_INT:
+      result = new ReG_SteerParameter<Integer>(label, steer, type, min, max);
+      if(value.length() > 0) result.setValue(Integer.parseInt(value));
+      break;
+    case REG_FLOAT:
+      result = new ReG_SteerParameter<Float>(label, steer, type, min, max);
+      if(value.length() > 0) result.setValue(Float.parseFloat(value));
+      break;
+    case REG_DBL:
+      result = new ReG_SteerParameter<Double>(label, steer, type, min, max);
+      if(value.length() > 0) result.setValue(Double.parseDouble(value));
+      break;
+    default:
+      result = null;
+    }
+
+    if(handle != REG_PARAM_HANDLE_NOTSET) {
+      result.handle = handle;
+      result.registered = true;
+    }
 
     return result;
   }
