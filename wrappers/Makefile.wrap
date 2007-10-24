@@ -35,24 +35,22 @@ REG_WRAP=none
 #REG_WRAP=python perl java
 #REG_WRAP=python perl tcl java
 
-# Flags for all wrappers
+# Flags for all wrappers - pass through REG_DEBUG
 REG_WRAP_FLAGS=-DREG_DEBUG=${REG_DEBUG_FLAG}
 
-# Set REG_WRAP_LINK.
-REG_WRAP_LINK=-L${REG_STEER_HOME}/lib${NBIT} -lReG_Steer -lReG_Steer_Utils -lReG_Steer_SOAP
+REG_WRAP_LINK=-L${REG_STEER_HOME}/lib${NBIT} -lReG_Steer -lReG_Steer_Utils -lReG_Steer_SOAP -lssl -lcrypto
 
-# swig
+# swig - must be at least swig 1.3.x The later the better.
 REG_SWIG=/usr/bin/swig
 
-# python
+# python - depends on which version of python you have
 REG_PYTHON_INC=-I/usr/include/python2.4 -I/usr/lib/python2.4/config/ -DHAVE_CONFIG_H
 
-# perl
-# this shouldn't need changing
+# perl- this shouldn't need changing
 REG_PERL_INC=-I`perl -e 'use Config; print $$Config{archlib};'`/CORE
 REG_PERL_CCFLAGS=`perl -e 'use Config; print $$Config{ccflags};'`
 
-# java
-REG_JAVA_PATH=/opt/software/java
+# java - must be at least Java 1.5
+REG_JAVA_PATH=/opt/software/jdk1.5.0_07
 REG_JAVA_INC=-I${REG_JAVA_PATH}/include -I${REG_JAVA_PATH}/include/linux
 JAVAC=${REG_JAVA_PATH}/bin/javac
