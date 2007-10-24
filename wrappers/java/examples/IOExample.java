@@ -51,7 +51,11 @@ public class IOExample {
     double testDouble = IO.readDouble();
     System.out.println("You entered: " + testDouble);
 
-    System.out.print("\nEnter text: ");
+    System.out.print("\nEnter a line of text: ");
+    String testLine = IO.readLine();
+    System.out.println("You entered: " + testLine);
+
+    System.out.print("\nEnter free text: ");
     String test = IO.readText();
     System.out.println("\nYou entered:");
     for(int i = 0; i < test.length(); i++) {
