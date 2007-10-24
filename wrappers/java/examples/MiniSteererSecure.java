@@ -79,11 +79,13 @@ public class MiniSteererSecure implements ReG_SteerConstants {
       System.out.print("Enter address of registry and hit return: ");
       registryAddress = IO.readLine();
 
+      // set up security info - we need this even without SSL
+      String userConfFile = System.getProperty("user.home") + "/.realitygrid/security.conf";
+      regSec = new ReG_SteerSecurity(userConfFile);
+
       // Using SSL?
       if(registryAddress.startsWith("https")) {
-	// yes - setup security...
-	String userConfFile = System.getProperty("user.home") + "/.realitygrid/security.conf";
-	regSec = new ReG_SteerSecurity(userConfFile);
+	// yes
 	regSec.setUsingSSL(true);
 
 	System.out.print("Enter passphrase for key: ");
@@ -91,10 +93,18 @@ public class MiniSteererSecure implements ReG_SteerConstants {
       }
       else {
 	// no
-	// TODO
+	regSec.setUsingSSL(false);
+	System.out.print("Enter your username [" + regSec.getUserDN() + "]: ");
+	String userName = IO.readLine();
+	if(userName.length() > 0) {
+	  regSec.setUserDN(userName);
+	}
+
+	System.out.print("Enter the password for the registry: ");
+	regSec.setPassphrase(IO.readPassword());
       }
 
-      //System.out.println("Security:\n" + regSec);
+      System.out.println("Security:\n" + regSec);
       ReG_SteerRegistryEntry[] list = rss.getRegistryEntriesFilteredSecure(registryAddress, regSec, "SWS");
 
       if(list.length > 0) {
@@ -178,12 +188,18 @@ public class MiniSteererSecure implements ReG_SteerConstants {
 	  break;
 
 	case 'e':
-	  int[] h = new int[1];
-	  h[0] = 6;
-	  String[] st = new String[1];
-	  st[0] = "111";
-	  rss.setParamValues(simHandle, h, st);
-	  rss.emitControl(simHandle, null, null);
+	  int[] pHandles = new int[1];
+	  pHandles[0] = chooseParam(simHandle, true);
+	  String[] newValues = new String[1];
+	  if(pHandles[0] != REG_PARAM_HANDLE_NOTSET) {
+	    System.out.print("Enter new value for param: ");
+	    newValues[0] = IO.readLine();
+	    rss.setParamValues(simHandle, pHandles, newValues);
+
+	    // emit control automatically emits the values of any steerable
+	    // parameters that have been edited since it was last called
+	    rss.emitControl(simHandle, null, null);
+	  }
 	  break;
 
 	case 'g':
