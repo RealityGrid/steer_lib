@@ -93,15 +93,15 @@ public class MiniApp implements Runnable, ReG_SteerConstants {
     numIOTypes = 2;
 
     /* Register the parameters */
-    sleepTime = new ReG_SteerParameter("time_to_sleep", 1, true, "0", "100");
-    opacityStepStop = new ReG_SteerParameter("OPACITY_STEP_STOP", 130, true, "0", "256");
-    temp = new ReG_SteerParameter("TEMP", 55.6f, false, "", "");
-    aAxis = new ReG_SteerParameter("a_axis", 1.5, true, "0.01", "10.0");
-    bAxis = new ReG_SteerParameter("b_axis", 1.5, true, "0.01", "10.0");
-    cAxis = new ReG_SteerParameter("c_axis", 1.5, true, "0.01", "10.0");
-    nx = new ReG_SteerParameter("nx", 16, true, "1", "");
-    ny = new ReG_SteerParameter("ny", 16, true, "1", "");
-    nz = new ReG_SteerParameter("nz", 16, true, "1", "");
+    sleepTime = ReG_SteerParameter.create("time_to_sleep", 1, true, "0", "100");
+    opacityStepStop = ReG_SteerParameter.create("OPACITY_STEP_STOP", 130, true, "0", "256");
+    temp = ReG_SteerParameter.create("TEMP", 55.6f, false, "", "");
+    aAxis = ReG_SteerParameter.create("a_axis", 1.5, true, "0.01", "10.0");
+    bAxis = ReG_SteerParameter.create("b_axis", 1.5, true, "0.01", "10.0");
+    cAxis = ReG_SteerParameter.create("c_axis", 1.5, true, "0.01", "10.0");
+    nx = ReG_SteerParameter.create("nx", 16, true, "1", "");
+    ny = ReG_SteerParameter.create("ny", 16, true, "1", "");
+    nz = ReG_SteerParameter.create("nz", 16, true, "1", "");
     try {
       sleepTime.register();
       opacityStepStop.register();
@@ -138,7 +138,7 @@ public class MiniApp implements Runnable, ReG_SteerConstants {
     for(int i = 0; i < nloops; i++) {
 
       try {
-	Thread.sleep(sleepTime.getIntValue() * 1000);
+	Thread.sleep(sleepTime.getValue().intValue() * 1000);
       }
       catch(InterruptedException e) {
 	System.err.println("Interrupted!");
@@ -179,31 +179,31 @@ public class MiniApp implements Runnable, ReG_SteerConstants {
 		  rsa.emitDataSlice(iohandle, header);
 
 		  /* nx, ny and nz are steerable so we need to alloc every time */
-		  int bufferSize = nx.getIntValue() * ny.getIntValue() * nz.getIntValue();
+		  int bufferSize = nx.getValue().intValue() * ny.getValue().intValue() * nz.getValue().intValue();
 
 		  float[] buffer = new float[bufferSize];
 		  for(int l = 0; l < bufferSize; l++) 
 		    buffer[l] = l;
 
 		  /* emit data in chunks to mimic a parallel program */
-		  if(nx.getIntValue() % chunkDim != 0) {
+		  if(nx.getValue().intValue() % chunkDim != 0) {
 		    System.out.println("nx not a multiple of " + chunkDim);
 		    rsa.emitStop(iohandle);
 		    continue;
 		  }
 
-		  int numChunks = nx.getIntValue() / chunkDim;
-		  System.out.println("nx = " + nx.getIntValue() + ", chunkDim = " + chunkDim + " so have " + numChunks + " chunks");
+		  int numChunks = nx.getValue().intValue() / chunkDim;
+		  System.out.println("nx = " + nx.getValue().intValue() + ", chunkDim = " + chunkDim + " so have " + numChunks + " chunks");
 
 		  for(int iChunk = 0; iChunk < numChunks; iChunk++) {
 		    System.out.println("chunk " + iChunk + "...");
 		    String chunkHeader = "CHUNK HEADER";
 		    rsa.emitDataSlice(iohandle, chunkHeader);
 
-		    int dataCount = chunkDim * ny.getIntValue() * nz.getIntValue();
+		    int dataCount = chunkDim * ny.getValue().intValue() * nz.getValue().intValue();
 		    float[] sendBuffer = new float[dataCount];
 		    for(int b = 0; b < dataCount; b++) {
-		      int item = (iChunk * chunkDim * ny.getIntValue() * nz.getIntValue());
+		      int item = (iChunk * chunkDim * ny.getValue().intValue() * nz.getValue().intValue());
 		      sendBuffer[b] = buffer[item + b];
 		    }
 		    rsa.emitDataSlice(iohandle, sendBuffer);
@@ -222,7 +222,7 @@ public class MiniApp implements Runnable, ReG_SteerConstants {
 	if(finished) break;
       } // numReceivedCommands
 
-      temp.setValue(temp.getFloatValue() + 0.5347672f);
+      temp.setValue(temp.getValue().floatValue() + 0.5347672f);
 
     } // nloops
 

@@ -81,7 +81,7 @@ public class Sink implements Runnable, ReG_SteerConstants {
     }
 
     /* Register monitored parameter */
-    bytesRead = new ReG_SteerParameter("Items_read", false, REG_INT, "", "");
+    bytesRead = ReG_SteerParameter.create("Items_read", false, REG_INT, "", "");
     try {
       bytesRead.register();
     }
