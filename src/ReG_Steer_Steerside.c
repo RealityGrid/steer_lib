@@ -97,7 +97,16 @@ int Steerer_initialize()
   signal(SIGINT, Steerside_signal_handler);
   /* kill (note cannot (and should not) catch kill -9) */
   signal(SIGTERM, Steerside_signal_handler);
-  signal(SIGSEGV, Steerside_signal_handler);
+
+  /* RHAINES 24/10/2007
+   * 
+   * Don't catch SIGSEGV for now on the steering side as it
+   * interferes with Java - the JVM needs to catch this signal
+   * Investigate solution another time!
+   *
+   * signal(SIGSEGV, Steerside_signal_handler);
+   */
+
   signal(SIGILL, Steerside_signal_handler);
   signal(SIGABRT, Steerside_signal_handler);
   signal(SIGFPE, Steerside_signal_handler);
