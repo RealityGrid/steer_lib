@@ -40,65 +40,77 @@ package org.realitygrid.steering;
  * @author Robert Haines
  */
 public class ReG_SteerRegistryEntry implements ReG_SteerConstants {
+  
+  private String serviceType;
+  private String GSH;
+  private String entryGSH;
+  private String application;
+  private String startDateTime;
+  private String user;
+  private String group;
+  private String jobDescription;
+  
+  public ReG_SteerRegistryEntry() {}
+  
+  public ReG_SteerRegistryEntry(String type,
+				String gsh,
+				String egsh,
+				String app,
+				String start,
+				String user,
+				String group,
+				String description) {
+    serviceType = type;
+    GSH = gsh;
+    entryGSH = egsh;
+    application = app;
+    startDateTime = start;
+    this.user = user;
+    this.group = group;
+    jobDescription = description;
+  }
+  
+  public String getServiceType() {
+    return serviceType;
+  }
+  
+  public String getGSH() {
+    return GSH;
+  }
+  
+  public String getEntryGSH() {
+    return entryGSH;
+  }
+  
+  public String getApplication() {
+    return application;
+  }
+  
+  public String getStartDateTime() {
+    return startDateTime;
+  }
+  
+  public String getUser() {
+    return user;
+  }
+  
+  public String getGroup() {
+    return group;
+  }
+  
+  public String getJobDescription() {
+    return jobDescription;
+  }
+  
+  public String toString() {
+    return application + " (" + jobDescription + ") - " + getCNFromUser(); 
+  }
 
-    private String serviceType;
-    private String GSH;
-    private String entryGSH;
-    private String application;
-    private String startDateTime;
-    private String user;
-    private String group;
-    private String jobDescription;
-
-    public ReG_SteerRegistryEntry() {}
-
-    public ReG_SteerRegistryEntry(String type,
-				  String gsh,
-				  String egsh,
-				  String app,
-				  String start,
-				  String user,
-				  String group,
-				  String description) {
-	serviceType = type;
-	GSH = gsh;
-	entryGSH = egsh;
-	application = app;
-	startDateTime = start;
-	this.user = user;
-	this.group = group;
-	jobDescription = description;
+  private String getCNFromUser() {
+    if(user.startsWith("/")) {
+      int index = user.indexOf("/CN=");
+      return user.substring(index + 4);
     }
-
-    public String getServiceType() {
-	return serviceType;
-    }
-
-    public String getGSH() {
-	return GSH;
-    }
-
-    public String getEntryGSH() {
-	return entryGSH;
-    }
-
-    public String getApplication() {
-	return application;
-    }
-
-    public String getStartDateTime() {
-	return startDateTime;
-    }
-
-    public String getUser() {
-	return user;
-    }
-
-    public String getGroup() {
-	return group;
-    }
-
-    public String getJobDescription() {
-	return jobDescription;
-    }
+    else return user;
+  }
 }
