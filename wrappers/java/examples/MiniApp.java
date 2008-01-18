@@ -60,6 +60,7 @@ public class MiniApp implements Runnable, ReG_SteerConstants {
   ReG_SteerParameter aAxis;
   ReG_SteerParameter bAxis;
   ReG_SteerParameter cAxis;
+  ReG_SteerParameter bool;
 
   public static void main(String[] argv) {
     new MiniApp();
@@ -102,6 +103,8 @@ public class MiniApp implements Runnable, ReG_SteerConstants {
     nx = ReG_SteerParameter.create("nx", 16, true, "1", "");
     ny = ReG_SteerParameter.create("ny", 16, true, "1", "");
     nz = ReG_SteerParameter.create("nz", 16, true, "1", "");
+    bool = ReG_SteerParameter.create("boolean", 0, true, "0", "1");
+
     try {
       sleepTime.register();
       opacityStepStop.register();
@@ -112,6 +115,7 @@ public class MiniApp implements Runnable, ReG_SteerConstants {
       nx.register();
       ny.register();
       nz.register();
+      bool.register();
     }
     catch(ReG_SteerException e) {
       System.err.println(e.getMessage());
