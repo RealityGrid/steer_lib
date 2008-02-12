@@ -144,6 +144,7 @@ int Get_security_config(const char               *configFile,
   xmlDocPtr  doc;
   xmlNodePtr cur;
   xmlChar   *attrValue;
+  xmlChar   *attrValueProp;
   FILE      *fp;
   char       bufline[512];
 
@@ -214,7 +215,7 @@ int Get_security_config(const char               *configFile,
       continue;
     }
     if( !xmlStrcmp(cur->name, (const xmlChar *)"caCertsPath") ){
-      attrValue = xmlGetProp(cur, "value");
+      attrValue = xmlGetProp(cur, (const xmlChar*) "value");
       if(attrValue){
         len = xmlStrlen(attrValue);
         strncpy(sec->caCertsPath, (char *)attrValue, len);
@@ -226,7 +227,7 @@ int Get_security_config(const char               *configFile,
       }
     }
     else if( !xmlStrcmp(cur->name, (const xmlChar *)"privateKeyCertFile") ){
-      attrValue = xmlGetProp(cur, "value");
+      attrValue = xmlGetProp(cur, (const xmlChar*) "value");
       if(attrValue){
         len = xmlStrlen(attrValue);
         strncpy(sec->myKeyCertFile, (char *)attrValue, len);

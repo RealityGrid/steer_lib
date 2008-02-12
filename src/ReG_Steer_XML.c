@@ -368,7 +368,7 @@ int parseSteerMessage(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
   }
 
   /* Get the msg UID if present */
-  if( (msg->msg_uid = xmlGetProp(cur, "Msg_UID")) ){
+  if( (msg->msg_uid = xmlGetProp(cur, (const xmlChar*) "Msg_UID")) ){
 #if REG_DEBUG_FULL
     fprintf(stderr, "STEER: INFO: parseSteerMessage: msg UID = %s\n",
 	    (char*)(msg->msg_uid));
@@ -2160,7 +2160,7 @@ int Store_xml_string(xmlDocPtr doc, xmlNodePtr cur, char **dest,
   printf("<<\n");
   */
   *dest = &(entry->pBuf[entry->bufIndex]);
-  strncpy(*dest, pXMLChar, len);
+  strncpy(*dest, (char*) pXMLChar, len);
   (*dest)[len] = '\0';
   entry->bufIndex += len + 1;
   xmlFree(pXMLChar);

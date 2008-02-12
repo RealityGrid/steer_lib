@@ -1469,7 +1469,7 @@ int Create_WSRF_header(struct soap *aSoap,
 
   /* Base64-encode this random sequence to make our nonce a nice
      ASCII string (XML friendly) */
-  Base64_encode(randBuf, 16, &pBase64Buf, &len);
+  Base64_encode((char*) randBuf, 16, &pBase64Buf, (unsigned int*) &len);
 
   aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Nonce = 
                                        (char *)soap_malloc(aSoap, len+1);
@@ -1502,10 +1502,10 @@ int Create_WSRF_header(struct soap *aSoap,
   nbytes = snprintf(pBuf, bytesLeft, passwd);
   bytesLeft -= nbytes; pBuf += nbytes;
 
-  SHA1(buf, (MAX_LEN-bytesLeft), digest); /* openssl call */
+  SHA1((unsigned char*) buf, (MAX_LEN-bytesLeft), (unsigned char*) digest); /* openssl call */
 
   free(pBase64Buf); len = 0; pBase64Buf=NULL;
-  Base64_encode(digest, SHA_DIGEST_LENGTH, &pBase64Buf, &len); /* Steer lib */
+  Base64_encode(digest, SHA_DIGEST_LENGTH, &pBase64Buf, (unsigned int*) &len); /* Steer lib */
   /* Strip padding characters from end because perl doesn't add them from
      the sha1_base64 function */
   i = len-1;
