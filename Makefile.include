@@ -48,6 +48,18 @@ LOCAL_BIN_DIR  = ${HOME}/RealityGrid/bin
 REG_SOAP_STEERING_FLAG = 0
 
 #------------------------------------
+# Use a direct TCP connection for steering?
+#
+# At the moment this selection method is a MASSIVE hack as it conflicts
+# with REG_SOAP_STEERING_FLAG above. This will be fixed in later releases.
+#
+# The actual implementation is NOT a hack though.
+#
+# This flag overrides REG_SOAP_STEERING_FLAG.
+# Set to 1 for a direct TCP steering connection or 0 to use SOAP or files.
+REG_DIRECT_TCP_STEERING_FLAG = 0
+
+#------------------------------------
 # Medium to use for data set transfer - you have a choice of 
 # direct tcp socket, socket via a proxy or files.  Setting both flags 
 # below to zero means that data transfer will use files (written to 

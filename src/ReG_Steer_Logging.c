@@ -40,9 +40,13 @@
 #include "ReG_Steer_Common.h"
 #include "ReG_Steer_Logging.h"
 #include "ReG_Steer_Appside_internal.h"
+#if REG_DIRECT_TCP_STEERING
+#include "ReG_Steer_Appside_Direct.h"
+#else
 #if REG_SOAP_STEERING
 #include "ReG_Steer_Appside_Soap.h"
 #endif
+#endif /* REG_DIRECT_TCP_STEERING */
 
 #ifndef WIN32
 #include <unistd.h>
@@ -94,9 +98,14 @@ int Initialize_log(Chk_log_type *log, log_type_type log_type)
     for(i=0; i<REG_MAX_NUM_STR_PARAMS; i++){
       log->param_send_all[i] = REG_TRUE;
     }
+#if REG_DIRECT_TCP_STEERING
+
+#else
 #if REG_SOAP_STEERING
     log->send_all    	= REG_FALSE;
 #endif
+#endif /* REG_DIRECT_TCP_STEERING */
+
     /* We delete any existing parameter log file rather than
        append to it */
     Delete_log_file(log);
@@ -239,6 +248,9 @@ int Save_log(Chk_log_type *log)
     if(status == REG_SUCCESS){
       fprintf(log->file_ptr, "%s", buf);
     }
+#if REG_DIRECT_TCP_STEERING
+
+#else
 #if REG_SOAP_STEERING
 #ifdef REG_WSRF
     Save_log_wsrf(buf);
@@ -246,6 +258,7 @@ int Save_log(Chk_log_type *log)
     Save_log_soap(buf);
 #endif
 #endif
+#endif /* REG_DIRECT_TCP_STEERING */
   }
 
   log->num_entries = 0;

@@ -40,6 +40,7 @@
 #include "ReG_Steer_Steerside.h"
 #include "ReG_Steer_Steerside_internal.h"
 #include "ReG_Steer_Proxy_utils.h"
+#include "ReG_Steer_Steerside_Direct.h"
 #include "ReG_Steer_Steerside_Soap.h"
 #include "ReG_Steer_Steerside_WSRF.h"
 #include "ReG_Steer_Browser.h"
@@ -466,12 +467,22 @@ int Sim_attach_secure(const char                     *SimID,
 
     if(return_status == REG_FAILURE){
 
-      /* Use local file system */
+#ifdef REG_DIRECT_TCP_STEERING
+      /* use direct tcp steering */
 #if REG_DEBUG
-      fprintf(stderr, "STEER: Sim_attach: calling Sim_attach_local...\n");
+      fprintf(stderr, "STEER: Sim_attach: calling Sim_attach_direct...\n");
 #endif
-      return_status = Sim_attach_local(&(Sim_table.sim[current_sim]), 
+      return_status = Sim_attach_direct(&(Sim_table.sim[current_sim]), (char*) SimID);
+
+#else /* REG_DIRECT_TCP_STEERING */
+
+	/* Use local file system */
+#if REG_DEBUG
+	fprintf(stderr, "STEER: Sim_attach: calling Sim_attach_local...\n");
+#endif
+	return_status = Sim_attach_local(&(Sim_table.sim[current_sim]), 
 				       (char *)SimID);
+#endif /* REG_DIRECT_TCP_STEERING */
     }
   }
 
@@ -516,7 +527,7 @@ int Sim_attach_secure(const char                     *SimID,
     free(sim_ptr->Chk_log.entry);
     sim_ptr->Chk_log.entry = NULL;
   }
-
+  
   return return_status;
 }
 
@@ -589,9 +600,12 @@ int Get_next_message(int   *SimHandle,
 #endif
 	}
 	else{
-
+#ifdef REG_DIRECT_TCP_STEERING
+	  Sim_table.sim[isim].msg = Get_status_msg_direct(&(Sim_table.sim[isim]), REG_TRUE);
+#else
 	  /* No proxy and no SGS available so using 'local' file system */
 	  Sim_table.sim[isim].msg = Get_status_msg_file(&(Sim_table.sim[isim]));
+#endif
 	}
       }
 
@@ -1825,8 +1839,11 @@ int Send_control_msg(int SimIndex, char* buf)
 #endif
     }
     else{
-
+#ifdef REG_DIRECT_TCP_STEERING
+      return Send_control_msg_direct(sim, buf);
+#else
       return Send_control_msg_file(SimIndex, buf);
+#endif
     }
   }
 }
@@ -3531,6 +3548,15 @@ int Finalize_connection(Sim_entry_type *sim)
       return Finalize_connection_soap(sim);
 #endif
     }
+
+#if REG_DIRECT_TCP_STEERING
+    if(sim->detached == REG_FALSE) {
+      Emit_detach_cmd(sim->handle);
+      fprintf(stderr, "sent detach command\n");
+    }
+    return Finalize_connection_direct(sim);
+    fprintf(stderr, "finalized...\n");
+#endif
 
     return Finalize_connection_file(sim);
   }

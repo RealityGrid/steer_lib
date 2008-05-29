@@ -369,6 +369,39 @@ typedef struct {
 
   } SGS_info_type;
 
+/** @internal 
+    Structure to hold direct tcp socket information */
+typedef struct
+{
+  /** Minimum port number we can use to listen on (zero if any) */
+  int                   min_port_in;
+  /** Maximum port number we can use to listen on (zero if any) */
+  int                   max_port_in;
+  /** Minimum port number we can use to connect out of (zero if any) */
+  int                   min_port_out;
+  /** Maximum port number we can use to connect out of (zero if any) */
+  int                   max_port_out;
+  /** Default outbound tcp interface */
+  char			tcp_interface[REG_MAX_STRING_LENGTH];
+  /** Handle of listener socket - info for socket connection ("server" end) */
+  int			listener_handle;
+  /** Hostname on which to listen -  info for socket connection ("server" end) */
+  char			listener_hostname[REG_MAX_STRING_LENGTH];
+  /** Port on which to listen -  info for socket connection ("server" end) */
+  unsigned short int	listener_port;
+  /** Handle of connecting socket - info for socket connection ("client" end) */
+  int			connector_handle;
+  /** Hostname to connect to - info for socket connection ("client" end) */
+  char			connector_hostname[REG_MAX_STRING_LENGTH];
+  /** Port to connect to - info for socket connection ("client" end) */
+  unsigned short int	connector_port;
+  /** status indicator for listening socket */
+  int			listener_status;  
+  /** status indicator for connecting socket */
+  int			comms_status;
+
+} Direct_info_type;
+
 /** @internal
     Holds details required for secure access to a service
     using either SSL or WSSE */

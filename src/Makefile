@@ -45,6 +45,8 @@ REG_LIB_OBJECTS=reg_steer_mod.o \
  ReG_Steer_Common.o \
  ReG_Steer_Proxy_utils.o \
  ReG_Steer_XML.o \
+ ReG_Steer_Steerside_Direct.o \
+ ReG_Steer_Appside_Direct.o \
  ReG_Steer_Appside_Sockets.o \
  ReG_Steer_Appside_IOProxy.o \
  ReG_Steer_Steerside_Soap.o \
@@ -69,6 +71,7 @@ REG_LIB_SOAP_OBJECTS=stdsoap2.o soapC.o soapClient.o
         -DREG_SOCKET_SAMPLES=${REG_SOCKET_SAMPLES_FLAG} \
         -DREG_PROXY_SAMPLES=${REG_PROXY_SAMPLES_FLAG} \
         -DREG_SOAP_STEERING=${REG_SOAP_STEERING_FLAG} \
+	-DREG_DIRECT_TCP_STEERING=${REG_DIRECT_TCP_STEERING_FLAG} \
         -DREG_DEBUG=${REG_DEBUG_FLAG} \
         -DREG_DEBUG_FULL=${REG_DEBUG_FULL_FLAG} \
         -DREG_STEER_LIB_VERSION=\"${REG_STEER_LIB_VERSION}\" \
@@ -103,6 +106,8 @@ lib:	${REG_LIB_OBJECTS}
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Common.o
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Proxy_utils.o
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_XML.o
+	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Steerside_Direct.o
+	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Appside_Direct.o
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Appside_Sockets.o
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Appside_IOProxy.o
 	${AR} ${AR_FLAGS} ${LIB_PATH}/libReG_Steer.a ReG_Steer_Appside_Soap.o
@@ -175,6 +180,19 @@ ReG_Steer_XML.o: ReG_Steer_XML.c \
 	../include/ReG_Steer_XML.h \
 	../include/ReG_Steer_types.h
 
+ReG_Steer_Appside_Direct.o: ReG_Steer_Appside_Direct.c \
+	../include/ReG_Steer_Appside_Direct.h \
+        ../include/ReG_Steer_Appside_internal.h \
+	../include/ReG_Steer_Common.h \
+	../include/ReG_Steer_types.h
+
+ReG_Steer_Steerside_Direct.o: ReG_Steer_Steerside_Direct.c \
+	../include/ReG_Steer_Steerside_Direct.h \
+        ../include/ReG_Steer_Steerside_internal.h \
+        ../include/ReG_Steer_Steerside.h \
+	../include/ReG_Steer_Common.h \
+	../include/ReG_Steer_types.h
+
 ReG_Steer_Appside_Sockets.o: ReG_Steer_Appside_Sockets.c \
 	../include/ReG_Steer_Appside_Sockets.h \
 	../include/ReG_Steer_types.h
@@ -224,6 +242,7 @@ ReG_Steering_Initialize.o: ReG_Steering_Initialize.f90 \
 	-${F90} -fPIC ${F90_FLAGS} \
         -DREG_SOCKET_SAMPLES=${REG_SOCKET_SAMPLES_FLAG} \
         -DREG_SOAP_STEERING=${REG_SOAP_STEERING_FLAG} \
+	-DREG_DIRECT_TCP_STEERING=${REG_DIRECT_TCP_STEERING_FLAG} \
         -DREG_DEBUG=${REG_DEBUG_FLAG} \
         -DREG_DEBUG_FULL=${REG_DEBUG_FULL_FLAG} \
         -DREG_STEER_LIB_VERSION=\"${REG_STEER_LIB_VERSION}\" \
@@ -240,6 +259,7 @@ reg_steer_mod.o: reg_steer_mod.f90
 	-${F90} ${F90_FLAGS} \
         -DREG_SOCKET_SAMPLES=${REG_SOCKET_SAMPLES_FLAG} \
         -DREG_SOAP_STEERING=${REG_SOAP_STEERING_FLAG} \
+	-DREG_DIRECT_TCP_STEERING=${REG_DIRECT_TCP_STEERING_FLAG} \
         -DREG_DEBUG=${REG_DEBUG_FLAG} \
         -DREG_DEBUG_FULL=${REG_DEBUG_FULL_FLAG} \
         -DREG_STEER_LIB_VERSION=\"${REG_STEER_LIB_VERSION}\" \

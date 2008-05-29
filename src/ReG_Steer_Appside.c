@@ -38,6 +38,7 @@
 #include "ReG_Steer_Appside.h"
 #include "ReG_Steer_Appside_internal.h"
 #include "ReG_Steer_Appside_Sockets.h"
+#include "ReG_Steer_Appside_Direct.h"
 #include "ReG_Steer_Appside_IOProxy.h"
 #include "ReG_Steer_Appside_Soap.h"
 #include "ReG_Steer_Appside_WSRF.h"
@@ -1345,6 +1346,9 @@ int Record_checkpoint_set(int   ChkType,
 			  char *ChkTag,
 			  char *Path)
 {
+#if REG_DIRECT_TCP_STEERING
+
+#else
 #if REG_SOAP_STEERING
   int    nfiles;
   int    i, j, status, len;
@@ -1358,12 +1362,16 @@ int Record_checkpoint_set(int   ChkType,
   time_t time_now;
   int    index;
 #endif
+#endif /* REG_DIRECT_TCP_STEERING */
 
   /* Can only call this function if steering lib initialised */
   if (!ReG_SteeringInit) return REG_FAILURE;
 
   if (ChkType == REG_IODEF_HANDLE_NOTSET) return REG_SUCCESS;
 
+#if REG_DIRECT_TCP_STEERING
+
+#else
 #if !REG_SOAP_STEERING
 
   return Record_Chkpt(ChkType, ChkTag);
@@ -1590,6 +1598,7 @@ int Record_checkpoint_set(int   ChkType,
   return REG_SUCCESS;
 
 #endif /* REG_SOAP_STEERING */
+#endif /* REG_DIRECT_TCP_STEERING */
 
 }
 
@@ -2952,14 +2961,17 @@ int Steering_control(int     SeqNum,
   /* If we're not steering via SOAP (and a Steering Grid Service)
      then we can't emit our parameter definitions etc. until
      a steerer has connected */
-#if !REG_SOAP_STEERING
+#if REG_DIRECT_TCP_STEERING
+  if(do_steer){
+#else
+#if !REG_SOAP_STEERING 
   if(do_steer){
 #endif /* !REG_SOAP_STEERING */
+#endif
 
     /* If registered params have changed since the last time then
        tell the steerer about the current set */
-    if(ReG_ParamsChanged){
-      
+    if(ReG_ParamsChanged){      
       if(Emit_param_defs() != REG_SUCCESS){
 
 	fprintf(stderr, "STEER: Steering_control: Emit_param_defs "
@@ -2999,8 +3011,11 @@ int Steering_control(int     SeqNum,
        Service) then we can and should publish our parameter
        definitions etc., irrespective of whether a steerer is
        attached */
+#if REG_DIRECT_TCP_STEERING
+#else
 #if REG_SOAP_STEERING
   if(do_steer){
+#endif
 #endif
 
     /* If we're being steered (no matter how) then... */
@@ -3066,7 +3081,7 @@ int Steering_control(int     SeqNum,
 	return_status = REG_FAILURE;
       }
 
-#if !REG_SOAP_STEERING
+#if !REG_SOAP_STEERING || !REG_DIRECT_TCP_STEERING
       /* Confirm that we have received the detach command */
       commands[0] = REG_STR_DETACH;
       Emit_status(SeqNum, 0,   
@@ -3138,7 +3153,7 @@ int Steering_control(int     SeqNum,
 
 	/* If we are being steered using soap then don't emit
 	   a confirmation - Steering_finalize takes care of this */
-#if !REG_SOAP_STEERING
+#if !REG_SOAP_STEERING || !REG_DIRECT_TCP_STEERING
 	/* Confirm that we have received the stop command */
 	commands[0] = REG_STR_STOP;
 	Emit_status(SeqNum, 0,   
@@ -4226,6 +4241,9 @@ int Unpack_control_msg(struct control_struct *ctrl,
 int Detach_from_steerer()
 {
   int i;
+#if REG_DIRECT_TCP_STEERING
+  Detach_from_steerer_direct();
+#else
 #if REG_SOAP_STEERING
 
 #ifndef REG_WSRF
@@ -4239,16 +4257,21 @@ int Detach_from_steerer()
   Detach_from_steerer_file();
 
 #endif /* File-based steering */
+#endif /* REG_DIRECT_TCP_STEERING */
 
   /* Flag that all entries in log need to be sent to steerer (in case
      another one attaches later on) */
   Chk_log.send_all           = REG_TRUE;
   Chk_log.emit_in_progress   = REG_FALSE;
+#if REG_DIRECT_TCP_STEERING
+
+#else
 #if REG_SOAP_STEERING
   Param_log.send_all         = REG_FALSE;
 #else
   Param_log.send_all         = REG_TRUE;
 #endif
+#endif /* REG_DIRECT_TCP_STEERING */
   for(i=0; i<REG_MAX_NUM_STR_PARAMS; i++){
     Param_log.param_send_all[i] = REG_TRUE;
   }
@@ -4848,6 +4871,9 @@ int Make_chunk_header(char *header,
 int Steerer_connected()
 {
 
+#if REG_DIRECT_TCP_STEERING
+  return Steerer_connected_direct();
+#else /* REG_DIRECT_TCP_STEERING */
 #if REG_SOAP_STEERING
 #ifdef REG_WSRF
   return Steerer_connected_wsrf();
@@ -4858,6 +4884,7 @@ int Steerer_connected()
 
   return Steerer_connected_file();
 #endif
+#endif /* REG_DIRECT_TCP_STEERING */
 }
 
 /*-------------------------------------------------------------------*/
@@ -4868,6 +4895,9 @@ int Send_status_msg(char *buf)
   fprintf(stderr, "STEER: Send_status_msg: sending:\n>>%s<<\n", buf);
 #endif
 
+#if REG_DIRECT_TCP_STEERING
+  return Send_status_msg_direct(&(Steerer_connection.socket_info), buf);
+#else
 #if REG_SOAP_STEERING
 
 #ifdef REG_WSRF
@@ -4879,6 +4909,7 @@ int Send_status_msg(char *buf)
 
   return Send_status_msg_file(buf);
 #endif
+#endif /* REG_DIRECT_TCP_STEERING */
 }
 
 /*-------------------------------------------------------------------*/
@@ -4886,6 +4917,9 @@ int Send_status_msg(char *buf)
 struct msg_struct *Get_control_msg()
 {
 
+#if REG_DIRECT_TCP_STEERING
+  return Get_control_msg_direct(&(Steerer_connection.socket_info));
+#else
 #if REG_SOAP_STEERING
 #ifdef REG_WSRF
   return Get_control_msg_wsrf();
@@ -4897,6 +4931,7 @@ struct msg_struct *Get_control_msg()
   return Get_control_msg_file();
 
 #endif
+#endif /* REG_DIRECT_TCP_STEERING */
 
 }
 
@@ -4936,6 +4971,10 @@ int Initialize_steering_connection(int  NumSupportedCmds,
 	  "interval = %d\n", (int)Steerer_connection.polling_interval);
 #endif
 
+#if REG_DIRECT_TCP_STEERING
+  return Initialize_steering_connection_direct(NumSupportedCmds,
+					       SupportedCmds);
+#else
 #if REG_SOAP_STEERING
 
 #ifdef REG_WSRF
@@ -4950,6 +4989,7 @@ int Initialize_steering_connection(int  NumSupportedCmds,
   return Initialize_steering_connection_file(NumSupportedCmds,
 					     SupportedCmds);
 #endif
+#endif /* REG_DIRECT_TCP_STEERING */
 
 }
 
@@ -5032,6 +5072,9 @@ int Set_steering_directory()
 int Finalize_steering_connection()
 {
 
+#if REG_DIRECT_TCP_STEERING
+  return Finalize_steering_connection_direct();
+#else
 #if REG_SOAP_STEERING
 
 #ifdef REG_WSRF
@@ -5055,6 +5098,7 @@ int Finalize_steering_connection()
 
   return Finalize_steering_connection_file();
 #endif
+#endif /* REG_DIRECT_TCP_STEERING */
 
 }
 /*---------------------------------------------------*/

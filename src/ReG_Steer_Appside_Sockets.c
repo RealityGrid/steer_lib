@@ -331,6 +331,11 @@ int connect_connector(const int index) {
 
   /* get a remote address if we need to */
   if(IOTypes_table.io_def[index].socket_info.connector_port == 0) {
+#if REG_DIRECT_TCP_STEERING
+    return_status = Get_data_source_address_direct(IOTypes_table.io_def[index].input_index, 
+						   IOTypes_table.io_def[index].socket_info.connector_hostname,
+						   &(IOTypes_table.io_def[index].socket_info.connector_port));
+#else
 #if REG_SOAP_STEERING	  
     /* Go out into the world of grid/web services... */
 #ifdef REG_WSRF /* use WSRF */
@@ -359,6 +364,7 @@ int connect_connector(const int index) {
 						 IOTypes_table.io_def[index].socket_info.connector_hostname,
 						 &(IOTypes_table.io_def[index].socket_info.connector_port));
 #endif /* !REG_SOAP_STEERING */
+#endif /* REG_DIRECT_TCP_STEERING */
   }
 
   if(return_status == REG_SUCCESS && 
