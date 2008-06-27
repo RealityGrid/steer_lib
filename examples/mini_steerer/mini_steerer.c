@@ -306,12 +306,14 @@ int main(int argc, char **argv){
 	  fprintf(stderr, "Attach failed :-(\n");
 	}
       }
+
+      /* Delete reg contents now finished with */
+      Delete_registry_table(&content);
     }
   }
 
   /* Done with malloc'd memory */
-  if(pchar)free(pchar);
-  Delete_registry_table(&content);
+  if(pchar) free(pchar);
 
   if(status != REG_SUCCESS){
 
