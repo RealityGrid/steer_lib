@@ -33,6 +33,9 @@
     @author Robert Haines
 */
 
+#ifndef REG_SOCKETS_ERROR
+#define REG_SOCKETS_ERROR -1
+#endif
 
 /** @internal
     @param sim Pointer to entry in main Sim_table

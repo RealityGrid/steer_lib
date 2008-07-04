@@ -29,8 +29,6 @@
   CORRECTION.
 ---------------------------------------------------------------------------*/
 
-#if REG_DIRECT_TCP_STEERING
-
 #include "ReG_Steer_Appside_Direct.h"
 #include "ReG_Steer_types.h"
 #include "ReG_Steer_Common.h"
@@ -525,5 +523,3 @@ int socket_info_init_direct(Direct_info_type* socket_info) {
 
   return REG_SUCCESS;
 }
-
-#endif /* REG_DIRECT_TCP_STEERING */
