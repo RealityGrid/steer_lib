@@ -28,7 +28,7 @@
 #ifndef __REG_STEER_STEERSIDE_DIRECT_H__
 #define __REG_STEER_STEERSIDE_DIRECT_H__
 
-/** @file ReG_Steer_Steerside_Sirect.h
+/** @file ReG_Steer_Steerside_Direct.h
     @brief Header file for direct tcp communications for the steering client.
     @author Robert Haines
 */

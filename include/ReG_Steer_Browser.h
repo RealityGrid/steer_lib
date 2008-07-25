@@ -104,7 +104,7 @@ struct registry_contents {
    @b OBSOLETE - superceded by Get_registry_entries() @n
    Really just wraps Get_registry_entries().  Uses the registry 
    address in REG_REGISTRY_ADDRESS if set, otherwise uses
-   default (#define'd at the top of ReG_Steer_Browser.c).
+   default (&#35;define'd at the top of ReG_Steer_Browser.c).
    Returns list of steerable applications (up to 
    REG_MAX_NUM_STEERED_SIM). The Grid Service Handle returned 
    in @p simGSH must be supplied as the SimID to Sim_attach. */
@@ -128,6 +128,8 @@ extern PREFIX int Get_registry_entries(const char               *registryGSH,
     of its service_type, application, user, group, start_date_time or
     job_description fields.
     @see Get_registry_entries
+    @param registryGSH Address of the ServiceGroup/Registry to query
+    @param contents Table holding details of registry entries. Must be 
     @param pattern String holding pattern to be used in filtering
  */
 extern PREFIX int Get_registry_entries_filtered(const char               *registryGSH, 

@@ -99,7 +99,7 @@ extern PREFIX int Steering_initialize(char *AppName,
    @param NumTypes The number of IOTypes to register
    @param IOLabel Array of labels for the IOTypes
    @param direction Array giving direction of each IOType (@c IN, 
-   @c OUT or @cINOUT)
+   @c OUT or @c INOUT)
    @param IOFrequency Array giving the interval between 
    automatically-generated commands to emit/consume data using each IOType
    @param IOType On success - array of handles for registered IOTypes
@@ -642,7 +642,7 @@ extern PREFIX int Emit_stop(int	       *IOTypeIndex);
    results in an acknowledgement of that data set being sent to the
    emitter.
    @param IOType The IOType channel to open
-   @param IOTypeIndex, On successful return, holds index of open channel
+   @param IOTypeIndex On successful return, holds index of open channel
    @return REG_SUCCESS, REG_FAILURE
    @see Register_IOTypes()
 */
@@ -781,7 +781,7 @@ extern PREFIX int Make_vtk_buffer(int    nx,
 
 /**
    Create a vtk header for a structured points data set of nx*ny*nz
-   points of type <type> (coded as REG_INT etc.) */
+   points of type &lt;type&gt; (coded as REG_INT etc.) */
 extern PREFIX int Make_vtk_header(char  *header,
 				  char  *title,
 				  int    nx,

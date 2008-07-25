@@ -113,7 +113,7 @@ int Consume_start_data_check_file(int index);
     @param names Array of char* holding names of files found
 
     Searches for files matching the pattern specified in fileroot (@e
-    i.e.  does 'ls <fileroot>').  If any are found, @p names is
+    i.e.  does 'ls &lt;fileroot&gt;').  If any are found, @p names is
     malloc'd to point to an array of char* and each entry in this
     array is malloc'd and set to the relevant filename. These ptrs
     MUST be free'd. @p num can be zero even if the routine returns

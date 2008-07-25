@@ -159,7 +159,7 @@ int Emit_status(int   SeqNum,
    associated parameters to the SteerCommands and SteerCmdParams arrays.
    @param SteerCommands The array of commands to which to append any
    automatically-generated commands
-   @param SteerParamCommands The array of command parameters to append to
+   @param SteerCmdParams The array of command parameters to append to
    @param paramPosn The point at which to start adding parameter handles
    and labels to the SteerParamHandles and SteerParamLabels arrays
    @param SteerParamHandles The array to which to add the handles of 

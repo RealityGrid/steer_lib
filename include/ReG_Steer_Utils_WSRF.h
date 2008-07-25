@@ -45,9 +45,7 @@
     Get the entries from a WSRF-based registry
     @param registryEPR Endpoint of the registry to query
     @param sec Pointer to struct holding authentication information
-    @param num_entries On successful return, holds the number of 
-    entries in the registry
-    @param entries Array of structs holding details on each entry */
+    @param contents Array of structs holding details on each entry */
 int Get_registry_entries_wsrf(const char             *registryEPR, 
 			      const struct reg_security_info *sec,
 			      struct registry_contents *contents);

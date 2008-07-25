@@ -34,7 +34,7 @@
  
     This header file contains routines and data structures for
     communication using Sockets.
-   @auther Andrew Porter
+   @author Andrew Porter
   */
 
 /* ARP - added to uniquely identify TRU64 systems.  Necessary on

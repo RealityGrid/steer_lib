@@ -95,7 +95,9 @@ int Finalize_steering_connection_direct();
     @param port Port on which data source is listening
 
     Obtain endpoint for a socket connection */
-int Get_data_source_address_direct(int, char*, unsigned short int *);
+int Get_data_source_address_direct(int index,
+				   char* hostname, 
+				   unsigned short int* port);
 
 int Create_steerer_listener(Direct_info_type*);
 void poll_steerer_socket(Direct_info_type*);

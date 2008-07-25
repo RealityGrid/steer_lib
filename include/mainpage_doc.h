@@ -51,7 +51,7 @@
     @endlatexonly
 
     <IMG SRC="steer_arch_symm.png" alt="Illustrative architecture diagram"
-         title="Illustrative architecture of a steering scenario"/>
+         title="Illustrative architecture of a steering scenario">
 
     The figure shows an example use case for computational steering.
     The simulation component has been instrumented using the steering

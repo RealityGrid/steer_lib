@@ -165,7 +165,7 @@ address of IOProxy if @p sourcePort != 0
    @param sourcePort Port on which to connect to IOProxy or 0 if using
 direct socket connection
    @param label Label of the IOType from which to get data
-   @sec Pointer to struct containing data required to authenticate to the SWS
+   @param sec Pointer to struct containing data required to authenticate to the SWS
 
    Configures the specified service with information on a data source 
    (either direct socket connection between source and sink or a socket 

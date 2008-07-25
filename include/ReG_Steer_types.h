@@ -158,7 +158,7 @@
 
 /** All generated IOtype handles must be >= this value because they
     will be interpreted as commands - this value must therefore be >
-    than all of the commands #define'd above */
+    than all of the commands &#35;define'd above */
 #define REG_MIN_IOTYPE_HANDLE 1000
 
 /** The three different types that an IOtype/CHKtype can have */
