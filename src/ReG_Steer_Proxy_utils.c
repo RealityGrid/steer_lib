@@ -36,16 +36,23 @@
     @author Andrew Porter
     @author Robert Haines
 */
+#include "ReG_Steer_Config.h"
 #include "ReG_Steer_Proxy_utils.h"
 
+/*
 #ifndef REG_DEBUG
 #define REG_DEBUG 1
 #endif
+*/
 
 #ifndef WIN32
 #else
 #include <io.h>
+/*
+NOW IN CMAKE
+
 #define read _read
+*/
 #endif
 
 /*----------------------------------------------------------*/
@@ -280,7 +287,7 @@ int Get_proxy_message(int pipe_from_proxy, char *buf, int *nbytes)
   memset(buf, 0, REG_MAX_MSG_SIZE);
 
   /* Block until message received */
-#if REG_DEBUG
+#ifdef REG_DEBUG
   fprintf(stderr, "STEER: Get_proxy_message: waiting for msg from proxy...\n");
 #endif
 
@@ -296,7 +303,7 @@ int Get_proxy_message(int pipe_from_proxy, char *buf, int *nbytes)
     return REG_FAILURE;
   }
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
   fprintf(stderr, "STEER: Get_proxy_message: got: <%s>\n", line_buf);
   fprintf(stderr, "STEER: Get_proxy_message: len = %d\n", len);
 #endif
@@ -318,7 +325,7 @@ int Get_proxy_message(int pipe_from_proxy, char *buf, int *nbytes)
     /* Get the next line - exit if EOF or error */
     len = getline(line_buf, REG_MAX_LINE_LEN, pipe_from_proxy);
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
     fprintf(stderr, "STEER: Get_proxy_message: got: <%s>\n", line_buf);
     fprintf(stderr, "STEER: Get_proxy_message: len = %d\n", len);
 #endif
@@ -343,7 +350,7 @@ int Get_proxy_message(int pipe_from_proxy, char *buf, int *nbytes)
 
   *nbytes = count;
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
   fprintf(stderr, "STEER: Get_proxy_message: received: %s\n", buf);
 #endif
 
@@ -402,7 +409,7 @@ int Proxy_is_in_path(const char *class_path, const char *exec)
 
     if(stat(full_path, &stbuf) != -1){
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
       fprintf(stderr, "STEER: Proxy_is_in_path: found >%s<\n", full_path);
 #endif
       return_status = REG_SUCCESS;

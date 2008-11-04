@@ -1,0 +1,19 @@
+#
+#
+#
+
+if(NOT REG_USE_FILE_LOADED)
+  set(REG_USE_FILE_LOADED 1)
+
+  # Import build settings
+  include(${CMAKE_ROOT}/Modules/CMakeImportBuildSettings.cmake)
+
+  CMAKE_IMPORT_BUILD_SETTINGS(${RealityGrid_BUILD_SETTINGS_FILE})
+
+  # tell the compiler where the headers are
+  include_directories(${RealityGrid_INCLUDE_DIRS})
+
+  # tell the linker where the libs are
+  link_directories(${RealityGrid_LIBRARY_DIRS})
+
+endif(NOT REG_USE_FILE_LOADED)

@@ -25,6 +25,8 @@
   DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR
   CORRECTION.
 ---------------------------------------------------------------------------*/
+
+#include "ReG_Steer_Config.h"
 #include "ReG_Steer_Steerside.h"
 #include "ReG_Steer_Steerside_internal.h"
 #include "ReG_Steer_Steerside_WSRF.h"
@@ -73,7 +75,7 @@ int Sim_attach_wsrf (Sim_entry_type *sim, char *SimID){
      http connections */
   soap_init2(sim->SGS_info.soap, SOAP_IO_KEEPALIVE, SOAP_IO_KEEPALIVE);
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
   /* ARPDBG Ptr to a handler so we can see which tags we're ignoring */
   sim->SGS_info.soap->fignore = soapMismatchHandler;
 #endif
@@ -234,7 +236,7 @@ struct msg_struct *Get_next_stored_msg(Sim_entry_type *sim)
       tmp = NULL;
     }
     else{
-#if REG_DEBUG
+#ifdef REG_DEBUG
       fprintf(stderr, "STEER: Get_next_stored_msg: hit end of msg store\n");
 #endif
       msgStorePtr->msg = NULL;
@@ -244,7 +246,7 @@ struct msg_struct *Get_next_stored_msg(Sim_entry_type *sim)
       msgStoreTailPtr = msgStorePtr;
     }
   }
-#if REG_DEBUG
+#ifdef REG_DEBUG
   else{
     fprintf(stderr, "STEER: Get_next_stored_msg: no msg to retrieve\n");
   }
@@ -290,12 +292,12 @@ int Get_resource_property (struct soap *soapStruct,
   }
 #ifdef USE_REG_TIMING
   Get_current_time_seconds(&time1);
-#if REG_DEBUG
+#ifdef REG_DEBUG
   fprintf(stderr, "STEER: TIMING: soap_call___wsrp__GetResourceProperty"
 	  " took %f seconds\n", (float)(time1-time0));
 #endif
 #endif
-#if REG_DEBUG_FULL
+#ifdef REG_DEBUG_FULL
   fprintf(stderr, "STEER: Get_resource_property for %s returned >>%s<<\n", 
 	  name, out);
 #endif
@@ -339,7 +341,7 @@ int Get_resource_property_doc(struct soap *soapStruct,
 
 #ifdef USE_REG_TIMING
   Get_current_time_seconds(&time1);
-#if REG_DEBUG
+#ifdef REG_DEBUG
   fprintf(stderr, "STEER: TIMING: soap_call_wsrp__GetResourcePropertyDocument "
 	  "took %f seconds\n", (time1-time0));
 #endif
@@ -392,7 +394,7 @@ int Set_resource_property (struct soap *soapStruct,
 /*------------------------------------------------------------------*/
 int Send_detach_msg_wsrf (Sim_entry_type *sim){
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
   fprintf(stderr, "STEER: Send_detach_msg_wsrf: calling Detach...\n");
 #endif
 
@@ -493,7 +495,7 @@ int Get_param_log_wsrf(Sim_entry_type *sim,
     return REG_FAILURE;
   }
 
-#if REG_DEBUG_FULL
+#ifdef REG_DEBUG_FULL
   fprintf(stderr, "STEER: Get_param_log_wsrf: got log from SWS >>%s<<\n",
 	  (char*)response.LogValues);
 #endif
@@ -574,7 +576,7 @@ int Get_param_log_wsrf(Sim_entry_type *sim,
 
   case REG_CHAR:
     /* This not implemented yet */
-#if REG_DEBUG
+#ifdef REG_DEBUG
     fprintf(stderr, "STEER: Get_param_log_wsrf: logging of char params not "
 	    "implemented!\n");
 #endif

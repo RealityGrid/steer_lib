@@ -35,6 +35,8 @@
     @author Robert Haines
 */
 
+#include "ReG_Steer_Config.h"
+
 /** @internal 
     @param NumSupportedCmds No. of commands supported by the application
     @param SupportedCmds Array containing the supported commands

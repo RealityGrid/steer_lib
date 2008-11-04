@@ -34,6 +34,7 @@
     @author Andrew Porter
   */
 
+#include "ReG_Steer_Config.h"
 #include "ReG_Steer_types.h"
 #include "ReG_Steer_Browser.h"
 #include "ReG_Steer_Utils.h"
@@ -130,7 +131,7 @@ int Get_registry_entries_wsrf(const char *registryEPR,
 	  "took %f seconds\n", (time1-time0));
 #endif
 
-#if REG_DEBUG_FULL
+#ifdef REG_DEBUG_FULL
   fprintf(stderr, "STEERUtils: Get_registry_entries_wsrf: "
 	  "Get_resource_property for Entry returned >>%s<<\n\n", out);
 #endif
@@ -168,7 +169,7 @@ char *Create_SWS(const struct reg_job_details   *job,
      to be created (including username and password) while the sec
      struct contains information to allow us to authenticate to the
      registry */
-#if REG_DEBUG_FULL
+#ifdef REG_DEBUG_FULL
   fprintf(stderr,"\nSTEERUtils: Create_SWS args:\n");
   fprintf(stderr," - lifetimeMinutes: %d\n", job->lifetimeMinutes);
   fprintf(stderr," - containerAddress: %s\n", containerAddress);
@@ -184,7 +185,7 @@ char *Create_SWS(const struct reg_job_details   *job,
   sprintf(factoryAddr, "%sSession/SWSFactory/SWSFactory", 
 	  containerAddress);
 
-#if REG_DEBUG_FULL
+#ifdef REG_DEBUG_FULL
   fprintf(stderr, "\nSTEERUtils: Create_SWS: using factory >>%s<<\n",
 	  factoryAddr);
 #endif
@@ -207,7 +208,7 @@ char *Create_SWS(const struct reg_job_details   *job,
     ssl_initialized = 1;
   }
 
-#if REG_DEBUG_FULL
+#ifdef REG_DEBUG_FULL
   if(sec->passphrase[0]){
     printf("STEERUtils: Create_SWS: userName for call to createSWSResource >>%s<<\n", 
 	   sec->userDN);
@@ -295,7 +296,7 @@ char *Create_SWS(const struct reg_job_details   *job,
 
   /* Print out address of the ServiceGroupEntry
      that represents our SWS's entry in the registry */
-#if REG_DEBUG_FULL
+#ifdef REG_DEBUG_FULL
   fprintf(stderr, "STEERUtils: Create_SWS: Address of SGE >>%s<<\n", 
 	  addResponse.wsa__EndpointReference.wsa__Address);
 #endif /* REG_DEBUG_FULL */
@@ -314,7 +315,7 @@ char *Create_SWS(const struct reg_job_details   *job,
     return NULL;
   }
 
-#if REG_DEBUG_FULL
+#ifdef REG_DEBUG_FULL
   fprintf(stderr,
 	  "\nSTEERUtils: Create_SWS: Calling SetResourceProperties "
 	  "with >>%s<<\n", jobDescription);
@@ -350,7 +351,7 @@ char *Create_SWS(const struct reg_job_details   *job,
       soap_done(&soap);
       return NULL;
     }
-#if REG_DEBUG_FULL
+#ifdef REG_DEBUG_FULL
     fprintf(stderr,
 	    "\nSTEERUtils: Create_SWS: Calling SetResourceProperties with >>%s<<\n",
 	    Global_scratch_buffer);

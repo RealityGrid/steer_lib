@@ -1,0 +1,86 @@
+#!/bin/bash
+
+version="@REG_STEER_LIB_VERSION@"
+prefix="@RealityGrid_INSTALL_PREFIX_CONFIG@"
+incdir="@RealityGrid_INCLUDE_DIRS_CONFIG@"
+libdir="@RealityGrid_LIBRARY_DIRS_CONFIG@"
+linklibs="@REG_LINK_LIBRARIES@"
+extlibs="@REG_EXTERNAL_LIBS@"
+
+usage() {
+    cat <<EOF
+Usage: reg-config [OPTION]
+
+Where OPTION can be one of:
+
+  --prefix		print the base location of the RealityGrid installation
+  --libs		print library linking information
+  --cflags		print pre-processor and compiler flags
+  --opts		print the options selected during the build
+  --help		display this help and exit
+  --version		output version information
+EOF
+
+    exit $1
+}
+
+if test $# -eq 0; then
+    usage 1
+fi
+
+cflags=false
+libs=false
+
+while test $# -gt 0; do
+    case "$1" in
+    -v|--version)
+	echo $version
+	exit 0
+	;;
+
+    -h|--help)
+	usage 0
+	;;
+
+    -p|--prefix)
+	echo $prefix
+	;;
+
+    -f|--cflags)
+	echo -e -I${incdir//;/ -I}
+	;;
+
+    -l|--libs)
+	echo -n "-L$libdir"
+	echo -en " -l${linklibs//;/ -l} "
+	echo $extlibs
+	;;
+
+    -o|--opts|--options)
+	echo "Standard options:"
+	echo "  REG_DEBUG:                   @REG_DEBUG@"
+	echo "  REG_BUILD_EXAMPLES:          @REG_BUILD_EXAMPLES@"
+	echo "  REG_BUILD_FORTRAN_WRAPPERS:  @REG_BUILD_FORTRAN_WRAPPERS@"
+	echo "  REG_BUILD_DOCUMENTATION:     @REG_BUILD_DOCUMENTATION@"
+	echo "  REG_SOCKET_STEERING:         @REG_SOCKET_STEERING@"
+	echo "  REG_SOCKET_SAMPLES:          @REG_SOCKET_SAMPLES@"
+	echo "  REG_SOAP_STEERING:           @REG_SOAP_STEERING@"
+	echo "  REG_USE_OPENSSL:             @REG_USE_OPENSSL@"
+	echo "Advanced options:"
+	echo "  REG_DEBUG_FULL:              @REG_DEBUG_FULL@"
+	echo "  REG_BUILD_SEPARATE_SOAP_LIB: @REG_BUILD_SEPARATE_SOAP_LIB@"
+	echo "  REG_USE_WSRF:                @REG_USE_WSRF@"
+	echo "  REG_PROXY_SAMPLES:           @REG_PROXY_SAMPLES@"
+	echo "  REG_LOG_STEERING:            @REG_LOG_STEERING@"
+	echo "  REG_USE_TIMING:              @REG_USE_TIMING@"
+	echo "  REG_KEEP_XML_MESSAGES:       @REG_KEEP_XML_MESSAGES@"
+	;;
+
+    *)
+	usage 1
+	;;
+    esac
+    shift
+done
+
+exit 0

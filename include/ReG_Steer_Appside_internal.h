@@ -28,6 +28,7 @@
 #ifndef __REG_STEER_APPSIDE_INTERNAL_H__
 #define __REG_STEER_APPSIDE_INTERNAL_H__
 
+#include "ReG_Steer_Config.h"
 #include "ReG_Steer_Common.h"
 #include "ReG_Steer_XML.h"
 #include "soapH.h"

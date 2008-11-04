@@ -33,6 +33,7 @@
     @author Andrew Porter
     @author Robert Haines */
 
+#include "ReG_Steer_Config.h"
 #include "ReG_Steer_Appside.h"
 #include <string.h>
 #include <unistd.h>

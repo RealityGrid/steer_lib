@@ -35,6 +35,7 @@
     @author Andrew Porter
   */
 
+#include "ReG_Steer_Config.h"
 #include "ReG_Steer_types.h"
 #include "ReG_Steer_Utils.h"
 #include "ReG_Steer_Utils_WSRF.h"
@@ -220,7 +221,7 @@ int Get_security_config(const char               *configFile,
         len = xmlStrlen(attrValue);
         strncpy(sec->caCertsPath, (char *)attrValue, len);
         sec->caCertsPath[len] = '\0';
-#if REG_DEBUG
+#ifdef REG_DEBUG
         printf("Get_security_config: caCertsPath >>%s<<\n", sec->caCertsPath);
 #endif
         xmlFree(attrValue);
@@ -232,7 +233,7 @@ int Get_security_config(const char               *configFile,
         len = xmlStrlen(attrValue);
         strncpy(sec->myKeyCertFile, (char *)attrValue, len);
         sec->myKeyCertFile[len] = '\0';
-#if REG_DEBUG
+#ifdef REG_DEBUG
         printf("Get_security_config: myKeyCertFile >>%s<<\n", 
 	       sec->myKeyCertFile);
 #endif
@@ -271,7 +272,7 @@ int Get_security_config(const char               *configFile,
     }
   }
   fclose(fp);
-#if REG_DEBUG
+#ifdef REG_DEBUG
   printf("Get_security_config: User's DN >>%s<<\n\n", sec->userDN);
 #endif
 

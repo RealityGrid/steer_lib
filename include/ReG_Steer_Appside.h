@@ -36,6 +36,7 @@
     @author Robert Haines
   */
 
+#include "ReG_Steer_Config.h"
 #include "ReG_Steer_types.h"
 
 #ifdef __cplusplus

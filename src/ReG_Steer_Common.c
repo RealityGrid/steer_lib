@@ -38,6 +38,7 @@
     @author Robert Haines
  */
 
+#include "ReG_Steer_Config.h"
 #include "ReG_Steer_types.h"
 #include "ReG_Steer_Common.h"
 
@@ -59,13 +60,19 @@
 #endif
 #include <signal.h>
 
+/*
 #ifndef REG_DEBUG
 #define REG_DEBUG 0
 #endif
+*/
 
 #ifndef WIN32
 #else
+/*
+NOW IN CMAKE
+
 #define snprintf _snprintf
+*/
 #endif
 
 /** @internal
@@ -189,7 +196,7 @@ FILE *Open_next_file(char* base_name)
 
     if( (fp = fopen(filename1, "r")) ){
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
       fprintf(stderr, "STEER: Open_next_file: opening %s\n", filename1);
 #endif
       /* Return the name of the file actually opened */
@@ -230,7 +237,7 @@ int Delete_file(char *filename)
 
   sprintf(long_filename, "%s.lock", filename);
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
   fprintf(stderr, "STEER: Delete_file: removing %s\n", long_filename);
 #endif
 
@@ -239,14 +246,14 @@ int Delete_file(char *filename)
     return_status = REG_FAILURE;
   }
 
-#if NO_FILE_DELETE
+#ifdef NO_FILE_DELETE
   /* If this debugging flag is set then don't remove the data file */
   return REG_SUCCESS;
 #endif
 
   /* Remove the data file */
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
   fprintf(stderr, "STEER: Delete_file: removing %s\n", filename);
 #endif
 
@@ -268,7 +275,7 @@ int Remove_files(char* base_name)
 
   strcpy(filename, base_name);
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
   fprintf(stderr, "STEER: Remove_files: looking for files beginning: %s\n", filename);
 #endif
 
@@ -278,18 +285,18 @@ int Remove_files(char* base_name)
 
     /* Remove lock file */
     sprintf(lock_name, "%s.lock", filename);
-#if REG_DEBUG
+#ifdef REG_DEBUG
     fprintf(stderr, "STEER: Remove_files: deleting %s\n", lock_name);
 #endif
     remove(lock_name);
 
-#if NO_FILE_DELETE
+#ifdef NO_FILE_DELETE
     /* Don't delete actual data files if this debugging flag set */
     continue;
 #endif
 
     /* Remove associated data file */
-#if REG_DEBUG
+#ifdef REG_DEBUG
     fprintf(stderr, "STEER: Remove_files: deleting %s\n", filename);
 #endif
     remove(filename);
@@ -308,56 +315,56 @@ int Get_message_type(const char *name)
 
   if(strcmp(name, "Param_defs") == 0){
   
-#if REG_DEBUG_FULL
+#ifdef REG_DEBUG_FULL
     fprintf(stderr, "STEER: Setting msg type to PARAM_DEFS\n");
 #endif
     return PARAM_DEFS;
   }
   else if(strcmp(name, "IOType_defs") == 0){
   
-#if REG_DEBUG_FULL
+#ifdef REG_DEBUG_FULL
     fprintf(stderr, "STEER: Setting msg type to IO_DEFS\n");
 #endif
     return IO_DEFS;
   }
   else if(strcmp(name, "ChkType_defs") == 0){
   
-#if REG_DEBUG_FULL
+#ifdef REG_DEBUG_FULL
     fprintf(stderr, "STEER: Setting msg type to CHK_DEFS\n");
 #endif
     return CHK_DEFS;
   }
   else if(strcmp(name, "Supported_commands") == 0){
     
-#if REG_DEBUG_FULL
+#ifdef REG_DEBUG_FULL
     fprintf(stderr, "STEER: Setting msg type to SUPP_CMDS\n");
 #endif
     return SUPP_CMDS;
   }
   else if(strcmp(name, "Steer_control") == 0){
   
-#if REG_DEBUG_FULL
+#ifdef REG_DEBUG_FULL
     fprintf(stderr, "STEER: Setting msg type to CONTROL\n");
 #endif
     return CONTROL;
   }
   else if(strcmp(name, "App_status") == 0){
   
-#if REG_DEBUG_FULL
+#ifdef REG_DEBUG_FULL
     fprintf(stderr, "STEER: Setting msg type to STATUS\n");
 #endif
     return STATUS;
   }
   else if(strcmp(name, "Steer_log") == 0){
 
-#if REG_DEBUG_FULL
+#ifdef REG_DEBUG_FULL
     fprintf(stderr, "STEER: Setting msg type to STEER_LOG\n");
 #endif
     return STEER_LOG;
   }
   else{
 
-#if REG_DEBUG  
+#ifdef REG_DEBUG  
     fprintf(stderr, "STEER: Get_message_type: unrecognised message type: %s\n", name);
 #endif /* REG_DEBUG */
 
@@ -808,7 +815,7 @@ int Reorder_decode_array(IOdef_entry *io,
   */
   if(io->use_xdr){
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
     fprintf(stderr, "STEER: Reorder_decode_array: doing XDR decode for type = %d\n",
 	    type);
 #endif
@@ -1285,7 +1292,7 @@ int Get_fully_qualified_hostname(char **hostname, char **ip_addr_ptr)
   sprintf(ip_addr, " ");
   * end of ARPDBG */
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
   fprintf(stderr, "STEER: Get_fully_qualified_hostname: hostname = %s\n", 
 	  host->h_name);
   fprintf(stderr, "                                     IP       = %s\n",
@@ -1323,7 +1330,7 @@ int Init_random()
   if(ReG_ssl_random_initialized == REG_TRUE)return REG_SUCCESS;
 
   if(!RAND_file_name(randBuf, (size_t)REG_MAX_STRING_LENGTH)){
-#if REG_DEBUG_FULL
+#ifdef REG_DEBUG_FULL
     fprintf(stderr, "STEER: WARNING: Init_random: RAND_file_name failed to "
 	    "return name of file for use in initializing randome "
 	    "sequence - trying /dev/urandom\n");
@@ -1346,7 +1353,7 @@ int Init_random()
     return REG_FAILURE;
   }
 
-#if REG_DEBUG_FULL
+#ifdef REG_DEBUG_FULL
   fprintf(stderr, "STEER: Init_random: seed file is %s\n", randBuf);
 #endif
 
@@ -1408,7 +1415,7 @@ int Create_WSRF_header(struct soap *aSoap,
   strcpy(aSoap->header->wsa__To, epr);
 
   if(!username || !(username[0])){
-#if REG_DEBUG
+#ifdef REG_DEBUG
     fprintf(stderr, 
 	    "STEER: Create_WSRF_header: not adding security to header\n");
 #endif /* REG_DEBUG */

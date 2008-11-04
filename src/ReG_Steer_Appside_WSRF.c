@@ -38,6 +38,7 @@
     application
   */
 
+#include "ReG_Steer_Config.h"
 #include "ReG_Steer_types.h"
 #include "ReG_Steer_Appside_internal.h"
 #include "ReG_Steer_Appside_WSRF.h"
@@ -66,7 +67,11 @@ extern struct msg_struct *Get_next_stored_msg(Sim_entry_type *sim);
 
 #ifndef WIN32
 #else
+/*
+NOW IN CMAKE
+
 #define snprintf _snprintf
+*/
 #endif
 
 /* Need access to these tables which are actually declared in 
@@ -145,7 +150,7 @@ int Initialize_steering_connection_wsrf(int  NumSupportedCmds,
 
     snprintf(Steerer_connection.SGS_info.address, REG_MAX_STRING_LENGTH, 
 	     "%s", pchar);
-#if REG_DEBUG
+#ifdef REG_DEBUG
     fprintf(stderr, "STEER: Initialize_steering_connection_wsrf: "
 	    "SWS address = %s\n", Steerer_connection.SGS_info.address);
 #endif
@@ -188,7 +193,7 @@ int Initialize_steering_connection_wsrf(int  NumSupportedCmds,
     if( (pchar = getenv("REG_PASSPHRASE")) ){
       snprintf(Steerer_connection.SGS_info.passwd, REG_MAX_STRING_LENGTH, 
 	       "%s", pchar);
-#if REG_DEBUG
+#ifdef REG_DEBUG
       fprintf(stderr, "STEER: Initialize_steering_connection_wsrf: "
 	      "passphrase read OK\n");
 #endif
@@ -231,7 +236,7 @@ int Initialize_steering_connection_wsrf(int  NumSupportedCmds,
                      Steerer_connection.SGS_info.username,
 		     Steerer_connection.SGS_info.passwd);
 
-#if REG_DEBUG_FULL
+#ifdef REG_DEBUG_FULL
   fprintf(stderr, "STEER: Initialize_steering_connection_wsrf: sending "
 	  "1st msg:\n>>%s<<\n\n",query_buf);
 #endif
@@ -258,7 +263,7 @@ int Initialize_steering_connection_wsrf(int  NumSupportedCmds,
 		     Steerer_connection.SGS_info.username,
 		     Steerer_connection.SGS_info.passwd);
 
-#if REG_DEBUG_FULL
+#ifdef REG_DEBUG_FULL
   fprintf(stderr, "STEER: Initialize_steering_connection_wsrf: sending "
 	  "2nd msg:\n>>%s<<\n\n", query_buf);
 #endif
@@ -292,7 +297,7 @@ int Steerer_connected_wsrf ()
     fprintf(stderr, "STEER: Steerer_connected_wsrf: Get_resource_property failed\n");
     return REG_FAILURE;
   }
-#if REG_DEBUG
+#ifdef REG_DEBUG
   else{
     fprintf(stderr, "STEER: Steerer_connected_wsrf: Get_resource_property "
 	    "returned: %s\n", steer_status);
@@ -505,7 +510,7 @@ struct msg_struct *Get_control_msg_wsrf ()
       pLast = strstr(pLast+1, "<sws:controlMsg");
     }
 
-#if REG_DEBUG_FULL
+#ifdef REG_DEBUG_FULL
     fprintf(stderr, "STEER: Get_control_msg_wsrf parsing >>%s<<\n", pLastBut1);
 #endif
 
@@ -696,7 +701,7 @@ int Get_data_source_address_wsrf(const int          index,
       return REG_FAILURE;
     }
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
     fprintf(stderr, "STEER: Get_data_source_address_wsrf: Got EPR = %s\n"
 	    "                                               label = %s\n",
 	    epr, label);
@@ -766,7 +771,7 @@ int Get_data_source_address_wsrf(const int          index,
       hostname[(pchar - label)] = '\0';
       pchar++;
       *port = (unsigned short int)atoi(pchar);
-#if REG_DEBUG
+#ifdef REG_DEBUG
       fprintf(stderr, "STEER: Get_data_source_address_wsrf: host = %s\n"
 	      "                                             port = %d\n",
 	      hostname, *port);
@@ -817,7 +822,7 @@ int Get_data_source_address_wsrf(const int          index,
       }
       pLast++;
     }
-#if REG_DEBUG
+#ifdef REG_DEBUG
     fprintf(stderr, "STEER: Get_data_source_address_wsrf: proxy host = %s\n"
 	            "                                     proxy port = %d\n"
  	            "                                          label = %s\n",
@@ -883,7 +888,7 @@ int Get_data_sink_address_wsrf(const int           index,
       }
       pLast++;
     }
-#if REG_DEBUG
+#ifdef REG_DEBUG
     fprintf(stderr, "STEER: Get_data_sink_address_wsrf: proxy host = %s\n"
   	            "                                   proxy port = %d\n",
 	    hostname, *port);
@@ -915,7 +920,7 @@ int Record_checkpoint_set_wsrf(char *chk_data,
     return REG_FAILURE;
   }
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
   if(response._RecordCheckpointReturn){
     fprintf(stderr, "STEER: Record_checkpoint_set_wsrf: "
 	    "RecordCheckpoint returned: >>%s<<\n", 

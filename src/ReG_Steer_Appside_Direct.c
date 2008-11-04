@@ -29,6 +29,7 @@
   CORRECTION.
 ---------------------------------------------------------------------------*/
 
+#include "ReG_Steer_Config.h"
 #include "ReG_Steer_Appside_Direct.h"
 #include "ReG_Steer_types.h"
 #include "ReG_Steer_Common.h"
@@ -42,12 +43,12 @@
 #include <netdb.h>
 #include <unistd.h>
 
-
 /* Allow value of 'REG_DEBUG' to propagate down from Reg_steer_types.h if
-   it has been set there */
+   it has been set there
 #ifndef REG_DEBUG
 #define REG_DEBUG 1
 #endif
+*/
 
 /** @internal
    The table holding details of our communication channel with the
@@ -71,7 +72,7 @@ int Initialize_steering_connection_direct(int  NumSupportedCmds,
 
   /* set up socket_info struct */
   if(socket_info_init_direct(socket_info) != REG_SUCCESS) {
-#if REG_DEBUG
+#ifdef REG_DEBUG
     fprintf(stderr, "**DIRECT: Initialize_steering_connection_direct: "
 	    "could not initialize socket information\n");
 #endif
@@ -84,7 +85,7 @@ int Initialize_steering_connection_direct(int  NumSupportedCmds,
 
   /* try to create listener */
   if(Create_steerer_listener(socket_info) != REG_SUCCESS) {
-#if REG_DEBUG
+#ifdef REG_DEBUG
     fprintf(stderr, "**DIRECT: Initialize_steering_connection_direct: "
 	    "failed to listen for steering connections\n");
 #endif
@@ -178,7 +179,7 @@ int Steerer_connected_direct() {
 
   /* If not connected, see if something is trying to connect */
   if(socket_info->listener_status != REG_COMMS_STATUS_LISTENING) {
-#if REG_DEBUG
+#ifdef REG_DEBUG
     fprintf(stderr, "**DIRECT: Steerer_connected_direct: "
 	    "dealing with listener_status not LISTENING \n");
 #endif
@@ -191,7 +192,7 @@ int Steerer_connected_direct() {
   /* only check comms_status if listener_status is now listening */
   if (socket_info->listener_status == REG_COMMS_STATUS_LISTENING) {
     if (socket_info->comms_status == REG_COMMS_STATUS_LISTENING) {
-#if REG_DEBUG
+#ifdef REG_DEBUG
       fprintf(stderr, "**DIRECT: Steerer_connected_direct: poll_socket\n");
 #endif
       poll_steerer_socket(socket_info);
@@ -206,7 +207,7 @@ int Steerer_connected_direct() {
   }
 
   /* if we get here, then we're not connected */
-#if REG_DEBUG
+#ifdef REG_DEBUG
       fprintf(stderr, "**DIRECT: Steerer_connected_direct: not connected\n");
 #endif
   return REG_FAILURE;
@@ -273,7 +274,7 @@ void poll_steerer_socket(Direct_info_type* socket_info) {
     fd_max = listener;
 
     /* poll using select() */
-#if REG_DEBUG
+#ifdef REG_DEBUG
     fprintf(stderr, "**DIRECT: poll_socket: polling for accept\n");
 #endif
     if(select(fd_max + 1, &sockets, NULL, NULL, &timeout) == -1) {
@@ -326,7 +327,7 @@ int send_steerer_msg(Direct_info_type* socket_info,
   pchar = (char*) pData;
 
   /* send header with just an int saying how much data to come */
-#if REG_DEBUG
+#ifdef REG_DEBUG
   fprintf(stderr, "**DIRECT: send_steerer_msg: sending header...\n");
 #endif
 #ifndef __linux
@@ -341,7 +342,7 @@ int send_steerer_msg(Direct_info_type* socket_info,
 
   bytes_left = num_bytes_to_send;
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
   fprintf(stderr, "**DIRECT: send_steerer_msg: writing...\n");
 #endif
   while(bytes_left > 0) {
@@ -361,13 +362,13 @@ int send_steerer_msg(Direct_info_type* socket_info,
   }
 
   if(bytes_left > 0) {
-#if REG_DEBUG
+#ifdef REG_DEBUG
     fprintf(stderr, "**DIRECT: send_steerer_msg: timed-out trying to write data\n");
 #endif
     return REG_TIMED_OUT;
   }
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
   fprintf(stderr, "**DIRECT: send_steerer_msg: sent %d bytes...\n", 
 	  (int) num_bytes_to_send);
 #endif
@@ -502,7 +503,7 @@ int socket_info_init_direct(Direct_info_type* socket_info) {
     sprintf(socket_info->tcp_interface, " ");
   }
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
   fprintf(stderr, "**DIRECT: socket_info_init_direct: port range to listen on %d - %d\n", 
 	  socket_info->min_port_in,
 	  socket_info->max_port_in);

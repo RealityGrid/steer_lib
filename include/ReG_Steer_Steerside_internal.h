@@ -44,6 +44,7 @@
     @author Robert Haines
 */
 
+#include "ReG_Steer_Config.h"
 #include "ReG_Steer_Common.h"
 #include "ReG_Steer_XML.h"
 

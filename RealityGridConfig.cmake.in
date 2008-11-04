@@ -1,0 +1,37 @@
+#
+#
+#
+
+# version numbers
+set(REG_LIB_VERSION_MAJ @REG_LIB_VERSION_MAJ@)
+set(REG_LIB_VERSION_MIN @REG_LIB_VERSION_MIN@)
+set(REG_LIB_VERSION_PAT @REG_LIB_VERSION_PAT@)
+
+# header, library and documentation locations
+set(RealityGrid_INSTALL_PREFIX "@RealityGrid_INSTALL_PREFIX_CONFIG@")
+set(RealityGrid_INCLUDE_DIRS "@RealityGrid_INCLUDE_DIRS_CONFIG@")
+set(RealityGrid_LIBRARY_DIRS "@RealityGrid_LIBRARY_DIRS_CONFIG@")
+set(RealityGrid_DOCS_DIR "@RealityGrid_DOCS_DIR_CONFIG@")
+
+# build setting, library dependencies and use file locations
+set(RealityGrid_BUILD_SETTINGS_FILE "@RealityGrid_BUILD_SETTINGS_FILE_CONFIG@")
+set(RealityGrid_USE_FILE "@RealityGrid_USE_FILE_CONFIG@")
+
+# RealityGrid config options
+set(REG_SOCKET_STEERING "@REG_SOCKET_STEERING@")
+set(REG_SOAP_STEERING "@REG_SOAP_STEERING@")
+set(REG_SOCKET_SAMPLES "@REG_SOCKET_SAMPLES@")
+set(REG_PROXY_SAMPLES "@REG_PROXY_SAMPLES@")
+set(REG_USE_OPENSSL "@REG_USE_OPENSSL@")
+set(REG_BUILD_SEPARATE_SOAP_LIB "@REG_BUILD_SEPARATE_SOAP_LIB@")
+set(REG_USE_WSRF "@REG_USE_WSRF@")
+set(REG_DEBUG "@REG_DEBUG@")
+set(REG_BUILD_FORTRAN_WRAPPERS "@REG_BUILD_FORTRAN_WRAPPERS@")
+
+# library dependencies
+set(REG_LINK_LIBRARIES "@REG_LINK_LIBRARIES@")
+set(REG_EXTERNAL_LIBS "@REG_EXTERNAL_LIBS@")
+
+if(EXISTS "@RealityGrid_DEPENDS_FILE_CONFIG@")
+  include("@RealityGrid_DEPENDS_FILE_CONFIG@")
+endif(EXISTS "@RealityGrid_DEPENDS_FILE_CONFIG@")

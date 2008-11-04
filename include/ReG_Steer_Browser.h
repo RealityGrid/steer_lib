@@ -38,6 +38,8 @@
     @author Robert Haines
 */
 
+#include "ReG_Steer_Config.h"
+
 #ifdef __cplusplus
   #define PREFIX "C"
 #else

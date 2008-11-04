@@ -45,6 +45,7 @@
   #define PREFIX 
 #endif
 
+#include "ReG_Steer_Config.h"
 #include "ReG_Steer_types.h"
 #include "ReG_Steer_Common.h"
 

@@ -35,6 +35,8 @@
     logging-related activity.
     @author Andrew Porter
     @author Robert Haines */
+
+#include "ReG_Steer_Config.h"
 #include "ReG_Steer_XML.h"
 
 /** @internal

@@ -36,6 +36,7 @@
     @brief Source file for routines to do registry look-up
   */
 
+#include "ReG_Steer_Config.h"
 #include "ReG_Steer_types.h"
 #include "ReG_Steer_Browser.h"
 #include "ReG_Steer_Common.h"
@@ -135,7 +136,7 @@ int Get_sim_list(int   *nSims,
   Get_proxy_message(Proxy.pipe_from_proxy, Proxy.buf, &nbytes);
 
   if(nbytes == 0){
-#if REG_DEBUG
+#ifdef REG_DEBUG
     fprintf(stderr, "STEERUtils: Get_sim_list: no steerable apps available\n");
 #endif
     return REG_SUCCESS;
@@ -288,7 +289,7 @@ int Get_registry_entries_filtered_secure(const char             *registryGSH,
 
   contents->numEntries = count;
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
   fprintf(stderr,
 	  "\nSTEERUtils: Get_registry_entries_filtered_secure, got %d filtered "
 	  "entries...\n", count);
@@ -338,7 +339,7 @@ int Get_registry_entries_secure(const char                     *registryGSH,
 	      "returned null\n");
       return REG_FAILURE;
     }
-#if REG_DEBUG_FULL
+#ifdef REG_DEBUG_FULL
     else{
       fprintf(stderr, "STEERUtils: Get_registry_entries_secure: findServiceData "
 	      "returned: %s\n", out._findServiceDataReturn);

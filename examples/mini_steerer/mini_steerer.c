@@ -32,6 +32,7 @@
     @author Andrew Porter
     @author Robert Haines */
 
+#include "ReG_Steer_Config.h"
 #include "ReG_Steer_Steerside.h"
 #include "ReG_Steer_Browser.h"
 #include "ReG_Steer_Utils.h"
@@ -39,9 +40,11 @@
 #include <string.h>
 #include <unistd.h>
 
+/*
 #ifndef REG_DEBUG
 #define REG_DEBUG 0
 #endif
+*/
 
 /** Allows the user to edit a steerable parameter
     @param sim_handle Handle of the simulation being steered */
@@ -659,19 +662,19 @@ int main(int argc, char **argv){
       case SUPP_CMDS:
 	/* Supported commands should only be output once (as part
 	   of handshaking process - read in Sim_attach) */
-#if REG_DEBUG
+#ifdef REG_DEBUG
 	fprintf(stderr, "ERROR: Got supported cmds message\n");
 #endif
 	break;
 
       case MSG_NOTSET:
-#if REG_DEBUG
+#ifdef REG_DEBUG
 	fprintf(stderr, "No messages to retrieve\n");
 #endif
 	break;
 
       case IO_DEFS:
-#if REG_DEBUG
+#ifdef REG_DEBUG
 	fprintf(stderr, "Got IOdefs message\n");
 #endif
 	if(Consume_IOType_defs(sim_handle) != REG_SUCCESS){
@@ -681,7 +684,7 @@ int main(int argc, char **argv){
 	break;
 
       case CHK_DEFS:
-#if REG_DEBUG
+#ifdef REG_DEBUG
 	fprintf(stderr, "Got Chkdefs message\n");
 #endif
 	if(Consume_ChkType_defs(sim_handle) != REG_SUCCESS){
@@ -691,20 +694,20 @@ int main(int argc, char **argv){
 	break;
 
       case PARAM_DEFS:
-#if REG_DEBUG
+#ifdef REG_DEBUG
 	fprintf(stderr, "Got param defs message\n");
 #endif
 	if(Consume_param_defs(sim_handle) != REG_SUCCESS){
 
 	  fprintf(stderr, "Consume_param_defs failed\n");
 	}
-#if REG_DEBUG
+#ifdef REG_DEBUG
 	Dump_sim_table();
 #endif
 	break;
 
       case STATUS:
-#if REG_DEBUG
+#ifdef REG_DEBUG
 	fprintf(stderr, "Got status message\n");
 #endif
 	status = Consume_status(sim_handle,
@@ -716,20 +719,20 @@ int main(int argc, char **argv){
 	  done = REG_TRUE;
 	}
 	else{
-#if REG_DEBUG
+#ifdef REG_DEBUG
 	  Dump_sim_table();
 #endif
 	  /* Parse commands */
 	  for(i=0; i<num_cmds; i++){
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
 	    fprintf(stderr, "Cmd %d = %d\n", i, commands[i]);
 #endif
 	    switch(commands[i]){
 
 	    case REG_STR_STOP:
 	    case REG_STR_DETACH:
-#if REG_DEBUG
+#ifdef REG_DEBUG
 	      fprintf(stderr, "App has signalled that it has finished\n");
 #endif
 	      Delete_sim_table_entry(&sim_handle);
@@ -743,7 +746,7 @@ int main(int argc, char **argv){
 	    if (done) break;
 	  }
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
 	  fprintf(stderr, "Application SeqNum = %d\n", app_seqnum);
 #endif
 	}

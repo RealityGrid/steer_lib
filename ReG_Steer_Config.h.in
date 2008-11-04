@@ -1,0 +1,94 @@
+/*----------------------------------------------------------------------------
+  (C) Copyright 2008, University of Manchester, United Kingdom,
+  all rights reserved.
+
+  This software was developed by the RealityGrid project
+  (http://www.realitygrid.org), funded by the EPSRC under grants
+  GR/R67699/01 and GR/R67699/02.
+
+  LICENCE TERMS
+
+  Redistribution and use in source and binary forms, with or without
+  modification, are permitted provided that the following conditions
+  are met:
+  1. Redistributions of source code must retain the above copyright
+     notice, this list of conditions and the following disclaimer.
+  2. Redistributions in binary form must reproduce the above copyright
+     notice, this list of conditions and the following disclaimer in the
+     documentation and/or other materials provided with the distribution.
+
+  THIS MATERIAL IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+  A PARTICULAR PURPOSE ARE DISCLAIMED. THE ENTIRE RISK AS TO THE QUALITY
+  AND PERFORMANCE OF THE PROGRAM IS WITH YOU.  SHOULD THE PROGRAM PROVE
+  DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR
+  CORRECTION.
+---------------------------------------------------------------------------*/
+
+/** @internal
+    @file ReG_Steer_Config.h.in
+    @brief Configuration file for passing build time options to source code
+
+    All internal library source code and header files should include
+    ReG_Steer_Config.h before any other code or includes.
+    @author Robert Haines
+*/
+
+#ifndef __REG_STEER_CONFIG_H__
+
+/* ReG version */
+#define REG_STEER_LIB_VERSION "@REG_STEER_LIB_VERSION@"
+
+/* feature options */
+#cmakedefine REG_SOCKET_STEERING
+#cmakedefine REG_SOAP_STEERING
+#cmakedefine REG_SOCKET_SAMPLES
+#cmakedefine REG_PROXY_SAMPLES
+#cmakedefine REG_USE_OPENSSL
+#cmakedefine REG_USE_WSRF
+#cmakedefine REG_LOG_STEERING
+
+/* Debug options */
+#cmakedefine REG_DEBUG
+#cmakedefine REG_DEBUG_FULL
+#cmakedefine REG_USE_TIMING
+#cmakedefine REG_KEEP_XML_MESSAGES
+
+/*
+ * Some WIN32 defines
+ */
+#ifdef WIN32
+#define snprintf _snprintf
+#define sleep(seconds) (Sleep(seconds*1000))
+#define usleep(microseconds) (Sleep(microseconds/1000))
+#define getcwd _getcwd
+#define read _read
+#endif
+
+/* Adjust some defines to match what is in the legacy code.
+ * 
+ * These could be changed in source code at some point.
+ */
+#ifdef REG_SOCKET_STEERING
+#define REG_DIRECT_TCP_STEERING
+#endif
+
+#ifdef REG_USE_OPENSSL
+#define WITH_OPENSSL
+#endif
+
+#ifdef REG_USE_WSRF
+#define REG_WSRF
+#endif
+
+#ifdef REG_USE_TIMING
+#define USE_REG_TIMING
+#endif
+
+#ifdef REG_KEEP_XML_MESSAGES
+#define NO_FILE_DELETE
+#endif
+
+#define __REG_STEER_CONFIG_H__
+#endif /* __REG_STEER_CONFIG_H__ */

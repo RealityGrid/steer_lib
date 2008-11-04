@@ -1,0 +1,18 @@
+@FC_STRING_HEADER@
+
+undefine(`len')
+define(`FUNCTION',`@FC_NAME_MANGLE@')
+
+define(`SAVE',`@FC_STRING_SAVE@')
+define(`ARGS',`@FC_STRING_ARGS@')
+define(`STRING_ARG',`@FC_STRING_STRING_ARG@')
+define(`STRING_ARG_DECL',`@FC_STRING_STRING_ARG_DECL@')
+define(`STRING_LEN',`@FC_STRING_STRING_LEN@')
+define(`STRING_PTR',`@FC_STRING_STRING_PTR@')
+
+define(`INT_KIND_1_DECL',`int *$1')
+define(`INT_KIND_1_CAST',`(int)($1)')
+define(`INT_KIND_1_PTR_CAST',`(int *)($1)')
+define(`INT_KIND_1D0_DECL',`long *$1')
+define(`INT_KIND_1D0_CAST',`(long)($1)')
+define(`INT_KIND_1D0_PTR_CAST',`(long *)($1)')

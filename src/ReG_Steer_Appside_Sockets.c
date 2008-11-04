@@ -33,7 +33,9 @@
     @author Robert Haines
   */
 
-#if REG_SOCKET_SAMPLES || REG_PROXY_SAMPLES || defined(DOXYGEN)
+#include "ReG_Steer_Config.h"
+
+#if defined(REG_SOCKET_SAMPLES) || defined(REG_PROXY_SAMPLES) || defined(DOXYGEN)
 
 #include "ReG_Steer_Common.h"
 #include "ReG_Steer_Appside_internal.h"
@@ -49,9 +51,11 @@
 #include <fcntl.h>
 #endif
 
+/*
 #ifndef REG_DEBUG
 #define REG_DEBUG 0
 #endif
+*/
 
 /* Need access to these tables which are actually declared in 
    ReG_Steer_Appside_internal.h */
@@ -72,11 +76,12 @@ int socket_info_init(const int index) {
   IOTypes_table.io_def[index].socket_info.min_port = 0;
   IOTypes_table.io_def[index].socket_info.max_port = 0;
 
-#if REG_PROXY_SAMPLES
+#ifdef REG_PROXY_SAMPLES
   /* We always connect OUT to the IOProxy */
   pchar = getenv("GLOBUS_TCP_SOURCE_RANGE");
 
-#elif REG_SOCKET_SAMPLES
+#else
+#ifdef REG_SOCKET_SAMPLES
 
   if(IOTypes_table.io_def[index].direction == REG_IO_OUT){
     pchar = getenv("GLOBUS_TCP_PORT_RANGE");
@@ -92,13 +97,14 @@ int socket_info_init(const int index) {
   }
 
 #endif
+#endif
 
   if( pchar && (sscanf(pchar, "%d,%d", &(min), &(max)) == 2) ) {
     IOTypes_table.io_def[index].socket_info.min_port = min;
     IOTypes_table.io_def[index].socket_info.max_port = max;
   }
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
   fprintf(stderr, "STEER: socket_info_init: port range %d - %d\n", 
 	  IOTypes_table.io_def[index].socket_info.min_port,
 	  IOTypes_table.io_def[index].socket_info.max_port);
@@ -112,7 +118,7 @@ int socket_info_init(const int index) {
     sprintf(IOTypes_table.io_def[index].socket_info.tcp_interface, " ");
   }
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
   fprintf(stderr, "STEER: socket_info_init: local tcp interface: %s\n", 
 	  IOTypes_table.io_def[index].socket_info.tcp_interface);
 #endif
@@ -167,14 +173,14 @@ int create_listener(const int index) {
    * that's what we use.  If not, call Get_fully_qualified_hostname which 
    * itself uses  REG_TCP_INTERFACE if set. */
   if( (pchar = getenv("REG_IO_ADDRESS")) ){
-#if REG_DEBUG
+#ifdef REG_DEBUG
     fprintf(stderr, "STEER: create_listener: Taking hostname from "
 	    "REG_IO_ADDRESS variable\n");
 #endif
     strcpy(IOTypes_table.io_def[index].socket_info.listener_hostname, pchar);
   }
   else if( (pchar = getenv("GLOBUS_HOSTNAME")) ){
-#if REG_DEBUG
+#ifdef REG_DEBUG
     fprintf(stderr, "STEER: create_listener: Taking hostname from "
 	    "GLOBUS_HOSTNAME variable\n");
 #endif
@@ -260,7 +266,7 @@ int create_connector(const int index) {
     return REG_FAILURE;
   }
 
-#if REG_PROXY_SAMPLES
+#ifdef REG_PROXY_SAMPLES
   /* Turn off NAGLE's algorithm if using an ioProxy so that the (small)
      acknowledgement messages get sent immediately instead of being buffered
      - helps to ensure ack is received before socket is shutdown when consumer
@@ -331,12 +337,12 @@ int connect_connector(const int index) {
 
   /* get a remote address if we need to */
   if(IOTypes_table.io_def[index].socket_info.connector_port == 0) {
-#if REG_DIRECT_TCP_STEERING
+#ifdef REG_DIRECT_TCP_STEERING
     return_status = Get_data_source_address_direct(IOTypes_table.io_def[index].input_index, 
 						   IOTypes_table.io_def[index].socket_info.connector_hostname,
 						   &(IOTypes_table.io_def[index].socket_info.connector_port));
 #else
-#if REG_SOAP_STEERING	  
+#ifdef REG_SOAP_STEERING	  
     /* Go out into the world of grid/web services... */
 #ifdef REG_WSRF /* use WSRF */
     if(IOTypes_table.io_def[index].direction == REG_IO_IN){
@@ -398,7 +404,7 @@ int connect_connector(const int index) {
     IOTypes_table.io_def[index].socket_info.comms_status = 
       REG_COMMS_STATUS_CONNECTED;
 
-#if REG_PROXY_SAMPLES
+#ifdef REG_PROXY_SAMPLES
     if(IOTypes_table.io_def[index].direction == REG_IO_IN){
       sprintf(Global_scratch_buffer, "%s\n%s\n", 
 	      IOTypes_table.io_def[index].label,
@@ -477,7 +483,7 @@ void close_listener_handle(const int index) {
     IOTypes_table.io_def[index].socket_info.listener_status = REG_COMMS_STATUS_FAILURE;
   }
   else {
-#if REG_DEBUG
+#ifdef REG_DEBUG
     fprintf(stderr, "STEER: close_listener_handle: close OK\n");
 #endif
     IOTypes_table.io_def[index].socket_info.listener_status = REG_COMMS_STATUS_NULL;
@@ -492,7 +498,7 @@ void close_connector_handle(const int index) {
     IOTypes_table.io_def[index].socket_info.comms_status = REG_COMMS_STATUS_FAILURE;
   }
   else {
-#if REG_DEBUG
+#ifdef REG_DEBUG
     fprintf(stderr, "STEER: close_connector_handle: close OK\n");
 #endif
     IOTypes_table.io_def[index].socket_info.comms_status = REG_COMMS_STATUS_NULL;
@@ -506,7 +512,7 @@ void attempt_listener_connect(const int index) {
   socket_info = &(IOTypes_table.io_def[index].socket_info);
 
   if(socket_info->listener_status != REG_COMMS_STATUS_LISTENING) {
-#if REG_DEBUG
+#ifdef REG_DEBUG
     fprintf(stderr, "STEER: attempt_listener_connect:dealing with listener_status not LISTENING \n");
 #endif
     if (socket_info->listener_status == REG_COMMS_STATUS_FAILURE ||
@@ -518,7 +524,7 @@ void attempt_listener_connect(const int index) {
   /* only check comms_status if listener_status is now listening */
   if (socket_info->listener_status == REG_COMMS_STATUS_LISTENING) {
     if (socket_info->comms_status == REG_COMMS_STATUS_LISTENING) {
-#if REG_DEBUG
+#ifdef REG_DEBUG
       fprintf(stderr, "STEER: attempt_listener_connect: poll_socket\n");
 #endif
       poll_socket(index);
@@ -528,7 +534,7 @@ void attempt_listener_connect(const int index) {
 	socket_info->comms_status == REG_COMMS_STATUS_NULL ) {
       /* connection has broken - we're still listening so see if 
          anything to connect */
-#if REG_DEBUG
+#ifdef REG_DEBUG
       fprintf(stderr, "STEER: attempt_listener_connect: retry accept connect\n");
 #endif
       retry_accept_connect(index);
@@ -560,7 +566,7 @@ void attempt_connector_connect(const int index) {
   socket_info = &(IOTypes_table.io_def[index].socket_info);
 
   if(socket_info->comms_status == REG_COMMS_STATUS_WAITING_TO_CONNECT) {
-#if REG_DEBUG    
+#ifdef REG_DEBUG    
     fprintf(stderr, "STEER: attempt_connector_connect: poll_socket\n");
 #endif
     poll_socket(index);
@@ -569,7 +575,7 @@ void attempt_connector_connect(const int index) {
   if(socket_info->comms_status == REG_COMMS_STATUS_FAILURE || 
      socket_info->comms_status == REG_COMMS_STATUS_NULL) {
     /* connection has broken - try to re-connect */
-#if REG_DEBUG
+#ifdef REG_DEBUG
     fprintf(stderr, "STEER: attempt_connector_connect: retry connect\n");
 #endif
     retry_connect(index);
@@ -591,7 +597,7 @@ void retry_connect(const int index) {
   }
 
   if(create_connector(index) != REG_SUCCESS) {
-#if REG_DEBUG
+#ifdef REG_DEBUG
     fprintf(stderr, "STEER: retry_connect: failed to register connector for IOType\n");
 #endif
     /* Set to FAILURE so create_connector is attempted again next time round */
@@ -626,7 +632,7 @@ void poll_socket(const int index) {
       fd_max = listener;
 
       /* poll using select() */
-#if REG_DEBUG
+#ifdef REG_DEBUG
       fprintf(stderr, "STEER: poll_socket: polling for accept\n");
 #endif
       if(select(fd_max + 1, &sockets, NULL, NULL, &timeout) == -1) {
@@ -673,7 +679,7 @@ int dns_lookup(char* hostname) {
     return REG_FAILURE;
   }
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
   fprintf(stderr, "STEER: DNS lookup: host: %s\n", host->h_name);
   fprintf(stderr, "               IP:   %s\n", 
 	  inet_ntoa(*((struct in_addr*) host->h_addr)));
@@ -726,7 +732,7 @@ int Initialize_IOType_transport_sockets(const int direction, const int index) {
 
   /* set up socket info stuff */
   if(socket_info_init(index) != REG_SUCCESS) {
-#if REG_DEBUG
+#ifdef REG_DEBUG
     fprintf(stderr, "STEER: Initialize_IOType_transport_sockets: failed to "
 	    "init socket info for IOType\n");
 #endif
@@ -741,7 +747,7 @@ int Initialize_IOType_transport_sockets(const int direction, const int index) {
       /* open socket and register callback function to listen for and
 	 accept connections */
       if(create_listener(index) != REG_SUCCESS) {
-#if REG_DEBUG
+#ifdef REG_DEBUG
 	fprintf(stderr, "STEER: Initialize_IOType_transport_sockets: failed to "
 		"create listener for IOType\n");
 #endif
@@ -768,13 +774,13 @@ int Initialize_IOType_transport_sockets(const int direction, const int index) {
       }
 
       if(create_connector(index) != REG_SUCCESS) {
-#if REG_DEBUG
+#ifdef REG_DEBUG
 	fprintf(stderr, "STEER: Initialize_IOType_transport_sockets: failed to "
 		"register connector for IOType\n");
 #endif
 	return_status = REG_FAILURE;
       }
-#if REG_DEBUG
+#ifdef REG_DEBUG
       else {
 	fprintf(stderr, "STEER: Initialize_IOType_transport_sockets: "
 		"registered connector on port %d, hostname = %s, "
@@ -841,7 +847,7 @@ int Enable_IOType_sockets(int index) {
     /* open socket and register callback function to listen for and
        accept connections */
     if(create_listener(index) != REG_SUCCESS) {
-#if REG_DEBUG
+#ifdef REG_DEBUG
       fprintf(stderr, "STEER: Enable_IOType_sockets: failed to create listener for IOType\n");
 #endif
       return REG_FAILURE;
@@ -849,7 +855,7 @@ int Enable_IOType_sockets(int index) {
   }
   else if(IOTypes_table.io_def[index].direction == REG_IO_IN) {
     if (create_connector(index) != REG_SUCCESS) {
-#if REG_DEBUG
+#ifdef REG_DEBUG
       fprintf(stderr, "STEER: Enable_IOType_sockets: failed to register "
 	      "connector for IOType\n");
 #endif
@@ -914,27 +920,27 @@ int Emit_header_sockets(const int index) {
   /* now are we connected? */
   if(IOTypes_table.io_def[index].socket_info.comms_status == 
      REG_COMMS_STATUS_CONNECTED) {
-#if REG_DEBUG
+#ifdef REG_DEBUG
     fprintf(stderr, "STEER: Emit_header_sockets: socket status is connected, index = %d\n", index );
 #endif
 
     /* send header */
     sprintf(buffer, REG_PACKET_FORMAT, REG_DATA_HEADER);
     buffer[REG_PACKET_SIZE - 1] = '\0';
-#if REG_DEBUG
+#ifdef REG_DEBUG
     fprintf(stderr, "STEER: Emit_header_sockets: Sending >>%s<<\n", buffer);
 #endif
     status = Emit_data_non_blocking_sockets(index, REG_PACKET_SIZE, 
 					    (void*) buffer);
 
     if(status == REG_SUCCESS) {
-#if REG_DEBUG
+#ifdef REG_DEBUG
       fprintf(stderr, "STEER: Emit_header_sockets: Sent %d bytes\n", REG_PACKET_SIZE);
 #endif
       return REG_SUCCESS;
     }
     else if(status == REG_FAILURE) {
-#if REG_DEBUG
+#ifdef REG_DEBUG
       fprintf(stderr, "STEER: Emit_header_sockets: Write_sockets failed - "
 	      "immediate retry connect\n");
 #endif
@@ -942,7 +948,7 @@ int Emit_header_sockets(const int index) {
 
       if(IOTypes_table.io_def[index].socket_info.comms_status == 
 	 REG_COMMS_STATUS_CONNECTED) {
-#if REG_DEBUG
+#ifdef REG_DEBUG
 	fprintf(stderr, "STEER: Emit_header_sockets: Sending >>%s<<\n", buffer);
 #endif    
 	if(Emit_data_sockets(index, REG_PACKET_SIZE, 
@@ -951,14 +957,14 @@ int Emit_header_sockets(const int index) {
 	}
       }
     }
-#if REG_DEBUG
+#ifdef REG_DEBUG
     else{
       fprintf(stderr, "STEER: Emit_header_sockets: attempt to write to "
 	      "socket timed out\n");
     }
 #endif
   }
-#if REG_DEBUG
+#ifdef REG_DEBUG
   else {
     fprintf(stderr, "STEER: Emit_header_sockets: socket not connected, "
 	    "index = %d\n", index );
@@ -990,7 +996,7 @@ int Emit_data_sockets(const int    index,
   bytes_left = num_bytes_to_send;
   pchar = (char*) pData;
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
   fprintf(stderr, "STEER: Emit_data_sockets: writing...\n");
 #endif
   while(bytes_left > 0) {
@@ -1010,13 +1016,13 @@ int Emit_data_sockets(const int    index,
   }
 
   if(bytes_left > 0) {
-#if REG_DEBUG
+#ifdef REG_DEBUG
     fprintf(stderr, "STEER: Emit_data_sockets: timed-out trying to write data\n");
 #endif
     return REG_TIMED_OUT;
   }
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
   fprintf(stderr, "STEER: Emit_data_sockets: sent %d bytes...\n", 
 	  (int) num_bytes_to_send);
 #endif
@@ -1039,7 +1045,7 @@ int Consume_msg_header_sockets(int index, int* datatype, int* count,
   if (sock_info->comms_status != REG_COMMS_STATUS_CONNECTED) return REG_FAILURE;
 
   /* Read header */
-#if REG_DEBUG_FULL
+#ifdef REG_DEBUG_FULL
   fprintf(stderr, "STEER: Consume_msg_header_sockets: calling recv...\n");
 #endif
 
@@ -1050,7 +1056,7 @@ int Consume_msg_header_sockets(int index, int* datatype, int* count,
       /* error */
       perror("recv");
     }
-#if REG_DEBUG
+#ifdef REG_DEBUG
     else {
       /* closed connection */
       fprintf(stderr, "STEER: Consume_msg_header_sockets: hung up!\n");
@@ -1061,7 +1067,7 @@ int Consume_msg_header_sockets(int index, int* datatype, int* count,
   }
 
   /* if we're here, we've got data */
-#if REG_DEBUG_FULL
+#ifdef REG_DEBUG_FULL
   fprintf(stderr, "STEER: Consume_msg_header_sockets: read <%s> from socket\n", 
 	  buffer);
 #endif
@@ -1091,7 +1097,7 @@ int Consume_msg_header_sockets(int index, int* datatype, int* count,
     return REG_FAILURE;
   }
 
-#if REG_DEBUG_FULL
+#ifdef REG_DEBUG_FULL
   fprintf(stderr, "STEER: Consume_msg_header_sockets: read <%s> from socket\n", 
 	  buffer);
 #endif
@@ -1117,7 +1123,7 @@ int Consume_msg_header_sockets(int index, int* datatype, int* count,
     return REG_FAILURE;
   }
 
-#if REG_DEBUG_FULL
+#ifdef REG_DEBUG_FULL
   fprintf(stderr, "STEER: Consume_msg_header_sockets: read <%s> from socket\n", 
 	  buffer);
 #endif
@@ -1147,7 +1153,7 @@ int Consume_msg_header_sockets(int index, int* datatype, int* count,
     return REG_FAILURE;
   }
 
-#if REG_DEBUG_FULL
+#ifdef REG_DEBUG_FULL
   fprintf(stderr, "STEER: Consume_msg_header_sockets: read >%s< from socket\n", 
 	  buffer);
 #endif
@@ -1177,7 +1183,7 @@ int Consume_msg_header_sockets(int index, int* datatype, int* count,
     return REG_FAILURE;
   }
 
-#if REG_DEBUG_FULL
+#ifdef REG_DEBUG_FULL
   fprintf(stderr, "STEER: Consume_msg_header_socket: read >%s< from socket\n", 
 	  buffer);
 #endif
@@ -1210,7 +1216,7 @@ int Consume_msg_header_sockets(int index, int* datatype, int* count,
     return REG_FAILURE;
   }
 
-#if REG_DEBUG_FULL
+#ifdef REG_DEBUG_FULL
   fprintf(stderr, "STEER: Consume_msg_header_sockets: read <%s> from socket\n", 
 	  buffer);
 #endif
@@ -1243,14 +1249,14 @@ int Consume_start_data_check_sockets(const int index) {
 
   /* check if socket connection has been made */
   if(sock_info->comms_status != REG_COMMS_STATUS_CONNECTED) {
-#if REG_DEBUG
+#ifdef REG_DEBUG
     fprintf(stderr, "STEER: INFO: Consume_start_data_check_socket: socket is NOT "
 	    "connected, index = %d\n", index);
 #endif
     return REG_FAILURE;
   }
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
   fprintf(stderr, "STEER: INFO: Consume_start_data_check_socket: socket status "
 	  "is connected, index = %d\n", index);
 #endif
@@ -1259,7 +1265,7 @@ int Consume_start_data_check_sockets(const int index) {
   attempt_reconnect = 1;
   memset(buffer, '\0', 1);
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
   fprintf(stderr, "STEER: Consume_start_data_check_socket: searching for start tag\n");
 #endif
 
@@ -1270,7 +1276,7 @@ int Consume_start_data_check_sockets(const int index) {
       if(nbytes < 0) {
 	if(errno == EAGAIN) {
 	  /* Call would have blocked because no data to read */
-#if REG_DEBUG
+#ifdef REG_DEBUG
 	  fprintf(stderr, "\n");
 #endif
 	  /* Call was OK but there's no data to read... */
@@ -1278,13 +1284,13 @@ int Consume_start_data_check_sockets(const int index) {
 	}
 	else {
 	  /* Some error occurred */
-#if REG_DEBUG
+#ifdef REG_DEBUG
 	  fprintf(stderr, "\n");
 #endif
 	  perror("STEER: recv");
 	}
       }
-#if REG_DEBUG
+#ifdef REG_DEBUG
       else {
 	/* recv returned 0 bytes => closed connection */
 	fprintf(stderr, "STEER: Consume_start_data_check_sockets: hung up!\n");
@@ -1297,7 +1303,7 @@ int Consume_start_data_check_sockets(const int index) {
 	return REG_FAILURE;
       }
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
       fprintf(stderr, "\nSTEER: Consume_start_data_check_sockets: recv failed - "
 	      "try immediate reconnect for index %d\n", index);
 #endif
@@ -1315,18 +1321,18 @@ int Consume_start_data_check_sockets(const int index) {
       memset(buffer, '\0', 1);
     }
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
     fprintf(stderr, "!");
 #endif
   } /* !while */
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
   fprintf(stderr, "\n");
 #endif
 
   if(nbytes > 0) {
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
     fprintf(stderr, "STEER: Consume_start_data_check_sockets: read >>%s<< "
 	    "from socket\n", buffer);
 #endif
@@ -1380,7 +1386,7 @@ int Consume_data_read_sockets(const int index,
 
   socket_io_type  *sock_info;
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
 
 #ifdef USE_REG_TIMING
   double time0, time1;
@@ -1403,7 +1409,7 @@ int Consume_data_read_sockets(const int index,
     nbytes = recv(sock_info->connector_handle, pData, num_bytes_to_read, MSG_WAITALL);
   }
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
   fprintf(stderr, "STEER: Consume_data_read_sockets: recv read %d bytes\n", (int) nbytes);
 
 #ifdef USE_REG_TIMING
@@ -1436,7 +1442,7 @@ int Consume_data_read_sockets(const int index,
 #ifndef __linux
 void signal_handler_sockets(int a_signal) {
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
   fprintf(stderr, "STEER: INFO: Caught SIGPIPE!\n");
 #endif
 
@@ -1506,7 +1512,7 @@ int Consume_ack_sockets(int index){
     if(errno == EAGAIN) {
       /* Call would have blocked because no data to read
        * Call was OK but there's no data to read... */
-#if REG_DEBUG_FULL
+#ifdef REG_DEBUG_FULL
       fprintf(stderr, "STEER: Consume_ack_sockets: no data on socket to "
 	      "read for ack\n");
 #endif
@@ -1522,7 +1528,7 @@ int Consume_ack_sockets(int index){
     IOTypes_table.io_def[index].ack_needed = REG_FALSE;
   }
 
-#if REG_DEBUG_FULL
+#ifdef REG_DEBUG_FULL
   fprintf(stderr, "STEER: INFO: Consume_ack_sockets: no ack received\n");
 #endif
   return REG_FAILURE;

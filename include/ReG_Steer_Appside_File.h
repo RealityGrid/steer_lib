@@ -35,6 +35,8 @@
     @author Robert Haines
   */
 
+#include "ReG_Steer_Config.h"
+
 /** @internal
     Removes files, signalling that client is attached and deletes
     any remaining files containing messages sent by client */

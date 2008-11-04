@@ -30,6 +30,7 @@
 ---------------------------------------------------------------------------*/
 #include <string.h>
 
+#include "ReG_Steer_Config.h"
 #include "ReG_Steer_Appside_File.h"
 #include "ReG_Steer_types.h"
 #include "ReG_Steer_Common.h"
@@ -44,14 +45,19 @@
 
 #ifndef WIN32
 #else
+/*
+NOW IN CMAKE
+
 #define snprintf _snprintf
+*/
 #endif
 
 /* Allow value of 'REG_DEBUG' to propagate down from Reg_steer_types.h if
-   it has been set there */
+   it has been set there
 #ifndef REG_DEBUG
 #define REG_DEBUG 1
 #endif
+*/
 
 /** @internal
    The table holding details of our communication channel with the
@@ -240,7 +246,7 @@ int Finalize_steering_connection_file()
 {
   char sys_command[REG_MAX_STRING_LENGTH];
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
   int  max, max1;
 
   max = strlen(APP_STEERABLE_FILENAME);
@@ -269,7 +275,7 @@ int Finalize_steering_connection_file()
   sprintf(sys_command, "%s%s", Steerer_connection.file_root,
 	  STR_CONNECTED_FILENAME);
   if(remove(sys_command)){
-#if REG_DEBUG    
+#ifdef REG_DEBUG    
     fprintf(stderr, "STEER: Finalize_steering_connection_file: failed to remove "
 	    "%s\n", sys_command);
 #endif
@@ -313,7 +319,7 @@ int Initialize_steering_connection_file(int  NumSupportedCmds,
       fprintf(stderr, "STEER: Initialize_steering_connection_file: failed to "
 	      "remove %s\n",filename);
     }
-#if REG_DEBUG
+#ifdef REG_DEBUG
     else{
       fprintf(stderr, "STEER: Initialize_steering_connection_file: removed "
 	      "%s\n", filename);
@@ -340,7 +346,7 @@ int Initialize_steering_connection_file(int  NumSupportedCmds,
     return REG_FAILURE;
   }
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
   fprintf(stderr, "STEER: Initialize_steering_connection_file: writing file: %s\n", 
 	  filename);
 #endif
@@ -604,7 +610,7 @@ int Consume_data_read_file(const int	 index,
 		   (size_t)num_bytes_to_read, 
 		   IOTypes_table.io_def[index].fp);
   }
-#if REG_DEBUG
+#ifdef REG_DEBUG
   fprintf(stderr, "STEER: Consume_data_read_file: read %d bytes\n",
 	  (int) nbytes);
 #endif /* REG_DEBUG */
@@ -668,7 +674,7 @@ int Consume_msg_header_file(int  index,
     return REG_FAILURE;
   }
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
   fprintf(stderr, "STEER: Consume_iotype_msg_header: read >%s< from file\n",
 	  buffer);
 #endif
@@ -699,7 +705,7 @@ int Consume_msg_header_file(int  index,
     return REG_FAILURE;
   }
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
   fprintf(stderr, "STEER: Consume_iotype_msg_header: read >%s< from file\n", 
 	  buffer);
 #endif
@@ -724,7 +730,7 @@ int Consume_msg_header_file(int  index,
     return REG_FAILURE;
   }
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
   fprintf(stderr, "STEER: Consume_iotype_msg_header: read >%s< from file\n", 
 	  buffer);
 #endif
@@ -758,7 +764,7 @@ int Consume_msg_header_file(int  index,
     return REG_FAILURE;
   }
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
   fprintf(stderr, "STEER: Consume_iotype_msg_header: read >%s< from file\n", 
 	  buffer);
 #endif
@@ -792,7 +798,7 @@ int Consume_msg_header_file(int  index,
     return REG_FAILURE;
   }
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
   fprintf(stderr, "STEER: Consume_iotype_msg_header: read >%s< from file\n", 
 	  buffer);
 #endif
@@ -827,7 +833,7 @@ int Consume_msg_header_file(int  index,
     return REG_FAILURE;
   }
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
   fprintf(stderr, "STEER: Consume_msg_header: read >%s< from file\n", 
 	  buffer);
 #endif
@@ -875,7 +881,7 @@ int Initialize_IOType_transport_file(int direction,
     else{
       strcpy(IOTypes_table.io_def[index].directory, pchar);
     }
-#if REG_DEBUG
+#ifdef REG_DEBUG
     fprintf(stderr, "STEER: Initialize_IOType_transport_file: will use following"
 	    " directory for data files: %s\n", 
 	    IOTypes_table.io_def[index].directory);
@@ -883,7 +889,7 @@ int Initialize_IOType_transport_file(int direction,
   }
   else{
     IOTypes_table.io_def[index].directory[0] = '\0';
-#if REG_DEBUG
+#ifdef REG_DEBUG
     fprintf(stderr, "STEER: Initialize_IOType_transport_file: will use current"
 	    " working directory for data files\n");
 #endif    

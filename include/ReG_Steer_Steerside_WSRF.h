@@ -31,6 +31,7 @@
 #ifndef __REG_STEER_STEERSIDE_WSRF_H__
 #define __REG_STEER_STEERSIDE_WSRF_H__
 
+#include "ReG_Steer_Config.h"
 #include "ReG_Steer_Common.h"
 #include "ReG_Steer_XML.h"
 

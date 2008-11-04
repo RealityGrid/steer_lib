@@ -36,6 +36,8 @@
     @author Andrew Porter
 */
 
+#include "ReG_Steer_Config.h"
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <string.h>

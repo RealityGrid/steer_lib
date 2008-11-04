@@ -22,6 +22,7 @@
     @author Andrew Porter
 */
 
+#include "ReG_Steer_Config.h"
 #include "Base64.h"
 #include "ReG_Steer_types.h"
 #include <string.h>

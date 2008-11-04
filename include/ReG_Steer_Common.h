@@ -40,6 +40,7 @@
 #ifndef __REG_STEER_COMMON_H__
 #define __REG_STEER_COMMON_H__
 
+#include "ReG_Steer_Config.h"
 #include "ReG_Steer_Appside_Sockets.h"
 #include "soapH.h"
 
@@ -284,7 +285,7 @@ typedef struct {
   int                           buffer_bytes;
   /** Size of the @p buffer */
   int				buffer_max_bytes;
-#if REG_SOCKET_SAMPLES || REG_PROXY_SAMPLES || defined(DOXYGEN)
+#if defined(REG_SOCKET_SAMPLES) || defined(REG_PROXY_SAMPLES) || defined(DOXYGEN)
   /** structure used to hold all socket information when using direct
       socket connections or socket connections to an ioProxy */
   socket_io_type		socket_info;

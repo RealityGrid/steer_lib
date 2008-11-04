@@ -38,6 +38,8 @@
     @author Andrew Porter
   */
 
+#include "ReG_Steer_Config.h"
+
 /** The username which the application will use within WS-Security
     when talking to the SWS */
 #define REG_APPSIDE_WSSE_USERNAME "application"

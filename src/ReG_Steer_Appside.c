@@ -35,6 +35,7 @@
     @author Andrew Porter
     @author Robert Haines
   */
+#include "ReG_Steer_Config.h"
 #include "ReG_Steer_Appside.h"
 #include "ReG_Steer_Appside_internal.h"
 #include "ReG_Steer_Appside_Sockets.h"
@@ -57,17 +58,22 @@
 #include <unistd.h>
 #else
 #include <direct.h>
+/*
+NOW IN CMAKE
+
 #define snprintf _snprintf
 #define sleep(seconds) (Sleep(seconds*1000))
 #define usleep(microseconds) (Sleep(microseconds/1000))
 #define getcwd _getcwd
+*/
 #endif
 
 /* Allow value of 'REG_DEBUG' to propagate down from Reg_steer_types.h if
-   it has been set there */
+   it has been set there
 #ifndef REG_DEBUG
 #define REG_DEBUG 1
 #endif
+*/
 
 /**
    Buffer used for string handling etc - size set 
@@ -198,7 +204,7 @@ int Steering_initialize(char *AppName,
   extern char ReG_Steer_Schema_Locn[REG_MAX_STRING_LENGTH];
   char       *schema_path = "xml_schema/reg_steer_comm.xsd";
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
   /* Print out version information */
   fprintf(stderr, "**** RealityGrid Computational Steering Library "
 	  "v.%s ****\n\n", REG_STEER_LIB_VERSION);
@@ -220,7 +226,7 @@ int Steering_initialize(char *AppName,
 
     i = strlen(pchar);
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
     /* Check that path of schema location fits in the string we've
        put aside for it */
     if((i + strlen(schema_path) + 1) > REG_MAX_STRING_LENGTH){
@@ -292,7 +298,7 @@ int Steering_initialize(char *AppName,
     fprintf(stderr, "STEER: Steering_initialize: failed to get machine name\n");
   }
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
   fprintf(stderr, "STEER: Steering_initialize: machine name = %s\n", 
 	  ReG_Hostname);
 #endif
@@ -326,7 +332,7 @@ int Steering_initialize(char *AppName,
   for(i=0; i<IOTypes_table.max_entries; i++){
 
     IOTypes_table.io_def[i].handle = REG_IODEF_HANDLE_NOTSET;
-#if REG_SOCKET_SAMPLES
+#ifdef REG_SOCKET_SAMPLES
     sprintf(IOTypes_table.io_def[i].socket_info.listener_hostname,
 	    "%s", "NOT_SET");
 #endif
@@ -547,7 +553,7 @@ int Steering_initialize(char *AppName,
   /* LSF sends us a SIGUSR2 signal when we reach our wall-clock limit */
   signal(SIGUSR2, Steering_signal_handler);
 #endif
-#if REG_SOCKET_SAMPLES || REG_PROXY_SAMPLES
+#if defined(REG_SOCKET_SAMPLES) || defined(REG_PROXY_SAMPLES)
 #ifndef __linux
   /* Catch the broken pipe signal for sending down a disconnected
      socket. Linux allows us to do this with a flag to send()    */
@@ -677,7 +683,7 @@ int Steering_finalize()
   /* Flag that library no-longer initialised */
   ReG_SteeringInit    = REG_FALSE;
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
   /* Print out version information */
   fprintf(stderr, "**** RealityGrid Computational Steering Library "
 	  "cleanup done ****\n\n");
@@ -800,7 +806,7 @@ int Register_IOType(char* IOLabel,
   }
   else{
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
     fprintf(stderr, "STEER: Register_IOTypes: failed to get handle for param\n");
 #endif
     return REG_FAILURE;
@@ -889,10 +895,12 @@ int Disable_IOType(int IOType){
 
   if(IOTypes_table.io_def[index].is_enabled == REG_TRUE){
 
-#if REG_SOCKET_SAMPLES
+#ifdef REG_SOCKET_SAMPLES
     status = Disable_IOType_sockets(index);
-#elif REG_PROXY_SAMPLES
+#else
+#ifdef REG_PROXY_SAMPLES
     status = Disable_IOType_proxy(index);
+#endif
 #endif
     IOTypes_table.io_def[index].is_enabled = REG_FALSE;
 
@@ -956,10 +964,12 @@ int Enable_IOType(int IOType){
 
   if(IOTypes_table.io_def[index].is_enabled == REG_FALSE){
 
-#if REG_SOCKET_SAMPLES
+#ifdef REG_SOCKET_SAMPLES
     status = Enable_IOType_sockets(index);
-#elif REG_PROXY_SAMPLES
+#else
+#ifdef REG_PROXY_SAMPLES
     status = Enable_IOType_proxy(index);
+#endif
 #endif
     IOTypes_table.io_def[index].is_enabled = REG_TRUE;
 
@@ -974,7 +984,7 @@ int Enable_IOType(int IOType){
 
     IOTypes_table.io_def[index].ack_needed = REG_FALSE;
   }
-#if REG_DEBUG
+#ifdef REG_DEBUG
   else{
     fprintf(stderr, "STEER: Enable_IOType: IOType %d already enabled\n", 
 	    IOType);
@@ -1196,7 +1206,7 @@ int Register_ChkType(char* ChkLabel,
       Params_table.param[iparam].is_internal = REG_TRUE;
     }
     else{
-#if REG_DEBUG
+#ifdef REG_DEBUG
       fprintf(stderr, "STEER: Register_ChkType: failed to get handle for param\n");
 #endif
       *ChkType = REG_IODEF_HANDLE_NOTSET;
@@ -1346,10 +1356,10 @@ int Record_checkpoint_set(int   ChkType,
 			  char *ChkTag,
 			  char *Path)
 {
-#if REG_DIRECT_TCP_STEERING
+#ifdef REG_DIRECT_TCP_STEERING
 
 #else
-#if REG_SOAP_STEERING
+#ifdef REG_SOAP_STEERING
   int    nfiles;
   int    i, j, status, len;
   int    count = 0;
@@ -1369,10 +1379,10 @@ int Record_checkpoint_set(int   ChkType,
 
   if (ChkType == REG_IODEF_HANDLE_NOTSET) return REG_SUCCESS;
 
-#if REG_DIRECT_TCP_STEERING
+#ifdef REG_DIRECT_TCP_STEERING
 
 #else
-#if !REG_SOAP_STEERING
+#ifndef REG_SOAP_STEERING
 
   return Record_Chkpt(ChkType, ChkTag);
 
@@ -1581,7 +1591,7 @@ int Record_checkpoint_set(int   ChkType,
     return REG_FAILURE;
   }
 
-#if REG_DEBUG_FULL
+#ifdef REG_DEBUG_FULL
   fprintf(stderr, "STEER: Record_checkpoint_set: node meta data >>%s<<\n",
 	  node_data);
   fprintf(stderr, "STEER: Record_checkpoint_set: cp_data >>%s<<\n",
@@ -1735,7 +1745,7 @@ int Consume_start_blocking(int   IOType,
 
     usleep(blocked_poll_interval);
     if((wait_time += blocked_poll_interval) > time_out_uS){
-#if REG_DEBUG
+#ifdef REG_DEBUG
       fprintf(stderr, "STEER: Consume_start_blocking: timed out\n");
 #endif
       status = REG_TIMED_OUT;
@@ -1775,7 +1785,7 @@ int Consume_stop(int *IOTypeIndex)
   IOTypes_table.io_def[*IOTypeIndex].ack_needed = REG_TRUE;
 
 
-#if !REG_SOCKET_SAMPLES && !REG_PROXY_SAMPLES
+#if !defined(REG_SOCKET_SAMPLES) && !defined(REG_PROXY_SAMPLES)
   /* Close any file associated with this channel */
   if(IOTypes_table.io_def[*IOTypeIndex].fp){
     fclose(IOTypes_table.io_def[*IOTypeIndex].fp);
@@ -1997,7 +2007,7 @@ int Emit_start(int  IOType,
 	       int  SeqNum,
 	       int *IOTypeIndex)
 {
-#if !REG_SOCKET_SAMPLES && !REG_PROXY_SAMPLES
+#if !defined(REG_SOCKET_SAMPLES) && !defined(REG_PROXY_SAMPLES)
   char *pchar;
   int   len;
 #endif
@@ -2039,7 +2049,7 @@ int Emit_start(int  IOType,
     return REG_NOT_READY;
   }
 
-#if !REG_SOCKET_SAMPLES && !REG_PROXY_SAMPLES
+#if !defined(REG_SOCKET_SAMPLES) && !defined(REG_PROXY_SAMPLES)
 
   /* Currently have no way of looking up what filename to use so 
      hardwire... */
@@ -2118,7 +2128,7 @@ int Emit_start_blocking(int    IOType,
 
     usleep(blocked_poll_interval);
     if((wait_time += blocked_poll_interval) > time_out_uS){
-#if REG_DEBUG
+#ifdef REG_DEBUG
       fprintf(stderr, "STEER: Emit_start_blocking: timed out\n");
 #endif
       status = REG_TIMED_OUT;
@@ -2159,7 +2169,7 @@ int Emit_stop(int *IOTypeIndex)
 
   return_status = Emit_footer(*IOTypeIndex, Global_scratch_buffer);
 
-#if !REG_SOCKET_SAMPLES && !REG_PROXY_SAMPLES
+#if !defined(REG_SOCKET_SAMPLES) && !defined(REG_PROXY_SAMPLES)
   if(IOTypes_table.io_def[*IOTypeIndex].fp){
     fclose(IOTypes_table.io_def[*IOTypeIndex].fp);
     IOTypes_table.io_def[*IOTypeIndex].fp = NULL;
@@ -2173,14 +2183,14 @@ int Emit_stop(int *IOTypeIndex)
      before we try to read another one */
   if(return_status == REG_SUCCESS){
     IOTypes_table.io_def[*IOTypeIndex].ack_needed = REG_TRUE;
-#if REG_DEBUG_FULL
+#ifdef REG_DEBUG_FULL
     fprintf(stderr, "STEER: INFO: Emit_stop: set ack_needed = "
 	    "REG_TRUE for index %d\n", *IOTypeIndex);
 #endif
   }
   else{
     IOTypes_table.io_def[*IOTypeIndex].ack_needed = REG_FALSE;
-#if REG_DEBUG_FULL
+#ifdef REG_DEBUG_FULL
     fprintf(stderr, "STEER: INFO: Emit_stop: set ack_needed = "
 	    "REG_FALSE for index %d\n", *IOTypeIndex);
 #endif
@@ -2792,7 +2802,7 @@ int Steering_control(int     SeqNum,
 
   if(time1 > -1.0){
     ReG_WallClockPerStep = (float)(time0 - time1);
-#if REG_DEBUG
+#ifdef REG_DEBUG
     fprintf(stderr, "STEER: TIMING: Spent %.5f seconds working\n",
 	    ReG_WallClockPerStep);
     if(ReG_WallClockPerStep > REG_TOL_ZERO){
@@ -2933,7 +2943,7 @@ int Steering_control(int     SeqNum,
 
 	ReG_SteeringActive = REG_TRUE;
 	first_time = REG_TRUE;
-#if REG_DEBUG
+#ifdef REG_DEBUG
 	fprintf(stderr, "STEER: Steering_control: steerer has connected\n");
 #endif
 	/* Save-out parameter log when steerer attaches - this forces
@@ -2961,10 +2971,10 @@ int Steering_control(int     SeqNum,
   /* If we're not steering via SOAP (and a Steering Grid Service)
      then we can't emit our parameter definitions etc. until
      a steerer has connected */
-#if REG_DIRECT_TCP_STEERING
+#ifdef REG_DIRECT_TCP_STEERING
   if(do_steer){
 #else
-#if !REG_SOAP_STEERING 
+#ifndef REG_SOAP_STEERING 
   if(do_steer){
 #endif /* !REG_SOAP_STEERING */
 #endif
@@ -2977,7 +2987,7 @@ int Steering_control(int     SeqNum,
 	fprintf(stderr, "STEER: Steering_control: Emit_param_defs "
 		"failed\n");
       }
-#if REG_DEBUG
+#ifdef REG_DEBUG
       fprintf(stderr, "STEER: Steering_control: done Emit_param_defs\n");
 #endif
       ReG_ParamsChanged  = REG_FALSE;
@@ -2989,7 +2999,7 @@ int Steering_control(int     SeqNum,
 
       Emit_IOType_defs();
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
       fprintf(stderr, "STEER: Steering_control: done Emit_IOType_defs\n");
 #endif
       ReG_IOTypesChanged = REG_FALSE;
@@ -3001,7 +3011,7 @@ int Steering_control(int     SeqNum,
 
       Emit_ChkType_defs();
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
       fprintf(stderr, "STEER: Steering_control: done Emit_ChkType_defs\n");
 #endif
       ReG_ChkTypesChanged = REG_FALSE;
@@ -3011,9 +3021,9 @@ int Steering_control(int     SeqNum,
        Service) then we can and should publish our parameter
        definitions etc., irrespective of whether a steerer is
        attached */
-#if REG_DIRECT_TCP_STEERING
+#ifdef REG_DIRECT_TCP_STEERING
 #else
-#if REG_SOAP_STEERING
+#ifdef REG_SOAP_STEERING
   if(do_steer){
 #endif
 #endif
@@ -3030,7 +3040,7 @@ int Steering_control(int     SeqNum,
 
       return_status = REG_FAILURE;
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
       fprintf(stderr, "STEER: Steering_control: call to Consume_control failed\n");
 #endif
     }
@@ -3046,13 +3056,13 @@ int Steering_control(int     SeqNum,
 
       fprintf(stderr, "STEER: Steering_control: Emit chk log failed\n");
     }
-#if REG_DEBUG_FULL
+#ifdef REG_DEBUG_FULL
     else{
       fprintf(stderr, "STEER: Steering_control: done Emit_log for chk log\n");
     }
 #endif
 
-#if REG_DEBUG_FULL
+#ifdef REG_DEBUG_FULL
     fprintf(stderr, "STEER: Steering_control: done Consume_control\n");
 #endif
   }
@@ -3073,7 +3083,7 @@ int Steering_control(int     SeqNum,
 
     case REG_STR_DETACH:
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
       fprintf(stderr, "STEER: Steering_control: got detach command\n");
 #endif
 
@@ -3081,7 +3091,7 @@ int Steering_control(int     SeqNum,
 	return_status = REG_FAILURE;
       }
 
-#if !REG_SOAP_STEERING || !REG_DIRECT_TCP_STEERING
+#if !defined(REG_SOAP_STEERING) || !defined(REG_DIRECT_TCP_STEERING)
       /* Confirm that we have received the detach command */
       commands[0] = REG_STR_DETACH;
       Emit_status(SeqNum, 0,   
@@ -3099,7 +3109,7 @@ int Steering_control(int     SeqNum,
       if( Emit_log(&Param_log, status) != REG_SUCCESS ){
 	fprintf(stderr, "STEER: Steering_control: Emit param log failed\n");
       }
-#if REG_DEBUG_FULL
+#ifdef REG_DEBUG_FULL
       else{
 	fprintf(stderr, "STEER: Steering_control: done Emit_log\n");
       }
@@ -3116,7 +3126,7 @@ int Steering_control(int     SeqNum,
 	  fprintf(stderr, "STEER: Steering_control: FAILED to signal that "
 		  "now paused\n");
 	}
-#if REG_DEBUG
+#ifdef REG_DEBUG
 	else{
 	  fprintf(stderr, "STEER: Steering_control: signalled that now "
 		  "paused OK\n");
@@ -3138,7 +3148,7 @@ int Steering_control(int     SeqNum,
       
     default:
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
       fprintf(stderr, "STEER: Steering_control: got command %d\n", commands[i]);
 #endif
 
@@ -3153,7 +3163,7 @@ int Steering_control(int     SeqNum,
 
 	/* If we are being steered using soap then don't emit
 	   a confirmation - Steering_finalize takes care of this */
-#if !REG_SOAP_STEERING || !REG_DIRECT_TCP_STEERING
+#if !defined(REG_SOAP_STEERING) || !defined(REG_DIRECT_TCP_STEERING)
 	/* Confirm that we have received the stop command */
 	commands[0] = REG_STR_STOP;
 	Emit_status(SeqNum, 0,   
@@ -3207,7 +3217,7 @@ int Steering_control(int     SeqNum,
 #ifdef USE_REG_TIMING
   Get_current_time_seconds(&time1);
   steer_time = (float)(time1 - time0);
-#if REG_DEBUG
+#ifdef REG_DEBUG
   fprintf(stderr, "STEER: TIMING: Spent %.5f seconds in Steering_control\n",
 	  steer_time);
 #endif
@@ -3309,7 +3319,7 @@ int Auto_generate_steer_cmds(int    SeqNum,
 
       if(Control_msg_now_valid(storedMsg->msg)){
 
-#if REG_LOG_STEERING
+#ifdef REG_LOG_STEERING
 	Log_control_msg(storedMsg->msg->control);
 #endif
 	Unpack_control_msg(storedMsg->msg->control,
@@ -3398,13 +3408,13 @@ int Steering_pause(int   *NumSteerParams,
 
       return_status = REG_FAILURE;
       paused = REG_FALSE;
-#if REG_DEBUG
+#ifdef REG_DEBUG
       fprintf(stderr, "STEER: Steering_pause: call to Consume_control failed\n");
 #endif
     }
     else{
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
       fprintf(stderr,"STEER: Steering_pause: got %d cmds and %d params\n", 
 	      num_commands,
 	      *NumSteerParams);
@@ -3775,7 +3785,7 @@ int Emit_IOType_defs(){
 			trimWhiteSpace((char *)Global_scratch_buffer), 
 			IOTypes_table.io_def[i].handle);
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
       /* Check for truncation */
       if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
 
@@ -3798,7 +3808,7 @@ int Emit_IOType_defs(){
 	break;
 
       default:
-#if REG_DEBUG
+#ifdef REG_DEBUG
 	fprintf(stderr, 
 		"STEER: Emit_IOType_defs: Unrecognised IOType direction\n");
 #endif
@@ -3810,7 +3820,7 @@ int Emit_IOType_defs(){
 
       nbytes = snprintf(pbuf, bytes_left, "<Freq_handle>%d</Freq_handle>\n",
 			IOTypes_table.io_def[i].freq_param_handle);
-#if REG_DEBUG
+#ifdef REG_DEBUG
       /* Check for truncation */
       if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
 
@@ -3823,7 +3833,7 @@ int Emit_IOType_defs(){
       bytes_left -= nbytes;
 
 
-#if REG_SOCKET_SAMPLES
+#ifdef REG_SOCKET_SAMPLES
       if(IOTypes_table.io_def[i].direction == REG_IO_OUT){
 
 	if(!strstr(IOTypes_table.io_def[i].socket_info.listener_hostname,
@@ -3832,7 +3842,7 @@ int Emit_IOType_defs(){
 		     IOTypes_table.io_def[i].socket_info.listener_hostname,
 		     (int)(IOTypes_table.io_def[i].socket_info.listener_port));
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
 	  /* Check for truncation */
 	  if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
 
@@ -3845,9 +3855,11 @@ int Emit_IOType_defs(){
 	  bytes_left -= nbytes;
 	}
       }
-#elif REG_PROXY_SAMPLES
+#else
+#ifdef REG_PROXY_SAMPLES
       /* ARPDBG - does anything go here? Where do we set the address
 	 of the proxy? */
+#endif
 #endif /* REG_SOCKET_SAMPLES */
       nbytes = snprintf(pbuf, bytes_left, "</IOType>\n");
       pbuf += nbytes;
@@ -3901,7 +3913,7 @@ int Emit_ChkType_defs(){
 		       "<Handle>%d</Handle>\n", 
 		       ChkTypes_table.io_def[i].label, 
 		       ChkTypes_table.io_def[i].handle);
-#if REG_DEBUG
+#ifdef REG_DEBUG
       /* Check for truncation */
       if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
 
@@ -3929,14 +3941,14 @@ int Emit_ChkType_defs(){
 	break;
 
       default:
-#if REG_DEBUG
+#ifdef REG_DEBUG
 
 	fprintf(stderr, 
 		"STEER: Emit_ChkType_defs: Unrecognised ChkType direction\n");
 #endif /* REG_DEBUG */
 	return REG_FAILURE;
       }
-#if REG_DEBUG
+#ifdef REG_DEBUG
       /* Check for truncation */
       if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
 
@@ -3952,7 +3964,7 @@ int Emit_ChkType_defs(){
       nbytes = snprintf(pbuf,bytes_left,"<Freq_handle>%d</Freq_handle>\n"
 			"</ChkType>\n",
 			ChkTypes_table.io_def[i].freq_param_handle);
-#if REG_DEBUG
+#ifdef REG_DEBUG
       /* Check for truncation */
       if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
 	fprintf(stderr, "STEER: Emit_ChkType_defs: message exceeds max. "
@@ -3966,7 +3978,7 @@ int Emit_ChkType_defs(){
   }
   
   nbytes = snprintf(pbuf,bytes_left,"</ChkType_defs>\n");
-#if REG_DEBUG
+#ifdef REG_DEBUG
   /* Check for truncation */
   if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
     fprintf(stderr, "STEER: Emit_ChkType_defs: message exceeds max. "
@@ -4029,7 +4041,7 @@ int Consume_control(int    *NumCommands,
 	return REG_SUCCESS;
       }
 
-#if REG_LOG_STEERING
+#ifdef REG_LOG_STEERING
       Log_control_msg(msg->control);
 #endif
       Unpack_control_msg(msg->control,
@@ -4050,7 +4062,7 @@ int Consume_control(int    *NumCommands,
     /* free up msg memory */
     Delete_msg_struct(&msg);
   }
-#if REG_DEBUG
+#ifdef REG_DEBUG
   else{
     fprintf(stderr, "STEER: Consume_control: no message from steerer\n");
   }
@@ -4142,7 +4154,7 @@ int Unpack_control_msg(struct control_struct *ctrl,
     /* Log this cmd parameter */
     strcpy(Steer_log.cmd[count].params, CommandParams[count]);
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
     fprintf(stderr, "STEER: Unpack_control_msg: cmd[%d] = %d\n", count,
 	    Commands[count]);
     fprintf(stderr, "                           params  = %s\n", 
@@ -4165,7 +4177,7 @@ int Unpack_control_msg(struct control_struct *ctrl,
   Steer_log.num_cmds = count;
 
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
   fprintf(stderr, "STEER: Unpack_control_msg: received %d commands\n", 
 	  *NumCommands);
 #endif
@@ -4228,7 +4240,7 @@ int Unpack_control_msg(struct control_struct *ctrl,
      some may be internal and are not passed up to the calling routine */
   *NumSteerParams = count;
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
   fprintf(stderr, "STEER: Unpack_control_msg: received %d params\n", 
 	  *NumSteerParams);
 #endif
@@ -4241,10 +4253,10 @@ int Unpack_control_msg(struct control_struct *ctrl,
 int Detach_from_steerer()
 {
   int i;
-#if REG_DIRECT_TCP_STEERING
+#ifdef REG_DIRECT_TCP_STEERING
   Detach_from_steerer_direct();
 #else
-#if REG_SOAP_STEERING
+#ifdef REG_SOAP_STEERING
 
 #ifndef REG_WSRF
   Detach_from_steerer_soap();
@@ -4263,10 +4275,10 @@ int Detach_from_steerer()
      another one attaches later on) */
   Chk_log.send_all           = REG_TRUE;
   Chk_log.emit_in_progress   = REG_FALSE;
-#if REG_DIRECT_TCP_STEERING
+#ifdef REG_DIRECT_TCP_STEERING
 
 #else
-#if REG_SOAP_STEERING
+#ifdef REG_SOAP_STEERING
   Param_log.send_all         = REG_FALSE;
 #else
   Param_log.send_all         = REG_TRUE;
@@ -4423,7 +4435,7 @@ int Emit_status(int   SeqNum,
 
     if(!cmddone){
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
       fprintf(stderr, "STEER: Emit_status: NumCommands = %d, ccount = %d\n", 
 	      NumCommands, ccount);
 #endif
@@ -4707,7 +4719,7 @@ int Make_vtk_buffer(int    nx,
     return REG_FAILURE;
   }
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
   fprintf(stderr, "STEER: Make_vtk_buffer: checksum = %f\n", sum/((float) count));
 #endif
 
@@ -4871,10 +4883,10 @@ int Make_chunk_header(char *header,
 int Steerer_connected()
 {
 
-#if REG_DIRECT_TCP_STEERING
+#ifdef REG_DIRECT_TCP_STEERING
   return Steerer_connected_direct();
 #else /* REG_DIRECT_TCP_STEERING */
-#if REG_SOAP_STEERING
+#ifdef REG_SOAP_STEERING
 #ifdef REG_WSRF
   return Steerer_connected_wsrf();
 #else
@@ -4891,14 +4903,14 @@ int Steerer_connected()
 
 int Send_status_msg(char *buf)
 {
-#if REG_DEBUG_FULL
+#ifdef REG_DEBUG_FULL
   fprintf(stderr, "STEER: Send_status_msg: sending:\n>>%s<<\n", buf);
 #endif
 
-#if REG_DIRECT_TCP_STEERING
+#ifdef REG_DIRECT_TCP_STEERING
   return Send_status_msg_direct(&(Steerer_connection.socket_info), buf);
 #else
-#if REG_SOAP_STEERING
+#ifdef REG_SOAP_STEERING
 
 #ifdef REG_WSRF
   return Send_status_msg_wsrf(buf);
@@ -4917,10 +4929,10 @@ int Send_status_msg(char *buf)
 struct msg_struct *Get_control_msg()
 {
 
-#if REG_DIRECT_TCP_STEERING
+#ifdef REG_DIRECT_TCP_STEERING
   return Get_control_msg_direct(&(Steerer_connection.socket_info));
 #else
-#if REG_SOAP_STEERING
+#ifdef REG_SOAP_STEERING
 #ifdef REG_WSRF
   return Get_control_msg_wsrf();
 #else
@@ -4966,16 +4978,16 @@ int Initialize_steering_connection(int  NumSupportedCmds,
     }
   }
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
   fprintf(stderr, "STEER: Initialize_steering_connection: polling "
 	  "interval = %d\n", (int)Steerer_connection.polling_interval);
 #endif
 
-#if REG_DIRECT_TCP_STEERING
+#ifdef REG_DIRECT_TCP_STEERING
   return Initialize_steering_connection_direct(NumSupportedCmds,
 					       SupportedCmds);
 #else
-#if REG_SOAP_STEERING
+#ifdef REG_SOAP_STEERING
 
 #ifdef REG_WSRF
   return Initialize_steering_connection_wsrf(NumSupportedCmds,
@@ -5072,10 +5084,10 @@ int Set_steering_directory()
 int Finalize_steering_connection()
 {
 
-#if REG_DIRECT_TCP_STEERING
+#ifdef REG_DIRECT_TCP_STEERING
   return Finalize_steering_connection_direct();
 #else
-#if REG_SOAP_STEERING
+#ifdef REG_SOAP_STEERING
 
 #ifdef REG_WSRF
   return Finalize_steering_connection_wsrf();
@@ -5175,11 +5187,12 @@ int Make_supp_cmds_msg(int   NumSupportedCmds,
 int Initialize_IOType_transport(const int direction,
 				const int index)
 {
-#if REG_SOCKET_SAMPLES
+#ifdef REG_SOCKET_SAMPLES
 
   return Initialize_IOType_transport_sockets(direction, index);
 
-#elif REG_PROXY_SAMPLES
+#else
+#ifdef REG_PROXY_SAMPLES
 
   return Initialize_IOType_transport_proxy(direction, index);
 
@@ -5187,20 +5200,23 @@ int Initialize_IOType_transport(const int direction,
 
   return Initialize_IOType_transport_file(direction, index);
 #endif
+#endif
 }
 
 /*---------------------------------------------------*/
 
 void Finalize_IOType_transport()
 {
-#if REG_SOCKET_SAMPLES
+#ifdef REG_SOCKET_SAMPLES
 
   Finalize_IOType_transport_sockets();
 
-#elif REG_PROXY_SAMPLES
+#else
+#ifdef REG_PROXY_SAMPLES
 
   Finalize_IOType_transport_proxy();
 
+#endif
 #endif
 }
 
@@ -5209,7 +5225,7 @@ void Finalize_IOType_transport()
 int Consume_start_data_check(const int index)
 {
 
-#if REG_SOCKET_SAMPLES || REG_PROXY_SAMPLES
+#if defined(REG_SOCKET_SAMPLES) || defined(REG_PROXY_SAMPLES)
   int status = Consume_start_data_check_sockets(index);
   if(status == REG_SUCCESS){
     IOTypes_table.io_def[index].consuming = REG_TRUE;
@@ -5235,7 +5251,7 @@ int Consume_data_read(const int		index,
     return REG_FAILURE;
   }
 
-#if REG_SOCKET_SAMPLES || REG_PROXY_SAMPLES
+#if defined(REG_SOCKET_SAMPLES) || defined(REG_PROXY_SAMPLES)
 
   return Consume_data_read_sockets(index,
 				   datatype,
@@ -5266,12 +5282,14 @@ int Emit_ack(const int index)
     return REG_FAILURE;
   }
 
-#if REG_SOCKET_SAMPLES
+#ifdef REG_SOCKET_SAMPLES
   return Emit_ack_sockets(index);
-#elif REG_PROXY_SAMPLES
+#else
+#ifdef REG_PROXY_SAMPLES
   return Emit_ack_proxy(index);
 #else
   return Emit_ack_file(index);
+#endif
 #endif
 }
 
@@ -5297,7 +5315,7 @@ int Consume_ack(const int index)
   if(IOTypes_table.io_def[index].use_ack == REG_TRUE){
     /* We are using acknowledgements so it matters whether
        or not we've got one */
-#if REG_SOCKET_SAMPLES || REG_PROXY_SAMPLES
+#if defined(REG_SOCKET_SAMPLES) || defined(REG_PROXY_SAMPLES)
     return Consume_ack_sockets(index);
 #else
     return Consume_ack_file(index);
@@ -5306,7 +5324,7 @@ int Consume_ack(const int index)
   else{
     /* We're not using acknowledgments but might still need 
        to clean-up those being generated by the consumer */
-#if REG_SOCKET_SAMPLES || REG_PROXY_SAMPLES
+#if defined(REG_SOCKET_SAMPLES) || defined(REG_PROXY_SAMPLES)
     Consume_ack_sockets(index);
 #else
     Consume_ack_file(index);
@@ -5319,24 +5337,26 @@ int Consume_ack(const int index)
 
 int Emit_header(const int index)
 {
-#if REG_SOCKET_SAMPLES
+#ifdef REG_SOCKET_SAMPLES
 
   return Emit_header_sockets(index);
 
-#elif REG_PROXY_SAMPLES
+#else
+#ifdef REG_PROXY_SAMPLES
 
   return Emit_header_proxy(index);		   
 #else
 
   sprintf(Global_scratch_buffer, REG_PACKET_FORMAT, REG_DATA_HEADER);
   Global_scratch_buffer[REG_PACKET_SIZE-1] = '\0';
-#if REG_DEBUG
+#ifdef REG_DEBUG
   fprintf(stderr, "STEER: Emit_header: Sending >>%s<<\n", Global_scratch_buffer);
 #endif
 
   return Emit_data_file(index,
 			REG_PACKET_SIZE,
 			(void *)Global_scratch_buffer);
+#endif
 #endif
 }
 
@@ -5350,17 +5370,19 @@ int Emit_footer(const int index,
   /* strlen + 1 because it doesn't count '\0' */
   nbytes_to_send = strlen(buffer)+1;
 
-#if REG_SOCKET_SAMPLES
+#ifdef REG_SOCKET_SAMPLES
 
   return Emit_data_sockets(index, nbytes_to_send, (void*)buffer);
 
-#elif REG_PROXY_SAMPLES
+#else
+#ifdef REG_PROXY_SAMPLES
 
   return Emit_data_proxy(index, nbytes_to_send, (void*)buffer);
 
 #else
 
   return Emit_data_file(index, nbytes_to_send, (void*)buffer);
+#endif
 #endif
 }
 
@@ -5371,12 +5393,13 @@ int Emit_data(const int		index,
 	      const size_t	num_bytes_to_send,
 	      void		*pData )
 {
-#if REG_SOCKET_SAMPLES
+#ifdef REG_SOCKET_SAMPLES
 
   return Emit_data_sockets(index, 
 			   num_bytes_to_send,
 			   pData);
-#elif REG_PROXY_SAMPLES
+#else
+#ifdef REG_PROXY_SAMPLES
 
   return Emit_data_proxy(index, 
 			   num_bytes_to_send,
@@ -5388,6 +5411,7 @@ int Emit_data(const int		index,
 			num_bytes_to_send,
 			pData);
 #endif
+#endif
 
 }
 
@@ -5396,11 +5420,12 @@ int Emit_data(const int		index,
 int Get_communication_status(const int	index)
 {
 
-#if REG_SOCKET_SAMPLES
+#ifdef REG_SOCKET_SAMPLES
 
   return Get_communication_status_sockets(index);
 
-#elif REG_PROXY_SAMPLES
+#else
+#ifdef REG_PROXY_SAMPLES
 
   return Get_communication_status_proxy(index);
 
@@ -5413,6 +5438,7 @@ int Get_communication_status(const int	index)
   else{
     return REG_FAILURE;
   }
+#endif
 #endif
 
 }
@@ -5431,7 +5457,7 @@ int Consume_iotype_msg_header(int  IOTypeIndex,
     return REG_FAILURE;
   }
 
-#if REG_SOCKET_SAMPLES || REG_PROXY_SAMPLES
+#if defined(REG_SOCKET_SAMPLES) || defined(REG_PROXY_SAMPLES)
   return Consume_msg_header_sockets(IOTypeIndex,
 				    DataType,
 				    Count,
@@ -5482,10 +5508,11 @@ int Emit_iotype_msg_header(int IOTypeIndex,
   pchar += sprintf(pchar, REG_PACKET_FORMAT, "</ReG_data_slice_header>");
   *(pchar-1) = '\0';
 
-#if REG_SOCKET_SAMPLES
+#ifdef REG_SOCKET_SAMPLES
   return Emit_data_sockets(IOTypeIndex, (int) (pchar-buffer), 
 			   (void*) buffer);
-#elif REG_PROXY_SAMPLES
+#else
+#ifdef REG_PROXY_SAMPLES
   return Emit_data_proxy(IOTypeIndex, (int) (pchar-buffer), (void*) buffer);
 
 #else
@@ -5495,6 +5522,7 @@ int Emit_iotype_msg_header(int IOTypeIndex,
     return REG_SUCCESS;
   }
   return REG_FAILURE;
+#endif
 #endif
 
 }
@@ -5526,7 +5554,7 @@ int Realloc_IOdef_entry_buffer(IOdef_entry *iodef,
 
   if(!iodef)return REG_FAILURE;
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
   if(iodef->buffer){
     fprintf(stderr, "STEER: Realloc_IOdef_entry_buffer: realloc'ing "
 	    "pointer %p\n", iodef->buffer);
@@ -5843,7 +5871,7 @@ int Control_msg_now_valid(struct msg_struct *msg){
     return 1;
   }
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
   fprintf(stderr, "STEER: Control_msg_now_valid, msg has valid_after = %.20g\n", 
 	  valid_time);
   fprintf(stderr, "                                 current sim time = %.20g\n", 
@@ -5853,7 +5881,7 @@ int Control_msg_now_valid(struct msg_struct *msg){
   /* Comparing the valid_time with the current simulated time + one ten-
      thousandth of the time step allows for rounding errors. */
   if( valid_time < (ReG_TotalSimTimeSecs)){/*+0.0001*ReG_SimTimeStepSecs) ){*/
-#if REG_DEBUG
+#ifdef REG_DEBUG
     printf("STEER: Control_msg_now_valid: stored msg is now valid\n");
 #endif
     return 1;

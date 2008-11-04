@@ -30,7 +30,8 @@
 #ifndef __REG_STEER_UTILS_WSRF_H__
 #define __REG_STEER_UTILS_WSRF_H__
 
-#include <ReG_Steer_Browser.h>
+#include "ReG_Steer_Config.h"
+#include "ReG_Steer_Browser.h"
 #include "soapH.h"
 
 /** @internal

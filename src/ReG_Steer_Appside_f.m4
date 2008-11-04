@@ -30,9 +30,11 @@
 #include <unistd.h>
 #include <string.h>
 
+/*
 #ifndef REG_DEBUG
 #define REG_DEBUG 1
 #endif
+*/
 
 /** @file ReG_Steer_Appside_f.c
     @brief Generated from ReG_Steer_Appside_f.m4 
@@ -1756,7 +1758,7 @@ INT_KIND_1_DECL(Status);
   int i, len, pos;
 
 /*
-#if REG_DEBUG
+#ifdef REG_DEBUG
   fprintf(stderr, "STEER: steering_control_f: Calling Steering_control...\n");
 #endif
 */
@@ -1767,7 +1769,7 @@ INT_KIND_1_DECL(Status);
 			     		      gSteerCommands,
                                               str_array_params) );
 /*
-#if REG_DEBUG
+#ifdef REG_DEBUG
   fprintf(stderr, 
           "STEER: steering_control_f: got %d params and %d cmds\n", 
           num_params, num_commands);
@@ -1950,14 +1952,14 @@ INT_KIND_1D0_DECL(ptr);
   /* Obtain a pointer to the supplied character string.  This is intended
      to be passed to register_params_f as type void*. */
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
   fprintf(stderr, "STEER: steering_char_to_ptr_f: Entered routine, "
 	  "string = %s\n", STRING_PTR(string));
 #endif
 
   *ptr = INT_KIND_1D0_CAST(STRING_PTR(string));
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
   fprintf(stderr, "STEER: steering_char_to_ptr_f: Leaving routine\n");
 #endif
 }
@@ -2000,35 +2002,35 @@ INT_KIND_1_DECL(Status);
   switch(type){
 
     case REG_CHAR:
-#if REG_DEBUG
+#ifdef REG_DEBUG
       fprintf(stderr, "STEER: Sizeof REG_CHAR = %d, ", size);
 #endif
       sizeof_type[REG_CHAR] = size;
       break;
 
     case REG_INT:
-#if REG_DEBUG
-      fprintf(stderr, "STEER: Sizeof REG_INT = %d\n, ", size);
+#ifdef REG_DEBUG
+      fprintf(stderr, "STEER: Sizeof REG_INT = %d, ", size);
 #endif
       sizeof_type[REG_INT] = size;
       break;
 
     case REG_LONG:
-#if REG_DEBUG
-      fprintf(stderr, "STEER: Sizeof REG_LONG = %d\n, ", size);
+#ifdef REG_DEBUG
+      fprintf(stderr, "STEER: Sizeof REG_LONG = %d, ", size);
 #endif
       sizeof_type[REG_LONG] = size;
       break;
 
     case REG_FLOAT:
-#if REG_DEBUG
+#ifdef REG_DEBUG
       fprintf(stderr, "STEER: Sizeof REG_FLOAT = %d, ", size);
 #endif
       sizeof_type[REG_FLOAT] = size;
       break;
 
     case REG_DBL:
-#if REG_DEBUG
+#ifdef REG_DEBUG
       fprintf(stderr, "STEER: Sizeof REG_DBL = %d, ", size);
 #endif
       sizeof_type[REG_DBL] = size;
@@ -2044,7 +2046,7 @@ INT_KIND_1_DECL(Status);
   }
 
   if(size == sizeof(char)){
-#if REG_DEBUG
+#ifdef REG_DEBUG
     fprintf(stderr, "STEER: equivalent to a C char\n");
 #endif
     f90_to_c_type[type] = REG_CHAR;
@@ -2052,13 +2054,13 @@ INT_KIND_1_DECL(Status);
 
   if((type == REG_INT) || (type == REG_LONG)){
     if(size == sizeof(int)){
-#if REG_DEBUG
+#ifdef REG_DEBUG
       fprintf(stderr, "STEER: equivalent to a C int\n");
 #endif
       f90_to_c_type[type] = REG_INT;
     }
     else if(size == sizeof(long)){
-#if REG_DEBUG
+#ifdef REG_DEBUG
       fprintf(stderr, "STEER: equivalent to a C long\n");
 #endif
       f90_to_c_type[type] = REG_LONG;
@@ -2067,13 +2069,13 @@ INT_KIND_1_DECL(Status);
 
   if((type == REG_FLOAT) || (type == REG_DBL)){
     if(size == sizeof(float)){
-#if REG_DEBUG
+#ifdef REG_DEBUG
       fprintf(stderr, "STEER: equivalent to a C float\n");
 #endif
       f90_to_c_type[(int)*Type] = REG_FLOAT;
     }
     else if(size == sizeof(double)){
-#if REG_DEBUG
+#ifdef REG_DEBUG
       fprintf(stderr, "STEER: equivalent to a C double\n");
 #endif
       f90_to_c_type[(int)*Type] = REG_DBL;

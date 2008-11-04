@@ -25,6 +25,8 @@
   DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR
   CORRECTION.
 ---------------------------------------------------------------------------*/
+
+#include "ReG_Steer_Config.h"
 #include "ReG_Steer_Steerside.h"
 #include "ReG_Steer_Steerside_internal.h"
 #include "ReG_Steer_Steerside_Soap.h"
@@ -74,7 +76,7 @@ int Sim_attach_soap(Sim_entry_type *sim, char *SimID)
   }
 
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
   if(attach_response._AttachReturn){
     fprintf(stderr, "STEER: Sim_attach_soap: Attach returned:\n>>%s<<\n",
 	    attach_response._AttachReturn);
@@ -204,7 +206,7 @@ struct msg_struct *Get_status_msg_soap(Sim_entry_type *sim)
     return msg;
   }
   
-#if REG_DEBUG
+#ifdef REG_DEBUG
   if(getNotifications_response._GetNotificationsReturn){
     fprintf(stderr, "STEER: Get_status_msg_soap: GetNotifications returned >>%s<<\n",
 	    getNotifications_response._GetNotificationsReturn);
@@ -261,7 +263,7 @@ struct msg_struct *Get_status_msg_soap(Sim_entry_type *sim)
     return msg;
   }
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
   if(getStatus_response._GetStatusReturn){
     fprintf(stderr, "STEER: Get_status_msg_soap: response: %s\n", 
 	    getStatus_response._GetStatusReturn);
@@ -311,7 +313,7 @@ struct msg_struct *Get_service_data(Sim_entry_type *sim, char *sde_name)
     return msg;
   }
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
   if(findServiceData_response._findServiceDataReturn){
     fprintf(stderr, "STEER: Get_service_data: findServiceData returned: %s\n", 
 	    findServiceData_response._findServiceDataReturn);
@@ -385,7 +387,7 @@ int Send_pause_msg_soap(Sim_entry_type *sim)
 {
   struct sgs__PauseResponse  pause_response;
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
   fprintf(stderr, "STEER: Send_pause_msg_soap: calling Pause...\n");
 #endif
   pause_response._PauseReturn = NULL;
@@ -412,7 +414,7 @@ int Send_resume_msg_soap(Sim_entry_type *sim)
 {
   struct sgs__ResumeResponse  resume_response;
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
   fprintf(stderr, "STEER: Send_resume_msg_soap: calling Resume...\n");
 #endif
   resume_response._ResumeReturn = NULL;
@@ -439,7 +441,7 @@ int Send_detach_msg_soap(Sim_entry_type *sim)
 {
   struct sgs__DetachResponse  detach_response;
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
   fprintf(stderr, "STEER: Send_detach_msg_soap: calling Detach...\n");
 #endif
   detach_response._DetachReturn = NULL;
@@ -466,7 +468,7 @@ int Send_stop_msg_soap(Sim_entry_type *sim)
 {
   struct sgs__StopResponse  stop_response;
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
   fprintf(stderr, "STEER: Send_stop_msg_soap: calling Stop...\n");
 #endif
   stop_response._StopReturn = NULL;
@@ -648,7 +650,7 @@ int Get_param_log_soap(Sim_entry_type *sim, int handle)
 
   case REG_CHAR:
     /* This not implemented yet */
-#if REG_DEBUG
+#ifdef REG_DEBUG
     fprintf(stderr, "STEER: Get_param_log_soap: logging of char params not "
 	    "implemented!\n");
 #endif

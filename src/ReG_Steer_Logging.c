@@ -36,14 +36,15 @@
     @author Andrew Porter */
 
 #include <string.h>
+#include "ReG_Steer_Config.h"
 #include "ReG_Steer_types.h"
 #include "ReG_Steer_Common.h"
 #include "ReG_Steer_Logging.h"
 #include "ReG_Steer_Appside_internal.h"
-#if REG_DIRECT_TCP_STEERING
+#ifdef REG_DIRECT_TCP_STEERING
 #include "ReG_Steer_Appside_Direct.h"
 #else
-#if REG_SOAP_STEERING
+#ifdef REG_SOAP_STEERING
 #include "ReG_Steer_Appside_Soap.h"
 #endif
 #endif /* REG_DIRECT_TCP_STEERING */
@@ -52,15 +53,20 @@
 #include <unistd.h>
 #else
 #include <windows.h>
+/*
+NOW IN CMAKE
+
 #define snprintf _snprintf
 #define usleep(microseconds) (Sleep(microseconds/1000))
+*/
 #endif
 
 /* Allow value of 'REG_DEBUG' to propagate down from Reg_steer_types.h if
-   it has been set there */
+   it has been set there
 #ifndef REG_DEBUG
 #define REG_DEBUG 1
 #endif
+*/
 
 /** Log of checkpoints taken - declared in ReG_Steer_Appside.c  */
 extern Chk_log_type Chk_log;
@@ -98,10 +104,10 @@ int Initialize_log(Chk_log_type *log, log_type_type log_type)
     for(i=0; i<REG_MAX_NUM_STR_PARAMS; i++){
       log->param_send_all[i] = REG_TRUE;
     }
-#if REG_DIRECT_TCP_STEERING
+#ifdef REG_DIRECT_TCP_STEERING
 
 #else
-#if REG_SOAP_STEERING
+#ifdef REG_SOAP_STEERING
     log->send_all    	= REG_FALSE;
 #endif
 #endif /* REG_DIRECT_TCP_STEERING */
@@ -248,10 +254,10 @@ int Save_log(Chk_log_type *log)
     if(status == REG_SUCCESS){
       fprintf(log->file_ptr, "%s", buf);
     }
-#if REG_DIRECT_TCP_STEERING
+#ifdef REG_DIRECT_TCP_STEERING
 
 #else
-#if REG_SOAP_STEERING
+#ifdef REG_SOAP_STEERING
 #ifdef REG_WSRF
     Save_log_wsrf(buf);
 #else
@@ -332,7 +338,7 @@ int Chk_log_to_xml(Chk_log_type *log, char **pchar, int *count,
 		      log->entry[i].chk_handle, 
 		      log->entry[i].chk_tag);
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
     /* Check for truncation of message */
     if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
       fprintf(stderr, "STEER: Chk_log_to_xml: message size exceeds BUFSIZ (%d)\n", 
@@ -356,7 +362,7 @@ int Chk_log_to_xml(Chk_log_type *log, char **pchar, int *count,
 		        log->entry[i].param[j].handle,
 		        log->entry[i].param[j].value);
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
       /* Check for truncation of message */
       if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
 	fprintf(stderr, "STEER: Chk_log_to_xml: message size exceeds BUFSIZ (%d)\n", 
@@ -372,7 +378,7 @@ int Chk_log_to_xml(Chk_log_type *log, char **pchar, int *count,
     
     nbytes = snprintf(pentry, bytes_left, "</Chk_log_entry>\n"
 		                          "</Log_entry>\n");
-#if REG_DEBUG
+#ifdef REG_DEBUG
     /* Check for truncation of message */
     if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
       fprintf(stderr, "STEER: Chk_log_to_xml: message size exceeds BUFSIZ (%d)\n", 
@@ -442,7 +448,7 @@ int Param_log_to_xml(Chk_log_type *log, int handle, char **pchar,
 		      "<Key>%d</Key>\n",
 		      log->entry[i].key);
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
     /* Check for truncation of message */
     if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
       fprintf(stderr, "STEER: Param_log_to_xml: message size exceeds BUFSIZ (%d)\n", 
@@ -467,7 +473,7 @@ int Param_log_to_xml(Chk_log_type *log, int handle, char **pchar,
 			  log->entry[i].param[j].handle,
 			  log->entry[i].param[j].value);
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
 	/* Check for truncation of message */
 	if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
 	  fprintf(stderr, "STEER: Param_log_to_xml: message size "
@@ -486,7 +492,7 @@ int Param_log_to_xml(Chk_log_type *log, int handle, char **pchar,
     }
     
     nbytes = snprintf(pentry, bytes_left, "</Log_entry>\n");
-#if REG_DEBUG
+#ifdef REG_DEBUG
     /* Check for truncation of message */
     if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
       fprintf(stderr, "STEER: Param_log_to_xml: message size "
@@ -560,7 +566,7 @@ int Log_to_columns(Chk_log_type *log, char **pchar, int *count,
     pentry = entry;
     nbytes = snprintf(pentry, bytes_left, "%d", log->entry[i].key);
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
     /* Check for truncation of message */
     if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
       fprintf(stderr, "STEER: Log_to_columns: message size exceeds BUFSIZ (%d)\n", 
@@ -581,7 +587,7 @@ int Log_to_columns(Chk_log_type *log, char **pchar, int *count,
 		        log->entry[i].param[j].handle,
 		        log->entry[i].param[j].value);
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
       /* Check for truncation of message */
       if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
 	fprintf(stderr, "STEER: Log_to_columns: message size exceeds BUFSIZ (%d)\n", 
@@ -596,7 +602,7 @@ int Log_to_columns(Chk_log_type *log, char **pchar, int *count,
     }
     
     nbytes = snprintf(pentry, bytes_left, "\n");
-#if REG_DEBUG
+#ifdef REG_DEBUG
     /* Check for truncation of message */
     if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
       fprintf(stderr, "STEER: Log_to_columns: message size exceeds BUFSIZ (%d)\n", 
@@ -680,7 +686,7 @@ int Set_log_primary_key(Chk_log_type *log)
       old_ptr = ptr;
     }
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
     fprintf(stderr, "STEER: Set_log_primary_key: last chunk = >>%s<<\n", old_ptr);
 #endif
 
@@ -700,7 +706,7 @@ int Set_log_primary_key(Chk_log_type *log)
       old_ptr = ptr;
     }
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
     fprintf(stderr, "STEER: Set_log_primary_key: last chunk = >>%s<<\n", old_ptr);
 #endif
 
@@ -827,7 +833,7 @@ int Emit_log(Chk_log_type *log, int handle)
   else if((log->log_type == CHKPT && log->send_all == REG_TRUE)||
 	  (log->log_type == PARAM && log->param_send_all[index] == REG_TRUE)){
 
-#if REG_DEBUG_FULL
+#ifdef REG_DEBUG_FULL
     fprintf(stderr, "STEER: Emit_log: sending all saved log entries...\n");
 #endif
     /* Then we have to send any entries we've saved to file too... */
@@ -855,7 +861,7 @@ int Emit_log(Chk_log_type *log, int handle)
     /* Re-open log-file for future buffering */
     if( Open_log_file(log) != REG_SUCCESS){
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
       fprintf(stderr, "STEER: Emit_log: Open_log_file failed\n");
 #endif
     }
@@ -889,7 +895,7 @@ int Emit_log(Chk_log_type *log, int handle)
   }
   else{
 
-#if REG_DEBUG_FULL
+#ifdef REG_DEBUG_FULL
     fprintf(stderr, "STEER: Emit_log: sending unsent log entries...\n");
 #endif
     /* Fifth argument specifies that we only want those entries that haven't
@@ -900,7 +906,7 @@ int Emit_log(Chk_log_type *log, int handle)
     }
   }
 
-#if REG_DEBUG_FULL
+#ifdef REG_DEBUG_FULL
   fprintf(stderr, "STEER: Emit_log: calling Emit_log_entries...\n");
 #endif
 
@@ -915,7 +921,7 @@ int Emit_log(Chk_log_type *log, int handle)
   free(log->file_content);
   log->file_content = NULL;
 
-#if REG_DEBUG_FULL
+#ifdef REG_DEBUG_FULL
   fprintf(stderr, "STEER: Emit_log: sending logged steering commands...\n");
 #endif
 

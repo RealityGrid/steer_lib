@@ -40,6 +40,7 @@
 
 #include "libxml/xmlmemory.h"
 #include "libxml/parser.h"
+#include "ReG_Steer_Config.h"
 #include "ReG_Steer_Browser.h"
 
 #ifdef __cplusplus

@@ -37,6 +37,8 @@
     @author Robert Haines
 */
 
+#include "ReG_Steer_Config.h"
+
 /* These NEED TO MATCH the names given to the service data elements in
    SGS.pm */
 #define REG_APP_STATUS_SDE "SGS:Application_status"

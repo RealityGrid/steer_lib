@@ -26,6 +26,7 @@
   CORRECTION.
 ---------------------------------------------------------------------------*/
 
+#include "ReG_Steer_Config.h"
 #include "ReG_Steer_Steerside.h"
 #include "ReG_Steer_Steerside_internal.h"
 #include "ReG_Steer_Steerside_Direct.h"
@@ -49,7 +50,7 @@ int Sim_attach_direct(Sim_entry_type* sim, char* SimID) {
 
   /* init socket info struct */
   if(socket_info_init_direct(&(sim->socket_info)) != REG_SUCCESS) {
-#if REG_DEBUG
+#ifdef REG_DEBUG
     fprintf(stderr, "**DIRECT: connect_steerer_direct: could not init socket info\n");
 #endif
     return REG_FAILURE;
@@ -69,7 +70,7 @@ int Sim_attach_direct(Sim_entry_type* sim, char* SimID) {
 
   colon = strstr(pchar, ":");
   if(colon == NULL) {
-#if REG_DEBUG
+#ifdef REG_DEBUG
     fprintf(stderr, "**DIRECT: Sim_attach_direct: failed to parse REG_APP_ADDRESS: %s - %s:%d\n", pchar, hostname, hostport);
 #endif
 
@@ -80,7 +81,7 @@ int Sim_attach_direct(Sim_entry_type* sim, char* SimID) {
     snprintf((char*) hostname, addr_len, pchar);
     hostport = atoi(&colon[1]);
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
     fprintf(stderr, "**DIRECT: Sim_attach_direct: Got hostname (%s) and port (%d)\n", hostname, hostport);
 #endif
 
@@ -91,7 +92,7 @@ int Sim_attach_direct(Sim_entry_type* sim, char* SimID) {
     sim->socket_info.connector_port = hostport;
     sprintf(sim->socket_info.connector_hostname, (char*) hostname);
     if(connect_steerer_direct(&(sim->socket_info)) != REG_SUCCESS) {
-#if REG_DEBUG
+#ifdef REG_DEBUG
       fprintf(stderr, "**DIRECT: Sim_attach_direct: Could not connect to application\n");
 #endif
 
@@ -148,7 +149,7 @@ int Consume_supp_cmds_direct(Sim_entry_type *sim) {
 
   /* are we connected */
   if(sim->socket_info.comms_status != REG_COMMS_STATUS_CONNECTED) {
-#if REG_DEBUG
+#ifdef REG_DEBUG
     fprintf(stderr, "**DIRECT: Consume_supp_cmds_direct: Not connected!\n");
 #endif
     return REG_FAILURE;
@@ -257,7 +258,7 @@ int connect_steerer_direct(Direct_info_type* socket_info) {
   if( (i = socket_info->min_port_out) ) {
     myAddr.sin_port = htons((short) i);
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
     fprintf(stderr, "**DIRECT: connect_steerer_direct: using range %d-%d for bind\n", socket_info->min_port_out, socket_info->max_port_out);
 #endif
 
@@ -320,7 +321,7 @@ int Consume_steerer_msg(Direct_info_type* socket_info, char* data) {
 	    "Could not get message header");
     return REG_FAILURE;
   }
-#if REG_DEBUG
+#ifdef REG_DEBUG
   else {
     fprintf(stderr, "**DIRECT: Consume_steerer_msg: "
 	    "Got header: %d bytes to come\n", data_size);
@@ -370,14 +371,14 @@ int poll_msg_direct(int handle) {
   }
 
   if(FD_ISSET(handle, &sockets)) {
-#if REG_DEBUG
+#ifdef REG_DEBUG
     fprintf(stderr, "**DIRECT: socket ready...\n");
 #endif
 
     return REG_SUCCESS;
   }
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
   fprintf(stderr, "**DIRECT: socket not ready...\n");
 #endif
 
@@ -394,7 +395,7 @@ int dns_lookup_direct(char* hostname) {
     return REG_FAILURE;
   }
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
   fprintf(stderr, "**DIRECT: DNS lookup: host: %s\n", host->h_name);
   fprintf(stderr, "                        IP: %s\n", 
 	  inet_ntoa(*((struct in_addr*) host->h_addr)));
@@ -416,7 +417,7 @@ void close_listener_direct(Direct_info_type* socket_info) {
     socket_info->listener_status = REG_COMMS_STATUS_FAILURE;
   }
   else {
-#if REG_DEBUG
+#ifdef REG_DEBUG
     fprintf(stderr, "**DIRECT: close_listener_direct: close OK\n");
 #endif
     socket_info->listener_status = REG_COMMS_STATUS_NULL;
@@ -431,7 +432,7 @@ void close_connector_direct(Direct_info_type* socket_info) {
     socket_info->comms_status = REG_COMMS_STATUS_FAILURE;
   }
   else {
-#if REG_DEBUG
+#ifdef REG_DEBUG
     fprintf(stderr, "**DIRECT: close_connector_direct: close OK\n");
 #endif
     socket_info->comms_status = REG_COMMS_STATUS_NULL;

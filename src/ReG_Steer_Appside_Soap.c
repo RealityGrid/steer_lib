@@ -36,6 +36,7 @@
     @brief Source file for Soap-related Appside routines
   */
 
+#include "ReG_Steer_Config.h"
 #include "ReG_Steer_types.h"
 #include "ReG_Steer_Appside_internal.h"
 #include "ReG_Steer_Appside_Soap.h"
@@ -43,7 +44,11 @@
 
 #ifndef WIN32
 #else
+/*
+NOW IN CMAKE
+
 #define snprintf _snprintf
+*/
 #endif
 
 /* Need access to these tables which are actually declared in 
@@ -126,7 +131,7 @@ int Initialize_steering_connection_soap(int  NumSupportedCmds,
 
     snprintf(Steerer_connection.SGS_info.address, REG_MAX_STRING_LENGTH, 
 	     "%s", pchar);
-#if REG_DEBUG
+#ifdef REG_DEBUG
     fprintf(stderr, "STEER: Initialize_steering_connection_soap: SGS address = %s\n",
 	    Steerer_connection.SGS_info.address);
 #endif
@@ -200,7 +205,7 @@ int Initialize_steering_connection_soap(int  NumSupportedCmds,
     return REG_FAILURE;
   }
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
   if(setSDE_response._setServiceDataReturn){
     fprintf(stderr, "STEER: Initialize_steering_connection_soap: setServiceData "
 	    "returned: %s\n", setSDE_response._setServiceDataReturn);
@@ -230,7 +235,7 @@ int Initialize_steering_connection_soap(int  NumSupportedCmds,
     return REG_FAILURE;
   }
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
   if(setSDE_response._setServiceDataReturn){
     fprintf(stderr, "STEER: Initialize_steering_connection_soap: setServiceData "
 	    "returned: %s\n", setSDE_response._setServiceDataReturn);
@@ -292,7 +297,7 @@ int Steerer_connected_soap()
     return REG_FAILURE;
   }
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
   if(findServiceData_response._findServiceDataReturn){
     fprintf(stderr, "STEER: Steerer_connected_soap: findServiceData returned: %s\n", 
 	    findServiceData_response._findServiceDataReturn);
@@ -346,7 +351,7 @@ int Send_status_msg_soap(char* msg)
 	return REG_FAILURE;
       }
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
       if(putStatus_response._PutStatusReturn){
 	fprintf(stderr, "STEER: Send_status_msg_soap: PutStatus returned: %s\n", 
 		putStatus_response._PutStatusReturn);
@@ -453,7 +458,7 @@ struct msg_struct *Get_control_msg_soap()
   struct sgs__GetControlResponse getControl_response;
   struct msg_struct *msg = NULL;
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
     fprintf(stderr, "STEER: Get_control_msg_soap: address = %s\n", 
 	    Steerer_connection.SGS_info.address);
 #endif
@@ -465,7 +470,7 @@ struct msg_struct *Get_control_msg_soap()
     return NULL;
   }
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
   if(getControl_response._GetControlReturn){
     fprintf(stderr, "STEER: Get_control_msg_soap: GetControl returned: %s\n", 
 	    getControl_response._GetControlReturn);
@@ -543,7 +548,7 @@ int Get_data_source_address_soap(int   index,
     return REG_FAILURE;
   }
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
   if(getNthDataSource_response._GetNthDataSourceReturn){
     fprintf(stderr, "STEER: Get_data_source_address_soap: GetNthDataSource "
 	    "(for n=%d)\nreturned: >>%s<<\n", 
@@ -592,7 +597,7 @@ int Record_checkpoint_set_soap(char *chk_data,
     return REG_FAILURE;
   }
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
   if(AppRecordChkpoint_response._AppRecordChkpointReturn){
     fprintf(stderr, "STEER: Record_checkpoint_set_soap: "
 	    "AppRecordChkpoint returned: >>%s<<\n", 

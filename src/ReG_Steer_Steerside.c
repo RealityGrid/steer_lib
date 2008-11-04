@@ -37,6 +37,7 @@
     @author Robert Haines
   */
 
+#include "ReG_Steer_Config.h"
 #include "ReG_Steer_Steerside.h"
 #include "ReG_Steer_Steerside_internal.h"
 #include "ReG_Steer_Proxy_utils.h"
@@ -47,9 +48,11 @@
 #include "Base64.h"
 #include "signal.h"
 
+/*
 #ifndef REG_DEBUG
 #define REG_DEBUG 0
 #endif
+*/
 
 /*--------------------- Data structures -------------------*/
 
@@ -86,7 +89,7 @@ int Steerer_initialize()
      and steered have a variable of this name */
   extern char ReG_Steer_Schema_Locn[REG_MAX_STRING_LENGTH];
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
   /* Print out version information */
   fprintf(stderr, "**** RealityGrid Computational Steering Library "
 	  "v.%s ****\n\n", REG_STEER_LIB_VERSION);
@@ -432,7 +435,7 @@ int Sim_attach_secure(const char                     *SimID,
   if(Proxy.available){
 
     /* Use a proxy to interact with the 'grid' */
-#if REG_DEBUG
+#ifdef REG_DEBUG
     fprintf(stderr, "STEER: Sim_attach: calling Sim_attach_proxy...\n");
 #endif
     return_status = Sim_attach_proxy(&(Sim_table.sim[current_sim]), 
@@ -445,7 +448,7 @@ int Sim_attach_secure(const char                     *SimID,
     if(strstr(SimID, "http")){
       /* Try to use SOAP (and Steering Grid Service) - if this fails
 	 then SimID isn't a valid GSH so we revert to file-based steering */
-#if REG_DEBUG
+#ifdef REG_DEBUG
       fprintf(stderr, "STEER: Sim_attach: calling Sim_attach_soap, "
 	      "current_sim = %d\n", current_sim);
 #endif
@@ -469,7 +472,7 @@ int Sim_attach_secure(const char                     *SimID,
 
 #ifdef REG_DIRECT_TCP_STEERING
       /* use direct tcp steering */
-#if REG_DEBUG
+#ifdef REG_DEBUG
       fprintf(stderr, "STEER: Sim_attach: calling Sim_attach_direct...\n");
 #endif
       return_status = Sim_attach_direct(&(Sim_table.sim[current_sim]), (char*) SimID);
@@ -477,7 +480,7 @@ int Sim_attach_secure(const char                     *SimID,
 #else /* REG_DIRECT_TCP_STEERING */
 
 	/* Use local file system */
-#if REG_DEBUG
+#ifdef REG_DEBUG
 	fprintf(stderr, "STEER: Sim_attach: calling Sim_attach_local...\n");
 #endif
 	return_status = Sim_attach_local(&(Sim_table.sim[current_sim]), 
@@ -527,7 +530,7 @@ int Sim_attach_secure(const char                     *SimID,
     free(sim_ptr->Chk_log.entry);
     sim_ptr->Chk_log.entry = NULL;
   }
-  
+
   return return_status;
 }
 
@@ -1300,7 +1303,7 @@ int Consume_param_log(Sim_entry_type *sim,
 	break;
       case REG_CHAR:
 	/* This not implemented yet */
-#if REG_DEBUG
+#ifdef REG_DEBUG
 	fprintf(stderr, "STEER: Consume_param_log: logging of char params not "
 		"implemented!\n");
 #endif
@@ -1420,7 +1423,7 @@ int Consume_status(int   SimHandle,
 
   *NumCmds = count;
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
   fprintf(stderr, "STEER: Consume_status: got %d commands\n", (*NumCmds));
 #endif
 
@@ -1799,7 +1802,7 @@ int Emit_control(int    SimHandle,
   /* No parameters or commands to send so we're done */
   if(count==0 && num_to_emit==0){
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
     fprintf(stderr, "STEER: Emit_control: nothing to send\n");
 #endif
     return REG_SUCCESS;
@@ -1811,7 +1814,7 @@ int Emit_control(int    SimHandle,
      the buffer */
   Write_xml_footer(&pbuf, REG_MAX_MSG_SIZE);
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
   fprintf(stderr, "STEER: Emit_control: sending:\n>>%s<<\n", buf);
 #endif
 
@@ -2740,7 +2743,7 @@ int Set_iotype_freq(int sim_handle,
 
       if(i==Sim_table.sim[isim].IOdef_table.max_entries){
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
 	fprintf(stderr, "STEER: Set_iotype_freq: failed to match iotype handle\n");
 #endif
 	return_status = REG_FAILURE;
@@ -2762,7 +2765,7 @@ int Set_iotype_freq(int sim_handle,
   }
   else{
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
     fprintf(stderr, "STEER: Set_iotype_freq: failed to match sim_handle\n");
 #endif
     return_status = REG_FAILURE;
@@ -2859,7 +2862,7 @@ int Get_chktypes(int    sim_handle,
 			   "%d", &(chk_freqs[count]) );
 	    if(nitem != 1){
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
 	      fprintf(stderr, "STEER: Get_chktypes: failed to retrieve freq value\n");
 #endif
 	      chk_freqs[count] = 0;
@@ -2867,7 +2870,7 @@ int Get_chktypes(int    sim_handle,
 	    }
 	  }
 	  else{
-#if REG_DEBUG
+#ifdef REG_DEBUG
 	    fprintf(stderr, "STEER: Get_chktypes: failed to match param handle\n");
 #endif
 	    chk_freqs[count] = 0;
@@ -2925,7 +2928,7 @@ int Set_chktype_freq(int  sim_handle,
 
       if(i==Sim_table.sim[isim].Chkdef_table.max_entries){
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
 	fprintf(stderr, "STEER: Set_chktype_freq: failed to match iotype handle\n");
 #endif
 	return_status = REG_FAILURE;
@@ -2934,7 +2937,7 @@ int Set_chktype_freq(int  sim_handle,
 
       if(Sim_table.sim[isim].Chkdef_table.io_def[i].direction == REG_IO_IN){
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
 	fprintf(stderr, "STEER: Set_chktype_freq: frequency ignored for ChkTypes"
 		"with direction 'IN'\n");
 #endif
@@ -2956,7 +2959,7 @@ int Set_chktype_freq(int  sim_handle,
   }
   else{
 
-#if REG_DEBUG
+#ifdef REG_DEBUG
     fprintf(stderr, "STEER: Set_chktype_freq: failed to match sim_handle\n");
 #endif
     return_status = REG_FAILURE;
@@ -3015,7 +3018,7 @@ int Command_supported(int sim_id,
     }
   }
   
-#if REG_DEBUG
+#ifdef REG_DEBUG
   if(return_status != REG_SUCCESS){
 
     fprintf(stderr, 
@@ -3278,7 +3281,7 @@ int Sim_attach_local(Sim_entry_type *sim, char *SimID)
     }
 
     return_status = Directory_valid(file_root);
-#if REG_DEBUG
+#ifdef REG_DEBUG
     if(return_status != REG_SUCCESS){
       fprintf(stderr, "STEER: Sim_attach_local: invalid dir for "
 	      "steering messages: %s\n", file_root);
@@ -3305,7 +3308,7 @@ int Sim_attach_local(Sim_entry_type *sim, char *SimID)
     }
 
     return_status = Directory_valid(file_root);
-#if REG_DEBUG
+#ifdef REG_DEBUG
     if(return_status != REG_SUCCESS){
       fprintf(stderr, "STEER: Sim_attach_local: invalid dir for "
 	      "steering messages: %s\n", file_root);
@@ -3317,7 +3320,7 @@ int Sim_attach_local(Sim_entry_type *sim, char *SimID)
     fprintf(stderr, "STEER: Sim_attach_local: failed to get scratch directory\n");    
     return REG_FAILURE;
   }
-#if REG_DEBUG
+#ifdef REG_DEBUG
   else{
     fprintf(stderr, "STEER: Sim_attach_local: using following dir for "
 	    "steering messages: %s\n", file_root);
@@ -3549,7 +3552,7 @@ int Finalize_connection(Sim_entry_type *sim)
 #endif
     }
 
-#if REG_DIRECT_TCP_STEERING
+#ifdef REG_DIRECT_TCP_STEERING
     if(sim->detached == REG_FALSE) {
       Emit_detach_cmd(sim->handle);
       fprintf(stderr, "sent detach command\n");

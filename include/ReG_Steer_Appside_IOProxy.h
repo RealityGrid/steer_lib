@@ -45,7 +45,9 @@
 #endif
 #endif
 
-#if REG_PROXY_SAMPLES || defined(DOXYGEN)
+#include "ReG_Steer_Config.h"
+
+#if defined(REG_PROXY_SAMPLES) || defined(DOXYGEN)
 
 #include <errno.h>
 #if defined(TRU64)
