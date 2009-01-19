@@ -145,48 +145,54 @@ int main(int argc, char **argv){
   }
   char_ptr = NULL;
 
-  /* Take GSH/EPR off command line if supplied */
-  if(argc == 2){
+  /* Take GSH/EPR/server:port off command line if supplied */
+  if(argc == 2) {
 
+    if(strstr(argv[1], "http") == NULL) {
+      /* Probably a socket connection */
+      status = Sim_attach(argv[1], &sim_handle);
+    }
+    else {
+      /* Probably a grid connection */
 #ifdef REG_WSRF
-    if( !(passPtr = getpass("Enter password for SWS: ")) ){
-      printf("Failed to get password from command line\n");
-      return 1;
-    }
-    else{
-      strncpy(sec.passphrase, passPtr, REG_MAX_STRING_LENGTH);
-      strncpy(sec.userDN, getenv("USER"), REG_MAX_STRING_LENGTH);
-    }
+      if( !(passPtr = getpass("Enter password for SWS: ")) ){
+	printf("Failed to get password from command line\n");
+	return 1;
+      }
+      else{
+	strncpy(sec.passphrase, passPtr, REG_MAX_STRING_LENGTH);
+	strncpy(sec.userDN, getenv("USER"), REG_MAX_STRING_LENGTH);
+      }
 #endif /* REG_WSRF */
 
-    if(strstr(argv[1], "https://")){
-      /* If using SSL then we need to read security configuration */
-      sec.use_ssl = 1;
+      if(strstr(argv[1], "https://")){
+	/* If using SSL then we need to read security configuration */
+	sec.use_ssl = 1;
+	
+	if(!getenv("REG_STEER_HOME")){
+	  printf("REG_STEER_HOME environment variable is not set. Please set\n"
+		 "it to the location of your reg_steer_lib directory.\n");
+	  return 1;
+	}
+	snprintf(confFile, REG_MAX_STRING_LENGTH,
+		 "%s/examples/mini_steerer/security.conf", 
+		 getenv("REG_STEER_HOME"));
 
-      if(!getenv("REG_STEER_HOME")){
-	printf("REG_STEER_HOME environment variable is not set. Please set\n"
-	       "it to the location of your reg_steer_lib directory.\n");
-	return 1;
+	/* Read the location of certs etc. into global variables */
+	if(Get_security_config(confFile, &sec)){
+	  printf("ERROR: Failed to get SSL security configuration\n");
+	  return 1;
+	}
       }
-      snprintf(confFile, REG_MAX_STRING_LENGTH,
-	       "%s/examples/mini_steerer/security.conf", 
-	       getenv("REG_STEER_HOME"));
-
-      /* Read the location of certs etc. into global variables */
-      if(Get_security_config(confFile, &sec)){
-	printf("ERROR: Failed to get SSL security configuration\n");
-	return 1;
-      }
+      status = Sim_attach_secure(argv[1], &sec, &sim_handle);
     }
-    status = Sim_attach_secure(argv[1], &sec, &sim_handle);
   }
   else{
-    printf("Do (l)ocal or (r)emote attach: ");
+    printf("Do (s)tandard (files or sockets) or (g)rid attach: ");
     i = getchar();
-    while(getchar() != '\n'){}
+    while(getchar() != '\n') {}
 
-    if(i == 'l' || i == 'L'){
-
+    if(i == 's' || i == 'S') {
       status = Sim_attach("", &sim_handle);
     }
     else{
