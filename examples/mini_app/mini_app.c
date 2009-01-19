@@ -37,8 +37,11 @@
 #include "ReG_Steer_Appside.h"
 #include <string.h>
 #include <unistd.h>
+#include <math.h>
 
 /*-------------------------------------------------------------------------*/
+
+void update_data(int, double, int, float**);
 
 int main(){
 
@@ -65,28 +68,19 @@ int main(){
   char** changed_param_labels;
 
   /* Some example variables */
-
-  int   opacity_step_stop  = 130;
-  int   sleep_time         = 1;
-  float temp               = 55.6;
-  char  my_string[REG_MAX_STRING_LENGTH];
-  int   nx = 16;
-  int   ny = 16;
-  int   nz = 16;
+  int    sleep_time = 200;
+  char   my_string[REG_MAX_STRING_LENGTH];
+  int    side_length = 100;
+  int    old_side_length = 0;
+  int    amplitude = 12;
+  double multiplier = 1.0;
+  double multiplier_inc = -0.1;
+  float* data_array = NULL;
 
   int   itag;
   int   finished = REG_FALSE;
   int   icmd;
   int   i, j;
-  
-  double aaxis = 1.5;
-  double baxis = 1.5;
-  double caxis = 1.5;
-
-  float *array;
-  char   header[BUFSIZ];
-  int    ichunk, nchunk;
-  int    chunk_dim = 4;
 
   FILE  *fp;
 
@@ -99,8 +93,8 @@ int main(){
   recvd_cmd_params = Alloc_string_array(REG_MAX_STRING_LENGTH,
 					REG_MAX_NUM_STR_CMDS);
 
-  if(!changed_param_labels || !recvd_cmd_params){
-    printf("Failed to allocate string arrays :-(\n");
+  if(!changed_param_labels || !recvd_cmd_params) {
+    printf("Failed to allocate string arrays.\n");
     return REG_FAILURE;
   }
 
@@ -111,27 +105,27 @@ int main(){
   numCommands = 2;
   commands[0] = REG_STR_STOP;
   commands[1] = REG_STR_PAUSE;
-  status = Steering_initialize("mini_app v.1.0", numCommands, commands);
+  status = Steering_initialize("mini_app v2.5", numCommands, commands);
 
-  if(status != REG_SUCCESS){
+  if(status != REG_SUCCESS) {
     return REG_FAILURE;
   }
 
   /* Register the input and output IO channels */
 
-  if( Register_IOType("SOME_INPUT_DATA", 
-		      REG_IO_IN, 
-		      0, /* Don't do any auto consumption */
-		      &(iotype_handle[0])) != REG_SUCCESS){
+  if(Register_IOType("SOME_INPUT_DATA", 
+		     REG_IO_IN, 
+		     0, /* Don't do any auto consumption */
+		     &(iotype_handle[0])) != REG_SUCCESS) {
     printf("Failed to register IO type SOME_INPUT_DATA\n");
     Steering_finalize();
     return REG_FAILURE;
   }
-  if( Register_IOType("VTK_STRUCTURED_POINTS",
-		      REG_IO_OUT, 
-		      1, /* Attempt to do output every timestep */
-		      &(iotype_handle[1])) != REG_SUCCESS){
-    printf("Failed to register IO type VTK_STRUCTURED_POINTS\n");
+  if(Register_IOType("mini_app visualization data",
+		     REG_IO_OUT, 
+		     1, /* Attempt to do output every timestep */
+		     &(iotype_handle[1])) != REG_SUCCESS) {
+    printf("Failed to register IO type 'mini_app visualization data'\n");
     Steering_finalize();
     return REG_FAILURE;
   }
@@ -139,26 +133,26 @@ int main(){
 
   /* Register checkpoint emission */
 
-  if( Register_ChkType("MY_CHECKPOINT", 
-		       REG_IO_OUT, 
-		       0, /* No auto checkpointing */
-		       &(chktype_handle[0])) != REG_SUCCESS){
+  if(Register_ChkType("MY_CHECKPOINT", 
+		      REG_IO_OUT, 
+		      0, /* No auto checkpointing */
+		      &(chktype_handle[0])) != REG_SUCCESS) {
     printf("Failed to register Chk type MY_CHECKPOINT\n");
     return REG_FAILURE;
   }
 
-  if( Register_ChkType("MY_OTHER_CHECKPOINT", 
-		       REG_IO_INOUT, 
-		       0, /* No auto checkpointing */
-		       &(chktype_handle[1])) != REG_SUCCESS){
+  if(Register_ChkType("MY_OTHER_CHECKPOINT", 
+		      REG_IO_INOUT, 
+		      0, /* No auto checkpointing */
+		      &(chktype_handle[1])) != REG_SUCCESS) {
     printf("Failed to register Chk type MY_OTHER_CHECKPOINT\n");
     return REG_FAILURE;
   }
 
-  if( Register_ChkType("YET_ANOTHER_CHECKPOINT", 
-		       REG_IO_INOUT, 
-		       0, /* No auto checkpointing */
-		       &(chktype_handle[2])) != REG_SUCCESS){
+  if(Register_ChkType("YET_ANOTHER_CHECKPOINT", 
+		      REG_IO_INOUT, 
+		      0, /* No auto checkpointing */
+		      &(chktype_handle[2])) != REG_SUCCESS) {
     printf("Failed to register Chk type YET_ANOTHER_CHECKPOINT\n");
     return REG_FAILURE;
   }
@@ -166,40 +160,53 @@ int main(){
 
   /* Register some parameters */
 
-  status = Register_param("OPACITY_STEP_STOP", REG_TRUE, 
-			  (void *)(&opacity_step_stop),
-			  REG_INT, "0", "256");
-  status = Register_param("TEMP", REG_FALSE, (void *)(&temp),
-			  REG_FLOAT, "", "");
   sprintf(my_string, "running");
-  status = Register_param("A_STRING", REG_TRUE, (void *)(my_string),
+  status = Register_param("a string", REG_TRUE, (void *)(my_string),
 			  REG_CHAR, "", "10");
-  status = Register_param("a_axis", REG_TRUE, (void *)(&aaxis),
-			  REG_DBL, "0.01", "10.0");
-  status = Register_param("b_axis", REG_TRUE, (void *)(&baxis),
-			  REG_DBL, "0.01", "10.0");
-  status = Register_param("c_axis", REG_TRUE, (void *)(&caxis),
-			  REG_DBL, "0.01", "10.0");
   status = Register_param("time_to_sleep", REG_TRUE, (void *)(&sleep_time),
-			  REG_INT, "0", "100");
-  status = Register_param("nx", REG_TRUE, (void *)(&nx),
-			  REG_INT, "1", "");
-  status = Register_param("ny", REG_TRUE, (void *)(&ny),
-			  REG_INT, "1", "");
-  status = Register_param("nz", REG_TRUE, (void *)(&nz),
-			  REG_INT, "1", "");
-  if(status != REG_SUCCESS){
+			  REG_INT, "100", "1000");
+  status = Register_param("data side length", REG_TRUE, (void *)(&side_length),
+			  REG_INT, "10", "500");
+  status = Register_param("max amplitude", REG_TRUE, (void *)(&amplitude),
+			  REG_INT, "1", "15");
+  status = Register_param("multiplier", REG_FALSE, (void *)(&multiplier),
+			  REG_DBL, "", "");
+
+  if(status != REG_SUCCESS) {
     printf("Failed to register parameters\n");
   }
 
   /* Enter main loop */
 
-  for(i=0; i<nloops; i++){
+  for(i=0; i<nloops; i++) {
 
-    sleep(sleep_time); /* Pretend to do some work */
-    /* usleep(sleep_time*1000000); */
+    /* Pretend to do lots of work */
+    usleep(sleep_time * 1000);
+
+    /* check that memory block is big enough */
+    if(side_length > old_side_length) {
+      if(data_array) free(data_array);
+      data_array = (float*) malloc(sizeof(float) * side_length * side_length);
+    }
+    update_data(amplitude, multiplier, side_length, &data_array);
+    old_side_length = side_length;
+
+    /* alter multiplier */
+    multiplier += multiplier_inc;
+    if(multiplier > 1.0) {
+      multiplier = 1.0;
+      multiplier_inc = -0.1;
+    }
+    if(multiplier < -1.0) {
+      multiplier = -1.0;
+      multiplier_inc = 0.1;
+    }
 
     printf("\ni = %d\n", i);
+    printf("my_string          = %s\n", my_string);
+    printf("data side length   = %d\n", side_length);
+    printf("maximum amplitude  = %d\n", amplitude);
+    printf("multiplier param   = %f\n", multiplier);
 
     /* Talk to the steering client (if one is connected) */
     status = Steering_control(i,
@@ -209,26 +216,21 @@ int main(){
 			      recvd_cmds,
 			      recvd_cmd_params);
 
-    if(status == REG_SUCCESS){
+    if(status == REG_SUCCESS) {
 
-      printf("opacity_step_stop  = %d\n", opacity_step_stop);
-      printf("temp               = %f\n", temp);
-      printf("my_string          = %s\n", my_string);
-
-      if(num_recvd_cmds > 0){
+      if(num_recvd_cmds > 0) {
   
     	printf("Received %d steerer cmds\n", num_recvd_cmds);
   
-    	for(icmd=0; icmd<num_recvd_cmds; icmd++){
+    	for(icmd=0; icmd<num_recvd_cmds; icmd++) {
   
- 	  switch (recvd_cmds[icmd]){
-  
+ 	  switch(recvd_cmds[icmd]) {
 	  case REG_STR_PAUSE:
 	    if(Steering_pause(&num_params_changed,
 			      changed_param_labels,
 			      &num_recvd_cmds,
 			      recvd_cmds,
-			      recvd_cmd_params) != REG_SUCCESS){
+			      recvd_cmd_params) != REG_SUCCESS) {
 
 	      printf("Steering_pause returned error\n");
 	    }
@@ -238,7 +240,6 @@ int main(){
 	    icmd = -1;
 	    break;
 
-
  	  case REG_STR_STOP:
     	    finished = REG_TRUE;
  	    break;
@@ -247,122 +248,45 @@ int main(){
 
 	    /* Deal with user-defined IO types etc. */
 
-	    for(j=0; j<num_iotypes; j++){
+	    for(j=0; j<num_iotypes; j++) {
 
-	      if(recvd_cmds[icmd] == iotype_handle[j]){
+	      if(recvd_cmds[icmd] == iotype_handle[j]) {
 
 	        printf("Some IO command received\n");
 
-		if(j==1){
+		/* must ensure that data size has not been steered
+		   before the data has been re-allocated! */
+		if((j == 1) && (side_length == old_side_length)) {
 
 		  /* We've been told to emit some data */
-		  if( Emit_start(iotype_handle[j], i, &iohandle)
-		      == REG_SUCCESS ){
+		  if(Emit_start(iotype_handle[j], i, &iohandle)
+		      == REG_SUCCESS) {
 
-		    /* Make the vtk header to describe the data and then
-		       emit it */
-		    if(Make_vtk_header(header, "Some data", nx, ny, nz, 1, 
-				       REG_FLOAT) != REG_SUCCESS) {
-		      continue;
-		    }
+		    /* Emit dimensions of data */
+		    status = Emit_data_slice(iohandle, REG_INT, 1,
+					     (void*) &side_length);
 
-		    printf("First slice...\n");
-		    data_count = strlen(header);
-		    data_type  = REG_CHAR;
-		    status = Emit_data_slice(iohandle, data_type, data_count, 
-					     (void *)header);
-
-		    if(status != REG_SUCCESS){
-
-		      printf("Call to Emit_data_slice failed\n");
-		      Emit_stop(&iohandle);
-		      continue;
-		    }
-
-		    /* malloc memory for array; nx, ny and nz are steerable
-		       so we malloc everytime.  Could be done with a realloc
-		       but it's not necessary here. */
-
-		    if( !(array = (float *)malloc(nx*ny*nz*sizeof(float))) ){
-		    
-		      fprintf(stderr, "Malloc of %d bytes failed...\n",
-			      (int)(nx*ny*nz*sizeof(float)));
-		      status = Steering_finalize();
-		      return REG_FAILURE;
-		    }
-
-		    /* Make a dummy data set of 3D volumetric data */
-		    if(Make_vtk_buffer(nx, ny, nz, 1, aaxis, baxis, caxis, 
-				       array)
-		       != REG_SUCCESS){
-
-		      free(array);
-		      array = NULL;
-		      continue;
-		    }
-
-		    /* Emit the data set in chunks to mimic situation
-		       when data collected process by process in a parallel
-		       program */
-		    if(nx % chunk_dim != 0){
-
-		      printf("nx not a multiple of %d\n", chunk_dim);
-		      free(array);
-		      array = NULL;
-		      Emit_stop(&iohandle);
-		      continue;
-		    }
-
-		    nchunk = nx/chunk_dim;
-		    printf("nx = %d, chunk_dim = %d so have %d chunks...\n",
-			   nx, chunk_dim, nchunk);
-
-		    for(ichunk=0; ichunk<nchunk; ichunk++){
-
-		      printf("chunk %d...\n", ichunk);
-
-		      /* Construct header for this chunk to allow the recipient 
-			 of this data to reconstruct the data set */
-		      status = Make_chunk_header(header, iohandle, nx, ny, nz, 
-						 (ichunk*chunk_dim), 0, 0, 
-						 chunk_dim, ny, nz);
-
-		      data_count = strlen(header);
-		      data_type  = REG_CHAR;
-		      status = Emit_data_slice(iohandle, data_type, data_count,
-					       &header);
-		      if(status != REG_SUCCESS){
-			printf("Emit_data_slice failed - end emit\n");
-			break;
-		      }
-
-		      data_count = chunk_dim*ny*nz;
-		      data_type  = REG_FLOAT;
-		      status = Emit_data_slice(iohandle, data_type, data_count, 
-					       &(array[(ichunk*chunk_dim)*ny*nz]));
-		      if(status != REG_SUCCESS){
-			printf("Emit_data_slice failed - end emit\n");
-			break;
-		      }
-		    }
+		    /* Emit data */
+		    status = Emit_data_slice(iohandle, REG_FLOAT,
+					     (side_length * side_length),
+					     (void*) data_array);
 
 		    Emit_stop(&iohandle);
-		    free(array);
-		    array = NULL;
-		  }
-		}
+		  } // Emit_start
+		} // j == 1
 	        break;
 	      }
 	    }
-	    /* Check for a command to checkpoint or restart */
-	    for(j=0; j<num_chktypes; j++){
 
-	      if(recvd_cmds[icmd] == chktype_handle[j]){
+	    /* Check for a command to checkpoint or restart */
+	    for(j=0; j<num_chktypes; j++) {
+
+	      if(recvd_cmds[icmd] == chktype_handle[j]) {
 
 		printf("Got checkpoint command, parameters >>%s<<\n", 
 		       recvd_cmd_params[icmd]);
 
-		if(strstr(recvd_cmd_params[icmd], "OUT")){
+		if(strstr(recvd_cmd_params[icmd], "OUT")) {
 		  /* Pretend we've taken a checkpoint here */
 		  itag = rand();
 		  sprintf(chk_tag, "fake_chkpoint_%d.dat", itag);
@@ -370,13 +294,12 @@ int main(){
 		  /* Add this filename to the record of the checkpoint */
 		  Add_checkpoint_file(chktype_handle[j], chk_tag);
 
-		  if( (fp = fopen(chk_tag, "w")) ){
+		  if((fp = fopen(chk_tag, "w"))) {
 		    fprintf(fp, "Chkpoint data goes here\n");
 		    fclose(fp);
 		    sprintf(chk_tag,"%d", itag);
 		    /* Record that we've taken the checkpoint */
-		    Record_checkpoint_set(chktype_handle[j],
-					  chk_tag,  ".");
+		    Record_checkpoint_set(chktype_handle[j], chk_tag, ".");
 		  }
 		}
 		break;
@@ -386,18 +309,14 @@ int main(){
  	  }
 
 	  /* Break out if steerer told us to stop */  
- 	  if(finished)break;
+ 	  if(finished) break;
     	}
-	if(finished)break;
+	if(finished) break;
       }
     }
-    else{
-
+    else {
       printf("Call to Steering_control failed\n");
     }
-
-    /* Play with variables that are being monitored */
-    temp += 0.5347672f;
 
   } /* End of main loop */
 
@@ -407,3 +326,21 @@ int main(){
   return 0;
 }
 
+void update_data(int amp, double multi, int size, float** data) {
+  float q, x, y, s, t;
+  float start = -M_PI;
+  float incr = (-2.0f * start) / size;
+  int i, j, index;
+
+  for(i = 0; i < size; i++) {
+    x = start + (incr * i);
+    s = amp * multi * cosf(x * 5);
+    for(j = 0; j < size; j++) {
+      y = start + (incr * j);
+      t = amp * multi * cosf(y * 4);
+      index = (i * size) + j;
+      q = (x * x) + (y * y);
+      (*data)[index] = expf(q * -0.5f) * (s + t);
+    }
+  }
+}
