@@ -40,18 +40,31 @@
 #include <string.h>
 #include <unistd.h>
 
-/*
-#ifndef REG_DEBUG
-#define REG_DEBUG 0
-#endif
+/** Get the next message from the steering library and
+    perform any required actions
+    @param app_seqnum the current loop number of the
+    steered app to be updated
+    @return whether the steerer should quit or not
 */
+static int Get_message(int* app_seqnum);
+
+/** Repeatedly call Get_message until the next non-status
+    message is received.
+    @param app_seqnum the current loop number of the
+    steered app to be updated
+    @return whether the steerer should quit or not
+ */
+static int Get_all_messages(int* app_seqnum);
 
 /** Allows the user to edit a steerable parameter
-    @param sim_handle Handle of the simulation being steered */
+    @param sim_handle Handle of the simulation being steered
+*/
 static int Edit_parameter(int sim_handle);
+
 /** Allows the user to choose a parameter 
     @param sim_handle Handle of the simulation being steered
-    @param steerable  Whether to show user steerable or monitored params*/
+    @param steerable  Whether to show user steerable or monitored params
+*/
 static int Choose_parameter(int sim_handle, int steerable);
 
 /*-------------------------------------------------------------------------*/
@@ -59,7 +72,6 @@ static int Choose_parameter(int sim_handle, int steerable);
 int main(int argc, char **argv){
 
   int    sim_handle;
-  int    msg_type;
   int    status;
   int    done;
   int    i, j, k;
@@ -312,7 +324,7 @@ int main(int argc, char **argv){
 	}
 
 	if(status != REG_SUCCESS){
-	  fprintf(stderr, "Attach failed :-(\n");
+	  fprintf(stderr, "Attach failed\n");
 	}
       }
 
@@ -555,6 +567,7 @@ int main(int argc, char **argv){
       fprintf(stderr, "  e - Edit steerable parameter\n");
       fprintf(stderr, "  f - edit emit/consume Frequency of IOtype\n");
       fprintf(stderr, "  g - Get next message from application\n");
+      fprintf(stderr, "  G - Catch up with messages from application\n");
       fprintf(stderr, "  h - display this help message\n");
       fprintf(stderr, "  l - display List of checkpoint types\n");
       fprintf(stderr, "  o - retrieve param hist. log from application\n");
@@ -660,123 +673,12 @@ int main(int argc, char **argv){
 
     /*--------------------------------------------------*/
     case 'g':
-      Get_next_message(&sim_handle,
-		       &msg_type);
+      done = Get_message(&app_seqnum);
+      break;
 
-      switch(msg_type){
-
-      case SUPP_CMDS:
-	/* Supported commands should only be output once (as part
-	   of handshaking process - read in Sim_attach) */
-#ifdef REG_DEBUG
-	fprintf(stderr, "ERROR: Got supported cmds message\n");
-#endif
-	break;
-
-      case MSG_NOTSET:
-#ifdef REG_DEBUG
-	fprintf(stderr, "No messages to retrieve\n");
-#endif
-	break;
-
-      case IO_DEFS:
-#ifdef REG_DEBUG
-	fprintf(stderr, "Got IOdefs message\n");
-#endif
-	if(Consume_IOType_defs(sim_handle) != REG_SUCCESS){
-
-	  fprintf(stderr, "Consume_IOType_defs failed\n");
-	}
-	break;
-
-      case CHK_DEFS:
-#ifdef REG_DEBUG
-	fprintf(stderr, "Got Chkdefs message\n");
-#endif
-	if(Consume_ChkType_defs(sim_handle) != REG_SUCCESS){
-
-	  fprintf(stderr, "Consume_ChkType_defs failed\n");
-	}
-	break;
-
-      case PARAM_DEFS:
-#ifdef REG_DEBUG
-	fprintf(stderr, "Got param defs message\n");
-#endif
-	if(Consume_param_defs(sim_handle) != REG_SUCCESS){
-
-	  fprintf(stderr, "Consume_param_defs failed\n");
-	}
-#ifdef REG_DEBUG
-	Dump_sim_table();
-#endif
-	break;
-
-      case STATUS:
-#ifdef REG_DEBUG
-	fprintf(stderr, "Got status message\n");
-#endif
-	status = Consume_status(sim_handle,
-				&app_seqnum,
-				&num_cmds,
-				commands);
-	if(status == REG_FAILURE){
-	  fprintf(stderr, "Consume_status failed\n");
-	  done = REG_TRUE;
-	}
-	else{
-#ifdef REG_DEBUG
-	  Dump_sim_table();
-#endif
-	  /* Parse commands */
-	  for(i=0; i<num_cmds; i++){
-
-#ifdef REG_DEBUG
-	    fprintf(stderr, "Cmd %d = %d\n", i, commands[i]);
-#endif
-	    switch(commands[i]){
-
-	    case REG_STR_STOP:
-	    case REG_STR_DETACH:
-#ifdef REG_DEBUG
-	      fprintf(stderr, "App has signalled that it has finished\n");
-#endif
-	      Delete_sim_table_entry(&sim_handle);
-	      done = REG_TRUE;
-	      break;
-
-	    default:
-	      break;
-	    }
-
-	    if (done) break;
-	  }
-
-#ifdef REG_DEBUG
-	  fprintf(stderr, "Application SeqNum = %d\n", app_seqnum);
-#endif
-	}
-	break;
-
-      case CONTROL:
-	fprintf(stderr, "Got control message\n");
-	break;
-
-      case STEER_LOG:
-	fprintf(stderr, "Got log message\n");
-	Consume_log(sim_handle);
-	break;
-
-      case MSG_ERROR:
-	fprintf(stderr, "Error getting message - assume app finished\n");
-	Delete_sim_table_entry(&sim_handle);
-	done = REG_TRUE;
-	break;
-
-      default:
-	fprintf(stderr, "Unrecognised msg returned by Get_next_message\n");
-	break;
-      }
+    /*--------------------------------------------------*/
+    case 'G':
+      done = Get_all_messages(&app_seqnum);
       break;
 
     /*--------------------------------------------------*/
@@ -909,6 +811,149 @@ int main(int argc, char **argv){
   }
 
   return 0;
+}
+
+/*--------------------------------------------------------------------*/
+int Get_all_messages(int* app_seqnum) {
+  int app_seqnum_old;
+  int count = 0;
+  int done;
+
+  do {
+    app_seqnum_old = *app_seqnum;
+    done = Get_message(app_seqnum);
+    count = count + (*app_seqnum - app_seqnum_old);
+  } while((*app_seqnum != app_seqnum_old) && !done);
+
+  printf("Caught-up %d message%s...\n", count, (count == 1 ? "" : "s"));
+
+  return done;
+}
+
+int Get_message(int* app_seqnum) {
+  int sim_handle;
+  int msg_type;
+  int num_cmds;
+  int status;
+  int done = REG_FALSE;
+  int i;
+  int commands[REG_MAX_NUM_STR_CMDS];
+
+  Get_next_message(&sim_handle, &msg_type);
+
+  switch(msg_type) {
+
+  case SUPP_CMDS:
+    /* Supported commands should only be output once (as part
+       of handshaking process - read in Sim_attach) */
+#ifdef REG_DEBUG
+    fprintf(stderr, "ERROR: Got supported cmds message\n");
+#endif
+    break;
+
+  case MSG_NOTSET:
+#ifdef REG_DEBUG
+    fprintf(stderr, "No messages to retrieve\n");
+#endif
+    break;
+
+  case IO_DEFS:
+#ifdef REG_DEBUG
+    fprintf(stderr, "Got IOdefs message\n");
+#endif
+    if(Consume_IOType_defs(sim_handle) != REG_SUCCESS) {
+      fprintf(stderr, "Consume_IOType_defs failed\n");
+    }
+    break;
+
+  case CHK_DEFS:
+#ifdef REG_DEBUG
+    fprintf(stderr, "Got Chkdefs message\n");
+#endif
+    if(Consume_ChkType_defs(sim_handle) != REG_SUCCESS) {
+      fprintf(stderr, "Consume_ChkType_defs failed\n");
+    }
+    break;
+
+  case PARAM_DEFS:
+#ifdef REG_DEBUG
+    fprintf(stderr, "Got param defs message\n");
+#endif
+    if(Consume_param_defs(sim_handle) != REG_SUCCESS) {
+      fprintf(stderr, "Consume_param_defs failed\n");
+    }
+#ifdef REG_DEBUG
+    Dump_sim_table();
+#endif
+    break;
+
+  case STATUS:
+#ifdef REG_DEBUG
+    fprintf(stderr, "Got status message\n");
+#endif
+    status = Consume_status(sim_handle,
+                            app_seqnum,
+			    &num_cmds,
+			    commands);
+    if(status == REG_FAILURE) {
+      fprintf(stderr, "Consume_status failed\n");
+      done = REG_TRUE;
+    }
+    else {
+#ifdef REG_DEBUG
+      Dump_sim_table();
+#endif
+      /* Parse commands */
+      for(i=0; i<num_cmds; i++) {
+
+#ifdef REG_DEBUG
+        fprintf(stderr, "Cmd %d = %d\n", i, commands[i]);
+#endif
+        switch(commands[i]) {
+
+        case REG_STR_STOP:
+        case REG_STR_DETACH:
+#ifdef REG_DEBUG
+          fprintf(stderr, "App has signalled that it has finished\n");
+#endif
+          Delete_sim_table_entry(&sim_handle);
+	  done = REG_TRUE;
+	  break;
+
+        default:
+	  break;
+        }
+
+        if(done) break;
+      }
+
+#ifdef REG_DEBUG
+      fprintf(stderr, "Application SeqNum = %d\n", *app_seqnum);
+#endif
+    }
+    break;
+
+  case CONTROL:
+    fprintf(stderr, "Got control message\n");
+    break;
+
+  case STEER_LOG:
+    fprintf(stderr, "Got log message\n");
+    Consume_log(sim_handle);
+    break;
+
+  case MSG_ERROR:
+    fprintf(stderr, "Error getting message - assume app finished\n");
+    Delete_sim_table_entry(&sim_handle);
+    done = REG_TRUE;
+    break;
+
+  default:
+    fprintf(stderr, "Unrecognised msg returned by Get_next_message\n");
+    break;
+  }
+
+  return done;
 }
 
 /*--------------------------------------------------------------------*/
