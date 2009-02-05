@@ -39,6 +39,9 @@
 # build tree config
 #
 
+# install type
+set(RealityGrid_INSTALL_TYPE_CONFIG "build")
+
 # install prefix
 set(RealityGrid_INSTALL_PREFIX_CONFIG ${PROJECT_BINARY_DIR})
 
@@ -48,6 +51,7 @@ set(RealityGrid_INCLUDE_DIRS_CONFIG
   ${PROJECT_SOURCE_DIR}/include
 )
 set(RealityGrid_LIBRARY_DIRS_CONFIG ${PROJECT_BINARY_DIR}/lib)
+set(RealityGrid_BIN_DIR_CONFIG ${PROJECT_BINARY_DIR}/bin)
 set(RealityGrid_DOCS_DIR_CONFIG ${PROJECT_BINARY_DIR})
 
 # build setting, library dependencies and use file locations
@@ -81,12 +85,16 @@ configure_file(
 # install tree config
 #
 
+# install type
+set(RealityGrid_INSTALL_TYPE_CONFIG "install")
+
 # install prefix
 set(RealityGrid_INSTALL_PREFIX_CONFIG ${CMAKE_INSTALL_PREFIX})
 
 # header, library and documentation locations
 set(RealityGrid_INCLUDE_DIRS_CONFIG "${CMAKE_INSTALL_PREFIX}/include/RealityGrid")
 set(RealityGrid_LIBRARY_DIRS_CONFIG "${CMAKE_INSTALL_PREFIX}/lib/RealityGrid")
+set(RealityGrid_BIN_DIR_CONFIG "${CMAKE_INSTALL_PREFIX}/bin")
 set(RealityGrid_DOCS_DIR_CONFIG "${CMAKE_INSTALL_PREFIX}/share/doc/RealityGrid")
 
 # build setting, library dependencies and use file locations
