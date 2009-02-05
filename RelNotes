@@ -1,0 +1,30 @@
+Release Notes for the RealityGrid Steering Library
+--------------------------------------------------
+
+Version 2.5.0-rc2
+-----------------
+
+ * Major changes to mini_app example to output more interesting data.
+  - This was done to allow mini_app to be used as an example data
+    source for visualization programs using RealityGrid.
+ * Minor updates to mini_steerer to make working with direct socket
+   connections easier.
+ * Added steering message "catch-up" functionality so that user
+   doesn't have to keep prodding steerer.
+
+ Internal changes
+ ----------------
+
+ * Added an "install type" variable to distinguish build tree and
+   fully installed versions.
+  - Useful for projects that want to use or extend this one via CMake.
+
+Version 2.5.0-rc1
+-----------------
+
+ * Direct TCP Steering connections added.
+
+ Internal changes
+ ----------------
+
+ * Changed the build machinery from Make to CMake.
