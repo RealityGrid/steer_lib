@@ -210,6 +210,7 @@
 #define REG_FLOAT      1
 /** Encoding for a double type - equivalent to KIND(REG_DP_KIND) in F90 */
 #define REG_DBL        2
+#define REG_DOUBLE     2
 /** Encoding for a char type - equivalent to CHARACTER in F90 */
 #define REG_CHAR       3
 /** Encoding for an XDR int */
