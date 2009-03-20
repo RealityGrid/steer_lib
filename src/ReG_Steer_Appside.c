@@ -543,7 +543,7 @@ int Steering_initialize(char *AppName,
   signal(SIGINT, Steering_signal_handler);
   /* kill (note cannot (and should not) catch kill -9) */
   signal(SIGTERM, Steering_signal_handler);
-  signal(SIGSEGV, Steering_signal_handler);
+/*   signal(SIGSEGV, Steering_signal_handler); */
   signal(SIGILL, Steering_signal_handler);
   signal(SIGABRT, Steering_signal_handler);
   signal(SIGFPE, Steering_signal_handler);
