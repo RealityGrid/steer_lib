@@ -44,6 +44,12 @@ set(REG_LIB_VERSION_PAT 0)
 set(REG_STEER_LIB_VERSION 
     "${REG_LIB_VERSION_MAJ}.${REG_LIB_VERSION_MIN}.${REG_LIB_VERSION_PAT}")
 
+# shared library version numbers
+set(REG_LIBRARY_VERSION
+  VERSION "${REG_STEER_LIB_VERSION}"
+  SOVERSION "${REG_LIB_VERSION_MAJ}"
+)
+
 # set output directories.
 if(NOT LIBRARY_OUTPUT_PATH)
   set(LIBRARY_OUTPUT_PATH ${REG_BINARY_DIR}/lib CACHE INTERNAL "Single output directory for building all libraries.")
@@ -61,6 +67,15 @@ configure_file(
 
 # add binary tree so that we can find ReG_Steer_Config.h
 include_directories("${PROJECT_BINARY_DIR}")
+
+#
+# build shared or static libs
+#
+set(REG_LIB_TYPE STATIC)
+option(REG_BUILD_SHARED_LIBS "Turn on to build shared libraries. Build static libraries by default." OFF)
+if(REG_BUILD_SHARED_LIBS)
+  set(REG_LIB_TYPE SHARED)
+endif(REG_BUILD_SHARED_LIBS)
 
 #
 # transport options

@@ -128,10 +128,12 @@ if(NOT REG_BUILD_SEPARATE_SOAP_LIB)
   set(REG_LIB_SRCS ${REG_LIB_SRCS} ${REG_LIB_SOAP_SRCS})
 endif(NOT REG_BUILD_SEPARATE_SOAP_LIB)
 
-add_library(ReG_Steer ${REG_LIB_SRCS})
-add_library(ReG_Steer_Utils ${REG_LIB_UTILS_SRCS})
+add_library(ReG_Steer ${REG_LIB_TYPE} ${REG_LIB_SRCS})
+add_library(ReG_Steer_Utils ${REG_LIB_TYPE} ${REG_LIB_UTILS_SRCS})
+set(ReG_Steer_INSTALL_TARGETS ReG_Steer ReG_Steer_Utils)
 if(REG_BUILD_SEPARATE_SOAP_LIB)
-  add_library(ReG_Steer_SOAP ${REG_LIB_SOAP_SRCS})
+  add_library(ReG_Steer_SOAP ${REG_LIB_TYPE} ${REG_LIB_SOAP_SRCS})
+  set(ReG_Steer_INSTALL_TARGETS ${ReG_Steer_INSTALL_TARGETS} ReG_Steer_SOAP)
 endif(REG_BUILD_SEPARATE_SOAP_LIB)
 
 # link to external libs
@@ -151,11 +153,18 @@ if(OPENSSL_FOUND)
   endif(REG_BUILD_SEPARATE_SOAP_LIB)
 endif(OPENSSL_FOUND)
 
+# set shared library version numbers
+if(REG_BUILD_SHARED_LIBS)
+  set_target_properties(${ReG_Steer_INSTALL_TARGETS}
+    PROPERTIES ${REG_LIBRARY_VERSION}
+  )
+endif(REG_BUILD_SHARED_LIBS)
+
 #
 # install libs
 #
 
-install(TARGETS ReG_Steer ReG_Steer_Utils ARCHIVE DESTINATION lib/RealityGrid)
-if(REG_BUILD_SEPARATE_SOAP_LIB)
-  install(TARGETS ReG_Steer_SOAP ARCHIVE DESTINATION lib/RealityGrid)
-endif(REG_BUILD_SEPARATE_SOAP_LIB)
+install(TARGETS ${ReG_Steer_INSTALL_TARGETS}
+  ARCHIVE DESTINATION lib/RealityGrid
+  LIBRARY DESTINATION lib/RealityGrid
+)
