@@ -33,6 +33,12 @@
 
 find_package(MPI)
 
+if(REG_BUILD_MODULAR_LIBS)
+  foreach(type ${REG_MODULES_TYPES})
+    set(REG_EXAMPLES_MODULES_LINK ${REG_EXAMPLES_MODULES_LINK} "ReG_Steer_${type}_${REG_USE_MODULE_${type}}")
+  endforeach(type ${REG_MODULES_TYPES})
+endif(REG_BUILD_MODULAR_LIBS)
+
 add_subdirectory(mini_app)
 add_subdirectory(mini_steerer)
 add_subdirectory(sink)

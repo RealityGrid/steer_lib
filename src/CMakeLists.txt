@@ -39,8 +39,6 @@ set(REG_LIB_SRCS
   ReG_Steer_Common.c
   ReG_Steer_Proxy_utils.c
   ReG_Steer_XML.c
-  ReG_Steer_Appside_Sockets.c
-  ReG_Steer_Appside_IOProxy.c
   ReG_Steer_Steerside_Soap.c
   ReG_Steer_Appside_Soap.c
   ReG_Steer_Appside_File.c
@@ -50,29 +48,17 @@ set(REG_LIB_SRCS
   ReG_Steer_Steerside_Direct.c
   ReG_Steer_Appside_Direct.c
 )
-set_source_files_properties(
-  ${REG_LIB_SRCS}
-  PROPERTIES COMPILE_FLAGS -fPIC
-)
 
 set(REG_LIB_UTILS_SRCS
   ReG_Steer_Utils_WSRF.c
   ReG_Steer_Utils.c
   ReG_Steer_Browser.c
 )
-set_source_files_properties(
-  ${REG_LIB_UTILS_SRCS}
-  PROPERTIES COMPILE_FLAGS -fPIC
-)
 
 set(REG_LIB_SOAP_SRCS
   stdsoap2.c
   soapC.c
   soapClient.c
-)
-set_source_files_properties(
-  ${REG_LIB_SOAP_SRCS}
-  PROPERTIES COMPILE_FLAGS -fPIC
 )
 
 # header files and definitions
@@ -88,10 +74,6 @@ if(REG_BUILD_FORTRAN_WRAPPERS)
     ${CMAKE_CURRENT_BINARY_DIR}/ReG_Steer_Appside_f.c
     ReG_Steering_Initialize.f90
     reg_steer_mod.f90
-  )
-  set_source_files_properties(
-    ${REG_LIB_FORTRAN_SRCS}
-    PROPERTIES COMPILE_FLAGS -fPIC
   )
 
   # Configure m4 macros
@@ -122,6 +104,28 @@ if(REG_BUILD_FORTRAN_WRAPPERS)
     add_subdirectory(fortran_type_utils)
   endif(REG_BUILD_FORTRAN_TYPE_UTILS)
 endif(REG_BUILD_FORTRAN_WRAPPERS)
+
+# build the modules and add the common code to the main lib
+# or add the selected module code to the main lib if monolithic
+if(REG_BUILD_MODULAR_LIBS)
+  foreach(target ${REG_MODULES})
+    add_library(${target} ${REG_MOD_TYPE} ${${target}_SRCS})
+  endforeach(target ${REG_MODULES})
+  set(REG_LIB_SRCS ${REG_LIB_SRCS} ${REG_MODULE_COMMON_SRCS})
+else(REG_BUILD_MODULAR_LIBS)
+  foreach(type ${REG_MODULES_TYPES})
+    set(REG_LIB_SRCS ${REG_LIB_SRCS} ${SRCS_${type}_${REG_USE_MODULE_${type}}})
+  endforeach(type ${REG_MODULES_TYPES})
+endif(REG_BUILD_MODULAR_LIBS)
+
+# need to make sure everything is built with PIC in case
+# the static libs are to be embedded in a shared object
+if(NOT REG_BUILD_SHARED_LIBS)
+  set_source_files_properties(
+    ${REG_LIB_SRCS} ${REG_LIB_UTILS_SRCS} ${REG_LIB_SOAP_SRCS}
+    PROPERTIES COMPILE_FLAGS -fPIC
+  )
+endif(NOT REG_BUILD_SHARED_LIBS)
 
 # the libraries we want to build
 if(NOT REG_BUILD_SEPARATE_SOAP_LIB)
@@ -161,10 +165,17 @@ if(REG_BUILD_SHARED_LIBS)
 endif(REG_BUILD_SHARED_LIBS)
 
 #
-# install libs
+# install libs and modules
 #
 
 install(TARGETS ${ReG_Steer_INSTALL_TARGETS}
   ARCHIVE DESTINATION lib/RealityGrid
   LIBRARY DESTINATION lib/RealityGrid
 )
+
+if(REG_BUILD_MODULAR_LIBS)
+  install(TARGETS ${REG_MODULES}
+    ARCHIVE DESTINATION lib/RealityGrid/modules
+    LIBRARY DESTINATION lib/RealityGrid/modules
+  )
+endif(REG_BUILD_MODULAR_LIBS)

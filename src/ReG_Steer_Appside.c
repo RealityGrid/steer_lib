@@ -38,12 +38,10 @@
 #include "ReG_Steer_Config.h"
 #include "ReG_Steer_Appside.h"
 #include "ReG_Steer_Appside_internal.h"
-#include "ReG_Steer_Appside_Sockets.h"
+#include "ReG_Steer_Samples_Transport_API.h"
 #include "ReG_Steer_Appside_Direct.h"
-#include "ReG_Steer_Appside_IOProxy.h"
 #include "ReG_Steer_Appside_Soap.h"
 #include "ReG_Steer_Appside_WSRF.h"
-#include "ReG_Steer_Appside_File.h"
 #include "ReG_Steer_Logging.h"
 #include "Base64.h"
 #include "soapRealityGrid.nsmap"
@@ -329,20 +327,13 @@ int Steering_initialize(char *AppName,
     return REG_FAILURE;
   }
 
-  for(i=0; i<IOTypes_table.max_entries; i++){
-
+  for(i = 0; i < IOTypes_table.max_entries; i++)
     IOTypes_table.io_def[i].handle = REG_IODEF_HANDLE_NOTSET;
-#ifdef REG_SOCKET_SAMPLES
-    sprintf(IOTypes_table.io_def[i].socket_info.listener_hostname,
-	    "%s", "NOT_SET");
-#endif
-  }
 
   /* Initialise table of open IO channels */
 
-  for(i=0; i<REG_INITIAL_NUM_IOTYPES; i++){
+  for(i = 0; i < REG_INITIAL_NUM_IOTYPES; i++)
     IO_channel[i].buffer = NULL;
-  }
 
   /* Initialise table for registered checkpoint types */
 
@@ -352,8 +343,7 @@ int Steering_initialize(char *AppName,
                                    malloc(IOTypes_table.max_entries
 				  	  *sizeof(IOdef_entry));
  
-  if(ChkTypes_table.io_def == NULL){
-    
+  if(ChkTypes_table.io_def == NULL) {
     fprintf(stderr, "STEER: Steering_initialize: failed to allocate memory "
 	    "for ChkType table\n");
     free(IOTypes_table.io_def);
@@ -362,10 +352,8 @@ int Steering_initialize(char *AppName,
     return REG_FAILURE;
   }
 
-  for(i=0; i<ChkTypes_table.max_entries; i++){
-
+  for(i=0; i<ChkTypes_table.max_entries; i++)
     ChkTypes_table.io_def[i].handle = REG_IODEF_HANDLE_NOTSET;
-  }
 
   /* Set up table for registered parameters */
 
@@ -376,11 +364,9 @@ int Steering_initialize(char *AppName,
   Params_table.param          = (param_entry *)malloc(Params_table.max_entries
 					      *sizeof(param_entry));
 
-  if(Params_table.param == NULL){
-
+  if(Params_table.param == NULL) {
     fprintf(stderr, "STEER: Steering_initialize: failed to allocate memory "
 	    "for param table\n");
-
     free(IOTypes_table.io_def);
     IOTypes_table.io_def = NULL;
     free(ChkTypes_table.io_def);
@@ -391,8 +377,7 @@ int Steering_initialize(char *AppName,
 
   /* Initialize parameter handles */
 
-  for(i=0; i<Params_table.max_entries; i++){
-
+  for(i = 0; i < Params_table.max_entries; i++) {
     Params_table.param[i].handle = REG_PARAM_HANDLE_NOTSET;
     Params_table.param[i].min_val_valid = REG_FALSE;
     Params_table.param[i].max_val_valid = REG_FALSE;
@@ -482,7 +467,7 @@ int Steering_initialize(char *AppName,
 
   /* Set-up/prepare for connection to steering client */
   if(Initialize_steering_connection(NumSupportedCmds, 
-				    SupportedCmds) != REG_SUCCESS){
+				    SupportedCmds) != REG_SUCCESS) {
 
     free(IOTypes_table.io_def);
     IOTypes_table.io_def = NULL;
@@ -518,7 +503,7 @@ int Steering_initialize(char *AppName,
   strcpy(Param_log.filename, Steerer_connection.file_root);
   strcat(Param_log.filename, REG_PARAM_LOG_FILENAME);
 
-  if( Initialize_log(&Param_log, PARAM) != REG_SUCCESS ){
+  if(Initialize_log(&Param_log, PARAM) != REG_SUCCESS) {
     fprintf(stderr, "STEER: Steering_initialize: failed to allocate memory "
 	    "for param logging\n");
     free(IOTypes_table.io_def);
@@ -537,6 +522,9 @@ int Steering_initialize(char *AppName,
   Steer_log.num_cmds = 0;
   Steer_log.num_params = 0;
 
+  /* Initialize Samples Transport */
+  Initialize_samples_transport();
+
   /* Set up signal handler so can clean up if application 
      exits in a hurry */
   /* ctrl-c */
@@ -553,13 +541,6 @@ int Steering_initialize(char *AppName,
   /* LSF sends us a SIGUSR2 signal when we reach our wall-clock limit */
   signal(SIGUSR2, Steering_signal_handler);
 #endif
-#if defined(REG_SOCKET_SAMPLES) || defined(REG_PROXY_SAMPLES)
-#ifndef __linux
-  /* Catch the broken pipe signal for sending down a disconnected
-     socket. Linux allows us to do this with a flag to send()    */
-  signal(SIGPIPE, signal_handler_sockets);
-#endif
-#endif /* REG_SOCKET_SAMPLES || REG_PROXY_SAMPLES */
 
   /* Flag that library has been successfully initialized */
   ReG_SteeringInit = REG_TRUE;
@@ -598,6 +579,9 @@ int Steering_finalize()
      no-longer steerable */
   Finalize_steering_connection();
 
+  /* Clean-up samples transport */
+  Finalize_samples_transport();
+
   /* Clean-up IOTypes table */
 
   if(IOTypes_table.io_def){
@@ -605,9 +589,8 @@ int Steering_finalize()
     Finalize_IOType_transport();
 
     /* Free buffers associated with each iotype */
-    for(i=0; i<IOTypes_table.num_registered; i++){
-
-      if(IOTypes_table.io_def[i].buffer){
+    for(i = 0; i < IOTypes_table.num_registered; i++) {
+      if(IOTypes_table.io_def[i].buffer) {
 	free(IOTypes_table.io_def[i].buffer);
 	IOTypes_table.io_def[i].buffer = NULL;
 	IOTypes_table.io_def[i].buffer_bytes = 0;
@@ -624,10 +607,9 @@ int Steering_finalize()
 
   /* Clean-up ChkTypes table */
 
-  if(ChkTypes_table.io_def){
-
-    for(i=0; i<ChkTypes_table.num_registered; i++){
-      if(ChkTypes_table.io_def[i].buffer){
+  if(ChkTypes_table.io_def) {
+    for(i = 0; i < ChkTypes_table.num_registered; i++) {
+      if(ChkTypes_table.io_def[i].buffer) {
 	free(ChkTypes_table.io_def[i].buffer);
 	ChkTypes_table.io_def[i].buffer = NULL;
 	ChkTypes_table.io_def[i].buffer_bytes = 0;
@@ -646,10 +628,10 @@ int Steering_finalize()
 
   /* Clean-up parameters table */
 
-  if(Params_table.param != NULL){
-    for(i=0; i<Params_table.max_entries; i++){
-      if(Params_table.param[i].handle != REG_PARAM_HANDLE_NOTSET){
-	if(Params_table.param[i].ptr_raw){
+  if(Params_table.param != NULL) {
+    for(i = 0; i < Params_table.max_entries; i++) {
+      if(Params_table.param[i].handle != REG_PARAM_HANDLE_NOTSET) {
+	if(Params_table.param[i].ptr_raw) {
 	  free(Params_table.param[i].ptr_raw);
 	  Params_table.param[i].ptr_raw = NULL;
 	}
@@ -705,9 +687,8 @@ int Register_IOTypes(int    NumTypes,
 
   /* Check that steering is enabled */
 
-  if(!ReG_SteeringEnabled){
-
-    for(i=0; i<NumTypes; i++){
+  if(!ReG_SteeringEnabled) {
+    for(i = 0; i < NumTypes; i++) {
       IOType[i] = REG_IODEF_HANDLE_NOTSET;
     }
     return REG_SUCCESS;
@@ -717,12 +698,12 @@ int Register_IOTypes(int    NumTypes,
 
   if (!ReG_SteeringInit) return REG_FAILURE;
 
-  for(i=0; i<NumTypes; i++){
+  for(i = 0; i < NumTypes; i++) {
 
     if(Register_IOType(IOLabel[i],
 		       direction[i],
 		       IOFrequency[i],
-		       &(IOType[i])) != REG_SUCCESS){
+		       &(IOType[i])) != REG_SUCCESS) {
       return_status = REG_FAILURE;
     }
   }
@@ -747,22 +728,20 @@ int Register_IOType(char* IOLabel,
 
   /* Check that steering is enabled */
 
-  if(!ReG_SteeringEnabled){
-
+  if(!ReG_SteeringEnabled) {
     *IOType = REG_IODEF_HANDLE_NOTSET;
     return REG_SUCCESS;
   }
 
   /* Can only call this function if steering lib initialised */
 
-  if (!ReG_SteeringInit) return REG_FAILURE;
+  if(!ReG_SteeringInit) return REG_FAILURE;
 
   /* IO types cannot be deleted so is safe to use num_registered to 
      get next free entry */
   current = IOTypes_table.num_registered;
 
-  if(String_contains_xml_chars(IOLabel) == REG_TRUE){
-
+  if(String_contains_xml_chars(IOLabel) == REG_TRUE) {
     fprintf(stderr, "STEER: ERROR: Register_IOType: IO label contains "
 	    "reserved xml characters (<,>,&): %s\n", IOLabel);
     return REG_FAILURE;
@@ -801,7 +780,7 @@ int Register_IOType(char* IOLabel,
   iparam = Param_index_from_handle(&Params_table, 
 			      IOTypes_table.io_def[current].freq_param_handle);
 
-  if(iparam != -1){
+  if(iparam != -1) {
     Params_table.param[iparam].is_internal = REG_TRUE;
   }
   else{
@@ -834,7 +813,7 @@ int Register_IOType(char* IOLabel,
   IOTypes_table.io_def[current].consuming  = REG_FALSE;
 
   /* set up transport for sample data - eg sockets */
-  if(Initialize_IOType_transport(direction, current) != REG_SUCCESS){
+  if(Initialize_IOType_transport(direction, current) != REG_SUCCESS) {
     return REG_FAILURE;
   }
 
@@ -844,20 +823,17 @@ int Register_IOType(char* IOLabel,
 
   current++;
 
-  if(current == IOTypes_table.max_entries){
-
+  if(current == IOTypes_table.max_entries) {
     new_size = IOTypes_table.max_entries + REG_INITIAL_NUM_IOTYPES;
 
     dum_ptr = (IOdef_entry*)realloc((void *)(IOTypes_table.io_def),
 		                      new_size*sizeof(IOdef_entry));
 
-    if(dum_ptr == NULL){
-
+    if(dum_ptr == NULL) {
       fprintf(stderr, "STEER: Register_IOTypes: failed to allocate memory\n");
       return REG_FAILURE;
     }
-    else{
-
+    else {
       IOTypes_table.io_def = dum_ptr;
     }
 
@@ -883,33 +859,25 @@ int Disable_IOType(int IOType){
   if(!ReG_SteeringEnabled) return REG_SUCCESS;
 
   /* Can only call this function if steering lib initialised */
-  if (!ReG_SteeringInit) return REG_FAILURE;
+  if(!ReG_SteeringInit) return REG_FAILURE;
 
   /* Find corresponding entry in table of IOtypes */
   index = IOdef_index_from_handle(&IOTypes_table, IOType);
-  if(index == REG_IODEF_HANDLE_NOTSET){
-
+  if(index == REG_IODEF_HANDLE_NOTSET) {
     fprintf(stderr, "STEER: Disable_IOType: failed to find matching IOType\n");
     return REG_FAILURE;
   }
 
-  if(IOTypes_table.io_def[index].is_enabled == REG_TRUE){
+  if(IOTypes_table.io_def[index].is_enabled == REG_TRUE) {
+    status = Disable_IOType_impl(index);
 
-#ifdef REG_SOCKET_SAMPLES
-    status = Disable_IOType_sockets(index);
-#else
-#ifdef REG_PROXY_SAMPLES
-    status = Disable_IOType_proxy(index);
-#endif
-#endif
     IOTypes_table.io_def[index].is_enabled = REG_FALSE;
 
     /* If this is an output IOType then destroying the socket
        changes the listening port and so we have to reset its IOType
        definition. */
     if(status == REG_SUCCESS && 
-       IOTypes_table.io_def[index].direction == REG_IO_OUT){
-
+       IOTypes_table.io_def[index].direction == REG_IO_OUT) {
       Emit_IOType_defs();
     }
   }
@@ -919,19 +887,19 @@ int Disable_IOType(int IOType){
 
 /*----------------------------------------------------------------*/
 
-int Enable_IOTypes_on_registration(int toggle){
+int Enable_IOTypes_on_registration(int toggle) {
 
   /* Default operation is for IOTypes to be enabled (socket created
      in the case of sockets) when they are registered.  Can turn
      this off using this function prior to call to Register_IOTypes.*/
 
-  if(toggle == REG_TRUE){
+  if(toggle == REG_TRUE) {
     IOTypes_table.enable_on_registration = REG_TRUE;
   }
-  else if(toggle == REG_FALSE){
+  else if(toggle == REG_FALSE) {
     IOTypes_table.enable_on_registration = REG_FALSE;
   }
-  else{
+  else {
     return REG_FAILURE;
   }
   return REG_SUCCESS;
@@ -939,7 +907,7 @@ int Enable_IOTypes_on_registration(int toggle){
 
 /*----------------------------------------------------------------*/
 
-int Enable_IOType(int IOType){
+int Enable_IOType(int IOType) {
 
   int index;
   int status = REG_FAILURE;
@@ -948,7 +916,7 @@ int Enable_IOType(int IOType){
   if(!ReG_SteeringEnabled) return REG_SUCCESS;
 
   /* Can only call this function if steering lib initialised */
-  if(!ReG_SteeringInit){
+  if(!ReG_SteeringInit) {
     fprintf(stderr, "STEER: Enable_IOType: error: steering library not "
 	    "initialised\n");
     return REG_FAILURE;
@@ -956,36 +924,28 @@ int Enable_IOType(int IOType){
 
   /* Find corresponding entry in table of IOtypes */
   index = IOdef_index_from_handle(&IOTypes_table, IOType);
-  if(index == REG_IODEF_HANDLE_NOTSET){
-
+  if(index == REG_IODEF_HANDLE_NOTSET) {
     fprintf(stderr, "STEER: Enable_IOType: failed to find matching IOType\n");
     return REG_FAILURE;
   }
 
-  if(IOTypes_table.io_def[index].is_enabled == REG_FALSE){
+  if(IOTypes_table.io_def[index].is_enabled == REG_FALSE) {
+    status = Enable_IOType_impl(index);
 
-#ifdef REG_SOCKET_SAMPLES
-    status = Enable_IOType_sockets(index);
-#else
-#ifdef REG_PROXY_SAMPLES
-    status = Enable_IOType_proxy(index);
-#endif
-#endif
     IOTypes_table.io_def[index].is_enabled = REG_TRUE;
 
     /* If this is an output IOType then creating the socket
        changes the listening port and so we have to reset its IOType
        definition. */
     if(status == REG_SUCCESS && 
-       IOTypes_table.io_def[index].direction == REG_IO_OUT){
-
+       IOTypes_table.io_def[index].direction == REG_IO_OUT) {
       Emit_IOType_defs();
     }
 
     IOTypes_table.io_def[index].ack_needed = REG_FALSE;
   }
 #ifdef REG_DEBUG
-  else{
+  else {
     fprintf(stderr, "STEER: Enable_IOType: IOType %d already enabled\n", 
 	    IOType);
   }
@@ -996,7 +956,7 @@ int Enable_IOType(int IOType){
 
 /*----------------------------------------------------------------*/
 
-int Enable_IOType_acks(int IOType){
+int Enable_IOType_acks(int IOType) {
 
   int index;
 
@@ -1004,7 +964,7 @@ int Enable_IOType_acks(int IOType){
   if(!ReG_SteeringEnabled) return REG_SUCCESS;
 
   /* Can only call this function if steering lib initialised */
-  if(!ReG_SteeringInit){
+  if(!ReG_SteeringInit) {
     fprintf(stderr, "STEER: ERROR: Enable_IOType_acks: "
 	    "steering library not initialised\n");
     return REG_FAILURE;
@@ -1012,8 +972,7 @@ int Enable_IOType_acks(int IOType){
 
   /* Find corresponding entry in table of IOtypes */
   index = IOdef_index_from_handle(&IOTypes_table, IOType);
-  if(index == REG_IODEF_HANDLE_NOTSET){
-
+  if(index == REG_IODEF_HANDLE_NOTSET) {
     fprintf(stderr, "STEER: ERROR: Enable_IOType_acks: "
 	    "failed to find matching IOType\n");
     return REG_FAILURE;
@@ -1027,7 +986,7 @@ int Enable_IOType_acks(int IOType){
 
 /*----------------------------------------------------------------*/
 
-int Disable_IOType_acks(int IOType){
+int Disable_IOType_acks(int IOType) {
 
   int index;
 
@@ -1035,7 +994,7 @@ int Disable_IOType_acks(int IOType){
   if(!ReG_SteeringEnabled) return REG_SUCCESS;
 
   /* Can only call this function if steering lib initialised */
-  if(!ReG_SteeringInit){
+  if(!ReG_SteeringInit) {
     fprintf(stderr, "STEER: ERROR: Disable_IOType_acks: "
 	    "steering library not initialised\n");
     return REG_FAILURE;
@@ -1043,8 +1002,7 @@ int Disable_IOType_acks(int IOType){
 
   /* Find corresponding entry in table of IOtypes */
   index = IOdef_index_from_handle(&IOTypes_table, IOType);
-  if(index == REG_IODEF_HANDLE_NOTSET){
-
+  if(index == REG_IODEF_HANDLE_NOTSET) {
     fprintf(stderr, "STEER: ERROR: Disable_IOType_acks: "
 	    "failed to find matching IOType\n");
     return REG_FAILURE;
@@ -1058,15 +1016,15 @@ int Disable_IOType_acks(int IOType){
 
 /*----------------------------------------------------------------*/
 
-int Set_f90_array_ordering(int IOTypeIndex, int flag){
+int Set_f90_array_ordering(int IOTypeIndex, int flag) {
 
   /* Check that steering is enabled */
   if(!ReG_SteeringEnabled) return REG_SUCCESS;
 
   /* Can only call this function if steering lib initialised */
-  if (!ReG_SteeringInit) return REG_FAILURE;
+  if(!ReG_SteeringInit) return REG_FAILURE;
 
-  if(IOTypeIndex < 0){
+  if(IOTypeIndex < 0) {
     fprintf(stderr, "STEER: Set_f90_array_ordering: IOTypeIndex is < 0\n");
     return REG_FAILURE;
   }
@@ -1078,15 +1036,15 @@ int Set_f90_array_ordering(int IOTypeIndex, int flag){
 
 /*----------------------------------------------------------------*/
 
-int Called_from_f90(int flag){
+int Called_from_f90(int flag) {
 
-  if(flag == REG_TRUE){
+  if(flag == REG_TRUE) {
     ReG_CalledFromF90 = REG_TRUE;
   }
-  else if(flag == REG_FALSE){
+  else if(flag == REG_FALSE) {
     ReG_CalledFromF90 = REG_FALSE;
   }
-  else{
+  else {
     fprintf(stderr, "STEER: Called_from_f90: flag is neither REG_TRUE or REG_FALSE\n");
     return REG_FAILURE;
   }
@@ -1107,8 +1065,7 @@ int Register_ChkTypes(int    NumTypes,
 
   /* Check that steering is enabled */
 
-  if(!ReG_SteeringEnabled){
-
+  if(!ReG_SteeringEnabled) {
     for(i=0; i<NumTypes; i++){
       ChkType[i] = REG_IODEF_HANDLE_NOTSET;
     }
@@ -1117,15 +1074,13 @@ int Register_ChkTypes(int    NumTypes,
 
   /* Can only call this function if steering lib initialised */
 
-  if (!ReG_SteeringInit) return REG_FAILURE;
+  if(!ReG_SteeringInit) return REG_FAILURE;
 
-  for(i=0; i<NumTypes; i++){
-    
+  for(i = 0; i < NumTypes; i++) {
     if(Register_ChkType(ChkLabel[i],
 			direction[i],
 			ChkFrequency[i],
-			&(ChkType[i])) != REG_SUCCESS){
-
+			&(ChkType[i])) != REG_SUCCESS) {
       return_status = REG_FAILURE;
     }    
   } /* End of loop over Chk types to register */
@@ -1147,22 +1102,20 @@ int Register_ChkType(char* ChkLabel,
 
   /* Check that steering is enabled */
 
-  if(!ReG_SteeringEnabled){
-
+  if(!ReG_SteeringEnabled) {
     *ChkType = REG_IODEF_HANDLE_NOTSET;
     return REG_SUCCESS;
   }
 
   /* Can only call this function if steering lib initialised */
 
-  if (!ReG_SteeringInit) return REG_FAILURE;
+  if(!ReG_SteeringInit) return REG_FAILURE;
 
   /* Chk types cannot be deleted so is safe to use num_registered to 
      get next free entry */
   current = ChkTypes_table.num_registered;
 
-  if(String_contains_xml_chars(ChkLabel) == REG_TRUE){
-
+  if(String_contains_xml_chars(ChkLabel) == REG_TRUE) {
     fprintf(stderr, "STEER: ERROR: Register_ChkType: Chk label contains "
 	    "reserved xml characters (<,>,&): %s\n", ChkLabel);
     return REG_FAILURE;
@@ -1171,7 +1124,7 @@ int Register_ChkType(char* ChkLabel,
   strcpy(ChkTypes_table.io_def[current].label, ChkLabel);
 
   /* filename not used currently */
-  sprintf(ChkTypes_table.io_def[current].filename, "NOT_SET");
+/*   sprintf(ChkTypes_table.io_def[current].filename, "NOT_SET"); */
 
   /* Whether input or output */
   ChkTypes_table.io_def[current].direction = direction;
@@ -1179,8 +1132,7 @@ int Register_ChkType(char* ChkLabel,
   /* Set variables required for registration of associated io
      frequency as a steerable parameter (but only if checkpoint is
      to be emitted) */
-  if(direction != REG_IO_IN){
-
+  if(direction != REG_IO_IN) {
     /* Set variables required for registration of associated io
        frequency as a steerable parameter */
 
@@ -1202,10 +1154,10 @@ int Register_ChkType(char* ChkLabel,
        it is a parameter that is internal to the steering library */
     iparam = Param_index_from_handle(&Params_table, 
 			  ChkTypes_table.io_def[current].freq_param_handle);
-    if(iparam != -1){
+    if(iparam != -1) {
       Params_table.param[iparam].is_internal = REG_TRUE;
     }
-    else{
+    else {
 #ifdef REG_DEBUG
       fprintf(stderr, "STEER: Register_ChkType: failed to get handle for param\n");
 #endif
@@ -1213,7 +1165,7 @@ int Register_ChkType(char* ChkLabel,
       return REG_FAILURE;
     }
   }
-  else{
+  else {
     /* Auto consume is senseless for checkpoints so set frequency-related
        elements to 'null' values */
     ChkTypes_table.io_def[current].freq_param_handle = REG_PARAM_HANDLE_NOTSET;
@@ -1231,19 +1183,17 @@ int Register_ChkType(char* ChkLabel,
 
   /* Check whether we need to allocate more storage */
   current++;
-  if(current == ChkTypes_table.max_entries){
-
+  if(current == ChkTypes_table.max_entries) {
     new_size = ChkTypes_table.max_entries + REG_INITIAL_NUM_IOTYPES;
 
     dum_ptr = (IOdef_entry*)realloc((void *)(ChkTypes_table.io_def),
 		                    new_size*sizeof(IOdef_entry));
 
-    if(dum_ptr == NULL){
-
+    if(dum_ptr == NULL) {
       fprintf(stderr, "STEER: Register_ChkType: failed to allocate memory\n");
       return REG_FAILURE;
     }
-    else{
+    else {
 
       ChkTypes_table.io_def = dum_ptr;
     }
@@ -1271,19 +1221,17 @@ int Record_Chkpt(int   ChkType,
 
   /* Can only call this function if steering lib initialised */
 
-  if (!ReG_SteeringInit) return REG_FAILURE;
+  if(!ReG_SteeringInit) return REG_FAILURE;
 
-  if (ChkType == REG_IODEF_HANDLE_NOTSET) return REG_SUCCESS;
+  if(ChkType == REG_IODEF_HANDLE_NOTSET) return REG_SUCCESS;
 
   /* Check that we have enough storage space - if not then store
      current entries on disk (rather than continually grab more
      memory) */
 
-  if(Chk_log.num_entries == Chk_log.max_entries){
-
+  if(Chk_log.num_entries == Chk_log.max_entries) {
     /* Save_log also resets Chk_log.num_entries to zero */
-    if(Save_log(&Chk_log) != REG_SUCCESS){
-
+    if(Save_log(&Chk_log) != REG_SUCCESS) {
       fprintf(stderr, "STEER: Record_Chkpt: Save_log failed\n");
       return REG_FAILURE;
     }
@@ -1297,32 +1245,31 @@ int Record_Chkpt(int   ChkType,
   /* Store the values of all registered parameters at this point (so
      long as they're not internal to the library) */
   count = 0;
-  for(index = 0; index<Params_table.max_entries; index++){
-
+  for(index = 0; index<Params_table.max_entries; index++) {
     if(Params_table.param[index].handle == REG_PARAM_HANDLE_NOTSET ||
-       Params_table.param[index].is_internal == REG_TRUE){
+       Params_table.param[index].is_internal == REG_TRUE) {
 
       /* Time stamp is a special case - is internal but we do want
 	 it for checkpoint records */
-      if(Params_table.param[index].handle != REG_TIMESTAMP_HANDLE){
+      if(Params_table.param[index].handle != REG_TIMESTAMP_HANDLE) {
 	continue;
       }
-      else{
+      else {
 	/* Get timestamp */
-	if( (int)(time_now = time(NULL)) != -1){
+	if((int)(time_now = time(NULL)) != -1) {
 	  pchar = ctime(&time_now);
 	  strcpy(Params_table.param[index].value, pchar);
 	  /* Remove new-line character */
           Params_table.param[index].value[strlen(pchar)-1] = '\0';
 	}
-	else{
+	else {
 	  strcpy(Params_table.param[index].value, "");
 	}
       }
     }
 
     /* Don't include raw binary parameters in the log */
-    if(Params_table.param[index].type == REG_BIN)continue;
+    if(Params_table.param[index].type == REG_BIN) continue;
 
     /* This is one we want - store its handle and current value */
     Chk_log.entry[Chk_log.num_entries].param[count].handle = 
@@ -1336,7 +1283,7 @@ int Record_Chkpt(int   ChkType,
            Params_table.param[index].value);
     
     /* Storage for params associated with log entry is static */
-    if(++count >= REG_MAX_NUM_STR_PARAMS)break;  
+    if(++count >= REG_MAX_NUM_STR_PARAMS) break;  
   }
 
   /* Store the no. of params this entry has */
@@ -1684,30 +1631,28 @@ int Consume_start(int  IOType,
   if(!ReG_SteeringEnabled) return REG_SUCCESS;
 
   /* Can only call this function if steering lib initialised */
-  if (!ReG_SteeringInit) return REG_FAILURE;
+  if(!ReG_SteeringInit) return REG_FAILURE;
 
   /* Find corresponding entry in table of IOtypes */
   *IOTypeIndex = IOdef_index_from_handle(&IOTypes_table, IOType);
-  if(*IOTypeIndex == REG_IODEF_HANDLE_NOTSET){
+  if(*IOTypeIndex == REG_IODEF_HANDLE_NOTSET) {
     fprintf(stderr, "STEER: Consume_start: failed to find matching IOType, "
 	    "handle = %d\n", IOType);
     return REG_FAILURE;
   }
 
   /* Check that this IOType is enabled */
-  if(IOTypes_table.io_def[*IOTypeIndex].is_enabled == REG_FALSE){
+  if(IOTypes_table.io_def[*IOTypeIndex].is_enabled == REG_FALSE) {
     return REG_FAILURE;
   }
 
   /* Check that this IOType can be consumed */
-  if(IOTypes_table.io_def[*IOTypeIndex].direction == REG_IO_OUT){
-
+  if(IOTypes_table.io_def[*IOTypeIndex].direction == REG_IO_OUT) {
     fprintf(stderr, "STEER: ERROR: Consume_start: IOType has direction REG_IO_OUT\n");
     return REG_FAILURE;
   }
 
-  if(IOTypes_table.io_def[*IOTypeIndex].ack_needed == REG_TRUE){
-
+  if(IOTypes_table.io_def[*IOTypeIndex].ack_needed == REG_TRUE) {
     /* Signal that we have read this data and are ready for the next
        set */
     Emit_ack(*IOTypeIndex);
@@ -1735,14 +1680,13 @@ int Consume_start_blocking(int   IOType,
   if(!ReG_SteeringEnabled) return REG_SUCCESS;
 
   /* Can only call this function if steering lib initialised */
-  if (!ReG_SteeringInit) return REG_FAILURE;
+  if(!ReG_SteeringInit) return REG_FAILURE;
 
   /* Convert time out from seconds to microseconds */
   time_out_uS = (unsigned long)(TimeOut*1000000);
 
   wait_time = 0;
   while((status = Consume_start(IOType, IOTypeIndex)) != REG_SUCCESS) { 
-
     usleep(blocked_poll_interval);
     if((wait_time += blocked_poll_interval) > time_out_uS){
 #ifdef REG_DEBUG
@@ -1765,15 +1709,15 @@ int Consume_stop(int *IOTypeIndex)
   if(!ReG_SteeringEnabled) return REG_SUCCESS;
 
   /* Can only call this function if steering lib initialised */
-  if (!ReG_SteeringInit) return REG_FAILURE;
+  if(!ReG_SteeringInit) return REG_FAILURE;
 
-  if(*IOTypeIndex < 0 || *IOTypeIndex >= IOTypes_table.num_registered){
+  if(*IOTypeIndex < 0 || *IOTypeIndex >= IOTypes_table.num_registered) {
     fprintf(stderr, "STEER: Consume_stop: IOType index out of range\n");
     return REG_FAILURE;
   }
 
   /* Check that this IOType is enabled */
-  if(IOTypes_table.io_def[*IOTypeIndex].is_enabled == REG_FALSE){
+  if(IOTypes_table.io_def[*IOTypeIndex].is_enabled == REG_FALSE) {
     return REG_FAILURE;
   }
 
@@ -1784,15 +1728,7 @@ int Consume_stop(int *IOTypeIndex)
      when we next call Consume_start */
   IOTypes_table.io_def[*IOTypeIndex].ack_needed = REG_TRUE;
 
-
-#if !defined(REG_SOCKET_SAMPLES) && !defined(REG_PROXY_SAMPLES)
-  /* Close any file associated with this channel */
-  if(IOTypes_table.io_def[*IOTypeIndex].fp){
-    fclose(IOTypes_table.io_def[*IOTypeIndex].fp);
-    IOTypes_table.io_def[*IOTypeIndex].fp = NULL;
-    remove(IOTypes_table.io_def[*IOTypeIndex].filename);
-  }
-#endif
+  Consume_stop_impl(*IOTypeIndex);
 
   /* Free memory associated with channel */
   if( IOTypes_table.io_def[*IOTypeIndex].buffer ){
@@ -1901,45 +1837,45 @@ int Consume_data_slice(int    IOTypeIndex,
   if(!ReG_SteeringEnabled) return REG_SUCCESS;
 
   /* Check that this IOType is enabled */
-  if(IOTypes_table.io_def[IOTypeIndex].is_enabled == REG_FALSE){
+  if(IOTypes_table.io_def[IOTypeIndex].is_enabled == REG_FALSE) {
     return REG_FAILURE;
   }
 
   /* Calculate how many bytes to expect */
-  switch(DataType){
+  switch(DataType) {
 
   case REG_INT:
-    if(IOTypes_table.io_def[IOTypeIndex].use_xdr){
+    if(IOTypes_table.io_def[IOTypeIndex].use_xdr) {
       num_bytes_to_read = IOTypes_table.io_def[IOTypeIndex].num_xdr_bytes;
     }
-    else{
+    else {
       num_bytes_to_read = Count*sizeof(int);
     }
     break;
 
   case REG_LONG:
-    if(IOTypes_table.io_def[IOTypeIndex].use_xdr){
+    if(IOTypes_table.io_def[IOTypeIndex].use_xdr) {
       num_bytes_to_read = IOTypes_table.io_def[IOTypeIndex].num_xdr_bytes;
     }
-    else{
+    else {
       num_bytes_to_read = Count*sizeof(long);
     }
     break;
 
   case REG_FLOAT:
-    if(IOTypes_table.io_def[IOTypeIndex].use_xdr){
+    if(IOTypes_table.io_def[IOTypeIndex].use_xdr) {
       num_bytes_to_read = IOTypes_table.io_def[IOTypeIndex].num_xdr_bytes;
     }
-    else{
+    else {
       num_bytes_to_read = Count*sizeof(float);
     }
     break;
 
   case REG_DBL:
-    if(IOTypes_table.io_def[IOTypeIndex].use_xdr){
+    if(IOTypes_table.io_def[IOTypeIndex].use_xdr) {
       num_bytes_to_read = IOTypes_table.io_def[IOTypeIndex].num_xdr_bytes;
     }
-    else{
+    else {
       num_bytes_to_read = Count*sizeof(double);
     }
     break;
@@ -1963,12 +1899,12 @@ int Consume_data_slice(int    IOTypeIndex,
   /* Check that input buffer is large enough (only an issue if have XDR-
      encoded data or need to reorder it) */
   if(IOTypes_table.io_def[IOTypeIndex].use_xdr ||
-     IOTypes_table.io_def[IOTypeIndex].convert_array_order == REG_TRUE){
+     IOTypes_table.io_def[IOTypeIndex].convert_array_order == REG_TRUE) {
 
-    if(IOTypes_table.io_def[IOTypeIndex].buffer_max_bytes < num_bytes_to_read){
+    if(IOTypes_table.io_def[IOTypeIndex].buffer_max_bytes < num_bytes_to_read) {
 
       if(Realloc_iotype_buffer(IOTypeIndex, num_bytes_to_read) 
-	 != REG_SUCCESS){
+	 != REG_SUCCESS) {
 
 	/* Reset use_xdr flag set as only valid on a per-slice basis */
 	IOTypes_table.io_def[IOTypeIndex].use_xdr = REG_FALSE;
@@ -2007,11 +1943,6 @@ int Emit_start(int  IOType,
 	       int  SeqNum,
 	       int *IOTypeIndex)
 {
-#if !defined(REG_SOCKET_SAMPLES) && !defined(REG_PROXY_SAMPLES)
-  char *pchar;
-  int   len;
-#endif
-
   /* Check that steering is enabled */
   if(!ReG_SteeringEnabled) return REG_SUCCESS;
 
@@ -2049,56 +1980,14 @@ int Emit_start(int  IOType,
     return REG_NOT_READY;
   }
 
-#if !defined(REG_SOCKET_SAMPLES) && !defined(REG_PROXY_SAMPLES)
-
-  /* Currently have no way of looking up what filename to use so 
-     hardwire... */
-
-  len = strlen(IOTypes_table.io_def[*IOTypeIndex].directory) +
-    strlen(IOTypes_table.io_def[*IOTypeIndex].label);
-
-  if(len > REG_MAX_STRING_LENGTH){
-
-    fprintf(stderr, "STEER: Emit_start: combination of filename + "
-	    "directory path exceeds %d characters: increase "
-	    "REG_MAX_STRING_LENGTH\n", REG_MAX_STRING_LENGTH);
+  if(Emit_start_impl(*IOTypeIndex, SeqNum) != REG_SUCCESS)
     return REG_FAILURE;
-  }
 
-  /* In the short term, use the label as the filename */
-  sprintf(IOTypes_table.io_def[*IOTypeIndex].filename, 
-	  "%s%s", IOTypes_table.io_def[*IOTypeIndex].directory,
-	  IOTypes_table.io_def[*IOTypeIndex].label);
-
-  /* Remove trailing white space */
-  trimWhiteSpace(IOTypes_table.io_def[*IOTypeIndex].filename);
-  len = strlen(IOTypes_table.io_def[*IOTypeIndex].filename);
-
-  /* Replace any spaces with '_' */
-  pchar = strchr(IOTypes_table.io_def[*IOTypeIndex].filename, ' ');
-  while( pchar && ((pchar - IOTypes_table.io_def[*IOTypeIndex].filename + 1) < len) ){
-    *pchar = '_';
-    pchar = strchr(++pchar,' ');
-  }
-
-  pchar = IOTypes_table.io_def[*IOTypeIndex].filename;
-  pchar += strlen(IOTypes_table.io_def[*IOTypeIndex].filename);
-
-  sprintf(pchar, "_%d", SeqNum);
-  if( !(IOTypes_table.io_def[*IOTypeIndex].fp = 
-	fopen(IOTypes_table.io_def[*IOTypeIndex].filename, "w")) ){
-
-    fprintf(stderr, "STEER: Emit_start: failed to open file %s\n", 
-	    IOTypes_table.io_def[*IOTypeIndex].filename);
-    return REG_FAILURE;
-  }
-#endif
-
-  if( Emit_header(*IOTypeIndex) != REG_SUCCESS){
-
+  if(Emit_header(*IOTypeIndex) != REG_SUCCESS) {
     IOTypes_table.io_def[*IOTypeIndex].ack_needed = REG_FALSE;
     return REG_FAILURE;
   }
+
   return REG_SUCCESS;
 }
 
@@ -2118,7 +2007,7 @@ int Emit_start_blocking(int    IOType,
   if(!ReG_SteeringEnabled) return REG_SUCCESS;
 
   /* Can only call this function if steering lib initialised */
-  if (!ReG_SteeringInit) return REG_FAILURE;
+  if(!ReG_SteeringInit) return REG_FAILURE;
 
   /* Convert time out from seconds to microseconds */
   time_out_uS = (unsigned long)(TimeOut*1000000);
@@ -2127,7 +2016,7 @@ int Emit_start_blocking(int    IOType,
   while((status = Emit_start(IOType, SeqNum, IOTypeIndex)) != REG_SUCCESS) { 
 
     usleep(blocked_poll_interval);
-    if((wait_time += blocked_poll_interval) > time_out_uS){
+    if((wait_time += blocked_poll_interval) > time_out_uS) {
 #ifdef REG_DEBUG
       fprintf(stderr, "STEER: Emit_start_blocking: timed out\n");
 #endif
@@ -2169,15 +2058,7 @@ int Emit_stop(int *IOTypeIndex)
 
   return_status = Emit_footer(*IOTypeIndex, Global_scratch_buffer);
 
-#if !defined(REG_SOCKET_SAMPLES) && !defined(REG_PROXY_SAMPLES)
-  if(IOTypes_table.io_def[*IOTypeIndex].fp){
-    fclose(IOTypes_table.io_def[*IOTypeIndex].fp);
-    IOTypes_table.io_def[*IOTypeIndex].fp = NULL;
-  }
-  /* Create lock file for this data file to prevent race 
-     conditions */
-  Create_lock_file(IOTypes_table.io_def[*IOTypeIndex].filename);
-#endif
+  Emit_stop_impl(*IOTypeIndex);
 
   /* Flag that we'll want an acknowledgement of this data set
      before we try to read another one */
@@ -2608,10 +2489,9 @@ int Register_params(int    NumParams,
 
   /* Can only call this function if steering lib initialised */
 
-  if (!ReG_SteeringInit) return REG_FAILURE;
+  if(!ReG_SteeringInit) return REG_FAILURE;
 
-  for(i=0; i<NumParams; i++){
-
+  for(i = 0; i < NumParams; i++) {
     Register_param(ParamLabels[i], ParamSteerable[i], ParamPtrs[i],
 		   ParamTypes[i], ParamMinima[i], ParamMaxima[i]);
   }
@@ -2674,7 +2554,7 @@ int Enable_all_param_logging(int toggle)
 {
   int lToggle = REG_FALSE;
 
-  if(toggle == REG_TRUE){
+  if(toggle == REG_TRUE) {
     lToggle = REG_TRUE;
   }
 
@@ -3077,9 +2957,9 @@ int Steering_control(int     SeqNum,
   i         = 0;
   detached  = REG_FALSE;
 
-  while(i<num_commands){
+  while(i < num_commands) {
 
-    switch(commands[i]){
+    switch(commands[i]) {
 
     case REG_STR_DETACH:
 
@@ -3832,35 +3712,8 @@ int Emit_IOType_defs(){
       pbuf += nbytes;
       bytes_left -= nbytes;
 
+      Get_IOType_address_impl(i, &pbuf, &bytes_left);
 
-#ifdef REG_SOCKET_SAMPLES
-      if(IOTypes_table.io_def[i].direction == REG_IO_OUT){
-
-	if(!strstr(IOTypes_table.io_def[i].socket_info.listener_hostname,
-		     "NOT_SET")){
-	  nbytes = snprintf(pbuf, bytes_left, "<Address>%s:%d</Address>\n",
-		     IOTypes_table.io_def[i].socket_info.listener_hostname,
-		     (int)(IOTypes_table.io_def[i].socket_info.listener_port));
-
-#ifdef REG_DEBUG
-	  /* Check for truncation */
-	  if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
-
-	    fprintf(stderr, "STEER: Emit_IOType_defs: message exceeds max. "
-		    "msg. size of %d bytes\n", REG_MAX_MSG_SIZE);
-	    return REG_FAILURE;
-	  }
-#endif /* REG_DEBUG */
-	  pbuf += nbytes;
-	  bytes_left -= nbytes;
-	}
-      }
-#else
-#ifdef REG_PROXY_SAMPLES
-      /* ARPDBG - does anything go here? Where do we set the address
-	 of the proxy? */
-#endif
-#endif /* REG_SOCKET_SAMPLES */
       nbytes = snprintf(pbuf, bytes_left, "</IOType>\n");
       pbuf += nbytes;
       bytes_left -= nbytes;
@@ -5185,56 +5038,20 @@ int Make_supp_cmds_msg(int   NumSupportedCmds,
 /*---------------------------------------------------*/
 
 int Initialize_IOType_transport(const int direction,
-				const int index)
-{
-#ifdef REG_SOCKET_SAMPLES
-
-  return Initialize_IOType_transport_sockets(direction, index);
-
-#else
-#ifdef REG_PROXY_SAMPLES
-
-  return Initialize_IOType_transport_proxy(direction, index);
-
-#else
-
-  return Initialize_IOType_transport_file(direction, index);
-#endif
-#endif
+				const int index) {
+  return Initialize_IOType_transport_impl(direction, index);
 }
 
 /*---------------------------------------------------*/
 
-void Finalize_IOType_transport()
-{
-#ifdef REG_SOCKET_SAMPLES
-
-  Finalize_IOType_transport_sockets();
-
-#else
-#ifdef REG_PROXY_SAMPLES
-
-  Finalize_IOType_transport_proxy();
-
-#endif
-#endif
+void Finalize_IOType_transport() {
+  Finalize_IOType_transport_impl();
 }
 
 /*---------------------------------------------------*/
 
-int Consume_start_data_check(const int index)
-{
-
-#if defined(REG_SOCKET_SAMPLES) || defined(REG_PROXY_SAMPLES)
-  int status = Consume_start_data_check_sockets(index);
-  if(status == REG_SUCCESS){
-    IOTypes_table.io_def[index].consuming = REG_TRUE;
-  }
-  return status;
-#else
-
-  return Consume_start_data_check_file(index);
-#endif
+int Consume_start_data_check(const int index) {
+  return Consume_start_data_check_impl(index);
 }
 
 /*---------------------------------------------------*/
@@ -5244,27 +5061,17 @@ int Consume_data_read(const int		index,
 		      const size_t	num_bytes_to_read, 
 		      void		*pData)
 {
-  if(index < 0 || index >= IOTypes_table.num_registered){
+  if(index < 0 || index >= IOTypes_table.num_registered) {
 
     fprintf(stderr, "STEER: ERROR: Consume_data_read: IOType "
 	    "index (%d) out of range\n", index);
     return REG_FAILURE;
   }
 
-#if defined(REG_SOCKET_SAMPLES) || defined(REG_PROXY_SAMPLES)
-
-  return Consume_data_read_sockets(index,
-				   datatype,
-				   num_bytes_to_read,
-				   pData);
-
-#else
-
-  return Consume_data_read_file(index,
-				datatype,
-				num_bytes_to_read,
-				pData);
-#endif
+return Consume_data_read_impl(index,
+			      datatype,
+			      num_bytes_to_read,
+			      pData);
 }
 
 /*---------------------------------------------------*/
@@ -5282,15 +5089,7 @@ int Emit_ack(const int index)
     return REG_FAILURE;
   }
 
-#ifdef REG_SOCKET_SAMPLES
-  return Emit_ack_sockets(index);
-#else
-#ifdef REG_PROXY_SAMPLES
-  return Emit_ack_proxy(index);
-#else
-  return Emit_ack_file(index);
-#endif
-#endif
+  return Emit_ack_impl(index);
 }
 
 /*---------------------------------------------------*/
@@ -5312,78 +5111,35 @@ int Consume_ack(const int index)
      acknowledgements on or off.  A better way would be to signal
      the consumer that acknowledgements are not required. */
 
-  if(IOTypes_table.io_def[index].use_ack == REG_TRUE){
+  if(IOTypes_table.io_def[index].use_ack == REG_TRUE) {
     /* We are using acknowledgements so it matters whether
        or not we've got one */
-#if defined(REG_SOCKET_SAMPLES) || defined(REG_PROXY_SAMPLES)
-    return Consume_ack_sockets(index);
-#else
-    return Consume_ack_file(index);
-#endif
+    return Consume_ack_impl(index);
   }
-  else{
+  else {
     /* We're not using acknowledgments but might still need 
        to clean-up those being generated by the consumer */
-#if defined(REG_SOCKET_SAMPLES) || defined(REG_PROXY_SAMPLES)
-    Consume_ack_sockets(index);
-#else
-    Consume_ack_file(index);
-#endif
+    Consume_ack_impl(index);
     return REG_SUCCESS;
   }
 }
 
 /*---------------------------------------------------*/
 
-int Emit_header(const int index)
-{
-#ifdef REG_SOCKET_SAMPLES
-
-  return Emit_header_sockets(index);
-
-#else
-#ifdef REG_PROXY_SAMPLES
-
-  return Emit_header_proxy(index);		   
-#else
-
-  sprintf(Global_scratch_buffer, REG_PACKET_FORMAT, REG_DATA_HEADER);
-  Global_scratch_buffer[REG_PACKET_SIZE-1] = '\0';
-#ifdef REG_DEBUG
-  fprintf(stderr, "STEER: Emit_header: Sending >>%s<<\n", Global_scratch_buffer);
-#endif
-
-  return Emit_data_file(index,
-			REG_PACKET_SIZE,
-			(void *)Global_scratch_buffer);
-#endif
-#endif
+int Emit_header(const int index) {
+  return Emit_header_impl(index);
 }
 
 /*---------------------------------------------------*/
 
 int Emit_footer(const int index,
-		const char * const buffer)
-{
+		const char * const buffer) {
   int nbytes_to_send;
 
   /* strlen + 1 because it doesn't count '\0' */
   nbytes_to_send = strlen(buffer)+1;
 
-#ifdef REG_SOCKET_SAMPLES
-
-  return Emit_data_sockets(index, nbytes_to_send, (void*)buffer);
-
-#else
-#ifdef REG_PROXY_SAMPLES
-
-  return Emit_data_proxy(index, nbytes_to_send, (void*)buffer);
-
-#else
-
-  return Emit_data_file(index, nbytes_to_send, (void*)buffer);
-#endif
-#endif
+  return Emit_data_impl(index, nbytes_to_send, (void*)buffer);
 }
 
 /*---------------------------------------------------*/
@@ -5391,56 +5147,14 @@ int Emit_footer(const int index,
 int Emit_data(const int		index,  
 	      const int		datatype,
 	      const size_t	num_bytes_to_send,
-	      void		*pData )
-{
-#ifdef REG_SOCKET_SAMPLES
-
-  return Emit_data_sockets(index, 
-			   num_bytes_to_send,
-			   pData);
-#else
-#ifdef REG_PROXY_SAMPLES
-
-  return Emit_data_proxy(index, 
-			   num_bytes_to_send,
-			   pData);
-
-#else
-
-  return Emit_data_file(index, 
-			num_bytes_to_send,
-			pData);
-#endif
-#endif
-
+	      void		*pData ) {
+  return Emit_data_impl(index, num_bytes_to_send, pData);
 }
 
 /*---------------------------------------------------*/
 
-int Get_communication_status(const int	index)
-{
-
-#ifdef REG_SOCKET_SAMPLES
-
-  return Get_communication_status_sockets(index);
-
-#else
-#ifdef REG_PROXY_SAMPLES
-
-  return Get_communication_status_proxy(index);
-
-#else
-
-  if(IOTypes_table.io_def[index].fp){
-
-    return REG_SUCCESS;
-  }
-  else{
-    return REG_FAILURE;
-  }
-#endif
-#endif
-
+int Get_communication_status(const int	index) {
+  return Get_communication_status_impl(index);
 }
 
 /*---------------------------------------------------*/
@@ -5457,19 +5171,11 @@ int Consume_iotype_msg_header(int  IOTypeIndex,
     return REG_FAILURE;
   }
 
-#if defined(REG_SOCKET_SAMPLES) || defined(REG_PROXY_SAMPLES)
-  return Consume_msg_header_sockets(IOTypeIndex,
-				    DataType,
-				    Count,
-				    NumBytes,
-				    IsFortranArray);
-#else
-  return Consume_msg_header_file(IOTypeIndex,
+  return Consume_msg_header_impl(IOTypeIndex,
 				 DataType,
 				 Count,
 				 NumBytes,
 				 IsFortranArray);
-#endif
 }
 
 /*----------------------------------------------------------------*/
@@ -5508,30 +5214,14 @@ int Emit_iotype_msg_header(int IOTypeIndex,
   pchar += sprintf(pchar, REG_PACKET_FORMAT, "</ReG_data_slice_header>");
   *(pchar-1) = '\0';
 
-#ifdef REG_SOCKET_SAMPLES
-  return Emit_data_sockets(IOTypeIndex, (int) (pchar-buffer), 
-			   (void*) buffer);
-#else
-#ifdef REG_PROXY_SAMPLES
-  return Emit_data_proxy(IOTypeIndex, (int) (pchar-buffer), (void*) buffer);
-
-#else
-
-  if(fwrite((void *)buffer, sizeof(char), (int)(pchar-buffer), 
-	    IOTypes_table.io_def[IOTypeIndex].fp) == (pchar-buffer)){
-    return REG_SUCCESS;
-  }
-  return REG_FAILURE;
-#endif
-#endif
+  return Emit_msg_header_impl(IOTypeIndex, (int)(pchar-buffer), (void*)buffer);
 
 }
 
 /*----------------------------------------------------------------*/
 
 int Realloc_iotype_buffer(int index,
-			  int num_bytes)
-{
+			  int num_bytes) {
   return Realloc_IOdef_entry_buffer(&(IOTypes_table.io_def[index]),
 				    num_bytes);
 }
@@ -5539,8 +5229,7 @@ int Realloc_iotype_buffer(int index,
 /*----------------------------------------------------------------*/
 
 int Realloc_chktype_buffer(int index,
-			   int num_bytes)
-{
+			   int num_bytes) {
   return Realloc_IOdef_entry_buffer(&(ChkTypes_table.io_def[index]),
 				    num_bytes);
 }

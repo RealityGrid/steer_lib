@@ -33,8 +33,21 @@
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
 string(REGEX MATCH "^[^\\.]+" EX_APP_NAME ${EX_SRC_NAME})
+
+# if building static libraries the link order needs
+# to be repeated to resolve circular dependencies
+set(EXAMPLES_LINK_LINE ${REG_EXAMPLES_MODULES_LINK} ${REG_LINK_LIBRARIES})
+if(NOT REG_BUILD_SHARED_LIBS)
+  set(EXAMPLES_LINK_LINE ${EXAMPLES_LINK_LINE} ${EXAMPLES_LINK_LINE})
+endif(NOT REG_BUILD_SHARED_LIBS)
+
 add_executable(${EX_APP_NAME} ${EX_SRC_NAME})
-target_link_libraries(${EX_APP_NAME} ${REG_LINK_LIBRARIES} ${XML2_LIBRARIES} ${SSL_LIBRARIES})
+target_link_libraries(
+  ${EX_APP_NAME}
+  ${EXAMPLES_LINK_LINE}
+  ${XML2_LIBRARIES}
+  ${SSL_LIBRARIES}
+)
 
 #
 # install

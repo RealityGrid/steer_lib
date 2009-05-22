@@ -58,6 +58,10 @@ if(NOT EXECUTABLE_OUTPUT_PATH)
   set(EXECUTABLE_OUTPUT_PATH ${REG_BINARY_DIR}/bin CACHE INTERNAL "Single output directory for building all executables.")
 endif(NOT EXECUTABLE_OUTPUT_PATH)
 
+# set up modules
+include(ModulesMacro)
+include(Modules)
+
 # set up configure header file
 configure_file(
   "${PROJECT_SOURCE_DIR}/ReG_Steer_Config.h.in"
@@ -78,26 +82,29 @@ if(REG_BUILD_SHARED_LIBS)
 endif(REG_BUILD_SHARED_LIBS)
 
 #
+# build a monolithic or modular library
+#
+option(REG_BUILD_MODULAR_LIBS "Turn on to build a set of modular libs rather than one monolithic one. Modular by default." ON)
+
+# set the type of modules to build
+if(REG_BUILD_MODULAR_LIBS)
+  set(REG_MOD_TYPE STATIC)
+  if(REG_BUILD_SHARED_LIBS)
+    # THE BELOW SHOULD BE CHANGED TO "MODULE" WHEN LD STUFF IS COMPLETE
+    set(REG_MOD_TYPE SHARED)
+  endif(REG_BUILD_SHARED_LIBS)
+endif(REG_BUILD_MODULAR_LIBS)
+
+#
 # transport options
 #
 option(REG_SOCKET_STEERING "Use plain sockets for the transfer of steering messages. Default is ON." ON)
 option(REG_SOAP_STEERING "Use SOAP for the transfer of steering messages. Default is OFF." OFF)
-option(REG_SOCKET_SAMPLES "Use TCP/IP sockets to transfer IO data. If set to OFF, files are used." ON)
-option(REG_PROXY_SAMPLES "Use a Proxy to mediate data transfers. Default is OFF." OFF)
-if(REG_PROXY_SAMPLES)
-  add_subdirectory(ioProxy)
-endif(REG_PROXY_SAMPLES)
-mark_as_advanced(REG_PROXY_SAMPLES)
 
 # quick hack to stop both socket and soap steering from being selected
 if(REG_SOCKET_STEERING AND REG_SOAP_STEERING)
   message(SEND_ERROR "You can not use both Sockets and SOAP for your steering transport. Please switch one of them off!")
 endif(REG_SOCKET_STEERING AND REG_SOAP_STEERING)
-
-# quick hack to stop both socket and proxy samples from being selected
-if(REG_SOCKET_SAMPLES AND REG_PROXY_SAMPLES)
-  message(SEND_ERROR "You can not use both Sockets and a Proxy for your IO transport. Please switch one of them off!")
-endif(REG_SOCKET_SAMPLES AND REG_PROXY_SAMPLES)
 
 #
 # feature options

@@ -43,8 +43,6 @@
 /* feature options */
 #cmakedefine REG_SOCKET_STEERING
 #cmakedefine REG_SOAP_STEERING
-#cmakedefine REG_SOCKET_SAMPLES
-#cmakedefine REG_PROXY_SAMPLES
 #cmakedefine REG_USE_OPENSSL
 #cmakedefine REG_USE_WSRF
 #cmakedefine REG_LOG_STEERING
