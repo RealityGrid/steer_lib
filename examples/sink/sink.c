@@ -117,7 +117,7 @@ int main(){
 
   /* Register the input IO channel */
 
-  iotype_labels[0] = "VTK_STRUCTURED_POINTS";
+  iotype_labels[0] = "mini_app visualization data";
   iotype_dirn[0] = REG_IO_IN;
   iotype_frequency[0] = 1; /* Attempt to consume data at every step */
 
