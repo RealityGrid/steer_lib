@@ -47,15 +47,58 @@
 #cmakedefine REG_USE_WSRF
 #cmakedefine REG_LOG_STEERING
 
-/* Debug options */
 #cmakedefine REG_DEBUG
 #cmakedefine REG_DEBUG_FULL
 #cmakedefine REG_USE_TIMING
 #cmakedefine REG_KEEP_XML_MESSAGES
 
-/*
- * Some WIN32 defines
- */
+#cmakedefine REG_NEED_MALLOC_H
+
+/* standard system headers */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <string.h>
+#include <signal.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <arpa/inet.h>
+#include <fcntl.h>
+#include <rpc/rpc.h>
+#include <errno.h>
+
+#ifndef WIN32
+#include <unistd.h>
+#include <time.h>
+#include <sys/time.h>
+#include <sys/utsname.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h>
+#else /* WIN32 */
+#include <windows.h>
+#include <direct.h>
+#include <io.h>
+#endif /* WIN32 */
+
+/* only include malloc.h if we need it.
+   some systems define malloc in stdlib.h */
+#ifdef REG_NEED_MALLOC_H
+#include <malloc.h>
+#endif
+
+#include <libxml/xmlmemory.h>
+#include <libxml/parser.h>
+
+/* features to code for */
+
+#cmakedefine01 REG_HAS_MSG_NOSIGNAL
+#cmakedefine01 REG_HAS_MSG_DONTWAIT
+
+
+/* some extra defines for windows */
+
 #ifdef WIN32
 #define snprintf _snprintf
 #define sleep(seconds) (Sleep(seconds*1000))
@@ -63,6 +106,8 @@
 #define getcwd _getcwd
 #define read _read
 #endif
+
+/* ---------------------------------------------------- */
 
 /* Adjust some defines to match what is in the legacy code.
  * 

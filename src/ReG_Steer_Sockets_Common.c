@@ -31,13 +31,6 @@
 #include "ReG_Steer_Sockets_Common.h"
 #include "ReG_Steer_Common.h"
 #include "ReG_Steer_Appside_internal.h"
-#include <string.h>
-#include <signal.h>
-#include <sys/time.h>
-
-#ifdef _AIX
-#include <fcntl.h>
-#endif
 
 /* */
 socket_info_table_type socket_info_table;

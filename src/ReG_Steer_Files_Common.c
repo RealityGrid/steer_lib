@@ -31,7 +31,6 @@
 #include "ReG_Steer_Files_Common.h"
 #include "ReG_Steer_Common.h"
 #include "ReG_Steer_Appside_internal.h"
-#include <string.h>
 
 file_info_table_type file_info_table;
 

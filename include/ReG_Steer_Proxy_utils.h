@@ -38,12 +38,6 @@
 
 #include "ReG_Steer_Config.h"
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <string.h>
-#ifndef WIN32
-#include <unistd.h>
-#endif
 #include "ReG_Steer_types.h"
 
 /*-----------------------------------------------------------------*/

@@ -35,7 +35,6 @@
     component).
     @author Andrew Porter */
 
-#include <string.h>
 #include "ReG_Steer_Config.h"
 #include "ReG_Steer_types.h"
 #include "ReG_Steer_Common.h"
@@ -48,25 +47,6 @@
 #include "ReG_Steer_Appside_Soap.h"
 #endif
 #endif /* REG_DIRECT_TCP_STEERING */
-
-#ifndef WIN32
-#include <unistd.h>
-#else
-#include <windows.h>
-/*
-NOW IN CMAKE
-
-#define snprintf _snprintf
-#define usleep(microseconds) (Sleep(microseconds/1000))
-*/
-#endif
-
-/* Allow value of 'REG_DEBUG' to propagate down from Reg_steer_types.h if
-   it has been set there
-#ifndef REG_DEBUG
-#define REG_DEBUG 1
-#endif
-*/
 
 /** Log of checkpoints taken - declared in ReG_Steer_Appside.c  */
 extern Chk_log_type Chk_log;

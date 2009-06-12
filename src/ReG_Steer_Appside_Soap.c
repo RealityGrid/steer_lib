@@ -42,15 +42,6 @@
 #include "ReG_Steer_Appside_Soap.h"
 #include "ReG_Steer_Logging.h"
 
-#ifndef WIN32
-#else
-/*
-NOW IN CMAKE
-
-#define snprintf _snprintf
-*/
-#endif
-
 /* Need access to these tables which are actually declared in 
    ReG_Steer_Appside_internal.h and ReG_Steer_Appside.c */
 extern IOdef_table_type IOTypes_table;

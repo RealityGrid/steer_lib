@@ -43,19 +43,6 @@
 #include "ReG_Steer_Appside_File.h"
 #include "ReG_Steer_Appside_Soap.h"
 #include "ReG_Steer_Appside_WSRF.h"
-#include <string.h>
-#include <signal.h>
-#include <sys/time.h>
-
-#ifdef _AIX
-#include <fcntl.h>
-#endif
-
-/*
-#ifndef REG_DEBUG
-#define REG_DEBUG 0
-#endif
-*/
 
 /* Need access to these tables which are actually declared in 
    ReG_Steer_Appside_internal.h */

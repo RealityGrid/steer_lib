@@ -35,21 +35,6 @@
 #include "ReG_Steer_Common.h"
 #include "ReG_Steer_Appside_internal.h"
 
-#include <string.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <netdb.h>
-#include <unistd.h>
-
-/* Allow value of 'REG_DEBUG' to propagate down from Reg_steer_types.h if
-   it has been set there
-#ifndef REG_DEBUG
-#define REG_DEBUG 1
-#endif
-*/
-
 /** @internal
    The table holding details of our communication channel with the
    steering client - defined in ReG_Steer_Appside.c */

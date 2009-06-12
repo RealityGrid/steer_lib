@@ -44,19 +44,6 @@
 #include "ReG_Steer_Appside_Sockets.h"
 #include "ReG_Steer_Appside_WSRF.h"
 #include "ReG_Steer_Appside_IOProxy.h"
-#include <string.h>
-#include <signal.h>
-#include <sys/time.h>
-
-#ifdef _AIX
-#include <fcntl.h>
-#endif
-
-/*
-#ifndef REG_DEBUG
-#define REG_DEBUG 0
-#endif
-*/
 
 /* Need access to these tables which are actually declared in 
    ReG_Steer_Appside.c */

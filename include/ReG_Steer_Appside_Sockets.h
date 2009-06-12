@@ -35,28 +35,9 @@
     @author Robert Haines
   */
 
-/* ARP - added to uniquely identify TRU64 systems.  Necessary on
-   Alpha workstations and LeMieux */
-#ifndef TRU64
-#if (defined (__digital__) && defined (__unix__))
-#define TRU64
-#endif
-#endif
-
 #include "ReG_Steer_Config.h"
 
 #if defined(REG_SOCKET_SAMPLES) || defined(REG_PROXY_SAMPLES) || defined(DOXYGEN)
-
-#include <errno.h>
-#if defined(TRU64)
-#include <fcntl.h>
-#endif
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <netdb.h>
-#include <unistd.h>
 
 #include "ReG_Steer_types.h"
 

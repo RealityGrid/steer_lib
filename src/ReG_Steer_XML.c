@@ -39,14 +39,6 @@
 #include "ReG_Steer_Browser.h"
 #include "ReG_Steer_Steerside.h"
 
-#include <string.h>
-
-/*
-#ifndef REG_DEBUG
-#define REG_DEBUG 1
-#endif
-*/
-
 /** Declared in ReG_Steer_Appside.c */
 extern struct msg_store_struct  Msg_store;
 extern struct msg_store_struct *Msg_store_tail;

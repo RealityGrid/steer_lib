@@ -62,6 +62,9 @@ endif(NOT EXECUTABLE_OUTPUT_PATH)
 include(ModulesMacro)
 include(Modules)
 
+# do platform checks
+include(PlatformFeatures)
+
 # set up configure header file
 configure_file(
   "${PROJECT_SOURCE_DIR}/ReG_Steer_Config.h.in"

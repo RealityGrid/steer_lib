@@ -25,8 +25,6 @@
 #include "ReG_Steer_Config.h"
 #include "Base64.h"
 #include "ReG_Steer_types.h"
-#include <string.h>
-#include <stdio.h>
 
 static const char   fillchar = '=';
 #define Base64_NP 257

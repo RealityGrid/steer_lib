@@ -40,14 +40,6 @@
 #include "ReG_Steer_Utils.h"
 #include "ReG_Steer_Utils_WSRF.h"
 #include "ReG_Steer_Steerside_WSRF.h"
-#include "libxml/xmlmemory.h"
-#include "libxml/parser.h"
-
-#ifndef WIN32
-#include <time.h>
-#include <sys/time.h>
-#endif /* not WIN32 */
-
 #include "soapH.h"
 
 /*----------------------------------------------------------------*/

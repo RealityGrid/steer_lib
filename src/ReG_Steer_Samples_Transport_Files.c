@@ -38,9 +38,6 @@
 #include "ReG_Steer_Files_Common.h"
 #include "ReG_Steer_Common.h"
 #include "ReG_Steer_Appside_internal.h"
-#include <string.h>
-#include <signal.h>
-#include <sys/time.h>
 
 /* */
 extern file_info_table_type file_info_table;

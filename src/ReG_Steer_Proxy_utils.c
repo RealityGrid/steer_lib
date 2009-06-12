@@ -39,22 +39,6 @@
 #include "ReG_Steer_Config.h"
 #include "ReG_Steer_Proxy_utils.h"
 
-/*
-#ifndef REG_DEBUG
-#define REG_DEBUG 1
-#endif
-*/
-
-#ifndef WIN32
-#else
-#include <io.h>
-/*
-NOW IN CMAKE
-
-#define read _read
-*/
-#endif
-
 /*----------------------------------------------------------*/
 
 /* NOTE - This function is not currently available under Windows */

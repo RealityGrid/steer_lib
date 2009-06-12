@@ -42,39 +42,6 @@
 #include "ReG_Steer_types.h"
 #include "ReG_Steer_Common.h"
 
-#include "Base64.h"
-#ifndef WIN32
-#include <sys/time.h>
-#endif
-#include <rpc/rpc.h>
-#include <string.h>
-/* These are for uname and gethostbyname */
-#ifndef WIN32
-#include <sys/utsname.h>
-#endif
-#include <sys/types.h>
-#ifndef WIN32
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#endif
-#include <signal.h>
-
-/*
-#ifndef REG_DEBUG
-#define REG_DEBUG 0
-#endif
-*/
-
-#ifndef WIN32
-#else
-/*
-NOW IN CMAKE
-
-#define snprintf _snprintf
-*/
-#endif
-
 /** @internal
    Location of file specifying the schema/namespace to which all
    steering messages should belong.  Set in Steerer_initialize or

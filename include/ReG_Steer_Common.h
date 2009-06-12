@@ -43,11 +43,6 @@
 #include "ReG_Steer_Config.h"
 #include "soapH.h"
 
-/* Following two includes are for use of stat system call 
-   in Open_next_file */
-#include <sys/types.h>
-#include <sys/stat.h>
-
 #ifdef __cplusplus
   #define PREFIX "C"
 #else

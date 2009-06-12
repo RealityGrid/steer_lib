@@ -41,48 +41,10 @@
 
 #include "ReG_Steer_Config.h"
 
-/** If REG_WSRF is not defined then the code builds with OGSI stubs
-    instead
-
-    NOW IN CMAKE
-
-#define REG_WSRF */
-
 /** Comment out the below if yours is a pre-2.6 version of libxml2 that
     doesn't have XML_PARSE_NOERROR defined (to go with the xmlReadMemory
     in Parse_xml) */
 #define REG_HAVE_XMLREADMEMORY
-
-/** Whether or not to use timing routines - these are not very portable
-
-    NOW IN CMAKE
-
-#define USE_REG_TIMING */
-
-/** This is here to allow use of SSL to be switched on and off by editing
-    Makefile.include (because WITH_OPENSSL is a gSoap #define)
-
-    NOW IN CMAKE
-
-#if REG_WITH_OPENSSL
-#  define WITH_OPENSSL
-#endif */
-
-#include <stdio.h>
-#include <stdlib.h>
-
-/** Flag for debugging - set to one to retain all xml messages
-
-    NOW IN CMAKE
-
-#define NO_FILE_DELETE 0 */
-
-/** UNICORE_DEMO must be defined in order to produce a steering lib
-    compatible with the UNICORE steering demonstration framework.
-    Only consequence is that the status files emitted by the application
-    are all called 'steer_status' and not indexed - @e i.e. some output will 
-    be lost if the status files are not consumed sufficiently rapidly */
-/*#define UNICORE_DEMO*/
 
 /** The namespace used for steering messages (which are in xml) */
 #define REG_STEER_NAMESPACE "http://www.realitygrid.org/xml/steering"
@@ -314,11 +276,6 @@ typedef int REG_IOHandleType;
 #define REG_LOG_FILENAME         "ReG_checkpoint_log.xml"
 /** The filename to use for the parameter log */
 #define REG_PARAM_LOG_FILENAME   "ReG_params_log.dat"
-/** Whether or not to log steering commands
-
-    NOW IN CMAKE
-
-#define REG_LOG_STEERING 1 */
 
 /** Values for IOdef_entry.comms_status */
 #define REG_COMMS_STATUS_NULL			0

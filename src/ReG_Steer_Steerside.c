@@ -46,13 +46,6 @@
 #include "ReG_Steer_Steerside_WSRF.h"
 #include "ReG_Steer_Browser.h"
 #include "Base64.h"
-#include "signal.h"
-
-/*
-#ifndef REG_DEBUG
-#define REG_DEBUG 0
-#endif
-*/
 
 /*--------------------- Data structures -------------------*/
 

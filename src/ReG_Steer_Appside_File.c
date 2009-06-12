@@ -28,7 +28,6 @@
   DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR
   CORRECTION.
 ---------------------------------------------------------------------------*/
-#include <string.h>
 
 #include "ReG_Steer_Config.h"
 #include "ReG_Steer_Appside_File.h"
@@ -43,22 +42,6 @@
     @author Andrew Porter
     @author Robert Haines
   */
-
-#ifndef WIN32
-#else
-/*
-NOW IN CMAKE
-
-#define snprintf _snprintf
-*/
-#endif
-
-/* Allow value of 'REG_DEBUG' to propagate down from Reg_steer_types.h if
-   it has been set there
-#ifndef REG_DEBUG
-#define REG_DEBUG 1
-#endif
-*/
 
 /** @internal
    The table holding details of our communication channel with the

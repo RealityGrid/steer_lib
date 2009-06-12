@@ -46,33 +46,6 @@
 #include "Base64.h"
 #include "soapRealityGrid.nsmap"
 
-#include <signal.h>
-#include <time.h>
-#include <rpc/rpc.h>
-#include <math.h>
-#include <string.h>
-
-#ifndef WIN32
-#include <unistd.h>
-#else
-#include <direct.h>
-/*
-NOW IN CMAKE
-
-#define snprintf _snprintf
-#define sleep(seconds) (Sleep(seconds*1000))
-#define usleep(microseconds) (Sleep(microseconds/1000))
-#define getcwd _getcwd
-*/
-#endif
-
-/* Allow value of 'REG_DEBUG' to propagate down from Reg_steer_types.h if
-   it has been set there
-#ifndef REG_DEBUG
-#define REG_DEBUG 1
-#endif
-*/
-
 /**
    Buffer used for string handling etc - size set 
    in ReG_steer_types.h 
