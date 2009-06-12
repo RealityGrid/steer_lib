@@ -53,6 +53,11 @@ extern char Global_scratch_buffer[];
 /*---------------------------------------------------*/
 
 int Initialize_samples_transport() {
+
+#if !REG_HAS_MSG_NOSIGNAL
+  signal(SIGPIPE, signal_handler_sockets);
+#endif
+
   return socket_info_table_init();
 }
 
@@ -338,11 +343,7 @@ int Emit_data_impl(const int    index,
   fprintf(stderr, "STEER: Emit_data: writing...\n");
 #endif
   while(bytes_left > 0) {
-#ifndef __linux
-    result = send(connector, pchar, bytes_left, 0);
-#else
-    result = send(connector, pchar, bytes_left, MSG_NOSIGNAL);
-#endif
+    result = send_no_signal(connector, pchar, bytes_left, 0);
     if(result == REG_SOCKETS_ERROR) {
       perror("send");
       return REG_FAILURE;
@@ -778,20 +779,6 @@ int Consume_data_read_impl(const int index,
 
   return REG_SUCCESS;
 }
-
-/*---------------------------------------------------*/
-
-#ifndef __linux
-void signal_handler_impl(int a_signal) {
-
-#ifdef REG_DEBUG
-  fprintf(stderr, "STEER: INFO: Caught SIGPIPE!\n");
-#endif
-
-  signal(SIGPIPE, signal_handler);
-
-}
-#endif
 
 /*---------------------------------------------------*/
 

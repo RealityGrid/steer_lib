@@ -156,14 +156,6 @@ int Consume_data_read_impl(const int index,
 			   const int num_bytes_to_read, 
 			   void* pData);
 
-#ifndef __linux
-/** @internal 
-    Handler for SIGPIPE generated when connection goes down. 
-    Only defined for Linux systems.  Necessary because otherwise the
-    signal takes down the program. */
-void signal_handler_impl(int a_signal);
-#endif
-
 /** @internal
     @param index Index of the IOType on which to send acknowledgement
 

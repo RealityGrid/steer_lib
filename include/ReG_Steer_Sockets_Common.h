@@ -182,4 +182,17 @@ int recv_non_block(socket_info_type* sock_info,
 		   char*             pbuf, 
 		   int               nbytes);
 
+#if !REG_HAS_MSG_NOSIGNAL
+/** @internal
+    Handler for SIGPIPE generated when connection goes down.
+    Only defined for systems without MSG_NOSIGNAL.  Necessary because
+    otherwise the signal takes down the program. */
+void signal_handler_sockets(int a_signal);
+#endif
+
+/** @internal
+ *  Wrap send() so we can avoid lots of #ifdefs in the main body of code
+ */
+ssize_t send_no_signal(int s, const void *buf, size_t len, int flags);
+
 #endif /* __REG_STEER_SOCKETS_COMMON_H__ */

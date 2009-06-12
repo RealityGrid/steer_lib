@@ -720,3 +720,31 @@ int recv_non_block(socket_info_type  *sock_info,
   
   return nbytes_read;
 }
+
+/*--------------------------------------------------------------------*/
+
+#if !REG_HAS_MSG_NOSIGNAL
+void signal_handler_sockets(int a_signal) {
+
+#ifdef REG_DEBUG
+  fprintf(stderr, "STEER: INFO: Caught SIGPIPE!\n");
+#endif
+
+  signal(SIGPIPE, signal_handler_sockets);
+
+}
+#endif
+
+/*--------------------------------------------------------------------*/
+
+ssize_t send_no_signal(int s, const void* buf, size_t len, int flags) {
+  int pass_flags;
+
+#if REG_HAS_MSG_NOSIGNAL
+  pass_flags = flags | MSG_NOSIGNAL;
+#else
+  pass_flags = flags;
+#endif
+
+  return send(s, buf, len, pass_flags);
+}
