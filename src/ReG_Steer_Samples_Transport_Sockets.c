@@ -610,7 +610,8 @@ int Consume_start_data_check_impl(const int index) {
 
   while(!(pstart = strstr(buffer, REG_DATA_HEADER))) {
 
-    if( (nbytes = recv_non_block(sock_info, buffer, REG_PACKET_SIZE)) <= 0){
+    if((nbytes = recv_non_block(sock_info->connector_handle,
+				buffer, REG_PACKET_SIZE, 0)) <= 0) {
 
       if(nbytes < 0) {
 	if(errno == EAGAIN) {
@@ -809,8 +810,8 @@ int Consume_ack_impl(int index){
   memset(buf, '\0', 32);
 
   /* Search for an ACK tag */
-  if((nbytes = recv_non_block(&(socket_info_table.socket_info[index]), 
-			      (void *)buf, 16)) == 16){
+  if((nbytes = recv_non_block(socket_info_table.socket_info[index].connector_handle, 
+			      (void*)buf, 16, 0)) == 16) {
     pchar = strchr(buf, '<');
 
     if(pchar){
@@ -827,8 +828,8 @@ int Consume_ack_impl(int index){
 	else{
 	  /* Looks like our ack msg drops off end of buffer so get another
 	     16 bytes */
-	  if(recv_non_block(&(socket_info_table.socket_info[index]), 
-			    (void *)&(buf[16]), 16) == 16){
+	  if(recv_non_block(socket_info_table.socket_info[index].connector_handle, 
+			    (void*)&(buf[16]), 16, 0) == 16) {
 
 	    if( strstr(buf, ack_msg) ) return REG_SUCCESS;
 	  }

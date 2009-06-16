@@ -170,17 +170,15 @@ void poll_socket(const int index);
 int dns_lookup(char* hostname);
 
 /** @internal
-    @param sock_info Pointer to socket_info_type structure holding info
-    on socket
-    @param pbuf Pointer to buffer in which to put received data (must
-    be at least @p nbytes in size)
-    @param nbytes No. of bytes to read from socket
+    @param s File descriptor of the receiving socket
+    @param buf Pointer to buffer in which to put received data (must
+    be at least @p len in size)
+    @param len Number of bytes to read from socket
+    @param flags Flags to pass to the underlying call to recv()
 
-    Does a non-blocking receive.  Mainly used to work
-    around the fact that AIX and TRU64 recv's seem to block by default. */
-int recv_non_block(socket_info_type* sock_info, 
-		   char*             pbuf, 
-		   int               nbytes);
+    A wrapper around the recv() call to do a non-blocking receive.
+    See recv(2) and fcntl(2). */
+ssize_t recv_non_block(int s, void *buf, size_t len, int flags);
 
 #if !REG_HAS_MSG_NOSIGNAL
 /** @internal
@@ -191,7 +189,8 @@ void signal_handler_sockets(int a_signal);
 #endif
 
 /** @internal
- *  Wrap send() so we can avoid lots of #ifdefs in the main body of code
+ *  Wrap send() so we can avoid lots of #ifdefs in the main body of code.
+ *  See send(2).
  */
 ssize_t send_no_signal(int s, const void *buf, size_t len, int flags);
 

@@ -694,31 +694,21 @@ int dns_lookup(char* hostname) {
 
 /*--------------------------------------------------------------------*/
 
-int recv_non_block(socket_info_type  *sock_info,
-		   char *pbuf, int nbytes){
-
-  int nbytes_read = 0;
-
-#if defined(_AIX) || defined(TRU64)
-
-  /* So it looks like AIX blocks by default... So make the socket
-   * non-blocking as we can't control this with flags to recv() in AIX... */
-  fcntl(sock_info->connector_handle, F_SETFL, 
-	fcntl(sock_info->connector_handle, F_GETFL)|O_NONBLOCK);
-
-  nbytes_read = recv(sock_info->connector_handle, pbuf, nbytes, 0);
-
-  /* ...And turn off non-blocking again... */
-  fcntl(sock_info->connector_handle, F_SETFL, 
-	fcntl(sock_info->connector_handle, F_GETFL)&~O_NONBLOCK);
-
+ssize_t recv_non_block(int s, void *buf, size_t len, int flags) {
+#if REG_HAS_MSG_DONTWAIT
+  /* non-blocking can be achieved with a flag to recv() */
+  return recv(s, buf, len, flags | MSG_DONTWAIT);
 #else
+  ssize_t result;
+  int save_flags = fcntl(s, F_GETFL);
 
-  nbytes_read = recv(sock_info->connector_handle, pbuf, 
-		     nbytes, MSG_DONTWAIT);
+  /* turn off blocking, do the recv, then reset the flags */
+  fcntl(s, F_SETFL, save_flags | O_NONBLOCK);
+  result = recv(s, buf, len, flags);
+  fcntl(s, F_SETFL, save_flags);
+
+  return result;
 #endif
-  
-  return nbytes_read;
 }
 
 /*--------------------------------------------------------------------*/
