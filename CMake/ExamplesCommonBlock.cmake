@@ -45,8 +45,7 @@ add_executable(${EX_APP_NAME} ${EX_SRC_NAME})
 target_link_libraries(
   ${EX_APP_NAME}
   ${EXAMPLES_LINK_LINE}
-  ${XML2_LIBRARIES}
-  ${SSL_LIBRARIES}
+  ${REG_EXTERNAL_LIBS}
 )
 
 #

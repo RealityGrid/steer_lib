@@ -47,7 +47,20 @@ if(${MPI_LINK_FLAGS})
   )
 endif(${MPI_LINK_FLAGS})
 
-target_link_libraries(${EX_APP_NAME} ${REG_LINK_LIBRARIES} ${XML2_LIBRARIES} ${SSL_LIBRARIES} ${MPI_LIBRARY} ${MPI_EXTRA_LIBRARY})
+# if building static libraries the link order needs
+# to be repeated to resolve circular dependencies
+set(EXAMPLES_LINK_LINE ${REG_EXAMPLES_MODULES_LINK} ${REG_LINK_LIBRARIES})
+if(NOT REG_BUILD_SHARED_LIBS)
+  set(EXAMPLES_LINK_LINE ${EXAMPLES_LINK_LINE} ${EXAMPLES_LINK_LINE})
+endif(NOT REG_BUILD_SHARED_LIBS)
+
+target_link_libraries(
+  ${EX_APP_NAME}
+  ${MPI_LIBRARY}
+  ${MPI_EXTRA_LIBRARY}
+  ${EXAMPLES_LINK_LINE}
+  ${REG_EXTERNAL_LIBS}
+)
 
 #
 # install

@@ -144,27 +144,28 @@ if(REG_BUILD_FORTRAN_WRAPPERS)
   include(fortran-c-abi/Fortran-C-ABI)
 endif(REG_BUILD_FORTRAN_WRAPPERS)
 
-# keep a track of external libs used for configuring
+#
+# find the required external libraries and
+# keep a track of them to help with configuring
 # other projects that link against this one
-set(REG_EXTERNAL_LIBS "-lz -lm")
+#
+find_library(LIBM_LIB m)
+mark_as_advanced(LIBM_LIB)
+find_package(ZLIB REQUIRED)
+include_directories(${ZLIB_INCLUDE_DIR})
+set(REG_EXTERNAL_LIBS ${REG_EXTERNAL_LIBS} ${ZLIB_LIBRARY} ${LIBM_LIB})
 
-#
-# find libxml2
-#
 find_package(LibXml2 REQUIRED)
 include_directories("${LIBXML2_INCLUDE_DIR}")
-set(REG_EXTERNAL_LIBS "-lxml2 ${REG_EXTERNAL_LIBS}")
+set(REG_EXTERNAL_LIBS ${LIBXML2_LIBRARIES} ${REG_EXTERNAL_LIBS})
 
-#
-# find openssl
-#
 if(REG_USE_OPENSSL)
   find_package(OpenSSL REQUIRED)
   include_directories("${OPENSSL_INCLUDE_DIR}")
-  set(REG_EXTERNAL_LIBS "-lssl ${REG_EXTERNAL_LIBS}")
+  set(REG_EXTERNAL_LIBS ${OPENSSL_LIBRARIES} ${REG_EXTERNAL_LIBS})
 endif(REG_USE_OPENSSL)
 
-# libs to link examples against
+# ReG libs to link examples against
 set(REG_LINK_LIBRARIES ReG_Steer_Utils ReG_Steer)
 if(REG_BUILD_SEPARATE_SOAP_LIB)
   set(REG_LINK_LIBRARIES ${REG_LINK_LIBRARIES} ReG_Steer_SOAP)

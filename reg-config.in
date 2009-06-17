@@ -50,9 +50,9 @@ while test $# -gt 0; do
 	;;
 
     -l|--libs)
-	echo -n "-L$libdir"
+	echo -n -L$libdir
 	echo -en " -l${linklibs//;/ -l} "
-	echo $extlibs
+	echo -e ${extlibs//;/ }
 	;;
 
     -m|--mods|--modules)

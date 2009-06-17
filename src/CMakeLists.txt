@@ -141,21 +141,11 @@ if(REG_BUILD_SEPARATE_SOAP_LIB)
 endif(REG_BUILD_SEPARATE_SOAP_LIB)
 
 # link to external libs
-if(LIBXML2_FOUND)
-  target_link_libraries(ReG_Steer ${LIBXML2_LIBRARIES})
-  target_link_libraries(ReG_Steer_Utils ${LIBXML2_LIBRARIES})
-  if(REG_BUILD_SEPARATE_SOAP_LIB)
-    target_link_libraries(ReG_Steer_SOAP ${LIBXML2_LIBRARIES})
-  endif(REG_BUILD_SEPARATE_SOAP_LIB)
-endif(LIBXML2_FOUND)
-
-if(OPENSSL_FOUND)
-  target_link_libraries(ReG_Steer ${OPENSSL_LIBRARIES})
-  target_link_libraries(ReG_Steer_Utils ${OPENSSL_LIBRARIES})
-  if(REG_BUILD_SEPARATE_SOAP_LIB)
-    target_link_libraries(ReG_Steer_SOAP ${OPENSSL_LIBRARIES})
-  endif(REG_BUILD_SEPARATE_SOAP_LIB)
-endif(OPENSSL_FOUND)
+target_link_libraries(ReG_Steer ${REG_EXTERNAL_LIBS})
+target_link_libraries(ReG_Steer_Utils ${REG_EXTERNAL_LIBS})
+if(REG_BUILD_SEPARATE_SOAP_LIB)
+  target_link_libraries(ReG_Steer_SOAP ${REG_EXTERNAL_LIBS})
+endif(REG_BUILD_SEPARATE_SOAP_LIB)
 
 # set shared library version numbers
 if(REG_BUILD_SHARED_LIBS)
