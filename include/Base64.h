@@ -26,10 +26,10 @@
     @param out_data Pointer to malloc'd buffer containing encoded data
     @param out_len Length of output buffer (bytes)
 
-    Base64 encodes @p len bytes of data pointed to by @p data as 
+    Base64 encodes @p len bytes of data pointed to by @p data as
     Base64. User @e must free returned buffer when done.
  */
-int Base64_encode(const char *data, const unsigned int len, 
+int Base64_encode(const char *data, const unsigned int len,
 		  char **out_data, unsigned int *out_len);
 
 /** @internal
@@ -41,7 +41,7 @@ int Base64_encode(const char *data, const unsigned int len,
     Decodes len bytes of data pointed to by data. User must free
     returned buffer when done.
  */
-int Base64_decode(const char *data, const unsigned int len, 
+int Base64_decode(const char *data, const unsigned int len,
 		  char **out_data, unsigned int *out_len);
 
 #endif
