@@ -176,20 +176,22 @@ FILE *Open_next_file(char* base_name)
 
 /*-----------------------------------------------------------------*/
 
-int Create_lock_file(char *filename)
-{
-  char lock_file[REG_MAX_STRING_LENGTH+11];
+int Create_lock_file(char* filename) {
+  int fd;
+  char lock_file[REG_MAX_STRING_LENGTH + 5];
 
   /* Create lock file to flag that a file of same root is ready to
      be read */
 
-  sprintf(lock_file, "touch %s.lock", filename);
+  sprintf(lock_file, "%s.lock", filename);
 
-  if(system(lock_file)){
+  if((fd = creat(lock_file,
+		 (S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH))) < 0) {
 
     return REG_FAILURE;
   }
   
+  close(fd);
   return REG_SUCCESS;
 }
 

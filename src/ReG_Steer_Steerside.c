@@ -3254,7 +3254,6 @@ int Sim_attach_local(Sim_entry_type *sim, char *SimID)
   char *pchar;
   char  file_root[REG_MAX_STRING_LENGTH];
   char  filename[REG_MAX_STRING_LENGTH];
-  char  sys_cmd[REG_MAX_STRING_LENGTH];
   int   return_status;
 
   return_status = REG_FAILURE;
@@ -3337,9 +3336,16 @@ int Sim_attach_local(Sim_entry_type *sim, char *SimID)
   if(return_status == REG_SUCCESS){
 
     /* Create lock file to indicate that steerer has connected to sim */
-    sprintf(sys_cmd, "touch %s%s", sim->file_root, 
-	    STR_CONNECTED_FILENAME);
-    system(sys_cmd);
+    int fd;
+    char lock_file[REG_MAX_STRING_LENGTH];
+
+    sprintf(lock_file, "%s%s", sim->file_root, STR_CONNECTED_FILENAME);
+    if((fd = creat(lock_file,
+		   (S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH))) < 0) {
+      return REG_FAILURE;
+    }
+
+    close(fd);
   }
 
   return return_status;
