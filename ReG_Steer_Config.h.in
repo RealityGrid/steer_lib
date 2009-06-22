@@ -67,6 +67,7 @@
 #include <fcntl.h>
 #include <rpc/rpc.h>
 #include <errno.h>
+#include <dirent.h>
 
 #ifndef WIN32
 #include <unistd.h>

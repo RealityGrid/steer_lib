@@ -67,87 +67,80 @@ int file_info_table_init() {
 
 /*----------------------------------------------------------------*/
 
-int Get_file_list(char *fileroot,
-		  int  *num,
-		  char ***names)
-{
-  char  redirection[REG_MAX_STRING_LENGTH];
-  char *pchar;
-  char  bufline[REG_MAX_STRING_LENGTH];
-  int   len;
-  int   i, j;
-  FILE *fp;
+int Get_file_list(const char* dirname, int num_tags, char** tags,
+		  int* num_files, char*** filenames) {
 
-  *num = 0;
+  DIR* dir;
+  char** tmp;
+  struct dirent* entry;
+  int array_len;
+  int name_len;
+  int i, j;
+  int tag_not_found;
 
-/*   snprintf(redirection, REG_MAX_STRING_LENGTH, " > %s/ReG_files.tmp", */
-/* 	   Steerer_connection.file_root); */
-  snprintf(redirection, REG_MAX_STRING_LENGTH, " > ./ReG_files.tmp");
+  if((dir = opendir(dirname)) == NULL)
+    return REG_FAILURE;
 
-  /* Calc. length of string - 'ls -1' and slashes add 9 chars so
-     add a few more for safety.  Ask for 2*strlen(ChkTag) so that
-     we can use the end of this buffer to hold the trimmed version
-     of the tag. */
-  len = strlen(fileroot) + strlen(redirection) + 20;
-
-  if(!(pchar = (char *)malloc(len))) {
-
-    fprintf(stderr, "STEER: Get_file_list: malloc of %d bytes failed\n",
-	    len);
+  /* allocate an array of 50 filenames */
+  array_len = 50;
+  *filenames = (char**) malloc(array_len * sizeof(char*));
+  if(*filenames == NULL) {
+    closedir(dir);
     return REG_FAILURE;
   }
 
-  sprintf(pchar, "ls -1 %s %s", fileroot, redirection);
-  system(pchar);
-
-  free(pchar);
-  pchar = NULL;
-
-/*   snprintf(redirection, REG_MAX_STRING_LENGTH, "%s/ReG_files.tmp", */
-/* 	   Steerer_connection.file_root); */
-  snprintf(redirection, REG_MAX_STRING_LENGTH, "./ReG_files.tmp");
-
-  if((fp = fopen(redirection, "r"))) {
-
-    while(fgets(bufline, REG_MAX_STRING_LENGTH, fp)) {
-      (*num)++;
+  i = 0;
+  while((entry = readdir(dir)) != NULL) {
+    /* search for the tags - they must all be present */
+    tag_not_found = 0;
+    for(j = 0; j < num_tags; j++) {
+      if((strstr(entry->d_name, tags[j])) == NULL) {
+	tag_not_found = 1;
+	break;
+      }
     }
+    if(tag_not_found)
+      continue;
 
-    if(*num == 0){
-      remove(redirection);
-      fclose(fp);
-      return REG_FAILURE;
-    }
-
-    *names = (char **)malloc(*num * sizeof(char*));
-    rewind(fp);
-
-    for(i=0; i<*num; i++) {
-
-      fgets(bufline, REG_MAX_STRING_LENGTH, fp);
-      /* fgets includes '\n' in the returned buffer */
-      len = (int)strlen(bufline);
-      if(!((*names)[i] = (char *)malloc(len))) {
-
-	fprintf(stderr, "STEER: Get_file_list: malloc failed\n");
-	for(j=i; j>=0; j--) {
-	  free((*names)[i]);
-	  (*names)[i] = NULL;
+    /* do we need more space in the filenames array? */
+    if(i == array_len) {
+      array_len += 10;
+      tmp = (char**) realloc((void*)(*filenames),
+			     array_len * sizeof(char*));
+      if(tmp == NULL) {
+	for(j = 0; j < i; j++) {
+	  free((*filenames)[j]);
 	}
-	free(*names);
-	*names = NULL;
-	remove(redirection);
-	fclose(fp);
+	free(*filenames);
+	closedir(dir);
 	return REG_FAILURE;
       }
-      memcpy((*names)[i], bufline, len);
-      /* Terminate string - overwrite '\n' */
-      (*names)[i][len-1] = '\0';
+      
+      *filenames = tmp;
     }
-
-    fclose(fp);
-    remove(redirection);
+    
+    /* allocate the memory required to store the filename */
+    name_len = strlen(entry->d_name) + 1;
+    (*filenames)[i] = (char*) malloc(name_len * sizeof(char));
+    if((*filenames)[i] == NULL) {
+      for(j = 0; j < i; j++) {
+	free((*filenames)[j]);
+      }
+      free(*filenames);
+      closedir(dir);
+      return REG_FAILURE;
+    }
+    
+    strncpy((*filenames)[i], entry->d_name, name_len);
+    i++;
   }
+  
+  closedir(dir);
+
+  if(i > 0)
+    qsort(*filenames, i, sizeof(**filenames), cmpstrs);
+
+  *num_files = i;
 
   return REG_SUCCESS;
 }

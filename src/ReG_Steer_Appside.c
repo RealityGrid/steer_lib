@@ -1354,10 +1354,11 @@ int Record_checkpoint_set(int   ChkType,
     }
     pTag[count] = '\0';
 
-    sprintf(pchar, "%s/%s/*%s*", ReG_CurrentDir, Path, pTag);
+/*     sprintf(pchar, "%s/%s/\*%s*", ReG_CurrentDir, Path, pTag); */
+    sprintf(pchar, "%s/%s", ReG_CurrentDir, Path);
 
     filenames = NULL;
-    status = Get_file_list(pchar, &nfiles, &filenames);
+    status = Get_file_list(pchar, 1, &pTag, &nfiles, &filenames);
     free(pchar);
 
     if( (status != REG_SUCCESS) || !nfiles){

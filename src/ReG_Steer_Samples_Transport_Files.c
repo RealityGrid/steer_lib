@@ -563,42 +563,45 @@ int Consume_start_data_check_impl(int index) {
   int    nfiles;
   char  *pchar;
   char** filenames;
-  char   fileroot[REG_MAX_STRING_LENGTH];
+  char buffer[REG_MAX_STRING_LENGTH];
+  char* tags[2];
 
   /* In the short term, use the label (with spaces replaced by
      '_'s) as the filename */
-  sprintf(fileroot, "%s%s", file_info_table.file_info[index].directory,
-	  IOTypes_table.io_def[index].label);
+  tags[0] = (char*) malloc(strlen(IOTypes_table.io_def[index].label) * sizeof(char));
+  strcpy(tags[0], IOTypes_table.io_def[index].label);
 
   /* Remove trailing white space */
-  i = strlen(fileroot);
-  while(fileroot[--i] == ' ');
+  i = strlen(tags[0]);
+  while(tags[0][--i] == ' ');
 
   /* Terminate string and correct length of string (since final
      character we looked at wasn't actually blank) */
-  fileroot[++i] = '\0';
+  tags[0][++i] = '\0';
 
   /* Replace any spaces with '_' */
-  pchar = (char*) strchr(fileroot, ' ');
-  while( pchar && ((pchar - fileroot + 1) < i) ) {
+  pchar = (char*) strchr(tags[0], ' ');
+  while( pchar && ((pchar - tags[0] + 1) < i) ) {
     *pchar = '_';
     pchar = (char*) strchr(++pchar,' ');
   }
 
-  strcat(fileroot, "_*.lock");
+  tags[1] = ".lock";
 
   filenames = NULL;
-  if(Get_file_list(fileroot, &nfiles, &filenames) != REG_SUCCESS ||
-     nfiles == 0) {
+  if(Get_file_list(file_info_table.file_info[index].directory, 2, tags,
+		   &nfiles, &filenames) != REG_SUCCESS || nfiles == 0) {
     return REG_FAILURE;
   }
 
-  strcpy(file_info_table.file_info[index].filename, filenames[0]);
+  sprintf(file_info_table.file_info[index].filename, "%s%s",
+	  file_info_table.file_info[index].directory, filenames[0]);
 
   for(i=0; i<nfiles; i++){
     free(filenames[i]);
   }
   free(filenames);
+  free(tags[0]);
 
   /* Remove the lock file to take ownership of the data file */
   remove(file_info_table.file_info[index].filename);
@@ -620,9 +623,8 @@ int Consume_start_data_check_impl(int index) {
     return REG_FAILURE;
   }
 
-  /* Use fileroot buffer as is plenty big enough for the small header
-     we want to read here */
-  if(fread((void *)fileroot, 
+  /* Read header */
+  if(fread((void *)buffer, 
 	   (size_t)1, 
 	   REG_PACKET_SIZE, 
 	   file_info_table.file_info[index].fp) != (size_t)REG_PACKET_SIZE) {
@@ -633,7 +635,7 @@ int Consume_start_data_check_impl(int index) {
     return REG_FAILURE;
   }
 
-  if(!strstr(fileroot, REG_DATA_HEADER)) {
+  if(!strstr(buffer, REG_DATA_HEADER)) {
     fprintf(stderr, "STEER: Consume_start_data_check_file: wrong "
 	    "header from file: %s\n",
 	    file_info_table.file_info[index].filename);

@@ -110,21 +110,6 @@ int Initialize_IOType_transport_file(int direction,
 int Consume_start_data_check_file(int index);
 
 /** @internal
-    @param fileroot Pattern to pass to 'ls' command
-    @param num Number of files found
-    @param names Array of char* holding names of files found
-
-    Searches for files matching the pattern specified in fileroot (@e
-    i.e.  does 'ls &lt;fileroot&gt;').  If any are found, @p names is
-    malloc'd to point to an array of char* and each entry in this
-    array is malloc'd and set to the relevant filename. These ptrs
-    MUST be free'd. @p num can be zero even if the routine returns
-    REG_SUCCESS. */
-int Get_file_list(char *fileroot,
-		  int  *num,
-		  char ***names);
-
-/** @internal
     @param index Index of IOType from which to read data.
     @param datatype Type of data to read
     @param num_bytes_to_read No. of bytes to read
