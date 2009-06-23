@@ -260,9 +260,9 @@ extern PREFIX int Add_checkpoint_file(int   ChkType,
    once it has successfully taken a checkpoint of type @p ChkType.  If
    Add_checkpoint_file() has not been called one or more times prior
    to this call then @p ChkTag is used by the library to identify all
-   of the files belonging to the checkpoint (@e i.e. executing 'ls
-   ./@p Path/*@p ChkTag*' will return a list of all the files
-   constituting the checkpoint).  If one or more calls to
+   of the files belonging to the checkpoint (@e i.e. searching ./@p Path
+   for files with @p ChkTag in their names will return a list of all the
+   files constituting the checkpoint).  If one or more calls to
    Add_checkpoint_file() have been made since the last call of this
    routine then the checkpoint set is recorded as consisting of the
    file(s) specified in those calls.  That list of files is reset

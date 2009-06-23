@@ -33,7 +33,7 @@
   */
 
 #include "ReG_Steer_Config.h"
-
+#include "ReG_Steer_types.h"
 #include "ReG_Steer_Samples_Transport_API.h"
 #include "ReG_Steer_Files_Common.h"
 #include "ReG_Steer_Common.h"
@@ -45,7 +45,6 @@ extern file_info_table_type file_info_table;
 /* Need access to these tables which are actually declared in 
    ReG_Steer_Appside_internal.h */
 extern IOdef_table_type IOTypes_table;
-extern Steerer_connection_table_type Steerer_connection;
 
 /** Global scratch buffer - declared in ReG_Steer_Appside.c */
 extern char Global_scratch_buffer[];
@@ -53,7 +52,7 @@ extern char Global_scratch_buffer[];
 /*---------------------------------------------------*/
 
 int Initialize_samples_transport() {
-  return file_info_table_init();
+  return file_info_table_init(IOTypes_table.max_entries);
 }
 
 /*---------------------------------------------------*/
@@ -121,7 +120,7 @@ int Emit_stop_impl(int index) {
   }
   /* Create lock file for this data file to prevent race 
      conditions */
-  Create_lock_file(file_info_table.file_info[index].filename);
+  create_lock_file(file_info_table.file_info[index].filename);
 
   return REG_SUCCESS;
 }

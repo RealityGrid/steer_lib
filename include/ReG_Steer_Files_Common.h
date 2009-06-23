@@ -50,7 +50,7 @@ typedef struct {
 
 /* Function Prototypes */
 
-int file_info_table_init();
+int file_info_table_init(const int max_entries);
 
 /** @internal
     @param dir The directory to search
@@ -76,5 +76,33 @@ int Get_file_list(const char* dir, int num_tags, char** tags,
 static int cmpstrs(const void* str1, const void* str2) {
   return strcmp(*(char* const*) str1, *(char* const*) str2);
 }
+
+/** @internal
+    @param base_name Root of the filename to search for
+
+    Searches for and opens the next file in a numbered
+    sequence with the specified root name */
+FILE* open_next_file(char* base_name);
+
+/** @internal
+    @param filename Base name of lock file
+
+    Creates a lock file with name consisting of ".lock"
+    appended to supplied name */
+int create_lock_file(char* filename);
+
+/** @internal
+    @param filename Full path to file to delete
+
+    Delete the specified file (must have full path) */
+int delete_file(char* filename);
+
+/** @internal
+    @param base_name Base of the name of the messaging files to look for
+
+    Called when steering finished - cleans up any files that either the app
+    or steerer hasn't got around to consuming 
+ */
+int remove_files(char* base_name);
 
 #endif /* __REG_STEER_FILES_COMMON_H__ */

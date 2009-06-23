@@ -55,8 +55,6 @@ int main(){
   int    chktype_handle[REG_INITIAL_NUM_IOTYPES];
   char   chk_tag[REG_MAX_STRING_LENGTH];
   REG_IOHandleType iohandle;
-  int    data_type;
-  int    data_count;
 	 
   int    status;
   int    numCommands;

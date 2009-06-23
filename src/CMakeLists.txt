@@ -39,26 +39,9 @@ set(REG_LIB_SRCS
   ReG_Steer_Common.c
   ReG_Steer_Proxy_utils.c
   ReG_Steer_XML.c
-  ReG_Steer_Steerside_Soap.c
-  ReG_Steer_Appside_Soap.c
-  ReG_Steer_Appside_File.c
   ReG_Steer_Logging.c
-  ReG_Steer_Steerside_WSRF.c
-  ReG_Steer_Appside_WSRF.c
-  ReG_Steer_Steerside_Direct.c
-  ReG_Steer_Appside_Direct.c
-)
-
-set(REG_LIB_UTILS_SRCS
-  ReG_Steer_Utils_WSRF.c
   ReG_Steer_Utils.c
   ReG_Steer_Browser.c
-)
-
-set(REG_LIB_SOAP_SRCS
-  stdsoap2.c
-  soapC.c
-  soapClient.c
 )
 
 # header files and definitions
@@ -122,30 +105,16 @@ endif(REG_BUILD_MODULAR_LIBS)
 # the static libs are to be embedded in a shared object
 if(NOT REG_BUILD_SHARED_LIBS)
   set_source_files_properties(
-    ${REG_LIB_SRCS} ${REG_LIB_UTILS_SRCS} ${REG_LIB_SOAP_SRCS}
+    ${REG_LIB_SRCS}
     PROPERTIES COMPILE_FLAGS -fPIC
   )
 endif(NOT REG_BUILD_SHARED_LIBS)
 
-# the libraries we want to build
-if(NOT REG_BUILD_SEPARATE_SOAP_LIB)
-  set(REG_LIB_SRCS ${REG_LIB_SRCS} ${REG_LIB_SOAP_SRCS})
-endif(NOT REG_BUILD_SEPARATE_SOAP_LIB)
-
 add_library(ReG_Steer ${REG_LIB_TYPE} ${REG_LIB_SRCS})
-add_library(ReG_Steer_Utils ${REG_LIB_TYPE} ${REG_LIB_UTILS_SRCS})
-set(ReG_Steer_INSTALL_TARGETS ReG_Steer ReG_Steer_Utils)
-if(REG_BUILD_SEPARATE_SOAP_LIB)
-  add_library(ReG_Steer_SOAP ${REG_LIB_TYPE} ${REG_LIB_SOAP_SRCS})
-  set(ReG_Steer_INSTALL_TARGETS ${ReG_Steer_INSTALL_TARGETS} ReG_Steer_SOAP)
-endif(REG_BUILD_SEPARATE_SOAP_LIB)
+set(ReG_Steer_INSTALL_TARGETS ReG_Steer)
 
 # link to external libs
 target_link_libraries(ReG_Steer ${REG_EXTERNAL_LIBS})
-target_link_libraries(ReG_Steer_Utils ${REG_EXTERNAL_LIBS})
-if(REG_BUILD_SEPARATE_SOAP_LIB)
-  target_link_libraries(ReG_Steer_SOAP ${REG_EXTERNAL_LIBS})
-endif(REG_BUILD_SEPARATE_SOAP_LIB)
 
 # set shared library version numbers
 if(REG_BUILD_SHARED_LIBS)

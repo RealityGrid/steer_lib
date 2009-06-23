@@ -40,13 +40,6 @@
 #include "ReG_Steer_Common.h"
 #include "ReG_Steer_Logging.h"
 #include "ReG_Steer_Appside_internal.h"
-#ifdef REG_DIRECT_TCP_STEERING
-#include "ReG_Steer_Appside_Direct.h"
-#else
-#ifdef REG_SOAP_STEERING
-#include "ReG_Steer_Appside_Soap.h"
-#endif
-#endif /* REG_DIRECT_TCP_STEERING */
 
 /** Log of checkpoints taken - declared in ReG_Steer_Appside.c  */
 extern Chk_log_type Chk_log;
@@ -84,13 +77,13 @@ int Initialize_log(Chk_log_type *log, log_type_type log_type)
     for(i=0; i<REG_MAX_NUM_STR_PARAMS; i++){
       log->param_send_all[i] = REG_TRUE;
     }
-#ifdef REG_DIRECT_TCP_STEERING
+/* #ifdef REG_DIRECT_TCP_STEERING */
 
-#else
-#ifdef REG_SOAP_STEERING
-    log->send_all    	= REG_FALSE;
-#endif
-#endif /* REG_DIRECT_TCP_STEERING */
+/* #else */
+/* #ifdef REG_SOAP_STEERING */
+/*     log->send_all    	= REG_FALSE; */
+/* #endif */
+/* #endif */ /* REG_DIRECT_TCP_STEERING */
 
     /* We delete any existing parameter log file rather than
        append to it */
@@ -234,17 +227,17 @@ int Save_log(Chk_log_type *log)
     if(status == REG_SUCCESS){
       fprintf(log->file_ptr, "%s", buf);
     }
-#ifdef REG_DIRECT_TCP_STEERING
+/* #ifdef REG_DIRECT_TCP_STEERING */
 
-#else
-#ifdef REG_SOAP_STEERING
-#ifdef REG_WSRF
-    Save_log_wsrf(buf);
-#else
-    Save_log_soap(buf);
-#endif
-#endif
-#endif /* REG_DIRECT_TCP_STEERING */
+/* #else */
+/* #ifdef REG_SOAP_STEERING */
+/* #ifdef REG_WSRF */
+/*     Save_log_wsrf(buf); */
+/* #else */
+/*     Save_log_soap(buf); */
+/* #endif */
+/* #endif */
+/* #endif */ /* REG_DIRECT_TCP_STEERING */
   }
 
   log->num_entries = 0;

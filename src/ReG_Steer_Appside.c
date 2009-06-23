@@ -39,9 +39,7 @@
 #include "ReG_Steer_Appside.h"
 #include "ReG_Steer_Appside_internal.h"
 #include "ReG_Steer_Samples_Transport_API.h"
-#include "ReG_Steer_Appside_Direct.h"
-#include "ReG_Steer_Appside_Soap.h"
-#include "ReG_Steer_Appside_WSRF.h"
+#include "ReG_Steer_Steering_Transport_API.h"
 #include "ReG_Steer_Logging.h"
 #include "Base64.h"
 #include "soapRealityGrid.nsmap"
@@ -125,7 +123,6 @@ static int Next_IO_Chk_handle = REG_MIN_IOTYPE_HANDLE;
 /** Linked list of arrays we've alloc'ed for the user when
     Alloc_string_array was called */
 struct ReG_array_list {
-
   char **array;
   struct ReG_array_list* next;
 };
@@ -1354,7 +1351,6 @@ int Record_checkpoint_set(int   ChkType,
     }
     pTag[count] = '\0';
 
-/*     sprintf(pchar, "%s/%s/\*%s*", ReG_CurrentDir, Path, pTag); */
     sprintf(pchar, "%s/%s", ReG_CurrentDir, Path);
 
     filenames = NULL;
@@ -2825,13 +2821,13 @@ int Steering_control(int     SeqNum,
   /* If we're not steering via SOAP (and a Steering Grid Service)
      then we can't emit our parameter definitions etc. until
      a steerer has connected */
-#ifdef REG_DIRECT_TCP_STEERING
+/* #ifdef REG_DIRECT_TCP_STEERING */
   if(do_steer){
-#else
-#ifndef REG_SOAP_STEERING 
-  if(do_steer){
-#endif /* !REG_SOAP_STEERING */
-#endif
+/* #else */
+/* #ifndef REG_SOAP_STEERING  */
+/*   if(do_steer){ */
+/* #endif /\* !REG_SOAP_STEERING *\/ */
+/* #endif */
 
     /* If registered params have changed since the last time then
        tell the steerer about the current set */
@@ -2875,12 +2871,12 @@ int Steering_control(int     SeqNum,
        Service) then we can and should publish our parameter
        definitions etc., irrespective of whether a steerer is
        attached */
-#ifdef REG_DIRECT_TCP_STEERING
-#else
-#ifdef REG_SOAP_STEERING
-  if(do_steer){
-#endif
-#endif
+/* #ifdef REG_DIRECT_TCP_STEERING */
+/* #else */
+/* #ifdef REG_SOAP_STEERING */
+/*   if(do_steer){ */
+/* #endif */
+/* #endif */
 
     /* If we're being steered (no matter how) then... */
 
@@ -4080,37 +4076,39 @@ int Unpack_control_msg(struct control_struct *ctrl,
 int Detach_from_steerer()
 {
   int i;
-#ifdef REG_DIRECT_TCP_STEERING
-  Detach_from_steerer_direct();
-#else
-#ifdef REG_SOAP_STEERING
+/* #ifdef REG_DIRECT_TCP_STEERING */
+/*   Detach_from_steerer_direct(); */
+/* #else */
+/* #ifdef REG_SOAP_STEERING */
 
-#ifndef REG_WSRF
-  Detach_from_steerer_soap();
-  /* No need for this in WSRF as protocol no longer calls for
-     client to wait for confirmation from application */
-#endif
+/* #ifndef REG_WSRF */
+/*   Detach_from_steerer_soap(); */
+/*   /\* No need for this in WSRF as protocol no longer calls for */
+/*      client to wait for confirmation from application *\/ */
+/* #endif */
 
-#else /* File-based steering */
+/* #else /\* File-based steering *\/ */
 
-  Detach_from_steerer_file();
+/*   Detach_from_steerer_file(); */
 
-#endif /* File-based steering */
-#endif /* REG_DIRECT_TCP_STEERING */
+/* #endif /\* File-based steering *\/ */
+/* #endif /\* REG_DIRECT_TCP_STEERING *\/ */
+
+  Detach_from_steerer_impl();
 
   /* Flag that all entries in log need to be sent to steerer (in case
      another one attaches later on) */
   Chk_log.send_all           = REG_TRUE;
   Chk_log.emit_in_progress   = REG_FALSE;
-#ifdef REG_DIRECT_TCP_STEERING
+/* #ifdef REG_DIRECT_TCP_STEERING */
 
-#else
-#ifdef REG_SOAP_STEERING
-  Param_log.send_all         = REG_FALSE;
-#else
-  Param_log.send_all         = REG_TRUE;
-#endif
-#endif /* REG_DIRECT_TCP_STEERING */
+/* #else */
+/* #ifdef REG_SOAP_STEERING */
+/*   Param_log.send_all         = REG_FALSE; */
+/* #else */
+/*   Param_log.send_all         = REG_TRUE; */
+/* #endif */
+/* #endif */ /* REG_DIRECT_TCP_STEERING */
   for(i=0; i<REG_MAX_NUM_STR_PARAMS; i++){
     Param_log.param_send_all[i] = REG_TRUE;
   }
@@ -4707,23 +4705,22 @@ int Make_chunk_header(char *header,
 
 /*--------------------------------------------------------------------*/
 
-int Steerer_connected()
-{
+int Steerer_connected() {
+/* #ifdef REG_DIRECT_TCP_STEERING */
+/*   return Steerer_connected_direct(); */
+/* #else /\* REG_DIRECT_TCP_STEERING *\/ */
+/* #ifdef REG_SOAP_STEERING */
+/* #ifdef REG_WSRF */
+/*   return Steerer_connected_wsrf(); */
+/* #else */
+/*   return Steerer_connected_soap(); */
+/* #endif */
+/* #else */
 
-#ifdef REG_DIRECT_TCP_STEERING
-  return Steerer_connected_direct();
-#else /* REG_DIRECT_TCP_STEERING */
-#ifdef REG_SOAP_STEERING
-#ifdef REG_WSRF
-  return Steerer_connected_wsrf();
-#else
-  return Steerer_connected_soap();
-#endif
-#else
-
-  return Steerer_connected_file();
-#endif
-#endif /* REG_DIRECT_TCP_STEERING */
+/*   return Steerer_connected_file(); */
+/* #endif */
+/* #endif /\* REG_DIRECT_TCP_STEERING *\/ */
+  return Steerer_connected_impl();
 }
 
 /*-------------------------------------------------------------------*/
@@ -4734,21 +4731,22 @@ int Send_status_msg(char *buf)
   fprintf(stderr, "STEER: Send_status_msg: sending:\n>>%s<<\n", buf);
 #endif
 
-#ifdef REG_DIRECT_TCP_STEERING
-  return Send_status_msg_direct(&(Steerer_connection.socket_info), buf);
-#else
-#ifdef REG_SOAP_STEERING
+/* #ifdef REG_DIRECT_TCP_STEERING */
+/*   return Send_status_msg_direct(&(Steerer_connection.socket_info), buf); */
+/* #else */
+/* #ifdef REG_SOAP_STEERING */
 
-#ifdef REG_WSRF
-  return Send_status_msg_wsrf(buf);
-#else
-  return Send_status_msg_soap(buf);
-#endif
-#else
+/* #ifdef REG_WSRF */
+/*   return Send_status_msg_wsrf(buf); */
+/* #else */
+/*   return Send_status_msg_soap(buf); */
+/* #endif */
+/* #else */
 
-  return Send_status_msg_file(buf);
-#endif
-#endif /* REG_DIRECT_TCP_STEERING */
+/*   return Send_status_msg_file(buf); */
+/* #endif */
+/* #endif */ /* REG_DIRECT_TCP_STEERING */
+  return Send_status_msg_impl(buf);
 }
 
 /*-------------------------------------------------------------------*/
@@ -4756,22 +4754,23 @@ int Send_status_msg(char *buf)
 struct msg_struct *Get_control_msg()
 {
 
-#ifdef REG_DIRECT_TCP_STEERING
-  return Get_control_msg_direct(&(Steerer_connection.socket_info));
-#else
-#ifdef REG_SOAP_STEERING
-#ifdef REG_WSRF
-  return Get_control_msg_wsrf();
-#else
-  return Get_control_msg_soap();
-#endif
-#else
+/* #ifdef REG_DIRECT_TCP_STEERING */
+/*   return Get_control_msg_direct(&(Steerer_connection.socket_info)); */
+/* #else */
+/* #ifdef REG_SOAP_STEERING */
+/* #ifdef REG_WSRF */
+/*   return Get_control_msg_wsrf(); */
+/* #else */
+/*   return Get_control_msg_soap(); */
+/* #endif */
+/* #else */
 
-  return Get_control_msg_file();
+/*   return Get_control_msg_file(); */
 
-#endif
-#endif /* REG_DIRECT_TCP_STEERING */
+/* #endif */
+/* #endif /\* REG_DIRECT_TCP_STEERING *\/ */
 
+  return Get_control_msg_impl();
 }
 
 /*-------------------------------------------------------------------*/
@@ -4810,26 +4809,28 @@ int Initialize_steering_connection(int  NumSupportedCmds,
 	  "interval = %d\n", (int)Steerer_connection.polling_interval);
 #endif
 
-#ifdef REG_DIRECT_TCP_STEERING
-  return Initialize_steering_connection_direct(NumSupportedCmds,
-					       SupportedCmds);
-#else
-#ifdef REG_SOAP_STEERING
+/* #ifdef REG_DIRECT_TCP_STEERING */
+/*   return Initialize_steering_connection_direct(NumSupportedCmds, */
+/* 					       SupportedCmds); */
+/* #else */
+/* #ifdef REG_SOAP_STEERING */
 
-#ifdef REG_WSRF
-  return Initialize_steering_connection_wsrf(NumSupportedCmds,
-					     SupportedCmds);
-#else
-  return Initialize_steering_connection_soap(NumSupportedCmds,
-					     SupportedCmds);
-#endif
-#else
+/* #ifdef REG_WSRF */
+/*   return Initialize_steering_connection_wsrf(NumSupportedCmds, */
+/* 					     SupportedCmds); */
+/* #else */
+/*   return Initialize_steering_connection_soap(NumSupportedCmds, */
+/* 					     SupportedCmds); */
+/* #endif */
+/* #else */
 
-  return Initialize_steering_connection_file(NumSupportedCmds,
-					     SupportedCmds);
-#endif
-#endif /* REG_DIRECT_TCP_STEERING */
+/*   return Initialize_steering_connection_file(NumSupportedCmds, */
+/* 					     SupportedCmds); */
+/* #endif */
+/* #endif */ /* REG_DIRECT_TCP_STEERING */
 
+  return Initialize_steering_connection_impl(NumSupportedCmds,
+					     SupportedCmds);
 }
 
 /*-------------------------------------------------------------------*/
@@ -4911,34 +4912,35 @@ int Set_steering_directory()
 int Finalize_steering_connection()
 {
 
-#ifdef REG_DIRECT_TCP_STEERING
-  return Finalize_steering_connection_direct();
-#else
-#ifdef REG_SOAP_STEERING
+/* #ifdef REG_DIRECT_TCP_STEERING */
+/*   return Finalize_steering_connection_direct(); */
+/* #else */
+/* #ifdef REG_SOAP_STEERING */
 
-#ifdef REG_WSRF
-  return Finalize_steering_connection_wsrf();
-#else
-  return Finalize_steering_connection_soap();
-#endif
+/* #ifdef REG_WSRF */
+/*   return Finalize_steering_connection_wsrf(); */
+/* #else */
+/*   return Finalize_steering_connection_soap(); */
+/* #endif */
 
-#else
-  int  commands[1];
+/* #else */
+/*   int  commands[1]; */
 
-  if(ReG_SteeringActive){
+/*   if(ReG_SteeringActive){ */
 
-    commands[0] = REG_STR_DETACH;
-    Emit_status(0,
-		0,
-		NULL,
-		1,
-		commands);
-  }
+/*     commands[0] = REG_STR_DETACH; */
+/*     Emit_status(0, */
+/* 		0, */
+/* 		NULL, */
+/* 		1, */
+/* 		commands); */
+/*   } */
 
-  return Finalize_steering_connection_file();
-#endif
-#endif /* REG_DIRECT_TCP_STEERING */
+/*   return Finalize_steering_connection_file(); */
+/* #endif */
+/* #endif */ /* REG_DIRECT_TCP_STEERING */
 
+  return Finalize_steering_connection_impl();
 }
 /*---------------------------------------------------*/
 

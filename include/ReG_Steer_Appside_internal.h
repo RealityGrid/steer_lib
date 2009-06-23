@@ -73,13 +73,6 @@ typedef struct {
   /** Where to write files for file-based steering */
   char			file_root[REG_MAX_STRING_LENGTH];
 
-  /** Struct holding info on Steering Grid Service (for SOAP-based steering) */
-  SGS_info_type         SGS_info;
-
-  /** Struct holding info on socket connection (for direct tcp steering) */
-
-  Direct_info_type      socket_info;
-
   /** String to hold 'supported commands' message 'cos we can't 
       actually send it until a steerer has connected in the case
       where we're using SOAP */

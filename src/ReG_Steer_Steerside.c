@@ -41,11 +41,9 @@
 #include "ReG_Steer_Steerside.h"
 #include "ReG_Steer_Steerside_internal.h"
 #include "ReG_Steer_Proxy_utils.h"
-#include "ReG_Steer_Steerside_Direct.h"
-#include "ReG_Steer_Steerside_Soap.h"
-#include "ReG_Steer_Steerside_WSRF.h"
 #include "ReG_Steer_Browser.h"
 #include "Base64.h"
+#include "ReG_Steer_Steering_Transport_API.h"
 
 /*--------------------- Data structures -------------------*/
 
@@ -147,8 +145,7 @@ int Steerer_initialize()
   Sim_table.sim = (Sim_entry_type *)malloc(REG_MAX_NUM_STEERED_SIM*
 					   sizeof(Sim_entry_type));
 
-  if(Sim_table.sim == NULL){
-    
+  if(Sim_table.sim == NULL) {
     fprintf(stderr, "STEER: Steerer_initialize: failed to allocate memory\n");
     return REG_FAILURE;
   }
@@ -199,7 +196,10 @@ int Steerer_initialize()
     Steer_config.ossl_rand_available = REG_FALSE;
   }
 
-  return REG_SUCCESS;
+  /* init the steering transport module */
+  
+  return Initialize_steerside_transport();
+/*   return REG_SUCCESS; */
 }
 
 /*----------------------------------------------------------*/
@@ -403,18 +403,18 @@ int Sim_attach_secure(const char                     *SimID,
   }
 
   /* Initialise Steering Grid Service-related data */
-  sim_ptr->SGS_info.active = REG_FALSE;
-  sim_ptr->SGS_info.sde_count = 0;
-  sim_ptr->SGS_info.sde_index = 0;
+/*   sim_ptr->SGS_info.active = REG_FALSE; */
+/*   sim_ptr->SGS_info.sde_count = 0; */
+/*   sim_ptr->SGS_info.sde_index = 0; */
   /* We'll only be able to do WS-Security if we previously successfully
      initialized the OpenSSL random number generator */
   if(Steer_config.ossl_rand_available == REG_TRUE){
-    strncpy(sim_ptr->SGS_info.username, sec->userDN, REG_MAX_STRING_LENGTH);
-    strncpy(sim_ptr->SGS_info.passwd, sec->passphrase, REG_MAX_STRING_LENGTH);
+/*     strncpy(sim_ptr->SGS_info.username, sec->userDN, REG_MAX_STRING_LENGTH); */
+/*     strncpy(sim_ptr->SGS_info.passwd, sec->passphrase, REG_MAX_STRING_LENGTH); */
   }
   else{
-    sim_ptr->SGS_info.username[0] = '\0';
-    sim_ptr->SGS_info.passwd[0] = '\0';
+/*     sim_ptr->SGS_info.username[0] = '\0'; */
+/*     sim_ptr->SGS_info.passwd[0] = '\0'; */
   }
 
   /* SSL configuration */
@@ -438,47 +438,52 @@ int Sim_attach_secure(const char                     *SimID,
 
     return_status = REG_FAILURE;
 
-    if(strstr(SimID, "http")){
-      /* Try to use SOAP (and Steering Grid Service) - if this fails
-	 then SimID isn't a valid GSH so we revert to file-based steering */
-#ifdef REG_DEBUG
-      fprintf(stderr, "STEER: Sim_attach: calling Sim_attach_soap, "
-	      "current_sim = %d\n", current_sim);
-#endif
+    /* if(strstr(SimID, "http")){ */
+/*       /\* Try to use SOAP (and Steering Grid Service) - if this fails */
+/* 	 then SimID isn't a valid GSH so we revert to file-based steering *\/ */
+/* #ifdef REG_DEBUG */
+/*       fprintf(stderr, "STEER: Sim_attach: calling Sim_attach_soap, " */
+/* 	      "current_sim = %d\n", current_sim); */
+/* #endif */
 
-#ifdef REG_WSRF
-      return_status = Sim_attach_wsrf(&(Sim_table.sim[current_sim]), 
-				      (char *)SimID);
-#else
-      return_status = Sim_attach_soap(&(Sim_table.sim[current_sim]), 
-				      (char *)SimID);
-#endif
-      if(return_status == REG_SUCCESS){
-	Sim_table.sim[current_sim].SGS_info.active = REG_TRUE;
-      }
-      else{
-	Sim_table.sim[current_sim].SGS_info.active = REG_FALSE;
-      }
-    }
+/* #ifdef REG_WSRF */
+/*       return_status = Sim_attach_wsrf(&(Sim_table.sim[current_sim]),  */
+/* 				      (char *)SimID); */
+/* #else */
+/*       return_status = Sim_attach_soap(&(Sim_table.sim[current_sim]),  */
+/* 				      (char *)SimID); */
+/* #endif */
+/*       if(return_status == REG_SUCCESS){ */
+/* 	Sim_table.sim[current_sim].SGS_info.active = REG_TRUE; */
+/*       } */
+/*       else{ */
+/* 	Sim_table.sim[current_sim].SGS_info.active = REG_FALSE; */
+/*       } */
+/*     } */
 
     if(return_status == REG_FAILURE){
 
-#ifdef REG_DIRECT_TCP_STEERING
-      /* use direct tcp steering */
 #ifdef REG_DEBUG
-      fprintf(stderr, "STEER: Sim_attach: calling Sim_attach_direct...\n");
+      fprintf(stderr, "STEER: Sim_attach: calling Sim_attach...\n");
 #endif
-      return_status = Sim_attach_direct(&(Sim_table.sim[current_sim]), (char*) SimID);
+      return_status = Sim_attach_impl(current_sim, (char*) SimID);
 
-#else /* REG_DIRECT_TCP_STEERING */
+/* #ifdef REG_DIRECT_TCP_STEERING */
+/*       /\* use direct tcp steering *\/ */
+/* #ifdef REG_DEBUG */
+/*       fprintf(stderr, "STEER: Sim_attach: calling Sim_attach_direct...\n"); */
+/* #endif */
+/*       return_status = Sim_attach_direct(&(Sim_table.sim[current_sim]), (char*) SimID); */
 
-	/* Use local file system */
-#ifdef REG_DEBUG
-	fprintf(stderr, "STEER: Sim_attach: calling Sim_attach_local...\n");
-#endif
-	return_status = Sim_attach_local(&(Sim_table.sim[current_sim]), 
-				       (char *)SimID);
-#endif /* REG_DIRECT_TCP_STEERING */
+/* #else /\* REG_DIRECT_TCP_STEERING *\/ */
+
+/* 	/\* Use local file system *\/ */
+/* #ifdef REG_DEBUG */
+/* 	fprintf(stderr, "STEER: Sim_attach: calling Sim_attach_local...\n"); */
+/* #endif */
+/* 	return_status = Sim_attach_local(&(Sim_table.sim[current_sim]),  */
+/* 				       (char *)SimID); */
+/* #endif */ /* REG_DIRECT_TCP_STEERING */
     }
   }
 
@@ -585,24 +590,26 @@ int Get_next_message(int   *SimHandle,
 	/* Have a proxy so communicate with sim. using it */
 	Sim_table.sim[isim].msg = Get_status_msg_proxy(&(Sim_table.sim[isim]));
       }
-      else{
+      else {
+	Sim_table.sim[isim].msg = Get_status_msg_impl(isim, REG_TRUE);
 
-        if(Sim_table.sim[isim].SGS_info.active){
+/*         if(Sim_table.sim[isim].SGS_info.active){ */
 
-#ifdef REG_WSRF
-  	  Sim_table.sim[isim].msg = Get_status_msg_wsrf(&(Sim_table.sim[isim]));
-#else
-  	  Sim_table.sim[isim].msg = Get_status_msg_soap(&(Sim_table.sim[isim]));
-#endif
-	}
-	else{
-#ifdef REG_DIRECT_TCP_STEERING
-	  Sim_table.sim[isim].msg = Get_status_msg_direct(&(Sim_table.sim[isim]), REG_TRUE);
-#else
-	  /* No proxy and no SGS available so using 'local' file system */
-	  Sim_table.sim[isim].msg = Get_status_msg_file(&(Sim_table.sim[isim]));
-#endif
-	}
+/* #ifdef REG_WSRF */
+/*   	  Sim_table.sim[isim].msg = Get_status_msg_wsrf(&(Sim_table.sim[isim])); */
+/* #else */
+/*   	  Sim_table.sim[isim].msg = Get_status_msg_soap(&(Sim_table.sim[isim])); */
+/* #endif */
+/* 	} */
+/* 	else{ */
+/* 	  Sim_table.sim[isim].msg = Get_status_msg_impl(&(Sim_table.sim[isim]), */
+/* #ifdef REG_DIRECT_TCP_STEERING */
+/* 	  Sim_table.sim[isim].msg = Get_status_msg_direct(&(Sim_table.sim[isim]), REG_TRUE); */
+/* #else */
+/* 	  /\* No proxy and no SGS available so using 'local' file system *\/ */
+/* 	  Sim_table.sim[isim].msg = Get_status_msg_file(&(Sim_table.sim[isim])); */
+/* #endif */
+/* 	} */
       }
 
       /* If we got a message & parsed it successfully then we're done */
@@ -673,36 +680,36 @@ struct msg_struct *Get_status_msg_proxy(Sim_entry_type *sim)
 
 /*--------------------------------------------------------------------*/
 
-struct msg_struct *Get_status_msg_file(Sim_entry_type *sim)
-{
-  struct msg_struct *msg = NULL;
-  char  filename[REG_MAX_STRING_LENGTH];
-  FILE *fp;
-  int   return_status;
+/* struct msg_struct *Get_status_msg_file(Sim_entry_type *sim) */
+/* { */
+/*   struct msg_struct *msg = NULL; */
+/*   char  filename[REG_MAX_STRING_LENGTH]; */
+/*   FILE *fp; */
+/*   int   return_status; */
 
-  sprintf(filename, "%s%s", sim->file_root, APP_TO_STR_FILENAME);
+/*   sprintf(filename, "%s%s", sim->file_root, APP_TO_STR_FILENAME); */
 
-  if( (fp = Open_next_file(filename)) ){
+/*   if( (fp = Open_next_file(filename)) ){ */
 	
-    fclose(fp);
+/*     fclose(fp); */
 
-    /* Parse it and store it in structure pointed to by msg */
+/*     /\* Parse it and store it in structure pointed to by msg *\/ */
 
-    msg = New_msg_struct();
+/*     msg = New_msg_struct(); */
 
-    return_status = Parse_xml_file(filename, msg, sim);
+/*     return_status = Parse_xml_file(filename, msg, sim); */
 
-    if(return_status != REG_SUCCESS){
+/*     if(return_status != REG_SUCCESS){ */
 
-      Delete_msg_struct(&msg);
-    }
+/*       Delete_msg_struct(&msg); */
+/*     } */
 
-    /* Consume the file now that we've read it */
-    Delete_file(filename);
-  }
+/*     /\* Consume the file now that we've read it *\/ */
+/*     Delete_file(filename); */
+/*   } */
 
-  return msg;
-}
+/*   return msg; */
+/* } */
 
 /*------------------------------------------------------------------------*/
 
@@ -1501,31 +1508,34 @@ int Consume_status(int   SimHandle,
 int Emit_detach_cmd(int SimHandle)
 {
   int index;
-  int SysCommands[1];
+/*   int SysCommands[1]; */
   int status;
 
   /* Check that handle is valid */
-  if(SimHandle == REG_SIM_HANDLE_NOTSET) return REG_SUCCESS;
+  if(SimHandle == REG_SIM_HANDLE_NOTSET)
+    return REG_SUCCESS;
 
-  if( (index = Sim_index_from_handle(SimHandle)) == -1){
+  if((index = Sim_index_from_handle(SimHandle)) == -1)
     return REG_FAILURE;
-  }
 
   /* Don't call detach again if we're already detached */
-  if(Sim_table.sim[index].detached == REG_TRUE) return REG_SUCCESS;
+  if(Sim_table.sim[index].detached == REG_TRUE)
+    return REG_SUCCESS;
 
-  if(Sim_table.sim[index].SGS_info.active){
-#ifdef REG_WSRF
-    status = Send_detach_msg_wsrf(&(Sim_table.sim[index]));
-#else
-    status = Send_detach_msg_soap(&(Sim_table.sim[index]));
-#endif
-  }
-  else{
-    SysCommands[0] = REG_STR_DETACH;
+/*   if(Sim_table.sim[index].SGS_info.active){ */
+/* #ifdef REG_WSRF */
+/*     status = Send_detach_msg_wsrf(&(Sim_table.sim[index])); */
+/* #else */
+/*     status = Send_detach_msg_soap(&(Sim_table.sim[index])); */
+/* #endif */
+/*   } */
+/*   else{ */
+/*     SysCommands[0] = REG_STR_DETACH; */
 
-    status = Emit_control(SimHandle, 1, SysCommands, NULL);
-  }
+/*     status = Emit_control(SimHandle, 1, SysCommands, NULL); */
+/*   } */
+
+  status = Send_detach_msg_impl(index);
 
   if(status == REG_SUCCESS){
     /* Flag that we're now detached */
@@ -1538,86 +1548,82 @@ int Emit_detach_cmd(int SimHandle)
 
 int Emit_stop_cmd(int SimHandle)
 {
-  int index;
+/*   int index; */
   int SysCommands[1];
 
   /* Check that handle is valid */
-  if(SimHandle == REG_SIM_HANDLE_NOTSET) return REG_SUCCESS;
+  if(SimHandle == REG_SIM_HANDLE_NOTSET)
+    return REG_SUCCESS;
 
-  index = Sim_index_from_handle(SimHandle);
-  if( index == -1){
+/*   index = Sim_index_from_handle(SimHandle); */
+/*   if(index == -1) */
+/*     return REG_FAILURE; */
 
-    return REG_FAILURE;
-  }
-
-#ifndef REG_WSRF
-  if(Sim_table.sim[index].SGS_info.active){
-    return Send_stop_msg_soap(&(Sim_table.sim[index]));
-  }
-#endif
+/* #ifndef REG_WSRF */
+/*   if(Sim_table.sim[index].SGS_info.active){ */
+/*     return Send_stop_msg_soap(&(Sim_table.sim[index])); */
+/*   } */
+/* #endif */
 
   SysCommands[0] = REG_STR_STOP;
 
-  return Emit_control(SimHandle,
-		      1,
-		      SysCommands,
-		      NULL);
+  return Emit_control(SimHandle, 1, SysCommands, NULL);
 }
 
 /*----------------------------------------------------------*/
 
 int Emit_pause_cmd(int SimHandle)
 {
-  int index;
+/*   int index; */
   int SysCommands[1];
 
   /* Check that handle is valid */
-  if(SimHandle == REG_SIM_HANDLE_NOTSET) return REG_SUCCESS;
+  if(SimHandle == REG_SIM_HANDLE_NOTSET)
+    return REG_SUCCESS;
 
-  index = Sim_index_from_handle(SimHandle);
-  if( index == -1){
+/*   index = Sim_index_from_handle(SimHandle); */
+/*   if( index == -1){ */
 
-    return REG_FAILURE;
-  }
+/*     return REG_FAILURE; */
+/*   } */
 
-#ifndef REG_WSRF
-  if(Sim_table.sim[index].SGS_info.active){
-    return Send_pause_msg_soap(&(Sim_table.sim[index]));
-  }
-#endif
+/* #ifndef REG_WSRF */
+/*   if(Sim_table.sim[index].SGS_info.active){ */
+/*     return Send_pause_msg_soap(&(Sim_table.sim[index])); */
+/*   } */
+/* #endif */
 
   SysCommands[0] = REG_STR_PAUSE;
 
-  return Emit_control(SimHandle, 1,
-		      SysCommands, NULL);
+  return Emit_control(SimHandle, 1, SysCommands, NULL);
 }
 
 /*----------------------------------------------------------*/
 
 int Emit_resume_cmd(int SimHandle)
 {
-  int index;
+/*   int index; */
   int SysCommands[1];
 
   /* Check that handle is valid */
-  if(SimHandle == REG_SIM_HANDLE_NOTSET) return REG_SUCCESS;
+  if(SimHandle == REG_SIM_HANDLE_NOTSET)
+    return REG_SUCCESS;
 
-  index = Sim_index_from_handle(SimHandle);
-  if( index == -1){
+/*   index = Sim_index_from_handle(SimHandle); */
+/*   if( index == -1){ */
 
-    return REG_FAILURE;
-  }
+/*     return REG_FAILURE; */
+/*   } */
 
-#ifndef REG_WSRF
-  if(Sim_table.sim[index].SGS_info.active){
-    return Send_resume_msg_soap(&(Sim_table.sim[index]));
-  }
-#endif
+/* #ifndef REG_WSRF */
+/*   if(Sim_table.sim[index].SGS_info.active){ */
+/*     return Send_resume_msg_soap(&(Sim_table.sim[index])); */
+/*   } */
+/* #endif */
 
   SysCommands[0] = REG_STR_RESUME;
 
-  return Emit_control(SimHandle, 1,
-		      SysCommands, NULL);
+  return Emit_control(SimHandle, 1, SysCommands, NULL);
 }
 
 /*----------------------------------------------------------*/
@@ -1629,65 +1635,69 @@ int Emit_retrieve_param_log_cmd(int SimHandle, int ParamHandle)
   static char **CommandParams = NULL;
 
   /* Check that handle is valid */
-  if(SimHandle == REG_SIM_HANDLE_NOTSET) return REG_SUCCESS;
+  if(SimHandle == REG_SIM_HANDLE_NOTSET)
+    return REG_SUCCESS;
 
-  if( (index = Sim_index_from_handle(SimHandle)) == -1){
-
+  if((index = Sim_index_from_handle(SimHandle)) == -1)
     return REG_FAILURE;
-  }
 
-  if(Sim_table.sim[index].SGS_info.active){
+/*   if(Sim_table.sim[index].SGS_info.active){ */
 
-#ifdef REG_WSRF
-    /* Get all of the log entries cached on the SGS */
-    return Get_param_log_wsrf(&(Sim_table.sim[index]), ParamHandle);
-#else
-    return Get_param_log_soap(&(Sim_table.sim[index]), ParamHandle);
-#endif
-  }
-  else{
-    /* Alternatively, send command to app to emit all of them since
-       we have no cache on an SGS */
-    SysCommands[0] = REG_STR_EMIT_PARAM_LOG;
+/* #ifdef REG_WSRF */
+/*     /\* Get all of the log entries cached on the SGS *\/ */
+/*     return Get_param_log_wsrf(&(Sim_table.sim[index]), ParamHandle); */
+/* #else */
+/*     return Get_param_log_soap(&(Sim_table.sim[index]), ParamHandle); */
+/* #endif */
+/*   } */
+/*   else{ */
+/*     /\* Alternatively, send command to app to emit all of them since */
+/*        we have no cache on an SGS *\/ */
+/*     SysCommands[0] = REG_STR_EMIT_PARAM_LOG; */
 
-    /* Which parameter to get the log of */
-    if(!CommandParams) CommandParams = Alloc_string_array(32, 1);
-    sprintf(CommandParams[0], "%d", ParamHandle);
+/*     /\* Which parameter to get the log of *\/ */
+/*     if(!CommandParams) CommandParams = Alloc_string_array(32, 1); */
+/*     sprintf(CommandParams[0], "%d", ParamHandle); */
 
-    return Emit_control(SimHandle,
-			1,
-			SysCommands,
-			CommandParams);
-  }
+/*     return Emit_control(SimHandle, */
+/* 			1, */
+/* 			SysCommands, */
+/* 			CommandParams); */
+/*   } */
+
+/*   return REG_FAILURE; */
+  return Get_param_log_impl(index, ParamHandle);
 }
 
 /*----------------------------------------------------------*/
 
 int Emit_restart_cmd(int SimHandle, char *chkGSH)
 {
-  int index;
+/*   int index; */
 
   /* Check that handle is valid */
-  if(SimHandle == REG_SIM_HANDLE_NOTSET) return REG_SUCCESS;
+  if(SimHandle == REG_SIM_HANDLE_NOTSET)
+    return REG_SUCCESS;
 
-  if( (index = Sim_index_from_handle(SimHandle)) == -1){
+/*   if( (index = Sim_index_from_handle(SimHandle)) == -1){ */
 
-    return REG_FAILURE;
-  }
+/*     return REG_FAILURE; */
+/*   } */
 
-  if(Sim_table.sim[index].SGS_info.active){
-#ifdef REG_WSRF
-    fprintf(stderr, "STEER: ERROR: Emit_restart_cmd: this "
-	    "routine has been superceded. Send standard control "
-	    "message instead\n");
-    return REG_FAILURE;
-#else
-    return Send_restart_msg_soap(&(Sim_table.sim[index]), chkGSH);
-#endif
-  }
-  else{
-    return REG_FAILURE;
-  }
+/*   if(Sim_table.sim[index].SGS_info.active){ */
+/* #ifdef REG_WSRF */
+/*     fprintf(stderr, "STEER: ERROR: Emit_restart_cmd: this " */
+/* 	    "routine has been superceded. Send standard control " */
+/* 	    "message instead\n"); */
+/*     return REG_FAILURE; */
+/* #else */
+/*     return Send_restart_msg_soap(&(Sim_table.sim[index]), chkGSH); */
+/* #endif */
+/*   } */
+/*   else{ */
+/*     return REG_FAILURE; */
+/*   } */
+  return REG_FAILURE;
 }
 
 /*----------------------------------------------------------*/
@@ -1820,28 +1830,28 @@ int Send_control_msg(int SimIndex, char* buf)
 {
   Sim_entry_type *sim = &(Sim_table.sim[SimIndex]);
 
-  if(sim->pipe_to_proxy != REG_PIPE_UNSET){
-
+  if(sim->pipe_to_proxy != REG_PIPE_UNSET) {
     return Send_control_msg_proxy(sim, buf);
   }
-  else{
-
-    if(sim->SGS_info.active){
-
-#ifdef REG_WSRF
-      return Send_control_msg_wsrf(sim, buf);
-#else
-      return Send_control_msg_soap(sim, buf);
-#endif
-    }
-    else{
-#ifdef REG_DIRECT_TCP_STEERING
-      return Send_control_msg_direct(sim, buf);
-#else
-      return Send_control_msg_file(SimIndex, buf);
-#endif
-    }
+  else {
+    return Send_control_msg_impl(SimIndex, buf);
   }
+
+/*     if(sim->SGS_info.active){ */
+
+/* #ifdef REG_WSRF */
+/*       return Send_control_msg_wsrf(sim, buf); */
+/* #else */
+/*       return Send_control_msg_soap(sim, buf); */
+/* #endif */
+/*     } */
+/*     else{ */
+/* #ifdef REG_DIRECT_TCP_STEERING */
+/*       return Send_control_msg_direct(sim, buf); */
+/* #else */
+/*       return Send_control_msg_file(SimIndex, buf); */
+/* #endif */
+/*     } */
 }
 
 /*--------------------------------------------------------------------*/
@@ -1867,32 +1877,32 @@ int Send_control_msg_proxy(Sim_entry_type *sim, char* buf)
 
 /*--------------------------------------------------------------------*/
 
-int Send_control_msg_file(int SimIndex, char* buf)
-{
-  FILE *fp;
-  char  filename[REG_MAX_STRING_LENGTH];
+/* int Send_control_msg_file(int SimIndex, char* buf) */
+/* { */
+/*   FILE *fp; */
+/*   char  filename[REG_MAX_STRING_LENGTH]; */
 
-  /* Write to a 'local' file */
+/*   /\* Write to a 'local' file *\/ */
 
-  if( Generate_control_filename(SimIndex, filename) != REG_SUCCESS){
+/*   if( Generate_control_filename(SimIndex, filename) != REG_SUCCESS){ */
 
-    fprintf(stderr, "STEER: Send_control_msg_file: failed to create filename\n");
-    return REG_FAILURE;
-  }
+/*     fprintf(stderr, "STEER: Send_control_msg_file: failed to create filename\n"); */
+/*     return REG_FAILURE; */
+/*   } */
 
-  if( (fp = fopen(filename, "w")) == NULL){
+/*   if( (fp = fopen(filename, "w")) == NULL){ */
 
-    fprintf(stderr, "STEER: Send_control_msg_file: failed to open file\n");
-    return REG_FAILURE;
-  }
+/*     fprintf(stderr, "STEER: Send_control_msg_file: failed to open file\n"); */
+/*     return REG_FAILURE; */
+/*   } */
 
-  fprintf(fp, "%s", buf);
-  fclose(fp);
+/*   fprintf(fp, "%s", buf); */
+/*   fclose(fp); */
 
-  /* The application only attempts to read files for which it can find an
-     associated lock file */
-  return Create_lock_file(filename);
-}
+/*   /\* The application only attempts to read files for which it can find an */
+/*      associated lock file *\/ */
+/*   return Create_lock_file(filename); */
+/* } */
 
 /*--------------------------------------------------------------------*/
 
@@ -1915,7 +1925,7 @@ int Delete_sim_table_entry(int *SimHandle)
     Delete_msg_struct(&(sim->msg));
   }
 
-  Finalize_connection(sim);
+  Finalize_connection(index);
 
   /* Clean-up the provided entry in the table of connected
      simulations */
@@ -1996,20 +2006,20 @@ int Delete_param_table(Param_table_type *param_table)
 
 /*----------------------------------------------------------*/
 
-int Generate_control_filename(int SimIndex, char* filename)
-{
-  static int output_file_index = 0;
+/* int Generate_control_filename(int SimIndex, char* filename) */
+/* { */
+/*   static int output_file_index = 0; */
 
-  /* Generate next filename in sequence for sending data to
-     steerer & increment counter */
+/*   /\* Generate next filename in sequence for sending data to */
+/*      steerer & increment counter *\/ */
 
-  sprintf(filename, "%s%s_%d", Sim_table.sim[SimIndex].file_root,
-	  STR_TO_APP_FILENAME, output_file_index++);
+/*   sprintf(filename, "%s%s_%d", Sim_table.sim[SimIndex].file_root, */
+/* 	  STR_TO_APP_FILENAME, output_file_index++); */
 
-  if(output_file_index == REG_MAX_NUM_FILES) output_file_index = 0;
+/*   if(output_file_index == REG_MAX_NUM_FILES) output_file_index = 0; */
 
-  return REG_SUCCESS;
-}
+/*   return REG_SUCCESS; */
+/* } */
 
 /*----------------------------------------------------------*/
 
@@ -3249,107 +3259,107 @@ int Get_log_entry_details(Param_table_type *param_table,
 
 /*-------------------------------------------------------------------*/
 
-int Sim_attach_local(Sim_entry_type *sim, char *SimID)
-{
-  char *pchar;
-  char  file_root[REG_MAX_STRING_LENGTH];
-  char  filename[REG_MAX_STRING_LENGTH];
-  int   return_status;
+/* int Sim_attach_local(Sim_entry_type *sim, char *SimID) */
+/* { */
+/*   char *pchar; */
+/*   char  file_root[REG_MAX_STRING_LENGTH]; */
+/*   char  filename[REG_MAX_STRING_LENGTH]; */
+/*   int   return_status; */
 
-  return_status = REG_FAILURE;
+/*   return_status = REG_FAILURE; */
 
-  /* Unless SimID contains a string, get the directory to use for 
-     steering messages from the REG_STEER_DIRECTORY env. variable.  */
-  if(strlen(SimID) != 0){
-    pchar = SimID;
+/*   /\* Unless SimID contains a string, get the directory to use for  */
+/*      steering messages from the REG_STEER_DIRECTORY env. variable.  *\/ */
+/*   if(strlen(SimID) != 0){ */
+/*     pchar = SimID; */
 
-    /* Check that path ends in '/' - if not then add one */
-    if( pchar[strlen(pchar)-1] != '/' ){
+/*     /\* Check that path ends in '/' - if not then add one *\/ */
+/*     if( pchar[strlen(pchar)-1] != '/' ){ */
 
-      sprintf(file_root, "%s/", pchar);
-    }
-    else{
-      strcpy(file_root, pchar);
-    }
+/*       sprintf(file_root, "%s/", pchar); */
+/*     } */
+/*     else{ */
+/*       strcpy(file_root, pchar); */
+/*     } */
 
-    return_status = Directory_valid(file_root);
-#ifdef REG_DEBUG
-    if(return_status != REG_SUCCESS){
-      fprintf(stderr, "STEER: Sim_attach_local: invalid dir for "
-	      "steering messages: %s\n", file_root);
-    }
-#endif
-  }
+/*     return_status = Directory_valid(file_root); */
+/* #ifdef REG_DEBUG */
+/*     if(return_status != REG_SUCCESS){ */
+/*       fprintf(stderr, "STEER: Sim_attach_local: invalid dir for " */
+/* 	      "steering messages: %s\n", file_root); */
+/*     } */
+/* #endif */
+/*   } */
 
-  /* If supplied ID didn't work then try using REG_STEER_DIRECTORY env.
-     variable instead */
-  if(return_status != REG_SUCCESS){
+/*   /\* If supplied ID didn't work then try using REG_STEER_DIRECTORY env. */
+/*      variable instead *\/ */
+/*   if(return_status != REG_SUCCESS){ */
     
-    if(!(pchar = getenv("REG_STEER_DIRECTORY"))){
-      fprintf(stderr, "STEER: Sim_attach_local: failed to get scratch directory\n");
-      return REG_FAILURE;
-    }
+/*     if(!(pchar = getenv("REG_STEER_DIRECTORY"))){ */
+/*       fprintf(stderr, "STEER: Sim_attach_local: failed to get scratch directory\n"); */
+/*       return REG_FAILURE; */
+/*     } */
     
-    /* Check that path ends in '/' - if not then add one */
-    if( pchar[strlen(pchar)-1] != '/' ){
+/*     /\* Check that path ends in '/' - if not then add one *\/ */
+/*     if( pchar[strlen(pchar)-1] != '/' ){ */
 
-      sprintf(file_root, "%s/", pchar);
-    }
-    else{
-      strcpy(file_root, pchar);
-    }
+/*       sprintf(file_root, "%s/", pchar); */
+/*     } */
+/*     else{ */
+/*       strcpy(file_root, pchar); */
+/*     } */
 
-    return_status = Directory_valid(file_root);
-#ifdef REG_DEBUG
-    if(return_status != REG_SUCCESS){
-      fprintf(stderr, "STEER: Sim_attach_local: invalid dir for "
-	      "steering messages: %s\n", file_root);
-    }
-#endif
-  }
+/*     return_status = Directory_valid(file_root); */
+/* #ifdef REG_DEBUG */
+/*     if(return_status != REG_SUCCESS){ */
+/*       fprintf(stderr, "STEER: Sim_attach_local: invalid dir for " */
+/* 	      "steering messages: %s\n", file_root); */
+/*     } */
+/* #endif */
+/*   } */
 
-  if(return_status != REG_SUCCESS){
-    fprintf(stderr, "STEER: Sim_attach_local: failed to get scratch directory\n");    
-    return REG_FAILURE;
-  }
-#ifdef REG_DEBUG
-  else{
-    fprintf(stderr, "STEER: Sim_attach_local: using following dir for "
-	    "steering messages: %s\n", file_root);
-  }
-#endif
+/*   if(return_status != REG_SUCCESS){ */
+/*     fprintf(stderr, "STEER: Sim_attach_local: failed to get scratch directory\n");     */
+/*     return REG_FAILURE; */
+/*   } */
+/* #ifdef REG_DEBUG */
+/*   else{ */
+/*     fprintf(stderr, "STEER: Sim_attach_local: using following dir for " */
+/* 	    "steering messages: %s\n", file_root); */
+/*   } */
+/* #endif */
 
-  /* Delete any old communication files written by an app 
-     in this location */
+/*   /\* Delete any old communication files written by an app  */
+/*      in this location *\/ */
 
-  sprintf(filename, "%s%s", file_root, 
-	  APP_TO_STR_FILENAME);
+/*   sprintf(filename, "%s%s", file_root,  */
+/* 	  APP_TO_STR_FILENAME); */
 
-  Remove_files(filename);
+/*   Remove_files(filename); */
 
-  /* Save directory used for communication */
-  strcpy(sim->file_root, file_root);
+/*   /\* Save directory used for communication *\/ */
+/*   strcpy(sim->file_root, file_root); */
  
-  /* Read the commands that the application supports */
-  return_status = Consume_supp_cmds_local(sim);
+/*   /\* Read the commands that the application supports *\/ */
+/*   return_status = Consume_supp_cmds_local(sim); */
 
-  if(return_status == REG_SUCCESS){
+/*   if(return_status == REG_SUCCESS){ */
 
-    /* Create lock file to indicate that steerer has connected to sim */
-    int fd;
-    char lock_file[REG_MAX_STRING_LENGTH];
+/*     /\* Create lock file to indicate that steerer has connected to sim *\/ */
+/*     int fd; */
+/*     char lock_file[REG_MAX_STRING_LENGTH]; */
 
-    sprintf(lock_file, "%s%s", sim->file_root, STR_CONNECTED_FILENAME);
-    if((fd = creat(lock_file,
-		   (S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH))) < 0) {
-      return REG_FAILURE;
-    }
+/*     sprintf(lock_file, "%s%s", sim->file_root, STR_CONNECTED_FILENAME); */
+/*     if((fd = creat(lock_file, */
+/* 		   (S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH))) < 0) { */
+/*       return REG_FAILURE; */
+/*     } */
 
-    close(fd);
-  }
+/*     close(fd); */
+/*   } */
 
-  return return_status;
-}
+/*   return return_status; */
+/* } */
 
 /*-------------------------------------------------------------------*/
 
@@ -3457,111 +3467,110 @@ int Sim_attach_proxy(Sim_entry_type *sim, char *SimID)
 
 /*-------------------------------------------------------------------*/
 
+/* int Consume_supp_cmds_local(Sim_entry_type *sim) */
+/* { */
+/*   FILE              *fp1; */
+/*   FILE              *fp2; */
+/*   char               filename[REG_MAX_STRING_LENGTH]; */
+/*   struct msg_struct *msg; */
+/*   struct cmd_struct *cmd; */
+/*   int                return_status = REG_SUCCESS; */
 
-int Consume_supp_cmds_local(Sim_entry_type *sim)
-{
-  FILE              *fp1;
-  FILE              *fp2;
-  char               filename[REG_MAX_STRING_LENGTH];
-  struct msg_struct *msg;
-  struct cmd_struct *cmd;
-  int                return_status = REG_SUCCESS;
+/*   /\* Check for absence of lock file indicating that sim is */
+/*      already being steered *\/ */
 
-  /* Check for absence of lock file indicating that sim is
-     already being steered */
+/*   sprintf(filename, "%s%s", sim->file_root, STR_CONNECTED_FILENAME); */
+/*   fp2 = fopen(filename, "r"); */
 
-  sprintf(filename, "%s%s", sim->file_root, STR_CONNECTED_FILENAME);
-  fp2 = fopen(filename, "r");
+/*   /\* Check for presence of lock file indicating sim is steerable *\/ */
 
-  /* Check for presence of lock file indicating sim is steerable */
+/*   sprintf(filename, "%s%s", sim->file_root, APP_STEERABLE_FILENAME); */
+/*   fp1 = fopen(filename, "r"); */
 
-  sprintf(filename, "%s%s", sim->file_root, APP_STEERABLE_FILENAME);
-  fp1 = fopen(filename, "r");
+/*   if(fp1 != NULL && fp2 == NULL){ */
 
-  if(fp1 != NULL && fp2 == NULL){
+/*     fclose(fp1); */
 
-    fclose(fp1);
+/*     msg = New_msg_struct(); */
 
-    msg = New_msg_struct();
+/*     return_status = Parse_xml_file(filename, msg, sim); */
 
-    return_status = Parse_xml_file(filename, msg, sim);
+/*     if(return_status == REG_SUCCESS){ */
 
-    if(return_status == REG_SUCCESS){
+/*       cmd = msg->supp_cmd->first_cmd; */
 
-      cmd = msg->supp_cmd->first_cmd;
+/*       while(cmd){ */
 
-      while(cmd){
+/* 	sscanf((char *)(cmd->id), "%d",  */
+/* 	       &(sim->Cmds_table.cmd[sim->Cmds_table.num_registered].cmd_id)); */
 
-	sscanf((char *)(cmd->id), "%d", 
-	       &(sim->Cmds_table.cmd[sim->Cmds_table.num_registered].cmd_id));
+/* 	/\* ARPDBG - may need to add cmd parameters here too *\/ */
 
-	/* ARPDBG - may need to add cmd parameters here too */
+/* 	Increment_cmd_registered(&(sim->Cmds_table)); */
 
-	Increment_cmd_registered(&(sim->Cmds_table));
+/* 	cmd = cmd->next; */
+/*       } */
+/*     } */
+/*     else{ */
 
-	cmd = cmd->next;
-      }
-    }
-    else{
+/*       fprintf(stderr, "STEER: Consume_supp_cmds_local: error parsing <%s>\n", */
+/* 	      filename); */
+/*     } */
 
-      fprintf(stderr, "STEER: Consume_supp_cmds_local: error parsing <%s>\n",
-	      filename);
-    }
+/*     Delete_msg_struct(&msg); */
+/*   } */
+/*   else{ */
 
-    Delete_msg_struct(&msg);
-  }
-  else{
+/*     if(fp2) fclose(fp2); */
 
-    if(fp2) fclose(fp2);
+/*     return REG_FAILURE; */
+/*   } */
 
-    return REG_FAILURE;
-  }
-
-  return return_status;
-}
+/*   return return_status; */
+/* } */
 
 /*-------------------------------------------------------------------*/
 
-int Finalize_connection(Sim_entry_type *sim)
-{
+int Finalize_connection(int index) {
 
-  if(sim->pipe_to_proxy != REG_PIPE_UNSET){
+  return Finalize_connection_impl(index);
+/*   if(sim->pipe_to_proxy != REG_PIPE_UNSET){ */
 
-    return Finalize_connection_proxy(sim);
-  }
-  else{
+/*     return Finalize_connection_proxy(sim); */
+/*   } */
+/*   else{ */
 
-    if(sim->SGS_info.active){
+/*     if(sim->SGS_info.active){ */
 
-#ifdef REG_WSRF
-      if(sim->detached == REG_FALSE){
-	if(Send_detach_msg_wsrf(sim) == REG_SUCCESS){
-	  sim->detached = REG_TRUE;
-	}
-      }
-      return Finalize_connection_wsrf(sim);
-#else
-      /* Detach from the SGS and then clean up */
-      if(sim->detached == REG_FALSE){
-	if(Send_detach_msg_soap(sim) == REG_SUCCESS){
-	  sim->detached = REG_TRUE;
-	}
-      }
-      return Finalize_connection_soap(sim);
-#endif
-    }
+/* #ifdef REG_WSRF */
+/*       if(sim->detached == REG_FALSE){ */
+/* 	if(Send_detach_msg_wsrf(sim) == REG_SUCCESS){ */
+/* 	  sim->detached = REG_TRUE; */
+/* 	} */
+/*       } */
+/*       return Finalize_connection_wsrf(sim); */
+/* #else */
+/*       /\* Detach from the SGS and then clean up *\/ */
+/*       if(sim->detached == REG_FALSE){ */
+/* 	if(Send_detach_msg_soap(sim) == REG_SUCCESS){ */
+/* 	  sim->detached = REG_TRUE; */
+/* 	} */
+/*       } */
+/*       return Finalize_connection_soap(sim); */
+/* #endif */
+/*     } */
 
-#ifdef REG_DIRECT_TCP_STEERING
-    if(sim->detached == REG_FALSE) {
-      Emit_detach_cmd(sim->handle);
-      fprintf(stderr, "sent detach command\n");
-    }
-    return Finalize_connection_direct(sim);
-    fprintf(stderr, "finalized...\n");
-#endif
+/* #ifdef REG_DIRECT_TCP_STEERING */
+/*     if(sim->detached == REG_FALSE) { */
+/*       Emit_detach_cmd(sim->handle); */
+/*       fprintf(stderr, "sent detach command\n"); */
+/*     } */
+/*     return Finalize_connection_direct(sim); */
+/*     fprintf(stderr, "finalized...\n"); */
+/* #endif */
 
-    return Finalize_connection_file(sim);
-  }
+/*     return Finalize_connection_file(sim); */
+/*   } */
 }
 
 /*-------------------------------------------------------------------*/
@@ -3577,20 +3586,20 @@ int Finalize_connection_proxy(Sim_entry_type *sim)
 
 /*-------------------------------------------------------------------*/
 
-int Finalize_connection_file(Sim_entry_type *sim)
-{
-  char base_name[REG_MAX_STRING_LENGTH];
+/* int Finalize_connection_file(Sim_entry_type *sim) */
+/* { */
+/*   char base_name[REG_MAX_STRING_LENGTH]; */
 
-  /* Delete any files that the app's produced that we won't now be
-     consuming */
+/*   /\* Delete any files that the app's produced that we won't now be */
+/*      consuming *\/ */
 
-  sprintf(base_name, "%s%s", sim->file_root, 
-	  APP_TO_STR_FILENAME);
+/*   sprintf(base_name, "%s%s", sim->file_root,  */
+/* 	  APP_TO_STR_FILENAME); */
 
-  Remove_files(base_name);
+/*   Remove_files(base_name); */
 
-  return REG_SUCCESS;
-}
+/*   return REG_SUCCESS; */
+/* } */
 
 /*-------------------------------------------------------------------*/
 

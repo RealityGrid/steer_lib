@@ -50,10 +50,10 @@ char* Create_steering_service(const struct reg_job_details *job,
 			      const struct reg_security_info *sec)
 {
 #ifdef REG_WSRF
-  return Create_SWS(job,
-		    containerAddress,
-		    registryAddress,
-		    sec);
+/*   return Create_SWS(job, */
+/* 		    containerAddress, */
+/* 		    registryAddress, */
+/* 		    sec); */
 #else
   fprintf(stderr, "STEERUtils: Create_steering_service: NOT IMPLEMENTED for OGSI\n");
   return NULL;
@@ -67,50 +67,50 @@ char *Create_checkpoint_tree(const char *factory,
 {
 #ifdef REG_WSRF
 
-  return Create_checkpoint_tree_wsrf(factory, metadata);
+/*   return Create_checkpoint_tree_wsrf(factory, metadata); */
 
 #else
 
-  struct rgtf__createNewTreeResponse out;
-  char                              *pchar;
-  char                              *pend;
-  static char                        epr[256];
-  struct soap                        soap;
+/*   struct rgtf__createNewTreeResponse out; */
+/*   char                              *pchar; */
+/*   char                              *pend; */
+/*   static char                        epr[256]; */
+/*   struct soap                        soap; */
 
-  soap_init(&soap);
-  /* Something to do with the XML type */
-  soap.encodingStyle = NULL;
+/*   soap_init(&soap); */
+/*   /\* Something to do with the XML type *\/ */
+/*   soap.encodingStyle = NULL; */
 
-  if(soap_call_rgtf__createNewTree(&soap, 
-				   factory, 
-				   "", /* soap Action */
-				   "<ogsi:terminationTime />", "", "", 
-				   (char *)metadata, 
-				   &out) != SOAP_OK){
-    fprintf(stderr, "STEERUtils: Create_checkpoint_tree: soap call failed:\n");
-    soap_print_fault(&soap, stderr);
-    soap_end(&soap); /* dealloc deserialized data */
-    soap_done(&soap); /* cleanup and detach soap struct */
-    return NULL;
-  }
+/*   if(soap_call_rgtf__createNewTree(&soap,  */
+/* 				   factory,  */
+/* 				   "", /\* soap Action *\/ */
+/* 				   "<ogsi:terminationTime />", "", "",  */
+/* 				   (char *)metadata,  */
+/* 				   &out) != SOAP_OK){ */
+/*     fprintf(stderr, "STEERUtils: Create_checkpoint_tree: soap call failed:\n"); */
+/*     soap_print_fault(&soap, stderr); */
+/*     soap_end(&soap); /\* dealloc deserialized data *\/ */
+/*     soap_done(&soap); /\* cleanup and detach soap struct *\/ */
+/*     return NULL; */
+/*   } */
 
-  if( !(pchar = strstr(out._createNewTreeReturn, "<ogsi:handle>")) ){
-    fprintf(stderr, "STEERUtils: Create_checkpoint_tree: failed to find "
-	    "<ogsi:handle> in >>%s<< returned by createNewTree on %s\n", 
-	    out._createNewTreeReturn, factory);
-    soap_end(&soap); /* dealloc deserialized data */
-    soap_done(&soap); /* cleanup and detach soap struct */
-    return NULL;
-  }
+/*   if( !(pchar = strstr(out._createNewTreeReturn, "<ogsi:handle>")) ){ */
+/*     fprintf(stderr, "STEERUtils: Create_checkpoint_tree: failed to find " */
+/* 	    "<ogsi:handle> in >>%s<< returned by createNewTree on %s\n",  */
+/* 	    out._createNewTreeReturn, factory); */
+/*     soap_end(&soap); /\* dealloc deserialized data *\/ */
+/*     soap_done(&soap); /\* cleanup and detach soap struct *\/ */
+/*     return NULL; */
+/*   } */
 
-  pchar += 13; /* 13 = strlen("<ogsi:handle>") */
-  pend = strchr(pchar, '<');
-  strncpy(epr, pchar, (int)(pend-pchar));
+/*   pchar += 13; /\* 13 = strlen("<ogsi:handle>") *\/ */
+/*   pend = strchr(pchar, '<'); */
+/*   strncpy(epr, pchar, (int)(pend-pchar)); */
 
-  soap_end(&soap); /* dealloc deserialized data */
-  soap_done(&soap); /* cleanup and detach soap struct */
+/*   soap_end(&soap); /\* dealloc deserialized data *\/ */
+/*   soap_done(&soap); /\* cleanup and detach soap struct *\/ */
 
-  return epr;
+/*   return epr; */
 
 #endif /* !defined REG_WSRF */
 }
@@ -120,7 +120,7 @@ char *Create_checkpoint_tree(const char *factory,
 int Destroy_steering_service(const char                     *address,
                              const struct reg_security_info *sec){
 #ifdef REG_WSRF
-  return Destroy_WSRP(address, sec);
+/*   return Destroy_WSRP(address, sec); */
 #else
   fprintf(stderr, "STEERUtils: Destroy_steering_service: not implemented for OGSI :-(\n");
   return REG_FAILURE;
@@ -280,9 +280,9 @@ int Get_IOTypes(const char                     *address,
 		const struct reg_security_info *sec,
 		struct reg_iotype_list         *list){
 #ifdef REG_WSRF
-  return Get_IOTypes_WSRF(address, 
-			  sec,
-			  list);
+/*   return Get_IOTypes_WSRF(address,  */
+/* 			  sec, */
+/* 			  list); */
 #else
   fprintf(stderr, "STEERUtils: Get_IOTypes: not implemented for "
 	  "OGSI :-(\n");
@@ -312,31 +312,31 @@ int Set_service_data_source(const char *EPR,
 			    const char *label,
 			    const struct reg_security_info *sec)
 {
-  char        buf[1024];
-  struct soap mySoap;
-  int         status;
+/*   char        buf[1024]; */
+/*   struct soap mySoap; */
+/*   int         status; */
 
-  if(sourcePort == 0){
-    /* No proxy being used */
-    snprintf(buf, 1024, "<dataSource><sourceEPR>%s</sourceEPR>"
-	     "<sourceLabel>%s</sourceLabel></dataSource>",
-	     sourceAddress, label);
-  }
-  else{
-    /* A proxy has been specified */
-    snprintf(buf, 1024, "<dataSource><Proxy><address>%s"
-	     "</address><port>%d</port></Proxy><sourceLabel>%s"
-	     "</sourceLabel></dataSource>",
-	     sourceAddress, sourcePort, label);
-  }
+/*   if(sourcePort == 0){ */
+/*     /\* No proxy being used *\/ */
+/*     snprintf(buf, 1024, "<dataSource><sourceEPR>%s</sourceEPR>" */
+/* 	     "<sourceLabel>%s</sourceLabel></dataSource>", */
+/* 	     sourceAddress, label); */
+/*   } */
+/*   else{ */
+/*     /\* A proxy has been specified *\/ */
+/*     snprintf(buf, 1024, "<dataSource><Proxy><address>%s" */
+/* 	     "</address><port>%d</port></Proxy><sourceLabel>%s" */
+/* 	     "</sourceLabel></dataSource>", */
+/* 	     sourceAddress, sourcePort, label); */
+/*   } */
 
-  soap_init(&mySoap);
+/*   soap_init(&mySoap); */
 
-  status = Set_resource_property(&mySoap, EPR, sec->userDN,
-				 sec->passphrase, buf);
+/*   status = Set_resource_property(&mySoap, EPR, sec->userDN, */
+/* 				 sec->passphrase, buf); */
 
-  soap_end(&mySoap);
-  soap_done(&mySoap);
+/*   soap_end(&mySoap); */
+/*   soap_done(&mySoap); */
 
-  return status;
+/*   return status; */
 }

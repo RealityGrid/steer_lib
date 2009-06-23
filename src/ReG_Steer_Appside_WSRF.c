@@ -273,34 +273,34 @@ int Initialize_steering_connection_wsrf(int  NumSupportedCmds,
 
 /*-------------------------------------------------------------------------*/
 
-int Steerer_connected_wsrf ()
-{
-  char *steer_status;
-  int   status;
+/* int Steerer_connected_wsrf () */
+/* { */
+/*   char *steer_status; */
+/*   int   status; */
   
-  status = Get_resource_property(Steerer_connection.SGS_info.soap,
-				 Steerer_connection.SGS_info.address,
-				 Steerer_connection.SGS_info.username,
-				 Steerer_connection.SGS_info.passwd,
-				 STEER_STATUS_RP,
-				 &steer_status);
-  if(status != REG_SUCCESS){
-    fprintf(stderr, "STEER: Steerer_connected_wsrf: Get_resource_property failed\n");
-    return REG_FAILURE;
-  }
-#ifdef REG_DEBUG
-  else{
-    fprintf(stderr, "STEER: Steerer_connected_wsrf: Get_resource_property "
-	    "returned: %s\n", steer_status);
-  }
-#endif
+/*   status = Get_resource_property(Steerer_connection.SGS_info.soap, */
+/* 				 Steerer_connection.SGS_info.address, */
+/* 				 Steerer_connection.SGS_info.username, */
+/* 				 Steerer_connection.SGS_info.passwd, */
+/* 				 STEER_STATUS_RP, */
+/* 				 &steer_status); */
+/*   if(status != REG_SUCCESS){ */
+/*     fprintf(stderr, "STEER: Steerer_connected_wsrf: Get_resource_property failed\n"); */
+/*     return REG_FAILURE; */
+/*   } */
+/* #ifdef REG_DEBUG */
+/*   else{ */
+/*     fprintf(stderr, "STEER: Steerer_connected_wsrf: Get_resource_property " */
+/* 	    "returned: %s\n", steer_status); */
+/*   } */
+/* #endif */
 
-  if(strstr(steer_status, "ATTACHED")){
-    return REG_SUCCESS;
-  }
+/*   if(strstr(steer_status, "ATTACHED")){ */
+/*     return REG_SUCCESS; */
+/*   } */
 
-  return REG_FAILURE;
-}
+/*   return REG_FAILURE; */
+/* } */
 
 /*-------------------------------------------------------------------------*/
 

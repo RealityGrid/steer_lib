@@ -329,62 +329,29 @@ typedef struct {
 
 /** @internal 
     For steering via SOAP - holds info on the Grid/Web Service */
-typedef struct {
-    /** whether we're steering via SOAP (1) or not (0) */
-    int  active;
-    /** Location of the Grid service */
-    char address[REG_MAX_STRING_LENGTH];
-    /** Holds list of names of service data elements on the SGS for which
-	notifications are pending */
-    char notifications[REG_MAX_NUM_SGS_SDE][REG_MAX_STRING_LENGTH];
-    /** No. of notifications that we've yet to process (OGSI) */
-    int  sde_count;
-    /** Our current position in the @p notifications array ?? (OGSI) */
-    int  sde_index;
-    /** The structure holding the gSoap environment for this connection */
-    struct soap *soap;
-    /** Username to use with WS-Security with this service */
-    char username[REG_MAX_STRING_LENGTH];
-    /** Passphrase (if any) used with WS-Security for this service */
-    char passwd[REG_MAX_STRING_LENGTH];
-    /** The last-modified time of the ResourceProperty document of our
-	associated SWS when we last looked at it (WSRF) */
-    long int lastModTime;
+/* typedef struct { */
+/*     /\** whether we're steering via SOAP (1) or not (0) *\/ */
+/*     int  active; */
+/*     /\** Location of the Grid service *\/ */
+/*     char address[REG_MAX_STRING_LENGTH]; */
+/*     /\** Holds list of names of service data elements on the SGS for which */
+/* 	notifications are pending *\/ */
+/*     char notifications[REG_MAX_NUM_SGS_SDE][REG_MAX_STRING_LENGTH]; */
+/*     /\** No. of notifications that we've yet to process (OGSI) *\/ */
+/*     int  sde_count; */
+/*     /\** Our current position in the @p notifications array ?? (OGSI) *\/ */
+/*     int  sde_index; */
+/*     /\** The structure holding the gSoap environment for this connection *\/ */
+/*     struct soap *soap; */
+/*     /\** Username to use with WS-Security with this service *\/ */
+/*     char username[REG_MAX_STRING_LENGTH]; */
+/*     /\** Passphrase (if any) used with WS-Security for this service *\/ */
+/*     char passwd[REG_MAX_STRING_LENGTH]; */
+/*     /\** The last-modified time of the ResourceProperty document of our */
+/* 	associated SWS when we last looked at it (WSRF) *\/ */
+/*     long int lastModTime; */
 
-  } SGS_info_type;
-
-/** @internal 
-    Structure to hold direct tcp socket information */
-typedef struct
-{
-  /** Minimum port number we can use to listen on (zero if any) */
-  int                   min_port_in;
-  /** Maximum port number we can use to listen on (zero if any) */
-  int                   max_port_in;
-  /** Minimum port number we can use to connect out of (zero if any) */
-  int                   min_port_out;
-  /** Maximum port number we can use to connect out of (zero if any) */
-  int                   max_port_out;
-  /** Default outbound tcp interface */
-  char			tcp_interface[REG_MAX_STRING_LENGTH];
-  /** Handle of listener socket - info for socket connection ("server" end) */
-  int			listener_handle;
-  /** Hostname on which to listen -  info for socket connection ("server" end) */
-  char			listener_hostname[REG_MAX_STRING_LENGTH];
-  /** Port on which to listen -  info for socket connection ("server" end) */
-  unsigned short int	listener_port;
-  /** Handle of connecting socket - info for socket connection ("client" end) */
-  int			connector_handle;
-  /** Hostname to connect to - info for socket connection ("client" end) */
-  char			connector_hostname[REG_MAX_STRING_LENGTH];
-  /** Port to connect to - info for socket connection ("client" end) */
-  unsigned short int	connector_port;
-  /** status indicator for listening socket */
-  int			listener_status;  
-  /** status indicator for connecting socket */
-  int			comms_status;
-
-} Direct_info_type;
+/*   } SGS_info_type; */
 
 /** @internal
     Holds details required for secure access to a service
@@ -405,26 +372,6 @@ struct reg_security_info {
 };
 
 /*-------- Function prototypes --------*/
-
-/** @internal
-    @param base_name Root of the filename to search for
-
-    Searches for and opens the next file in a numbered
-    sequence with the specified root name */
-extern PREFIX FILE *Open_next_file(char* base_name);
-
-/** @internal
-    @param filename Base name of lock file
-
-    Creates a lock file with name consisting of ".lock"
-    appended to supplied name */
-extern PREFIX int Create_lock_file(char *filename);
-
-/** @internal
-    @param filename Full path to file to delete
-
-    Delete the specified file (must have full path) */
-extern PREFIX int Delete_file(char *filename);
 
 /** @internal
     @param directory Full path to directory to check
@@ -502,14 +449,6 @@ extern PREFIX int Increment_iodef_registered(IOdef_table_type *table);
     Increment the count of log entries and allocate
     more memory if required. */
 extern PREFIX int Increment_log_entry(Chk_log_type *log);
-
-/** @internal
-    @param base_name Base of the name of the messaging files to look for
-
-    Called when steering finished - cleans up any files that either the app
-    or steerer hasn't got around to consuming 
- */
-extern PREFIX int Remove_files(char* base_name);
 
 /** @internal
     @param name Name of message
@@ -590,10 +529,10 @@ extern PREFIX int Init_random();
     @param username The username to present to the service
     @param passwd The password used to access the service
     @return REG_SUCCESS or REG_FAILURE if no header created */
-extern PREFIX int Create_WSRF_header(struct soap *aSoap,
-				     const  char *epr,
-				     const  char *username,
-				     const  char *passwd);
+/* extern PREFIX int Create_WSRF_header(struct soap *aSoap, */
+/* 				     const  char *epr, */
+/* 				     const  char *username, */
+/* 				     const  char *passwd); */
 
 /** @internal
     Return the current (GMT) date and time as a string in the format

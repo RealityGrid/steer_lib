@@ -47,9 +47,9 @@
     @param registryEPR Endpoint of the registry to query
     @param sec Pointer to struct holding authentication information
     @param contents Array of structs holding details on each entry */
-int Get_registry_entries_wsrf(const char             *registryEPR, 
-			      const struct reg_security_info *sec,
-			      struct registry_contents *contents);
+/* int Get_registry_entries_wsrf(const char             *registryEPR,  */
+/* 			      const struct reg_security_info *sec, */
+/* 			      struct registry_contents *contents); */
 
 /** @internal
     Create a Steering Web Service and return its address 

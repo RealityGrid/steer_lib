@@ -252,10 +252,6 @@ typedef struct {
   /** Set to REG_TRUE once detach has been called - prevents us
       calling detach more than once on the SWS */
   int                  detached;
-  /** Info on associated Grid service - for steering via SOAP */
-  SGS_info_type SGS_info;
-  /** Info on direct socket connection - for steering via direct tcp */
-  Direct_info_type socket_info;
   /** Last status message received from this simulation - filled in
       Get_next_message() and used by whichever Consume_... routine
       is called in response to the message type */

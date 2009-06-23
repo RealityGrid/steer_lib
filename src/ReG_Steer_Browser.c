@@ -313,53 +313,53 @@ int Get_registry_entries_filtered_secure(const char             *registryGSH,
 int Get_registry_entries_secure(const char                     *registryGSH, 
 				const struct reg_security_info *sec,
 				struct registry_contents       *contents){
-  int status;
+/*   int status; */
 
-#ifndef REG_WSRF
+/* #ifndef REG_WSRF */
 
-  fprintf(stderr, "STEERUtils: Get_registry_entries_secure: WARNING: no secure version "
-	  "available for OGSI implementation!\n");
+/*   fprintf(stderr, "STEERUtils: Get_registry_entries_secure: WARNING: no secure version " */
+/* 	  "available for OGSI implementation!\n"); */
 
-  struct sgr__findServiceDataResponse out;
-  struct soap soap;
-  char   query_buf[256];
+/*   struct sgr__findServiceDataResponse out; */
+/*   struct soap soap; */
+/*   char   query_buf[256]; */
 
-  soap_init(&soap);
+/*   soap_init(&soap); */
 
-  sprintf(query_buf, "<ogsi:queryByServiceDataNames names=\"ogsi:entry\"/>");
+/*   sprintf(query_buf, "<ogsi:queryByServiceDataNames names=\"ogsi:entry\"/>"); */
 
-  if (soap_call_sgr__findServiceData ( &soap, registryGSH, "", query_buf, 
-				       &out)){
-    soap_print_fault(&soap,stderr);
-    return REG_FAILURE;
-  }
-  else{
-    if(!(out._findServiceDataReturn)){
-      fprintf(stderr, "STEERUtils: Get_registry_entries_secure: findServiceData "
-	      "returned null\n");
-      return REG_FAILURE;
-    }
-#ifdef REG_DEBUG_FULL
-    else{
-      fprintf(stderr, "STEERUtils: Get_registry_entries_secure: findServiceData "
-	      "returned: %s\n", out._findServiceDataReturn);
-    }
-#endif /* REG_DEBUG_FULL */
-  }
+/*   if (soap_call_sgr__findServiceData ( &soap, registryGSH, "", query_buf,  */
+/* 				       &out)){ */
+/*     soap_print_fault(&soap,stderr); */
+/*     return REG_FAILURE; */
+/*   } */
+/*   else{ */
+/*     if(!(out._findServiceDataReturn)){ */
+/*       fprintf(stderr, "STEERUtils: Get_registry_entries_secure: findServiceData " */
+/* 	      "returned null\n"); */
+/*       return REG_FAILURE; */
+/*     } */
+/* #ifdef REG_DEBUG_FULL */
+/*     else{ */
+/*       fprintf(stderr, "STEERUtils: Get_registry_entries_secure: findServiceData " */
+/* 	      "returned: %s\n", out._findServiceDataReturn); */
+/*     } */
+/* #endif /\* REG_DEBUG_FULL *\/ */
+/*   } */
 
-  status = Parse_registry_entries(out._findServiceDataReturn, 
-				  strlen(out._findServiceDataReturn),
-				  contents);
-  soap_destroy(&soap);
-  soap_end(&soap);
+/*   status = Parse_registry_entries(out._findServiceDataReturn,  */
+/* 				  strlen(out._findServiceDataReturn), */
+/* 				  contents); */
+/*   soap_destroy(&soap); */
+/*   soap_end(&soap); */
 
-#else /* WSRF, not OGSI */
+/* #else /\* WSRF, not OGSI *\/ */
 
-  status = Get_registry_entries_wsrf(registryGSH, sec, contents);
+/*   status = Get_registry_entries_wsrf(registryGSH, sec, contents); */
 
-#endif /* !defined REG_WSRF */
+/* #endif /\* !defined REG_WSRF *\/ */
 
-  return status;
+  return Get_registry_entries_impl(registryGSH, sec, contents);
 }
 
 /*-------------------------------------------------------------------------*/

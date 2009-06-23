@@ -30,19 +30,21 @@
 #define __REG_STEER_SOCKETS_COMMON_H__
 
 #include "ReG_Steer_Config.h"
-
 #include "ReG_Steer_types.h"
 
 #define REG_SOCKETS_ERROR -1
 
 /** @internal 
     Structure to hold socket information */
-typedef struct
-{
-  /** Minimum port number we can use (zero if any) */
-  int                   min_port;
-  /** Maximum port number we can use (zero if any) */
-  int                   max_port;
+typedef struct {
+  /** Minimum port number we can use to listen on (zero if any) */
+  int                   min_port_in;
+  /** Maximum port number we can use to listen on (zero if any) */
+  int                   max_port_in;
+  /** Minimum port number we can use to connect out of (zero if any) */
+  int                   min_port_out;
+  /** Maximum port number we can use to connect out of (zero if any) */
+  int                   max_port_out;
   /** Default outbound tcp interface */
   char			tcp_interface[REG_MAX_STRING_LENGTH];
   /** Handle of listener socket - info for socket connection ("server" end) */
@@ -61,7 +63,6 @@ typedef struct
   int			listener_status;  
   /** status indicator for connecting socket */
   int			comms_status;
-
 } socket_info_type;
 
 typedef struct {
@@ -74,92 +75,20 @@ typedef struct {
 
     Initialise socket info table.
  */
-int socket_info_table_init();
+int socket_info_table_init(socket_info_table_type* table,
+			   const int max_entries);
 
 /** @internal
     @param index Index of the IOType to which socket belongs
 
     Initialise socket_info_type structure */
-int socket_info_init(const int index);
+int socket_info_init(socket_info_type* socket_info);
 
 /** @internal
     @param index Index of the IOType to which socket belongs
 
     Clean up members of socket_info_type structure */
-void socket_info_cleanup(const int index);
-
-/** @internal
-    @param index Index of the IOType to which socket belongs
-
-    Create a listening socket */
-int create_listener(const int index);
-
-/** @internal
-    @param index Index of the IOType to which socket belongs
-
-    Create a connector socket */
-int create_connector(const int index);
-
-/** @internal
-    @param index Index of the IOType to which socket belongs
-
-    Sets up and then attempts to connect a connector */
-int connect_connector(const int index);
-
-/** @internal
-    @param index Index of the IOType to which socket belongs
-
-    Take down a listener */
-void cleanup_listener_connection(const int index);
-
-/** @internal
-    @param index Index of the IOType to which socket belongs
-
-    Take down a connector */
-void cleanup_connector_connection(const int index);
-
-/** @internal
-    @param index Index of the IOType to which socket belongs
-    
-    Calls close on the listener handle */
-void close_listener_handle(const int index);
-
-/** @internal
-    @param index Index of the IOType to which socket belongs
-
-    Calls close on the connector handle */
-void close_connector_handle(const int index);
-
-/** @internal
-    @param index Index of the IOType to which socket belongs
-
-    Checks to see if anyone is trying to connect */
-void attempt_listener_connect(const int index);
-
-/** @internal
-    @param index Index of the IOType to which socket belongs
-
-    Cleans-up a broken socket and tries to reconnect */
-void retry_accept_connect(const int index);
-
-/** @internal
-    @param index Index of the IOType to which socket belongs
-
-    Attempts to reconnect a connector */
-void attempt_connector_connect(const int index);
-
-/** @internal
-    @param index Index of the IOType to which socket belongs
-
-    Takes down a failed connector and tries again */
-void retry_connect(const int index);
-
-/** @internal
-    @param index Index of the IOType to which socket belongs
-
-    Checks socket connection and tries to establish
-    connection if none (whether listener or connector) */
-void poll_socket(const int index);
+void socket_info_cleanup(socket_info_type* socket_info);
 
 /** @internal
     @param hostname Fully qualified name of machine to look-up.  On

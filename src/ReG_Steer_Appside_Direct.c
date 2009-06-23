@@ -219,236 +219,236 @@ int Detach_from_steerer_direct() {
 
 /*--------------------------------------------------------------------*/
 
-int Finalize_steering_connection_direct() {
+/* int Finalize_steering_connection_direct() { */
 
-  Direct_info_type* socket_info = &(Steerer_connection.socket_info);
+/*   Direct_info_type* socket_info = &(Steerer_connection.socket_info); */
 
-  if(socket_info->listener_status = REG_COMMS_STATUS_LISTENING) {
-    close_listener_direct(socket_info);
-  }
+/*   if(socket_info->listener_status = REG_COMMS_STATUS_LISTENING) { */
+/*     close_listener_direct(socket_info); */
+/*   } */
 
-  if(socket_info->comms_status = REG_COMMS_STATUS_CONNECTED) {
-    close_connector_direct(socket_info);
-  }
+/*   if(socket_info->comms_status = REG_COMMS_STATUS_CONNECTED) { */
+/*     close_connector_direct(socket_info); */
+/*   } */
 
-  return REG_SUCCESS;
-}
-
-/*--------------------------------------------------------------------*/
-
-void poll_steerer_socket(Direct_info_type* socket_info) {
-
-  struct timeval timeout;
-  fd_set sockets;	/* the set of sockets to check */
-  int fd_max;		/* the max socket number */
-
-  int listener = socket_info->listener_handle;
-  int connector = socket_info->connector_handle;
-
-  timeout.tv_sec  = 0;
-  timeout.tv_usec = 0;
-
-  /* just return if we have no handles */
-  if((listener == -1) && (connector == -1)) return;
-
-  /* clear the socket set and add required handles */
-  FD_ZERO(&sockets);
-
-  if(socket_info->listener_status == REG_COMMS_STATUS_LISTENING) {
-    FD_SET(listener, &sockets);
-    fd_max = listener;
-
-    /* poll using select() */
-#ifdef REG_DEBUG
-    fprintf(stderr, "**DIRECT: poll_socket: polling for accept\n");
-#endif
-    if(select(fd_max + 1, &sockets, NULL, NULL, &timeout) == -1) {
-      perror("select");
-      return;
-    }
-
-    /* see if anything needs doing */
-    if(FD_ISSET(listener, &sockets)) {
-      /* new connection */
-      struct sockaddr_in theirAddr;
-#if defined(__sgi)
-      socklen_t addrlen = sizeof(theirAddr);
-#elif defined(TRU64)
-      int addrlen = sizeof(theirAddr);
-#else
-      unsigned int addrlen = sizeof(theirAddr);
-#endif
-      int new_fd = accept(listener, (struct sockaddr*) &theirAddr, &addrlen);
-      if(new_fd == REG_SOCKETS_ERROR) {
-	perror("accept");
-	return;
-      }
-      socket_info->connector_handle = new_fd;
-      socket_info->comms_status=REG_COMMS_STATUS_CONNECTED;
-    }
-  }
-}
+/*   return REG_SUCCESS; */
+/* } */
 
 /*--------------------------------------------------------------------*/
 
-int send_steerer_msg(Direct_info_type* socket_info,
-		     const size_t num_bytes_to_send, 
-		     void*        pData) {
-  int bytes_left;
-  int result;
-  char* pchar;
-  int connector = socket_info->connector_handle;
+/* void poll_steerer_socket(Direct_info_type* socket_info) { */
 
-  if(num_bytes_to_send < 0) {
-    fprintf(stderr, "**DIRECT: send_steerer_msg: requested to write < 0 bytes!\n");
-    return REG_FAILURE;
-  }
-  else if(num_bytes_to_send == 0) {
-    fprintf(stderr, "**DIRECT: send_steerer_msg: asked to send 0 bytes!\n");
-    return REG_SUCCESS;
-  }
+/*   struct timeval timeout; */
+/*   fd_set sockets;	/\* the set of sockets to check *\/ */
+/*   int fd_max;		/\* the max socket number *\/ */
 
-  /* cast void pointer */
-  pchar = (char*) pData;
+/*   int listener = socket_info->listener_handle; */
+/*   int connector = socket_info->connector_handle; */
 
-  /* send header with just an int saying how much data to come */
-#ifdef REG_DEBUG
-  fprintf(stderr, "**DIRECT: send_steerer_msg: sending header...\n");
-#endif
-#ifndef __linux
-  result = send(connector, (void*) &num_bytes_to_send, sizeof(int), 0);
-#else
-  result = send(connector, (void*) &num_bytes_to_send, sizeof(int), MSG_NOSIGNAL);
-#endif
-  if(result != sizeof(int)) {
-    perror("send");
-    return REG_FAILURE;
-  }
+/*   timeout.tv_sec  = 0; */
+/*   timeout.tv_usec = 0; */
 
-  bytes_left = num_bytes_to_send;
+/*   /\* just return if we have no handles *\/ */
+/*   if((listener == -1) && (connector == -1)) return; */
 
-#ifdef REG_DEBUG
-  fprintf(stderr, "**DIRECT: send_steerer_msg: writing...\n");
-#endif
-  while(bytes_left > 0) {
-#ifndef __linux
-    result = send(connector, pchar, bytes_left, 0);
-#else
-    result = send(connector, pchar, bytes_left, MSG_NOSIGNAL);
-#endif
-    if(result == REG_SOCKETS_ERROR) {
-      perror("send");
-      return REG_FAILURE;
-    }
-    else {
-      bytes_left -= result;
-      pchar += result;
-    }
-  }
+/*   /\* clear the socket set and add required handles *\/ */
+/*   FD_ZERO(&sockets); */
 
-  if(bytes_left > 0) {
-#ifdef REG_DEBUG
-    fprintf(stderr, "**DIRECT: send_steerer_msg: timed-out trying to write data\n");
-#endif
-    return REG_TIMED_OUT;
-  }
+/*   if(socket_info->listener_status == REG_COMMS_STATUS_LISTENING) { */
+/*     FD_SET(listener, &sockets); */
+/*     fd_max = listener; */
 
-#ifdef REG_DEBUG
-  fprintf(stderr, "**DIRECT: send_steerer_msg: sent %d bytes...\n", 
-	  (int) num_bytes_to_send);
-#endif
+/*     /\* poll using select() *\/ */
+/* #ifdef REG_DEBUG */
+/*     fprintf(stderr, "**DIRECT: poll_socket: polling for accept\n"); */
+/* #endif */
+/*     if(select(fd_max + 1, &sockets, NULL, NULL, &timeout) == -1) { */
+/*       perror("select"); */
+/*       return; */
+/*     } */
+
+/*     /\* see if anything needs doing *\/ */
+/*     if(FD_ISSET(listener, &sockets)) { */
+/*       /\* new connection *\/ */
+/*       struct sockaddr_in theirAddr; */
+/* #if defined(__sgi) */
+/*       socklen_t addrlen = sizeof(theirAddr); */
+/* #elif defined(TRU64) */
+/*       int addrlen = sizeof(theirAddr); */
+/* #else */
+/*       unsigned int addrlen = sizeof(theirAddr); */
+/* #endif */
+/*       int new_fd = accept(listener, (struct sockaddr*) &theirAddr, &addrlen); */
+/*       if(new_fd == REG_SOCKETS_ERROR) { */
+/* 	perror("accept"); */
+/* 	return; */
+/*       } */
+/*       socket_info->connector_handle = new_fd; */
+/*       socket_info->comms_status=REG_COMMS_STATUS_CONNECTED; */
+/*     } */
+/*   } */
+/* } */
+
+/*--------------------------------------------------------------------*/
+
+/* int send_steerer_msg(Direct_info_type* socket_info, */
+/* 		     const size_t num_bytes_to_send,  */
+/* 		     void*        pData) { */
+/*   int bytes_left; */
+/*   int result; */
+/*   char* pchar; */
+/*   int connector = socket_info->connector_handle; */
+
+/*   if(num_bytes_to_send < 0) { */
+/*     fprintf(stderr, "**DIRECT: send_steerer_msg: requested to write < 0 bytes!\n"); */
+/*     return REG_FAILURE; */
+/*   } */
+/*   else if(num_bytes_to_send == 0) { */
+/*     fprintf(stderr, "**DIRECT: send_steerer_msg: asked to send 0 bytes!\n"); */
+/*     return REG_SUCCESS; */
+/*   } */
+
+/*   /\* cast void pointer *\/ */
+/*   pchar = (char*) pData; */
+
+/*   /\* send header with just an int saying how much data to come *\/ */
+/* #ifdef REG_DEBUG */
+/*   fprintf(stderr, "**DIRECT: send_steerer_msg: sending header...\n"); */
+/* #endif */
+/* #ifndef __linux */
+/*   result = send(connector, (void*) &num_bytes_to_send, sizeof(int), 0); */
+/* #else */
+/*   result = send(connector, (void*) &num_bytes_to_send, sizeof(int), MSG_NOSIGNAL); */
+/* #endif */
+/*   if(result != sizeof(int)) { */
+/*     perror("send"); */
+/*     return REG_FAILURE; */
+/*   } */
+
+/*   bytes_left = num_bytes_to_send; */
+
+/* #ifdef REG_DEBUG */
+/*   fprintf(stderr, "**DIRECT: send_steerer_msg: writing...\n"); */
+/* #endif */
+/*   while(bytes_left > 0) { */
+/* #ifndef __linux */
+/*     result = send(connector, pchar, bytes_left, 0); */
+/* #else */
+/*     result = send(connector, pchar, bytes_left, MSG_NOSIGNAL); */
+/* #endif */
+/*     if(result == REG_SOCKETS_ERROR) { */
+/*       perror("send"); */
+/*       return REG_FAILURE; */
+/*     } */
+/*     else { */
+/*       bytes_left -= result; */
+/*       pchar += result; */
+/*     } */
+/*   } */
+
+/*   if(bytes_left > 0) { */
+/* #ifdef REG_DEBUG */
+/*     fprintf(stderr, "**DIRECT: send_steerer_msg: timed-out trying to write data\n"); */
+/* #endif */
+/*     return REG_TIMED_OUT; */
+/*   } */
+
+/* #ifdef REG_DEBUG */
+/*   fprintf(stderr, "**DIRECT: send_steerer_msg: sent %d bytes...\n",  */
+/* 	  (int) num_bytes_to_send); */
+/* #endif */
   
-  return REG_SUCCESS;
-}
+/*   return REG_SUCCESS; */
+/* } */
 
 /*---------------------------------------------------*/
 
-int Send_status_msg_direct(Direct_info_type* socket_info, char *buf) {
+/* int Send_status_msg_direct(Direct_info_type* socket_info, char *buf) { */
 
-  int buf_len;
+/*   int buf_len; */
 
-  buf_len = strlen(buf) + 1; /* +1 for \0 */
-  if(send_steerer_msg(socket_info, buf_len, buf) == REG_FAILURE) {
-    fprintf(stderr, "**DIRECT: Send_status_msg_direct: failed to send\n");
+/*   buf_len = strlen(buf) + 1; /\* +1 for \0 *\/ */
+/*   if(send_steerer_msg(socket_info, buf_len, buf) == REG_FAILURE) { */
+/*     fprintf(stderr, "**DIRECT: Send_status_msg_direct: failed to send\n"); */
     
-    return REG_FAILURE;
-  }
+/*     return REG_FAILURE; */
+/*   } */
 
-  return REG_SUCCESS;
-}
+/*   return REG_SUCCESS; */
+/* } */
 
 /*---------------------------------------------------*/
 
-struct msg_struct *Get_control_msg_direct(Direct_info_type* socket_info) {
+/* struct msg_struct *Get_control_msg_direct(Direct_info_type* socket_info) { */
 
-  struct msg_struct* msg = NULL;
-  int return_status;
-  char data[REG_MAX_MSG_SIZE];
+/*   struct msg_struct* msg = NULL; */
+/*   int return_status; */
+/*   char data[REG_MAX_MSG_SIZE]; */
 
-  /* will this block? we never want it to! */
-  if(poll_msg_direct(socket_info->connector_handle) == REG_FAILURE) return NULL;
+/*   /\* will this block? we never want it to! *\/ */
+/*   if(poll_msg_direct(socket_info->connector_handle) == REG_FAILURE) return NULL; */
 
-  if(Consume_steerer_msg(socket_info, data) == REG_SUCCESS) {
+/*   if(Consume_steerer_msg(socket_info, data) == REG_SUCCESS) { */
 
-    msg = New_msg_struct();
+/*     msg = New_msg_struct(); */
 
-    /* Pass NULL down here as this is app-side and we have no ptr to
-       a Sim_entry struct */
-    return_status = Parse_xml_buf(data, strlen(data), msg, NULL);
+/*     /\* Pass NULL down here as this is app-side and we have no ptr to */
+/*        a Sim_entry struct *\/ */
+/*     return_status = Parse_xml_buf(data, strlen(data), msg, NULL); */
 
-    if(return_status != REG_SUCCESS) {
-      Delete_msg_struct(&msg);
-    }
-  }
+/*     if(return_status != REG_SUCCESS) { */
+/*       Delete_msg_struct(&msg); */
+/*     } */
+/*   } */
 
-  return msg;
-}
+/*   return msg; */
+/* } */
 
 /*-----------------------------------------------------------------------*/
 
-int Get_data_source_address_direct(int                 dummy,
-				   char*               hostname,
-				   unsigned short int* port)
-{
-  char* pchar;
-  int   len;
+/* int Get_data_source_address_direct(int                 dummy, */
+/* 				   char*               hostname, */
+/* 				   unsigned short int* port) */
+/* { */
+/*   char* pchar; */
+/*   int   len; */
 
-  /* Return port = 0 on failure */
-  *port = 0;
+/*   /\* Return port = 0 on failure *\/ */
+/*   *port = 0; */
 
-  /* Get hostname and port from environment variables */
+/*   /\* Get hostname and port from environment variables *\/ */
 
-  pchar = getenv("REG_CONNECTOR_HOSTNAME");
-  if (pchar) {
-    len = strlen(pchar);
-    if (len < REG_MAX_STRING_LENGTH) {
-      sprintf(hostname, pchar);
-    }
-    else{
-      fprintf(stderr, "**DIRECT: Get_data_source_address_direct: content of "
-	      "REG_CONNECTOR_HOSTNAME exceeds max. string length of "
-	      "%d chars\n", REG_MAX_STRING_LENGTH);
-      return REG_FAILURE;
-    }
-  }
-  else{
-    fprintf(stderr, 
-	    "**DIRECT: Get_data_source_address_direct: REG_CONNECTOR_HOSTNAME not set\n");
-    return REG_FAILURE;
-  }
+/*   pchar = getenv("REG_CONNECTOR_HOSTNAME"); */
+/*   if (pchar) { */
+/*     len = strlen(pchar); */
+/*     if (len < REG_MAX_STRING_LENGTH) { */
+/*       sprintf(hostname, pchar); */
+/*     } */
+/*     else{ */
+/*       fprintf(stderr, "**DIRECT: Get_data_source_address_direct: content of " */
+/* 	      "REG_CONNECTOR_HOSTNAME exceeds max. string length of " */
+/* 	      "%d chars\n", REG_MAX_STRING_LENGTH); */
+/*       return REG_FAILURE; */
+/*     } */
+/*   } */
+/*   else{ */
+/*     fprintf(stderr,  */
+/* 	    "**DIRECT: Get_data_source_address_direct: REG_CONNECTOR_HOSTNAME not set\n"); */
+/*     return REG_FAILURE; */
+/*   } */
 
-  pchar = getenv("REG_CONNECTOR_PORT");
-  if (pchar) {
-    *port =  (unsigned short int)atoi(pchar);
-  }
-  else{
-    fprintf(stderr, 
-	    "**DIRECT: Get_data_source_address_direct: REG_CONNECTOR_PORT not set\n");
-    return REG_FAILURE;
-  }
+/*   pchar = getenv("REG_CONNECTOR_PORT"); */
+/*   if (pchar) { */
+/*     *port =  (unsigned short int)atoi(pchar); */
+/*   } */
+/*   else{ */
+/*     fprintf(stderr,  */
+/* 	    "**DIRECT: Get_data_source_address_direct: REG_CONNECTOR_PORT not set\n"); */
+/*     return REG_FAILURE; */
+/*   } */
 
-  return REG_SUCCESS;
-}
+/*   return REG_SUCCESS; */
+/* } */
 
 /*---------------------------------------------------*/
 

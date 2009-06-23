@@ -58,23 +58,6 @@ if(NOT EXECUTABLE_OUTPUT_PATH)
   set(EXECUTABLE_OUTPUT_PATH ${REG_BINARY_DIR}/bin CACHE INTERNAL "Single output directory for building all executables.")
 endif(NOT EXECUTABLE_OUTPUT_PATH)
 
-# set up modules
-include(ModulesMacro)
-include(Modules)
-
-# do platform checks
-include(PlatformFeatures)
-
-# set up configure header file
-configure_file(
-  "${PROJECT_SOURCE_DIR}/ReG_Steer_Config.h.in"
-  "${PROJECT_BINARY_DIR}/ReG_Steer_Config.h"
-  @ONLY
-)
-
-# add binary tree so that we can find ReG_Steer_Config.h
-include_directories("${PROJECT_BINARY_DIR}")
-
 #
 # build shared or static libs
 #
@@ -98,26 +81,28 @@ if(REG_BUILD_MODULAR_LIBS)
   endif(REG_BUILD_SHARED_LIBS)
 endif(REG_BUILD_MODULAR_LIBS)
 
-#
-# transport options
-#
-option(REG_SOCKET_STEERING "Use plain sockets for the transfer of steering messages. Default is ON." ON)
-option(REG_SOAP_STEERING "Use SOAP for the transfer of steering messages. Default is OFF." OFF)
+# set up modules
+include(ModulesMacro)
+include(Modules)
 
-# quick hack to stop both socket and soap steering from being selected
-if(REG_SOCKET_STEERING AND REG_SOAP_STEERING)
-  message(SEND_ERROR "You can not use both Sockets and SOAP for your steering transport. Please switch one of them off!")
-endif(REG_SOCKET_STEERING AND REG_SOAP_STEERING)
+# do platform checks
+include(PlatformFeatures)
+
+# set up configure header file
+configure_file(
+  "${PROJECT_SOURCE_DIR}/ReG_Steer_Config.h.in"
+  "${PROJECT_BINARY_DIR}/ReG_Steer_Config.h"
+  @ONLY
+)
+
+# add binary tree so that we can find ReG_Steer_Config.h
+include_directories("${PROJECT_BINARY_DIR}")
 
 #
 # feature options
 #
 option(REG_USE_OPENSSL "Use SSL for steering connections. Default is OFF." OFF)
-option(REG_BUILD_SEPARATE_SOAP_LIB "The SOAP code can sometimes clash with other applications if linked in to the main library. Use this toggle to move it in or out of the main library. Default is to build a separate library." ON)
-option(REG_USE_WSRF "If set, use WSRF otherwise use OGSI for the SOAP middleware. Default is WSRF." ON)
 option(REG_LOG_STEERING "Whether or not to log steering commands. Default is ON." ON)
-mark_as_advanced(REG_BUILD_SEPARATE_SOAP_LIB)
-mark_as_advanced(REG_USE_WSRF)
 mark_as_advanced(REG_LOG_STEERING)
 
 #
@@ -166,10 +151,7 @@ if(REG_USE_OPENSSL)
 endif(REG_USE_OPENSSL)
 
 # ReG libs to link examples against
-set(REG_LINK_LIBRARIES ReG_Steer_Utils ReG_Steer)
-if(REG_BUILD_SEPARATE_SOAP_LIB)
-  set(REG_LINK_LIBRARIES ${REG_LINK_LIBRARIES} ReG_Steer_SOAP)
-endif(REG_BUILD_SEPARATE_SOAP_LIB)
+set(REG_LINK_LIBRARIES ReG_Steer)
 
 # build and install library and headers
 add_subdirectory(src)

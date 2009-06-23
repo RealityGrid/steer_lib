@@ -63,12 +63,12 @@ struct msg_struct *Get_status_msg_direct(Sim_entry_type *sim, int);
     Clean-up soap-specific structures */
 int Finalize_connection_direct(Sim_entry_type *sim);
 
-int connect_steerer_direct(Direct_info_type*);
-int steerer_socket_init_direct(Direct_info_type*);
-int dns_lookup_direct(char*);
-int Consume_steerer_msg(Direct_info_type*, char*);
-int poll_msg_direct(int);
-void close_listener_direct(Direct_info_type*);
-void close_connector_direct(Direct_info_type*);
+/* int connect_steerer_direct(Direct_info_type*); */
+/* int steerer_socket_init_direct(Direct_info_type*); */
+/* int dns_lookup_direct(char*); */
+/* int Consume_steerer_msg(Direct_info_type*, char*); */
+/* int poll_msg_direct(int); */
+/* void close_listener_direct(Direct_info_type*); */
+/* void close_connector_direct(Direct_info_type*); */
 
 #endif /* __REG_STEER_STEERSIDE_DIRECT_H__ */

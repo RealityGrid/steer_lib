@@ -98,15 +98,6 @@ typedef struct {
 /*--------- Prototypes of internal library functions -------------*/
 
 /** @internal
-    @param SimIndex Index of attached simulation in main Sim_table
-    @param filename On return, filename to use for sending next control
-    message to the simulation
-    
-    Generate a filename for sending steering commands to the application.
-*/
-int Generate_control_filename(int SimIndex, char* filename);
-
-/** @internal
     @param SimHandle Handle of an attached simulation
 
     A look-up function - return the index of the simulation with handle 
@@ -133,31 +124,12 @@ int Next_free_iodef_index(IOdef_table_type *table);
 int Command_supported(int sim_id, int cmd_id);
 
 /** @internal
-    @param sim Pointer to simulation entry in Sim_table
-    @param SimID Optionally, contains path of directory used to communicate
-    with the simulation
-    @return REG_SUCCESS, REG_FAILURE
-
-    Attach to specified simulation using local file system.  If @p SimID
-    contains a valid directory path then that is used, otherwise the routine
-    attempts to use the value of the REG_STEER_DIRECTORY environment 
-    variable. */
-int Sim_attach_local(Sim_entry_type *sim, char *SimID);
-
-/** @internal
     @param sim Pointer to simulation entry
     @param SimID GSH of simulation to attach to
     @return REG_SUCCESS, REG_FAILURE
     
     Attach to specified simulation via (java) proxy. */
 int Sim_attach_proxy(Sim_entry_type *sim, char *SimID);
-
-/** @internal
-    @param sim Pointer to simulation entry in Sim_table
-    
-    Read an applications supported commands from disk and store them
-    in the entry pointed to by @p sim. */
-int Consume_supp_cmds_local(Sim_entry_type *sim);
 
 /** @internal
     @param SimIndex Index of simulation in main Sim_table
@@ -177,14 +149,6 @@ int Send_control_msg(int SimIndex, char* buf);
 int Send_control_msg_proxy(Sim_entry_type *sim, char* buf);
 
 /** @internal
-    @param SimIndex Index of simulation in main Sim_table
-    @param buf Buffer containing control message
-
-    Send the supplied control message to the simulation with the
-    supplied index via local disk */
-int Send_control_msg_file(int SimIndex, char* buf);
-
-/** @internal
     @param sim Pointer to simulation entry in Sim_table
 
     Get a status message back via the java proxy */
@@ -193,26 +157,14 @@ struct msg_struct *Get_status_msg_proxy(Sim_entry_type *sim);
 /** @internal
     @param sim Pointer to simulation entry in Sim_table
 
-    Get a status message back by reading from disk */
-struct msg_struct *Get_status_msg_file(Sim_entry_type *sim);
-
-/** @internal
-    @param sim Pointer to simulation entry in Sim_table
-
     Take down the steering connection */
-int Finalize_connection(Sim_entry_type *sim);
+int Finalize_connection(int index);
 
 /** @internal
     @param sim Pointer to simulation entry in Sim_table
 
     Take down the proxy-based steering connection */
 int Finalize_connection_proxy(Sim_entry_type *sim);
-
-/** @internal
-    @param sim Pointer to simulation entry in Sim_table
-    
-    Take down the file-based steering connection */
-int Finalize_connection_file(Sim_entry_type *sim);
 
 /** @internal
     @param param_table Pointer to parameter table

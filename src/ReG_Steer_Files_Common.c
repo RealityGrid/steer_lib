@@ -34,23 +34,15 @@
 
 file_info_table_type file_info_table;
 
-/* Need access to these tables which are actually declared in 
-   ReG_Steer_Appside_internal.h */
-extern IOdef_table_type IOTypes_table;
-extern Steerer_connection_table_type Steerer_connection;
-
-/** Global scratch buffer - declared in ReG_Steer_Appside.c */
-extern char Global_scratch_buffer[];
-
 /*--------------------------------------------------------------------*/
 
-int file_info_table_init() {
+int file_info_table_init(const int max_entries) {
   int i;
 
-  file_info_table.max_entries = IOTypes_table.max_entries;
+  file_info_table.max_entries = max_entries;
   file_info_table.num_used = 0;
   file_info_table.file_info = (file_info_type*) 
-    malloc(file_info_table.max_entries * sizeof(file_info_type));
+    malloc(max_entries * sizeof(file_info_type));
 
   if(file_info_table.file_info == NULL) {
     fprintf(stderr, "STEER: file_info_table_init: failed to allocate memory "
@@ -58,7 +50,7 @@ int file_info_table_init() {
     return REG_FAILURE;
   }
 
-  for(i = 0; i < file_info_table.max_entries; i++) {
+  for(i = 0; i < max_entries; i++) {
     file_info_table.file_info[i].fp = NULL;
   }
 
@@ -144,5 +136,213 @@ int Get_file_list(const char* dirname, int num_tags, char** tags,
 
   return REG_SUCCESS;
 }
+
+/*----------------------------------------------------------------*/
+
+FILE* open_next_file(char* base_name) {
+  FILE* fp;
+  char  tmp_filename[REG_MAX_STRING_LENGTH+9];
+  char  filename1[REG_MAX_STRING_LENGTH+9];
+  char  filename2[REG_MAX_STRING_LENGTH+9];
+  struct stat stbuf;
+  long  time1;
+  long  time2;
+  int   i;
+
+  fp = NULL;
+
+  i = 0;
+  time1 = -1;
+  while(i<REG_MAX_NUM_FILES){
+    
+    /* Look for presence of lock file */
+    sprintf(tmp_filename,"%s_%d.lock", base_name, i);
+
+    fp = fopen(tmp_filename, "r");
+
+    if (fp != NULL) {
+     
+      /* Found one - check its last-modified time */
+      fclose(fp);
+      fp = NULL;
+      if(stat(tmp_filename, &stbuf) != -1){
+
+        /* timespec_t     st_mtim;      Time of last data modification
+           Times measured in seconds and nanoseconds
+           since 00:00:00 UTC, Jan. 1, 1970 */
+        sprintf(filename1,"%s_%d", base_name, i);
+	time1 = (long)stbuf.st_mtime;
+        break;
+      }
+      else{
+
+	fprintf(stderr, "STEER: Open_next_file: failed to stat %s\n", tmp_filename);
+      }
+    }
+
+    i++;
+  }
+
+  /* Now search in the opposite direction (in case consumption lags
+     creation and we've wrapped around the REG_MAX_NUM_FILES counter) */
+
+  i = REG_MAX_NUM_FILES - 1;
+  time2 = -1;
+  while(i > -1){
+    
+    /* Look for presence of lock file */
+    sprintf(tmp_filename,"%s_%d.lock", base_name, i);
+
+    fp = fopen(tmp_filename, "r");
+
+    if (fp != NULL) {
+     
+      /* Found one - check its last-modified time */
+      fclose(fp);
+      fp = NULL;
+      if(stat(tmp_filename, &stbuf) != -1){
+
+        /* timespec_t     st_mtim;      Time of last data modification
+           Times measured in seconds and nanoseconds
+           since 00:00:00 UTC, Jan. 1, 1970 */
+        sprintf(filename2,"%s_%d", base_name, i);
+	time2 = (long)stbuf.st_mtime;/*.tv_sec;*/
+        break;
+      }
+      else{
+
+	fprintf(stderr, "STEER: Open_next_file: failed to stat %s\n", tmp_filename);
+      }
+    }
+
+    i--;
+  }
+
+  /* We want to open the oldest file that we've found... */
+
+  if(time1 != -1 && time2 != -1){
+
+    if(time2 < time1) strcpy(filename1, filename2);
+
+    if( (fp = fopen(filename1, "r")) ){
+
+#ifdef REG_DEBUG
+      fprintf(stderr, "STEER: Open_next_file: opening %s\n", filename1);
+#endif
+      /* Return the name of the file actually opened */
+      strcpy(base_name, filename1);
+    }
+  }
+
+  return fp;
+}
+
+/*----------------------------------------------------------------*/
+
+int create_lock_file(char* filename) {
+  int fd;
+  char lock_file[REG_MAX_STRING_LENGTH + 5];
+
+  /* Create lock file to flag that a file of same root is ready to
+     be read */
+
+  sprintf(lock_file, "%s.lock", filename);
+
+  if((fd = creat(lock_file,
+		 (S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH))) < 0) {
+
+    return REG_FAILURE;
+  }
+  
+  close(fd);
+  return REG_SUCCESS;
+}
+
+/*----------------------------------------------------------------*/
+
+int delete_file(char* filename) {
+  int  return_status = REG_SUCCESS;
+  char long_filename[REG_MAX_STRING_LENGTH+5];
+
+  /* Remove lock file first (because this is what is searched for) */
+
+  sprintf(long_filename, "%s.lock", filename);
+
+#ifdef REG_DEBUG
+  fprintf(stderr, "STEER: Delete_file: removing %s\n", long_filename);
+#endif
+
+  if(remove(long_filename)){
+    perror("STEER: Delete_file, deleting lock file");
+    return_status = REG_FAILURE;
+  }
+
+#ifdef NO_FILE_DELETE
+  /* If this debugging flag is set then don't remove the data file */
+  return REG_SUCCESS;
+#endif
+
+  /* Remove the data file */
+
+#ifdef REG_DEBUG
+  fprintf(stderr, "STEER: Delete_file: removing %s\n", filename);
+#endif
+
+  if(remove(filename)){
+    perror("STEER: Delete_file, deleting data file");
+    return_status = REG_FAILURE;
+  }
+  return return_status;
+}
+
+/*----------------------------------------------------------------*/
+
+int remove_files(char* base_name) {
+  char  filename[REG_MAX_STRING_LENGTH];
+  char  lock_name[REG_MAX_STRING_LENGTH];
+  FILE *fp;
+
+  /* Remove any files that we would have normally consumed */
+
+  strcpy(filename, base_name);
+
+#ifdef REG_DEBUG
+  fprintf(stderr, "STEER: Remove_files: looking for files beginning: %s\n", filename);
+#endif
+
+  while((fp = open_next_file(filename))) {
+
+    fclose(fp);
+
+    /* Remove lock file */
+    sprintf(lock_name, "%s.lock", filename);
+#ifdef REG_DEBUG
+    fprintf(stderr, "STEER: Remove_files: deleting %s\n", lock_name);
+#endif
+    remove(lock_name);
+
+#ifdef NO_FILE_DELETE
+    /* Don't delete actual data files if this debugging flag set */
+    continue;
+#endif
+
+    /* Remove associated data file */
+#ifdef REG_DEBUG
+    fprintf(stderr, "STEER: Remove_files: deleting %s\n", filename);
+#endif
+    remove(filename);
+
+    /* Reset filename ready to look for next one */
+    strcpy(filename, base_name);
+  }
+
+  return REG_SUCCESS;
+}
+
+/*----------------------------------------------------------------*/
+
+
+/*----------------------------------------------------------------*/
+
 
 /*----------------------------------------------------------------*/

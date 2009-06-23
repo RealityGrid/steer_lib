@@ -39,8 +39,8 @@
 # register_module(
 #   the type of module (Samples, Steering, etc)
 #   what is provided (Sockets, Files, etc)
-#   source files unique to this module
-#   source files common to other modules
+#   source files unique to this module (filenames ; separated)
+#   source files common to other modules (filenames ; separated)
 # )
 #
 
@@ -58,12 +58,26 @@ register_module(
   "ReG_Steer_Files_Common.c"
 )
 
-#register_module(
-#  Steering
-#  Sockets
-#  "ReG_Steer_Samples_Transport_Sockets.c"
-#  "ReG_Steer_Sockets_Common.c"
-#)
+register_module(
+  Steering
+  Sockets
+  "ReG_Steer_Steering_Transport_Sockets.c"
+  "ReG_Steer_Sockets_Common.c"
+)
+
+register_module(
+  Steering
+  WSRF
+  "stdsoap2.c;soapC.c;soapClient.c;ReG_Steer_Steering_Transport_WSRF.c"
+  ""
+)
+
+register_module(
+  Steering
+  Files
+  "ReG_Steer_Steering_Transport_Files.c"
+  "ReG_Steer_Files_Common.c"
+)
 
 ##
 ## DO NOT REGISTER ANY MODULES BELOW HERE

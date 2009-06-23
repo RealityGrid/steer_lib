@@ -33,14 +33,15 @@
   */
 
 #include "ReG_Steer_Config.h"
-
 #include "ReG_Steer_Samples_Transport_API.h"
+#include "ReG_Steer_Samples_Transport_Sockets.h"
 #include "ReG_Steer_Sockets_Common.h"
 #include "ReG_Steer_Common.h"
 #include "ReG_Steer_Appside_internal.h"
+#include "ReG_Steer_Steering_Transport_API.h"
 
 /* */
-extern socket_info_table_type socket_info_table;
+socket_info_table_type socket_info_table;
 
 /* Need access to these tables which are actually declared in 
    ReG_Steer_Appside_internal.h */
@@ -50,7 +51,7 @@ extern Steerer_connection_table_type Steerer_connection;
 /** Global scratch buffer - declared in ReG_Steer_Appside.c */
 extern char Global_scratch_buffer[];
 
-/*---------------------------------------------------*/
+/*--------------------- API -------------------------*/
 
 int Initialize_samples_transport() {
 
@@ -58,7 +59,7 @@ int Initialize_samples_transport() {
   signal(SIGPIPE, signal_handler_sockets);
 #endif
 
-  return socket_info_table_init();
+  return socket_info_table_init(&socket_info_table, IOTypes_table.max_entries);
 }
 
 /*---------------------------------------------------*/
@@ -72,9 +73,10 @@ int Finalize_samples_transport() {
 int Initialize_IOType_transport_impl(const int direction, const int index) {
 
   int return_status = REG_SUCCESS;
+  socket_info_type* socket_info = &(socket_info_table.socket_info[index]);
 
   /* set up socket info stuff */
-  if(socket_info_init(index) != REG_SUCCESS) {
+  if(socket_info_init(socket_info) != REG_SUCCESS) {
 #ifdef REG_DEBUG
     fprintf(stderr, "STEER: Initialize_IOType_transport: failed to "
 	    "init socket info for IOType\n");
@@ -89,7 +91,7 @@ int Initialize_IOType_transport_impl(const int direction, const int index) {
 
       /* open socket and register callback function to listen for and
 	 accept connections */
-      if(create_listener(index) != REG_SUCCESS) {
+      if(create_listener_samples(index) != REG_SUCCESS) {
 #ifdef REG_DEBUG
 	fprintf(stderr, "STEER: Initialize_IOType_transport: failed to "
 		"create listener for IOType\n");
@@ -99,8 +101,8 @@ int Initialize_IOType_transport_impl(const int direction, const int index) {
       else {
 	fprintf(stderr, "STEER: Initialize_IOType_transport: Created "
 		"listener on port %d, index %d, label %s\n", 
-		socket_info_table.socket_info[index].listener_port, 
-		index, IOTypes_table.io_def[index].label );
+		socket_info->listener_port, 
+		index, IOTypes_table.io_def[index].label);
       }
     }
     else if(direction == REG_IO_IN) {
@@ -116,7 +118,7 @@ int Initialize_IOType_transport_impl(const int direction, const int index) {
 	return REG_SUCCESS;
       }
 
-      if(create_connector(index) != REG_SUCCESS) {
+      if(create_connector_samples(index) != REG_SUCCESS) {
 #ifdef REG_DEBUG
 	fprintf(stderr, "STEER: Initialize_IOType_transport: failed to "
 		"register connector for IOType\n");
@@ -128,8 +130,8 @@ int Initialize_IOType_transport_impl(const int direction, const int index) {
 	fprintf(stderr, "STEER: Initialize_IOType_transport: "
 		"registered connector on port %d, hostname = %s, "
 		"index %d, label %s\n", 
-		socket_info_table.socket_info[index].connector_port,
-		socket_info_table.socket_info[index].connector_hostname,
+		socket_info->connector_port,
+		socket_info->connector_hostname,
 		index, IOTypes_table.io_def[index].label );
       }
 #endif
@@ -148,13 +150,13 @@ void Finalize_IOType_transport_impl() {
   for(index = 0; index < IOTypes_table.num_registered; index++) {
     if(IOTypes_table.io_def[index].direction == REG_IO_OUT) {
       /* close sockets */
-      cleanup_listener_connection(index);
-      socket_info_cleanup(index);
+      cleanup_listener_connection_samples(index);
+      socket_info_cleanup(&(socket_info_table.socket_info[index]));
     }
     else if(IOTypes_table.io_def[index].direction == REG_IO_IN) {
       /* close sockets */
-      cleanup_connector_connection(index);
-      socket_info_cleanup(index);
+      cleanup_connector_connection_samples(index);
+      socket_info_cleanup(&(socket_info_table.socket_info[index]));
     }
   }
 }
@@ -170,11 +172,11 @@ int Disable_IOType_impl(const int index) {
 
   if(IOTypes_table.io_def[index].direction == REG_IO_OUT) {
     /* close sockets */
-    cleanup_listener_connection(index);
+    cleanup_listener_connection_samples(index);
   }
   else if(IOTypes_table.io_def[index].direction == REG_IO_IN) {
     /* close sockets */
-    cleanup_connector_connection(index);
+    cleanup_connector_connection_samples(index);
   }
 
   return REG_SUCCESS;
@@ -189,7 +191,7 @@ int Enable_IOType_impl(int index) {
   if(IOTypes_table.io_def[index].direction == REG_IO_OUT) {
     /* open socket and register callback function to listen for and
        accept connections */
-    if(create_listener(index) != REG_SUCCESS) {
+    if(create_listener_samples(index) != REG_SUCCESS) {
 #ifdef REG_DEBUG
       fprintf(stderr, "STEER: Enable_IOType: failed to create listener for IOType\n");
 #endif
@@ -197,7 +199,7 @@ int Enable_IOType_impl(int index) {
     }
   }
   else if(IOTypes_table.io_def[index].direction == REG_IO_IN) {
-    if (create_connector(index) != REG_SUCCESS) {
+    if (create_connector_samples(index) != REG_SUCCESS) {
 #ifdef REG_DEBUG
       fprintf(stderr, "STEER: Enable_IOType: failed to register "
 	      "connector for IOType\n");
@@ -257,7 +259,7 @@ int Emit_header_impl(const int index) {
   /* check if socket connection has been made */
   if(socket_info_table.socket_info[index].comms_status != 
      REG_COMMS_STATUS_CONNECTED) {
-    attempt_listener_connect(index);
+    attempt_listener_connect_samples(index);
   }
 
   /* now are we connected? */
@@ -287,7 +289,7 @@ int Emit_header_impl(const int index) {
       fprintf(stderr, "STEER: Emit_header: Write failed - "
 	      "immediate retry connect\n");
 #endif
-      retry_accept_connect(index);
+      retry_accept_connect_samples(index);
 
       if(socket_info_table.socket_info[index].comms_status == 
 	 REG_COMMS_STATUS_CONNECTED) {
@@ -583,7 +585,7 @@ int Consume_start_data_check_impl(const int index) {
 
   /* if not connected attempt to connect now */
   if(sock_info->comms_status != REG_COMMS_STATUS_CONNECTED) {
-    attempt_connector_connect(index);
+    attempt_connector_connect_samples(index);
   }
 
   /* check if socket connection has been made */
@@ -648,7 +650,7 @@ int Consume_start_data_check_impl(const int index) {
 	      "try immediate reconnect for index %d\n", index);
 #endif
 
-      retry_connect(index);
+      retry_connect_samples(index);
 
       /* check if socket reconnection has been made and check for 
 	 data if it has */
@@ -923,4 +925,537 @@ int Consume_stop_impl(int index) {
   return REG_SUCCESS;
 }
 
-/*---------------------------------------------------*/
+/*--------------------- Others ----------------------*/
+
+int create_listener_samples(const int index) {
+
+  char* pchar;
+  char* ip_addr;
+
+  int listener;
+  int yes = 1;
+  int i;
+  struct sockaddr_in myAddr;
+
+  /* create and register listener */
+  listener = socket(AF_INET, SOCK_STREAM, 0);
+  if(listener == REG_SOCKETS_ERROR) {
+    perror("socket");
+    socket_info_table.socket_info[index].comms_status=REG_COMMS_STATUS_FAILURE;
+    return REG_FAILURE;
+  }
+  socket_info_table.socket_info[index].listener_handle = listener;
+
+  /* Turn off the "Address already in use" error message */
+  if(setsockopt(listener, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == 
+     REG_SOCKETS_ERROR) {
+    perror("setsockopt");
+    return REG_FAILURE;
+  }
+
+  /* Get the hostname of the machine we're running on (so we can publish
+   * the endpoint of this connection). If REG_IO_ADDRESS is set then
+   * that's what we use.  If not, call Get_fully_qualified_hostname which 
+   * itself uses  REG_TCP_INTERFACE if set. */
+  if( (pchar = getenv("REG_IO_ADDRESS")) ){
+#ifdef REG_DEBUG
+    fprintf(stderr, "STEER: create_listener: Taking hostname from "
+	    "REG_IO_ADDRESS variable\n");
+#endif
+    strcpy(socket_info_table.socket_info[index].listener_hostname, pchar);
+  }
+  else if( (pchar = getenv("GLOBUS_HOSTNAME")) ){
+#ifdef REG_DEBUG
+    fprintf(stderr, "STEER: create_listener: Taking hostname from "
+	    "GLOBUS_HOSTNAME variable\n");
+#endif
+    strcpy(socket_info_table.socket_info[index].listener_hostname, pchar);
+  }
+  else if(Get_fully_qualified_hostname(&pchar, &ip_addr) == REG_SUCCESS){
+    strcpy(socket_info_table.socket_info[index].listener_hostname, pchar);
+  }
+  else{
+    fprintf(stderr, "STEER: WARNING: Sockets_create_listener: failed to get hostname\n");
+    sprintf(socket_info_table.socket_info[index].listener_hostname, 
+	    "NOT_SET");
+  }
+  
+  /* set up server address */
+  myAddr.sin_family = AF_INET;
+  if(strlen(socket_info_table.socket_info[index].tcp_interface) == 1) {
+    myAddr.sin_addr.s_addr = INADDR_ANY;
+  }
+  else {
+    inet_aton(socket_info_table.socket_info[index].tcp_interface, 
+	      &(myAddr.sin_addr));
+  }
+  memset(&(myAddr.sin_zero), '\0', 8); /* zero the rest */
+
+  /* Now bind listener so we can accept connections when they happen */
+  i = socket_info_table.socket_info[index].min_port_in;
+  myAddr.sin_port = htons((short) i);
+
+  while(bind(listener, (struct sockaddr*) &myAddr, sizeof(struct sockaddr)) == 
+	REG_SOCKETS_ERROR) {
+    if(++i > socket_info_table.socket_info[index].max_port_in) {
+      perror("bind");
+      close(listener);
+      socket_info_table.socket_info[index].comms_status=REG_COMMS_STATUS_FAILURE;
+      return REG_FAILURE;
+    }
+    myAddr.sin_port = htons((short) i);
+  }
+  /* we're bound, so save the port number we're using */
+  socket_info_table.socket_info[index].listener_port = i;
+
+  /* now we need to actually listen */
+  if(listen(listener, 10) == REG_SOCKETS_ERROR) {
+    perror("listen");
+    close(listener);
+    socket_info_table.socket_info[index].comms_status = REG_COMMS_STATUS_FAILURE;
+    socket_info_table.socket_info[index].listener_status = REG_COMMS_STATUS_FAILURE;
+    return REG_FAILURE;
+  }
+
+  /* we are listening! */
+  socket_info_table.socket_info[index].listener_status = REG_COMMS_STATUS_LISTENING;
+  socket_info_table.socket_info[index].comms_status = REG_COMMS_STATUS_LISTENING;
+
+  return REG_SUCCESS;
+}
+
+/*--------------------------------------------------------------------*/
+
+int create_connector_samples(const int index) {
+
+  int i;
+  int yes = 1;
+  int connector;
+  struct sockaddr_in myAddr;
+
+  /* create connector*/
+  connector = socket(AF_INET, SOCK_STREAM, 0);
+  if(connector == REG_SOCKETS_ERROR) {
+    /* problem! */
+    perror("socket");
+    socket_info_table.socket_info[index].comms_status=REG_COMMS_STATUS_FAILURE;
+    return REG_FAILURE;
+  }
+  /* all okay, so save connector handle */
+  socket_info_table.socket_info[index].connector_handle = connector;
+
+  /* ...turn off the "Address already in use" error message... */
+  if(setsockopt(connector, SOL_SOCKET, SO_REUSEADDR, &yes, 
+		sizeof(int)) == REG_SOCKETS_ERROR) {
+    perror("setsockopt");
+    return REG_FAILURE;
+  }
+
+/* #ifdef REG_PROXY_SAMPLES */
+/*   /\* Turn off NAGLE's algorithm if using an ioProxy so that the (small) */
+/*      acknowledgement messages get sent immediately instead of being buffered */
+/*      - helps to ensure ack is received before socket is shutdown when consumer */
+/*      is shutdown *\/ */
+/*   yes = 1; */
+/*   if(setsockopt(connector, IPPROTO_TCP, TCP_NODELAY, &yes,  */
+/* 		sizeof(int)) == REG_SOCKETS_ERROR) { */
+/*     perror("setsockopt"); */
+/*     return REG_FAILURE; */
+/*   } */
+/* #endif /\* REG_PROXY_SAMPLES *\/ */
+
+  /* ...build local address struct... */
+  myAddr.sin_family = AF_INET;
+  if(strlen(socket_info_table.socket_info[index].tcp_interface) == 1) {
+    myAddr.sin_addr.s_addr = INADDR_ANY;
+  }
+  else {
+    if( !inet_aton(socket_info_table.socket_info[index].tcp_interface, 
+		   &(myAddr.sin_addr)) ){
+      fprintf(stderr, "STEER: create_connector: inet_aton failed "
+	      "for interface >>%s<<\n", 
+	      socket_info_table.socket_info[index].tcp_interface);
+      return REG_FAILURE;
+    }
+  }
+  memset(&(myAddr.sin_zero), '\0', 8); /* zero the rest */
+
+  /* ...and bind connector so we can punch out of firewalls (if necessary)... */
+  if((i = socket_info_table.socket_info[index].min_port_out)) {
+    myAddr.sin_port = htons((short) i);
+
+    fprintf(stderr, "STEER: create_connector: using range %d -- %d for bind\n",
+	    socket_info_table.socket_info[index].min_port_out,
+	    socket_info_table.socket_info[index].max_port_out);
+
+    while(bind(connector, (struct sockaddr*) &myAddr, 
+	       sizeof(struct sockaddr)) == REG_SOCKETS_ERROR) {
+      if(++i > socket_info_table.socket_info[index].max_port_out) {
+	fprintf(stderr, "STEER: create_connector: failed to find free local port to "
+		"bind to in range %d -- %d\n",
+		socket_info_table.socket_info[index].min_port_out,
+		socket_info_table.socket_info[index].max_port_out);
+	close(connector);
+	socket_info_table.socket_info[index].comms_status=REG_COMMS_STATUS_FAILURE;
+	return REG_FAILURE;
+      }
+      myAddr.sin_port = htons((short) i);
+    }
+  }
+  socket_info_table.socket_info[index].comms_status=REG_COMMS_STATUS_WAITING_TO_CONNECT;
+
+  /* might as well try to connect now... */
+  connect_connector_samples(index);
+
+  return REG_SUCCESS;
+}
+
+/*--------------------------------------------------------------------*/
+
+int connect_connector_samples(const int index) {
+
+  struct sockaddr_in theirAddr;
+  int  connector     = socket_info_table.socket_info[index].connector_handle;
+  int  return_status = REG_SUCCESS;
+  char tmpBuf[REG_MAX_STRING_LENGTH];
+
+  /* get a remote address if we need to */
+  if(socket_info_table.socket_info[index].connector_port == 0) {
+    return_status =
+      Get_data_io_address_impl(IOTypes_table.io_def[index].input_index,
+			       IOTypes_table.io_def[index].direction,
+			       socket_info_table.socket_info[index].connector_hostname,
+			       &(socket_info_table.socket_info[index].connector_port),
+			       IOTypes_table.io_def[index].proxySourceLabel);
+
+/* #ifdef REG_DIRECT_TCP_STEERING */
+/*     return_status = Get_data_source_address_direct(IOTypes_table.io_def[index].input_index,  */
+/* 						   socket_info_table.socket_info[index].connector_hostname, */
+/* 						   &(socket_info_table.socket_info[index].connector_port)); */
+/* #else */
+/* #ifdef REG_SOAP_STEERING	   */
+/*     /\* Go out into the world of grid/web services... *\/ */
+/* #ifdef REG_WSRF /\* use WSRF *\/ */
+/*     if(IOTypes_table.io_def[index].direction == REG_IO_IN){ */
+/*       return_status = Get_data_source_address_wsrf(IOTypes_table.io_def[index].input_index,  */
+/* 						   socket_info_table.socket_info[index].connector_hostname, */
+/* 						   &(socket_info_table.socket_info[index].connector_port), */
+/* 						   IOTypes_table.io_def[index].proxySourceLabel); */
+/*     } */
+/*     else{ */
+/*       /\* (We'll only be attempting to connect a connector for an IOType of  */
+/* 	 direction REG_IO_OUT when using an IOProxy.) *\/ */
+/*       return_status = Get_data_sink_address_wsrf(IOTypes_table.io_def[index].input_index,  */
+/* 						 socket_info_table.socket_info[index].connector_hostname, */
+/* 						 &(socket_info_table.socket_info[index].connector_port)); */
+/*     } */
+/* #else /\* use OGSI *\/ */
+/*     return_status = Get_data_source_address_soap(IOTypes_table.io_def[index].input_index,  */
+/* 						 socket_info_table.socket_info[index].connector_hostname, */
+/* 						 &(socket_info_table.socket_info[index].connector_port)); */
+/* #endif /\* REG_WSRF *\/ */
+
+/* #else /\* File-based steering *\/ */
+/*     /\* get hostname and port from environment variables *\/ */
+/*     return_status = Get_data_source_address_file(IOTypes_table.io_def[index].input_index,  */
+/* 						 socket_info_table.socket_info[index].connector_hostname, */
+/* 						 &(socket_info_table.socket_info[index].connector_port)); */
+/* #endif /\* !REG_SOAP_STEERING *\/ */
+/* #endif */ /* REG_DIRECT_TCP_STEERING */
+  }
+
+  if(return_status == REG_SUCCESS && 
+     socket_info_table.socket_info[index].connector_port != 0) {
+
+    /* ...look up and then build remote address struct... */
+    if(dns_lookup(socket_info_table.socket_info[index].connector_hostname) == REG_FAILURE) {
+      fprintf(stderr, "STEER: connect_connector: Could not resolve hostname <%s>\n", 
+	      socket_info_table.socket_info[index].connector_hostname);
+      return REG_FAILURE;
+    }
+
+    theirAddr.sin_family = AF_INET;
+    theirAddr.sin_port = 
+             htons(socket_info_table.socket_info[index].connector_port);
+    if( !inet_aton(socket_info_table.socket_info[index].connector_hostname, 
+		   &(theirAddr.sin_addr)) ){
+      fprintf(stderr, 
+	      "STEER: connect_connector: inet_aton reports address is invalid\n");
+      return REG_FAILURE;
+    }
+    memset(&(theirAddr.sin_zero), '\0', 8); /* zero the rest */
+    
+    /* ...finally connect to the remote address! */
+    if(connect(connector, (struct sockaddr*) &theirAddr, 
+	       sizeof(struct sockaddr)) == REG_SOCKETS_ERROR) {
+      perror("connect_connector: connect");
+      socket_info_table.socket_info[index].connector_port = 0;
+      return REG_FAILURE;
+    }
+    socket_info_table.socket_info[index].comms_status = 
+      REG_COMMS_STATUS_CONNECTED;
+
+#ifdef REG_PROXY_SAMPLES
+    if(IOTypes_table.io_def[index].direction == REG_IO_IN){
+      sprintf(Global_scratch_buffer, "%s\n%s\n", 
+	      IOTypes_table.io_def[index].label,
+	      IOTypes_table.io_def[index].proxySourceLabel);
+    }
+    else{
+      /* If this is an output channel then we subscribe to 
+	 acknowledgements but first trim off any trailing
+         white space. */
+      strncpy(tmpBuf, IOTypes_table.io_def[index].label, 
+	      REG_MAX_STRING_LENGTH);
+      i = strlen(tmpBuf) - 1;
+      while(tmpBuf[i] == ' ' && (i > -1) ){
+	tmpBuf[i] = '\0';
+	i--;
+      }
+      sprintf(Global_scratch_buffer, "%s\n%s_REG_ACK\n",
+	      tmpBuf, tmpBuf);
+
+      /* If this is an output channel then we aren't subscribing to 
+	 any data source
+      sprintf(Global_scratch_buffer, "%s\nACKS_ONLY\n",
+      IOTypes_table.io_def[index].label); */
+    }
+
+    if(Emit_data_sockets(index, 
+			 strlen(Global_scratch_buffer), 
+			 (void*)(Global_scratch_buffer)) !=
+       REG_SUCCESS){
+
+      close_connector_handle_samples(index);
+      fprintf(stderr, 
+	      "STEER: connect_connector: failed to send ID to proxy\n");
+      socket_info_table.socket_info[index].connector_port = 0;
+      return REG_FAILURE;
+    }
+#endif
+  }
+  else {
+    fprintf(stderr, "STEER: connect_connector: cannot get remote address\n");
+  }
+
+  return return_status;  
+}
+
+/*--------------------------------------------------------------------*/
+
+void cleanup_listener_connection_samples(const int index) {
+  if(socket_info_table.socket_info[index].listener_status == REG_COMMS_STATUS_LISTENING) {
+    close_listener_handle_samples(index);
+  }
+
+  if(socket_info_table.socket_info[index].comms_status == REG_COMMS_STATUS_CONNECTED) { 
+    close_connector_handle_samples(index);
+  }
+
+  /* Flag that this listener is dead - used in Emit_IOType_defs */
+  sprintf(socket_info_table.socket_info[index].listener_hostname, "NOT_SET");
+  socket_info_table.socket_info[index].listener_port = 0;
+}
+
+/*--------------------------------------------------------------------*/
+
+void cleanup_connector_connection_samples(const int index) {
+  if (socket_info_table.socket_info[index].comms_status == REG_COMMS_STATUS_CONNECTED ||
+      socket_info_table.socket_info[index].comms_status == REG_COMMS_STATUS_WAITING_TO_CONNECT ){
+    close_connector_handle_samples(index);
+  }
+}
+
+/*--------------------------------------------------------------------*/
+
+void close_listener_handle_samples(const int index) {
+  if(close(socket_info_table.socket_info[index].listener_handle) == REG_SOCKETS_ERROR) {
+    perror("close");
+    socket_info_table.socket_info[index].listener_status = REG_COMMS_STATUS_FAILURE;
+  }
+  else {
+#ifdef REG_DEBUG
+    fprintf(stderr, "STEER: close_listener_handle: close OK\n");
+#endif
+    socket_info_table.socket_info[index].listener_status = REG_COMMS_STATUS_NULL;
+  }
+}
+
+/*--------------------------------------------------------------------*/
+
+void close_connector_handle_samples(const int index) {
+  if(close(socket_info_table.socket_info[index].connector_handle) == REG_SOCKETS_ERROR) {
+    perror("close");
+    socket_info_table.socket_info[index].comms_status = REG_COMMS_STATUS_FAILURE;
+  }
+  else {
+#ifdef REG_DEBUG
+    fprintf(stderr, "STEER: close_connector_handle: close OK\n");
+#endif
+    socket_info_table.socket_info[index].comms_status = REG_COMMS_STATUS_NULL;
+  }
+}
+
+/*--------------------------------------------------------------------*/
+
+void attempt_listener_connect_samples(const int index) {
+  socket_info_type *socket_info;
+  socket_info = &(socket_info_table.socket_info[index]);
+
+  if(socket_info->listener_status != REG_COMMS_STATUS_LISTENING) {
+#ifdef REG_DEBUG
+    fprintf(stderr, "STEER: attempt_listener_connect:dealing with listener_status not LISTENING \n");
+#endif
+    if (socket_info->listener_status == REG_COMMS_STATUS_FAILURE ||
+	socket_info->listener_status == REG_COMMS_STATUS_NULL ) {
+      create_listener_samples(index);
+    }
+  }
+
+  /* only check comms_status if listener_status is now listening */
+  if (socket_info->listener_status == REG_COMMS_STATUS_LISTENING) {
+    if (socket_info->comms_status == REG_COMMS_STATUS_LISTENING) {
+#ifdef REG_DEBUG
+      fprintf(stderr, "STEER: attempt_listener_connect: poll_socket\n");
+#endif
+      poll_socket_samples(index);
+    }
+
+    if (socket_info->comms_status == REG_COMMS_STATUS_FAILURE ||
+	socket_info->comms_status == REG_COMMS_STATUS_NULL ) {
+      /* connection has broken - we're still listening so see if 
+         anything to connect */
+#ifdef REG_DEBUG
+      fprintf(stderr, "STEER: attempt_listener_connect: retry accept connect\n");
+#endif
+      retry_accept_connect_samples(index);
+    }
+  }
+}
+
+/*--------------------------------------------------------------------*/
+
+void retry_accept_connect_samples(const int index) {
+  socket_info_type *socket_info;
+  socket_info = &(socket_info_table.socket_info[index]);
+
+  /* if this is called, a write has failed */
+
+  /* if we're here and  status is connected  we've lost a connection, 
+     so first close socket */
+  if (socket_info->comms_status==REG_COMMS_STATUS_CONNECTED) {
+    close_connector_handle_samples(index);
+  }
+
+  poll_socket_samples(index);
+}
+
+/*--------------------------------------------------------------------*/
+
+void attempt_connector_connect_samples(const int index) {
+  socket_info_type *socket_info;
+  socket_info = &(socket_info_table.socket_info[index]);
+
+  if(socket_info->comms_status == REG_COMMS_STATUS_WAITING_TO_CONNECT) {
+#ifdef REG_DEBUG    
+    fprintf(stderr, "STEER: attempt_connector_connect: poll_socket\n");
+#endif
+    poll_socket_samples(index);
+  }
+
+  if(socket_info->comms_status == REG_COMMS_STATUS_FAILURE || 
+     socket_info->comms_status == REG_COMMS_STATUS_NULL) {
+    /* connection has broken - try to re-connect */
+#ifdef REG_DEBUG
+    fprintf(stderr, "STEER: attempt_connector_connect: retry connect\n");
+#endif
+    retry_connect_samples(index);
+  }
+}
+
+/*--------------------------------------------------------------------*/
+
+void retry_connect_samples(const int index) {
+  socket_info_type *socket_info;
+  socket_info = &(socket_info_table.socket_info[index]);
+
+  /* close the failed connector and retry to connect */
+  if(socket_info->comms_status == REG_COMMS_STATUS_CONNECTED) {
+    /* Reset connector port (to force us to go and look for it
+       again in case it has changed) */
+    socket_info->connector_port = 0;
+    close_connector_handle_samples(index);
+  }
+
+  if(create_connector_samples(index) != REG_SUCCESS) {
+#ifdef REG_DEBUG
+    fprintf(stderr, "STEER: retry_connect: failed to register connector for IOType\n");
+#endif
+    /* Set to FAILURE so create_connector is attempted again next time round */
+    socket_info->comms_status=REG_COMMS_STATUS_FAILURE;
+  }
+}
+
+/*--------------------------------------------------------------------*/
+
+void poll_socket_samples(const int index) {
+
+  struct timeval timeout;
+  fd_set sockets;	/* the set of sockets to check */
+  int fd_max;		/* the max socket number */
+
+  int listener = socket_info_table.socket_info[index].listener_handle;
+  int connector = socket_info_table.socket_info[index].connector_handle;
+  int direction = IOTypes_table.io_def[index].direction;
+
+  timeout.tv_sec  = 0;
+  timeout.tv_usec = 0;
+
+  /* just return if we have no handles */
+  if((listener == -1) && (connector == -1)) return;
+
+  /* clear the socket set and add required handles */
+  FD_ZERO(&sockets);
+  if(direction == REG_IO_OUT) {
+    /* SERVER */
+    if(socket_info_table.socket_info[index].listener_status == REG_COMMS_STATUS_LISTENING) {
+      FD_SET(listener, &sockets);
+      fd_max = listener;
+
+      /* poll using select() */
+#ifdef REG_DEBUG
+      fprintf(stderr, "STEER: poll_socket: polling for accept\n");
+#endif
+      if(select(fd_max + 1, &sockets, NULL, NULL, &timeout) == -1) {
+	perror("select");
+	return;
+      }
+
+      /* see if anything needs doing */
+      if(FD_ISSET(listener, &sockets)) {
+	/* new connection */
+	struct sockaddr_in theirAddr;
+#if defined(__sgi)
+	socklen_t addrlen = sizeof(theirAddr);
+#elif defined(TRU64)
+	int addrlen = sizeof(theirAddr);
+#else
+	unsigned int addrlen = sizeof(theirAddr);
+#endif
+	int new_fd = accept(listener, (struct sockaddr*) &theirAddr, &addrlen);
+	if(new_fd == REG_SOCKETS_ERROR) {
+	  perror("accept");
+	  return;
+	}
+	socket_info_table.socket_info[index].connector_handle = new_fd;
+	socket_info_table.socket_info[index].comms_status=REG_COMMS_STATUS_CONNECTED;
+      }
+    }
+  }
+  else if(direction == REG_IO_IN) {
+    /* CLIENT */
+    if(socket_info_table.socket_info[index].comms_status != REG_COMMS_STATUS_CONNECTED) {
+      connect_connector_samples(index);
+    }
+  }
+}

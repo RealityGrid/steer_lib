@@ -66,10 +66,10 @@ list(REMOVE_DUPLICATES REG_MODULES_PROVIDES)
 
 if(REG_BUILD_MODULAR_LIBS)
   # add common files to the main build and remove duplicates
-  if(NOT ${rm_common} STREQUAL "")
+  if(NOT "${rm_common}" STREQUAL "")
     list(APPEND REG_MODULE_COMMON_SRCS ${rm_common})
     list(REMOVE_DUPLICATES REG_MODULE_COMMON_SRCS)
-  endif(NOT ${rm_common} STREQUAL "")
+  endif(NOT "${rm_common}" STREQUAL "")
 
   # create lists of source files to build into modules
   set(rm_target "ReG_Steer_${rm_type}_${rm_provides}")

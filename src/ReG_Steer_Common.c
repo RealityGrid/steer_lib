@@ -59,226 +59,6 @@ int ReG_ssl_random_initialized = REG_FALSE;
 
 /*----------------------------------------------------------*/
 
-FILE *Open_next_file(char* base_name)
-{
-  FILE *fp;
-  char  tmp_filename[REG_MAX_STRING_LENGTH+9];
-  char  filename1[REG_MAX_STRING_LENGTH+9];
-  char  filename2[REG_MAX_STRING_LENGTH+9];
-  struct stat stbuf;
-  long  time1;
-  long  time2;
-  int   i;
-
-  fp = NULL;
-
-  i = 0;
-  time1 = -1;
-  while(i<REG_MAX_NUM_FILES){
-    
-    /* Look for presence of lock file */
-#ifdef UNICORE_DEMO
-    sprintf(tmp_filename,"%s.lock", base_name);
-#else
-    sprintf(tmp_filename,"%s_%d.lock", base_name, i);
-#endif
-
-    fp = fopen(tmp_filename, "r");
-
-    if (fp != NULL) {
-     
-      /* Found one - check its last-modified time */
-      fclose(fp);
-      fp = NULL;
-      if(stat(tmp_filename, &stbuf) != -1){
-
-        /* timespec_t     st_mtim;      Time of last data modification
-           Times measured in seconds and nanoseconds
-           since 00:00:00 UTC, Jan. 1, 1970 */
-#ifdef UNICORE_DEMO
-        sprintf(filename1,"%s", base_name);
-#else
-        sprintf(filename1,"%s_%d", base_name, i);
-#endif
-	time1 = (long)stbuf.st_mtime;
-        break;
-      }
-      else{
-
-	fprintf(stderr, "STEER: Open_next_file: failed to stat %s\n", tmp_filename);
-      }
-    }
-
-    i++;
-  }
-
-  /* Now search in the opposite direction (in case consumption lags
-     creation and we've wrapped around the REG_MAX_NUM_FILES counter) */
-
-  i = REG_MAX_NUM_FILES - 1;
-  time2 = -1;
-  while(i > -1){
-    
-    /* Look for presence of lock file */
-#ifdef UNICORE_DEMO
-    sprintf(tmp_filename,"%s.lock", base_name);
-#else
-    sprintf(tmp_filename,"%s_%d.lock", base_name, i);
-#endif
-
-    fp = fopen(tmp_filename, "r");
-
-    if (fp != NULL) {
-     
-      /* Found one - check its last-modified time */
-      fclose(fp);
-      fp = NULL;
-      if(stat(tmp_filename, &stbuf) != -1){
-
-        /* timespec_t     st_mtim;      Time of last data modification
-           Times measured in seconds and nanoseconds
-           since 00:00:00 UTC, Jan. 1, 1970 */
-#ifdef UNICORE_DEMO
-        sprintf(filename2,"%s", base_name);
-#else
-        sprintf(filename2,"%s_%d", base_name, i);
-#endif
-	time2 = (long)stbuf.st_mtime;/*.tv_sec;*/
-        break;
-      }
-      else{
-
-	fprintf(stderr, "STEER: Open_next_file: failed to stat %s\n", tmp_filename);
-      }
-    }
-
-    i--;
-  }
-
-  /* We want to open the oldest file that we've found... */
-
-  if(time1 != -1 && time2 != -1){
-
-    if(time2 < time1) strcpy(filename1, filename2);
-
-    if( (fp = fopen(filename1, "r")) ){
-
-#ifdef REG_DEBUG
-      fprintf(stderr, "STEER: Open_next_file: opening %s\n", filename1);
-#endif
-      /* Return the name of the file actually opened */
-      strcpy(base_name, filename1);
-    }
-  }
-
-  return fp;
-}
-
-/*-----------------------------------------------------------------*/
-
-int Create_lock_file(char* filename) {
-  int fd;
-  char lock_file[REG_MAX_STRING_LENGTH + 5];
-
-  /* Create lock file to flag that a file of same root is ready to
-     be read */
-
-  sprintf(lock_file, "%s.lock", filename);
-
-  if((fd = creat(lock_file,
-		 (S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH))) < 0) {
-
-    return REG_FAILURE;
-  }
-  
-  close(fd);
-  return REG_SUCCESS;
-}
-
-/*-----------------------------------------------------------------*/
-
-int Delete_file(char *filename)
-{
-  int  return_status = REG_SUCCESS;
-  char long_filename[REG_MAX_STRING_LENGTH+5];
-
-  /* Remove lock file first (because this is what is searched for) */
-
-  sprintf(long_filename, "%s.lock", filename);
-
-#ifdef REG_DEBUG
-  fprintf(stderr, "STEER: Delete_file: removing %s\n", long_filename);
-#endif
-
-  if(remove(long_filename)){
-    perror("STEER: Delete_file, deleting lock file");
-    return_status = REG_FAILURE;
-  }
-
-#ifdef NO_FILE_DELETE
-  /* If this debugging flag is set then don't remove the data file */
-  return REG_SUCCESS;
-#endif
-
-  /* Remove the data file */
-
-#ifdef REG_DEBUG
-  fprintf(stderr, "STEER: Delete_file: removing %s\n", filename);
-#endif
-
-  if(remove(filename)){
-    perror("STEER: Delete_file, deleting data file");
-    return_status = REG_FAILURE;
-  }
-  return return_status;
-}
-/*----------------------------------------------------------------*/
-
-int Remove_files(char* base_name)
-{
-  char  filename[REG_MAX_STRING_LENGTH];
-  char  lock_name[REG_MAX_STRING_LENGTH];
-  FILE *fp;
-
-  /* Remove any files that we would have normally consumed */
-
-  strcpy(filename, base_name);
-
-#ifdef REG_DEBUG
-  fprintf(stderr, "STEER: Remove_files: looking for files beginning: %s\n", filename);
-#endif
-
-  while( (fp = Open_next_file(filename)) ){
-
-    fclose(fp);
-
-    /* Remove lock file */
-    sprintf(lock_name, "%s.lock", filename);
-#ifdef REG_DEBUG
-    fprintf(stderr, "STEER: Remove_files: deleting %s\n", lock_name);
-#endif
-    remove(lock_name);
-
-#ifdef NO_FILE_DELETE
-    /* Don't delete actual data files if this debugging flag set */
-    continue;
-#endif
-
-    /* Remove associated data file */
-#ifdef REG_DEBUG
-    fprintf(stderr, "STEER: Remove_files: deleting %s\n", filename);
-#endif
-    remove(filename);
-
-    /* Reset filename ready to look for next one */
-    strcpy(filename, base_name);
-  }
-
-  return REG_SUCCESS;
-}
-
-/*----------------------------------------------------------*/
-
 int Get_message_type(const char *name)
 {
 
@@ -1348,174 +1128,174 @@ int Init_random()
 
 /*-----------------------------------------------------------------*/
 
-int Create_WSRF_header(struct soap *aSoap,
-		       const  char *epr,
-		       const  char *username,
-		       const  char *passwd)
-{
-#ifdef WITH_OPENSSL
-  int           bytesLeft, nbytes;
-  int           i, len;
-  int           status;
-#define MAX_LEN 1024
-  unsigned char randBuf[MAX_LEN];
-  char         *pBuf;
-  char          buf[MAX_LEN];
-  char          digest[SHA_DIGEST_LENGTH];
-  char         *pBase64Buf = NULL;
-  char         *timePtr;
-#endif
+/* int Create_WSRF_header(struct soap *aSoap, */
+/* 		       const  char *epr, */
+/* 		       const  char *username, */
+/* 		       const  char *passwd) */
+/* { */
+/* #ifdef WITH_OPENSSL */
+/*   int           bytesLeft, nbytes; */
+/*   int           i, len; */
+/*   int           status; */
+/* #define MAX_LEN 1024 */
+/*   unsigned char randBuf[MAX_LEN]; */
+/*   char         *pBuf; */
+/*   char          buf[MAX_LEN]; */
+/*   char          digest[SHA_DIGEST_LENGTH]; */
+/*   char         *pBase64Buf = NULL; */
+/*   char         *timePtr; */
+/* #endif */
 
-  /* alloc new header for WS-RF */
-  aSoap->header = soap_malloc(aSoap, sizeof(struct SOAP_ENV__Header));
-  if(!(aSoap->header)){
-    fprintf(stderr,
-	    "STEER: Create_WSRF_header: Failed to malloc space for header\n");
-    return REG_FAILURE;
-  }
+/*   /\* alloc new header for WS-RF *\/ */
+/*   aSoap->header = soap_malloc(aSoap, sizeof(struct SOAP_ENV__Header)); */
+/*   if(!(aSoap->header)){ */
+/*     fprintf(stderr, */
+/* 	    "STEER: Create_WSRF_header: Failed to malloc space for header\n"); */
+/*     return REG_FAILURE; */
+/*   } */
 
-  aSoap->header->wsa__To = (char *)soap_malloc(aSoap, strlen(epr)+1);
-  if(!(aSoap->header->wsa__To)){
-    fprintf(stderr, "STEER: Create_WSRF_header: Failed to malloc space "
-	    "for header wsa:To element\n");
-    return REG_FAILURE;
-  }
+/*   aSoap->header->wsa__To = (char *)soap_malloc(aSoap, strlen(epr)+1); */
+/*   if(!(aSoap->header->wsa__To)){ */
+/*     fprintf(stderr, "STEER: Create_WSRF_header: Failed to malloc space " */
+/* 	    "for header wsa:To element\n"); */
+/*     return REG_FAILURE; */
+/*   } */
 
-  strcpy(aSoap->header->wsa__To, epr);
+/*   strcpy(aSoap->header->wsa__To, epr); */
 
-  if(!username || !(username[0])){
-#ifdef REG_DEBUG
-    fprintf(stderr, 
-	    "STEER: Create_WSRF_header: not adding security to header\n");
-#endif /* REG_DEBUG */
-    aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Username = NULL;
-    aSoap->header->wsse__Security.wsse__UsernameToken.wsu__Created = NULL;
-    aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.Type = NULL;
-    aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.__item = NULL;
-    aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Nonce = NULL;
-    return REG_SUCCESS;
-  }
+/*   if(!username || !(username[0])){ */
+/* #ifdef REG_DEBUG */
+/*     fprintf(stderr,  */
+/* 	    "STEER: Create_WSRF_header: not adding security to header\n"); */
+/* #endif /\* REG_DEBUG *\/ */
+/*     aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Username = NULL; */
+/*     aSoap->header->wsse__Security.wsse__UsernameToken.wsu__Created = NULL; */
+/*     aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.Type = NULL; */
+/*     aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.__item = NULL; */
+/*     aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Nonce = NULL; */
+/*     return REG_SUCCESS; */
+/*   } */
 
-  /* Set up the username element of the header irrespective of whether
-     or not the library has been built with openSSL support */
-  aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Username = 
-                                       (char *)soap_malloc(aSoap, 128);
+/*   /\* Set up the username element of the header irrespective of whether */
+/*      or not the library has been built with openSSL support *\/ */
+/*   aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Username =  */
+/*                                        (char *)soap_malloc(aSoap, 128); */
 
-  if(!(aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Username)){
-    fprintf(stderr, "STEER: Create_WSRF_header: Failed to malloc space "
-	    "for Username element\n");
-    return REG_FAILURE;
-  }
-  snprintf(aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Username, 
-	   128, username);
+/*   if(!(aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Username)){ */
+/*     fprintf(stderr, "STEER: Create_WSRF_header: Failed to malloc space " */
+/* 	    "for Username element\n"); */
+/*     return REG_FAILURE; */
+/*   } */
+/*   snprintf(aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Username,  */
+/* 	   128, username); */
 
-#ifdef WITH_OPENSSL
+/* #ifdef WITH_OPENSSL */
 
-  aSoap->header->wsse__Security.wsse__UsernameToken.wsu__Created = 
-                                       (char *)soap_malloc(aSoap, 128);
-  aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.Type = 
-                                       (char *)soap_malloc(aSoap, 128);
+/*   aSoap->header->wsse__Security.wsse__UsernameToken.wsu__Created =  */
+/*                                        (char *)soap_malloc(aSoap, 128); */
+/*   aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.Type =  */
+/*                                        (char *)soap_malloc(aSoap, 128); */
 
-  if( !(aSoap->header->wsse__Security.wsse__UsernameToken.wsu__Created) ||
-      !(aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.Type) ){
-    fprintf(stderr, "STEER: Create_WSRF_header: Failed to malloc space "
-	    "for header elements\n");
-    return REG_FAILURE;
-  }
+/*   if( !(aSoap->header->wsse__Security.wsse__UsernameToken.wsu__Created) || */
+/*       !(aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.Type) ){ */
+/*     fprintf(stderr, "STEER: Create_WSRF_header: Failed to malloc space " */
+/* 	    "for header elements\n"); */
+/*     return REG_FAILURE; */
+/*   } */
 
-  if(ReG_ssl_random_initialized == REG_FALSE){
-    if(Init_random() != REG_SUCCESS){
-      fprintf(stderr, "STEER: Create_WSRF_header: Failed to "
-	      "initialize SSL random number generator\n");
-      return REG_FAILURE;
-    }
-  }
+/*   if(ReG_ssl_random_initialized == REG_FALSE){ */
+/*     if(Init_random() != REG_SUCCESS){ */
+/*       fprintf(stderr, "STEER: Create_WSRF_header: Failed to " */
+/* 	      "initialize SSL random number generator\n"); */
+/*       return REG_FAILURE; */
+/*     } */
+/*   } */
 
-  /* This call requires that Init_random() has been called previously */
-  status = RAND_pseudo_bytes(randBuf, 16);
-  if(status == 0){
-    fprintf(stderr, "STEER: WARNING: Create_WSRF_header: Sequence is not "
-	    "cryptographically strong\n");
-  }
-  else if(status == -1){
-    fprintf(stderr, "STEER: ERROR: Create_WSRF_header: RAND_pseudo_bytes "
-	    "is not supported\n");
-    return REG_FAILURE;
-  }
+/*   /\* This call requires that Init_random() has been called previously *\/ */
+/*   status = RAND_pseudo_bytes(randBuf, 16); */
+/*   if(status == 0){ */
+/*     fprintf(stderr, "STEER: WARNING: Create_WSRF_header: Sequence is not " */
+/* 	    "cryptographically strong\n"); */
+/*   } */
+/*   else if(status == -1){ */
+/*     fprintf(stderr, "STEER: ERROR: Create_WSRF_header: RAND_pseudo_bytes " */
+/* 	    "is not supported\n"); */
+/*     return REG_FAILURE; */
+/*   } */
 
-  /* Base64-encode this random sequence to make our nonce a nice
-     ASCII string (XML friendly) */
-  Base64_encode((char*) randBuf, 16, &pBase64Buf, (unsigned int*) &len);
+/*   /\* Base64-encode this random sequence to make our nonce a nice */
+/*      ASCII string (XML friendly) *\/ */
+/*   Base64_encode((char*) randBuf, 16, &pBase64Buf, (unsigned int*) &len); */
 
-  aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Nonce = 
-                                       (char *)soap_malloc(aSoap, len+1);
-  if( !(aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Nonce) ){
-    fprintf(stderr, 
-	    "STEER: Create_WSRF_header: Failed to malloc space for nonce\n");
-    return REG_FAILURE;
-  }
-  strncpy(aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Nonce, 
-	  pBase64Buf, len);
-  aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Nonce[len] = '\0';
+/*   aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Nonce =  */
+/*                                        (char *)soap_malloc(aSoap, len+1); */
+/*   if( !(aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Nonce) ){ */
+/*     fprintf(stderr,  */
+/* 	    "STEER: Create_WSRF_header: Failed to malloc space for nonce\n"); */
+/*     return REG_FAILURE; */
+/*   } */
+/*   strncpy(aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Nonce,  */
+/* 	  pBase64Buf, len); */
+/*   aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Nonce[len] = '\0'; */
 
-  timePtr = Get_current_time_string(); /* Steer lib */
-  snprintf(aSoap->header->wsse__Security.wsse__UsernameToken.wsu__Created, 
-	   128, timePtr);
-  snprintf(aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.Type,
-	   128, "PasswordDigest");
+/*   timePtr = Get_current_time_string(); /\* Steer lib *\/ */
+/*   snprintf(aSoap->header->wsse__Security.wsse__UsernameToken.wsu__Created,  */
+/* 	   128, timePtr); */
+/*   snprintf(aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.Type, */
+/* 	   128, "PasswordDigest"); */
 
-  /* Password_digest = Base64(SHA-1(nonce + created + password)) */
-  bytesLeft = MAX_LEN;
-  pBuf = buf;
-  /* Nonce */
-  nbytes = snprintf(pBuf, bytesLeft, 
-		    aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Nonce);
-  bytesLeft -= nbytes; pBuf += nbytes;
-  /* Created */
-  nbytes = snprintf(pBuf, bytesLeft, timePtr);
-  bytesLeft -= nbytes; pBuf += nbytes;
-  /* Password */
-  nbytes = snprintf(pBuf, bytesLeft, passwd);
-  bytesLeft -= nbytes; pBuf += nbytes;
+/*   /\* Password_digest = Base64(SHA-1(nonce + created + password)) *\/ */
+/*   bytesLeft = MAX_LEN; */
+/*   pBuf = buf; */
+/*   /\* Nonce *\/ */
+/*   nbytes = snprintf(pBuf, bytesLeft,  */
+/* 		    aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Nonce); */
+/*   bytesLeft -= nbytes; pBuf += nbytes; */
+/*   /\* Created *\/ */
+/*   nbytes = snprintf(pBuf, bytesLeft, timePtr); */
+/*   bytesLeft -= nbytes; pBuf += nbytes; */
+/*   /\* Password *\/ */
+/*   nbytes = snprintf(pBuf, bytesLeft, passwd); */
+/*   bytesLeft -= nbytes; pBuf += nbytes; */
 
-  SHA1((unsigned char*) buf, (MAX_LEN-bytesLeft), (unsigned char*) digest); /* openssl call */
+/*   SHA1((unsigned char*) buf, (MAX_LEN-bytesLeft), (unsigned char*) digest); /\* openssl call *\/ */
 
-  free(pBase64Buf); len = 0; pBase64Buf=NULL;
-  Base64_encode(digest, SHA_DIGEST_LENGTH, &pBase64Buf, (unsigned int*) &len); /* Steer lib */
-  /* Strip padding characters from end because perl doesn't add them from
-     the sha1_base64 function */
-  i = len-1;
-  while((i > -1) && (pBase64Buf[i] == '=')){
-    pBase64Buf[i--] = '\0';
-  }
+/*   free(pBase64Buf); len = 0; pBase64Buf=NULL; */
+/*   Base64_encode(digest, SHA_DIGEST_LENGTH, &pBase64Buf, (unsigned int*) &len); /\* Steer lib *\/ */
+/*   /\* Strip padding characters from end because perl doesn't add them from */
+/*      the sha1_base64 function *\/ */
+/*   i = len-1; */
+/*   while((i > -1) && (pBase64Buf[i] == '=')){ */
+/*     pBase64Buf[i--] = '\0'; */
+/*   } */
 
-  /* +1 allows for null terminator (which Base64_encode does not include) */
-  aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.__item = 
-                                       (char *)soap_malloc(aSoap, len+1);
-  if( !(aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.__item) ){
-    fprintf(stderr, "STEER: Create_WSRF_header: Failed to malloc "
-	    "space for Password\n");
-    return REG_FAILURE;
-  } 
-  strncpy(aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.__item,
-	  pBase64Buf, len);
-  aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.__item[len] = '\0';
+/*   /\* +1 allows for null terminator (which Base64_encode does not include) *\/ */
+/*   aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.__item =  */
+/*                                        (char *)soap_malloc(aSoap, len+1); */
+/*   if( !(aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.__item) ){ */
+/*     fprintf(stderr, "STEER: Create_WSRF_header: Failed to malloc " */
+/* 	    "space for Password\n"); */
+/*     return REG_FAILURE; */
+/*   }  */
+/*   strncpy(aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.__item, */
+/* 	  pBase64Buf, len); */
+/*   aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.__item[len] = '\0'; */
 
-  free(pBase64Buf);
-  pBase64Buf = NULL;
+/*   free(pBase64Buf); */
+/*   pBase64Buf = NULL; */
 
-  return REG_SUCCESS;
+/*   return REG_SUCCESS; */
 
-#else /* WITH_OPENSSL not defined */
+/* #else /\* WITH_OPENSSL not defined *\/ */
 
-  aSoap->header->wsse__Security.wsse__UsernameToken.wsu__Created = NULL;
-  aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.Type = NULL;
-  aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.__item = NULL;
-  aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Nonce = NULL;
-  return REG_SUCCESS;
+/*   aSoap->header->wsse__Security.wsse__UsernameToken.wsu__Created = NULL; */
+/*   aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.Type = NULL; */
+/*   aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.__item = NULL; */
+/*   aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Nonce = NULL; */
+/*   return REG_SUCCESS; */
 
-#endif
-}
+/* #endif */
+/* } */
 
 /*----------------------------------------------------------------*/
 
