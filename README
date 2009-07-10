@@ -246,7 +246,7 @@ framework is described in doc/ReG_Steering_Grid_Service.doc.)
 
 gSoap
 
-The library distribution includes gSoap, version 2.7.6e.  If for any
+The library distribution includes gSoap, version 2.7.13.  If for any
 reason you wish to change the version of gSoap used then the relevant
 files are:
 
@@ -258,7 +258,7 @@ includes an addition to allow the calling code to control which port
 the http connection uses on the local machine.  The latter is
 necessary to make use of the GLOBUS_TCP_PORT_RANGE holes in firewalls
 that restrict outgoing as well as incoming connections.  Search for
-ARPDBG in the source and header files.
+/* REG START */ and /* REG END */ in the source and header files.
 
 The following files are generated (using gSoap) tools from header
 files that describe the functionality of the various services

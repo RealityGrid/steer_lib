@@ -1,6 +1,6 @@
 //gsoap wsse schema namespace: http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd
 //gsoap wsu schema namespace: http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd
-//gsoap wsa schema namespace: http://www.w3.org/2005/03/addressing
+//gsoap wsa schema namespace: http://www.w3.org/2005/08/addressing
 
 /*start primitive data types*/
 typedef char * xsd__string;
@@ -13,12 +13,7 @@ struct epr {
 };
 
 #import "SWS.h"
-#import "SGS.h"
-#import "SGSFactory.h"
 #import "SWSFactory.h"
-#import "ServiceGroupRegistration.h"
-#import "RealityGridTreeFactory.h"
-#import "RealityGridTree.h"
 #import "regServiceGroup.h"
 #import "CheckPointTree.h"
 #import "CheckPointTreeNode.h"

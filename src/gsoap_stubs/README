@@ -15,18 +15,26 @@ in the form of the files:
   *.nsmap
 
 The current bindings have been generated under linux using gSoap
-2.7.6e.  To generate bindings yourself, you will need to install gSoap
-and then edit the Makefile in this directory in order to specify the
-location of the soapcpp2 executable.  Once that is done, typing 'make'
-should be sufficient to generate the bindings.  If you are changing
-the version of gSoap that is used then you will also need to update
-the reg_steer_lib/include/stdsoap2.h and reg_steer_lib/src/stdsoap2.c
+2.7.13.  To generate bindings yourself, you will need to install gSoap
+and then run:
+
+$ /path/to/soapcpp2 -c all_hdrs.h
+
+A Makefile is provided in this directory.  Edit it to point to where
+soapcpp2 is located on your machine and then simple run 'make'.  To
+move the correct files to the correct places in the main build tree
+run 'make install'.  Once this has been done a 'make clean' will
+remove all the extra files created in the build step.
+
+If you are changing the version of gSoap that is used then you will
+also need to update the 'include/stdsoap2.h' and 'src/stdsoap2.c'
 files.  To do this you will need to slightly modify the standard
-gSoap-supplied versions of those files - search for 'ARPDBG' in the
-versions of those files supplied with the steering library.
+gSoap-supplied versions of those files - search for sections bookended
+with /* REG START */ and /* REG END */ in the versions of those files
+supplied with the steering library and copy the relevent bits to the
+equivalent places in the new versions of the files.
 
 Once new bindings have been generated, the source files need to be
-copied to the reg_steer_lib/src directory and the header files to the
-reg_steer_lib/include directory. Any one of the generated *.nsmap files 
-(they are all identical) should be copied to:
-      reg_steer_lib/include/soapRealityGrid.nsmap.
+copied to the 'src' directory and the header files to the 'include'
+directory. Any one of the generated *.nsmap files (they are all
+identical) should be copied to 'include/soapRealityGrid.nsmap'.

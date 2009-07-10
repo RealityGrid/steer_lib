@@ -6,9 +6,9 @@
 
 //gsoap sws service location: http://some.where/
 //gsoap sws service name: soapSWS
-//gsoap wsrp schema namespace: http://www.ibm.com/xmlns/stdwip/web-services/WS-ResourceProperties
+//gsoap wsrp schema namespace: http://docs.oasis-open.org/wsrf/rp-2
 //gsoap reg schema namespace: http://www.realitygrid.org/xml/steering
-//gsoap wsrl schema namespace: http://www.ibm.com/xmlns/stdwip/web-services/WS-ResourceLifetime
+//gsoap wsrl schema namespace: http://docs.oasis-open.org/wsrf/rl-2
 
 struct sws__GetParamLogResponse {
   xsd__string LogValues;
@@ -72,7 +72,7 @@ struct sws__DetachResponse {
 
 //gsoap wsrp service method-style:     GetResourceProperty document
 //gsoap wsrp service method-encoding:  GetResourceProperty literal
-//gsoap wsrp service method-action:    GetResourceProperty http://www.ibm.com/xmlns/stdw
+//gsoap wsrp service method-action:    GetResourceProperty http://docs.oasis-open.org/wsrf/rp-2
 __wsrp__GetResourceProperty(xsd__string wsrp__GetResourceProperty,
 			    XML *out_);
 //gsoap wsrp service method-action: GetMultipleResourceProperties ""
