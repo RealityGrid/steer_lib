@@ -49,12 +49,14 @@ set(RealityGrid_INSTALL_PREFIX_CONFIG ${PROJECT_BINARY_DIR})
 set(RealityGrid_INCLUDE_DIRS_CONFIG
   ${PROJECT_BINARY_DIR}
   ${PROJECT_SOURCE_DIR}/include
+  ${ZLIB_INCLUDE_DIR}
+  ${LIBXML2_INCLUDE_DIR}
 )
 set(RealityGrid_LIBRARY_DIRS_CONFIG ${PROJECT_BINARY_DIR}/lib)
 set(RealityGrid_BIN_DIR_CONFIG ${PROJECT_BINARY_DIR}/bin)
 set(RealityGrid_DOCS_DIR_CONFIG ${PROJECT_BINARY_DIR})
 
-# build setting, library dependencies and use file locations
+# build setting, library dependencies, use file and modules list locations
 set(RealityGrid_BUILD_SETTINGS_FILE_CONFIG
   ${PROJECT_BINARY_DIR}/RealityGridBuildSettings.cmake
 )
@@ -67,6 +69,10 @@ set(RealityGrid_DEPENDS_FILE_CONFIG
   ${PROJECT_BINARY_DIR}/RealityGridLibraryDepends.cmake
 )
 
+set(RealityGrid_MODULES_LIST_CONFIG
+  ${PROJECT_BINARY_DIR}/RealityGridModulesList.cmake
+)
+
 # Configure RealityGridConfig.cmake for the build tree.
 configure_file(
   ${PROJECT_SOURCE_DIR}/RealityGridConfig.cmake.in
@@ -76,8 +82,8 @@ configure_file(
 
 # set up config shell script for the build tree.
 configure_file(
-  "${PROJECT_SOURCE_DIR}/reg-config.in"
-  "${PROJECT_BINARY_DIR}/bin/reg-config"
+  ${PROJECT_SOURCE_DIR}/reg-config.in
+  ${PROJECT_BINARY_DIR}/bin/reg-config
   @ONLY IMMEDIATE
 )
 
@@ -92,22 +98,30 @@ set(RealityGrid_INSTALL_TYPE_CONFIG "install")
 set(RealityGrid_INSTALL_PREFIX_CONFIG ${CMAKE_INSTALL_PREFIX})
 
 # header, library and documentation locations
-set(RealityGrid_INCLUDE_DIRS_CONFIG "${CMAKE_INSTALL_PREFIX}/include/RealityGrid")
-set(RealityGrid_LIBRARY_DIRS_CONFIG "${CMAKE_INSTALL_PREFIX}/lib/RealityGrid")
-set(RealityGrid_BIN_DIR_CONFIG "${CMAKE_INSTALL_PREFIX}/bin")
-set(RealityGrid_DOCS_DIR_CONFIG "${CMAKE_INSTALL_PREFIX}/share/doc/RealityGrid")
+set(RealityGrid_INCLUDE_DIRS_CONFIG
+  ${CMAKE_INSTALL_PREFIX}/include/RealityGrid
+  ${ZLIB_INCLUDE_DIR}
+  ${LIBXML2_INCLUDE_DIR}
+)
+set(RealityGrid_LIBRARY_DIRS_CONFIG ${CMAKE_INSTALL_PREFIX}/lib/RealityGrid)
+set(RealityGrid_BIN_DIR_CONFIG ${CMAKE_INSTALL_PREFIX}/bin)
+set(RealityGrid_DOCS_DIR_CONFIG ${CMAKE_INSTALL_PREFIX}/share/doc/RealityGrid)
 
-# build setting, library dependencies and use file locations
+# build setting, library dependencies, use file and modules list locations
 set(RealityGrid_BUILD_SETTINGS_FILE_CONFIG
-  "${CMAKE_INSTALL_PREFIX}/lib/RealityGrid/RealityGridBuildSettings.cmake"
+  ${CMAKE_INSTALL_PREFIX}/lib/RealityGrid/RealityGridBuildSettings.cmake
 )
 
 set(RealityGrid_USE_FILE_CONFIG
-  "${CMAKE_INSTALL_PREFIX}/lib/RealityGrid/UseRealityGrid.cmake"
+  ${CMAKE_INSTALL_PREFIX}/lib/RealityGrid/UseRealityGrid.cmake
 )
 
 set(RealityGrid_DEPENDS_FILE_CONFIG 
-  "${CMAKE_INSTALL_PREFIX}/lib/RealityGrid/RealityGridLibraryDepends.cmake"
+  ${CMAKE_INSTALL_PREFIX}/lib/RealityGrid/RealityGridLibraryDepends.cmake
+)
+
+set(RealityGrid_MODULES_LIST_CONFIG
+  ${CMAKE_INSTALL_PREFIX}/lib/RealityGrid/RealityGridModulesList.cmake
 )
 
 # Configure RealityGridConfig.cmake for the install tree.
@@ -119,7 +133,7 @@ configure_file(
 
 # set up config shell script for the install tree.
 configure_file(
-  "${PROJECT_SOURCE_DIR}/reg-config.in"
-  "${PROJECT_BINARY_DIR}/CMakeFiles/reg-config"
+  ${PROJECT_SOURCE_DIR}/reg-config.in
+  ${PROJECT_BINARY_DIR}/CMakeFiles/reg-config
   @ONLY IMMEDIATE
 )

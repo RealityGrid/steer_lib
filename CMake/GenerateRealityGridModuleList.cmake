@@ -31,37 +31,44 @@
 #  Author.........: Robert Haines
 #----------------------------------------------------------------------
 
-# version numbers
-set(REG_LIB_VERSION_MAJ @REG_LIB_VERSION_MAJ@)
-set(REG_LIB_VERSION_MIN @REG_LIB_VERSION_MIN@)
-set(REG_LIB_VERSION_PAT @REG_LIB_VERSION_PAT@)
+# Generate the RealityGridConfig.cmake file.
+# This file tells external projects which modules are available
+# for this build of the RealityGrid library.
 
-# install type
-set(RealityGrid_INSTALL_TYPE "@RealityGrid_INSTALL_TYPE_CONFIG@")
+# first gather a list of built-in modules if were a monolithic build
+if(NOT REG_BUILD_MODULAR_LIBS)
+  foreach(type ${REG_MODULES_TYPES})
+    list(APPEND
+      RealityGrid_MODULES_LIST_CONFIG
+      ${type}_${REG_USE_MODULE_${type}}
+    )
+    set(REG_MODULES ${RealityGrid_MODULES_LIST_CONFIG})
+  endforeach(type ${REG_MODULES_TYPES})
+endif(NOT REG_BUILD_MODULAR_LIBS)
 
-# header, library and documentation locations
-set(RealityGrid_INSTALL_PREFIX "@RealityGrid_INSTALL_PREFIX_CONFIG@")
-set(RealityGrid_INCLUDE_DIRS "@RealityGrid_INCLUDE_DIRS_CONFIG@")
-set(RealityGrid_LIBRARY_DIRS "@RealityGrid_LIBRARY_DIRS_CONFIG@")
-set(RealityGrid_BIN_DIR "@RealityGrid_BIN_DIR_CONFIG@")
-set(RealityGrid_DOCS_DIR "@RealityGrid_DOCS_DIR_CONFIG@")
+# write file header
+file(WRITE ${PROJECT_BINARY_DIR}/RealityGridModulesList.cmake
+  "#\n# RealityGrid Modules list\n#\n"
+  "# This is a generated file, do not edit!\n#\n\n"
+)
 
-# RealityGrid config options
-set(REG_USE_SHARED_LIBS "@REG_BUILD_SHARED_LIBS@")
-set(REG_USE_MODULAR_LIBS "@REG_BUILD_MODULAR_LIBS@")
-set(REG_USE_OPENSSL "@REG_USE_OPENSSL@")
-set(REG_DEBUG "@REG_DEBUG@")
-set(REG_BUILD_FORTRAN_WRAPPERS "@REG_BUILD_FORTRAN_WRAPPERS@")
-
-# build settings, use file and modules list locations
-set(RealityGrid_BUILD_SETTINGS_FILE "@RealityGrid_BUILD_SETTINGS_FILE_CONFIG@")
-set(RealityGrid_USE_FILE "@RealityGrid_USE_FILE_CONFIG@")
-set(RealityGrid_MODULES_LIST "@RealityGrid_MODULES_LIST_CONFIG@")
-
-# library dependencies
-set(REG_LINK_LIBRARIES "@REG_LINK_LIBRARIES@")
-set(REG_EXTERNAL_LIBS "@REG_EXTERNAL_LIBS@")
-
-if(EXISTS "@RealityGrid_DEPENDS_FILE_CONFIG@")
-  include("@RealityGrid_DEPENDS_FILE_CONFIG@")
-endif(EXISTS "@RealityGrid_DEPENDS_FILE_CONFIG@")
+# populate rest of file with a line for each module
+foreach(type ${REG_MODULES_TYPES})
+  foreach(mod ${REG_MODULES_${type}})
+    if(REG_BUILD_MODULAR_LIBS)
+      file(APPEND ${PROJECT_BINARY_DIR}/RealityGridModulesList.cmake
+	"set(REG_MODULE_${type}_${mod} ReG_Steer_${type}_${mod})\n"
+      )
+    else(REG_BUILD_MODULAR_LIBS)
+      list(FIND REG_MODULES "${type}_${mod}" found)
+      if(${found} EQUAL -1)
+	set(found OFF)
+      else(${found} EQUAL -1)
+	set(found ON)
+      endif(${found} EQUAL -1)
+      file(APPEND ${PROJECT_BINARY_DIR}/RealityGridModulesList.cmake
+	"set(REG_MODULE_${type}_${mod} ${found})\n"
+      )
+    endif(REG_BUILD_MODULAR_LIBS)
+  endforeach(mod ${REG_MODULES_${type}})
+endforeach(type ${REG_MODULES_TYPES})

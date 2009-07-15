@@ -72,8 +72,8 @@ if(REG_BUILD_MODULAR_LIBS)
   endif(NOT "${rm_common}" STREQUAL "")
 
   # create lists of source files to build into modules
-  set(rm_target "ReG_Steer_${rm_type}_${rm_provides}")
-  set(REG_MODULES ${REG_MODULES} ${rm_target})
+  set(rm_target "${rm_type}_${rm_provides}")
+  list(APPEND REG_MODULES ${rm_target})
   set(${rm_target}_SRCS ${rm_srcs})
 else(REG_BUILD_MODULAR_LIBS)
   # keep track of each modules individual source files

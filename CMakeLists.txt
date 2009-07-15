@@ -185,6 +185,9 @@ configure_file(
   COPYONLY IMMEDIATE
 )
 
+# create module list file
+include(GenerateRealityGridModuleList)
+
 # create build- and install-tree packaging info
 include(GenerateRealityGridConfig)
 
@@ -197,3 +200,10 @@ install(FILES
   "${PROJECT_BINARY_DIR}/RealityGridLibraryDepends.cmake"
   DESTINATION lib/RealityGrid
 )
+
+if(REG_BUILD_MODULAR_LIBS)
+  install(FILES
+    "${PROJECT_BINARY_DIR}/RealityGridModulesList.cmake"
+    DESTINATION lib/RealityGrid
+  )
+endif(REG_BUILD_MODULAR_LIBS)

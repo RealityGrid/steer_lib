@@ -92,12 +92,14 @@ endif(REG_BUILD_FORTRAN_WRAPPERS)
 # or add the selected module code to the main lib if monolithic
 if(REG_BUILD_MODULAR_LIBS)
   foreach(target ${REG_MODULES})
-    add_library(${target} ${REG_MOD_TYPE} ${${target}_SRCS})
+    add_library(ReG_Steer_${target} ${REG_MOD_TYPE} ${${target}_SRCS})
+    list(APPEND ReG_Steer_INSTALL_TARGETS ReG_Steer_${target})
   endforeach(target ${REG_MODULES})
   set(REG_LIB_SRCS ${REG_LIB_SRCS} ${REG_MODULE_COMMON_SRCS})
 else(REG_BUILD_MODULAR_LIBS)
   foreach(type ${REG_MODULES_TYPES})
     set(REG_LIB_SRCS ${REG_LIB_SRCS} ${SRCS_${type}_${REG_USE_MODULE_${type}}})
+    list(REMOVE_DUPLICATES REG_LIB_SRCS)
   endforeach(type ${REG_MODULES_TYPES})
 endif(REG_BUILD_MODULAR_LIBS)
 
@@ -111,7 +113,7 @@ if(NOT REG_BUILD_SHARED_LIBS)
 endif(NOT REG_BUILD_SHARED_LIBS)
 
 add_library(ReG_Steer ${REG_LIB_TYPE} ${REG_LIB_SRCS})
-set(ReG_Steer_INSTALL_TARGETS ReG_Steer)
+list(APPEND ReG_Steer_INSTALL_TARGETS ReG_Steer)
 
 # link to external libs
 target_link_libraries(ReG_Steer ${REG_EXTERNAL_LIBS})
@@ -131,10 +133,3 @@ install(TARGETS ${ReG_Steer_INSTALL_TARGETS}
   ARCHIVE DESTINATION lib/RealityGrid
   LIBRARY DESTINATION lib/RealityGrid
 )
-
-if(REG_BUILD_MODULAR_LIBS)
-  install(TARGETS ${REG_MODULES}
-    ARCHIVE DESTINATION lib/RealityGrid/modules
-    LIBRARY DESTINATION lib/RealityGrid/modules
-  )
-endif(REG_BUILD_MODULAR_LIBS)

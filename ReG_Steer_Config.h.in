@@ -41,12 +41,8 @@
 #define REG_STEER_LIB_VERSION "@REG_STEER_LIB_VERSION@"
 
 /* feature options */
-#cmakedefine REG_SOCKET_STEERING
-#cmakedefine REG_SOAP_STEERING
 #cmakedefine REG_USE_OPENSSL
-#cmakedefine REG_USE_WSRF
 #cmakedefine REG_LOG_STEERING
-
 #cmakedefine REG_DEBUG
 #cmakedefine REG_DEBUG_FULL
 #cmakedefine REG_USE_TIMING
@@ -114,16 +110,8 @@
  * 
  * These could be changed in source code at some point.
  */
-#ifdef REG_SOCKET_STEERING
-#define REG_DIRECT_TCP_STEERING
-#endif
-
 #ifdef REG_USE_OPENSSL
 #define WITH_OPENSSL
-#endif
-
-#ifdef REG_USE_WSRF
-#define REG_WSRF
 #endif
 
 #ifdef REG_USE_TIMING
