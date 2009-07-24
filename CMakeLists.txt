@@ -101,7 +101,6 @@ include_directories("${PROJECT_BINARY_DIR}")
 #
 # feature options
 #
-option(REG_USE_OPENSSL "Use SSL for steering connections. Default is OFF." OFF)
 option(REG_LOG_STEERING "Whether or not to log steering commands. Default is ON." ON)
 mark_as_advanced(REG_LOG_STEERING)
 
@@ -143,12 +142,6 @@ set(REG_EXTERNAL_LIBS ${REG_EXTERNAL_LIBS} ${ZLIB_LIBRARY} ${LIBM_LIB})
 find_package(LibXml2 REQUIRED)
 include_directories("${LIBXML2_INCLUDE_DIR}")
 set(REG_EXTERNAL_LIBS ${LIBXML2_LIBRARIES} ${REG_EXTERNAL_LIBS})
-
-if(REG_USE_OPENSSL)
-  find_package(OpenSSL REQUIRED)
-  include_directories("${OPENSSL_INCLUDE_DIR}")
-  set(REG_EXTERNAL_LIBS ${OPENSSL_LIBRARIES} ${REG_EXTERNAL_LIBS})
-endif(REG_USE_OPENSSL)
 
 # ReG libs to link examples against
 set(REG_LINK_LIBRARIES ReG_Steer)

@@ -446,6 +446,13 @@ int Sim_attach_impl(int index, char* SimID) {
 
 /*-------------------------------------------------------*/
 
+int Sim_attach_security_impl(const int index,
+			     const struct reg_security_info* sec) {
+  return REG_SUCCESS;
+}
+
+/*-------------------------------------------------------*/
+
 int Get_param_log_impl(int index, int handle) {
   int           command[1];
   static char** command_params = NULL;

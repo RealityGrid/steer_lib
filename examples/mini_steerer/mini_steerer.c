@@ -36,7 +36,6 @@
 #include "ReG_Steer_Steerside.h"
 #include "ReG_Steer_Browser.h"
 #include "ReG_Steer_Utils.h"
-#include "ReG_Steer_Utils_WSRF.h"
 #include <string.h>
 #include <unistd.h>
 
@@ -166,7 +165,6 @@ int main(int argc, char **argv){
     }
     else {
       /* Probably a grid connection */
-#ifdef REG_WSRF
       if( !(passPtr = getpass("Enter password for SWS: ")) ){
 	printf("Failed to get password from command line\n");
 	return 1;
@@ -175,20 +173,14 @@ int main(int argc, char **argv){
 	strncpy(sec.passphrase, passPtr, REG_MAX_STRING_LENGTH);
 	strncpy(sec.userDN, getenv("USER"), REG_MAX_STRING_LENGTH);
       }
-#endif /* REG_WSRF */
 
       if(strstr(argv[1], "https://")){
 	/* If using SSL then we need to read security configuration */
 	sec.use_ssl = 1;
 	
-	if(!getenv("REG_STEER_HOME")){
-	  printf("REG_STEER_HOME environment variable is not set. Please set\n"
-		 "it to the location of your reg_steer_lib directory.\n");
-	  return 1;
-	}
 	snprintf(confFile, REG_MAX_STRING_LENGTH,
-		 "%s/examples/mini_steerer/security.conf", 
-		 getenv("REG_STEER_HOME"));
+		 "%s/.realitygrid/security.conf",
+		 getenv("HOME"));
 
 	/* Read the location of certs etc. into global variables */
 	if(Get_security_config(confFile, &sec)){
@@ -223,14 +215,9 @@ int main(int argc, char **argv){
 
 	sec.use_ssl = 1;
 
-	if(!getenv("REG_STEER_HOME")){
-	  printf("REG_STEER_HOME environment variable is not set. Please set\n"
-		 "it to the location of your reg_steer_lib directory.\n");
-	  return 1;
-	}
 	snprintf(confFile, REG_MAX_STRING_LENGTH,
-		 "%s/examples/mini_steerer/security.conf", 
-		 getenv("REG_STEER_HOME"));
+		 "%s/.realitygrid/security.conf",
+		 getenv("HOME"));
 
 	/* Read the location of certs etc. into global variables */
 	if(Get_security_config(confFile, &sec)){
@@ -271,14 +258,7 @@ int main(int argc, char **argv){
       }
       printf("\n");
 
-      Get_registry_entries_filtered_secure(registryAddr,
-					   &sec,
-					   &content,
-#ifdef REG_WSRF
-					   "SWS");
-#else
-                                           "SGS");
-#endif
+      Get_registry_entries_filtered_secure(registryAddr, &sec, &content, "SWS");
 
       /* Attempt to attach to (just one) simulation - this blocks */
 

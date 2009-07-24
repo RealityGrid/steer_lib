@@ -46,7 +46,6 @@ set(REG_LIB_SRCS
 
 # header files and definitions
 include_directories(${PROJECT_SOURCE_DIR}/include)
-add_definitions(-DWITH_CDATA)
 
 #
 # Build the Fortran bits and include them in the main library
@@ -102,6 +101,16 @@ else(REG_BUILD_MODULAR_LIBS)
     list(REMOVE_DUPLICATES REG_LIB_SRCS)
   endforeach(type ${REG_MODULES_TYPES})
 endif(REG_BUILD_MODULAR_LIBS)
+
+#
+#
+# NEEDS DOING BETTER (FOR MONOLITHIC BUILDS, ETC)
+#
+#
+set_target_properties(ReG_Steer_Steering_WSRF
+  PROPERTIES
+  COMPILE_FLAGS -DWITH_OPENSSL
+)
 
 # need to make sure everything is built with PIC in case
 # the static libs are to be embedded in a shared object

@@ -516,45 +516,10 @@ extern PREFIX int Reorder_decode_array(IOdef_entry *io,
 extern PREFIX int Get_fully_qualified_hostname(char **hostname, 
 					       char **ip_addr_ptr);
 
-/** @internal 
-    Initialize the OpenSSL random number generator for this thread */
-extern PREFIX int Init_random();
-
-/** @internal
-    Creates a WSRF header including WS-Security elements  for gSoap 
-    (within the supplied soap struct). If @p username is null or
-    is empty then no WS-Security elements are created.
-    @param aSoap Pointer to soap struct to construct header in
-    @param epr The address of the service to be called
-    @param username The username to present to the service
-    @param passwd The password used to access the service
-    @return REG_SUCCESS or REG_FAILURE if no header created */
-/* extern PREFIX int Create_WSRF_header(struct soap *aSoap, */
-/* 				     const  char *epr, */
-/* 				     const  char *username, */
-/* 				     const  char *passwd); */
-
 /** @internal
     Return the current (GMT) date and time as a string in the format
     YYYY-MM-DDTHH:MM:SSZ suitable for inclusion in XML documents */
 extern PREFIX char *Get_current_time_string();
-
-/** @internal
-    Initialize the SSL context for the supplied gSoap structure
-    @param aSoap Ptr to soap struct to be initialized
-    @param authenticateSWS Whether or not to verify the cert. presented 
-    by the SWS.  If REG_TRUE then caCertPath must be set.
-    @param certKeyPemFile Full path to file containing user's certificate
-           and key (if doing mutual authentication, NULL otherwise) 
-    @param passphrase Passphrase for the user's key (can be NULL if not
-           doing mutual authentication)
-    @param caCertPath Path to directory containing CA certs 
-    @return REG_SUCCESS or REG_FAILURE */
-extern PREFIX int REG_Init_ssl_context(struct soap *aSoap,
-				       const int    authenticateSWS,
-				       const char  *certKeyPemFile,
-				       const char  *passphrase,
-				       const char  *caCertPath);
 
 /** @internal
     Resets all entries in the struct

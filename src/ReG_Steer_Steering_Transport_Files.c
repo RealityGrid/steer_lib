@@ -472,6 +472,13 @@ int Sim_attach_impl(int index, char *SimID) {
 
 /*-------------------------------------------------------*/
 
+int Sim_attach_security_impl(const int index,
+			     const struct reg_security_info* sec) {
+  return REG_SUCCESS;
+}
+
+/*-------------------------------------------------------*/
+
 struct msg_struct *Get_status_msg_impl(int index, int ignore) {
   struct msg_struct *msg = NULL;
   char  filename[REG_MAX_STRING_LENGTH];

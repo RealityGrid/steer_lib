@@ -1,7 +1,7 @@
 #
 #  CMake build machinery for the RealityGrid Steering Library.
 #
-#  (C) Copyright 2004-2008, University of Manchester, United Kingdom,
+#  (C) Copyright 2004-2009, University of Manchester, United Kingdom,
 #  all rights reserved.
 #
 #  This software is produced by the Supercomputing, Visualization and
@@ -31,36 +31,6 @@
 #  Author.........: Robert Haines
 #----------------------------------------------------------------------
 
-# version numbers
-set(REG_LIB_VERSION_MAJ @REG_LIB_VERSION_MAJ@)
-set(REG_LIB_VERSION_MIN @REG_LIB_VERSION_MIN@)
-set(REG_LIB_VERSION_PAT @REG_LIB_VERSION_PAT@)
-
-# install type
-set(RealityGrid_INSTALL_TYPE "@RealityGrid_INSTALL_TYPE_CONFIG@")
-
-# header, library and documentation locations
-set(RealityGrid_INSTALL_PREFIX "@RealityGrid_INSTALL_PREFIX_CONFIG@")
-set(RealityGrid_INCLUDE_DIRS "@RealityGrid_INCLUDE_DIRS_CONFIG@")
-set(RealityGrid_LIBRARY_DIRS "@RealityGrid_LIBRARY_DIRS_CONFIG@")
-set(RealityGrid_BIN_DIR "@RealityGrid_BIN_DIR_CONFIG@")
-set(RealityGrid_DOCS_DIR "@RealityGrid_DOCS_DIR_CONFIG@")
-
-# RealityGrid config options
-set(REG_USE_SHARED_LIBS "@REG_BUILD_SHARED_LIBS@")
-set(REG_USE_MODULAR_LIBS "@REG_BUILD_MODULAR_LIBS@")
-set(REG_DEBUG "@REG_DEBUG@")
-set(REG_BUILD_FORTRAN_WRAPPERS "@REG_BUILD_FORTRAN_WRAPPERS@")
-
-# build settings, use file and modules list locations
-set(RealityGrid_BUILD_SETTINGS_FILE "@RealityGrid_BUILD_SETTINGS_FILE_CONFIG@")
-set(RealityGrid_USE_FILE "@RealityGrid_USE_FILE_CONFIG@")
-set(RealityGrid_MODULES_LIST "@RealityGrid_MODULES_LIST_CONFIG@")
-
-# library dependencies
-set(REG_LINK_LIBRARIES "@REG_LINK_LIBRARIES@")
-set(REG_EXTERNAL_LIBS "@REG_EXTERNAL_LIBS@")
-
-if(EXISTS "@RealityGrid_DEPENDS_FILE_CONFIG@")
-  include("@RealityGrid_DEPENDS_FILE_CONFIG@")
-endif(EXISTS "@RealityGrid_DEPENDS_FILE_CONFIG@")
+find_package(OpenSSL REQUIRED)
+include_directories("${OPENSSL_INCLUDE_DIR}")
+set(REG_EXTERNAL_LIBS ${OPENSSL_LIBRARIES} ${REG_EXTERNAL_LIBS})

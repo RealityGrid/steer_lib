@@ -40,8 +40,6 @@
 /* ReG version */
 #define REG_STEER_LIB_VERSION "@REG_STEER_LIB_VERSION@"
 
-/* feature options */
-#cmakedefine REG_USE_OPENSSL
 #cmakedefine REG_LOG_STEERING
 #cmakedefine REG_DEBUG
 #cmakedefine REG_DEBUG_FULL
@@ -110,9 +108,6 @@
  * 
  * These could be changed in source code at some point.
  */
-#ifdef REG_USE_OPENSSL
-#define WITH_OPENSSL
-#endif
 
 #ifdef REG_USE_TIMING
 #define USE_REG_TIMING

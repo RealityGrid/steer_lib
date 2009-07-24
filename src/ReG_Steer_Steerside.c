@@ -187,15 +187,6 @@ int Steerer_initialize()
   }
   */
 
-  /* Initialize the (OpenSSL) pseudo-random number generator for
-     use with WS-Security */
-  if(Init_random() == REG_SUCCESS){
-    Steer_config.ossl_rand_available = REG_TRUE;
-  }
-  else{
-    Steer_config.ossl_rand_available = REG_FALSE;
-  }
-
   /* init the steering transport module */
   
   return Initialize_steerside_transport();
@@ -402,26 +393,9 @@ int Sim_attach_secure(const char                     *SimID,
     }
   }
 
-  /* Initialise Steering Grid Service-related data */
-/*   sim_ptr->SGS_info.active = REG_FALSE; */
-/*   sim_ptr->SGS_info.sde_count = 0; */
-/*   sim_ptr->SGS_info.sde_index = 0; */
-  /* We'll only be able to do WS-Security if we previously successfully
-     initialized the OpenSSL random number generator */
-  if(Steer_config.ossl_rand_available == REG_TRUE){
-/*     strncpy(sim_ptr->SGS_info.username, sec->userDN, REG_MAX_STRING_LENGTH); */
-/*     strncpy(sim_ptr->SGS_info.passwd, sec->passphrase, REG_MAX_STRING_LENGTH); */
-  }
-  else{
-/*     sim_ptr->SGS_info.username[0] = '\0'; */
-/*     sim_ptr->SGS_info.passwd[0] = '\0'; */
-  }
-
-  /* SSL configuration */
-  if(sec->caCertsPath[0]){
-    strncpy(Steer_config.caCertsPath, sec->caCertsPath, 
-	    REG_MAX_STRING_LENGTH);
-  }
+  /* Initialize security. This is SSL if available or
+     plain username + password otherwise. */
+  Sim_attach_security_impl(current_sim, sec);
 
   /* Now we actually connect to the application */
 

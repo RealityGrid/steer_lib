@@ -39,6 +39,7 @@
 #include "ReG_Steer_Config.h"
 #include "ReG_Steer_types.h"
 #include "ReG_Steer_Browser.h"
+#include "ReG_Steer_XML.h"
 
 /*-------- Appside function prototypes --------*/
 
@@ -99,6 +100,9 @@ int Finalize_steerside_transport();
     
     Initialise soap-specific structures & attach to simulation via SOAP */
 int Sim_attach_impl(int index, char *SimID);
+
+int Sim_attach_security_impl(const int index,
+			     const struct reg_security_info* sec);
 
 /** @internal
     @param sim Pointer to entry in main Sim_table

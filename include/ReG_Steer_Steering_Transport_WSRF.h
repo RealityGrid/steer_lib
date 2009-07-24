@@ -154,6 +154,26 @@ int create_WSRF_header(struct soap *aSoap,
 int destroy_WSRP(const char *epr,
 		 const struct reg_security_info *sec);
 
+/** @internal 
+    Initialize the OpenSSL random number generator for this thread */
+int init_ssl_random_seq();
+
+/** @internal
+    Initialize the SSL context for the supplied gSoap structure
+    @param aSoap Ptr to soap struct to be initialized
+    @param authenticateSWS Whether or not to verify the cert. presented 
+    by the SWS.  If REG_TRUE then caCertPath must be set.
+    @param certKeyPemFile Full path to file containing user's certificate
+           and key (if doing mutual authentication, NULL otherwise) 
+    @param passphrase Passphrase for the user's key (can be NULL if not
+           doing mutual authentication)
+    @param caCertPath Path to directory containing CA certs 
+    @return REG_SUCCESS or REG_FAILURE */
+int init_ssl_context(struct soap *aSoap,
+		     const int    authenticateSWS,
+		     const char  *certKeyPemFile,
+		     const char  *passphrase,
+		     const char  *caCertPath);
 
 int soap_mismatch_handler(struct soap* soap, const char* tag);
 

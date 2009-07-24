@@ -35,6 +35,12 @@
 #include "ReG_Steer_Steerside_internal.h"
 #include "soapH.h"
 
+/** @internal
+   Flag holding whether or not the ssl random no. generator has
+   been initialized. */
+int ReG_ssl_random_initialized;
+
+
 /* */
 SGS_info_type appside_SGS_info;
 
@@ -88,6 +94,201 @@ char *APP_NAME_RP       = "sws:applicationName";
 char *STATUS_MSG_RP     = "sws:statusMsg";
 
 /*----------------- Appside methods ---------------------*/
+
+int Initialize_steering_connection_impl(int  NumSupportedCmds,
+					int* SupportedCmds) {
+  char* pchar;
+  char  query_buf[REG_MAX_MSG_SIZE];
+  struct wsrp__SetResourcePropertiesResponse out;
+
+  /* malloc memory for soap struct for this connection and then
+     initialise it */
+  if(!(appside_SGS_info.soap = 
+                (struct soap*)malloc(sizeof(struct soap)))) {
+
+    fprintf(stderr, "STEER: Initialize_steering_connection: failed"
+	    " to malloc memory for soap struct\n");
+    return REG_FAILURE;
+  }
+
+  /* Set location of steering scratch directory */
+  if(Set_steering_directory() != REG_SUCCESS) {
+    fprintf(stderr, "STEER: Initialize_steering_connection: "
+	    "failed to set steering scratch directory - checkpoint "
+	    "info. will be written to ./\n");
+  }
+
+  /* Get the address of the SWS for this application from an environment
+     variable */
+  if((pchar = getenv("REG_SGS_ADDRESS"))) {
+    snprintf(appside_SGS_info.address, REG_MAX_STRING_LENGTH, 
+	     "%s", pchar);
+#ifdef REG_DEBUG
+    fprintf(stderr, "STEER: Initialize_steering_connection: "
+	    "SWS address = %s\n", appside_SGS_info.address);
+#endif
+  }
+  else {
+    fprintf(stderr, "STEER: Initialize_steering_connection: "
+	    "REG_SGS_ADDRESS environment variable not set\n");
+    return REG_FAILURE;
+  }
+
+  /* Initialise the soap run-time environment:
+     Use this form to turn-on keep-alive for both incoming and outgoing
+     http connections */
+  soap_init2(appside_SGS_info.soap, SOAP_IO_KEEPALIVE, 
+	     SOAP_IO_KEEPALIVE);
+
+  /* If address of SWS begins with 'https' then initialize SSL context */
+  if(strstr(appside_SGS_info.address, "https") == 
+     appside_SGS_info.address) {
+    if(init_ssl_context(appside_SGS_info.soap,
+			REG_FALSE, /* Don't authenticate SWS */
+			NULL,/*char *certKeyPemFile,*/
+			NULL, /* char *passphrase,*/
+			NULL/*CA certs directory */) == REG_FAILURE) {
+      fprintf(stderr, "STEER: ERROR: Initialize_steering_connection: "
+	      "call to initialize soap SSL context failed\n");
+      return REG_FAILURE;
+    }
+  }
+
+  /* Initialize the OpenSSL random no. generator and, if successful, 
+     get the passphrase, if any, for the SWS (for use with WS-Security) */
+  appside_SGS_info.passwd[0] = '\0';
+  snprintf(appside_SGS_info.username, REG_MAX_STRING_LENGTH,
+	   "%s", REG_APPSIDE_WSSE_USERNAME);
+
+  if(init_ssl_random_seq() == REG_SUCCESS) {
+    if((pchar = getenv("REG_PASSPHRASE"))) {
+      snprintf(appside_SGS_info.passwd, REG_MAX_STRING_LENGTH, 
+	       "%s", pchar);
+#ifdef REG_DEBUG
+      fprintf(stderr, "STEER: Initialize_steering_connection: "
+	      "passphrase read OK\n");
+#endif
+    }
+    else {
+      fprintf(stderr, "STEER: Initialize_steering_connection: "
+	      "no passphrase available from REG_PASSPHRASE\n");
+    }
+  }
+  else {
+      fprintf(stderr, "STEER: Initialize_steering_connection: "
+	      "failed to initialize OpenSSL random no. generator\n");
+  }
+
+  /* Since we are using KEEPALIVE, we can also ask gSOAP to bind the 
+     socket to a specific port on the local machine - only do this if 
+     GLOBUS_TCP_PORT_RANGE is set. */
+  if((pchar = getenv("GLOBUS_TCP_PORT_RANGE"))) {
+    if(sscanf(pchar, "%d,%d", 
+	      &(appside_SGS_info.soap->client_port_min), 
+	      &(appside_SGS_info.soap->client_port_max)) != 2) {
+      appside_SGS_info.soap->client_port_min = 0;
+      appside_SGS_info.soap->client_port_max = 0;
+    }
+  }
+
+  /* Create msg to send to SGS */
+  Make_supp_cmds_msg(NumSupportedCmds, SupportedCmds, 
+		     Steerer_connection.supp_cmds, REG_MAX_MSG_SIZE);
+
+  /* Strip off any xml version declaration */
+  pchar = strstr(Steerer_connection.supp_cmds,"<ReG_steer_message");
+
+  snprintf(query_buf, REG_MAX_MSG_SIZE, "<%s>%s</%s>", 
+	  SUPPORTED_CMDS_RP, pchar, SUPPORTED_CMDS_RP);
+
+  create_WSRF_header(appside_SGS_info.soap,
+                     appside_SGS_info.address,
+                     appside_SGS_info.username,
+		     appside_SGS_info.passwd);
+
+#ifdef REG_DEBUG_FULL
+  fprintf(stderr, "STEER: Initialize_steering_connection: sending "
+	  "1st msg:\n>>%s<<\n\n",query_buf);
+#endif
+
+  if(soap_call_wsrp__SetResourceProperties(appside_SGS_info.soap,
+					   appside_SGS_info.address,
+					   "", query_buf, &out) != SOAP_OK) {
+    fprintf(stderr, "STEER: Initialize_steering_connection: failed "
+	    "to set supportedCommands ResourceProperty:\n");
+    soap_print_fault(appside_SGS_info.soap, stderr);
+    return REG_FAILURE;
+  }
+
+  /* Publish our location: machine and working directory - these
+     are set in Steering_initialize prior to calling us */
+  snprintf(query_buf, REG_MAX_MSG_SIZE, 
+	   "<%s>%s</%s><%s>%s</%s><%s>%s</%s>", 
+	   WORKING_DIR_RP, ReG_CurrentDir, WORKING_DIR_RP,
+	   MACHINE_ADDRESS_RP, ReG_Hostname, MACHINE_ADDRESS_RP,
+	   APP_NAME_RP, ReG_AppName, APP_NAME_RP);
+
+  create_WSRF_header(appside_SGS_info.soap,
+                     appside_SGS_info.address,
+		     appside_SGS_info.username,
+		     appside_SGS_info.passwd);
+
+#ifdef REG_DEBUG_FULL
+  fprintf(stderr, "STEER: Initialize_steering_connection: sending "
+	  "2nd msg:\n>>%s<<\n\n", query_buf);
+#endif
+
+  if(soap_call_wsrp__SetResourceProperties(appside_SGS_info.soap, 
+					   appside_SGS_info.address,
+					   "", query_buf, &out) != SOAP_OK) {
+    fprintf(stderr, "STEER: Initialize_steering_connection: failed to "
+	    "set machine address and working directory ResourceProperties:\n");
+    soap_print_fault(appside_SGS_info.soap, stderr);
+    return REG_FAILURE;
+  }
+
+  return REG_SUCCESS;
+}
+
+/*-------------------------------------------------------*/
+
+int Finalize_steering_connection_impl() {
+  int return_status = REG_SUCCESS;
+  struct wsrp__DestroyResponse out;
+  int  commands[1];
+
+  commands[0] = REG_STR_DETACH;
+  Emit_status(0,
+	      0,   
+	      NULL,
+	      1,
+	      commands);
+
+  create_WSRF_header(appside_SGS_info.soap,
+                     appside_SGS_info.address,
+		     appside_SGS_info.username,
+		     appside_SGS_info.passwd);
+
+  if(soap_call_wsrp__Destroy(appside_SGS_info.soap, 
+			    appside_SGS_info.address, 
+			    "",  NULL, &out)) {
+    fprintf(stderr, "STEER: Finalize_steering_connection_wsrf: call to Destroy"
+	    " failed:\n");
+    soap_print_fault(appside_SGS_info.soap, stderr);
+    return_status = REG_FAILURE;
+  }
+
+  soap_end(appside_SGS_info.soap);
+  /* Reset: close master/slave sockets and remove callbacks */
+  soap_done(appside_SGS_info.soap);
+
+  free(appside_SGS_info.soap);
+  appside_SGS_info.soap = NULL;
+
+  return return_status;
+}
+
+/*-------------------------------------------------------*/
 
 int Detach_from_steerer_impl() {
   /* Don't send out param logs as they are cached on the SWS */
@@ -278,201 +479,6 @@ struct msg_struct* Get_control_msg_impl() {
   }
 
   return msg;
-}
-
-/*-------------------------------------------------------*/
-
-int Initialize_steering_connection_impl(int  NumSupportedCmds,
-					int* SupportedCmds) {
-  char* pchar;
-  char  query_buf[REG_MAX_MSG_SIZE];
-  struct wsrp__SetResourcePropertiesResponse out;
-
-  /* malloc memory for soap struct for this connection and then
-     initialise it */
-  if(!(appside_SGS_info.soap = 
-                (struct soap*)malloc(sizeof(struct soap)))) {
-
-    fprintf(stderr, "STEER: Initialize_steering_connection_wsrf: failed"
-	    " to malloc memory for soap struct\n");
-    return REG_FAILURE;
-  }
-
-  /* Set location of steering scratch directory */
-  if(Set_steering_directory() != REG_SUCCESS) {
-    fprintf(stderr, "STEER: Initialize_steering_connection_wsrf: "
-	    "failed to set steering scratch directory - checkpoint "
-	    "info. will be written to ./\n");
-  }
-
-  /* Get the address of the SWS for this application from an environment
-     variable */
-  if((pchar = getenv("REG_SGS_ADDRESS"))) {
-    snprintf(appside_SGS_info.address, REG_MAX_STRING_LENGTH, 
-	     "%s", pchar);
-#ifdef REG_DEBUG
-    fprintf(stderr, "STEER: Initialize_steering_connection_wsrf: "
-	    "SWS address = %s\n", appside_SGS_info.address);
-#endif
-  }
-  else {
-    fprintf(stderr, "STEER: Initialize_steering_connection_wsrf: "
-	    "REG_SGS_ADDRESS environment variable not set\n");
-    return REG_FAILURE;
-  }
-
-  /* Initialise the soap run-time environment:
-     Use this form to turn-on keep-alive for both incoming and outgoing
-     http connections */
-  soap_init2(appside_SGS_info.soap, SOAP_IO_KEEPALIVE, 
-	     SOAP_IO_KEEPALIVE);
-
-  /* If address of SWS begins with 'https' then initialize SSL context */
-  if(strstr(appside_SGS_info.address, "https") == 
-     appside_SGS_info.address) {
-    if(REG_Init_ssl_context(appside_SGS_info.soap,
-			    REG_FALSE, /* Don't authenticate SWS */
-			    NULL,/*char *certKeyPemFile,*/
-			    NULL, /* char *passphrase,*/
-			    NULL/*CA certs directory */) == REG_FAILURE) {
-      fprintf(stderr, "STEER: ERROR: Initialize_steering_connection_wsrf: "
-	      "call to initialize soap SSL context failed\n");
-      return REG_FAILURE;
-    }
-  }
-
-  /* Initialize the OpenSSL random no. generator and, if successful, 
-     get the passphrase, if any, for the SWS (for use with WS-Security) */
-  appside_SGS_info.passwd[0] = '\0';
-  snprintf(appside_SGS_info.username, REG_MAX_STRING_LENGTH,
-	   "%s", REG_APPSIDE_WSSE_USERNAME);
-
-  if(Init_random() == REG_SUCCESS) {
-    if((pchar = getenv("REG_PASSPHRASE"))) {
-      snprintf(appside_SGS_info.passwd, REG_MAX_STRING_LENGTH, 
-	       "%s", pchar);
-#ifdef REG_DEBUG
-      fprintf(stderr, "STEER: Initialize_steering_connection_wsrf: "
-	      "passphrase read OK\n");
-#endif
-    }
-    else {
-      fprintf(stderr, "STEER: Initialize_steering_connection_wsrf: "
-	      "no passphrase available from REG_PASSPHRASE\n");
-    }
-  }
-  else {
-      fprintf(stderr, "STEER: Initialize_steering_connection_wsrf: "
-	      "failed to initialize OpenSSL random no. generator\n");
-  }
-
-  /* Since we are using KEEPALIVE, we can also ask gSOAP to bind the 
-     socket to a specific port on the local machine - only do this if 
-     GLOBUS_TCP_PORT_RANGE is set. */
-  if((pchar = getenv("GLOBUS_TCP_PORT_RANGE"))) {
-    if(sscanf(pchar, "%d,%d", 
-	      &(appside_SGS_info.soap->client_port_min), 
-	      &(appside_SGS_info.soap->client_port_max)) != 2) {
-      appside_SGS_info.soap->client_port_min = 0;
-      appside_SGS_info.soap->client_port_max = 0;
-    }
-  }
-
-  /* Create msg to send to SGS */
-  Make_supp_cmds_msg(NumSupportedCmds, SupportedCmds, 
-		     Steerer_connection.supp_cmds, REG_MAX_MSG_SIZE);
-
-  /* Strip off any xml version declaration */
-  pchar = strstr(Steerer_connection.supp_cmds,"<ReG_steer_message");
-
-  snprintf(query_buf, REG_MAX_MSG_SIZE, "<%s>%s</%s>", 
-	  SUPPORTED_CMDS_RP, pchar, SUPPORTED_CMDS_RP);
-
-  create_WSRF_header(appside_SGS_info.soap,
-                     appside_SGS_info.address,
-                     appside_SGS_info.username,
-		     appside_SGS_info.passwd);
-
-#ifdef REG_DEBUG_FULL
-  fprintf(stderr, "STEER: Initialize_steering_connection_wsrf: sending "
-	  "1st msg:\n>>%s<<\n\n",query_buf);
-#endif
-
-  if(soap_call_wsrp__SetResourceProperties(appside_SGS_info.soap,
-					   appside_SGS_info.address,
-					   "", query_buf, &out) != SOAP_OK) {
-    fprintf(stderr, "STEER: Initialize_steering_connection_wsrf: failed "
-	    "to set supportedCommands ResourceProperty:\n");
-    soap_print_fault(appside_SGS_info.soap, stderr);
-    return REG_FAILURE;
-  }
-
-  /* Publish our location: machine and working directory - these
-     are set in Steering_initialize prior to calling us */
-  snprintf(query_buf, REG_MAX_MSG_SIZE, 
-	   "<%s>%s</%s><%s>%s</%s><%s>%s</%s>", 
-	   WORKING_DIR_RP, ReG_CurrentDir, WORKING_DIR_RP,
-	   MACHINE_ADDRESS_RP, ReG_Hostname, MACHINE_ADDRESS_RP,
-	   APP_NAME_RP, ReG_AppName, APP_NAME_RP);
-
-  create_WSRF_header(appside_SGS_info.soap,
-                     appside_SGS_info.address,
-		     appside_SGS_info.username,
-		     appside_SGS_info.passwd);
-
-#ifdef REG_DEBUG_FULL
-  fprintf(stderr, "STEER: Initialize_steering_connection_wsrf: sending "
-	  "2nd msg:\n>>%s<<\n\n", query_buf);
-#endif
-
-  if(soap_call_wsrp__SetResourceProperties(appside_SGS_info.soap, 
-					   appside_SGS_info.address,
-					   "", query_buf, &out) != SOAP_OK) {
-    fprintf(stderr, "STEER: Initialize_steering_connection_wsrf: failed to "
-	    "set machine address and working directory ResourceProperties:\n");
-    soap_print_fault(appside_SGS_info.soap, stderr);
-    return REG_FAILURE;
-  }
-
-  return REG_SUCCESS;
-}
-
-/*-------------------------------------------------------*/
-
-int Finalize_steering_connection_impl() {
-  int return_status = REG_SUCCESS;
-  struct wsrp__DestroyResponse out;
-  int  commands[1];
-
-  commands[0] = REG_STR_DETACH;
-  Emit_status(0,
-	      0,   
-	      NULL,
-	      1,
-	      commands);
-
-  create_WSRF_header(appside_SGS_info.soap,
-                     appside_SGS_info.address,
-		     appside_SGS_info.username,
-		     appside_SGS_info.passwd);
-
-  if(soap_call_wsrp__Destroy(appside_SGS_info.soap, 
-			    appside_SGS_info.address, 
-			    "",  NULL, &out)) {
-    fprintf(stderr, "STEER: Finalize_steering_connection_wsrf: call to Destroy"
-	    " failed:\n");
-    soap_print_fault(appside_SGS_info.soap, stderr);
-    return_status = REG_FAILURE;
-  }
-
-  soap_end(appside_SGS_info.soap);
-  /* Reset: close master/slave sockets and remove callbacks */
-  soap_done(appside_SGS_info.soap);
-
-  free(appside_SGS_info.soap);
-  appside_SGS_info.soap = NULL;
-
-  return return_status;
 }
 
 /*-------------------------------------------------------*/
@@ -739,12 +745,6 @@ int Get_data_io_address_impl(const int           index,
   return REG_SUCCESS;
 }
 
-/*-------------------------------------------------------*/
-/*-------------------------------------------------------*/
-/*-------------------------------------------------------*/
-/*-------------------------------------------------------*/
-/*-------------------------------------------------------*/
-
 /*---------------- Steerside methods --------------------*/
 
 extern Sim_table_type Sim_table;
@@ -752,6 +752,14 @@ extern Steerer_config_table_type Steer_config;
 SGS_info_table_type steerer_SGS_info_table;
 
 int Initialize_steerside_transport() {
+  
+  if(init_ssl_random_seq() == REG_SUCCESS){
+    Steer_config.ossl_rand_available = REG_TRUE;
+  }
+  else{
+    Steer_config.ossl_rand_available = REG_FALSE;
+  }
+
   return SGS_info_table_init(&steerer_SGS_info_table,
 			     REG_MAX_NUM_STEERED_SIM);
 }
@@ -794,11 +802,11 @@ int Sim_attach_impl(int index, char* SimID) {
 
   /* If address of SWS begins with 'https' then initialize SSL context */
   if(strstr(SimID, "https") == SimID) {
-    if(REG_Init_ssl_context(SGS_info->soap,
-			    REG_TRUE, /* Authenticate SWS */
-			    NULL,/*char *certKeyPemFile,*/
-			    NULL, /* char *passphrase,*/
-			    Steer_config.caCertsPath) == REG_FAILURE) {
+    if(init_ssl_context(SGS_info->soap,
+			REG_TRUE, /* Authenticate SWS */
+			NULL,/*char *certKeyPemFile,*/
+			NULL, /* char *passphrase,*/
+			Steer_config.caCertsPath) == REG_FAILURE) {
 
       fprintf(stderr, "STEER: ERROR: Sim_attach_wsrf: call to initialize "
 	      "soap SSL context failed\n");
@@ -837,6 +845,24 @@ int Sim_attach_impl(int index, char* SimID) {
     fprintf(stderr, "STEER: ERROR: Attach: no supported commands returned\n");
     Finalize_connection_impl(index);
     return REG_FAILURE;
+  }
+
+  return REG_SUCCESS;
+}
+
+/*-------------------------------------------------------*/
+
+int Sim_attach_security_impl(const int index,
+			     const struct reg_security_info* sec) {
+
+  strncpy(steerer_SGS_info_table.SGS_info[index].username,
+	  sec->userDN, REG_MAX_STRING_LENGTH);
+  strncpy(steerer_SGS_info_table.SGS_info[index].passwd,
+	  sec->passphrase, REG_MAX_STRING_LENGTH);
+
+  if(sec->caCertsPath[0]){
+    strncpy(Steer_config.caCertsPath, sec->caCertsPath, 
+	    REG_MAX_STRING_LENGTH);
   }
 
   return REG_SUCCESS;
@@ -1164,13 +1190,12 @@ int Get_registry_entries_impl(const char* registryEPR,
 
   /* regServiceGroup can use SSL for authentication */
   /* If address of SWS begins with 'https' then initialize SSL context */
-  if((sec->use_ssl == REG_TRUE) &&
-      (strstr(registryEPR, "https") == registryEPR)) {
-    if(REG_Init_ssl_context(&soap,
-			    REG_TRUE, /* Authenticate SWS */
-			    sec->myKeyCertFile,
-			    sec->passphrase,
-			    sec->caCertsPath) == REG_FAILURE) {
+  if((strstr(registryEPR, "https") == registryEPR)) {
+    if(init_ssl_context(&soap,
+			REG_TRUE, /* Authenticate SWS */
+			sec->myKeyCertFile,
+			sec->passphrase,
+			sec->caCertsPath) == REG_FAILURE) {
       fprintf(stderr, "Get_registry_entries: call to initialize "
 	      "soap SSL context failed\n");
       return REG_FAILURE;
@@ -1182,6 +1207,7 @@ int Get_registry_entries_impl(const char* registryEPR,
     status = create_WSRF_header(&soap, registryEPR,
 				sec->userDN, sec->passphrase);
   }
+
   if(status != REG_SUCCESS) {
     return REG_FAILURE;
   }
@@ -1243,6 +1269,206 @@ int Get_registry_entries_impl(const char* registryEPR,
 }
 
 /*----------------- Internal methods --------------------*/
+
+int create_WSRF_header(struct soap *aSoap,
+		       const  char *epr,
+		       const  char *username,
+		       const  char *passwd) {
+
+  int           bytesLeft, nbytes;
+  int           i, len;
+  int           status;
+#define MAX_LEN 1024
+  unsigned char randBuf[MAX_LEN];
+  char         *pBuf;
+  char          buf[MAX_LEN];
+  char          digest[SHA_DIGEST_LENGTH];
+  char         *pBase64Buf = NULL;
+  char         *timePtr;
+
+  /* alloc new header for WS-RF */
+  aSoap->header = soap_malloc(aSoap, sizeof(struct SOAP_ENV__Header));
+  if(!(aSoap->header)){
+    fprintf(stderr,
+	    "STEER: create_WSRF_header: Failed to malloc space for header\n");
+    return REG_FAILURE;
+  }
+
+  aSoap->header->wsa__To = (char *)soap_malloc(aSoap, strlen(epr)+1);
+  if(!(aSoap->header->wsa__To)){
+    fprintf(stderr, "STEER: create_WSRF_header: Failed to malloc space "
+	    "for header wsa:To element\n");
+    return REG_FAILURE;
+  }
+
+  strcpy(aSoap->header->wsa__To, epr);
+
+  if(!username || !(username[0])){
+#ifdef REG_DEBUG
+    fprintf(stderr,
+	    "STEER: create_WSRF_header: not adding security to header\n");
+#endif /* REG_DEBUG */
+    aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Username = NULL;
+    aSoap->header->wsse__Security.wsse__UsernameToken.wsu__Created = NULL;
+    aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.Type = NULL;
+    aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.__item = NULL;
+    aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Nonce = NULL;
+    return REG_SUCCESS;
+  }
+
+  /* Set up the username element of the header irrespective of whether
+     or not the library has been built with openSSL support */
+  aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Username =
+                                       (char *)soap_malloc(aSoap, 128);
+
+  if(!(aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Username)){
+    fprintf(stderr, "STEER: create_WSRF_header: Failed to malloc space "
+	    "for Username element\n");
+    return REG_FAILURE;
+  }
+  snprintf(aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Username,
+	   128, username);
+
+  aSoap->header->wsse__Security.wsse__UsernameToken.wsu__Created =
+                                       (char *)soap_malloc(aSoap, 128);
+  aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.Type =
+                                       (char *)soap_malloc(aSoap, 128);
+
+  if( !(aSoap->header->wsse__Security.wsse__UsernameToken.wsu__Created) ||
+      !(aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.Type) ){
+    fprintf(stderr, "STEER: create_WSRF_header: Failed to malloc space "
+	    "for header elements\n");
+    return REG_FAILURE;
+  }
+
+  if(ReG_ssl_random_initialized == REG_FALSE){
+    if(init_ssl_random_seq() != REG_SUCCESS){
+      fprintf(stderr, "STEER: create_WSRF_header: Failed to "
+	      "initialize SSL random number generator\n");
+      return REG_FAILURE;
+    }
+  }
+
+  /* This call requires that init_ssl_random_seq() has been called previously */
+  status = RAND_pseudo_bytes(randBuf, 16);
+  if(status == 0){
+    fprintf(stderr, "STEER: WARNING: create_WSRF_header: Sequence is not "
+	    "cryptographically strong\n");
+  }
+  else if(status == -1){
+    fprintf(stderr, "STEER: ERROR: create_WSRF_header: RAND_pseudo_bytes "
+	    "is not supported\n");
+    return REG_FAILURE;
+  }
+
+  /* Base64-encode this random sequence to make our nonce a nice
+     ASCII string (XML friendly) */
+  Base64_encode((char*) randBuf, 16, &pBase64Buf, (unsigned int*) &len);
+
+  aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Nonce =
+                                       (char *)soap_malloc(aSoap, len+1);
+  if( !(aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Nonce) ){
+    fprintf(stderr,
+	    "STEER: create_WSRF_header: Failed to malloc space for nonce\n");
+    return REG_FAILURE;
+  }
+  strncpy(aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Nonce,
+	  pBase64Buf, len);
+  aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Nonce[len] = '\0';
+
+  timePtr = Get_current_time_string(); /* Steer lib */
+  snprintf(aSoap->header->wsse__Security.wsse__UsernameToken.wsu__Created,
+	   128, timePtr);
+  snprintf(aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.Type,
+	   128, "PasswordDigest");
+
+  /* Password_digest = Base64(SHA-1(nonce + created + password)) */
+  bytesLeft = MAX_LEN;
+  pBuf = buf;
+  /* Nonce */
+  nbytes = snprintf(pBuf, bytesLeft,
+		    aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Nonce);
+  bytesLeft -= nbytes; pBuf += nbytes;
+  /* Created */
+  nbytes = snprintf(pBuf, bytesLeft, timePtr);
+  bytesLeft -= nbytes; pBuf += nbytes;
+  /* Password */
+  nbytes = snprintf(pBuf, bytesLeft, passwd);
+  bytesLeft -= nbytes; pBuf += nbytes;
+
+  SHA1((unsigned char*) buf, (MAX_LEN-bytesLeft), (unsigned char*) digest); /* openssl call */
+
+  free(pBase64Buf); len = 0; pBase64Buf=NULL;
+  Base64_encode(digest, SHA_DIGEST_LENGTH, &pBase64Buf, (unsigned int*) &len); /* Steer lib */
+  /* Strip padding characters from end because perl doesn't add them from
+     the sha1_base64 function */
+  i = len-1;
+  while((i > -1) && (pBase64Buf[i] == '=')){
+    pBase64Buf[i--] = '\0';
+  }
+
+  /* +1 allows for null terminator (which Base64_encode does not include) */
+  aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.__item =
+                                       (char *)soap_malloc(aSoap, len+1);
+  if( !(aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.__item) ){
+    fprintf(stderr, "STEER: create_WSRF_header: Failed to malloc "
+	    "space for Password\n");
+    return REG_FAILURE;
+  }
+  strncpy(aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.__item,
+	  pBase64Buf, len);
+  aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.__item[len] = '\0';
+
+  free(pBase64Buf);
+  pBase64Buf = NULL;
+
+  return REG_SUCCESS;
+}
+
+/*-------------------------------------------------------*/
+
+int destroy_WSRP(const char* epr,
+		 const struct reg_security_info* sec) {
+  struct wsrp__DestroyResponse out;
+  struct soap soap;
+  int    return_status = REG_SUCCESS;
+  if(epr) {
+    soap_init(&soap);
+    /* Something to do with the XML type */
+    soap.encodingStyle = NULL;
+
+    return_status = create_WSRF_header(&soap, epr, NULL, NULL);
+
+    if(return_status != REG_SUCCESS)
+      return REG_FAILURE;
+
+    /* If we're using https then set up the context */
+    if((strstr(epr, "https") == epr)) {
+      if(init_ssl_context(&soap,
+			  REG_TRUE, /* Authenticate SWS */
+			  NULL,/*char *certKeyPemFile,*/
+			  NULL, /* char *passphrase,*/
+			  sec->caCertsPath) == REG_FAILURE) {
+
+	fprintf(stderr, "ERROR: Destroy_WSRP: call to initialize soap "
+		"SSL context failed\n");
+	return REG_FAILURE;
+      }
+    }
+
+    if(soap_call_wsrp__Destroy(&soap, epr, NULL, NULL, &out) != SOAP_OK) {
+      fprintf(stderr, "destroy_WSRP: call to Destroy on %s failed:\n   ", epr);
+      soap_print_fault(&soap, stderr);
+      return_status = REG_FAILURE;
+    }
+
+    soap_end(&soap); /* dealloc deserialized data */
+    soap_done(&soap); /* cleanup and detach soap struct */
+  }
+  return return_status;
+}
+
+/*-------------------------------------------------------*/
 
 int get_resource_property (struct soap *soapStruct,
                            const char  *epr,
@@ -1428,227 +1654,6 @@ struct msg_struct* get_next_stored_msg(Sim_entry_type* sim) {
 
 /*-------------------------------------------------------*/
 
-int create_WSRF_header(struct soap *aSoap,
-		       const  char *epr,
-		       const  char *username,
-		       const  char *passwd) {
-#ifdef WITH_OPENSSL
-  int           bytesLeft, nbytes;
-  int           i, len;
-  int           status;
-#define MAX_LEN 1024
-  unsigned char randBuf[MAX_LEN];
-  char         *pBuf;
-  char          buf[MAX_LEN];
-  char          digest[SHA_DIGEST_LENGTH];
-  char         *pBase64Buf = NULL;
-  char         *timePtr;
-#endif
-
-  /* alloc new header for WS-RF */
-  aSoap->header = soap_malloc(aSoap, sizeof(struct SOAP_ENV__Header));
-  if(!(aSoap->header)){
-    fprintf(stderr,
-	    "STEER: create_WSRF_header: Failed to malloc space for header\n");
-    return REG_FAILURE;
-  }
-
-  aSoap->header->wsa__To = (char *)soap_malloc(aSoap, strlen(epr)+1);
-  if(!(aSoap->header->wsa__To)){
-    fprintf(stderr, "STEER: create_WSRF_header: Failed to malloc space "
-	    "for header wsa:To element\n");
-    return REG_FAILURE;
-  }
-
-  strcpy(aSoap->header->wsa__To, epr);
-
-  if(!username || !(username[0])){
-#ifdef REG_DEBUG
-    fprintf(stderr,
-	    "STEER: create_WSRF_header: not adding security to header\n");
-#endif /* REG_DEBUG */
-    aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Username = NULL;
-    aSoap->header->wsse__Security.wsse__UsernameToken.wsu__Created = NULL;
-    aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.Type = NULL;
-    aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.__item = NULL;
-    aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Nonce = NULL;
-    return REG_SUCCESS;
-  }
-
-  /* Set up the username element of the header irrespective of whether
-     or not the library has been built with openSSL support */
-  aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Username =
-                                       (char *)soap_malloc(aSoap, 128);
-
-  if(!(aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Username)){
-    fprintf(stderr, "STEER: create_WSRF_header: Failed to malloc space "
-	    "for Username element\n");
-    return REG_FAILURE;
-  }
-  snprintf(aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Username,
-	   128, username);
-
-#ifdef WITH_OPENSSL
-
-  aSoap->header->wsse__Security.wsse__UsernameToken.wsu__Created =
-                                       (char *)soap_malloc(aSoap, 128);
-  aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.Type =
-                                       (char *)soap_malloc(aSoap, 128);
-
-  if( !(aSoap->header->wsse__Security.wsse__UsernameToken.wsu__Created) ||
-      !(aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.Type) ){
-    fprintf(stderr, "STEER: create_WSRF_header: Failed to malloc space "
-	    "for header elements\n");
-    return REG_FAILURE;
-  }
-
-  if(ReG_ssl_random_initialized == REG_FALSE){
-    if(Init_random() != REG_SUCCESS){
-      fprintf(stderr, "STEER: create_WSRF_header: Failed to "
-	      "initialize SSL random number generator\n");
-      return REG_FAILURE;
-    }
-  }
-
-  /* This call requires that Init_random() has been called previously */
-  status = RAND_pseudo_bytes(randBuf, 16);
-  if(status == 0){
-    fprintf(stderr, "STEER: WARNING: create_WSRF_header: Sequence is not "
-	    "cryptographically strong\n");
-  }
-  else if(status == -1){
-    fprintf(stderr, "STEER: ERROR: create_WSRF_header: RAND_pseudo_bytes "
-	    "is not supported\n");
-    return REG_FAILURE;
-  }
-
-  /* Base64-encode this random sequence to make our nonce a nice
-     ASCII string (XML friendly) */
-  Base64_encode((char*) randBuf, 16, &pBase64Buf, (unsigned int*) &len);
-
-  aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Nonce =
-                                       (char *)soap_malloc(aSoap, len+1);
-  if( !(aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Nonce) ){
-    fprintf(stderr,
-	    "STEER: create_WSRF_header: Failed to malloc space for nonce\n");
-    return REG_FAILURE;
-  }
-  strncpy(aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Nonce,
-	  pBase64Buf, len);
-  aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Nonce[len] = '\0';
-
-  timePtr = Get_current_time_string(); /* Steer lib */
-  snprintf(aSoap->header->wsse__Security.wsse__UsernameToken.wsu__Created,
-	   128, timePtr);
-  snprintf(aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.Type,
-	   128, "PasswordDigest");
-
-  /* Password_digest = Base64(SHA-1(nonce + created + password)) */
-  bytesLeft = MAX_LEN;
-  pBuf = buf;
-  /* Nonce */
-  nbytes = snprintf(pBuf, bytesLeft,
-		    aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Nonce);
-  bytesLeft -= nbytes; pBuf += nbytes;
-  /* Created */
-  nbytes = snprintf(pBuf, bytesLeft, timePtr);
-  bytesLeft -= nbytes; pBuf += nbytes;
-  /* Password */
-  nbytes = snprintf(pBuf, bytesLeft, passwd);
-  bytesLeft -= nbytes; pBuf += nbytes;
-
-  SHA1((unsigned char*) buf, (MAX_LEN-bytesLeft), (unsigned char*) digest); /* openssl call */
-
-  free(pBase64Buf); len = 0; pBase64Buf=NULL;
-  Base64_encode(digest, SHA_DIGEST_LENGTH, &pBase64Buf, (unsigned int*) &len); /* Steer lib */
-  /* Strip padding characters from end because perl doesn't add them from
-     the sha1_base64 function */
-  i = len-1;
-  while((i > -1) && (pBase64Buf[i] == '=')){
-    pBase64Buf[i--] = '\0';
-  }
-
-  /* +1 allows for null terminator (which Base64_encode does not include) */
-  aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.__item =
-                                       (char *)soap_malloc(aSoap, len+1);
-  if( !(aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.__item) ){
-    fprintf(stderr, "STEER: create_WSRF_header: Failed to malloc "
-	    "space for Password\n");
-    return REG_FAILURE;
-  }
-  strncpy(aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.__item,
-	  pBase64Buf, len);
-  aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.__item[len] = '\0';
-
-  free(pBase64Buf);
-  pBase64Buf = NULL;
-
-  return REG_SUCCESS;
-
-#else /* WITH_OPENSSL not defined */
-
-  aSoap->header->wsse__Security.wsse__UsernameToken.wsu__Created = NULL;
-  aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.Type = NULL;
-  aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.__item = NULL;
-  aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Nonce = NULL;
-  return REG_SUCCESS;
-
-#endif
-}
-
-/*-------------------------------------------------------*/
-
-int destroy_WSRP(const char* epr,
-		 const struct reg_security_info* sec) {
-  struct wsrp__DestroyResponse out;
-  struct soap soap;
-  int    return_status = REG_SUCCESS;
-  if(epr) {
-    soap_init(&soap);
-    /* Something to do with the XML type */
-    soap.encodingStyle = NULL;
-
-    if(sec->use_ssl != REG_TRUE) {
-      return_status = create_WSRF_header(&soap, epr, sec->userDN,
-					 sec->passphrase);
-    }
-    else {
-      return_status = create_WSRF_header(&soap, epr, NULL, NULL);
-    }
-    if(return_status != REG_SUCCESS)
-      return REG_FAILURE;
-
-    /* If we're using https then set up the context */
-    if((sec->use_ssl == 1) && (strstr(epr, "https") == epr)) {
-      if(REG_Init_ssl_context(&soap,
-			      REG_TRUE, /* Authenticate SWS */
-			      NULL,/*char *certKeyPemFile,*/
-			      NULL, /* char *passphrase,*/
-			      sec->caCertsPath) == REG_FAILURE) {
-
-	fprintf(stderr, "ERROR: Destroy_WSRP: call to initialize soap "
-		"SSL context failed\n");
-	return REG_FAILURE;
-      }
-    }
-
-    if(soap_call_wsrp__Destroy(&soap, epr, NULL, NULL, &out) != SOAP_OK) {
-      fprintf(stderr, "destroy_WSRP: call to Destroy on %s failed:\n   ", epr);
-      soap_print_fault(&soap, stderr);
-      return_status = REG_FAILURE;
-    }
-
-    soap_end(&soap); /* dealloc deserialized data */
-    soap_done(&soap); /* cleanup and detach soap struct */
-  }
-  return return_status;
-}
-
-/*-------------------------------------------------------*/
-/*-------------------------------------------------------*/
-/*-------------------------------------------------------*/
-/*-------------------------------------------------------*/
-
 int SGS_info_table_init(SGS_info_table_type* table,
 			const int max_entries) {
   int i;
@@ -1681,6 +1686,145 @@ int soap_mismatch_handler(struct soap* soap, const char* tag) {
   printf("soap_mismatch_handler: tag = %s\n", tag);
   /*return SOAP_TAG_MISMATCH;	 every tag must be handled */
   return SOAP_OK;	/* We're just curious */
+}
+
+/*-------------------------------------------------------*/
+
+int init_ssl_random_seq() {
+  struct stat stbuf;
+  char randBuf[REG_MAX_STRING_LENGTH];
+
+  if(ReG_ssl_random_initialized == REG_TRUE)
+    return REG_SUCCESS;
+
+  if(!RAND_file_name(randBuf, (size_t)REG_MAX_STRING_LENGTH)){
+#ifdef REG_DEBUG_FULL
+    fprintf(stderr, "STEER: WARNING: Init_random: RAND_file_name failed to "
+	    "return name of file for use in initializing randome "
+	    "sequence - trying /dev/urandom\n");
+#endif
+    sprintf(randBuf, "/dev/urandom");
+  }
+
+  if(stat(randBuf, &stbuf) != -1){
+  }
+  else if(stat("/dev/urandom", &stbuf) != -1){
+    sprintf(randBuf, "/dev/urandom");
+  }
+  else if(stat("/dev/random", &stbuf) != -1){
+    sprintf(randBuf, "/dev/random");
+  }
+  else{
+    fprintf(stderr, "STEER: Init_random: %s, /dev/urandom and /dev/random "
+	    "do not exist on this system - cannot initalize random "
+	    "sequence\n", randBuf);
+    return REG_FAILURE;
+  }
+
+#ifdef REG_DEBUG_FULL
+  fprintf(stderr, "STEER: Init_random: seed file is %s\n", randBuf);
+#endif
+
+  /* Use contents of randBuf file to initialise sequence of pseudo
+     random numbers from OpenSSL */
+  if(!RAND_load_file(randBuf, 16)){
+    fprintf(stderr, "STEER: Init_random: Failed to initialize pseudo-random "
+	    "number sequence from %s\n", randBuf);
+    return REG_FAILURE;
+  }
+
+  ReG_ssl_random_initialized = REG_TRUE;
+  return REG_SUCCESS;
+}
+
+/*-------------------------------------------------------*/
+
+int init_ssl_context(struct soap *aSoap,
+		     const int  authenticateSWS,
+		     const char *certKeyPemFile,
+		     const char *passphrase,
+		     const char *caCertPath) {
+
+  struct stat stbuf;
+  int soap_ssl_flag;
+
+#ifdef REG_DEBUG
+  fprintf(stderr, "STEER: init_ssl_context arguments:\n"
+	          " - authenticateSWS = %d\n"
+                  " - certKeyPemFile = >>%s<<\n"
+	          " - passphrase = >>%s<<\n"
+                  " - caCertPath = >>%s<<\n", 
+	  authenticateSWS, certKeyPemFile, passphrase, caCertPath);
+#endif
+
+  if(!aSoap){
+    fprintf(stderr, "STEER: init_ssl_context: pointer to soap "
+	    "struct is NULL\n");
+    return REG_FAILURE;
+  }
+
+  if((authenticateSWS == REG_TRUE) && !caCertPath){
+    fprintf(stderr, "STEER: init_ssl_context: CA certificates "
+	    "directory MUST be specified when SWS authentication is on\n");
+    return REG_FAILURE;
+  }
+  else if( caCertPath && (stat(caCertPath, &stbuf) == -1) ){
+    fprintf(stderr, "STEER: init_ssl_context: CA certificates "
+	    "directory >>%s<< is not valid\n", caCertPath);
+    if(errno == ENOENT){
+      fprintf(stderr, "    Error from stat = ENOENT\n");
+    }
+    else if(errno == ENOTDIR){
+      fprintf(stderr, "    Error from stat = ENOTDIR\n");
+    }
+    else if(errno == ELOOP){
+      fprintf(stderr, "    Error from stat = ELOOP\n");
+    }
+    else if(errno == EFAULT){
+      fprintf(stderr, "    Error from stat = EFAULT\n");
+    }
+    else if(errno == EACCES){
+      fprintf(stderr, "    Error from stat = EACCES\n");
+    }
+    else if(errno == ENOMEM){
+      fprintf(stderr, "    Error from stat = ENOMEM\n");
+    }
+    else if(errno == ENAMETOOLONG){
+      fprintf(stderr, "    Error from stat = ENAMETOOLONG\n");
+    }
+    else{
+      fprintf(stderr, "    Error from stat = UNKNOWN!\n");
+    }
+
+    return REG_FAILURE;
+  }
+
+  soap_ssl_flag = SOAP_SSL_NO_AUTHENTICATION;
+  if(authenticateSWS == REG_TRUE){
+    soap_ssl_flag = SOAP_SSL_DEFAULT;
+  }
+
+  if (soap_ssl_client_context(aSoap,
+			      soap_ssl_flag,
+			      /* user's cert. & key file */
+			      certKeyPemFile,
+			      /* Password to read key file */
+			      passphrase,
+			      /* Optional CA cert. file to store trusted 
+				 certificates (to verify server) */
+			      NULL,
+			      /* Optional path to directory containing  
+				 trusted CA certs (to verify server) */
+			      caCertPath,
+			      /* if randfile!=NULL: use a file with 
+				 random data to seed randomness */
+			      NULL)){
+    fprintf(stderr, "STEER: init_ssl_context: failed to initialize "
+	    "gSoap ssl context:\n");
+    soap_print_fault(aSoap, stderr);
+    return REG_FAILURE;
+  }
+  return REG_SUCCESS;
 }
 
 /*-------------------------------------------------------*/
