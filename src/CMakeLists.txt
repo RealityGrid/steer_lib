@@ -102,16 +102,6 @@ else(REG_BUILD_MODULAR_LIBS)
   endforeach(type ${REG_MODULES_TYPES})
 endif(REG_BUILD_MODULAR_LIBS)
 
-#
-#
-# NEEDS DOING BETTER (FOR MONOLITHIC BUILDS, ETC)
-#
-#
-set_target_properties(ReG_Steer_Steering_WSRF
-  PROPERTIES
-  COMPILE_FLAGS -DWITH_OPENSSL
-)
-
 # need to make sure everything is built with PIC in case
 # the static libs are to be embedded in a shared object
 if(NOT REG_BUILD_SHARED_LIBS)
@@ -133,6 +123,11 @@ if(REG_BUILD_SHARED_LIBS)
     PROPERTIES ${REG_LIBRARY_VERSION}
   )
 endif(REG_BUILD_SHARED_LIBS)
+
+#
+# Any other custom build steps needed? 
+#
+include(build/All)
 
 #
 # install libs and modules

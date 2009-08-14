@@ -31,45 +31,23 @@
 #  Author.........: Robert Haines
 #----------------------------------------------------------------------
 
-#
-# register_module macro
-#
-# parameters are:
-# rm_type     - the type of module (Samples, Steering, etc)
-# rm_provides - what is provided (Sockets, Files, etc)
-# rm_srcs     - source files unique to this module
-# rm_common   - source files common to other modules
-#
-macro(register_module rm_type rm_provides rm_srcs rm_common)
-
-# add to the list of what modules are providing if unique, error otherwise
-list(FIND REG_MODULES_${rm_type} ${rm_provides} found)
-if(${found} EQUAL -1)
-  list(APPEND REG_MODULES_${rm_type} ${rm_provides})
-else(${found} EQUAL -1)
-  message(FATAL_ERROR "A module is already registered that provides ${rm_provides}! Please edit CMake/Modules.cmake and remove the duplicate entry.")
-endif(${found} EQUAL -1)
-
-# add to the lists of module types and remove duplicates
-list(APPEND REG_MODULES_TYPES ${rm_type})
-list(APPEND REG_MODULES_PROVIDES ${rm_provides})
-list(REMOVE_DUPLICATES REG_MODULES_TYPES)
-list(REMOVE_DUPLICATES REG_MODULES_PROVIDES)
-
 if(REG_BUILD_MODULAR_LIBS)
-  # add common files to the main build and remove duplicates
-  if(NOT "${rm_common}" STREQUAL "")
-    list(APPEND REG_MODULE_COMMON_SRCS ${rm_common})
-    list(REMOVE_DUPLICATES REG_MODULE_COMMON_SRCS)
-  endif(NOT "${rm_common}" STREQUAL "")
-
-  # create lists of source files to build into modules
-  set(rm_target "${rm_type}_${rm_provides}")
-  list(APPEND REG_MODULES ${rm_target})
-  set(${rm_target}_SRCS ${rm_srcs})
+  set(wsrf_srcs ${Steering_WSRF_SRCS})
 else(REG_BUILD_MODULAR_LIBS)
-  # keep track of each modules individual source files
-  set(SRCS_${rm_type}_${rm_provides} ${rm_srcs} ${rm_common})
+  set(wsrf_srcs ${SRCS_Steering_WSRF})
 endif(REG_BUILD_MODULAR_LIBS)
 
-endmacro(register_module)
+get_source_file_property(
+  flags
+  ReG_Steer_Steering_Transport_WSRF.c
+  COMPILE_FLAGS
+)
+
+if(NOT ${flags})
+  set(flags "")
+endif(NOT ${flags})
+
+set_source_files_properties(
+  ${wsrf_srcs}
+  PROPERTIES COMPILE_FLAGS "${flags} -DWITH_CDATA -DWITH_OPENSSL"
+)

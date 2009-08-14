@@ -31,45 +31,45 @@
 #  Author.........: Robert Haines
 #----------------------------------------------------------------------
 
-#
-# register_module macro
-#
-# parameters are:
-# rm_type     - the type of module (Samples, Steering, etc)
-# rm_provides - what is provided (Sockets, Files, etc)
-# rm_srcs     - source files unique to this module
-# rm_common   - source files common to other modules
-#
-macro(register_module rm_type rm_provides rm_srcs rm_common)
+# need to make sure everything is built with PIC in case
+# the static libs are to be embedded in a shared object
+if(NOT REG_BUILD_SHARED_LIBS)
+  foreach(type ${REG_MODULES_TYPES})
+    foreach(service ${REG_MODULES_PROVIDES})
+      if(REG_BUILD_MODULAR_LIBS)
+	set_source_files_properties(
+	  ${${type}_${service}_SRCS}
+	  ${REG_MODULE_COMMON_SRCS}
+	  PROPERTIES COMPILE_FLAGS -fPIC
+	)
+      else(REG_BUILD_MODULAR_LIBS)
+	set_source_files_properties(
+	  ${SRCS_${type}_${service}}
+	  PROPERTIES COMPILE_FLAGS -fPIC
+	)
+      endif(REG_BUILD_MODULAR_LIBS)
+    endforeach(service ${REG_MODULES_PROVIDES})
+  endforeach(type ${REG_MODULES_TYPES})
+endif(NOT REG_BUILD_SHARED_LIBS)
 
-# add to the list of what modules are providing if unique, error otherwise
-list(FIND REG_MODULES_${rm_type} ${rm_provides} found)
-if(${found} EQUAL -1)
-  list(APPEND REG_MODULES_${rm_type} ${rm_provides})
-else(${found} EQUAL -1)
-  message(FATAL_ERROR "A module is already registered that provides ${rm_provides}! Please edit CMake/Modules.cmake and remove the duplicate entry.")
-endif(${found} EQUAL -1)
-
-# add to the lists of module types and remove duplicates
-list(APPEND REG_MODULES_TYPES ${rm_type})
-list(APPEND REG_MODULES_PROVIDES ${rm_provides})
-list(REMOVE_DUPLICATES REG_MODULES_TYPES)
-list(REMOVE_DUPLICATES REG_MODULES_PROVIDES)
-
+#
+# Go through the various "types" of module
+# and do any extra specific build steps for them.
+#
+# Files should be in the build directory and named "Service.cmake"
+# where Service is what the module provides, eg Sockets, Files
+#
 if(REG_BUILD_MODULAR_LIBS)
-  # add common files to the main build and remove duplicates
-  if(NOT "${rm_common}" STREQUAL "")
-    list(APPEND REG_MODULE_COMMON_SRCS ${rm_common})
-    list(REMOVE_DUPLICATES REG_MODULE_COMMON_SRCS)
-  endif(NOT "${rm_common}" STREQUAL "")
-
-  # create lists of source files to build into modules
-  set(rm_target "${rm_type}_${rm_provides}")
-  list(APPEND REG_MODULES ${rm_target})
-  set(${rm_target}_SRCS ${rm_srcs})
+  foreach(service ${REG_MODULES_PROVIDES})
+    if(EXISTS ${CMAKE_SOURCE_DIR}/CMake/build/${service}.cmake)
+      include(build/${service})
+    endif(EXISTS ${CMAKE_SOURCE_DIR}/CMake/build/${service}.cmake)
+  endforeach(service ${REG_MODULES_PROVIDES})
 else(REG_BUILD_MODULAR_LIBS)
-  # keep track of each modules individual source files
-  set(SRCS_${rm_type}_${rm_provides} ${rm_srcs} ${rm_common})
+  foreach(type ${REG_MODULES_TYPES})
+    set(default_mod ${REG_USE_MODULE_${type}})
+    if(EXISTS ${CMAKE_SOURCE_DIR}/CMake/build/${default_mod}.cmake)
+      include(build/${default_mod})
+    endif(EXISTS ${CMAKE_SOURCE_DIR}/CMake/build/${default_mod}.cmake)
+  endforeach(type ${REG_MODULES_TYPES})
 endif(REG_BUILD_MODULAR_LIBS)
-
-endmacro(register_module)
