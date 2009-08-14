@@ -46,20 +46,20 @@ endif(NOT MALLOC_IN_STDLIB)
 # Go through the various "types" of module
 # and do any specific checks for them.
 #
-# Files should be named "PlatformFeaturesService.cmake"
+# Files should be in the deps directory and named "Service.cmake"
 # where Service is what the module provides, eg Sockets, Files
 #
 if(REG_BUILD_MODULAR_LIBS)
   foreach(service ${REG_MODULES_PROVIDES})
-    if(EXISTS ${CMAKE_SOURCE_DIR}/CMake/PlatformFeatures${service}.cmake)
-      include(PlatformFeatures${service})
-    endif(EXISTS ${CMAKE_SOURCE_DIR}/CMake/PlatformFeatures${service}.cmake)
+    if(EXISTS ${CMAKE_SOURCE_DIR}/CMake/deps/${service}.cmake)
+      include(deps/${service})
+    endif(EXISTS ${CMAKE_SOURCE_DIR}/CMake/deps/${service}.cmake)
   endforeach(service ${REG_MODULES_PROVIDES})
 else(REG_BUILD_MODULAR_LIBS)
   foreach(type ${REG_MODULES_TYPES})
     set(default_mod ${REG_USE_MODULE_${type}})
-    if(EXISTS ${CMAKE_SOURCE_DIR}/CMake/PlatformFeatures${default_mod}.cmake)
-      include(PlatformFeatures${default_mod})
-    endif(EXISTS ${CMAKE_SOURCE_DIR}/CMake/PlatformFeatures${default_mod}.cmake)
+    if(EXISTS ${CMAKE_SOURCE_DIR}/CMake/deps/${default_mod}.cmake)
+      include(deps/${default_mod})
+    endif(EXISTS ${CMAKE_SOURCE_DIR}/CMake/deps/${default_mod}.cmake)
   endforeach(type ${REG_MODULES_TYPES})
 endif(REG_BUILD_MODULAR_LIBS)

@@ -85,8 +85,8 @@ endif(REG_BUILD_MODULAR_LIBS)
 include(ModulesMacro)
 include(Modules)
 
-# do platform checks
-include(PlatformFeatures)
+# do dependency checks
+include(deps/All)
 
 # set up configure header file
 configure_file(
