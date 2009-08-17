@@ -88,6 +88,9 @@ include(Modules)
 # do dependency checks
 include(deps/All)
 
+# do platform compatibility checks
+include(platform/All)
+
 # set up configure header file
 configure_file(
   "${PROJECT_SOURCE_DIR}/ReG_Steer_Config.h.in"
