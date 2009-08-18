@@ -41,14 +41,8 @@
 #include "ReG_Steer_Browser.h"
 #include "ReG_Steer_Common.h"
 #include "ReG_Steer_XML.h"
-#include "ReG_Steer_Utils.h"
-#include "soapH.h"
 
-#ifdef REG_WSRF
-#define REG_TOP_LEVEL_REGISTRY "http://calculon.cs.man.ac.uk:50005/Session/myServiceGroup/myServiceGroup/51449871051219079298"
-#else
-#define REG_TOP_LEVEL_REGISTRY "http://yaffel.mvc.mcc.ac.uk:50000/Session/ServiceGroupRegistration/service?3893432997"
-#endif
+#define REG_TOP_LEVEL_REGISTRY "http://example.com:50005/Session/myServiceGroup/myServiceGroup/012345678901234567890"
 
 /*----------------------------------------------------------------*/
 

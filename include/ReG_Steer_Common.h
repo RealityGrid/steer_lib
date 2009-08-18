@@ -41,7 +41,6 @@
 #define __REG_STEER_COMMON_H__
 
 #include "ReG_Steer_Config.h"
-#include "soapH.h"
 
 #ifdef __cplusplus
   #define PREFIX "C"
@@ -327,31 +326,21 @@ typedef struct {
 
 }IOdef_table_type;
 
-/** @internal 
-    For steering via SOAP - holds info on the Grid/Web Service */
-/* typedef struct { */
-/*     /\** whether we're steering via SOAP (1) or not (0) *\/ */
-/*     int  active; */
-/*     /\** Location of the Grid service *\/ */
-/*     char address[REG_MAX_STRING_LENGTH]; */
-/*     /\** Holds list of names of service data elements on the SGS for which */
-/* 	notifications are pending *\/ */
-/*     char notifications[REG_MAX_NUM_SGS_SDE][REG_MAX_STRING_LENGTH]; */
-/*     /\** No. of notifications that we've yet to process (OGSI) *\/ */
-/*     int  sde_count; */
-/*     /\** Our current position in the @p notifications array ?? (OGSI) *\/ */
-/*     int  sde_index; */
-/*     /\** The structure holding the gSoap environment for this connection *\/ */
-/*     struct soap *soap; */
-/*     /\** Username to use with WS-Security with this service *\/ */
-/*     char username[REG_MAX_STRING_LENGTH]; */
-/*     /\** Passphrase (if any) used with WS-Security for this service *\/ */
-/*     char passwd[REG_MAX_STRING_LENGTH]; */
-/*     /\** The last-modified time of the ResourceProperty document of our */
-/* 	associated SWS when we last looked at it (WSRF) *\/ */
-/*     long int lastModTime; */
+/** Holds truncated details of a single iotype */
+struct iotype_detail {
+  /** The label given to this IOType at registration */
+  char label[REG_MAX_STRING_LENGTH];
+  /** The direction of this IOType (REG_IN or REG_OUT) */
+  int  direction;
+};
 
-/*   } SGS_info_type; */
+/** Holds truncated details of the IOTypes of a steerable app */
+struct reg_iotype_list {
+  /** Number of entries in this list */
+  int numEntries;
+  /** Array of entries */
+  struct iotype_detail *iotype;
+};
 
 /** @internal
     Holds details required for secure access to a service
@@ -526,6 +515,27 @@ extern PREFIX char *Get_current_time_string();
     @param sec Pointer to the reg_security_info structure to reset */
 extern PREFIX void Wipe_security_info(struct reg_security_info *sec);
 
+/** 
+    @param configFile Location of RealityGrid security config file or NULL/emptry string to use default of ~/.realitygrid/security.conf.
+    @param sec Pointer to reg_security_info struct to populate
+
+    Reads the specified RealityGrid security configuration file to get
+    location of the PEM file containing BOTH the user's key and certificate
+    and the path to the directory containing CA certificates. Parses 
+    user's certificate to get their DN.
+    The security config. file is of the form: @n
+    <tt>
+    @verbatim
+    <?xml version="1.0"?>
+    <Security_config>
+      <caCertsPath value="/etc/grid-security/certificates"/>
+      <privateKeyCertFile value="/home/me/.globus/mycertnkey.pem"/>
+    </Security_config>
+    @endverbatim
+    </tt>
+ */ 
+extern PREFIX int Get_security_config(const char               *configFile,
+				      struct reg_security_info *sec);
 /** @internal
     Prints out details of the specified signal - called by both the application-
     and steerer-side parts of the library
@@ -537,5 +547,13 @@ void Common_signal_handler(int aSignal);
     @param pChar Pointer to character array to trim
     @return pointer to trimmed string, NULL otherwise. */
 char *trimWhiteSpace(char *pChar);
+
+/**
+   @param list Pointer to reg_iotype_list to clean up
+
+   Frees memory associated with the reg_iotype_list and resets
+   member variables.
+*/
+int Delete_iotype_list(struct reg_iotype_list *list);
 
 #endif

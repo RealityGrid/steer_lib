@@ -39,6 +39,8 @@
 */
 
 #include "ReG_Steer_Config.h"
+#include "ReG_Steer_types.h"
+#include "ReG_Steer_Common.h"
 
 #ifdef __cplusplus
   #define PREFIX "C"
@@ -88,8 +90,6 @@ struct registry_contents {
   /** Array of entries */
   struct registry_entry *entries;
 };
-
-#include "ReG_Steer_Utils.h"
 
 /*-------------------------------------------------------------------*/
 

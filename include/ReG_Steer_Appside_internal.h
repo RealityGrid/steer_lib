@@ -31,7 +31,6 @@
 #include "ReG_Steer_Config.h"
 #include "ReG_Steer_Common.h"
 #include "ReG_Steer_XML.h"
-#include "soapH.h"
 
 /** @internal
     @file ReG_Steer_Appside_internal.h

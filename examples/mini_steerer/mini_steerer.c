@@ -35,7 +35,6 @@
 #include "ReG_Steer_Config.h"
 #include "ReG_Steer_Steerside.h"
 #include "ReG_Steer_Browser.h"
-#include "ReG_Steer_Utils.h"
 #include <string.h>
 #include <unistd.h>
 

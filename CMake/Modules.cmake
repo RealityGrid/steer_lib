@@ -68,7 +68,7 @@ register_module(
 register_module(
   Steering
   WSRF
-  "stdsoap2.c;soapC.c;soapClient.c;ReG_Steer_Steering_Transport_WSRF.c"
+  "stdsoap2.c;soapC.c;soapClient.c;ReG_Steer_WSRF_Utilities.c;ReG_Steer_Steering_Transport_WSRF.c"
   ""
 )
 

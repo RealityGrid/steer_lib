@@ -40,7 +40,6 @@ set(REG_LIB_SRCS
   ReG_Steer_Proxy_utils.c
   ReG_Steer_XML.c
   ReG_Steer_Logging.c
-  ReG_Steer_Utils.c
   ReG_Steer_Browser.c
 )
 
