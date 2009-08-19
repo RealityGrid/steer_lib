@@ -243,12 +243,6 @@ typedef struct {
   /** For connection to applications using local file system - contains
       the location of the directory used to communicate with the sim. */
   char                 file_root[REG_MAX_STRING_LENGTH];
-  /** File descriptor used to talk to (java) proxy for
-      this simulation */
-  int                  pipe_to_proxy;
-  /** File descriptor used to receive messages from (java) proxy for
-      this simulation */
-  int                  pipe_from_proxy;
   /** Set to REG_TRUE once detach has been called - prevents us
       calling detach more than once on the SWS */
   int                  detached;

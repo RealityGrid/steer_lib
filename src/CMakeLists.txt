@@ -37,7 +37,6 @@ set(REG_LIB_SRCS
   ReG_Steer_Appside.c
   ReG_Steer_Steerside.c
   ReG_Steer_Common.c
-  ReG_Steer_Proxy_utils.c
   ReG_Steer_XML.c
   ReG_Steer_Logging.c
   ReG_Steer_Browser.c

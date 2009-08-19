@@ -124,14 +124,6 @@ int Next_free_iodef_index(IOdef_table_type *table);
 int Command_supported(int sim_id, int cmd_id);
 
 /** @internal
-    @param sim Pointer to simulation entry
-    @param SimID GSH of simulation to attach to
-    @return REG_SUCCESS, REG_FAILURE
-    
-    Attach to specified simulation via (java) proxy. */
-int Sim_attach_proxy(Sim_entry_type *sim, char *SimID);
-
-/** @internal
     @param SimIndex Index of simulation in main Sim_table
     @param buf Buffer containing control message
     
@@ -140,31 +132,10 @@ int Sim_attach_proxy(Sim_entry_type *sim, char *SimID);
 int Send_control_msg(int SimIndex, char* buf);
 
 /** @internal
-    @deprecated
-    @param sim Pointer to simulation entry in Sim_table
-    @param buf Buffer containing message to send
-
-    Send the supplied control message to the simulation with the
-    supplied index via the java proxy */
-int Send_control_msg_proxy(Sim_entry_type *sim, char* buf);
-
-/** @internal
-    @param sim Pointer to simulation entry in Sim_table
-
-    Get a status message back via the java proxy */
-struct msg_struct *Get_status_msg_proxy(Sim_entry_type *sim);
-
-/** @internal
     @param sim Pointer to simulation entry in Sim_table
 
     Take down the steering connection */
 int Finalize_connection(int index);
-
-/** @internal
-    @param sim Pointer to simulation entry in Sim_table
-
-    Take down the proxy-based steering connection */
-int Finalize_connection_proxy(Sim_entry_type *sim);
 
 /** @internal
     @param param_table Pointer to parameter table

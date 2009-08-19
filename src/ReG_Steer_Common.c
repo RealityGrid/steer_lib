@@ -1106,7 +1106,6 @@ int Get_security_config(const char               *configFile,
   xmlDocPtr  doc;
   xmlNodePtr cur;
   xmlChar   *attrValue;
-  xmlChar   *attrValueProp;
   FILE      *fp;
   char       bufline[512];
 

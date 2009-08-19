@@ -175,6 +175,9 @@ int init_ssl_context(struct soap *aSoap,
 		     const char  *passphrase,
 		     const char  *caCertPath);
 
+int SGS_info_table_init(SGS_info_table_type* table,
+			const int max_entries);
+
 int soap_mismatch_handler(struct soap* soap, const char* tag);
 
 #endif /* __REG_STEER_STEERING_TRANSPORT_WSRF_H__ */

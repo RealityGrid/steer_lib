@@ -41,6 +41,7 @@
 #include "ReG_Steer_Browser.h"
 #include "ReG_Steer_Common.h"
 #include "ReG_Steer_XML.h"
+#include "ReG_Steer_Steering_Transport_API.h"
 
 #define REG_TOP_LEVEL_REGISTRY "http://example.com:50005/Session/myServiceGroup/myServiceGroup/012345678901234567890"
 
@@ -52,7 +53,6 @@ int Get_sim_list(int   *nSims,
 {
   char *ptr;
   int   count;
-  /*int   nbytes;*/
   int   status;
   int   i;
   char  registry_address[256];
@@ -65,109 +65,60 @@ int Get_sim_list(int   *nSims,
      REG_MAX_NUM_STEERED_SIM pointers to char arrays of length
      REG_MAX_STRING_LENGTH. */
 
-  /*if(Proxy.available != REG_TRUE){*/
 
-    /* Get address of top-level registry from env. variable if set */
-    if( (ptr = getenv("REG_REGISTRY_ADDRESS")) ){
-      strcpy(registry_address, ptr);
-    } else{
-      sprintf(registry_address, REG_TOP_LEVEL_REGISTRY);
-    }
+  /* Get address of top-level registry from env. variable if set */
+  if( (ptr = getenv("REG_REGISTRY_ADDRESS")) ){
+    strcpy(registry_address, ptr);
+  } else{
+    sprintf(registry_address, REG_TOP_LEVEL_REGISTRY);
+  }
 
-    /* Contact a registry here
-       and ask it for the location of any SGSs it knows of */
-    status = Get_registry_entries(registry_address, &contents);
+  /* Contact a registry here
+     and ask it for the location of any SGSs it knows of */
+  status = Get_registry_entries(registry_address, &contents);
 
-    if(status == REG_SUCCESS){
+  if(status == REG_SUCCESS) {
 
-      *nSims = contents.numEntries;
+    *nSims = contents.numEntries;
 
-      /* Hard limit on no. of sims we can return details on */
-      if(*nSims > REG_MAX_NUM_STEERED_SIM)*nSims = REG_MAX_NUM_STEERED_SIM;
+    /* Hard limit on no. of sims we can return details on */
+    if(*nSims > REG_MAX_NUM_STEERED_SIM)*nSims = REG_MAX_NUM_STEERED_SIM;
       
-      count = 0;
-      for(i=0; i<*nSims; i++){
+    count = 0;
+    for(i=0; i<*nSims; i++){
 
 
-	if((strlen(contents.entries[i].application) > 0) && 
-	   (!strcmp(contents.entries[i].service_type, "SWS") || 
-	   !strcmp(contents.entries[i].service_type, "SGS")) ){
+      if((strlen(contents.entries[i].application) > 0) && 
+	 (!strcmp(contents.entries[i].service_type, "SWS") || 
+	  !strcmp(contents.entries[i].service_type, "SGS")) ){
 
-	  sprintf(simName[count], "%s %s %s", contents.entries[i].user, 
-		  contents.entries[i].application, 
-		  contents.entries[i].start_date_time);
-	  strcpy(simGSH[count], contents.entries[i].gsh);
-	  count++;
-	}
-      }
-      *nSims = count;
-
-      Delete_registry_table(&contents);
-    }
-    else {
-      if( (ptr = getenv("REG_SGS_ADDRESS")) ){
-
-	*nSims = 1;
-	sprintf(simName[0], "Simulation");
-	strcpy(simGSH[0], ptr);
-      }
-      else{
-
-	fprintf(stderr, "STEERUtils: Get_sim_list: REG_SGS_ADDRESS environment variable "
-		"is not set\n");
-	*nSims = 0;
-	sprintf(simName[0], " ");
+	sprintf(simName[count], "%s %s %s", contents.entries[i].user, 
+		contents.entries[i].application, 
+		contents.entries[i].start_date_time);
+	strcpy(simGSH[count], contents.entries[i].gsh);
+	count++;
       }
     }
-    return REG_SUCCESS;
-  /*} End of if Proxy.available */
+    *nSims = count;
 
-  /* Get (space-delimited) list of steerable apps & associated
-     grid-service handles *
-
-  Send_proxy_message(Proxy.pipe_to_proxy, GET_APPS_MSG);
-
-  Get_proxy_message(Proxy.pipe_from_proxy, Proxy.buf, &nbytes);
-
-  if(nbytes == 0){
-#ifdef REG_DEBUG
-    fprintf(stderr, "STEERUtils: Get_sim_list: no steerable apps available\n");
-#endif
-    return REG_SUCCESS;
+    Delete_registry_table(&contents);
   }
+  else {
+    if( (ptr = getenv("REG_SGS_ADDRESS")) ){
 
-  if(Proxy.buf[0] == ' '){
+      *nSims = 1;
+      sprintf(simName[0], "Simulation");
+      strcpy(simGSH[0], ptr);
+    }
+    else{
 
-    ptr = (char *)strtok(&(Proxy.buf[1]), " ");
-  }
-  else{
-
-    ptr = (char *)strtok(Proxy.buf, " ");
-  }
-
-  count = 0;
-
-  while(ptr){
-
-    strcpy(simName[count], ptr);
-    ptr = (char *)strtok(NULL, " ");
-
-    if(ptr){
-      strcpy(simGSH[count], ptr);
-      ptr = (char *)strtok(NULL, " ");
-
-      count++;
-
-      if(count == REG_MAX_NUM_STEERED_SIM){
-
-	fprintf(stderr, "STEERUtils: Get_sim_list: truncating list of steerable apps\n");
-	break;
-      }
+      fprintf(stderr, "STEERUtils: Get_sim_list: REG_SGS_ADDRESS environment variable "
+	      "is not set\n");
+      *nSims = 0;
+      sprintf(simName[0], " ");
     }
   }
 
-  *nSims = count;
-  */
   return REG_SUCCESS;
 }
 
@@ -306,52 +257,7 @@ int Get_registry_entries_filtered_secure(const char             *registryGSH,
 
 int Get_registry_entries_secure(const char                     *registryGSH, 
 				const struct reg_security_info *sec,
-				struct registry_contents       *contents){
-/*   int status; */
-
-/* #ifndef REG_WSRF */
-
-/*   fprintf(stderr, "STEERUtils: Get_registry_entries_secure: WARNING: no secure version " */
-/* 	  "available for OGSI implementation!\n"); */
-
-/*   struct sgr__findServiceDataResponse out; */
-/*   struct soap soap; */
-/*   char   query_buf[256]; */
-
-/*   soap_init(&soap); */
-
-/*   sprintf(query_buf, "<ogsi:queryByServiceDataNames names=\"ogsi:entry\"/>"); */
-
-/*   if (soap_call_sgr__findServiceData ( &soap, registryGSH, "", query_buf,  */
-/* 				       &out)){ */
-/*     soap_print_fault(&soap,stderr); */
-/*     return REG_FAILURE; */
-/*   } */
-/*   else{ */
-/*     if(!(out._findServiceDataReturn)){ */
-/*       fprintf(stderr, "STEERUtils: Get_registry_entries_secure: findServiceData " */
-/* 	      "returned null\n"); */
-/*       return REG_FAILURE; */
-/*     } */
-/* #ifdef REG_DEBUG_FULL */
-/*     else{ */
-/*       fprintf(stderr, "STEERUtils: Get_registry_entries_secure: findServiceData " */
-/* 	      "returned: %s\n", out._findServiceDataReturn); */
-/*     } */
-/* #endif /\* REG_DEBUG_FULL *\/ */
-/*   } */
-
-/*   status = Parse_registry_entries(out._findServiceDataReturn,  */
-/* 				  strlen(out._findServiceDataReturn), */
-/* 				  contents); */
-/*   soap_destroy(&soap); */
-/*   soap_end(&soap); */
-
-/* #else /\* WSRF, not OGSI *\/ */
-
-/*   status = Get_registry_entries_wsrf(registryGSH, sec, contents); */
-
-/* #endif /\* !defined REG_WSRF *\/ */
+				struct registry_contents       *contents) {
 
   return Get_registry_entries_impl(registryGSH, sec, contents);
 }

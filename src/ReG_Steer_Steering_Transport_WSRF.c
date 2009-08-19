@@ -33,13 +33,13 @@
 #include "ReG_Steer_Appside_internal.h"
 #include "ReG_Steer_Steerside.h"
 #include "ReG_Steer_Steerside_internal.h"
+#include "Base64.h"
 #include "soapH.h"
 
 /** @internal
    Flag holding whether or not the ssl random no. generator has
    been initialized. */
 int ReG_ssl_random_initialized;
-
 
 /* */
 SGS_info_type appside_SGS_info;
