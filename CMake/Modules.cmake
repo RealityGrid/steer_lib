@@ -108,4 +108,16 @@ foreach(type ${REG_MODULES_TYPES})
   # set default module
   list(GET REG_MODULES_${type} 0 default)
   set(REG_USE_MODULE_${type} "${default}" CACHE STRING ${doc})
+
+  # check that a registered module has been chosen
+  # by the user for each type of module available
+  list(FIND REG_MODULES_${type} ${REG_USE_MODULE_${type}} exists)
+  if(exists EQUAL -1)
+    message(SEND_ERROR
+      "You cannot specify '${REG_USE_MODULE_${type}}' for "
+      "REG_USE_MODULE_${type} as a module of that name has not been registered "
+      "as providing ${type} transport. Please check the help for "
+      "REG_USE_MODULE_${type} to see the list of modules you can use."
+    )
+  endif(exists EQUAL -1)
 endforeach(type ${REG_MODULES_TYPES})
