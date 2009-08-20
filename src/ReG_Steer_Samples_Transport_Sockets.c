@@ -407,12 +407,6 @@ int Get_IOType_address_impl(int i, char** pbuf, int* bytes_left) {
   return REG_SUCCESS;
 }
 
-/*---------------------------------------------------*/
-
-int Consume_start_impl(int index) {
-  return REG_SUCCESS;
-}
-
 /*--------------------- Others ----------------------*/
 
 int create_connector_samples(const int index) {

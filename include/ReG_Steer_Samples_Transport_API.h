@@ -177,8 +177,6 @@ int Emit_start_impl(int index, int seqnum);
 
 int Emit_stop_impl(int index);
 
-int Consume_start_impl(int index);
-
 int Consume_stop_impl(int index);
 
 #endif /* __REG_STEER_SAMPLES_TRANSPORT_API_H__ */

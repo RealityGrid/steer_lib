@@ -127,12 +127,6 @@ int Emit_stop_impl(int index) {
 
 /*---------------------------------------------------*/
 
-int Consume_start_impl(int index) {
-  return REG_SUCCESS;
-}
-
-/*---------------------------------------------------*/
-
 int Consume_stop_impl(int index) {
   /* Close any file associated with this channel */
   if(file_info_table.file_info[index].fp){
