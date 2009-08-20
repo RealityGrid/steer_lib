@@ -47,7 +47,7 @@
 register_module(
   Samples
   Sockets
-  "ReG_Steer_Samples_Transport_Sockets.c"
+  "ReG_Steer_Samples_Transport_Sockets_Shared.c;ReG_Steer_Samples_Transport_Sockets.c"
   "ReG_Steer_Sockets_Common.c"
 )
 
@@ -56,6 +56,13 @@ register_module(
   Files
   "ReG_Steer_Samples_Transport_Files.c"
   "ReG_Steer_Files_Common.c"
+)
+
+register_module(
+  Samples
+  Proxy
+  "ReG_Steer_Samples_Transport_Sockets_Shared.c;ReG_Steer_Samples_Transport_Proxy.c"
+  "ReG_Steer_Sockets_Common.c"
 )
 
 register_module(

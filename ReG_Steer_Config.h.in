@@ -70,6 +70,7 @@
 #include <sys/utsname.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <netinet/tcp.h>
 #include <netdb.h>
 #else /* WIN32 */
 #include <windows.h>

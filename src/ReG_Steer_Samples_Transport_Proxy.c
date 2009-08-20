@@ -27,16 +27,17 @@
 -----------------------------------------------------------------------*/
 
 /** @internal
-    @file ReG_Steer_Appside_Sockets.c
-    @brief Source file for socket-related routines and data structures
+    @file ReG_Steer_Sample_Transport_Proxy.c
+    @brief Source file for proxy-related routines and data structures
     @author Robert Haines
   */
 
 #include "ReG_Steer_Config.h"
 #include "ReG_Steer_Samples_Transport_API.h"
+#include "ReG_Steer_Samples_Transport_Proxy.h"
 #include "ReG_Steer_Samples_Transport_Sockets.h"
-#include "ReG_Steer_Sockets_Common.h"
 #include "ReG_Steer_Common.h"
+#include "ReG_Steer_Sockets_Common.h"
 #include "ReG_Steer_Appside_internal.h"
 #include "ReG_Steer_Steering_Transport_API.h"
 
@@ -68,9 +69,10 @@ int Finalize_samples_transport() {
   return REG_SUCCESS;
 }
 
-/*---------------------------------------------------*/
+/*--------------------------------------------------------------------*/
 
-int Initialize_IOType_transport_impl(const int direction, const int index) {
+int Initialize_IOType_transport_impl(const int direction, 
+				      const int index) {
 
   int return_status = REG_SUCCESS;
   socket_info_type* socket_info = &(socket_info_table.socket_info[index]);
@@ -78,56 +80,60 @@ int Initialize_IOType_transport_impl(const int direction, const int index) {
   /* set up socket info stuff */
   if(socket_info_init(socket_info) != REG_SUCCESS) {
 #ifdef REG_DEBUG
-    fprintf(stderr, "STEER: Initialize_IOType_transport: failed to "
-	    "init socket info for IOType\n");
+    fprintf(stderr, "STEER: Initialize_IOType_transport: failed to init "
+	    "socket info for IOType\n");
 #endif
     return_status = REG_FAILURE;
   }
   else {
+    /* Keep a count of how many channels have been registered and
+       where this channel is in that list - this is used to map to the
+       list of data inputs held by our SGS (configured when it was 
+       created) */
+    IOTypes_table.io_def[index].input_index = ++(IOTypes_table.num_inputs);
+
     if(direction == REG_IO_OUT) {
 
       /* Don't create socket yet if this flag is set */
       if(IOTypes_table.enable_on_registration == REG_FALSE) return REG_SUCCESS;
 
-      /* open socket and register callback function to listen for and
-	 accept connections */
-      if(create_listener_samples(index) != REG_SUCCESS) {
+      /* Connect to the proxy */
+      if(create_connector_samples(index) != REG_SUCCESS) {
 #ifdef REG_DEBUG
-	fprintf(stderr, "STEER: Initialize_IOType_transport: failed to "
-		"create listener for IOType\n");
+	fprintf(stderr, "STEER: Initialize_IOType_transport_sockets: failed to "
+		"connect to proxy for IOType\n");
 #endif
 	return_status = REG_FAILURE;
       }
+#ifdef REG_DEBUG
       else {
-	fprintf(stderr, "STEER: Initialize_IOType_transport: Created "
-		"listener on port %d, index %d, label %s\n", 
-		socket_info->listener_port, 
-		index, IOTypes_table.io_def[index].label);
+	fprintf(stderr, "STEER: Initialize_IOType_transport_sockets: "
+		"registered connector to proxy on port %d, hostname = %s, "
+		"index %d, label %s\n", 
+		socket_info->connector_port,
+		socket_info->connector_hostname,
+		index, IOTypes_table.io_def[index].label );
       }
+#endif
     }
     else if(direction == REG_IO_IN) {
-
-      /* Keep a count of how many input channels have been registered and
-	 where this channel is in that list - this is used to map to the
-	 list of data inputs held by our SGS (configured when it was 
-	 created) */
-      IOTypes_table.io_def[index].input_index = ++(IOTypes_table.num_inputs);
 
       /* Don't create socket yet if this flag is set */
       if(IOTypes_table.enable_on_registration == REG_FALSE) {
 	return REG_SUCCESS;
       }
 
+      /* Connect to the proxy */
       if(create_connector_samples(index) != REG_SUCCESS) {
 #ifdef REG_DEBUG
-	fprintf(stderr, "STEER: Initialize_IOType_transport: failed to "
+	fprintf(stderr, "STEER: Initialize_IOType_transport_sockets: failed to "
 		"register connector for IOType\n");
 #endif
 	return_status = REG_FAILURE;
       }
 #ifdef REG_DEBUG
       else {
-	fprintf(stderr, "STEER: Initialize_IOType_transport: "
+	fprintf(stderr, "STEER: Initialize_IOType_transport_sockets: "
 		"registered connector on port %d, hostname = %s, "
 		"index %d, label %s\n", 
 		socket_info->connector_port,
@@ -135,49 +141,49 @@ int Initialize_IOType_transport_impl(const int direction, const int index) {
 		index, IOTypes_table.io_def[index].label );
       }
 #endif
-      
     }
   }
 
   return return_status;
 }
 
-/*---------------------------------------------------*/
+/*-----------------------------------------------------------*/
 
 void Finalize_IOType_transport_impl() {
   int index;
+  fprintf(stderr, "ARPDBG: Finalize_IOType_transport...\n");
 
+  /* For proxy, we only have connectors - no listeners */
   for(index = 0; index < IOTypes_table.num_registered; index++) {
-    if(IOTypes_table.io_def[index].direction == REG_IO_OUT) {
-      /* close sockets */
-      cleanup_listener_connection_samples(index);
-      socket_info_cleanup(&(socket_info_table.socket_info[index]));
+    fprintf(stderr, "ARPDBG: Finalize_IOType_transport index %d\n", index);
+
+    if(IOTypes_table.io_def[index].ack_needed == REG_TRUE || 
+       IOTypes_table.io_def[index].consuming == REG_TRUE){
+
+      /* Signal that we have read this data and are ready for
+	 the next set */
+      fprintf(stderr, "ARPDBG: emitting ack for index %d\n", index);
+      Emit_ack_impl(index);
+      IOTypes_table.io_def[index].ack_needed = REG_FALSE;
     }
-    else if(IOTypes_table.io_def[index].direction == REG_IO_IN) {
-      /* close sockets */
-      cleanup_connector_connection_samples(index);
-      socket_info_cleanup(&(socket_info_table.socket_info[index]));
-    }
+
+    /* close sockets */
+    cleanup_connector_connection_samples(index);
+    socket_info_cleanup(&(socket_info_table.socket_info[index]));
   }
 }
 
-/*---------------------------------------------------*/
+/*-----------------------------------------------------------*/
 
 int Disable_IOType_impl(const int index) {
   /* check index is valid */
   if(index < 0 || index >= IOTypes_table.num_registered) {
-    fprintf(stderr, "STEER: Disable_IOType: index out of range\n");
+    fprintf(stderr, "STEER: Disable_IOType_sockets: index out of range\n");
     return REG_FAILURE;
   }
 
-  if(IOTypes_table.io_def[index].direction == REG_IO_OUT) {
-    /* close sockets */
-    cleanup_listener_connection_samples(index);
-  }
-  else if(IOTypes_table.io_def[index].direction == REG_IO_IN) {
-    /* close sockets */
-    cleanup_connector_connection_samples(index);
-  }
+  /* close sockets */
+  cleanup_connector_connection_samples(index);
 
   return REG_SUCCESS;
 }
@@ -188,24 +194,12 @@ int Enable_IOType_impl(int index) {
   /* check index is valid */
   if(index < 0 || index >= IOTypes_table.num_registered) return REG_FAILURE;
 
-  if(IOTypes_table.io_def[index].direction == REG_IO_OUT) {
-    /* open socket and register callback function to listen for and
-       accept connections */
-    if(create_listener_samples(index) != REG_SUCCESS) {
+  if (create_connector_samples(index) != REG_SUCCESS) {
 #ifdef REG_DEBUG
-      fprintf(stderr, "STEER: Enable_IOType: failed to create listener for IOType\n");
+    fprintf(stderr, "STEER: Enable_IOType_sockets: failed to register "
+	    "connector for IOType\n");
 #endif
-      return REG_FAILURE;
-    }
-  }
-  else if(IOTypes_table.io_def[index].direction == REG_IO_IN) {
-    if (create_connector_samples(index) != REG_SUCCESS) {
-#ifdef REG_DEBUG
-      fprintf(stderr, "STEER: Enable_IOType: failed to register "
-	      "connector for IOType\n");
-#endif
-      return REG_FAILURE;
-    }
+    return REG_FAILURE;
   }
 
   return REG_SUCCESS;
@@ -223,8 +217,83 @@ int Get_communication_status_impl(const int index) {
 
 /*---------------------------------------------------*/
 
+int Emit_data_impl(const int index, const size_t size, void* buffer) {
+
+  int   bytes_left;
+  int   result;
+  char* pchar;
+  int   connector = socket_info_table.socket_info[index].connector_handle;
+  char *label = IOTypes_table.io_def[index].label;
+  char  header[128];
+
+  if(size < 0) {
+    fprintf(stderr, "STEER: Emit_data: requested to write < 0 bytes!\n");
+    return REG_FAILURE;
+  }
+  else if(size == 0) {
+    fprintf(stderr, "STEER: Emit_data: asked to send 0 bytes!\n");
+    return REG_SUCCESS;
+  }
+
+#ifdef REG_DEBUG
+  fprintf(stderr, "STEER: Emit_data: writing...\n");
+#endif
+
+  sprintf(header, "#%s\n%d\n%d\n", label, 1, (int) size);
+  bytes_left = strlen(header);
+  pchar = header;
+
+  while(bytes_left > 0) {
+    result = send_no_signal(connector, pchar, bytes_left, 0);
+    if(result == REG_SOCKETS_ERROR) {
+      perror("send");
+      return REG_FAILURE;
+    }
+    else {
+      bytes_left -= result;
+      pchar += result;
+    }
+  }
+
+  bytes_left = size;
+  pchar = (char*) buffer;
+
+  while(bytes_left > 0) {
+    result = send_no_signal(connector, pchar, bytes_left, 0);
+    if(result == REG_SOCKETS_ERROR) {
+      perror("send");
+      return REG_FAILURE;
+    }
+    else {
+      bytes_left -= result;
+      pchar += result;
+    }
+  }
+
+  if(bytes_left > 0) {
+#ifdef REG_DEBUG
+    fprintf(stderr, "STEER: Emit_data: timed-out trying to "
+	    "write data\n");
+#endif
+    return REG_TIMED_OUT;
+  }
+
+  /* Check that the IOProxy had a destination for the data ARPDBG */
+  result = Consume_proxy_destination_ack(index);
+
+#ifdef REG_DEBUG
+  if(result == REG_SUCCESS){
+    fprintf(stderr, "STEER: Emit_data: sent %d bytes...\n", (int) size);
+  }
+#endif
+
+  return result;
+}
+
+/*---------------------------------------------------*/
+
 int Emit_data_non_blocking_impl(const int index, const int size, 
-				   void* buffer) {
+				 void* buffer) {
 
   struct timeval timeout;
   int connector = socket_info_table.socket_info[index].connector_handle;
@@ -251,22 +320,52 @@ int Emit_data_non_blocking_impl(const int index, const int size,
 
 /*---------------------------------------------------*/
 
+int Consume_proxy_destination_ack(const int index) {
+
+  int  result;
+  int  connector = socket_info_table.socket_info[index].connector_handle;
+  char buffer[2];
+
+  result = recv(connector, buffer, (size_t) 2, MSG_WAITALL);
+  if(result == -1){
+    fprintf(stderr, "STEER: Consume_proxy_destination_ack: check for proxy OK failed\n");
+  }
+  fprintf(stderr, "ARPDBG: proxy OK returned: %c\n", buffer[0]);
+  if(buffer[0] == '1'){
+    return REG_SUCCESS;
+  }
+  else{
+#ifdef REG_DEBUG
+    fprintf(stderr, "STEER: Consume_proxy_destination_ack: proxy had no "
+	    "destination address\n");
+#endif
+    /* The recipient of our data has disappeared so we won't be getting an
+       acknowledgement back from them... */
+    IOTypes_table.io_def[index].ack_needed = REG_FALSE;
+    return REG_NOT_READY;
+  }
+}
+
+/*---------------------------------------------------*/
+
 int Emit_header_impl(const int index) {
 
   char buffer[REG_PACKET_SIZE];
+  socket_info_type* socket_info = &(socket_info_table.socket_info[index]);
   int status;
 
   /* check if socket connection has been made */
-  if(socket_info_table.socket_info[index].comms_status != 
+  if(socket_info->comms_status !=
      REG_COMMS_STATUS_CONNECTED) {
-    attempt_listener_connect_samples(index);
+    attempt_connector_connect_samples(index);
   }
 
   /* now are we connected? */
-  if(socket_info_table.socket_info[index].comms_status == 
+  if(socket_info->comms_status == 
      REG_COMMS_STATUS_CONNECTED) {
 #ifdef REG_DEBUG
-    fprintf(stderr, "STEER: Emit_header: socket status is connected, index = %d\n", index );
+    fprintf(stderr, "STEER: Emit_header: socket status is "
+	    "connected, index = %d\n", index );
 #endif
 
     /* send header */
@@ -276,7 +375,7 @@ int Emit_header_impl(const int index) {
     fprintf(stderr, "STEER: Emit_header: Sending >>%s<<\n", buffer);
 #endif
     status = Emit_data_non_blocking_impl(index, REG_PACKET_SIZE, 
-					 (void*) buffer);
+					  (void*) buffer);
 
     if(status == REG_SUCCESS) {
 #ifdef REG_DEBUG
@@ -286,23 +385,22 @@ int Emit_header_impl(const int index) {
     }
     else if(status == REG_FAILURE) {
 #ifdef REG_DEBUG
-      fprintf(stderr, "STEER: Emit_header: Write failed - "
-	      "immediate retry connect\n");
+      fprintf(stderr, "STEER: Emit_header: Emit_data_non_blocking "
+	      "failed - immediate retry connect\n");
 #endif
       retry_accept_connect_samples(index);
 
-      if(socket_info_table.socket_info[index].comms_status == 
+      if(socket_info->comms_status == 
 	 REG_COMMS_STATUS_CONNECTED) {
 #ifdef REG_DEBUG
 	fprintf(stderr, "STEER: Emit_header: Sending >>%s<<\n", buffer);
 #endif    
-	if(Emit_data_impl(index, REG_PACKET_SIZE, 
-			  (void*) buffer) == REG_SUCCESS) {
-	  return REG_SUCCESS;
-	}
+	return Emit_data_impl(index, REG_PACKET_SIZE, (void*) buffer);
       }
     }
 #ifdef REG_DEBUG
+    else if(status == REG_NOT_READY){
+    }
     else{
       fprintf(stderr, "STEER: Emit_header: attempt to write to "
 	      "socket timed out\n");
@@ -318,32 +416,43 @@ int Emit_header_impl(const int index) {
 
   return REG_FAILURE;
 }
+
 /*---------------------------------------------------*/
 
-int Emit_data_impl(const int    index, 
-		      const size_t num_bytes_to_send, 
-		      void*        pData)
-{
-  int bytes_left;
-  int result;
+int Emit_ack_impl(int index){
+
+  /* Send a 16-byte acknowledgement message */
+  char *ack_msg = "<ACK/>          ";
+  const int size = 16;
+  int   bytes_left;
+  int   result;
+  int   connector = socket_info_table.socket_info[index].connector_handle;
+  char  header[REG_MAX_STRING_LENGTH];
+  char *label = IOTypes_table.io_def[index].proxySourceLabel;
   char* pchar;
-  int connector = socket_info_table.socket_info[index].connector_handle;
 
-  if(num_bytes_to_send < 0) {
-    fprintf(stderr, "STEER: Emit_data: requested to write < 0 bytes!\n");
-    return REG_FAILURE;
+  snprintf(header, REG_MAX_STRING_LENGTH, "#%s_REG_ACK\n%d\n%d\n", 
+	   label, 1, size);
+
+  printf("ARPDBG: emitting ack: %s\n", header);
+  bytes_left = strlen(header);
+  pchar = header;
+
+  while(bytes_left > 0) {
+    result = send_no_signal(connector, pchar, bytes_left, 0);
+    if(result == REG_SOCKETS_ERROR) {
+      perror("send");
+      return REG_FAILURE;
+    }
+    else {
+      bytes_left -= result;
+      pchar += result;
+    }
   }
-  else if(num_bytes_to_send == 0) {
-    fprintf(stderr, "STEER: Emit_data: asked to send 0 bytes!\n");
-    return REG_SUCCESS;
-  }
 
-  bytes_left = num_bytes_to_send;
-  pchar = (char*) pData;
+  bytes_left = size;
+  pchar = ack_msg;
 
-#ifdef REG_DEBUG
-  fprintf(stderr, "STEER: Emit_data: writing...\n");
-#endif
   while(bytes_left > 0) {
     result = send_no_signal(connector, pchar, bytes_left, 0);
     if(result == REG_SOCKETS_ERROR) {
@@ -358,58 +467,25 @@ int Emit_data_impl(const int    index,
 
   if(bytes_left > 0) {
 #ifdef REG_DEBUG
-    fprintf(stderr, "STEER: Emit_data: timed-out trying to write data\n");
+    fprintf(stderr, "STEER: Emit_ack: timed-out trying to write data\n");
 #endif
     return REG_TIMED_OUT;
   }
 
-#ifdef REG_DEBUG
-  fprintf(stderr, "STEER: Emit_data: sent %d bytes...\n", 
-	  (int) num_bytes_to_send);
-#endif
-  
-  return REG_SUCCESS;
-}
+  /* Check that the IOProxy had a destination for the data ARPDBG */
+  result = Consume_proxy_destination_ack(index);
+  if(result == REG_SUCCESS)printf("ARPDBG: emitted ack OK\n");
 
-/*---------------------------------------------------*/
-
-int Emit_ack_impl(int index){
-
-  /* Send a 16-byte acknowledgement message */
-  char *ack_msg = "<ACK/>          ";
-  return Emit_data_impl(index, strlen(ack_msg), (void*)ack_msg);
+  return result;
 }
 
 /*---------------------------------------------------*/
 
 int Get_IOType_address_impl(int i, char** pbuf, int* bytes_left) {
-  int nbytes;
-
-  if(IOTypes_table.io_def[i].direction == REG_IO_OUT){
-    if(!strstr(socket_info_table.socket_info[i].listener_hostname, "NOT_SET")) {
-      nbytes = snprintf(*pbuf, *bytes_left, "<Address>%s:%d</Address>\n",
-			socket_info_table.socket_info[i].listener_hostname,
-			(int)(socket_info_table.socket_info[i].listener_port));
-
-#ifdef REG_DEBUG
-      /* Check for truncation */
-      if((nbytes >= (*bytes_left-1)) || (nbytes < 1)){
-	fprintf(stderr, "STEER: Emit_IOType_defs: message exceeds max. "
-		"msg. size of %d bytes\n", REG_MAX_MSG_SIZE);
-	return REG_FAILURE;
-      }
-#endif /* REG_DEBUG */
-      *pbuf += nbytes;
-      *bytes_left -= nbytes;
-    }
-  }
-
-  return REG_SUCCESS;
-}
-
-/*---------------------------------------------------*/
-
-int Consume_start_impl(int index) {
+  /* This is just a stub because we set the address of the proxy
+     in Get_data_io_address_impl(). But only for WSRF steering
+     for now...
+  */
   return REG_SUCCESS;
 }
 
@@ -435,6 +511,17 @@ int create_connector_samples(const int index) {
 
   /* ...turn off the "Address already in use" error message... */
   if(setsockopt(connector, SOL_SOCKET, SO_REUSEADDR, &yes, 
+		sizeof(int)) == REG_SOCKETS_ERROR) {
+    perror("setsockopt");
+    return REG_FAILURE;
+  }
+
+  /* Turn off NAGLE's algorithm if using an ioProxy so that the (small)
+     acknowledgement messages get sent immediately instead of being buffered
+     - helps to ensure ack is received before socket is shutdown when consumer
+     is shutdown */
+  yes = 1;
+  if(setsockopt(connector, IPPROTO_TCP, TCP_NODELAY, &yes,
 		sizeof(int)) == REG_SOCKETS_ERROR) {
     perror("setsockopt");
     return REG_FAILURE;
@@ -486,7 +573,7 @@ int create_connector_samples(const int index) {
   return REG_SUCCESS;
 }
 
-/*--------------------------------------------------------------------*/
+/*---------------------------------------------------*/
 
 int connect_connector_samples(const int index) {
 
@@ -494,6 +581,7 @@ int connect_connector_samples(const int index) {
   int  connector     = socket_info_table.socket_info[index].connector_handle;
   int  return_status = REG_SUCCESS;
   char tmpBuf[REG_MAX_STRING_LENGTH];
+  int i;
 
   /* get a remote address if we need to */
   if(socket_info_table.socket_info[index].connector_port == 0) {
@@ -503,6 +591,41 @@ int connect_connector_samples(const int index) {
 			       socket_info_table.socket_info[index].connector_hostname,
 			       &(socket_info_table.socket_info[index].connector_port),
 			       IOTypes_table.io_def[index].proxySourceLabel);
+
+/* #ifdef REG_DIRECT_TCP_STEERING */
+/*     return_status = Get_data_source_address_direct(IOTypes_table.io_def[index].input_index,  */
+/* 						   socket_info_table.socket_info[index].connector_hostname, */
+/* 						   &(socket_info_table.socket_info[index].connector_port)); */
+/* #else */
+/* #ifdef REG_SOAP_STEERING	   */
+/*     /\* Go out into the world of grid/web services... *\/ */
+/* #ifdef REG_WSRF /\* use WSRF *\/ */
+/*     if(IOTypes_table.io_def[index].direction == REG_IO_IN){ */
+/*       return_status = Get_data_source_address_wsrf(IOTypes_table.io_def[index].input_index,  */
+/* 						   socket_info_table.socket_info[index].connector_hostname, */
+/* 						   &(socket_info_table.socket_info[index].connector_port), */
+/* 						   IOTypes_table.io_def[index].proxySourceLabel); */
+/*     } */
+/*     else{ */
+/*       /\* (We'll only be attempting to connect a connector for an IOType of  */
+/* 	 direction REG_IO_OUT when using an IOProxy.) *\/ */
+/*       return_status = Get_data_sink_address_wsrf(IOTypes_table.io_def[index].input_index,  */
+/* 						 socket_info_table.socket_info[index].connector_hostname, */
+/* 						 &(socket_info_table.socket_info[index].connector_port)); */
+/*     } */
+/* #else /\* use OGSI *\/ */
+/*     return_status = Get_data_source_address_soap(IOTypes_table.io_def[index].input_index,  */
+/* 						 socket_info_table.socket_info[index].connector_hostname, */
+/* 						 &(socket_info_table.socket_info[index].connector_port)); */
+/* #endif /\* REG_WSRF *\/ */
+
+/* #else /\* File-based steering *\/ */
+/*     /\* get hostname and port from environment variables *\/ */
+/*     return_status = Get_data_source_address_file(IOTypes_table.io_def[index].input_index,  */
+/* 						 socket_info_table.socket_info[index].connector_hostname, */
+/* 						 &(socket_info_table.socket_info[index].connector_port)); */
+/* #endif /\* !REG_SOAP_STEERING *\/ */
+/* #endif */ /* REG_DIRECT_TCP_STEERING */
   }
 
   if(return_status == REG_SUCCESS && 
@@ -535,6 +658,40 @@ int connect_connector_samples(const int index) {
     }
     socket_info_table.socket_info[index].comms_status = 
       REG_COMMS_STATUS_CONNECTED;
+
+    if(IOTypes_table.io_def[index].direction == REG_IO_IN){
+      sprintf(Global_scratch_buffer, "%s\n%s\n", 
+	      IOTypes_table.io_def[index].label,
+	      IOTypes_table.io_def[index].proxySourceLabel);
+    }
+    else{
+      /* If this is an output channel then we subscribe to 
+	 acknowledgements but first trim off any trailing
+         white space. */
+      strncpy(tmpBuf, IOTypes_table.io_def[index].label, 
+	      REG_MAX_STRING_LENGTH);
+      i = strlen(tmpBuf) - 1;
+      while(tmpBuf[i] == ' ' && (i > -1) ){
+	tmpBuf[i] = '\0';
+	i--;
+      }
+      sprintf(Global_scratch_buffer, "%s\n%s_REG_ACK\n",
+	      tmpBuf, tmpBuf);
+
+      /* If this is an output channel then we aren't subscribing to 
+	 any data source
+      sprintf(Global_scratch_buffer, "%s\nACKS_ONLY\n",
+      IOTypes_table.io_def[index].label); */
+    }
+
+    if(Emit_data_impl(index, strlen(Global_scratch_buffer), 
+		      (void*)(Global_scratch_buffer)) != REG_SUCCESS) {
+      close_connector_handle_samples(index);
+      fprintf(stderr, 
+	      "STEER: connect_connector: failed to send ID to proxy\n");
+      socket_info_table.socket_info[index].connector_port = 0;
+      return REG_FAILURE;
+    }
   }
   else {
     fprintf(stderr, "STEER: connect_connector: cannot get remote address\n");
@@ -543,4 +700,4 @@ int connect_connector_samples(const int index) {
   return return_status;  
 }
 
-/*--------------------------------------------------------------------*/
+/*---------------------------------------------------*/
