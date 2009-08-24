@@ -91,6 +91,7 @@
 
 #cmakedefine01 REG_HAS_MSG_NOSIGNAL
 #cmakedefine01 REG_HAS_MSG_DONTWAIT
+#cmakedefine01 REG_HAS_MSG_WAITALL
 
 
 /* some extra defines for windows */

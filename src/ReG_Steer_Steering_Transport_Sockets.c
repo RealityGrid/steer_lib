@@ -827,7 +827,7 @@ int consume_steering_msg(socket_info_type* socket_info, char* data) {
   int connector = socket_info->connector_handle;
 
   /* get header */
-  nbytes = recv(connector, (void*) &data_size, sizeof(int), MSG_WAITALL);
+  nbytes = recv_wait_all(connector, (void*) &data_size, sizeof(int), 0);
   if(nbytes != sizeof(int)) {
     fprintf(stderr, "consume_steering_msg: Could not get message header");
     return REG_FAILURE;
@@ -840,7 +840,7 @@ int consume_steering_msg(socket_info_type* socket_info, char* data) {
 #endif
 
   /* get message */
-  nbytes = recv(connector, data, data_size, MSG_WAITALL);
+  nbytes = recv_wait_all(connector, data, data_size, 0);
 
   if(nbytes <= 0) {
     if(nbytes == 0) {

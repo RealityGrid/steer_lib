@@ -193,3 +193,21 @@ ssize_t send_no_signal(int s, const void* buf, size_t len, int flags) {
 }
 
 /*--------------------------------------------------------------------*/
+
+ssize_t recv_wait_all(int s, void *buf, size_t len, int flags) {
+#if REG_HAS_MSG_WAITALL
+  return recv(s, buf, len, flags | MSG_WAITALL);
+#else
+  ssize_t result;
+  ssize_t got = 0;
+
+  while(len > 0 && (result = recv(s, buf + got, len, flags)) > 0) {
+    len -= result;
+    got += result;
+  }
+
+  return result < 0 ? result : got;
+#endif
+}
+
+/*--------------------------------------------------------------------*/

@@ -34,6 +34,7 @@
 # sockets features
 CHECK_SYMBOL_EXISTS(MSG_NOSIGNAL "sys/socket.h" REG_HAS_MSG_NOSIGNAL)
 CHECK_SYMBOL_EXISTS(MSG_DONTWAIT "sys/socket.h" REG_HAS_MSG_DONTWAIT)
+CHECK_SYMBOL_EXISTS(MSG_WAITALL  "sys/socket.h" REG_HAS_MSG_WAITALL)
 
 # sockets library
 find_package(Sockets)

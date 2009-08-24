@@ -66,8 +66,8 @@ int Consume_msg_header_impl(int index, int* datatype, int* count,
 #endif
 
   /* Blocks until REG_PACKET_SIZE bytes received */
-  if((nbytes = recv(sock_info->connector_handle, buffer, REG_PACKET_SIZE, 
-		    MSG_WAITALL)) <= 0) {
+  if((nbytes = recv_wait_all(sock_info->connector_handle, buffer,
+			     REG_PACKET_SIZE, 0)) <= 0) {
     if(nbytes < 0) {
       /* error */
       perror("recv");
@@ -99,8 +99,8 @@ int Consume_msg_header_impl(int index, int* datatype, int* count,
   }
 
   /*--- Type of objects in message ---*/
-  if((nbytes = recv(sock_info->connector_handle, buffer, REG_PACKET_SIZE, 
-		    MSG_WAITALL)) <= 0) {
+  if((nbytes = recv_wait_all(sock_info->connector_handle, buffer,
+			     REG_PACKET_SIZE, 0)) <= 0) {
     if(nbytes == 0) {
       /* closed connection */
       fprintf(stderr, "STEER: Consume_msg_header: hung up!\n");
@@ -125,8 +125,8 @@ int Consume_msg_header_impl(int index, int* datatype, int* count,
   sscanf(buffer, "<Data_type>%d</Data_type>", datatype);
 
   /*--- No. of objects in message ---*/
-  if((nbytes = recv(sock_info->connector_handle, buffer, REG_PACKET_SIZE, 
-		    MSG_WAITALL)) <= 0) {
+  if((nbytes = recv_wait_all(sock_info->connector_handle, buffer,
+			     REG_PACKET_SIZE, 0)) <= 0) {
     if(nbytes == 0) {
       /* closed connection */
       fprintf(stderr, "STEER: Consume_msg_header: hung up!\n");
@@ -155,8 +155,8 @@ int Consume_msg_header_impl(int index, int* datatype, int* count,
   }
 
   /*--- No. of bytes in message ---*/
-  if((nbytes = recv(sock_info->connector_handle, buffer, REG_PACKET_SIZE, 
-		    MSG_WAITALL)) <= 0) {
+  if((nbytes = recv_wait_all(sock_info->connector_handle, buffer,
+			     REG_PACKET_SIZE, 0)) <= 0) {
     if(nbytes == 0) {
       /* closed connection */
       fprintf(stderr, "STEER: Consume_msg_header: hung up!\n");
@@ -185,8 +185,8 @@ int Consume_msg_header_impl(int index, int* datatype, int* count,
   }
 
   /*--- Array ordering in message ---*/
-  if((nbytes = recv(sock_info->connector_handle, buffer, REG_PACKET_SIZE, 
-		    MSG_WAITALL)) <= 0) {
+  if((nbytes = recv_wait_all(sock_info->connector_handle, buffer,
+			     REG_PACKET_SIZE, 0)) <= 0) {
     if(nbytes == 0) {
       /* closed connection */
       fprintf(stderr, "STEER: Consume_msg_header: hung up!\n");
@@ -218,8 +218,8 @@ int Consume_msg_header_impl(int index, int* datatype, int* count,
   }
 
   /*--- End of header ---*/
-  if((nbytes = recv(sock_info->connector_handle, buffer, REG_PACKET_SIZE, 
-		    MSG_WAITALL)) <= 0) {
+  if((nbytes = recv_wait_all(sock_info->connector_handle, buffer,
+			     REG_PACKET_SIZE, 0)) <= 0) {
     if(nbytes == 0) {
       /* closed connection */
       fprintf(stderr, "STEER: Consume_msg_header: hung up!\n");
@@ -424,10 +424,13 @@ int Consume_data_read_impl(const int index,
   sock_info = &(socket_info_table.socket_info[index]);
 
   if(IOTypes_table.io_def[index].use_xdr || IOTypes_table.io_def[index].convert_array_order == REG_TRUE) {
-    nbytes = recv(sock_info->connector_handle, IOTypes_table.io_def[index].buffer, num_bytes_to_read, MSG_WAITALL);
+    nbytes = recv_wait_all(sock_info->connector_handle,
+			   IOTypes_table.io_def[index].buffer,
+			   num_bytes_to_read, 0);
   }
   else {
-    nbytes = recv(sock_info->connector_handle, pData, num_bytes_to_read, MSG_WAITALL);
+    nbytes = recv_wait_all(sock_info->connector_handle, pData,
+			   num_bytes_to_read, 0);
   }
 
 #ifdef REG_DEBUG

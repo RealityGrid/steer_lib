@@ -326,7 +326,7 @@ int Consume_proxy_destination_ack(const int index) {
   int  connector = socket_info_table.socket_info[index].connector_handle;
   char buffer[2];
 
-  result = recv(connector, buffer, (size_t) 2, MSG_WAITALL);
+  result = recv_wait_all(connector, buffer, (size_t) 2, 0);
   if(result == -1){
     fprintf(stderr, "STEER: Consume_proxy_destination_ack: check for proxy OK failed\n");
   }

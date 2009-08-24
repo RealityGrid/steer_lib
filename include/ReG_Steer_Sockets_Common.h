@@ -123,4 +123,15 @@ void signal_handler_sockets(int a_signal);
  */
 ssize_t send_no_signal(int s, const void *buf, size_t len, int flags);
 
+/** @internal
+    @param s File descriptor of the receiving socket
+    @param buf Pointer to buffer in which to put received data (must
+    be at least @p len in size)
+    @param len Number of bytes to read from socket
+    @param flags Flags to pass to the underlying call to recv()
+
+    A wrapper around the recv() call to do a blocking receive.
+    See recv(2). */
+ssize_t recv_wait_all(int s, void *buf, size_t len, int flags);
+
 #endif /* __REG_STEER_SOCKETS_COMMON_H__ */
