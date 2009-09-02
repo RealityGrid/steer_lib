@@ -70,7 +70,7 @@ endif(REG_BUILD_SHARED_LIBS)
 #
 # build a monolithic or modular library
 #
-option(REG_BUILD_MODULAR_LIBS "Turn on to build a set of modular libs rather than one monolithic one. Modular by default." ON)
+option(REG_BUILD_MODULAR_LIBS "Turn on to build a set of modular libs rather than one monolithic one. Monolithic by default." OFF)
 
 # set the type of modules to build
 if(REG_BUILD_MODULAR_LIBS)
