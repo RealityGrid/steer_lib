@@ -37,6 +37,9 @@
 #include "ReG_Steer_Steerside_internal.h"
 
 /* */
+extern char Steering_transport_string[];
+
+/* */
 socket_info_type appside_socket_info;
 
 /** @internal
@@ -56,7 +59,7 @@ extern char Global_scratch_buffer[];
 int Initialize_steering_connection_impl(int  NumSupportedCmds,
 					int* SupportedCmds) {
 
-/*   Direct_info_type* socket_info = &(Steerer_connection.socket_info); */
+  strncpy(Steering_transport_string, "Sockets", 8);
 
   /* set up socket_info struct */
   if(socket_info_init(&appside_socket_info) != REG_SUCCESS) {
@@ -274,6 +277,8 @@ extern Sim_table_type Sim_table;
 socket_info_table_type steerer_socket_info_table;
 
 int Initialize_steerside_transport() {
+  strncpy(Steering_transport_string, "Sockets", 8);
+
   return socket_info_table_init(&steerer_socket_info_table,
 				REG_MAX_NUM_STEERED_SIM);
 }

@@ -47,6 +47,10 @@
 
 /*--------------------- Data structures -------------------*/
 
+/**
+ */
+char Steering_transport_string[REG_MAX_STRING_LENGTH];
+
 /** 
    Main table used to record all simulations currently
    being steered */
@@ -2916,6 +2920,12 @@ void Steerside_signal_handler(int aSignal)
   }
 
   exit(0);
+}
+
+/*-------------------------------------------------------------------*/
+
+char* Get_steering_transport_string(void) {
+  return Steering_transport_string;
 }
 
 /*-------------------------------------------------------------------*/

@@ -40,6 +40,9 @@
 #include "ReG_Steer_Appside_internal.h"
 
 /* */
+extern char Samples_transport_string[];
+
+/* */
 extern file_info_table_type file_info_table;
 
 /* Need access to these tables which are actually declared in 
@@ -52,6 +55,8 @@ extern char Global_scratch_buffer[];
 /*---------------------------------------------------*/
 
 int Initialize_samples_transport() {
+  strncpy(Samples_transport_string, "Files", 6);
+
   return file_info_table_init(IOTypes_table.max_entries);
 }
 

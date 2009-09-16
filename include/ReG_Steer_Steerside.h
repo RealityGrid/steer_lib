@@ -91,6 +91,10 @@ typedef struct {
 /*-------------- Steerer-side function prototypes -------------*/
 
 /**
+ */
+extern PREFIX char* Get_steering_transport_string(void);
+
+/**
    @param SimID A string (of no more than REG_MAX_STRING_LENGTH 
    characters) identifying the simulation to attach to
    (Web Service endpoint or directory on hard disk)

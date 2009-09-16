@@ -36,6 +36,9 @@
 #include "Base64.h"
 #include "soapH.h"
 
+/* */
+extern char Steering_transport_string[];
+
 /** @internal
    Flag holding whether or not the ssl random no. generator has
    been initialized. */
@@ -100,6 +103,8 @@ int Initialize_steering_connection_impl(int  NumSupportedCmds,
   char* pchar;
   char  query_buf[REG_MAX_MSG_SIZE];
   struct wsrp__SetResourcePropertiesResponse out;
+
+  strncpy(Steering_transport_string, "WSRF", 5);
 
   /* malloc memory for soap struct for this connection and then
      initialise it */
@@ -752,6 +757,7 @@ extern Steerer_config_table_type Steer_config;
 SGS_info_table_type steerer_SGS_info_table;
 
 int Initialize_steerside_transport() {
+  strncpy(Steering_transport_string, "WSRF", 5);
   
   if(init_ssl_random_seq() == REG_SUCCESS){
     Steer_config.ossl_rand_available = REG_TRUE;

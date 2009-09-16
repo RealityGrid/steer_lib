@@ -73,6 +73,10 @@ extern PREFIX int Steering_initialize(char *AppName,
 				      int  *SupportedCmds);
 
 /**
+ */
+extern PREFIX char* Get_samples_transport_string(void);
+
+/**
    In order to enable the generic steering client to control the
    emission and consumption of different types of sample data, the
    steered application must register the different sample-data types

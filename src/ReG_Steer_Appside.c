@@ -45,6 +45,10 @@
 #include "soapRealityGrid.nsmap"
 
 /**
+ */
+char Samples_transport_string[REG_MAX_STRING_LENGTH];
+
+/**
    Buffer used for string handling etc - size set 
    in ReG_steer_types.h 
  */
@@ -525,6 +529,12 @@ int Steering_initialize(char *AppName,
 #endif
 
   return REG_SUCCESS;
+}
+
+/*----------------------------------------------------------------*/
+
+char* Get_samples_transport_string() {
+  return Samples_transport_string;
 }
 
 /*----------------------------------------------------------------*/

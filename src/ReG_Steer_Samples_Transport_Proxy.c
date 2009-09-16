@@ -42,6 +42,9 @@
 #include "ReG_Steer_Steering_Transport_API.h"
 
 /* */
+extern char Samples_transport_string[];
+
+/* */
 socket_info_table_type socket_info_table;
 
 /* Need access to these tables which are actually declared in 
@@ -55,6 +58,7 @@ extern char Global_scratch_buffer[];
 /*--------------------- API -------------------------*/
 
 int Initialize_samples_transport() {
+  strncpy(Samples_transport_string, "Proxy", 6);
 
 #if !REG_HAS_MSG_NOSIGNAL
   signal(SIGPIPE, signal_handler_sockets);

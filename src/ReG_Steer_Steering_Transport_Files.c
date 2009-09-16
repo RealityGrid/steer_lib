@@ -36,6 +36,9 @@
 #include "ReG_Steer_Steerside.h"
 #include "ReG_Steer_Steerside_internal.h"
 
+/* */
+extern char Steering_transport_string[];
+
 /** @internal
    The table holding details of our communication channel with the
    steering client - defined in ReG_Steer_Appside.c */
@@ -55,8 +58,9 @@ int Detach_from_steerer_impl() {
   int   nbytes;
   char  filename[REG_MAX_STRING_LENGTH];
 
-  /* Remove lock file that indicates app is being steered */
+  strncpy(Steering_transport_string, "Files", 6);
 
+  /* Remove lock file that indicates app is being steered */
   nbytes = snprintf(filename, REG_MAX_STRING_LENGTH, "%s%s", 
 		    Steerer_connection.file_root, 
 		    STR_CONNECTED_FILENAME);
@@ -356,6 +360,8 @@ int Get_data_io_address_impl(const int           dummy,
 extern Sim_table_type Sim_table;
 
 int Initialize_steerside_transport() {
+  strncpy(Steering_transport_string, "Files", 6);
+
   return REG_SUCCESS;
 }
 
