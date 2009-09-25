@@ -511,7 +511,9 @@ int consume_supp_cmds(int index) {
 	     &(sim->Cmds_table.cmd[sim->Cmds_table.num_registered].cmd_id));
 
       /* ARPDBG - may need to add cmd parameters here too */
+#ifdef REG_DEBUG
       fprintf(stderr, "cmd->id %s: parsed %d\n", cmd->id, sim->Cmds_table.cmd[sim->Cmds_table.num_registered].cmd_id);
+#endif
 
       Increment_cmd_registered(&(sim->Cmds_table));
 
