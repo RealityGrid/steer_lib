@@ -1,6 +1,45 @@
 Release Notes for the RealityGrid Steering Library
 --------------------------------------------------
 
+Version 3.0.0
+-------------
+
+ * Add option to build either static or shared libraries.
+ * Create modularization framework and modularize "Samples" transport code.
+ * Modularization of "Steering" transport code.
+ * Modularize IOProxy Samples Transport code.
+ * Remove Consume_start_impl() from the Samples Transport API.
+ * Make the building of a monolithic library the default.
+ * Implement mechanism for modularized transport introspection.
+ * Turn off some debug output that was printed from a non-debug build.
+ * Update the licence in each file. Also add a LICENCE file at the top-level.
+
+ Internal changes
+ ----------------
+
+ * Convert files with DOS CRLF line endings to standard UNIX LF.
+ * Sink example IO Channel name updated to match that which mini_app uses.
+ * Move towards centralized cross-platform and library feature checks.
+ * Use REG_HAS_MSG_NOSIGNAL to correctly handle the use of flags versus signals for send().
+ * Use REG_HAS_MSG_DONTWAIT to correctly implement a cross-platform non-blocking recv.
+ * Make the finding and linkage of external library dependencies consistent.
+ * Convert creation of lock files from using 'touch' to creat().
+ * Convert listing of files in a directory from using 'ls' to c library functions.
+ * Grid Services code removed and gSoap bindings updated to version 2.7.13.
+ * Build system improvements relating to modularization work.
+ * Require OpenSSL for WSRF Steering so that we can always use HTTPS or WSSE if required.
+ * Move the platform dependency checks to their own directory.
+ * Add a per-module build step so that each module can have custom build steps.
+ * Added a framework in which to do platform specific configuration.
+ * Move 'utility' code to more appropriate files after modularization.
+ * Remove the proxy code for "grid" (WSRF) steering.
+ * Remove all the files that we no longer use.
+ * Test to ensure that the user specifies something sensible as module choices.
+ * Use REG_HAS_MSG_WAITALL to correctly implement a cross-platform blocking recv.
+ * Add a small check to prevent REG_DEBUG_FULL being ON if REG_DEBUG is OFF.
+ * Minor changes to some build system code.
+ * ReG_Steer_Common.h did not include ReG_Steer_types.h ...
+
 Version 2.5.0
 -------------
 

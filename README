@@ -28,7 +28,7 @@ as part of your OS.
 
 OpenSSL
 
-Certain configurations of the Steering library require SSL for secure
+Certain parts of the Steering library require SSL for secure
 communications. Again, you will need to have the header files
 available on your system as well as the runtime libraries. OpenSSL is
 available from http://www.openssl.org/ if it is not provided by your
@@ -159,32 +159,32 @@ REG_BUILD_FORTRAN_WRAPPERS - default OFF
 
 Wrap the Steering library for us from Fortran codes?
 
+REG_BUILD_MODULAR_LIBS - default OFF
+
+Build all the modules as separate libraries? If OFF then only build
+the chosen modules into a single monolithic library (see
+REG_USE_MODULE_Samples and REG_USE_MODULE_Steering below).
+
+Leaving this option OFF produces a library equivalent to that of a
+version 2.5.0 build.
+
+REG_BUILD_SHARED_LIBS - default OFF
+
+Build static or shared libraries?
+
 REG_DEBUG - default OFF
 
 Add debug messages to Steering library output for debugging purposes?
 
-REG_SOAP_STEERING - default OFF
-REG_SOCKET_STEERING - default ON
+REG_USE_MODULE_Samples - default Sockets
 
-Choose the transport which is used to pass steering messages. If both
-are set to OFF then a file-based transport is used.
+Choose the transport over which sample data is moved. Current choices
+are Sockets, Files or Proxy.
 
-REG_SOCKET_SAMPLES - default ON
-REG_PROXY_SAMPLES - default OFF
+REG_USE_MODULE_Steering - default Sockets
 
-Choose the transport over which sample data is moved. If both are set
-to OFF then a file-based transport is used.
-
-REG_USE_OPENSSL - default OFF
-
-Use SSL for steering connections. Requires OpenSSL.
-
-REG_BUILD_SEPARATE_SOAP_LIB - default ON
-
-By default the gSoap generated code is put in a separate library. This
-is so that such code does not clash with other uses of gSoap in a
-combined system. If you know that you won't be using such a setup then
-you can set this to OFF.
+Choose the transport which is used to pass steering messages. Current
+choices are Sockets, WSRF or Files.
 
 REG_KEEP_XML_MESSAGES - default OFF
 REG_USE_TIMING - default OFF
@@ -194,11 +194,6 @@ Some further debugging aids. Leave OFF for general use.
 REG_LOG_STEERING - default ON
 
 Keep a log of steering operations performed during a run.
-
-REG_USE_WSRF - default ON
-
-Specifies the use of WSRF for SOAP steering (if SOAP steering is being
-used). Turn this option OFF for OGSI (not recommended).
 
 ----------------------------------------------------------------------
 
