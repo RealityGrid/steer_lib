@@ -1,4 +1,4 @@
-/*
+
   The RealityGrid Steering Library
 
   Copyright (c) 2002-2009, University of Manchester, United Kingdom.
@@ -41,15 +41,3 @@
   LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
   ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
   POSSIBILITY OF SUCH DAMAGE.
-
-  Author: Robert Haines
- */
-
-#ifndef __REG_STEER_SAMPLES_TRANSPORT_PROXY_H__
-#define __REG_STEER_SAMPLES_TRANSPORT_PROXY_H__
-
-#include "ReG_Steer_Config.h"
-
-int Consume_proxy_destination_ack(const int index);
-
-#endif /* __REG_STEER_SAMPLES_TRANSPORT_PROXY_H__ */

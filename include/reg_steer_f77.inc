@@ -1,35 +1,49 @@
-c---------------------------------------------------------------------
-c  F77 include file intended to give F77 applications access to 
-c  the RealityGrid computational-steering API.
 c
-c  (C) Copyright 2006, University of Manchester, United Kingdom,
-c  all rights reserved.
+c  The RealityGrid Steering Library
 c
-c  This software was developed by the RealityGrid project
-c  (http://www.realitygrid.org), funded by the EPSRC under grants
-c  GR/R67699/01 and GR/R67699/02.
+c  Copyright (c) 2002-2009, University of Manchester, United Kingdom.
+c  All rights reserved.
+c
+c  This software is produced by Research Computing Services, University
+c  of Manchester as part of the RealityGrid project and associated
+c  follow on projects, funded by the EPSRC under grants GR/R67699/01,
+c  GR/R67699/02, GR/T27488/01, EP/C536452/1, EP/D500028/1,
+c  EP/F00561X/1.
 c
 c  LICENCE TERMS
 c
 c  Redistribution and use in source and binary forms, with or without
 c  modification, are permitted provided that the following conditions
 c  are met:
-c  1. Redistributions of source code must retain the above copyright
-c     notice, this list of conditions and the following disclaimer.
-c  2. Redistributions in binary form must reproduce the above copyright
-c     notice, this list of conditions and the following disclaimer in the
-c     documentation and/or other materials provided with the distribution.
 c
-c  THIS MATERIAL IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+c    * Redistributions of source code must retain the above copyright
+c       notice, this list of conditions and the following disclaimer.
+c
+c    * Redistributions in binary form must reproduce the above
+c      copyright notice, this list of conditions and the following
+c      disclaimer in the documentation and/or other materials provided
+c      with the distribution.
+c
+c    * Neither the name of The University of Manchester nor the names
+c      of its contributors may be used to endorse or promote products
+c      derived from this software without specific prior written
+c      permission.
+c
+c  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 c  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-c  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-c  A PARTICULAR PURPOSE ARE DISCLAIMED. THE ENTIRE RISK AS TO THE QUALITY
-c  AND PERFORMANCE OF THE PROGRAM IS WITH YOU.  SHOULD THE PROGRAM PROVE
-c  DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR
-c  CORRECTION.  
+c  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+c  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+c  COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+c  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+c  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+c  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+c  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+c  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+c  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+c  POSSIBILITY OF SUCH DAMAGE.
 c
-c  Authors........: Andrew Porter, Robert Haines
-c---------------------------------------------------------------------
+c  Author: Andrew Porter
+c          Robert Haines
 
 c Declarations of RealityGrid steering functions - these are actually
 c wrappers for the library routines (in C)
