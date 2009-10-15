@@ -45,8 +45,9 @@
   Author: Robert Haines
  */
 
-/** @file ReG_Steer_WSRF_Utilities.c
-    @brief Source file for routines to do registry look-up
+/** @internal
+    @file ReG_Steer_WSRF_Utilities.c
+    @brief Source file for WSRF-specific routines.
     @author Robert Haines
   */
 

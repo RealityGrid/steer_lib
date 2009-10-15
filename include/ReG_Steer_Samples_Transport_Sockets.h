@@ -48,6 +48,12 @@
 #ifndef __REG_STEER_SAMPLES_TRANSPORT_SOCKETS_H__
 #define __REG_STEER_SAMPLES_TRANSPORT_SOCKETS_H__
 
+/** @file ReG_Steer_Samples_Transport_Sockets.h 
+ *  @brief Socket specific routines for the samples transport module.
+ *
+ *  @author Robert Haines
+ */
+
 #include "ReG_Steer_Config.h"
 #include "ReG_Steer_types.h"
 #include "ReG_Steer_Sockets_Common.h"

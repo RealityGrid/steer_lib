@@ -47,6 +47,7 @@
 
 /** @file mainpage_doc.h
     @author Andrew Porter
+    @author Robert Haines
     @brief Separate header file for doxygen documentation only
 */
 
@@ -97,7 +98,7 @@
     \end{figure}
     @endlatexonly
 
-    <IMG SRC="steer_arch_symm.png" alt="Illustrative architecture diagram"
+    <img src="steer_arch_symm.png" alt="Illustrative architecture diagram"
          title="Illustrative architecture of a steering scenario">
 
     The figure shows an example use case for computational steering.
@@ -368,8 +369,10 @@
 
     This work was funded by the Engineering and Physical Sciences
     Research Council (http://www.epsrc.ac.uk) as part of the
-    RealityGrid project (http://www.realitygrid.org).  More
-    documentation and the library itself are available from
-    http://www.sve.man.ac.uk/Research/AtoZ/RealityGrid/.
+    RealityGrid project (http://www.realitygrid.org) under grants
+    GR/R67699/01, GR/R67699/02, GR/T27488/01, EP/C536452/1,
+    EP/D500028/1 and EP/F00561X/1.  More documentation and the library
+    itself are available from
+    http://code.google.com/p/computational-steering/.
 
 */

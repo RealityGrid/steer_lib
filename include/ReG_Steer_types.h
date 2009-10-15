@@ -50,7 +50,7 @@
 #define __REG_TYPES_INCLUDED
 
 /** @file ReG_Steer_types.h
-    @brief Top-level header file
+    @brief Top-level header file containing type definitions, etc.
 
     Base header file for the steering library - contains definitions
     of return values, message types and array sizes.

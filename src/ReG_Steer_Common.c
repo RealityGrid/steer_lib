@@ -396,9 +396,6 @@ int IOdef_index_from_handle(IOdef_table_type *table, int IOdefHandle)
 }
 
 /*--------------------------------------------------------------------*/
-/** Write the header of a new steering message into the supplied buffer 
-    @param buf Pointer to array of char to write into
-    @internal */
 int Write_xml_header(char **buf)
 {
   int  return_status = REG_SUCCESS;

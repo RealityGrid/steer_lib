@@ -74,6 +74,8 @@
    if not enabled. By default, the steering library is disabled
    and therefore this routine must be called with @p EnableSteer
    set to REG_TRUE in order to make an application steerable.
+   @param EnableSteer Set to REG_TRUE or REG_FALSE to enable or
+   disable the steering library respectively.
  */
 extern PREFIX void Steering_enable(const int EnableSteer);
 
@@ -140,6 +142,14 @@ extern PREFIX int Register_IOTypes(int    NumTypes,
 /**
    Register a single IOType. Behaves exactly as Register_IOTypes() but
    does not require arrays of variables as arguments. 
+   @param IOLabel Array of labels for the IOTypes
+   @param direction Array giving direction of each IOType (@c IN, 
+   @c OUT or @c INOUT)
+   @param IOFrequency Array giving the interval between 
+   automatically-generated commands to emit/consume data using each IOType
+   @param IOType On success - array of handles for registered IOTypes
+   @return REG_SUCCESS, REG_FAILURE
+   @see Register_IOTypes()
  */
 extern PREFIX int Register_IOType(char* IOLabel,
 				  int   direction,

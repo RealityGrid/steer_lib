@@ -46,8 +46,8 @@
  */
 
 /** @internal
-    @file ReG_Steer_Sample_Transport_Proxy.c
-    @brief Source file for proxy-related routines and data structures
+    @file ReG_Steer_Samples_Transport_Proxy.c
+    @brief Source file for proxy-based samples transport.
     @author Robert Haines
   */
 

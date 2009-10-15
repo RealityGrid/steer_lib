@@ -46,8 +46,8 @@
  */
 
 /** @internal
-    @file ReG_Steer_Appside_Sockets.c
-    @brief Source file for socket-related routines and data structures
+    @file ReG_Steer_Samples_Transport_Files.c
+    @brief Source file for file-based samples transport.
     @author Robert Haines
   */
 

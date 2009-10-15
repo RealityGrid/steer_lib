@@ -45,6 +45,12 @@
   Author: Robert Haines
  */
 
+/** @internal
+    @file ReG_Steer_Steering_Transport_WSRF.c
+    @brief Source file for WSRF-based steering transport.
+    @author Robert Haines
+  */
+
 #include "ReG_Steer_Config.h"
 #include "ReG_Steer_types.h"
 #include "ReG_Steer_Steering_Transport_API.h"

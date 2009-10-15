@@ -45,6 +45,12 @@
   Author: Robert Haines
  */
 
+/** @internal
+    @file ReG_Steer_Files_Common.c
+    @brief Source file for file-specific routines.
+    @author Robert Haines
+  */
+
 #include "ReG_Steer_Config.h"
 
 #include "ReG_Steer_Files_Common.h"

@@ -1,3 +1,4 @@
+
 /*
   The RealityGrid Steering Library
 
@@ -46,7 +47,7 @@
  */
 
 /** @internal
-    @file ReG_Steer_Config.h.in
+    @file ReG_Steer_Config.h
     @brief Configuration file for passing build time options to source code
 
     All internal library source code and header files should include

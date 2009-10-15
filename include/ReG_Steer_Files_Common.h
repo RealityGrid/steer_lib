@@ -48,6 +48,12 @@
 #ifndef __REG_STEER_FILES_COMMON_H__
 #define __REG_STEER_FILES_COMMON_H__
 
+/** @file ReG_Steer_Files_Common.h 
+ *  @brief Data structures and routines common to all file-based code.
+ *
+ *  @author Robert Haines
+ */
+
 #include "ReG_Steer_Config.h"
 
 #include "ReG_Steer_types.h"

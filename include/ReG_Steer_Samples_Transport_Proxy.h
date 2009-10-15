@@ -48,6 +48,12 @@
 #ifndef __REG_STEER_SAMPLES_TRANSPORT_PROXY_H__
 #define __REG_STEER_SAMPLES_TRANSPORT_PROXY_H__
 
+/** @file ReG_Steer_Samples_Transport_Proxy.h 
+ *  @brief Proxy specific routines for the samples transport module.
+ *
+ *  @author Robert Haines
+ */
+
 #include "ReG_Steer_Config.h"
 
 int Consume_proxy_destination_ack(const int index);

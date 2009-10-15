@@ -48,6 +48,12 @@
 #ifndef __REG_STEER_STEERING_TRANSPORT_FILES_H__
 #define __REG_STEER_STEERING_TRANSPORT_FILES_H__
 
+/** @file ReG_Steer_Steering_Transport_Files.h 
+ *  @brief File specific routines for the steering transport module.
+ *
+ *  @author Robert Haines
+ */
+
 #include "ReG_Steer_Config.h"
 #include "ReG_Steer_types.h"
 #include "ReG_Steer_Steering_Transport_API.h"

@@ -49,8 +49,7 @@
 #define __REG_STEER_SAMPLES_TRANSPORT_API_H__
 
 /** @file ReG_Steer_Samples_Transport_API.h 
- *  @brief Some file...
- *
+ *  @brief The API specification for the samples transport modules.
  *
  *  @author Robert Haines
  */

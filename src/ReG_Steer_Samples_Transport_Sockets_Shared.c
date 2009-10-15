@@ -46,9 +46,9 @@
  */
 
 /** @internal
-    @file ReG_Steer_Sample_Transport_Sockets_Shared.c
+    @file ReG_Steer_Samples_Transport_Sockets_Shared.c
     @brief Source file for routines and data structures shared between
-           socket and proxy implementations.
+           socket and proxy samples transport implementations.
     @author Robert Haines
   */
 

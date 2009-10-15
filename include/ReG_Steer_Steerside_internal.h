@@ -150,7 +150,7 @@ int Command_supported(int sim_id, int cmd_id);
 int Send_control_msg(int SimIndex, char* buf);
 
 /** @internal
-    @param sim Pointer to simulation entry in Sim_table
+    @param index Index of simulation entry in Sim_table
 
     Take down the steering connection */
 int Finalize_connection(int index);

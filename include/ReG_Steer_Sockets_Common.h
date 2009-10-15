@@ -48,6 +48,12 @@
 #ifndef __REG_STEER_SOCKETS_COMMON_H__
 #define __REG_STEER_SOCKETS_COMMON_H__
 
+/** @file ReG_Steer_Sockets_Common.h 
+ *  @brief Data structures and routines common to all sockets-based code.
+ *
+ *  @author Robert Haines
+ */
+
 #include "ReG_Steer_Config.h"
 #include "ReG_Steer_types.h"
 
@@ -91,6 +97,9 @@ typedef struct {
 } socket_info_table_type;
 
 /** @internal
+    @param table Pointer to the table of socket information to be
+    initialised
+    @param max_entries The maximum size of that table
 
     Initialise socket info table.
  */
@@ -98,13 +107,15 @@ int socket_info_table_init(socket_info_table_type* table,
 			   const int max_entries);
 
 /** @internal
-    @param index Index of the IOType to which socket belongs
+    @param socket_info Pointer to the socket information for the socket
+    to be initialised
 
     Initialise socket_info_type structure */
 int socket_info_init(socket_info_type* socket_info);
 
 /** @internal
-    @param index Index of the IOType to which socket belongs
+    @param socket_info Pointer to the socket information for the socket
+    to be cleaned up.
 
     Clean up members of socket_info_type structure */
 void socket_info_cleanup(socket_info_type* socket_info);
@@ -137,9 +148,14 @@ void signal_handler_sockets(int a_signal);
 #endif
 
 /** @internal
- *  Wrap send() so we can avoid lots of #ifdefs in the main body of code.
- *  See send(2).
- */
+    @param s File descriptor of the sending socket
+    @param buf Pointer to buffer from which to send data (must
+    be at least @p len in size)
+    @param len Number of bytes to send through socket
+    @param flags Flags to pass to the underlying call to send()
+
+    Wrap send() so we can avoid lots of \#ifdefs in the main body of code.
+    See send(2). */
 ssize_t send_no_signal(int s, const void *buf, size_t len, int flags);
 
 /** @internal

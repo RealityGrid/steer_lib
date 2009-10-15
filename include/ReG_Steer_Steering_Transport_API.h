@@ -49,8 +49,7 @@
 #define __REG_STEER_STEERING_TRANSPORT_API_H__
 
 /** @file ReG_Steer_Steering_Transport_API.h 
- *  @brief Some file...
- *
+ *  @brief The API specification for the steering transport modules.
  *
  *  @author Robert Haines
  */
@@ -98,8 +97,13 @@ int Finalize_steering_connection_impl();
 
 /** @internal
     @param index Index of IOType to get address for
+    @param direction The direction of the data that the IOType is used for,
+           e.g. <code>REG_IN</code>, <code>REG_OUT</code> or
+	   <code>REG_INOUT</code>.
     @param hostname hostname of machine on which data source is listening
     @param port Port on which data source is listening
+    @param label The label of the IOType to be used. This only means anything
+           when steering via a SWS otherwise this parameter is ignored.
 
     Obtain endpoint for a socket connection */
 int Get_data_io_address_impl(const int index,
@@ -114,23 +118,31 @@ int Initialize_steerside_transport();
 int Finalize_steerside_transport();
 
 /** @internal
-    @param sim Pointer to entry in main Sim_table
-    @param SimID GSH of the SGS representing the simulation
+    @param index Index of entry in main Sim_table
+    @param SimID Address of the simulation or the SWS representing the
+           simulation
     
     Initialise soap-specific structures & attach to simulation via SOAP */
 int Sim_attach_impl(int index, char *SimID);
 
+/** @internal
+    @param index Index of entry in main Sim_table
+    @param sec Security structure to be populated.
+
+    Initialise security information for a secure attach. */
 int Sim_attach_security_impl(const int index,
 			     const struct reg_security_info* sec);
 
 /** @internal
-    @param sim Pointer to entry in main Sim_table
+    @param index Index of entry in main Sim_table
+    @param no_block Whether to wait for a message or return immediatly if
+           there is no message waiting.
 
     Gets the next status message from the simulation */
 struct msg_struct *Get_status_msg_impl(int index, int no_block);
 
 /** @internal 
-    @param sim Pointer to entry in main Sim_table
+    @param index Index of entry in main Sim_table
     @param buf The control message to send
 
     Send the supplied control message to the simulation */
@@ -143,7 +155,7 @@ int Send_control_msg_impl(int index, char* buf);
 int Send_detach_msg_impl(int index);
 
 /** @internal
-    @param sim Pointer to entry in main Sim_table
+    @param index Index of entry in main Sim_table
 
     Clean-up soap-specific structures */
 int Finalize_connection_impl(int index);
