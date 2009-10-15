@@ -84,6 +84,12 @@ else(DOXYGEN_QUIET)
   set(DOXYGEN_QUIET NO)
 endif(DOXYGEN_QUIET)
 
+# was dot found as well?
+set(DOXYGEN_HAVE_DOT YES)
+if(DOXYGEN_DOT_EXECUTABLE MATCHES "NOTFOUND$")
+  set(DOXYGEN_HAVE_DOT NO)
+endif(DOXYGEN_DOT_EXECUTABLE MATCHES "NOTFOUND$")
+
 # configure the doxygen driver file
 configure_file(
   "${CMAKE_CURRENT_SOURCE_DIR}/doxyfile.in"
