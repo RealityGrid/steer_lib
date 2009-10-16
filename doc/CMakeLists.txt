@@ -102,6 +102,13 @@ add_custom_target(Documentation ALL
   "${CMAKE_CURRENT_BINARY_DIR}/doxyfile"
 )
 
+# copy the required images to the build dir
+configure_file(
+  "${CMAKE_CURRENT_SOURCE_DIR}/steer_arch_symm.png"
+  "${CMAKE_CURRENT_BINARY_DIR}/html/steer_arch_symm.png"
+  COPYONLY
+)
+
 # install the documentation
 if(REG_BUILD_HTML_DOCS)
   install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html/
