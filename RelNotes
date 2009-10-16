@@ -1,6 +1,19 @@
 Release Notes for the RealityGrid Steering Library
 --------------------------------------------------
 
+Version 3.0.1
+-------------
+
+ * Updates and corrections to the inline doxygen document comments in the code.
+ * When building docs, the images for the main page need to be copied to the build tree.
+ * Add the example codes into the doxygen process.
+
+ Internal changes
+ ----------------
+
+ * Updates to the automatic documentation build rules.
+ * Remove a couple of very old and out of date doc files that refer to version 1.0.
+
 Version 3.0.0
 -------------
 
