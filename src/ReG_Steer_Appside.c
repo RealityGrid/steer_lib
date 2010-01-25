@@ -168,6 +168,9 @@ struct msg_store_struct *Msg_store_tail;
     handled -  used by application-side of library */
 struct msg_uid_history_struct Msg_uid_store;
 
+/** Basic library config - declared in ReG_Steer_Common */
+extern Steer_lib_config_type Steer_lib_config;
+
 /*----------------------------------------------------------------*/
 
 void Steering_enable(const int EnableSteer)
@@ -204,6 +207,10 @@ int Steering_initialize(char *AppName,
 	    "not enabled - no steering will be possible\n");
     return REG_SUCCESS;
   }
+
+  /* Set up the basic library config data */
+  if(Get_scratch_directory() != REG_SUCCESS)
+    return REG_FAILURE;
 
   /* Set the location of the file containing the schema describing all 
      steering communication */
@@ -472,7 +479,7 @@ int Steering_initialize(char *AppName,
   /* Initialise log of checkpoints */
   /* Jens, 09.04.03: Moved these lines here because Open_log_file()
    * needs Initialize_steering_connection to be called before. */
-  strcpy(Chk_log.filename, Steerer_connection.file_root);
+  strcpy(Chk_log.filename, Steer_lib_config.scratch_dir);
   strcat(Chk_log.filename, REG_LOG_FILENAME);
 
   if( Initialize_log(&Chk_log, CHKPT) != REG_SUCCESS ){
@@ -490,7 +497,7 @@ int Steering_initialize(char *AppName,
   }
 
   /* Initialize table for logging parameter values */
-  strcpy(Param_log.filename, Steerer_connection.file_root);
+  strcpy(Param_log.filename, Steer_lib_config.scratch_dir);
   strcat(Param_log.filename, REG_PARAM_LOG_FILENAME);
 
   if(Initialize_log(&Param_log, PARAM) != REG_SUCCESS) {
@@ -4857,77 +4864,6 @@ int Initialize_steering_connection(int  NumSupportedCmds,
 
   return Initialize_steering_connection_impl(NumSupportedCmds,
 					     SupportedCmds);
-}
-
-/*-------------------------------------------------------------------*/
-
-int Set_steering_directory()
-{
-  char *pchar;
-  int   i;
-  int   len; 
-  int   max_len;
-
-  pchar = getenv("REG_STEER_DIRECTORY");
-
-  if(pchar){
-
-    /* Check that path ends in '/' - if not then add one */
-
-    i = strlen(pchar);
-
-    /* Check that we've got enough memory to hold full path
-       for steering-message filenames */
-    max_len = strlen(REG_LOG_FILENAME);
-    if((len = strlen(APP_STEERABLE_FILENAME)) > max_len){
-      max_len = len;
-    }
-    if((len = strlen(STR_CONNECTED_FILENAME)) > max_len){
-      max_len = len;
-    }
-    if((len = strlen(APP_TO_STR_FILENAME "_1000.lock")) > max_len){
-      max_len = len;
-    }
-    if((len = strlen(STR_TO_APP_FILENAME "_1000.lock")) > max_len){
-      max_len = len;
-    }
-
-    if((i + max_len + 1) > REG_MAX_STRING_LENGTH){
-
-      fprintf(stderr, "STEER: Set_steering_directory: "
-	      "REG_MAX_STRING_LENGTH (%d chars) less\nthan predicted "
-	      "string length of %d chars\n", REG_MAX_STRING_LENGTH, 
-	      (i+max_len+1));
-      return REG_FAILURE;
-    }
-
-    if( pchar[i-1] != '/' ){
-
-      sprintf(Steerer_connection.file_root, "%s/", pchar);
-    }
-    else{
-
-      strcpy(Steerer_connection.file_root, pchar);
-    }
-
-    if(Directory_valid(Steerer_connection.file_root) != REG_SUCCESS){
-
-      fprintf(stderr, "STEER: Set_steering_directory: invalid scratch dir for "
-	      "steering: %s\n", Steerer_connection.file_root);
-      return REG_FAILURE;
-    }
-    else{
-      fprintf(stderr, "STEER: Using following dir for steering scratch: %s\n", 
-	     Steerer_connection.file_root);
-    }
-  }
-  else{
-    fprintf(stderr, "STEER: Set_steering_directory: failed to get "
-	    "scratch directory - using ./\n");
-    sprintf(Steerer_connection.file_root, "./");
-  }
-
-  return REG_SUCCESS;
 }
 
 /*-------------------------------------------------------------------*/

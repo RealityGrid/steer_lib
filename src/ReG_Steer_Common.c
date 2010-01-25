@@ -72,6 +72,9 @@
 
 char ReG_Steer_Schema_Locn[REG_MAX_STRING_LENGTH];
 
+/** Basic library config. Declared here as used by all. */
+Steer_lib_config_type Steer_lib_config;
+
 /*----------------------------------------------------------*/
 
 int Get_message_type(const char *name)
@@ -439,6 +442,74 @@ int Write_xml_footer(char **buf, int bytes_free)
   }
 
   return return_status;
+}
+
+/*-----------------------------------------------------------------*/
+
+int Get_scratch_directory() {
+  char* pchar;
+  int   i;
+  int   len;
+  int   max_len;
+
+  pchar = getenv("REG_STEER_DIRECTORY");
+
+  if(pchar) {
+
+    /* Check that path ends in '/' - if not then add one */
+
+    i = strlen(pchar);
+
+    /* Check that we've got enough memory to hold full path
+       for steering-message filenames */
+    max_len = strlen(REG_LOG_FILENAME);
+    if((len = strlen(APP_STEERABLE_FILENAME)) > max_len) {
+      max_len = len;
+    }
+    if((len = strlen(STR_CONNECTED_FILENAME)) > max_len) {
+      max_len = len;
+    }
+    if((len = strlen(APP_TO_STR_FILENAME "_1000.lock")) > max_len) {
+      max_len = len;
+    }
+    if((len = strlen(STR_TO_APP_FILENAME "_1000.lock")) > max_len) {
+      max_len = len;
+    }
+
+    if((i + max_len + 1) > REG_MAX_STRING_LENGTH) {
+
+      fprintf(stderr, "STEER: Get_scratch_directory: "
+	      "REG_MAX_STRING_LENGTH (%d chars) less\nthan predicted "
+	      "string length of %d chars\n", REG_MAX_STRING_LENGTH, 
+	      (i+max_len+1));
+      return REG_FAILURE;
+    }
+
+    if(pchar[i-1] != '/') {
+      sprintf(Steer_lib_config.scratch_dir, "%s/", pchar);
+    }
+    else{
+      strcpy(Steer_lib_config.scratch_dir, pchar);
+    }
+
+    if(Directory_valid(Steer_lib_config.scratch_dir) != REG_SUCCESS) {
+      fprintf(stderr, "STEER: Get_scratch_directory: invalid scratch dir: %s\n",
+	      Steer_lib_config.scratch_dir);
+      return REG_FAILURE;
+    }
+    else {
+      fprintf(stderr, "STEER: Using following dir for scratch: %s\n", 
+	     Steer_lib_config.scratch_dir);
+    }
+  }
+  else {
+    fprintf(stderr, "STEER: Get_scratch_directory: failed to get "
+	    "scratch directory from REG_STEER_DIRECTORY. Using default (%s).\n",
+	    REG_SCRATCH_DEFAULT);
+    sprintf(Steer_lib_config.scratch_dir, REG_SCRATCH_DEFAULT);
+  }
+
+  return REG_SUCCESS;
 }
 
 /*-----------------------------------------------------------------*/

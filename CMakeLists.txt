@@ -115,10 +115,12 @@ configure_file(
 include_directories("${PROJECT_BINARY_DIR}")
 
 #
-# feature options
+# configure options
 #
 option(REG_LOG_STEERING "Whether or not to log steering commands. Default is ON." ON)
+set(REG_SCRATCH_DEFAULT "./" CACHE PATH "Directory for library to use as general scratch space. Default is the current directory (./).")
 mark_as_advanced(REG_LOG_STEERING)
+mark_as_advanced(REG_SCRATCH_DEFAULT)
 
 #
 # library debug options

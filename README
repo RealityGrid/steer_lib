@@ -186,6 +186,13 @@ REG_USE_MODULE_Steering - default Sockets
 Choose the transport which is used to pass steering messages. Current
 choices are Sockets, WSRF or Files.
 
+REG_SCRATCH_DEFAULT - default .
+
+The directory to use for any temporary files that the library needs to
+create. If using File-based methods then steering messages and data
+are written into this directory. Checkpoints are also written to this
+directory.
+
 REG_KEEP_XML_MESSAGES - default OFF
 REG_USE_TIMING - default OFF
 

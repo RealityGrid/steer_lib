@@ -69,6 +69,12 @@
   #define PREFIX 
 #endif
 
+/** @internal Basic library configuration */
+typedef struct {
+  /** Where to write any temporary files such as logs */
+  char scratch_dir[REG_MAX_STRING_LENGTH];
+} Steer_lib_config_type;
+
 /** @internal Used to log parameter values */
 typedef struct {
   /** Handle of logged parameter */
@@ -395,7 +401,7 @@ extern PREFIX int Directory_valid(char *directory);
     from REG_STEER_DIRECTORY env. variable.  Used even when steering
     is NOT file based (because some log files @e etc. are stored in that
     directory too). */
-extern PREFIX int Set_steering_directory();
+extern PREFIX int Get_scratch_directory();
 
 /** @internal
     @param table Pointer to table of registered parameters

@@ -60,6 +60,9 @@
 /* ReG version */
 #define REG_STEER_LIB_VERSION "@REG_STEER_LIB_VERSION@"
 
+/* The default directory to use for scratch space */
+#define REG_SCRATCH_DEFAULT "@REG_SCRATCH_DEFAULT@/"
+
 #cmakedefine REG_LOG_STEERING
 #cmakedefine REG_DEBUG
 #cmakedefine REG_DEBUG_FULL

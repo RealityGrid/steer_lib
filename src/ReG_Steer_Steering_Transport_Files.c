@@ -76,6 +76,9 @@ extern Chk_log_type Param_log;
 /** @internal Global scratch buffer - declared in ReG_Steer_Appside.c */
 extern char Global_scratch_buffer[];
 
+/** Basic library config - declared in ReG_Steer_Common */
+extern Steer_lib_config_type Steer_lib_config;
+
 /*----------------- Appside methods ---------------------*/
 
 int Detach_from_steerer_impl() {
@@ -87,7 +90,7 @@ int Detach_from_steerer_impl() {
 
   /* Remove lock file that indicates app is being steered */
   nbytes = snprintf(filename, REG_MAX_STRING_LENGTH, "%s%s", 
-		    Steerer_connection.file_root, 
+		    Steer_lib_config.scratch_dir, 
 		    STR_CONNECTED_FILENAME);
 
   if(nbytes >= (REG_MAX_STRING_LENGTH-1) || (nbytes < 1)){
@@ -104,7 +107,7 @@ int Detach_from_steerer_impl() {
      now be consuming */
 
   nbytes = snprintf(filename, REG_MAX_STRING_LENGTH, "%s%s", 
-		    Steerer_connection.file_root, 
+		    Steer_lib_config.scratch_dir, 
 		    STR_TO_APP_FILENAME);
 
   if( nbytes >= (REG_MAX_STRING_LENGTH-1) || (nbytes < 1)){
@@ -131,7 +134,7 @@ int Steerer_connected_impl() {
   int    nbytes;
 
   nbytes = snprintf(filename, REG_MAX_STRING_LENGTH, "%s%s", 
-		    Steerer_connection.file_root, 
+		    Steer_lib_config.scratch_dir, 
 		    STR_CONNECTED_FILENAME);
 
   if(nbytes >= (REG_MAX_STRING_LENGTH-1) || (nbytes < 1)) {
@@ -182,7 +185,7 @@ struct msg_struct *Get_control_msg_impl() {
   int                  nbytes;
 
   nbytes = snprintf(filename, REG_MAX_STRING_LENGTH, "%s%s", 
-		    Steerer_connection.file_root, 
+		    Steer_lib_config.scratch_dir, 
 		    STR_TO_APP_FILENAME);
 
   if( nbytes >= (REG_MAX_STRING_LENGTH-1) || (nbytes < 1)){
@@ -224,17 +227,11 @@ int Initialize_steering_connection_impl(int  NumSupportedCmds,
   char  buf[REG_MAX_MSG_SIZE];
   char  filename[REG_MAX_STRING_LENGTH];
 
-  /* Set location of all comms files */
-  if(Set_steering_directory() != REG_SUCCESS){
-
-    return REG_FAILURE;
-  }
-
   /* Clean up any old files... */
 
   /* ...file indicating a steerer is connected (which it can't be since we've
      only just begun) */ 
-  sprintf(filename, "%s%s", Steerer_connection.file_root, 
+  sprintf(filename, "%s%s", Steer_lib_config.scratch_dir, 
 	  STR_CONNECTED_FILENAME);
   fp = fopen(filename, "w");
   if(fp != NULL){
@@ -254,14 +251,14 @@ int Initialize_steering_connection_impl(int  NumSupportedCmds,
   }
 
   /* ...files containing messages from a steerer */
-  sprintf(filename, "%s%s", Steerer_connection.file_root, 
+  sprintf(filename, "%s%s", Steer_lib_config.scratch_dir, 
 	  STR_TO_APP_FILENAME);
 
   remove_files(filename);
 
   /* Signal that component is available to be steered */
 
-  sprintf(filename, "%s%s", Steerer_connection.file_root, 
+  sprintf(filename, "%s%s", Steer_lib_config.scratch_dir, 
 	                    APP_STEERABLE_FILENAME);
   fp = fopen(filename,"w");
 
@@ -298,7 +295,7 @@ int Finalize_steering_connection_impl() {
 
   if(max1 > max) max=max1;
   
-  max += strlen(Steerer_connection.file_root);
+  max += strlen(Steer_lib_config.scratch_dir);
   if(max > REG_MAX_STRING_LENGTH ){
 
     fprintf(stderr, "STEER: Finalize_steering_connection_file: WARNING: truncating "
@@ -307,7 +304,7 @@ int Finalize_steering_connection_impl() {
 #endif
 
   /* Delete the lock file that indicates we are steerable */
-  sprintf(sys_command, "%s%s", Steerer_connection.file_root,
+  sprintf(sys_command, "%s%s", Steer_lib_config.scratch_dir,
 	  APP_STEERABLE_FILENAME);
   if(remove(sys_command)){
 
@@ -316,7 +313,7 @@ int Finalize_steering_connection_impl() {
   }
 
   /* Delete the lock file that indicates we are being steered */
-  sprintf(sys_command, "%s%s", Steerer_connection.file_root,
+  sprintf(sys_command, "%s%s", Steer_lib_config.scratch_dir,
 	  STR_CONNECTED_FILENAME);
   if(remove(sys_command)){
 #ifdef REG_DEBUG    
@@ -326,7 +323,7 @@ int Finalize_steering_connection_impl() {
   }
 
   /* Delete any files we'd have consumed if we'd lived longer */
-  sprintf(sys_command, "%s%s", Steerer_connection.file_root, 
+  sprintf(sys_command, "%s%s", Steer_lib_config.scratch_dir, 
 	  STR_TO_APP_FILENAME);
   remove_files(sys_command);
 
@@ -632,7 +629,7 @@ int generate_status_filename(char* filename) {
   /* Generate next filename in sequence for sending data to
      steerer & increment counter */
 
-  sprintf(filename, "%s%s_%d", Steerer_connection.file_root, 
+  sprintf(filename, "%s%s_%d", Steer_lib_config.scratch_dir, 
 	  APP_TO_STR_FILENAME, output_file_index++);
 
   /* Wrap counter if no. of distinct files exceeded */

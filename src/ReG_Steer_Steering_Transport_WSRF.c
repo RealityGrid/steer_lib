@@ -141,13 +141,6 @@ int Initialize_steering_connection_impl(int  NumSupportedCmds,
     return REG_FAILURE;
   }
 
-  /* Set location of steering scratch directory */
-  if(Set_steering_directory() != REG_SUCCESS) {
-    fprintf(stderr, "STEER: Initialize_steering_connection: "
-	    "failed to set steering scratch directory - checkpoint "
-	    "info. will be written to ./\n");
-  }
-
   /* Get the address of the SWS for this application from an environment
      variable */
   if((pchar = getenv("REG_SGS_ADDRESS"))) {
