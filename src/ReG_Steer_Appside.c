@@ -124,8 +124,6 @@ static int ReG_CalledFromF90   = REG_FALSE;
 static double ReG_TotalSimTimeSecs = 0.0;
 /** Internal param to hold current size of timestep of sim */
 static double ReG_SimTimeStepSecs = 0.0;
-/** Hostname of machine we are executing on */
-char ReG_Hostname[REG_MAX_STRING_LENGTH];
 /** Name (and version) of the application that has called us */
 char ReG_AppName[REG_MAX_STRING_LENGTH];
 #ifdef USE_REG_TIMING
@@ -269,30 +267,6 @@ int Steering_initialize(char *AppName,
     return REG_FAILURE;
   }
   strcpy(ReG_AppName, AppName);
-
-  /* Get the hostname of this machine - used to tell the outside
-     world how to contact us and where the (checkpoint) files we've 
-     written live.  On many machines we may be running on a node
-     that cannot be seen by the outside world and therefore globus 
-     connections for file transfer etc. will need an address of a 
-     publicly-accessible node.  This can be passed to us via the
-     REG_MACHINE_NAME environment variable. */
-  if( (pchar = getenv("REG_MACHINE_NAME")) ){
-    
-    strcpy(ReG_Hostname, pchar);
-  }
-  else if(Get_fully_qualified_hostname(&pchar, &ip_addr) == REG_SUCCESS){
-    strcpy(ReG_Hostname, pchar);
-  }
-  else{
-    ReG_Hostname[0] = '\0';
-    fprintf(stderr, "STEER: Steering_initialize: failed to get machine name\n");
-  }
-
-#ifdef REG_DEBUG
-  fprintf(stderr, "STEER: Steering_initialize: machine name = %s\n", 
-	  ReG_Hostname);
-#endif
 
   /* Initialize storage for messages received */
   Msg_store.msg = NULL;

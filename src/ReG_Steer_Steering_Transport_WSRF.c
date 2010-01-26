@@ -93,7 +93,7 @@ extern struct msg_store_struct *Msg_store_tail;
 extern Steer_lib_config_type Steer_lib_config;
 
 /* Hostname of machine we are executing on */
-extern char ReG_Hostname[REG_MAX_STRING_LENGTH];
+char ReG_Hostname[REG_MAX_STRING_LENGTH];
 
 /* Name (and version) of the application that has called us */
 extern char ReG_AppName[REG_MAX_STRING_LENGTH];
@@ -126,6 +126,7 @@ char *STATUS_MSG_RP     = "sws:statusMsg";
 int Initialize_steering_connection_impl(int  NumSupportedCmds,
 					int* SupportedCmds) {
   char* pchar;
+  char* ip_addr;
   char  query_buf[REG_MAX_MSG_SIZE];
   struct wsrp__SetResourcePropertiesResponse out;
 
@@ -212,6 +213,24 @@ int Initialize_steering_connection_impl(int  NumSupportedCmds,
       appside_SGS_info.soap->client_port_min = 0;
       appside_SGS_info.soap->client_port_max = 0;
     }
+  }
+
+  /* Get the hostname of this machine - used to tell the outside
+     world how to contact us and where the (checkpoint) files we've
+     written live.  On many machines we may be running on a node
+     that cannot be seen by the outside world and therefore globus
+     connections for file transfer etc. will need an address of a
+     publicly-accessible node.  This can be passed to us via the
+     REG_MACHINE_NAME environment variable.
+  */
+  if((pchar = getenv("REG_MACHINE_NAME"))) {
+    strncpy(ReG_Hostname, pchar, REG_MAX_STRING_LENGTH);
+  }
+  else if(Get_fully_qualified_hostname(&pchar, &ip_addr) == REG_SUCCESS) {
+    strncpy(ReG_Hostname, pchar, REG_MAX_STRING_LENGTH);
+  }
+  else {
+    ReG_Hostname[0] = '\0';
   }
 
   /* Create msg to send to SGS */
