@@ -58,8 +58,8 @@
 #include "ReG_Steer_Common.h"
 #include "ReG_Steer_Appside_internal.h"
 
-/* */
-extern char Samples_transport_string[];
+/** Basic library config - declared in ReG_Steer_Common */
+extern Steer_lib_config_type Steer_lib_config;
 
 /* */
 extern file_info_table_type file_info_table;
@@ -74,7 +74,7 @@ extern char Global_scratch_buffer[];
 /*---------------------------------------------------*/
 
 int Initialize_samples_transport() {
-  strncpy(Samples_transport_string, "Files", 6);
+  strncpy(Steer_lib_config.Samples_transport_string, "Files", 6);
 
   return file_info_table_init(IOTypes_table.max_entries);
 }

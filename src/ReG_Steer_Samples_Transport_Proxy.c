@@ -60,8 +60,8 @@
 #include "ReG_Steer_Appside_internal.h"
 #include "ReG_Steer_Steering_Transport_API.h"
 
-/* */
-extern char Samples_transport_string[];
+/** Basic library config - declared in ReG_Steer_Common */
+extern Steer_lib_config_type Steer_lib_config;
 
 /* */
 socket_info_table_type socket_info_table;
@@ -77,7 +77,7 @@ extern char Global_scratch_buffer[];
 /*--------------------- API -------------------------*/
 
 int Initialize_samples_transport() {
-  strncpy(Samples_transport_string, "Proxy", 6);
+  strncpy(Steer_lib_config.Samples_transport_string, "Proxy", 6);
 
 #if !REG_HAS_MSG_NOSIGNAL
   signal(SIGPIPE, signal_handler_sockets);

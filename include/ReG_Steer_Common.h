@@ -71,10 +71,16 @@
 
 /** @internal Basic library configuration */
 typedef struct {
+  /** Markers to test for the implementation of transport code */
+  char Samples_transport_string[REG_MAX_STRING_LENGTH];
+  char Steering_transport_string[REG_MAX_STRING_LENGTH];
+
   /** Absolute path of directory we are executing in */
   char working_dir[REG_MAX_STRING_LENGTH];
+
   /** Where to write any temporary files such as logs */
   char scratch_dir[REG_MAX_STRING_LENGTH];
+
 } Steer_lib_config_type;
 
 /** @internal Used to log parameter values */
