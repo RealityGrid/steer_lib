@@ -296,6 +296,12 @@ int Get_data_io_address_impl(const int           dummy,
   return REG_SUCCESS;
 }
 
+/*-------------------------------------------------------*/
+
+int Record_checkpoint_set_impl(int ChkType, char* ChkTag, char* Path) {
+  return Record_Chkpt(ChkType, ChkTag);
+}
+
 /*--------------------- Steerside methods ---------------------*/
 
 extern Sim_table_type Sim_table;
