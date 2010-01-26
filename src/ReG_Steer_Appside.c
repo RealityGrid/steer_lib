@@ -124,8 +124,6 @@ static int ReG_CalledFromF90   = REG_FALSE;
 static double ReG_TotalSimTimeSecs = 0.0;
 /** Internal param to hold current size of timestep of sim */
 static double ReG_SimTimeStepSecs = 0.0;
-/** Absolute path of directory we are executing in */
-char ReG_CurrentDir[REG_MAX_STRING_LENGTH];
 /** Hostname of machine we are executing on */
 char ReG_Hostname[REG_MAX_STRING_LENGTH];
 /** Name (and version) of the application that has called us */
@@ -254,10 +252,8 @@ int Steering_initialize(char *AppName,
   }
 
   /* Get our current working directory */
-  memset(ReG_CurrentDir, '\0', REG_MAX_STRING_LENGTH);
-  if( !(pchar = getcwd(ReG_CurrentDir, REG_MAX_STRING_LENGTH)) ){
-
-    ReG_CurrentDir[0] = '\0';
+  if(!(pchar = getcwd(Steer_lib_config.working_dir, REG_MAX_STRING_LENGTH))) {
+    Steer_lib_config.working_dir[0] = '\0';
     fprintf(stderr, "STEER: Steering_initialize: failed to get working "
 	    "directory\n");
   } 
@@ -1347,7 +1343,8 @@ int Record_checkpoint_set(int   ChkType,
        add a few more for safety.  Ask for 2*strlen(ChkTag) so that
        we can use the end of this buffer to hold the trimmed version
        of the tag. */
-    len = strlen(Path) + 2*strlen(ChkTag) + strlen(ReG_CurrentDir) + 20;
+    len = strlen(Path) + 2*strlen(ChkTag) +
+      strlen(Steer_lib_config.working_dir) + 20;
 
     if( !(pchar = (char *)malloc(len)) ){
 
@@ -1384,7 +1381,7 @@ int Record_checkpoint_set(int   ChkType,
     }
     pTag[count] = '\0';
 
-    sprintf(pchar, "%s/%s", ReG_CurrentDir, Path);
+    sprintf(pchar, "%s/%s", Steer_lib_config.working_dir, Path);
 
     filenames = NULL;
     status = Get_file_list(pchar, 1, &pTag, &nfiles, &filenames);
@@ -1401,7 +1398,7 @@ int Record_checkpoint_set(int   ChkType,
 
     /* Temporarily store the path to the files in the node_data string
        'cos we don't use that until later */
-    sprintf(node_data, "%s/%s/", ReG_CurrentDir, Path);
+    sprintf(node_data, "%s/%s/", Steer_lib_config.working_dir, Path);
 
     /* Filenames have been added by calls to Add_checkpoint_file */
     pchar = (char *)ChkTypes_table.io_def[index].buffer;

@@ -71,6 +71,8 @@
 
 /** @internal Basic library configuration */
 typedef struct {
+  /** Absolute path of directory we are executing in */
+  char working_dir[REG_MAX_STRING_LENGTH];
   /** Where to write any temporary files such as logs */
   char scratch_dir[REG_MAX_STRING_LENGTH];
 } Steer_lib_config_type;

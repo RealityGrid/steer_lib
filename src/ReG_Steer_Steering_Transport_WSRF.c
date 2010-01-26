@@ -89,8 +89,8 @@ extern Chk_log_type Chk_log;
 extern struct msg_store_struct  Msg_store;
 extern struct msg_store_struct *Msg_store_tail;
 
-/* Absolute path of directory we are executing in */
-extern char ReG_CurrentDir[REG_MAX_STRING_LENGTH];
+/** Basic library config - declared in ReG_Steer_Common */
+extern Steer_lib_config_type Steer_lib_config;
 
 /* Hostname of machine we are executing on */
 extern char ReG_Hostname[REG_MAX_STRING_LENGTH];
@@ -247,7 +247,7 @@ int Initialize_steering_connection_impl(int  NumSupportedCmds,
      are set in Steering_initialize prior to calling us */
   snprintf(query_buf, REG_MAX_MSG_SIZE, 
 	   "<%s>%s</%s><%s>%s</%s><%s>%s</%s>", 
-	   WORKING_DIR_RP, ReG_CurrentDir, WORKING_DIR_RP,
+	   WORKING_DIR_RP, Steer_lib_config.working_dir, WORKING_DIR_RP,
 	   MACHINE_ADDRESS_RP, ReG_Hostname, MACHINE_ADDRESS_RP,
 	   APP_NAME_RP, ReG_AppName, APP_NAME_RP);
 
