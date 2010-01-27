@@ -48,7 +48,7 @@
 
 /** @file sink.c
     @brief A very simple example of an application that
-    reads data from an IO channel using the RealityGrid steering 
+    reads data from an IO channel using the RealityGrid steering
     library.
     @author Andrew Porter
     @author Robert Haines */
@@ -143,8 +143,8 @@ int main(){
   num_iotypes = 1;
 
   status = Register_IOTypes(num_iotypes,
-  			    iotype_labels, 
-			    iotype_dirn, 
+  			    iotype_labels,
+			    iotype_dirn,
 			    iotype_frequency,
   			    iotype_handle);
 
@@ -154,7 +154,7 @@ int main(){
     return REG_FAILURE;
   }
 
-  status = Register_param("Bytes_read", REG_FALSE, 
+  status = Register_param("Bytes_read", REG_FALSE,
 			  (void *)(&bytes_read), REG_INT, "", "");
 
   /* Enter main loop waiting for data to arrive */
@@ -180,9 +180,9 @@ int main(){
     if(num_recvd_cmds > 0){
 
       for(icmd=0; icmd<num_recvd_cmds; icmd++){
-  
+
 	switch (recvd_cmds[icmd]){
-  
+
 	case REG_STR_STOP:
 	  finished = 1;
 	  break;
@@ -196,12 +196,12 @@ int main(){
 	    if( status == REG_SUCCESS ){
 
 	      /* Data is available to read...get header describing it */
-	      status = Consume_data_slice_header(iohandle, &data_type, 
+	      status = Consume_data_slice_header(iohandle, &data_type,
 						 &data_count);
 
 	      while(status == REG_SUCCESS){
 
-		printf("\nGot data: type = %d, count = %d\n", data_type, 
+		printf("\nGot data: type = %d, count = %d\n", data_type,
 		       data_count);
 
 		/* Read the data itself */
@@ -212,7 +212,7 @@ int main(){
 		  c_array = (char*)malloc(data_count*sizeof(char));
 
 		  if(c_array){
-		    status = Consume_data_slice(iohandle, data_type, 
+		    status = Consume_data_slice(iohandle, data_type,
 						data_count, c_array);
 
 		    /* Print data but allow for fact that this is just an
@@ -234,7 +234,7 @@ int main(){
 		  i_array = (int *)malloc(data_count*sizeof(int));
 
 		  if(i_array){
-		    status = Consume_data_slice(iohandle, data_type, 
+		    status = Consume_data_slice(iohandle, data_type,
 						data_count, i_array);
 
 		    printf("Got int data:\n");
@@ -253,7 +253,7 @@ int main(){
 		  l_array = (long *)malloc(data_count*sizeof(long));
 
 		  if(l_array){
-		    status = Consume_data_slice(iohandle, data_type, 
+		    status = Consume_data_slice(iohandle, data_type,
 						data_count, l_array);
 
 		    printf("Got long data:\n");
@@ -272,7 +272,7 @@ int main(){
 		  f_array = (float *)malloc(data_count*sizeof(float));
 
 		  if(f_array){
-		    status = Consume_data_slice(iohandle, data_type, 
+		    status = Consume_data_slice(iohandle, data_type,
 						data_count, f_array);
 		    printf("Got float data\n");
 		    for(j=0; j<data_count; j++){
@@ -290,7 +290,7 @@ int main(){
 		  d_array = (double *)malloc(data_count*sizeof(double));
 
 		  if(d_array){
-		    status = Consume_data_slice(iohandle, data_type, 
+		    status = Consume_data_slice(iohandle, data_type,
 						data_count, d_array);
 		    printf("Got double data\n");
 		    for(j=0; j<data_count; j++){
@@ -329,4 +329,3 @@ int main(){
   free(changed_param_labels[0]);
   return 0;
 }
-

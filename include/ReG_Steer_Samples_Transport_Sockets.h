@@ -1,7 +1,7 @@
 /*
   The RealityGrid Steering Library
 
-  Copyright (c) 2002-2009, University of Manchester, United Kingdom.
+  Copyright (c) 2002-2010, University of Manchester, United Kingdom.
   All rights reserved.
 
   This software is produced by Research Computing Services, University
@@ -48,7 +48,7 @@
 #ifndef __REG_STEER_SAMPLES_TRANSPORT_SOCKETS_H__
 #define __REG_STEER_SAMPLES_TRANSPORT_SOCKETS_H__
 
-/** @file ReG_Steer_Samples_Transport_Sockets.h 
+/** @file ReG_Steer_Samples_Transport_Sockets.h
  *  @brief Socket specific routines for the samples transport module.
  *
  *  @author Robert Haines
@@ -90,7 +90,7 @@ void cleanup_connector_connection_samples(const int index);
 
 /** @internal
     @param index Index of the IOType to which socket belongs
-    
+
     Calls close on the listener handle */
 void close_listener_handle_samples(const int index);
 

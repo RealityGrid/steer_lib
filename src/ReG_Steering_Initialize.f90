@@ -1,7 +1,7 @@
 !
 !  The RealityGrid Steering Library
 !
-!  Copyright (c) 2002-2009, University of Manchester, United Kingdom.
+!  Copyright (c) 2002-2010, University of Manchester, United Kingdom.
 !  All rights reserved.
 !
 !  This software is produced by Research Computing Services, University
@@ -59,7 +59,7 @@ SUBROUTINE steering_initialize_f(AppName, NumSupportedCmds, &
   REAL (KIND=REG_SP_KIND), DIMENSION(2)    :: real_array
   REAL (KIND=REG_DP_KIND), DIMENSION(2)    :: dbl_array
 
-  ! These calls are the reason this F90 wrapper exists - allows us to 
+  ! These calls are the reason this F90 wrapper exists - allows us to
   ! calculate the sizeof(each ReG type).  This info. is used in
   ! Register_bin_param_f(...)
   CALL set_type_size(REG_CHAR, AppName(1:1), AppName(2:2), Status)

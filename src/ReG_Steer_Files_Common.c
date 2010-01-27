@@ -1,7 +1,7 @@
 /*
   The RealityGrid Steering Library
 
-  Copyright (c) 2002-2009, University of Manchester, United Kingdom.
+  Copyright (c) 2002-2010, University of Manchester, United Kingdom.
   All rights reserved.
 
   This software is produced by Research Computing Services, University
@@ -66,7 +66,7 @@ int file_info_table_init(const int max_entries) {
 
   file_info_table.max_entries = max_entries;
   file_info_table.num_used = 0;
-  file_info_table.file_info = (file_info_type*) 
+  file_info_table.file_info = (file_info_type*)
     malloc(max_entries * sizeof(file_info_type));
 
   if(file_info_table.file_info == NULL) {
@@ -132,10 +132,10 @@ int Get_file_list(const char* dirname, int num_tags, char** tags,
 	closedir(dir);
 	return REG_FAILURE;
       }
-      
+
       *filenames = tmp;
     }
-    
+
     /* allocate the memory required to store the filename */
     name_len = strlen(entry->d_name) + 1;
     (*filenames)[i] = (char*) malloc(name_len * sizeof(char));
@@ -147,11 +147,11 @@ int Get_file_list(const char* dirname, int num_tags, char** tags,
       closedir(dir);
       return REG_FAILURE;
     }
-    
+
     strncpy((*filenames)[i], entry->d_name, name_len);
     i++;
   }
-  
+
   closedir(dir);
 
   if(i > 0)
@@ -179,14 +179,14 @@ FILE* open_next_file(char* base_name) {
   i = 0;
   time1 = -1;
   while(i<REG_MAX_NUM_FILES){
-    
+
     /* Look for presence of lock file */
     sprintf(tmp_filename,"%s_%d.lock", base_name, i);
 
     fp = fopen(tmp_filename, "r");
 
     if (fp != NULL) {
-     
+
       /* Found one - check its last-modified time */
       fclose(fp);
       fp = NULL;
@@ -214,14 +214,14 @@ FILE* open_next_file(char* base_name) {
   i = REG_MAX_NUM_FILES - 1;
   time2 = -1;
   while(i > -1){
-    
+
     /* Look for presence of lock file */
     sprintf(tmp_filename,"%s_%d.lock", base_name, i);
 
     fp = fopen(tmp_filename, "r");
 
     if (fp != NULL) {
-     
+
       /* Found one - check its last-modified time */
       fclose(fp);
       fp = NULL;
@@ -278,7 +278,7 @@ int create_lock_file(char* filename) {
 
     return REG_FAILURE;
   }
-  
+
   close(fd);
   return REG_SUCCESS;
 }

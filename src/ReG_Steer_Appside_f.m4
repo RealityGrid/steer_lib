@@ -1,7 +1,7 @@
 /*
   The RealityGrid Steering Library
 
-  Copyright (c) 2002-2009, University of Manchester, United Kingdom.
+  Copyright (c) 2002-2010, University of Manchester, United Kingdom.
   All rights reserved.
 
   This software is produced by Research Computing Services, University
@@ -57,12 +57,12 @@
 */
 
 /** @file ReG_Steer_Appside_f.c
-    @brief Generated from ReG_Steer_Appside_f.m4 
+    @brief Generated from ReG_Steer_Appside_f.m4
     @author Andrew Porter
     @author Robert Haines
 
-    This file contains wrapper routines allowing the routines for the 
-    construction of an interface to a steering component (from an 
+    This file contains wrapper routines allowing the routines for the
+    construction of an interface to a steering component (from an
     application component) to be called from F90.  The m4 macros used
     to create the platform-specific C functions are based on those from the
     PVM distribution.  See the readme file in the 'conf' directory.
@@ -73,7 +73,7 @@
 static char gStringBuf[(REG_MAX_NUM_STR_PARAMS+REG_MAX_NUM_STR_CMDS)
                        *REG_MAX_STRING_LENGTH];
 /** Global array of char* pointers - used for passing parameter
-    labels into the steering library.  Initialised in 
+    labels into the steering library.  Initialised in
     steering_initialize_f. */
 static char *str_array[REG_MAX_NUM_STR_PARAMS];
 /** Global array of char* pointers - used for passing parameter info
@@ -112,9 +112,9 @@ SUBROUTINE steering_initialize_wrapper(AppName, NumSupportedCmds, &
   INTEGER (KIND=REG_SP_KIND), INTENT(out) :: Status
 ----------------------------------------------------------------*/
 
-/** Wrapper for Steering_initialize(), for use from within F90 
+/** Wrapper for Steering_initialize(), for use from within F90
     @param Status Return status of the call */
-void FUNCTION(steering_initialize_wrapper) ARGS(`STRING_ARG(AppName), 
+void FUNCTION(steering_initialize_wrapper) ARGS(`STRING_ARG(AppName),
                                                  NumSupportedCmds,
 			                         SupportedCmds, Status')
 STRING_ARG_DECL(AppName);
@@ -128,7 +128,7 @@ INT_KIND_1_DECL(Status);
   char *pchar;
   int   found = 0;
 
-  /* Perform some initialisation of ptrs to memory used by 
+  /* Perform some initialisation of ptrs to memory used by
      steering_control_f */
   for(i=0; i<REG_MAX_NUM_STR_PARAMS; i++){
 
@@ -152,7 +152,7 @@ INT_KIND_1_DECL(Status);
   if(len > REG_MAX_STRING_LENGTH){
 
     fprintf(stderr, "STEER: ERROR: steering_initialize_f: length of tag "
-            "exceeds REG_MAX_STRING_LENGTH (%d) chars\n", 
+            "exceeds REG_MAX_STRING_LENGTH (%d) chars\n",
             REG_MAX_STRING_LENGTH);
 
     *Status = INT_KIND_1_CAST(REG_FAILURE);
@@ -176,7 +176,7 @@ INT_KIND_1_DECL(Status);
       fprintf(stderr, "STEER: ERROR: steering_initialize_f: length of tag "
                 "is REG_MAX_STRING_LENGTH (%d) chars long\nbut contains "
                 "no termination character - shorten label (or its len "
-                "declaration)\n", 
+                "declaration)\n",
                 REG_MAX_STRING_LENGTH);
       *Status = INT_KIND_1_CAST(REG_FAILURE);
       return;
@@ -195,7 +195,7 @@ INT_KIND_1_DECL(Status);
   }
 
   *Status = INT_KIND_1_CAST( Steering_initialize(gStringBuf,
-                                                 (int)(*NumSupportedCmds), 
+                                                 (int)(*NumSupportedCmds),
 	 	                                 gSteerCommands) );
   return;
 }
@@ -208,7 +208,7 @@ SUBROUTINE steering_finalize_f(Status)
 ----------------------------------------------------------------*/
 
 /** Wrapper for Steering_finalize(), for use from within F90
-    @param Status Return status of the call, REG_SUCCESS or 
+    @param Status Return status of the call, REG_SUCCESS or
     REG_FAILURE */
 void FUNCTION(steering_finalize_f) ARGS(`Status')
 INT_KIND_1_DECL(Status);
@@ -225,9 +225,9 @@ SUBROUTINE enable_iotypes_on_registrn_f(Toggle, Status)
   INTEGER (KIND=REG_SP_KIND), INTENT(out) :: Status
 ----------------------------------------------------------------*/
 
-/** Wrapper for Enable_IOTypes_on_registration(), for use from 
+/** Wrapper for Enable_IOTypes_on_registration(), for use from
     within F90
-    @param Status Return status of the call, REG_SUCCESS or 
+    @param Status Return status of the call, REG_SUCCESS or
     REG_FAILURE */
 void FUNCTION(enable_iotypes_on_registrn_f) ARGS(`Toggle,
                                                   Status')
@@ -247,7 +247,7 @@ SUBROUTINE enable_iotype_f(IOType, Status)
 ----------------------------------------------------------------*/
 
 /** Wrapper for Enable_IOType(), for use from within F90
-    @param Status Return status of the call, REG_SUCCESS or 
+    @param Status Return status of the call, REG_SUCCESS or
     REG_FAILURE */
 void FUNCTION(enable_iotype_f) ARGS(`IOType,
                                      Status')
@@ -322,7 +322,7 @@ INT_KIND_1_DECL(Status);
 
 /*----------------------------------------------------------------
 
-SUBROUTINE register_iotypes_f(NumTypes, IOLabel, IODirn, IOFrequency, 
+SUBROUTINE register_iotypes_f(NumTypes, IOLabel, IODirn, IOFrequency,
                               IOType, Status)
 
   INTEGER (KIND=REG_SP_KIND), INTENT(in)                      :: NumTypes
@@ -336,7 +336,7 @@ SUBROUTINE register_iotypes_f(NumTypes, IOLabel, IODirn, IOFrequency,
 /** Wrapper for Register_IOTypes(), for use from within F90
     @param Status Return status of the call, REG_SUCCESS or
     REG_FAILURE */
-void FUNCTION(register_iotypes_f) ARGS(`NumTypes, 
+void FUNCTION(register_iotypes_f) ARGS(`NumTypes,
 				        STRING_ARG(IOLabel),
 					IODirn,
 					IOFrequency,
@@ -358,7 +358,7 @@ INT_KIND_1_DECL(Status);
 
   len = STRING_LEN(IOLabel);
   if(len >= REG_MAX_STRING_LENGTH){
-    fprintf(stderr, 
+    fprintf(stderr,
             "STEER: WARNING: register_iotypes_f: truncating label\n");
     /* Allow space for terminating '/0' */
     len = REG_MAX_STRING_LENGTH - 1;
@@ -387,7 +387,7 @@ INT_KIND_1_DECL(Status);
 
   for(i=0; i<lNumTypes; i++){
 
-    memcpy(str_array[i], 
+    memcpy(str_array[i],
            &(STRING_PTR(IOLabel)[i*STRING_LEN(IOLabel)]),
            len);
     str_array[i][len] = '\0';
@@ -414,7 +414,7 @@ INT_KIND_1_DECL(Status);
 
 /*----------------------------------------------------------------
 
-SUBROUTINE register_iotype_f(IOLabel, IODirn, IOFrequency, 
+SUBROUTINE register_iotype_f(IOLabel, IODirn, IOFrequency,
                              IOType, Status)
 
   CHARACTER (LEN=*), INTENT(in)          :: IOLabel
@@ -424,7 +424,7 @@ SUBROUTINE register_iotype_f(IOLabel, IODirn, IOFrequency,
   INTEGER (KIND=REG_SP_KIND), INTENT(out):: Status
 ----------------------------------------------------------------*/
 
-/** Wrapper for Register_IOType(), for use from within F90 
+/** Wrapper for Register_IOType(), for use from within F90
     @param Status Return status of the call, REG_SUCCESS or
     REG_FAILURE */
 void FUNCTION(register_iotype_f) ARGS(`STRING_ARG(IOLabel),
@@ -442,7 +442,7 @@ INT_KIND_1_DECL(Status);
 
   len = STRING_LEN(IOLabel);
   if(len >= REG_MAX_STRING_LENGTH){
-    fprintf(stderr, 
+    fprintf(stderr,
             "STEER: WARNING: register_iotype_f: truncating label\n");
     /* Allow space for terminating '/0' */
     len = REG_MAX_STRING_LENGTH - 1;
@@ -454,7 +454,7 @@ INT_KIND_1_DECL(Status);
 
   dirn = (int)*IODirn;
   freq = (int)*IOFrequency;
-  
+
   *Status = INT_KIND_1_CAST( Register_IOType(gStringBuf, dirn,
                                              freq, &type) );
   *IOType = INT_KIND_1_CAST(type);
@@ -468,7 +468,7 @@ SUBROUTINE register_chktypes_f(NumTypes, ChkLabel, ChkDirn,
                                ChkFrequency, ChkType, Status)
 
   INTEGER (KIND=REG_SP_KIND), INTENT(in)                       :: NumTypes
-  CHARACTER (LEN=*), DIMENSION(NumTypes), INTENT(in)           :: ChkLabel 
+  CHARACTER (LEN=*), DIMENSION(NumTypes), INTENT(in)           :: ChkLabel
   INTEGER (KIND=REG_SP_KIND), DIMENSION(NumTypes), INTENT(in)  :: ChkDirn
   INTEGER (KIND=REG_SP_KIND), DIMENSION(NumTypes), INTENT(in)  :: ChkFrequency
   INTEGER (KIND=REG_SP_KIND), DIMENSION(NumTypes), INTENT(out) :: ChkType
@@ -479,8 +479,8 @@ SUBROUTINE register_chktypes_f(NumTypes, ChkLabel, ChkDirn,
 /** Wrapper for Register_ChkTypes(), for use from F90
     @param Status Return status of the call, REG_SUCCESS or
     REG_FAILURE */
-void FUNCTION(register_chktypes_f) ARGS(`NumTypes, 
-                                        STRING_ARG(ChkLabel), 
+void FUNCTION(register_chktypes_f) ARGS(`NumTypes,
+                                        STRING_ARG(ChkLabel),
                                         ChkDirn,
                                         ChkFrequency,
                                         ChkType,
@@ -500,7 +500,7 @@ INT_KIND_1_DECL(Status);
 
   len = STRING_LEN(ChkLabel);
   if(len >= REG_MAX_STRING_LENGTH){
-    fprintf(stderr, 
+    fprintf(stderr,
             "STEER: WARNING: register_chktypes_f: truncating label\n");
     /* Allow space for terminating '/0' */
     len = REG_MAX_STRING_LENGTH - 1;
@@ -522,7 +522,7 @@ INT_KIND_1_DECL(Status);
   for(i=0; i<lNumTypes; i++){
 
     str_array[i] = &(buf[i*(len + 1)]);
-    memcpy(str_array[i], 
+    memcpy(str_array[i],
            &(STRING_PTR(ChkLabel)[i*STRING_LEN(ChkLabel)]),
            len);
     str_array[i][len] = '\0';
@@ -546,7 +546,7 @@ INT_KIND_1_DECL(Status);
 SUBROUTINE register_chktype_f(ChkLabel, ChkDirn,
                               ChkFrequency, ChkType, Status)
 
-  CHARACTER (LEN=*), DIMENSION(NumTypes), INTENT(in)           :: ChkLabel 
+  CHARACTER (LEN=*), DIMENSION(NumTypes), INTENT(in)           :: ChkLabel
   INTEGER (KIND=REG_SP_KIND), DIMENSION(NumTypes), INTENT(in)  :: ChkDirn
   INTEGER (KIND=REG_SP_KIND), DIMENSION(NumTypes), INTENT(in)  :: ChkFrequency
   INTEGER (KIND=REG_SP_KIND), DIMENSION(NumTypes), INTENT(out) :: ChkType
@@ -557,7 +557,7 @@ SUBROUTINE register_chktype_f(ChkLabel, ChkDirn,
 /** Wrapper for Register_ChkType(), for use from F90
     @param Status Return status of the call, REG_SUCCESS or
     REG_FAILURE */
-void FUNCTION(register_chktype_f) ARGS(`STRING_ARG(ChkLabel), 
+void FUNCTION(register_chktype_f) ARGS(`STRING_ARG(ChkLabel),
                                         ChkDirn,
                                         ChkFrequency,
                                         ChkType,
@@ -572,7 +572,7 @@ INT_KIND_1_DECL(Status);
 
   len = STRING_LEN(ChkLabel);
   if(len >= REG_MAX_STRING_LENGTH){
-    fprintf(stderr, 
+    fprintf(stderr,
             "STEER: WARNING: register_chktypes_f: truncating label\n");
     /* Allow space for terminating '/0' */
     len = REG_MAX_STRING_LENGTH - 1;
@@ -581,7 +581,7 @@ INT_KIND_1_DECL(Status);
   /* Convert string to a null-terminated C-style string */
   memcpy(gStringBuf, STRING_PTR(ChkLabel), len);
   gStringBuf[len] = '\0';
- 
+
   *Status = INT_KIND_1_CAST( Register_ChkType(gStringBuf,
                                               (int)*ChkDirn,
                                               (int)*ChkFrequency,
@@ -594,7 +594,7 @@ INT_KIND_1_DECL(Status);
 SUBROUTINE record_chkpt_f(ChkType, ChkTag, Status)
 
   INTEGER  (KIND=REG_SP_KIND), INTENT(in)           :: ChkType
-  CHARACTER (LEN=REG_MAX_STRING_LENGTH), INTENT(in) :: ChkTag 
+  CHARACTER (LEN=REG_MAX_STRING_LENGTH), INTENT(in) :: ChkTag
   INTEGER (KIND=REG_SP_KIND), INTENT(out)           :: Status
 
 ----------------------------------------------------------------*/
@@ -619,7 +619,7 @@ INT_KIND_1_DECL(Status);
   if(len > REG_MAX_STRING_LENGTH){
 
     fprintf(stderr, "STEER: ERROR: record_chkpt_f: length of tag "
-            "exceeds REG_MAX_STRING_LENGTH (%d) chars\n", 
+            "exceeds REG_MAX_STRING_LENGTH (%d) chars\n",
             REG_MAX_STRING_LENGTH);
 
     *Status = INT_KIND_1_CAST(REG_FAILURE);
@@ -643,7 +643,7 @@ INT_KIND_1_DECL(Status);
       fprintf(stderr, "STEER: ERROR: record_chkpt_f: length of label "
                 "is REG_MAX_STRING_LENGTH (%d) chars long\nbut contains "
                 "no termination character - shorten label (or its len "
-                "declaration)\n", 
+                "declaration)\n",
                 REG_MAX_STRING_LENGTH);
       *Status = INT_KIND_1_CAST(REG_FAILURE);
       return;
@@ -655,7 +655,7 @@ INT_KIND_1_DECL(Status);
     gStringBuf[len] = '\0';
   }
 
-  *Status = INT_KIND_1_CAST(Record_Chkpt((int)*ChkType, 
+  *Status = INT_KIND_1_CAST(Record_Chkpt((int)*ChkType,
                                          gStringBuf));
 
   return;
@@ -666,7 +666,7 @@ INT_KIND_1_DECL(Status);
 SUBROUTINE add_checkpoint_file_f(ChkType, ChkTag, Status)
 
   INTEGER  (KIND=REG_SP_KIND), INTENT(in)           :: ChkType
-  CHARACTER (LEN=REG_MAX_STRING_LENGTH), INTENT(in) :: ChkTag 
+  CHARACTER (LEN=REG_MAX_STRING_LENGTH), INTENT(in) :: ChkTag
   INTEGER (KIND=REG_SP_KIND), INTENT(out)           :: Status
 
 ----------------------------------------------------------------*/
@@ -691,7 +691,7 @@ INT_KIND_1_DECL(Status);
   if(len > REG_MAX_STRING_LENGTH){
 
     fprintf(stderr, "STEER: ERROR: add_checkpoint_file_f: length of filename "
-            "exceeds REG_MAX_STRING_LENGTH (%d) chars\n", 
+            "exceeds REG_MAX_STRING_LENGTH (%d) chars\n",
             REG_MAX_STRING_LENGTH);
 
     *Status = INT_KIND_1_CAST(REG_FAILURE);
@@ -715,7 +715,7 @@ INT_KIND_1_DECL(Status);
       fprintf(stderr, "STEER: ERROR: add_checkpoint_file_f: length of filename "
                 "is REG_MAX_STRING_LENGTH (%d) chars long\nbut contains "
                 "no termination character - shorten label (or its len "
-                "declaration)\n", 
+                "declaration)\n",
                 REG_MAX_STRING_LENGTH);
       *Status = INT_KIND_1_CAST(REG_FAILURE);
       return;
@@ -727,7 +727,7 @@ INT_KIND_1_DECL(Status);
     gStringBuf[len] = '\0';
   }
 
-  *Status = INT_KIND_1_CAST(Add_checkpoint_file((int)*ChkType, 
+  *Status = INT_KIND_1_CAST(Add_checkpoint_file((int)*ChkType,
                                          	gStringBuf) );
 
   return;
@@ -738,7 +738,7 @@ INT_KIND_1_DECL(Status);
 SUBROUTINE record_checkpoint_set_f(ChkType, ChkTag, Status)
 
   INTEGER  (KIND=REG_SP_KIND), INTENT(in)           :: ChkType
-  CHARACTER (LEN=REG_MAX_STRING_LENGTH), INTENT(in) :: ChkTag 
+  CHARACTER (LEN=REG_MAX_STRING_LENGTH), INTENT(in) :: ChkTag
   INTEGER (KIND=REG_SP_KIND), INTENT(out)           :: Status
 
 ----------------------------------------------------------------*/
@@ -766,7 +766,7 @@ INT_KIND_1_DECL(Status);
   if(len > REG_MAX_STRING_LENGTH){
 
     fprintf(stderr, "STEER: ERROR: record_checkpoint_set_f: length of tag "
-            "exceeds REG_MAX_STRING_LENGTH (%d) chars\n", 
+            "exceeds REG_MAX_STRING_LENGTH (%d) chars\n",
             REG_MAX_STRING_LENGTH);
 
     *Status = INT_KIND_1_CAST(REG_FAILURE);
@@ -790,7 +790,7 @@ INT_KIND_1_DECL(Status);
       fprintf(stderr, "STEER: ERROR: record_checkpoint_set_f: length of label "
                 "is REG_MAX_STRING_LENGTH (%d) chars long\nbut contains "
                 "no termination character - shorten label (or its len "
-                "declaration)\n", 
+                "declaration)\n",
                 REG_MAX_STRING_LENGTH);
       *Status = INT_KIND_1_CAST(REG_FAILURE);
       return;
@@ -807,7 +807,7 @@ INT_KIND_1_DECL(Status);
   if(len > REG_MAX_STRING_LENGTH){
 
     fprintf(stderr, "STEER: ERROR: record_checkpoint_set_f: length of path "
-            "exceeds REG_MAX_STRING_LENGTH (%d) chars\n", 
+            "exceeds REG_MAX_STRING_LENGTH (%d) chars\n",
             REG_MAX_STRING_LENGTH);
 
     *Status = INT_KIND_1_CAST(REG_FAILURE);
@@ -831,7 +831,7 @@ INT_KIND_1_DECL(Status);
       fprintf(stderr, "STEER: ERROR: record_checkpoint_set_f: length of path "
                 "is REG_MAX_STRING_LENGTH (%d) chars long\nbut contains "
                 "no termination character - shorten label (or its len "
-                "declaration)\n", 
+                "declaration)\n",
                 REG_MAX_STRING_LENGTH);
       *Status = INT_KIND_1_CAST(REG_FAILURE);
       return;
@@ -843,7 +843,7 @@ INT_KIND_1_DECL(Status);
     path_buf[len] = '\0';
   }
 
-  *Status = INT_KIND_1_CAST(Record_checkpoint_set((int)*ChkType, 
+  *Status = INT_KIND_1_CAST(Record_checkpoint_set((int)*ChkType,
                                          	  gStringBuf,
                                                   path_buf) );
   return;
@@ -894,7 +894,7 @@ INT_KIND_1_DECL(Status);
   if(STRING_LEN(ParamLabel) > REG_MAX_STRING_LENGTH){
 
     fprintf(stderr, "STEER: ERROR: register_param_f: length of label "
-            "exceeds REG_MAX_STRING_LENGTH (%d) chars\n", 
+            "exceeds REG_MAX_STRING_LENGTH (%d) chars\n",
             REG_MAX_STRING_LENGTH);
 
     *Status = INT_KIND_1_CAST(REG_FAILURE);
@@ -915,7 +915,7 @@ INT_KIND_1_DECL(Status);
       fprintf(stderr, "STEER: ERROR: register_param_f: length of label "
               "is REG_MAX_STRING_LENGTH (%d) chars long\nbut contains "
               "no termination character - shorten label (or its len "
-              "declaration)\n", 
+              "declaration)\n",
               REG_MAX_STRING_LENGTH);
 
       *Status = INT_KIND_1_CAST(REG_FAILURE);
@@ -929,14 +929,14 @@ INT_KIND_1_DECL(Status);
       (STRING_LEN(ParamMax) >= REG_MAX_STRING_LENGTH) ){
     fprintf(stderr, "STEER: ERROR: register_param_f: string specifying "
             "max. and/or min. param. value exceeds "
-            "REG_MAX_STRING_LENGTH (%d) chars in length\n", 
+            "REG_MAX_STRING_LENGTH (%d) chars in length\n",
             REG_MAX_STRING_LENGTH);
 
     *Status = INT_KIND_1_CAST(REG_FAILURE);
     return;
   }
 
-  /* Following code assumes 
+  /* Following code assumes
      (REG_MAX_NUM_STR_PARAMS+REG_MAX_NUM_STR_CMDS) >= 3 */
   pbuf[0] = &(gStringBuf[0]);
   pbuf[1] = pbuf[0] + REG_MAX_STRING_LENGTH;
@@ -990,9 +990,9 @@ SUBROUTINE register_string_param_f(ParamLabel, ParamSteerable, &
 ----------------------------------------------------------------*/
 
 /** F90-only.  For registering a monitored/steerable parameter that
-    is of type CHARACTER. The maximum length of the string is 
+    is of type CHARACTER. The maximum length of the string is
     automatically obtained and stored along with the registered parameter.
-    @param ParamLabel A string containing the label of this parameter 
+    @param ParamLabel A string containing the label of this parameter
     @param ParamSteerable Whether (REG_TRUE) or not (REG_FALSE) this
            parameter is steerable
     @param StringParam The string variable to register
@@ -1018,7 +1018,7 @@ INT_KIND_1_DECL(Status);
   if(STRING_LEN(ParamLabel) > REG_MAX_STRING_LENGTH){
 
     fprintf(stderr, "STEER: ERROR: register_string_param_f: length of label "
-            "exceeds REG_MAX_STRING_LENGTH (%d) chars\n", 
+            "exceeds REG_MAX_STRING_LENGTH (%d) chars\n",
             REG_MAX_STRING_LENGTH);
 
     *Status = INT_KIND_1_CAST(REG_FAILURE);
@@ -1039,7 +1039,7 @@ INT_KIND_1_DECL(Status);
       fprintf(stderr, "STEER: ERROR: register_string_param_f: length of label "
               "is REG_MAX_STRING_LENGTH (%d) chars long\nbut contains "
               "no termination character - shorten label (or its len "
-              "declaration)\n", 
+              "declaration)\n",
               REG_MAX_STRING_LENGTH);
 
       *Status = INT_KIND_1_CAST(REG_FAILURE);
@@ -1115,7 +1115,7 @@ INT_KIND_1_DECL(Status);
   if(STRING_LEN(ParamLabel) > REG_MAX_STRING_LENGTH){
 
     fprintf(stderr, "STEER: ERROR: register_bin_param_f: length of label "
-            "exceeds REG_MAX_STRING_LENGTH (%d) chars\n", 
+            "exceeds REG_MAX_STRING_LENGTH (%d) chars\n",
             REG_MAX_STRING_LENGTH);
 
     *Status = INT_KIND_1_CAST(REG_FAILURE);
@@ -1135,7 +1135,7 @@ INT_KIND_1_DECL(Status);
       fprintf(stderr, "STEER: ERROR: register_bin_param_f: length of label "
               "is REG_MAX_STRING_LENGTH (%d) chars long\nbut contains "
               "no termination character - shorten label (or its len "
-              "declaration)\n", 
+              "declaration)\n",
               REG_MAX_STRING_LENGTH);
 
       *Status = INT_KIND_1_CAST(REG_FAILURE);
@@ -1168,7 +1168,7 @@ INT_KIND_1_DECL(Status);
                                                len_buf ) );
   }
   else{
-    fprintf(stderr, "STEER: Register_bin_param_f: sizeof type %d is unknown\n", 
+    fprintf(stderr, "STEER: Register_bin_param_f: sizeof type %d is unknown\n",
             *ParamType);
     *Status = INT_KIND_1_CAST( REG_FAILURE );
   }
@@ -1219,7 +1219,7 @@ INT_KIND_1_DECL(Status);
   if(len > REG_MAX_STRING_LENGTH){
 
     fprintf(stderr, "STEER: ERROR: enable_param_logging_f: length of param "
-            "label exceeds REG_MAX_STRING_LENGTH (%d) chars\n", 
+            "label exceeds REG_MAX_STRING_LENGTH (%d) chars\n",
             REG_MAX_STRING_LENGTH);
 
     *Status = INT_KIND_1_CAST(REG_FAILURE);
@@ -1279,7 +1279,7 @@ INT_KIND_1_DECL(Status);
   if(len > REG_MAX_STRING_LENGTH){
 
     fprintf(stderr, "STEER: ERROR: disable_param_logging_f: length of param "
-            "label exceeds REG_MAX_STRING_LENGTH (%d) chars\n", 
+            "label exceeds REG_MAX_STRING_LENGTH (%d) chars\n",
             REG_MAX_STRING_LENGTH);
 
     *Status = INT_KIND_1_CAST(REG_FAILURE);
@@ -1424,7 +1424,7 @@ INT_KIND_1_DECL(Status);
 {
   int lCount, lType;
   *Status = INT_KIND_1_CAST( Consume_data_slice_header((int)*IOHandle,
-                                                       &lType, 
+                                                       &lType,
                                                        &lCount));
   *DataType = INT_KIND_1_CAST(lType);
   *Count = INT_KIND_1_CAST(lCount);
@@ -1446,7 +1446,7 @@ SUBROUTINE consume_data_slice_f(IOHandle, pData, Status)
 void FUNCTION(consume_data_slice_f) ARGS(`IOHandle,
                                           DataType,
                                           Count,
-                                          pData, 
+                                          pData,
                                           Status')
 INT_KIND_1_DECL(IOHandle);
 INT_KIND_1_DECL(DataType);
@@ -1455,8 +1455,8 @@ void *pData;
 INT_KIND_1_DECL(Status);
 {
   *Status = INT_KIND_1_CAST( Consume_data_slice((int)*IOHandle,
-                                                (int)*DataType, 
-                                                (int)*Count, 
+                                                (int)*DataType,
+                                                (int)*Count,
                                                 pData) );
   return;
 }
@@ -1472,8 +1472,8 @@ SUBROUTINE emit_start_f(IOType, SeqNum, IOHandle, Status)
 /** Wrapper for Emit_start(), for use from within F90.
     @param Status Return status of the call, REG_SUCCESS or
     REG_FAILURE */
-void FUNCTION(emit_start_f) ARGS(`IOType, 
-                                SeqNum, 
+void FUNCTION(emit_start_f) ARGS(`IOType,
+                                SeqNum,
                                 IOHandle,
                                 Status')
 INT_KIND_1_DECL(IOType);
@@ -1482,8 +1482,8 @@ INT_KIND_1_DECL(IOHandle);
 INT_KIND_1_DECL(Status);
 {
   int handle;
-  *Status = INT_KIND_1_CAST( Emit_start((int)*IOType, 
-                                        (int)*SeqNum, 
+  *Status = INT_KIND_1_CAST( Emit_start((int)*IOType,
+                                        (int)*SeqNum,
                                         &handle) );
   *IOHandle = INT_KIND_1_CAST(handle);
 
@@ -1507,8 +1507,8 @@ SUBROUTINE emit_start_blocking_f(IOType, SeqNum, IOHandle, &
 /** Wrapper for Emit_start_blocking(), for use from within F90.
     @param Status Return status of the call, REG_SUCCESS or
     REG_FAILURE */
-void FUNCTION(emit_start_blocking_f) ARGS(`IOType, 
-                                           SeqNum, 
+void FUNCTION(emit_start_blocking_f) ARGS(`IOType,
+                                           SeqNum,
                                            IOHandle,
                                            TimeOut,
                                            Status')
@@ -1519,8 +1519,8 @@ float *TimeOut;
 INT_KIND_1_DECL(Status);
 {
   int handle;
-  *Status = INT_KIND_1_CAST( Emit_start_blocking((int)*IOType, 
-                                                 (int)*SeqNum, 
+  *Status = INT_KIND_1_CAST( Emit_start_blocking((int)*IOType,
+                                                 (int)*SeqNum,
                                                  &handle,
                                                  *TimeOut) );
   *IOHandle = INT_KIND_1_CAST(handle);
@@ -1576,9 +1576,9 @@ INT_KIND_1_DECL(Count);
 void *pData;
 INT_KIND_1_DECL(Status);
 {
-  *Status = INT_KIND_1_CAST( Emit_data_slice((int)*IOHandle, 
+  *Status = INT_KIND_1_CAST( Emit_data_slice((int)*IOHandle,
                                              f90_to_c_type[(int)*DataType],/*(int)*DataType,*/
-                                             (int)*Count, 
+                                             (int)*Count,
                                              pData) );
   return;
 }
@@ -1594,7 +1594,7 @@ SUBROUTINE emit_char_data_slice_f(IOHandle, pData, Status)
     @param IOHandle The handle of the IOType to use to emit data
     @param pData The CHARACTER string to emit
     @param Status Return status of the call, REG_SUCCESS or
-    REG_FAILURE 
+    REG_FAILURE
     @see emit_data_slice() */
 void FUNCTION(emit_char_data_slice_f) ARGS(`IOHandle,
                                             STRING_ARG(pData),
@@ -1603,14 +1603,14 @@ INT_KIND_1_DECL(IOHandle);
 STRING_ARG_DECL(pData);
 INT_KIND_1_DECL(Status);
 {
-  *Status = INT_KIND_1_CAST( Emit_data_slice(*IOHandle, REG_CHAR, 
-                                             STRING_LEN(pData), 
+  *Status = INT_KIND_1_CAST( Emit_data_slice(*IOHandle, REG_CHAR,
+                                             STRING_LEN(pData),
                                              STRING_PTR(pData)) );
   return;
 }
 
 /*----------------------------------------------------------------
-SUBROUTINE make_vtk_buffer_f(nx, ny, nz, veclen, a, b, c, 
+SUBROUTINE make_vtk_buffer_f(nx, ny, nz, veclen, a, b, c,
                              array, status)
 
   INTEGER (KIND=REG_SP_KIND), INTENT(in)  :: nx, ny, nz
@@ -1623,7 +1623,7 @@ SUBROUTINE make_vtk_buffer_f(nx, ny, nz, veclen, a, b, c,
     @param Status Return status of the call, REG_SUCCESS or
     REG_FAILURE */
 void FUNCTION(make_vtk_buffer_f) ARGS(`nx, ny, nz,
-                                       veclen, 
+                                       veclen,
                                        a, b, c,
                                        array,
                                        Status')
@@ -1639,8 +1639,8 @@ double *c;
 float *array;
 INT_KIND_1_DECL(Status);
 {
-  *Status = INT_KIND_1_CAST( Make_vtk_buffer((int)*nx, 
-                                             (int)*ny, 
+  *Status = INT_KIND_1_CAST( Make_vtk_buffer((int)*nx,
+                                             (int)*ny,
                                              (int)*nz,
                                              (int)*veclen,
                                              *a, *b, *c,
@@ -1649,7 +1649,7 @@ INT_KIND_1_DECL(Status);
 }
 
 /*----------------------------------------------------------------
-SUBROUTINE make_vtk_header_f(header, title, nx, ny, nz, veclen, 
+SUBROUTINE make_vtk_header_f(header, title, nx, ny, nz, veclen,
                              type, status)
 
   CHARACTER (LEN=BUFSIZ), INTENT(out)               :: header
@@ -1678,15 +1678,15 @@ INT_KIND_1_DECL(Status);
 {
   int len = STRING_LEN(title);
   memset(STRING_PTR(header), '\0', STRING_LEN(header));
-  /* Ensure that the string that we pass in to the library is 
+  /* Ensure that the string that we pass in to the library is
   correctly null-terminated */
   strncpy(gStringBuf, STRING_PTR(title), len);
   gStringBuf[len] = '\0';
 
   *Status = INT_KIND_1_CAST( Make_vtk_header(STRING_PTR(header),
                                              gStringBuf,
-                                             (int)*nx, 
-                                             (int)*ny, 
+                                             (int)*nx,
+                                             (int)*ny,
                                              (int)*nz,
                                              (int)*veclen,
                                              (int)*type) );
@@ -1694,7 +1694,7 @@ INT_KIND_1_DECL(Status);
 }
 
 /*----------------------------------------------------------------
-SUBROUTINE make_chunk_header_f(header, IOindex, sx, sy, sz, nx, ny, nz, 
+SUBROUTINE make_chunk_header_f(header, IOindex, sx, sy, sz, nx, ny, nz,
                                status)
 
   CHARACTER (LEN=BUFSIZ), INTENT(out)               :: header
@@ -1727,15 +1727,15 @@ INT_KIND_1_DECL(Status);
 {
   memset(STRING_PTR(header), '\0', STRING_LEN(header));
   *Status = INT_KIND_1_CAST( Make_chunk_header(STRING_PTR(header),
-                                               (int)*IOindex, 
-                                               (int)*totx, 
-                                               (int)*toty, 
+                                               (int)*IOindex,
+                                               (int)*totx,
+                                               (int)*toty,
                                                (int)*totz,
-                                               (int)*sx, 
-                                               (int)*sy, 
+                                               (int)*sx,
+                                               (int)*sy,
                                                (int)*sz,
-                                               (int)*nx, 
-                                               (int)*ny, 
+                                               (int)*nx,
+                                               (int)*ny,
                                                (int)*nz) );
   return;
 }
@@ -1754,7 +1754,7 @@ SUBROUTINE steering_control_f(SeqNum, NumSteerParams, SteerParamLabels, &
 	                              INTENT(out)  :: SteerCommands
   CHARACTER (LEN=REG_MAX_STRING_LENGTH)  &
       DIMENSION(REG_MAX_NUM_STR_CMDS), INTENT(out) :: SteerCommandParams
-  INTEGER (KIND=REG_SP_KIND), INTENT(out)          :: Status  
+  INTEGER (KIND=REG_SP_KIND), INTENT(out)          :: Status
 ----------------------------------------------------------------*/
 /** Wrapper for Steering_control(), for use from within F90.
     @param Status Return status of the call, REG_SUCCESS or
@@ -1790,8 +1790,8 @@ INT_KIND_1_DECL(Status);
                                               str_array_params) );
 /*
 #ifdef REG_DEBUG
-  fprintf(stderr, 
-          "STEER: steering_control_f: got %d params and %d cmds\n", 
+  fprintf(stderr,
+          "STEER: steering_control_f: got %d params and %d cmds\n",
           num_params, num_commands);
 #endif
 */
@@ -1808,11 +1808,11 @@ INT_KIND_1_DECL(Status);
       strcpy(&(STRING_PTR(SteerParamLabels)[i*STRING_LEN(SteerParamLabels)]),
              str_array[i]);
 
-      /* Blank the remainder of the string being returned to the F90 
+      /* Blank the remainder of the string being returned to the F90
          routine */
       len = (int)strlen(str_array[i]);
       pos = i*STRING_LEN(SteerParamLabels) + len;
-      
+
       if( (len = (STRING_LEN(SteerParamLabels) - len)) > 0){
 
         memset(&(STRING_PTR(SteerParamLabels)[pos]), ' ', len);
@@ -1828,11 +1828,11 @@ INT_KIND_1_DECL(Status);
       strcpy(&(STRING_PTR(SteerCommandParams)[i*STRING_LEN(SteerCommandParams)]),
              str_array_params[i]);
 
-      /* Blank the remainder of the string being returned to the F90 
+      /* Blank the remainder of the string being returned to the F90
          routine */
       len = (int)strlen(str_array_params[i]);
       pos = i*STRING_LEN(SteerCommandParams) + len;
-      
+
       if( (len = (STRING_LEN(SteerCommandParams) - len)) > 0){
 
         memset(&(STRING_PTR(SteerCommandParams)[pos]), ' ', len);
@@ -1856,7 +1856,7 @@ SUBROUTINE steering_pause_f(NumSteerParams, SteerParamLabels, &
 	                              INTENT(out)  :: SteerCommands
   CHARACTER (LEN=REG_MAX_STRING_LENGTH)  &
       DIMENSION(REG_MAX_NUM_STR_CMDS), INTENT(out) :: SteerCommandParams
-  INTEGER (KIND=REG_SP_KIND), INTENT(out)          :: Status  
+  INTEGER (KIND=REG_SP_KIND), INTENT(out)          :: Status
 ----------------------------------------------------------------*/
 /** Wrapper for Steering_pause(), for use from within F90.
     @param Status Return status of the call, REG_SUCCESS or
@@ -1909,11 +1909,11 @@ INT_KIND_1_DECL(Status);
       strcpy(&(STRING_PTR(SteerParamLabels)[i*STRING_LEN(SteerParamLabels)]),
              str_array[i]);
 
-      /* Blank the remainder of the string being returned to the F90 
+      /* Blank the remainder of the string being returned to the F90
          routine */
       len = (int)strlen(str_array[i]);
       pos = i*STRING_LEN(SteerParamLabels) + len;
-      
+
       if( (len = (STRING_LEN(SteerParamLabels) - len)) > 0){
 
         memset(&(STRING_PTR(SteerParamLabels)[pos]), ' ', len);
@@ -1929,11 +1929,11 @@ INT_KIND_1_DECL(Status);
       strcpy(&(STRING_PTR(SteerCommandParams)[i*STRING_LEN(SteerCommandParams)]),
              str_array_params[i]);
 
-      /* Blank the remainder of the string being returned to the F90 
+      /* Blank the remainder of the string being returned to the F90
          routine */
       len = (int)strlen(str_array_params[i]);
       pos = i*STRING_LEN(SteerCommandParams) + len;
-      
+
       if( (len = (STRING_LEN(SteerCommandParams) - len)) > 0){
 
         memset(&(STRING_PTR(SteerCommandParams)[pos]), ' ', len);
@@ -1947,7 +1947,7 @@ INT_KIND_1_DECL(Status);
 /*----------------------------------------------------------------
 SUBROUTINE steering_sleep_f()
 ----------------------------------------------------------------*/
-/** Wrapper for C call to sleep(2), for use from F90. 
+/** Wrapper for C call to sleep(2), for use from F90.
     @internal */
 void FUNCTION(steering_sleep_f) ARGS(`')
 {
@@ -1962,7 +1962,7 @@ SUBROUTINE steering_char_to_ptr_f(string, ptr)
   INTEGER (KIND=REG_DP_KIND), INTENT(out)           :: ptr
 ----------------------------------------------------------------*/
 /** F90 only. Routine to obtain a pointer to the supplied string.
-    Originally intended to be passed to register_params_f as type void*. 
+    Originally intended to be passed to register_params_f as type void*.
     Now obsolete since introduction of FUNCTION(register_string_param_f)()? */
 void FUNCTION(steering_char_to_ptr_f) ARGS(`STRING_ARG(string),
                                             ptr')
@@ -1993,13 +1993,13 @@ SUBROUTINE set_type_size(Type, Ptr1, Ptr2, Status)
 ----------------------------------------------------------------*/
 /** Routine to allow the storage size of different variable types
     to be determined at run time.
-    @param Type The type of the variable being examined, as encoded 
+    @param Type The type of the variable being examined, as encoded
            in ReG_Steer_types.h
     @param Ptr1 Pointer to first element in array of type @p Type
     @param Ptr2 Pointer to second element in array of type @p Type
     @param Status Return status of the call, REG_SUCCESS or
-    REG_FAILURE 
-    @internal */    
+    REG_FAILURE
+    @internal */
 void FUNCTION(set_type_size) ARGS(`Type, Ptr1, Ptr2, Status')
 INT_KIND_1_DECL(Type);
 char *Ptr1;

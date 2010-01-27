@@ -1,7 +1,7 @@
 /*
   The RealityGrid Steering Library
 
-  Copyright (c) 2002-2009, University of Manchester, United Kingdom.
+  Copyright (c) 2002-2010, University of Manchester, United Kingdom.
   All rights reserved.
 
   This software is produced by Research Computing Services, University
@@ -63,7 +63,7 @@ int socket_info_table_init(socket_info_table_type* table,
 
   table->max_entries = max_entries;
   table->num_used = 0;
-  table->socket_info = (socket_info_type*) 
+  table->socket_info = (socket_info_type*)
     malloc(max_entries * sizeof(socket_info_type));
 
   if(table->socket_info == NULL) {
@@ -119,20 +119,20 @@ int socket_info_init(socket_info_type* socket_info) {
   }
 
 #ifdef REG_DEBUG
-  fprintf(stderr, "socket_info_init: port range to listen on %d - %d\n", 
+  fprintf(stderr, "socket_info_init: port range to listen on %d - %d\n",
 	  socket_info->min_port_in,
 	  socket_info->max_port_in);
-  fprintf(stderr, "socket_info_init: port range to connect out of %d - %d\n", 
+  fprintf(stderr, "socket_info_init: port range to connect out of %d - %d\n",
 	  socket_info->min_port_out,
 	  socket_info->max_port_out);
-  fprintf(stderr, "socket_info_init: local tcp interface: %s\n", 
+  fprintf(stderr, "socket_info_init: local tcp interface: %s\n",
 	  socket_info->tcp_interface);
 #endif
 
   socket_info->listener_port = 0;
   socket_info->listener_handle = -1;
   socket_info->listener_status = REG_COMMS_STATUS_NULL;
-  socket_info->comms_status = REG_COMMS_STATUS_NULL;   
+  socket_info->comms_status = REG_COMMS_STATUS_NULL;
   socket_info->connector_port = 0;
   socket_info->connector_handle = -1;
   sprintf(socket_info->connector_hostname, " ");
@@ -158,13 +158,13 @@ int dns_lookup(char* hostname) {
 
 #ifdef REG_DEBUG
   fprintf(stderr, "STEER: DNS lookup: host: %s\n", host->h_name);
-  fprintf(stderr, "               IP:   %s\n", 
+  fprintf(stderr, "               IP:   %s\n",
 	  inet_ntoa(*((struct in_addr*) host->h_addr)));
 #endif
 
   /* This next bit must be done with a sprintf for AIX...
    * It can be done with a strcpy on Linux or IRIX...      */
-  sprintf(hostname, "%s", 
+  sprintf(hostname, "%s",
 	  inet_ntoa(*((struct in_addr*) host->h_addr_list[0])));
 
   return REG_SUCCESS;

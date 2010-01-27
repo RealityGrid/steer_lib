@@ -142,30 +142,30 @@ PROGRAM para_mini_app
   IF(my_id .eq. 0)THEN
     CALL register_iotype_f("VTK_STRUCTURED_POINTS_INPUT", REG_IO_IN, &
                            0, iotype_handles(1), status)
-  
+
     IF(status .ne. REG_SUCCESS)THEN
-  
+
       CALL steering_finalize_f(status)
       CALL MPI_BCAST(REG_FAILURE, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, IERROR)
       CALL MPI_FINALIZE(IERROR)
       STOP 'Failed to register IO type'
     END IF
-  
+
     WRITE(*,*) 'Returned IOtype = ', iotype_handles(1)
   END IF
 
   IF(my_id .eq. 0)THEN
     CALL register_iotype_f("SOME_OUTPUT", REG_IO_OUT, &
                            5, iotype_handles(2), status)
-  
+
     IF(status .ne. REG_SUCCESS)THEN
-  
+
       CALL steering_finalize_f(status)
       CALL MPI_BCAST(REG_FAILURE, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, IERROR)
       CALL MPI_FINALIZE(IERROR)
       STOP 'Failed to register IO type'
     END IF
-  
+
     WRITE(*,*) 'Returned IOtype = ', iotype_handles(2)
   END IF
 
@@ -174,22 +174,22 @@ PROGRAM para_mini_app
                             5, chk_handles(1), status)
 
     IF(status .ne. REG_SUCCESS)THEN
-  
+
       CALL steering_finalize_f(status)
       CALL MPI_BCAST(REG_FAILURE, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, IERROR)
       CALL MPI_FINALIZE(IERROR)
       STOP 'Failed to register IO type'
     END IF
-  
+
     WRITE(*,*) 'Returned IOtype = ', iotype_handles(3)
   END IF
 
   ! Register some parameters
-  
+
   param_labels(1) = "test_integer"
   param_type  = REG_INT
   param_strbl = reg_true
-  
+
   IF(my_id .eq. 0)THEN
      ! This variable restricted to 0 <= dum_int <= 100
     CALL register_param_f(param_labels(1), param_strbl, dum_int, &
@@ -200,7 +200,7 @@ PROGRAM para_mini_app
   ! rather than simply changing value of first one
   param_labels(2) = "2nd_test_integer"
   param_strbl = reg_false
-  
+
   IF(my_id .eq. 0)THEN
     CALL register_param_f(param_labels(2), param_strbl, dum_int2, &
                           param_type, "-50", "50", status)
@@ -209,7 +209,7 @@ PROGRAM para_mini_app
   param_labels(3) = "test_real"
   param_type  = REG_FLOAT
   param_strbl = reg_false
-  
+
   IF(my_id .eq. 0)THEN
     CALL register_param_f(param_labels(3), param_strbl, dum_real, &
                           param_type, "-200.0", "200.0", status)
@@ -218,7 +218,7 @@ PROGRAM para_mini_app
   param_labels(4) = "2nd_test_real"
   param_type  = REG_FLOAT
   param_strbl = reg_true
-    
+
   IF(my_id .eq. 0)THEN
     CALL register_param_f(param_labels(4), param_strbl, dum_real2, &
                           param_type, "-200.0", "200.0", status)
@@ -227,25 +227,25 @@ PROGRAM para_mini_app
   param_labels(5) = "test_string"
   param_type  = REG_CHAR
   param_strbl = reg_true
-    
+
   IF(my_id .eq. 0)THEN
     ! Getting a pointer to a string from F90 is a bit tricky so use
     ! the following string-specific function to register a string for
-    ! steering/monitoring  
+    ! steering/monitoring
     CALL register_string_param_f(param_labels(5), param_strbl, dum_str, status)
   END IF
 
   param_labels(6) = "test_double"
   param_type  = REG_DBL
   param_strbl = reg_true
-  
+
   IF(my_id .eq. 0)THEN
     CALL register_param_f(param_labels(6), param_strbl, dum_dbl, &
                           param_type, "50.0d0", "150.0d0", status)
-  
-  
+
+
     IF(status .ne. REG_SUCCESS)THEN
-  
+
       CALL steering_finalize_f(status)
       CALL MPI_BCAST(REG_FAILURE, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, IERROR)
       CALL MPI_FINALIZE(IERROR)
@@ -321,7 +321,7 @@ PROGRAM para_mini_app
           CALL MPI_BCAST(dum_dbl, 1, MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD, &
                          IERROR)
         END IF
-  
+
         WRITE(*,FMT="(A, I2, A, I2, A, A)") 'Px ', my_id, ' changed param no. ', &
                                             iparam,' = ', &
                                             changed_param_labels(iparam)
@@ -339,36 +339,36 @@ PROGRAM para_mini_app
                      IERROR)
 
       ! Process any commands sent by the steerer
-  
+
       IF(num_recvd_cmds > 0)THEN
-  
+
         icmd = 1
         DO
-  
+
           WRITE (*,FMT='(A, I4, A, A)') "Received cmd: ", recvd_cmds(icmd),&
                                         " with params: ", &
                                         TRIM(recvd_cmd_params(icmd))
 
           SELECT CASE (recvd_cmds(icmd))
-  
+
           CASE(REG_STR_PAUSE)
             WRITE (*,*) 'Received pause command from steerer'
-  
+
             CALL steering_pause_f(num_params_changed, changed_param_labels, &
                                  num_recvd_cmds, recvd_cmds, &
                                  recvd_cmd_params, status)
-  
-            ! Worker processes are blocked on a BCAST and thus have 
+
+            ! Worker processes are blocked on a BCAST and thus have
             ! effectively been paused too
             CALL MPI_BCAST(REG_STR_PAUSE, 1, MPI_INTEGER, 0, &
                            MPI_COMM_WORLD, IERROR)
 
             IF(status .ne. REG_SUCCESS)THEN
-  
+
               WRITE(*,*) 'steering_pause_f returned error'
               finished = 1
             ELSE
-  
+
               WRITE(*,*) 'steering_pause_f: ',num_recvd_cmds,' cmds and ', &
                          num_params_changed, ' parameters'
 
@@ -394,12 +394,12 @@ PROGRAM para_mini_app
                   CALL MPI_BCAST(dum_dbl, 1, MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD, &
                                  IERROR)
                 END IF
-  
+
                 WRITE(*,*) 'Px ', my_id, ' changed param no. ', iparam,' = ', &
                            changed_param_labels(iparam)
               END DO
 
-              IF(num_params_changed > 0)THEN           
+              IF(num_params_changed > 0)THEN
                 WRITE(*,*) 'Px ', my_id,' test_integer = ', dum_int
                 WRITE(*,*) 'Px ', my_id,' 2nd_test_real = ', dum_real2
                 WRITE(*,*) 'Px ', my_id,' test_string = ', TRIM(dum_str)
@@ -410,14 +410,14 @@ PROGRAM para_mini_app
               ! received
               icmd = 0
             END IF
-  
+
           CASE(REG_STR_STOP)
 
             CALL MPI_BCAST(REG_STR_STOP, 1, MPI_INTEGER, 0, &
                              MPI_COMM_WORLD, IERROR)
             WRITE (*,*) 'Px ', my_id, ' received stop command from steerer'
-            finished = 1           
-  
+            finished = 1
+
           CASE DEFAULT
 
             ! Worker px always expects to be told what the command is, even
@@ -426,9 +426,9 @@ PROGRAM para_mini_app
                            MPI_COMM_WORLD, IERROR)
 
           END SELECT
-  
+
           icmd = icmd + 1
-  
+
           IF ((icmd .gt. num_recvd_cmds) .OR. (finished .eq. 1)) THEN
 
             CALL MPI_BCAST(1, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, &
@@ -436,10 +436,10 @@ PROGRAM para_mini_app
             EXIT
           ELSE
             CALL MPI_BCAST(finished, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, &
-                           IERROR)              
+                           IERROR)
           END IF
         END DO
-     
+
       END IF ! num_recvd_cmds > 0
 
     ELSE ! We are a worker px...
@@ -476,12 +476,12 @@ PROGRAM para_mini_app
           CALL MPI_BCAST(dum_dbl, 1, MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD, &
                          IERROR)
         END IF
-  
+
         WRITE(*,*) 'Px ', my_id, ' changed param no. ', iparam,' = ', &
                    TRIM(changed_param_labels(iparam))
       END DO
 
-      IF(num_params_changed > 0)THEN    
+      IF(num_params_changed > 0)THEN
         WRITE(*,*) 'Px ', my_id,' test_integer = ', dum_int
         WRITE(*,*) 'Px ', my_id,' 2nd_test_real = ', dum_real2
         WRITE(*,*) 'Px ', my_id,' test_string = ', TRIM(dum_str)
@@ -489,11 +489,11 @@ PROGRAM para_mini_app
       END IF
 
       CALL MPI_BCAST(num_recvd_cmds, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, IERROR)
-      
+
       WRITE (*,*) 'Px ', my_id, ' num_recvd_cmds = ', num_recvd_cmds
 
       IF(num_recvd_cmds > 0)THEN
-      
+
         parse_finished = 0
         DO WHILE(parse_finished .ne. 1)
 
@@ -526,12 +526,12 @@ PROGRAM para_mini_app
                 CALL MPI_BCAST(dum_dbl, 1, MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD, &
                                IERROR)
               END IF
-  
+
               WRITE(*,*) 'Px ', my_id, ' changed param no. ', iparam,' = ', &
                          TRIM(changed_param_labels(iparam))
             END DO
 
-            IF(num_params_changed > 0)THEN         
+            IF(num_params_changed > 0)THEN
               WRITE(*,*) 'Px ', my_id,' test_integer = ', dum_int
               WRITE(*,*) 'Px ', my_id,' 2nd_test_real = ', dum_real2
               WRITE(*,*) 'Px ', my_id,' test_string = ', TRIM(dum_str)

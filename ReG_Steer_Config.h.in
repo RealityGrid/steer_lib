@@ -1,8 +1,7 @@
-
 /*
   The RealityGrid Steering Library
 
-  Copyright (c) 2002-2009, University of Manchester, United Kingdom.
+  Copyright (c) 2002-2010, University of Manchester, United Kingdom.
   All rights reserved.
 
   This software is produced by Research Computing Services, University
@@ -130,7 +129,7 @@
 /* ---------------------------------------------------- */
 
 /* Adjust some defines to match what is in the legacy code.
- * 
+ *
  * These could be changed in source code at some point.
  */
 

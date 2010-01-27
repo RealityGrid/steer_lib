@@ -1,7 +1,7 @@
 /*
   The RealityGrid Steering Library
 
-  Copyright (c) 2002-2009, University of Manchester, United Kingdom.
+  Copyright (c) 2002-2010, University of Manchester, United Kingdom.
   All rights reserved.
 
   This software is produced by Research Computing Services, University
@@ -50,7 +50,7 @@
 #define __REG_STEER_BROWSER_H__
 
 /** @file ReG_Steer_Browser.h
-    @brief Header file for registry browsing functionality 
+    @brief Header file for registry browsing functionality
 
     This header file contains routines and data structures for
     steerside SOAP-based communication.
@@ -66,13 +66,13 @@
 #ifdef __cplusplus
   #define PREFIX "C"
 #else
-  #define PREFIX 
+  #define PREFIX
 #endif
 
 /** Holds details on a single entry in a registry */
 struct registry_entry {
 
-  /** Type of service (SWS, SGS, SGSFactory etc.) - points to 
+  /** Type of service (SWS, SGS, SGSFactory etc.) - points to
       string stored somewhere in @p pBuf */
   char *service_type;
   /** Endpoint of the service - points to string stored somewhere
@@ -81,19 +81,19 @@ struct registry_entry {
   /** Endpoint of the service modelling the registry entry - points
       to string somewhere in @p pBuf */
   char *entry_gsh;
-  /** Name of the application - points to string stored somewhere 
+  /** Name of the application - points to string stored somewhere
       in @p pBuf */
   char *application;
   /** Date and time at which application started - points to string
       somewhere in @p pBuf */
   char *start_date_time;
-  /** User who lauched the application - points to string stored 
+  /** User who lauched the application - points to string stored
       somewhere in @p pBuf*/
   char *user;
   /** The group to which the user belongs - points to string stored
       somewhere in @p pBuf*/
   char *group;
-  /** Description of purpose of job - actually points to string held in 
+  /** Description of purpose of job - actually points to string held in
       @p pBuf */
   char *job_description;
   /** Pointer to buffer containing data */
@@ -116,20 +116,20 @@ struct registry_contents {
 
 /**
    @param nSims No. of steerable applications available
-   @param simName Pointer to array of strings, each of length 
-   REG_MAX_STRING_LENGTH.  On successful return holds names of each 
+   @param simName Pointer to array of strings, each of length
+   REG_MAX_STRING_LENGTH.  On successful return holds names of each
    steerable application
-   @param simGSH Pointer to array of strings, each of length 
-   REG_MAX_STRING_LENGTH. On successful return holds Grid Service 
+   @param simGSH Pointer to array of strings, each of length
+   REG_MAX_STRING_LENGTH. On successful return holds Grid Service
    Handles of each application
    @return REG_SUCCESS, REG_FAILURE
 
    @b OBSOLETE - superceded by Get_registry_entries() @n
-   Really just wraps Get_registry_entries().  Uses the registry 
+   Really just wraps Get_registry_entries().  Uses the registry
    address in REG_REGISTRY_ADDRESS if set, otherwise uses
    default (&#35;define'd at the top of ReG_Steer_Browser.c).
-   Returns list of steerable applications (up to 
-   REG_MAX_NUM_STEERED_SIM). The Grid Service Handle returned 
+   Returns list of steerable applications (up to
+   REG_MAX_NUM_STEERED_SIM). The Grid Service Handle returned
    in @p simGSH must be supplied as the SimID to Sim_attach. */
 extern PREFIX int Get_sim_list(int   *nSims,
 			       char **simName,
@@ -139,10 +139,10 @@ extern PREFIX int Get_sim_list(int   *nSims,
     The pointer held in *entries must be free'd once the data
     has been used.
     @param registryGSH Address of the ServiceGroup/Registry to query
-    @param contents Table holding details of registry entries. Must be 
+    @param contents Table holding details of registry entries. Must be
     free'd by calling Delete_registry_table().
  */
-extern PREFIX int Get_registry_entries(const char               *registryGSH, 
+extern PREFIX int Get_registry_entries(const char               *registryGSH,
 				       struct registry_contents *contents);
 
 /** Queries specified registry and filters results using the
@@ -152,10 +152,10 @@ extern PREFIX int Get_registry_entries(const char               *registryGSH,
     job_description fields.
     @see Get_registry_entries
     @param registryGSH Address of the ServiceGroup/Registry to query
-    @param contents Table holding details of registry entries. Must be 
+    @param contents Table holding details of registry entries. Must be
     @param pattern String holding pattern to be used in filtering
  */
-extern PREFIX int Get_registry_entries_filtered(const char               *registryGSH, 
+extern PREFIX int Get_registry_entries_filtered(const char               *registryGSH,
 						struct registry_contents *contents,
 						char                     *pattern);
 
@@ -165,7 +165,7 @@ extern PREFIX int Get_registry_entries_filtered(const char               *regist
     @param registryGSH Endpoint of the registry to query
     @param sec Pointer to reg_security_info struct holding information
     needed to authenticate user to the registry (using either ssl or wsse)
-    @param contents Pointer to table holding details of registry entries. 
+    @param contents Pointer to table holding details of registry entries.
     Must be free'd by calling Delete_registry_table().
 */
 extern PREFIX int Get_registry_entries_secure(const char                  *registryGSH,
@@ -174,7 +174,7 @@ extern PREFIX int Get_registry_entries_secure(const char                  *regis
 
 /** @see Get_registry_entries_filtered
     @see Get_registry_entries_secure */
-extern PREFIX int Get_registry_entries_filtered_secure(const char             *registryGSH, 
+extern PREFIX int Get_registry_entries_filtered_secure(const char             *registryGSH,
 						       const struct reg_security_info *sec,
 						       struct registry_contents *contents,
 						       char                   *pattern);

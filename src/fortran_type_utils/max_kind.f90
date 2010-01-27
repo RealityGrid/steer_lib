@@ -1,7 +1,7 @@
 !
 !  The RealityGrid Steering Library
 !
-!  Copyright (c) 2002-2009, University of Manchester, United Kingdom.
+!  Copyright (c) 2002-2010, University of Manchester, United Kingdom.
 !  All rights reserved.
 !
 !  This software is produced by Research Computing Services, University
@@ -64,7 +64,7 @@ PROGRAM max_kind
 
   DO i=128,2,-1
 
-    ! n = SELECTED_IND_KIND(R) returns the KIND parameter of an integer 
+    ! n = SELECTED_IND_KIND(R) returns the KIND parameter of an integer
     ! that covers -10**R < n < 10**R or -1 if none exists.
     ! Max. signed integer, n, represented by nbits is n = 2**(nbits - 1) - 1
     !ikind = SELECTED_INT_KIND(INT((LOG10(2.0**(i-1) - 1.0))))
@@ -143,7 +143,7 @@ FUNCTION KIND_FROM_BITS(nbits)
   INTEGER :: KIND_FROM_BITS
   INTEGER :: nbits
 
-  ! n = SELECTED_IND_KIND(R) returns the KIND parameter of an integer 
+  ! n = SELECTED_IND_KIND(R) returns the KIND parameter of an integer
   ! that covers -10**R < n < 10**R or -1 if none exists.
   ! Max. signed integer, n, represented by nbits is n = 2**(nbits - 1) - 1
 

@@ -143,11 +143,11 @@ int main(){
       printf("temp  = %f\n", temp);
 
       if(num_recvd_cmds > 0){
-  
+
     	printf("Received %d steerer cmds\n", num_recvd_cmds);
-  
+
     	for(icmd=0; icmd<num_recvd_cmds; icmd++){
-  
+
  	  switch (recvd_cmds[icmd]){
 
  	  case REG_STR_STOP:
@@ -160,7 +160,7 @@ int main(){
  	    break;
  	  }
 
-	  /* Break out if steerer told us to stop */  
+	  /* Break out if steerer told us to stop */
  	  if(finished)break; /* out of loop over recv'd commands */
     	}
 	if(finished)break; /* out of main sim. loop */
@@ -176,4 +176,3 @@ int main(){
 
   return 0;
 }
-

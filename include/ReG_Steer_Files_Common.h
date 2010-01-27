@@ -1,7 +1,7 @@
 /*
   The RealityGrid Steering Library
 
-  Copyright (c) 2002-2009, University of Manchester, United Kingdom.
+  Copyright (c) 2002-2010, University of Manchester, United Kingdom.
   All rights reserved.
 
   This software is produced by Research Computing Services, University
@@ -48,7 +48,7 @@
 #ifndef __REG_STEER_FILES_COMMON_H__
 #define __REG_STEER_FILES_COMMON_H__
 
-/** @file ReG_Steer_Files_Common.h 
+/** @file ReG_Steer_Files_Common.h
  *  @brief Data structures and routines common to all file-based code.
  *
  *  @author Robert Haines
@@ -126,7 +126,7 @@ int delete_file(char* filename);
     @param base_name Base of the name of the messaging files to look for
 
     Called when steering finished - cleans up any files that either the app
-    or steerer hasn't got around to consuming 
+    or steerer hasn't got around to consuming
  */
 int remove_files(char* base_name);
 

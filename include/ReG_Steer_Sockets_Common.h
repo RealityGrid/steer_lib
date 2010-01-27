@@ -1,7 +1,7 @@
 /*
   The RealityGrid Steering Library
 
-  Copyright (c) 2002-2009, University of Manchester, United Kingdom.
+  Copyright (c) 2002-2010, University of Manchester, United Kingdom.
   All rights reserved.
 
   This software is produced by Research Computing Services, University
@@ -48,7 +48,7 @@
 #ifndef __REG_STEER_SOCKETS_COMMON_H__
 #define __REG_STEER_SOCKETS_COMMON_H__
 
-/** @file ReG_Steer_Sockets_Common.h 
+/** @file ReG_Steer_Sockets_Common.h
  *  @brief Data structures and routines common to all sockets-based code.
  *
  *  @author Robert Haines
@@ -59,7 +59,7 @@
 
 #define REG_SOCKETS_ERROR -1
 
-/** @internal 
+/** @internal
     Structure to hold socket information */
 typedef struct {
   /** Minimum port number we can use to listen on (zero if any) */
@@ -85,7 +85,7 @@ typedef struct {
   /** Port to connect to - info for socket connection ("client" end) */
   unsigned short int	connector_port;
   /** status indicator for listening socket */
-  int			listener_status;  
+  int			listener_status;
   /** status indicator for connecting socket */
   int			comms_status;
 } socket_info_type;

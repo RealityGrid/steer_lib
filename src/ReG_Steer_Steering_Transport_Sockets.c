@@ -1,7 +1,7 @@
 /*
   The RealityGrid Steering Library
 
-  Copyright (c) 2002-2009, University of Manchester, United Kingdom.
+  Copyright (c) 2002-2010, University of Manchester, United Kingdom.
   All rights reserved.
 
   This software is produced by Research Computing Services, University
@@ -93,7 +93,7 @@ int Initialize_steering_connection_impl(int  NumSupportedCmds,
   }
 
   /* Create msg about supported commands */
-  Make_supp_cmds_msg(NumSupportedCmds, SupportedCmds, 
+  Make_supp_cmds_msg(NumSupportedCmds, SupportedCmds,
 		     Steerer_connection.supp_cmds, REG_MAX_MSG_SIZE);
 
   /* try to create listener */
@@ -107,7 +107,7 @@ int Initialize_steering_connection_impl(int  NumSupportedCmds,
   }
   else {
     fprintf(stderr, "Initialize_steering_connection: "
-	    "registered steering connection on port %d\n", 
+	    "registered steering connection on port %d\n",
 	    appside_socket_info.listener_port);
   }
 
@@ -137,7 +137,7 @@ int Steerer_connected_impl() {
 
 /*   Direct_info_type* socket_info = &(Steerer_connection.socket_info); */
 
-  /* If already connected then just return a "yes" */  
+  /* If already connected then just return a "yes" */
   if(appside_socket_info.comms_status == REG_COMMS_STATUS_CONNECTED) {
     return REG_SUCCESS;
   }
@@ -275,7 +275,7 @@ int Get_data_io_address_impl(const int           dummy,
     }
   }
   else{
-    fprintf(stderr, 
+    fprintf(stderr,
 	    "Get_data_source_address: REG_CONNECTOR_HOSTNAME not set\n");
     return REG_FAILURE;
   }
@@ -285,7 +285,7 @@ int Get_data_io_address_impl(const int           dummy,
     *port = (unsigned short int)atoi(pchar);
   }
   else {
-    fprintf(stderr, 
+    fprintf(stderr,
 	    "Get_data_source_address: REG_CONNECTOR_PORT not set\n");
     return REG_FAILURE;
   }
@@ -489,13 +489,13 @@ int Sim_attach_security_impl(const int index,
 int Get_param_log_impl(int index, int handle) {
   int           command[1];
   static char** command_params = NULL;
-  
+
   command[0] = REG_STR_EMIT_PARAM_LOG;
-  
+
   /* Which parameter to get the log of */
   if(!command_params) command_params = Alloc_string_array(32, 1);
   sprintf(command_params[0], "%d", handle);
-  
+
   return Emit_control(Sim_table.sim[index].handle,
 		      1,
 		      command,
@@ -535,7 +535,7 @@ int consume_supp_cmds(int index) {
     cmd = msg->supp_cmd->first_cmd;
 
     while(cmd) {
-      sscanf((char *)(cmd->id), "%d", 
+      sscanf((char *)(cmd->id), "%d",
 	     &(sim->Cmds_table.cmd[sim->Cmds_table.num_registered].cmd_id));
 
       /* ARPDBG - may need to add cmd parameters here too */
@@ -580,7 +580,7 @@ int create_steering_connector(socket_info_type* socket_info) {
   socket_info->connector_handle = connector;
 
   /* ...turn off the "Address already in use" error message... */
-  if(setsockopt(connector, SOL_SOCKET, SO_REUSEADDR, &yes, 
+  if(setsockopt(connector, SOL_SOCKET, SO_REUSEADDR, &yes,
 		sizeof(int)) == REG_SOCKETS_ERROR) {
     perror("setsockopt");
     return REG_FAILURE;
@@ -594,7 +594,7 @@ int create_steering_connector(socket_info_type* socket_info) {
   else {
     if(!inet_aton(socket_info->tcp_interface, &(myAddr.sin_addr)) ){
       fprintf(stderr, "create_steering_connector: inet_aton failed "
-	      "for interface >>%s<<\n", 
+	      "for interface >>%s<<\n",
 	      socket_info->tcp_interface);
       return REG_FAILURE;
     }
@@ -610,7 +610,7 @@ int create_steering_connector(socket_info_type* socket_info) {
 	    socket_info->min_port_out, socket_info->max_port_out);
 #endif
 
-    while(bind(connector, (struct sockaddr*) &myAddr, 
+    while(bind(connector, (struct sockaddr*) &myAddr,
 	       sizeof(struct sockaddr)) == REG_SOCKETS_ERROR) {
       if(++i > socket_info->max_port_out) {
 	fprintf(stderr, "create_steering_connector: failed to find free local "
@@ -632,20 +632,20 @@ int create_steering_connector(socket_info_type* socket_info) {
   if(dns_lookup(socket_info->connector_hostname) == REG_FAILURE) {
     fprintf(stderr, "Could not resolve hostname: %s\n",
 	    socket_info->connector_hostname);
-    return REG_FAILURE;  
+    return REG_FAILURE;
   }
 
   theirAddr.sin_family = AF_INET;
   theirAddr.sin_port = htons(socket_info->connector_port);
   if(!inet_aton(socket_info->connector_hostname, &(theirAddr.sin_addr))) {
-    fprintf(stderr, 
+    fprintf(stderr,
 	      "create_steering_connector: inet_aton reports address is invalid\n");
       return REG_FAILURE;
     }
     memset(&(theirAddr.sin_zero), '\0', 8); /* zero the rest */
 
     /* ...finally connect to the remote address! */
-    if(connect(connector, (struct sockaddr*) &theirAddr, 
+    if(connect(connector, (struct sockaddr*) &theirAddr,
 	       sizeof(struct sockaddr)) == REG_SOCKETS_ERROR) {
       perror("create_steering_connector: connect");
       socket_info->connector_port = 0;
@@ -675,7 +675,7 @@ int create_steering_listener(socket_info_type* socket_info) {
   socket_info->listener_handle = listener;
 
   /* Turn off the "Address already in use" error message */
-  if(setsockopt(listener, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == 
+  if(setsockopt(listener, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) ==
      REG_SOCKETS_ERROR) {
     perror("setsockopt");
     return REG_FAILURE;
@@ -695,7 +695,7 @@ int create_steering_listener(socket_info_type* socket_info) {
   i = socket_info->min_port_in;
   myAddr.sin_port = htons((short) i);
 
-  while(bind(listener, (struct sockaddr*) &myAddr, sizeof(struct sockaddr)) == 
+  while(bind(listener, (struct sockaddr*) &myAddr, sizeof(struct sockaddr)) ==
 	REG_SOCKETS_ERROR) {
     if(++i > socket_info->max_port_in) {
       perror("bind");
@@ -782,7 +782,7 @@ void poll_steering_socket(socket_info_type* socket_info) {
 /*-------------------------------------------------------*/
 
 int send_steering_msg(socket_info_type* socket_info,
-		      const size_t num_bytes_to_send, 
+		      const size_t num_bytes_to_send,
 		      void*        pData) {
   int bytes_left;
   int result;
@@ -846,10 +846,10 @@ int send_steering_msg(socket_info_type* socket_info,
   }
 
 #ifdef REG_DEBUG
-  fprintf(stderr, "send_steering_msg: sent %d bytes...\n", 
+  fprintf(stderr, "send_steering_msg: sent %d bytes...\n",
 	  (int) num_bytes_to_send);
 #endif
-  
+
   return REG_SUCCESS;
 }
 
@@ -901,7 +901,7 @@ int poll_steering_msg(socket_info_type* socket_info, int handle) {
   struct timeval timeout;
   fd_set sockets;	/* the set of sockets to check */
   int fd_max;		/* the max socket number */
-  
+
   timeout.tv_sec  = 0;
   timeout.tv_usec = 0;
 

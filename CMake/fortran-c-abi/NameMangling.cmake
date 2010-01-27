@@ -1,7 +1,7 @@
 #
 #  The RealityGrid Steering Library
 #
-#  Copyright (c) 2002-2009, University of Manchester, United Kingdom.
+#  Copyright (c) 2002-2010, University of Manchester, United Kingdom.
 #  All rights reserved.
 #
 #  This software is produced by Research Computing Services, University
@@ -56,7 +56,7 @@ if(NOT DEFINED FC_NAME_MANGLE)
 
   if(MANGLE_COMPILE_RESULT)
     exec_program(
-      ${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeTmp/mangle/mangle 
+      ${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeTmp/mangle/mangle
       OUTPUT_VARIABLE MANGLE_OUTPUT
     )
 

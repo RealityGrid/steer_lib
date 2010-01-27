@@ -1,7 +1,7 @@
 /*
   The RealityGrid Steering Library
 
-  Copyright (c) 2002-2009, University of Manchester, United Kingdom.
+  Copyright (c) 2002-2010, University of Manchester, United Kingdom.
   All rights reserved.
 
   This software is produced by Research Computing Services, University
@@ -61,13 +61,13 @@
 
 /*--------------------- Data structures -------------------*/
 
-/** 
+/**
    Main table used to record all simulations currently
    being steered */
 Sim_table_type Sim_table;
 
 /**
-   Structure holding general configuration details for the 
+   Structure holding general configuration details for the
    steering-side of the library */
 Steerer_config_table_type Steer_config;
 
@@ -86,7 +86,7 @@ int Steerer_initialize()
   int   i;
   /* int   status; */
   char *pchar;
-  
+
   /* Actually defined in ReG_Steer_Common.c because both steerer
      and steered have a variable of this name */
   extern char ReG_Steer_Schema_Locn[REG_MAX_STRING_LENGTH];
@@ -97,7 +97,7 @@ int Steerer_initialize()
 	  "v.%s ****\n\n", REG_STEER_LIB_VERSION);
 #endif
 
-  /* Set up signal handler so can clean up if application 
+  /* Set up signal handler so can clean up if application
      exits in a hurry */
   /* ctrl-c */
   signal(SIGINT, Steerside_signal_handler);
@@ -105,7 +105,7 @@ int Steerer_initialize()
   signal(SIGTERM, Steerside_signal_handler);
 
   /* RHAINES 24/10/2007
-   * 
+   *
    * Don't catch SIGSEGV for now on the steering side as it
    * interferes with Java - the JVM needs to catch this signal
    * Investigate solution another time!
@@ -123,7 +123,7 @@ int Steerer_initialize()
   signal(SIGUSR2, Steerside_signal_handler);
 #endif
 
-  /* Set the location of the file containing the schema describing all 
+  /* Set the location of the file containing the schema describing all
      steering communication */
 
   pchar = getenv("REG_STEER_HOME");
@@ -199,7 +199,7 @@ int Steerer_finalize()
 
   Sim_table.num_registered = 0;
   Sim_table.max_entries    = 0;
- 
+
   return REG_SUCCESS;
 }
 
@@ -245,12 +245,12 @@ int Sim_attach_secure(const char                     *SimID,
     sim_ptr->Msg_uid_store.uidStore[i] = -1;
   }
   sim_ptr->Msg_uid_store.uidStorePtr = sim_ptr->Msg_uid_store.uidStore;
-  sim_ptr->Msg_uid_store.maxPtr = 
+  sim_ptr->Msg_uid_store.maxPtr =
     &(sim_ptr->Msg_uid_store.uidStore[REG_UID_HISTORY_BUFFER_SIZE - 1]);
 
   /* ...registered parameters */
 
-  sim_ptr->Params_table.param = 
+  sim_ptr->Params_table.param =
             (param_entry *)malloc(REG_INITIAL_NUM_PARAMS*sizeof(param_entry));
 
   if(sim_ptr->Params_table.param == NULL){
@@ -271,7 +271,7 @@ int Sim_attach_secure(const char                     *SimID,
 
   /* ...supported commands */
 
-  sim_ptr->Cmds_table.cmd = 
+  sim_ptr->Cmds_table.cmd =
     (supp_cmd_entry *)malloc(REG_INITIAL_NUM_CMDS*sizeof(supp_cmd_entry));
 
   if(sim_ptr->Cmds_table.cmd == NULL){
@@ -294,7 +294,7 @@ int Sim_attach_secure(const char                     *SimID,
 
   /* ...IO types */
 
-  sim_ptr->IOdef_table.io_def = 
+  sim_ptr->IOdef_table.io_def =
     (IOdef_entry *)malloc(REG_INITIAL_NUM_IOTYPES*sizeof(IOdef_entry));
 
   if(sim_ptr->IOdef_table.io_def == NULL){
@@ -317,7 +317,7 @@ int Sim_attach_secure(const char                     *SimID,
 
   /* ...Chk types */
 
-  sim_ptr->Chkdef_table.io_def = 
+  sim_ptr->Chkdef_table.io_def =
     (IOdef_entry *)malloc(REG_INITIAL_NUM_IOTYPES*sizeof(IOdef_entry));
 
   if(sim_ptr->Chkdef_table.io_def == NULL){
@@ -399,7 +399,7 @@ int Sim_attach_secure(const char                     *SimID,
     for(i=0; i<sim_ptr->Cmds_table.num_registered; i++){
 
       if(sim_ptr->Cmds_table.cmd[i].cmd_id == REG_STR_PAUSE){
-	
+
 	j = sim_ptr->Cmds_table.num_registered;
 	sim_ptr->Cmds_table.cmd[j].cmd_id = REG_STR_RESUME;
 	Increment_cmd_registered(&(sim_ptr->Cmds_table));
@@ -471,7 +471,7 @@ int Get_next_message(int   *SimHandle,
     if(isim >= Sim_table.max_entries)isim = 0;
 
     if(Sim_table.sim[isim].handle != REG_SIM_HANDLE_NOTSET){
-  
+
       /* Just to make sure we don't leak - wipe any existing msg */
       if(Sim_table.sim[isim].msg){
 	Delete_msg_struct(&(Sim_table.sim[isim].msg));
@@ -572,7 +572,7 @@ int Consume_param_defs(int SimHandle)
       }
 
       if(ptr->steerable){
-	sscanf((char *)(ptr->steerable), "%d", 
+	sscanf((char *)(ptr->steerable), "%d",
 	       &(Sim_table.sim[index].Params_table.param[j].steerable));
       }
 
@@ -594,7 +594,7 @@ int Consume_param_defs(int SimHandle)
       }
 
       if(ptr->min_val){
-	strcpy(Sim_table.sim[index].Params_table.param[j].min_val, 
+	strcpy(Sim_table.sim[index].Params_table.param[j].min_val,
 	       (char *)ptr->min_val);
 	Sim_table.sim[index].Params_table.param[j].min_val_valid = REG_TRUE;
       }
@@ -606,7 +606,7 @@ int Consume_param_defs(int SimHandle)
       }
 
       if(ptr->max_val){
-	strcpy(Sim_table.sim[index].Params_table.param[j].max_val, 
+	strcpy(Sim_table.sim[index].Params_table.param[j].max_val,
 	       (char *)ptr->max_val);
 	Sim_table.sim[index].Params_table.param[j].max_val_valid = REG_TRUE;
       }
@@ -621,9 +621,9 @@ int Consume_param_defs(int SimHandle)
       if(Sim_table.sim[index].Params_table.param[j].type == REG_BIN){
 	 if(Sim_table.sim[index].Params_table.param[j].max_val_valid == REG_TRUE){
 
-	   Sim_table.sim[index].Params_table.param[j].ptr_raw = 
+	   Sim_table.sim[index].Params_table.param[j].ptr_raw =
 	     malloc(atoi(Sim_table.sim[index].Params_table.param[j].max_val));
-	   Sim_table.sim[index].Params_table.param[j].raw_buf_size = 
+	   Sim_table.sim[index].Params_table.param[j].raw_buf_size =
 	     atoi(Sim_table.sim[index].Params_table.param[j].max_val);
 
 	   /* Won't have a traditional value field so blank it */
@@ -670,7 +670,7 @@ int Consume_param_defs(int SimHandle)
       * Only indication that param deleted is change of handle - hence loop
 	 over max_entries here *
 
-      Sim_table.sim[index].Params_table.param[i].handle = 
+      Sim_table.sim[index].Params_table.param[i].handle =
 	                                       REG_PARAM_HANDLE_NOTSET;
       Sim_table.sim[index].Params_table.num_registered--;
     }
@@ -716,7 +716,7 @@ int Consume_IOType_defs(int SimHandle)
 
     sscanf((char *)(ptr->handle), "%d", &handle);
 
-    if( IOdef_index_from_handle(&(Sim_table.sim[index].IOdef_table), 
+    if( IOdef_index_from_handle(&(Sim_table.sim[index].IOdef_table),
 				handle) == REG_IODEF_HANDLE_NOTSET){
 
       /* Our table doesn't have this IOdef so add it */
@@ -788,7 +788,7 @@ int Consume_IOType_defs(int SimHandle)
       /* Only indication that IOdef deleted is change of handle - hence loop
 	 over max_entries here */
 
-      Sim_table.sim[index].IOdef_table.io_def[i].handle = 
+      Sim_table.sim[index].IOdef_table.io_def[i].handle =
 	                                 REG_IODEF_HANDLE_NOTSET;
       Sim_table.sim[index].IOdef_table.num_registered--;
     }
@@ -832,7 +832,7 @@ int Consume_ChkType_defs(int SimHandle)
 
     sscanf((char *)(ptr->handle), "%d", &handle);
 
-    if( IOdef_index_from_handle(&(Sim_table.sim[index].Chkdef_table), 
+    if( IOdef_index_from_handle(&(Sim_table.sim[index].Chkdef_table),
 				handle) == REG_IODEF_HANDLE_NOTSET){
 
       /* Our table doesn't have this Chkdef so add it */
@@ -908,7 +908,7 @@ int Consume_ChkType_defs(int SimHandle)
       /* Only indication that Chkdef deleted is change of handle - hence loop
 	 over max_entries here */
 
-      Sim_table.sim[index].Chkdef_table.io_def[i].handle = 
+      Sim_table.sim[index].Chkdef_table.io_def[i].handle =
 	                                 REG_IODEF_HANDLE_NOTSET;
       Sim_table.sim[index].Chkdef_table.num_registered--;
     }
@@ -931,7 +931,7 @@ int Consume_log(int SimHandle)
 
   int return_status = REG_SUCCESS;
 
-  if( (index = Sim_index_from_handle(SimHandle)) == 
+  if( (index = Sim_index_from_handle(SimHandle)) ==
                                           REG_SIM_HANDLE_NOTSET){
 
     fprintf(stderr, "STEER: Consume_log: failed to find sim table entry\n");
@@ -957,7 +957,7 @@ int Consume_log(int SimHandle)
 
     if(entry_ptr->key){
 
-      sscanf((char *)entry_ptr->key, "%d", 
+      sscanf((char *)entry_ptr->key, "%d",
 	     &(sim->Chk_log.entry[index].key));
     }
 
@@ -980,7 +980,7 @@ int Consume_log(int SimHandle)
 
 /*----------------------------------------------------------*/
 
-int Consume_chk_log(Sim_entry_type *sim, 
+int Consume_chk_log(Sim_entry_type *sim,
 		    struct chk_log_entry_struct *entry)
 {
   int                  index, count;
@@ -993,12 +993,12 @@ int Consume_chk_log(Sim_entry_type *sim,
 
   if(entry->chk_handle){
 
-    sscanf((char *)entry->chk_handle, "%d", 
+    sscanf((char *)entry->chk_handle, "%d",
 	   &(sim->Chk_log.entry[index].chk_handle));
   }
   if(entry->chk_tag){
 
-    strcpy(sim->Chk_log.entry[index].chk_tag, 
+    strcpy(sim->Chk_log.entry[index].chk_tag,
 	   (char *)entry->chk_tag);
   }
 
@@ -1008,7 +1008,7 @@ int Consume_chk_log(Sim_entry_type *sim,
   while(param_ptr){
 
     if(param_ptr->handle){
-      sscanf((char *)(param_ptr->handle), "%d", 
+      sscanf((char *)(param_ptr->handle), "%d",
 	     &(sim->Chk_log.entry[index].param[count].handle));
     }
     if(param_ptr->value){
@@ -1020,7 +1020,7 @@ int Consume_chk_log(Sim_entry_type *sim,
     if(++count >= REG_MAX_NUM_STR_PARAMS){
 
       fprintf(stderr, "STEER: WARNING: Consume_chk_log: discarding parameter "
-	      "because max. no. of %d exceeded\n", 
+	      "because max. no. of %d exceeded\n",
 	      REG_MAX_NUM_STR_PARAMS);
       break;
     }
@@ -1039,7 +1039,7 @@ int Consume_chk_log(Sim_entry_type *sim,
 
 /*----------------------------------------------------------*/
 
-int Consume_param_log(Sim_entry_type *sim, 
+int Consume_param_log(Sim_entry_type *sim,
 		      struct param_struct *param_ptr)
 {
   int handle;
@@ -1048,7 +1048,7 @@ int Consume_param_log(Sim_entry_type *sim,
   int   dum_int;
   long  dum_long;
   float dum_float;
-  
+
   while(param_ptr){
 
     if(!param_ptr->handle){
@@ -1201,7 +1201,7 @@ int Consume_status(int   SimHandle,
 	    Commands[count] = REG_STR_RESUME;
 	  }
 	  else{
-	    fprintf(stderr, "STEER: Consume_status: unrecognised cmd name: %s\n", 
+	    fprintf(stderr, "STEER: Consume_status: unrecognised cmd name: %s\n",
 		    (char *)cmd_ptr->name);
 	    cmd_ptr = cmd_ptr->next;
 	  }
@@ -1254,8 +1254,8 @@ int Consume_status(int   SimHandle,
 
       if(Sim_table.sim[index].Params_table.param[j].type == REG_BIN){
 
-	if(Base64_decode((char *)(param_ptr->value), 
-			 strlen((char *)(param_ptr->value)), 
+	if(Base64_decode((char *)(param_ptr->value),
+			 strlen((char *)(param_ptr->value)),
 			 (char **)&(Sim_table.sim[index].Params_table.param[j].ptr_raw),
 			 &Sim_table.sim[index].Params_table.param[j].raw_buf_size)
 	   != REG_SUCCESS){
@@ -1497,9 +1497,9 @@ int Emit_control(int    SimHandle,
       }
 
       pbuf += sprintf(pbuf, "<Param>\n");
-      pbuf += sprintf(pbuf, "<Handle>%d</Handle>\n", 
+      pbuf += sprintf(pbuf, "<Handle>%d</Handle>\n",
 	      Sim_table.sim[simid].Params_table.param[i].handle);
-      pbuf += sprintf(pbuf, "<Value>%s</Value>\n", 
+      pbuf += sprintf(pbuf, "<Value>%s</Value>\n",
 	      Sim_table.sim[simid].Params_table.param[i].value);
       pbuf += sprintf(pbuf, "</Param>\n");
 
@@ -1520,7 +1520,7 @@ int Emit_control(int    SimHandle,
   }
 
   pbuf += sprintf(pbuf, "</Steer_control>\n");
-  /* ARPDBG - have to use REG_MAX_MSG_SIZE here because this 
+  /* ARPDBG - have to use REG_MAX_MSG_SIZE here because this
      routine doesn't count how many bytes it's written into
      the buffer */
   Write_xml_footer(&pbuf, REG_MAX_MSG_SIZE);
@@ -1548,7 +1548,7 @@ int Delete_sim_table_entry(int *SimHandle)
   Sim_entry_type *sim;
 
   if(*SimHandle == REG_SIM_HANDLE_NOTSET) return REG_SUCCESS;
-  
+
   if( (index = Sim_index_from_handle(*SimHandle)) == -1){
 
     return REG_FAILURE;
@@ -1702,9 +1702,9 @@ int Dump_sim_table()
       if(paramptr != NULL){
 
       	for(iparam=0; iparam<simptr->Params_table.max_entries; iparam++){
-  
+
  	  if(paramptr->handle == REG_PARAM_HANDLE_NOTSET) continue;
-  
+
  	  fprintf(fp, "Param index %d\n", iparam);
  	  fprintf(fp, "--------------\n");
  	  fprintf(fp, "Label  	 = %s\n", paramptr->label);
@@ -1716,7 +1716,7 @@ int Dump_sim_table()
  	  fprintf(fp, "min_valid = %d\n\n", paramptr->min_val_valid);
  	  fprintf(fp, "max       = %s\n\n", paramptr->max_val);
  	  fprintf(fp, "max_valid = %d\n\n", paramptr->max_val_valid);
-  
+
  	  paramptr++;
         }
       }
@@ -1727,9 +1727,9 @@ int Dump_sim_table()
       if(ioptr != NULL){
 
       	for(iotype=0; iotype<simptr->IOdef_table.max_entries; iotype++){
-  
+
  	  if(ioptr->handle == REG_IODEF_HANDLE_NOTSET) continue;
-  
+
  	  fprintf(fp, "IO Type index %d\n", iotype);
  	  fprintf(fp, "----------------\n");
  	  fprintf(fp, "Label     = %s\n", ioptr->label);
@@ -1737,7 +1737,7 @@ int Dump_sim_table()
  	  fprintf(fp, "direction = %d\n", ioptr->direction);
  	  fprintf(fp, "freq_param_handle = %d\n", ioptr->freq_param_handle);
 
-          iparam = Param_index_from_handle(&(simptr->Params_table), 
+          iparam = Param_index_from_handle(&(simptr->Params_table),
 			                   ioptr->freq_param_handle);
           if(iparam != -1){
  	    fprintf(fp, "frequency = %s\n", simptr->Params_table.param[iparam].value);
@@ -1755,9 +1755,9 @@ int Dump_sim_table()
       if(ioptr != NULL){
 
       	for(iotype=0; iotype<simptr->Chkdef_table.max_entries; iotype++){
-  
+
  	  if(ioptr->handle == REG_IODEF_HANDLE_NOTSET) continue;
-  
+
  	  fprintf(fp, "Chk Type index %d\n", iotype);
  	  fprintf(fp, "----------------\n");
  	  fprintf(fp, "Label     = %s\n", ioptr->label);
@@ -1765,14 +1765,14 @@ int Dump_sim_table()
  	  fprintf(fp, "direction = %d\n", ioptr->direction);
  	  fprintf(fp, "freq_param_handle = %d\n", ioptr->freq_param_handle);
 
-          iparam = Param_index_from_handle(&(simptr->Params_table), 
+          iparam = Param_index_from_handle(&(simptr->Params_table),
 			                   ioptr->freq_param_handle);
           if(iparam != -1){
  	    fprintf(fp, "frequency = %s\n", simptr->Params_table.param[iparam].value);
 	  }
 
  	  fprintf(fp, "\n");
-  
+
  	  ioptr++;
         }
       }
@@ -1799,7 +1799,7 @@ int Dump_sim_table()
   fclose(fp);
 
   return REG_SUCCESS;
-} 
+}
 
 /*----------------------------------------------------------------*/
 
@@ -1818,13 +1818,13 @@ int Get_param_number(int  sim_handle,
      associated with the simulation with handle sim_handle */
 
   if( (isim = Sim_index_from_handle(sim_handle)) != -1){
-  
+
     count = 0;
     for(i=0; i<Sim_table.sim[isim].Params_table.max_entries; i++){
-  
+
       /* Check that entry is valid & is not for a library-generated param */
 
-      if(Sim_table.sim[isim].Params_table.param[i].handle != 
+      if(Sim_table.sim[isim].Params_table.param[i].handle !=
 	 REG_PARAM_HANDLE_NOTSET &&
 	 !(Sim_table.sim[isim].Params_table.param[i].is_internal)){
 
@@ -1858,13 +1858,13 @@ int Get_param_values(int    sim_handle,
   int count;
 
   /* Return lists of registered parameter handles and associated
-     values (as strings), types and limits for the steered simulation 
-     with handle sim_handle 
+     values (as strings), types and limits for the steered simulation
+     with handle sim_handle
 
      num_param is the number to return and param_details should
-     point to an array (of Param_details_struct's) of at least this length 
+     point to an array (of Param_details_struct's) of at least this length
 
-     if steerable == REG_TRUE (1) then return steerable params, if REG_FALSE 
+     if steerable == REG_TRUE (1) then return steerable params, if REG_FALSE
      (0) then return monitoring params */
 
   if(!param_details) {
@@ -1874,42 +1874,42 @@ int Get_param_values(int    sim_handle,
 
   isim = Sim_index_from_handle(sim_handle);
   if(isim != -1){
-  
+
     count = 0;
 
     for(i=0; i<Sim_table.sim[isim].Params_table.max_entries; i++){
 
       /* Check that entry is valid & is not for a library-generated param */
 
-      if(Sim_table.sim[isim].Params_table.param[i].handle != 
+      if(Sim_table.sim[isim].Params_table.param[i].handle !=
 	 REG_PARAM_HANDLE_NOTSET &&
 	 !(Sim_table.sim[isim].Params_table.param[i].is_internal)){
 
 	if(Sim_table.sim[isim].Params_table.param[i].steerable == steerable){
 
-	  param_details[count].handle = 
+	  param_details[count].handle =
 	                     Sim_table.sim[isim].Params_table.param[i].handle;
 
-	  strcpy(param_details[count].label, 
+	  strcpy(param_details[count].label,
 		 Sim_table.sim[isim].Params_table.param[i].label);
 	  /* Strip off any trailing space (often an issue with strings
 	     supplied from F90) */
 	  trimWhiteSpace(param_details[count].label);
 
-	  strcpy(param_details[count].value, 
+	  strcpy(param_details[count].value,
 		 Sim_table.sim[isim].Params_table.param[i].value);
 
           param_details[count].type = Sim_table.sim[isim].Params_table.param[i].type;
 
 	  if(Sim_table.sim[isim].Params_table.param[i].min_val_valid == REG_TRUE){
-	    strcpy(param_details[count].min_val, 
+	    strcpy(param_details[count].min_val,
 		   Sim_table.sim[isim].Params_table.param[i].min_val);
 	  }
 	  else{
 	    sprintf(param_details[count].min_val, "--");
 	  }
 	  if(Sim_table.sim[isim].Params_table.param[i].max_val_valid == REG_TRUE){
-	    strcpy(param_details[count].max_val, 
+	    strcpy(param_details[count].max_val,
 		   Sim_table.sim[isim].Params_table.param[i].max_val);
 	  }
 	  else{
@@ -1919,7 +1919,7 @@ int Get_param_values(int    sim_handle,
 	  /* For monitored parameters that are simply chunks of raw data we pass
 	     back a pointer to this data */
 	  if(param_details[count].type == REG_BIN){
-	    param_details[count].raw_data = 
+	    param_details[count].raw_data =
 	      Sim_table.sim[isim].Params_table.param[i].ptr_raw;
 	  }
 
@@ -1933,7 +1933,7 @@ int Get_param_values(int    sim_handle,
   else{
     return_status = REG_FAILURE;
   }
-  
+
   return return_status;
 }
 
@@ -1962,12 +1962,12 @@ int Set_param_values(int    sim_handle,
 
     for(i=0; i<num_params; i++){
 
-      if( (index = Param_index_from_handle(&(Sim_table.sim[isim].Params_table), 
+      if( (index = Param_index_from_handle(&(Sim_table.sim[isim].Params_table),
 				 handles[i])) == REG_PARAM_HANDLE_NOTSET ){
 	return_status = REG_FAILURE;
 	break;
       }
-      
+
       /* Only set the value if parameter is steerable */
 
       if(Sim_table.sim[isim].Params_table.param[index].steerable){
@@ -1991,9 +1991,9 @@ int Set_param_values(int    sim_handle,
 	  }
 	  if(outside_range == REG_TRUE){
 	    fprintf(stderr, "STEER: Set_param_values: new value (%d) of %s is outside\n"
-		    "permitted range (%s,%s) - skipping...\n", 
-		    ivalue, 
-		    Sim_table.sim[isim].Params_table.param[index].label, 
+		    "permitted range (%s,%s) - skipping...\n",
+		    ivalue,
+		    Sim_table.sim[isim].Params_table.param[index].label,
 		    Sim_table.sim[isim].Params_table.param[index].min_val,
 		    Sim_table.sim[isim].Params_table.param[index].max_val);
 	    continue;
@@ -2003,20 +2003,20 @@ int Set_param_values(int    sim_handle,
 	case REG_LONG:
 	  sscanf(vals[i], "%ld", &lvalue);
 	  if(Sim_table.sim[isim].Params_table.param[index].min_val_valid == REG_TRUE){
-	    sscanf(Sim_table.sim[isim].Params_table.param[index].min_val, 
+	    sscanf(Sim_table.sim[isim].Params_table.param[index].min_val,
 		   "%ld", &llimit);
 	    if (lvalue < llimit) outside_range = REG_TRUE;
 	  }
 	  if(Sim_table.sim[isim].Params_table.param[index].max_val_valid == REG_TRUE){
-	    sscanf(Sim_table.sim[isim].Params_table.param[index].max_val, 
+	    sscanf(Sim_table.sim[isim].Params_table.param[index].max_val,
 		   "%ld", &llimit);
 	    if (lvalue > llimit) outside_range = REG_TRUE;
 	  }
 	  if(outside_range == REG_TRUE){
 	    fprintf(stderr, "STEER: Set_param_values: new value (%ld) of %s is "
-		    "outside\npermitted range (%s,%s) - skipping...\n", 
-		    lvalue, 
-		    Sim_table.sim[isim].Params_table.param[index].label, 
+		    "outside\npermitted range (%s,%s) - skipping...\n",
+		    lvalue,
+		    Sim_table.sim[isim].Params_table.param[index].label,
 		    Sim_table.sim[isim].Params_table.param[index].min_val,
 		    Sim_table.sim[isim].Params_table.param[index].max_val);
 	    continue;
@@ -2038,10 +2038,10 @@ int Set_param_values(int    sim_handle,
 
 	  if(outside_range == REG_TRUE){
 	    fprintf(stderr, "STEER: Set_param_values: new value (%f) of %s is outside\n"
-		    "permitted range (%s,%s) - skipping...\n", 
-		    fvalue, 
-		    Sim_table.sim[isim].Params_table.param[index].label, 
-		    Sim_table.sim[isim].Params_table.param[index].min_val, 
+		    "permitted range (%s,%s) - skipping...\n",
+		    fvalue,
+		    Sim_table.sim[isim].Params_table.param[index].label,
+		    Sim_table.sim[isim].Params_table.param[index].min_val,
 		    Sim_table.sim[isim].Params_table.param[index].max_val);
 	    continue;
 	  }
@@ -2050,21 +2050,21 @@ int Set_param_values(int    sim_handle,
 	case REG_DBL:
 	  sscanf(vals[i], "%lg", &dvalue);
 	  if(Sim_table.sim[isim].Params_table.param[index].min_val_valid == REG_TRUE){
-	    sscanf(Sim_table.sim[isim].Params_table.param[index].min_val, 
+	    sscanf(Sim_table.sim[isim].Params_table.param[index].min_val,
 		   "%lg", &dmin);
 	    if(dvalue < dmin) outside_range = REG_TRUE;
 	  }
 	  if(Sim_table.sim[isim].Params_table.param[index].max_val_valid == REG_TRUE){
-	    sscanf(Sim_table.sim[isim].Params_table.param[index].max_val, 
+	    sscanf(Sim_table.sim[isim].Params_table.param[index].max_val,
 		   "%lg", &dmax);
 	    if(dvalue > dmax) outside_range = REG_TRUE;
 	  }
 
 	  if(outside_range == REG_TRUE){
 	    fprintf(stderr, "STEER: Set_param_values: new value (%f) of %s is outside\n"
-		    "permitted range (%s,%s) - skipping...\n", 
-		    (float)dvalue, 
-		    Sim_table.sim[isim].Params_table.param[index].label, 
+		    "permitted range (%s,%s) - skipping...\n",
+		    (float)dvalue,
+		    Sim_table.sim[isim].Params_table.param[index].label,
 		    Sim_table.sim[isim].Params_table.param[index].min_val,
 		    Sim_table.sim[isim].Params_table.param[index].max_val);
 	    continue;
@@ -2072,7 +2072,7 @@ int Set_param_values(int    sim_handle,
 	  break;
 
 	case REG_CHAR:
-	  /* Max. value taken as maximum possible length of steered 
+	  /* Max. value taken as maximum possible length of steered
 	     character strings */
 	  if(Sim_table.sim[isim].Params_table.param[index].max_val_valid == REG_TRUE){
 	    sscanf(Sim_table.sim[isim].Params_table.param[index].max_val, "%d",
@@ -2080,9 +2080,9 @@ int Set_param_values(int    sim_handle,
 	    if (strlen(vals[i]) > imax) {
 
 	      fprintf(stderr, "STEER: Set_param_values: new string (%s) of %s exceeds\n"
-		      "maximum length (%s) - skipping...\n", 
-		      vals[i], 
-		      Sim_table.sim[isim].Params_table.param[index].label, 
+		      "maximum length (%s) - skipping...\n",
+		      vals[i],
+		      Sim_table.sim[isim].Params_table.param[index].label,
 		      Sim_table.sim[isim].Params_table.param[index].max_val);
 	      continue;
 	    }
@@ -2114,7 +2114,7 @@ int Set_param_values(int    sim_handle,
 
 int Get_param_log(int      sim_handle,
 		  int      handle,
-		  double **buf, 
+		  double **buf,
 		  int     *num_entries)
 {
   int isim;
@@ -2128,7 +2128,7 @@ int Get_param_log(int      sim_handle,
     return REG_FAILURE;
   }
 
-  if( (index = Param_index_from_handle(&(Sim_table.sim[isim].Params_table), 
+  if( (index = Param_index_from_handle(&(Sim_table.sim[isim].Params_table),
 				       handle)) == REG_PARAM_HANDLE_NOTSET ){
     return REG_FAILURE;
   }
@@ -2165,8 +2165,8 @@ int Next_free_iodef_index(IOdef_table_type *table)
     /* No free entries - need to allocate more memory */
 
     new_size = table->max_entries + REG_INITIAL_NUM_IOTYPES;
-    
-    if( (dum_ptr = (void *)realloc(table->io_def, 
+
+    if( (dum_ptr = (void *)realloc(table->io_def,
 				   new_size*sizeof(param_entry))) ){
 
       index = table->max_entries;
@@ -2239,7 +2239,7 @@ int Get_iotype_number(int sim_handle,
 
     for(i=0; i<Sim_table.sim[isim].IOdef_table.max_entries; i++){
 
-      if(Sim_table.sim[isim].IOdef_table.io_def[i].handle != 
+      if(Sim_table.sim[isim].IOdef_table.io_def[i].handle !=
 	 REG_IODEF_HANDLE_NOTSET) count++;
     }
 
@@ -2280,12 +2280,12 @@ int Get_iotypes(int    sim_handle,
 
     for(i=0; i<Sim_table.sim[isim].IOdef_table.max_entries; i++){
 
-      if(Sim_table.sim[isim].IOdef_table.io_def[i].handle != 
+      if(Sim_table.sim[isim].IOdef_table.io_def[i].handle !=
 	 REG_IODEF_HANDLE_NOTSET){
 
 	handles[count] = Sim_table.sim[isim].IOdef_table.io_def[i].handle;
 
-	strcpy(labels[count], 
+	strcpy(labels[count],
 	       Sim_table.sim[isim].IOdef_table.io_def[i].label);
 	/* Strip off any trailing space (often an issue with strings
 	   supplied from F90) */
@@ -2299,7 +2299,7 @@ int Get_iotypes(int    sim_handle,
 
 	if(iparam != REG_PARAM_HANDLE_NOTSET){
 
-	  nitem = sscanf(Sim_table.sim[isim].Params_table.param[iparam].value, 
+	  nitem = sscanf(Sim_table.sim[isim].Params_table.param[iparam].value,
 			   "%d", &(io_freqs[count]) );
 	  if(nitem != 1){
 
@@ -2316,7 +2316,7 @@ int Get_iotypes(int    sim_handle,
 	  io_freqs[count] = 0;
 	  return_status = REG_FAILURE;
 	}
-	
+
 	count++;
 
 	if(count == num_iotypes)break;
@@ -2325,7 +2325,7 @@ int Get_iotypes(int    sim_handle,
   }
   else{
 
-    fprintf(stderr, "STEER: Get_iotypes: unknown sim handle: %d\n", 
+    fprintf(stderr, "STEER: Get_iotypes: unknown sim handle: %d\n",
 	    sim_handle);
     return_status = REG_FAILURE;
   }
@@ -2381,7 +2381,7 @@ int Set_iotype_freq(int sim_handle,
 					1,
 					&(Sim_table.sim[isim].IOdef_table.io_def[i].freq_param_handle),
 					&val_array);
-      
+
     }
   }
   else{
@@ -2416,7 +2416,7 @@ int Get_chktype_number(int  sim_handle,
 
     for(i=0; i<Sim_table.sim[isim].Chkdef_table.max_entries; i++){
 
-      if(Sim_table.sim[isim].Chkdef_table.io_def[i].handle != 
+      if(Sim_table.sim[isim].Chkdef_table.io_def[i].handle !=
 	 REG_IODEF_HANDLE_NOTSET) count++;
     }
 
@@ -2457,12 +2457,12 @@ int Get_chktypes(int    sim_handle,
 
     for(i=0; i<Sim_table.sim[isim].Chkdef_table.max_entries; i++){
 
-      if(Sim_table.sim[isim].Chkdef_table.io_def[i].handle != 
+      if(Sim_table.sim[isim].Chkdef_table.io_def[i].handle !=
 	 REG_IODEF_HANDLE_NOTSET){
 
 	handles[count] = Sim_table.sim[isim].Chkdef_table.io_def[i].handle;
 
-	strcpy(labels[count], 
+	strcpy(labels[count],
 	       Sim_table.sim[isim].Chkdef_table.io_def[i].label);
 
 	/* Strip off any trailing space (often an issue with strings
@@ -2479,7 +2479,7 @@ int Get_chktypes(int    sim_handle,
 
 	  if(iparam != REG_PARAM_HANDLE_NOTSET){
 
-	    nitem = sscanf(Sim_table.sim[isim].Params_table.param[iparam].value, 
+	    nitem = sscanf(Sim_table.sim[isim].Params_table.param[iparam].value,
 			   "%d", &(chk_freqs[count]) );
 	    if(nitem != 1){
 
@@ -2575,7 +2575,7 @@ int Set_chktype_freq(int  sim_handle,
 					1,
 					&(Sim_table.sim[isim].Chkdef_table.io_def[i].freq_param_handle),
 					&val_array);
-      
+
     }
   }
   else{
@@ -2638,12 +2638,12 @@ int Command_supported(int sim_id,
       }
     }
   }
-  
+
 #ifdef REG_DEBUG
   if(return_status != REG_SUCCESS){
 
-    fprintf(stderr, 
-	    "STEER: Command_supported: command %d is not supported by the sim.\n", 
+    fprintf(stderr,
+	    "STEER: Command_supported: command %d is not supported by the sim.\n",
 	    cmd_id);
   }
 #endif
@@ -2658,7 +2658,7 @@ int Get_supp_cmd_number(int sim_handle,
 {
   int isim;
   int return_status = REG_SUCCESS;
-  
+
   /* Returns the number of commands supported by the specified sim */
 
   if (num_cmds == NULL) return REG_FAILURE;
@@ -2700,7 +2700,7 @@ int Get_supp_cmds(int  sim_handle,
     else{
       loop_limit = Sim_table.sim[isim].Cmds_table.num_registered;
     }
-    
+
     /* Copy command id's out of table and into supplied array */
 
     for(i=0; i<loop_limit; i++){
@@ -2842,17 +2842,17 @@ int Get_log_entry_details(Param_table_type *param_table,
 
     if(in->param[i].handle == REG_PARAM_HANDLE_NOTSET) break;
 
-    index = Param_index_from_handle(param_table, 
+    index = Param_index_from_handle(param_table,
 				    in->param[i].handle);
 
     if(index == -1){
       fprintf(stderr, "STEER: Get_log_entry_details: error - failed"
-	      " to match param handle: %d\n", 
+	      " to match param handle: %d\n",
 	      in->param[i].handle);
       continue;
     }
 
-    strcpy(out->param_labels[i], 
+    strcpy(out->param_labels[i],
 	   param_table->param[index].label);
 
     /* Strip off any trailing space (often an issue with strings

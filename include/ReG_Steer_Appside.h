@@ -1,7 +1,7 @@
 /*
   The RealityGrid Steering Library
 
-  Copyright (c) 2002-2009, University of Manchester, United Kingdom.
+  Copyright (c) 2002-2010, University of Manchester, United Kingdom.
   All rights reserved.
 
   This software is produced by Research Computing Services, University
@@ -46,8 +46,8 @@
           Robert Haines
  */
 
-/** @file ReG_Steer_Appside.h 
-    @brief Header file for inclusion in code to be steered 
+/** @file ReG_Steer_Appside.h
+    @brief Header file for inclusion in code to be steered
 
     Header file defining public routines used in the construction
     of a steering interface for an application.
@@ -62,7 +62,7 @@
 #ifdef __cplusplus
   #define PREFIX "C"
 #else
-  #define PREFIX 
+  #define PREFIX
 #endif
 
 
@@ -81,12 +81,12 @@ extern PREFIX void Steering_enable(const int EnableSteer);
 
 /**
    Initialise the internal library tables and advertise application
-   as being steerable. 
-   @param AppName Name and version of the user application.  This 
-   information is included in the log of checkpoints created and 
+   as being steerable.
+   @param AppName Name and version of the user application.  This
+   information is included in the log of checkpoints created and
    used to check consistency when restarts are requested.
    @param NumSupportedCmds No. of steering commands supported
-   @param SupportedCmds Array holding which of the pre-defined 
+   @param SupportedCmds Array holding which of the pre-defined
    supported commands the application supports (e.g. REG_STR_STOP).
    @return REG_SUCCESS or REG_FAILURE
  */
@@ -122,12 +122,12 @@ extern PREFIX char* Get_samples_transport_string(void);
    Register the specified IO types.  This routine performs some sort of
    mapping between the supplied label and a physical destination for
    data (@e e.g. a filename and location), possibly using the component
-   framework. Returns an integer handle for each IO type. 
+   framework. Returns an integer handle for each IO type.
    @param NumTypes The number of IOTypes to register
    @param IOLabel Array of labels for the IOTypes
-   @param direction Array giving direction of each IOType (@c IN, 
+   @param direction Array giving direction of each IOType (@c IN,
    @c OUT or @c INOUT)
-   @param IOFrequency Array giving the interval between 
+   @param IOFrequency Array giving the interval between
    automatically-generated commands to emit/consume data using each IOType
    @param IOType On success - array of handles for registered IOTypes
    @return REG_SUCCESS, REG_FAILURE
@@ -141,11 +141,11 @@ extern PREFIX int Register_IOTypes(int    NumTypes,
 
 /**
    Register a single IOType. Behaves exactly as Register_IOTypes() but
-   does not require arrays of variables as arguments. 
+   does not require arrays of variables as arguments.
    @param IOLabel Array of labels for the IOTypes
-   @param direction Array giving direction of each IOType (@c IN, 
+   @param direction Array giving direction of each IOType (@c IN,
    @c OUT or @c INOUT)
-   @param IOFrequency Array giving the interval between 
+   @param IOFrequency Array giving the interval between
    automatically-generated commands to emit/consume data using each IOType
    @param IOType On success - array of handles for registered IOTypes
    @return REG_SUCCESS, REG_FAILURE
@@ -175,7 +175,7 @@ extern PREFIX int Enable_IOTypes_on_registration(int toggle);
 */
 extern PREFIX int Disable_IOType(int IOType);
 
-/** 
+/**
     Enables a previously disabled IOType (such as one produced by
     Register_IOTypes() after an earlier call of
     Enable_IOTypes_on_registration(toggle) with @p toggle= @c
@@ -193,7 +193,7 @@ extern PREFIX int Enable_IOType(int IOType);
    acknowledgements are enabled, calls to Emit_start() will return
    REG_NOT_READY until an acknowledgement of the last data set emitted
    has been received from the consumer
-.  @e N.B. acknowledgements are ON by default.  
+.  @e N.B. acknowledgements are ON by default.
    @see Disable_IOType_acks(), Enable_IOTypes_on_registration()
  */
 extern PREFIX int Enable_IOType_acks(int IOType);
@@ -207,7 +207,7 @@ extern PREFIX int Enable_IOType_acks(int IOType);
    unable to keep up (@e e.g. if the consumer's processing of a data set
    is taking longer than the interval between the generation of data
    sets by the emitter).
-   @e N.B. acknowledgements are ON by default.  
+   @e N.B. acknowledgements are ON by default.
    @see Enable_IOType_acks(), Enable_IOTypes_on_registration()
  */
 extern PREFIX int Disable_IOType_acks(int IOType);
@@ -216,7 +216,7 @@ extern PREFIX int Disable_IOType_acks(int IOType);
    @param NumTypes No. of checkpoint types to register
    @param ChkLabel Unique label for each Chk type
    @param direction @c IN, @c OUT or @c INOUT for each Chk type
-   @param ChkFrequency Initial value of frequency of checkpoint 
+   @param ChkFrequency Initial value of frequency of checkpoint
    creation (ignored for ChkTypes with direction @c IN)
    @param ChkType On successful return, holds identifier(s) of the
    registered Chk type(s)
@@ -242,7 +242,7 @@ extern PREFIX int Register_ChkTypes(int    NumTypes,
 /**
    Identical in operation to Register_ChkTypes() with the obvious
    exception that they only register one ChkType at a time and
-   therefore do not require arrays of variables as arguments. 
+   therefore do not require arrays of variables as arguments.
 */
 extern PREFIX int Register_ChkType(char* ChkLabel,
 				   int   direction,
@@ -254,11 +254,11 @@ extern PREFIX int Register_ChkType(char* ChkLabel,
    OBSOLETE - replaced by Record_checkpoint_set() @n
    Record that the application has just read/written a checkpoint
    of type ChkType - the handle returned by Register_ChkTypes.  Whether
-   it has been read or written is given by the 'direction' of this 
+   it has been read or written is given by the 'direction' of this
    registered type.  The caller must supply a string in ChkTag which
    will allow them to retrieve the data associated with this checkpoint.
-   If the same tag is supplied in multiple calls then the checkpoint is 
-   assumed to be have been overwritten (in the case where the 
+   If the same tag is supplied in multiple calls then the checkpoint is
+   assumed to be have been overwritten (in the case where the
    'direction' of the associated ChkType is OUT). */
 extern PREFIX int Record_Chkpt(int   ChkType,
 			       char *ChkTag);
@@ -283,10 +283,10 @@ extern PREFIX int Add_checkpoint_file(int   ChkType,
 				      char *filename);
 
 /**
-   @param ChkType The type of checkpoint that is being recorder (as 
+   @param ChkType The type of checkpoint that is being recorder (as
    returned by Register_ChkTypes()).
    @param ChkTag Specifies a unique string identifying this checkpoint instance
-   @param Path Specifies the location of the files making up the 
+   @param Path Specifies the location of the files making up the
    checkpoint set, relative to the current working directory
    @return REG_SUCCESS, REG_FAILURE
 
@@ -309,10 +309,10 @@ extern PREFIX int Record_checkpoint_set(int   ChkType,
 /**
     @param NumParams Number of params to register
     @param ParamLabels Label for each parameter
-    @param ParamSteerable @c REG_TRUE if parameter steerable, @c REG_FALSE 
+    @param ParamSteerable @c REG_TRUE if parameter steerable, @c REG_FALSE
     otherwise. Since the quantities being registered with the steering library
-    are pointers, it is a requirement that the variables to which they refer 
-    remain in scope through multiple calls to Steering_control (@e i.e. 
+    are pointers, it is a requirement that the variables to which they refer
+    remain in scope through multiple calls to Steering_control (@e i.e.
     until Steering_finalize() is called).
     @param ParamPtrs Pointer to parameter value
     @param ParamTypes Data type of parameter
@@ -320,10 +320,10 @@ extern PREFIX int Record_checkpoint_set(int   ChkType,
     @param ParamMaxima Max. parameter value
     @return REG_SUCCESS or REG_FAILURE
 
-    Register the provided list of parameters with the library - this 
-    allows a steering client to monitor or, if they are flagged as 
-    steerable, to modify them.  The labels must be unique as they are 
-    used to identify the parameters.  Also, they must not match the 
+    Register the provided list of parameters with the library - this
+    allows a steering client to monitor or, if they are flagged as
+    steerable, to modify them.  The labels must be unique as they are
+    used to identify the parameters.  Also, they must not match the
     following reserved strings:
     @li 'CPU_TIME_PER_STEP';
     @li 'SEQUENCE_NUM';
@@ -340,19 +340,19 @@ extern PREFIX int Record_checkpoint_set(int   ChkType,
     value of ten corresponds to the steering client being contacted
     once in every ten calls.)
 
-    This routine may be called more than once and at any time (whether or 
-    not Steering_initialize() has successfully initiated a connection with 
-    a steering client).  The steering library's internal tables of 
+    This routine may be called more than once and at any time (whether or
+    not Steering_initialize() has successfully initiated a connection with
+    a steering client).  The steering library's internal tables of
     parameters remains unchanged by the (dis)connection of a steering client.
 
-    Multiple calls to this routine have a cumulative effect.  That is, 
-    every successful call to this routine results in the addition of the 
-    specified parameters to the table of registered parameters within the 
+    Multiple calls to this routine have a cumulative effect.  That is,
+    every successful call to this routine results in the addition of the
+    specified parameters to the table of registered parameters within the
     library.
-    
-    The pointers in @p ParamPtrs may be to variables of different types (since 
-    this routine is only available in C and C++).  The type of each 
-    parameter is specified by the @p ParamTypes array using the coding scheme 
+
+    The pointers in @p ParamPtrs may be to variables of different types (since
+    this routine is only available in C and C++).  The type of each
+    parameter is specified by the @p ParamTypes array using the coding scheme
      defined within the ReG_Steer_types.h header file, c.f. MPI.)
 
     The user may specify a range of validity for steerable parameters
@@ -367,10 +367,10 @@ extern PREFIX int Record_checkpoint_set(int   ChkType,
     the length of a string registered with the library is
     @c REG_MAX_STRING_LENGTH characters.
 
-    Although this routine is flexible, in practice it requires that a 
-    user set up arrays for the various quantities being passed to it.  It 
-    is also not possible to provide a binding for this routine in F90.  
-    As a consequence of these issues, the API also provides a singular 
+    Although this routine is flexible, in practice it requires that a
+    user set up arrays for the various quantities being passed to it.  It
+    is also not possible to provide a binding for this routine in F90.
+    As a consequence of these issues, the API also provides a singular
     form of the parameter registration routine, Register_param().
     @see Register_param
 */
@@ -384,7 +384,7 @@ extern PREFIX int Register_params(int    NumParams,
 
 /**
    Singular form of Register_params(). Removes the need for
-   arrays of parameter labels @e etc. 
+   arrays of parameter labels @e etc.
    @see Register_params */
 extern PREFIX int Register_param(char* ParamLabel,
                                  int   ParamSteerable,
@@ -398,27 +398,27 @@ extern PREFIX int Register_param(char* ParamLabel,
    REG_BIN.  Calculates number of bytes that ParamPtr
    points at.  Mandates that REG_BIN variables are
    monitored only. */
-extern PREFIX int Register_bin_param(char *ParamLabel, 
+extern PREFIX int Register_bin_param(char *ParamLabel,
 				     void *ParamPtr,
-				     int ParamType, 
+				     int ParamType,
 				     int NumObjects);
 
 /**
    Un-register the parameters identified by the given labels.
-   NOT CURRENTLY IMPLEMENTED. 
+   NOT CURRENTLY IMPLEMENTED.
    @param NumParams Number of parameters to unregister
    @param ParamLabels Array of parameter labels */
 extern PREFIX int Unregister_params(int    NumParams,
 				    char* *ParamLabels);
 /**
-   Toggle whether (@p toggle = @c REG_TRUE) or not 
-   (@p toggle = @c REG_FALSE) to 
+   Toggle whether (@p toggle = @c REG_TRUE) or not
+   (@p toggle = @c REG_FALSE) to
    log values of all registered  parameters. Logging is on by
    default for all parameters except those of
    type @c REG_BIN. */
 extern PREFIX int Enable_all_param_logging(int toggle);
 
-/** 
+/**
    Enable logging of values of a parameter (which must have been
    previously registered with the steering library).  When logging of
    a parameter is enabled, all values of that parameter (as captured
@@ -434,16 +434,16 @@ extern PREFIX int Enable_all_param_logging(int toggle);
    the WS itself and are retrieved from it by the library (when requested)
    using the @c GetParamLog method of the SWS.
    @e N.B. logging is on by default for all parameters except those of
-   type @c REG_BIN. 
-   @param ParamLabel The label of the parameter for which to enable logging 
+   type @c REG_BIN.
+   @param ParamLabel The label of the parameter for which to enable logging
    @see Disable_param_logging() */
 extern PREFIX int Enable_param_logging(char *ParamLabel);
 
-/** 
+/**
    Disable logging of values of a parameter.
    @e N.B. Logging is on by default for all parameters except those of
-   type @c REG_BIN. 
-   @param ParamLabel The label of the parameter for which to disable logging 
+   type @c REG_BIN.
+   @param ParamLabel The label of the parameter for which to disable logging
    @see Enable_param_logging() */
 extern PREFIX int Disable_param_logging(char *ParamLabel);
 
@@ -453,23 +453,23 @@ extern PREFIX int Disable_param_logging(char *ParamLabel);
    @param SteerParamLabels The labels of parameters that have been steered
    @param NumSteerCommands No. of steering commands received from client
    @param SteerCommands List of commands received from client
-   @param SteerCmdParams List of params associated with each command 
+   @param SteerCmdParams List of params associated with each command
    from client
    @return REG_SUCCESS, REG_FAILURE
 
-   Main steering routine to be called at the application breakpoint (as 
+   Main steering routine to be called at the application breakpoint (as
    described in @ref sec_background). It performs the following actions:
 
-   @li checks for and enables a steering client to connect if the 
+   @li checks for and enables a steering client to connect if the
    application is not already being steered;
-   @li retrieves any (new) values for the steerable parameters from an 
-   attached steering client and updates the associated simulation 
+   @li retrieves any (new) values for the steerable parameters from an
+   attached steering client and updates the associated simulation
    variables via the pointers supplied at their registration;
-   @li retrieves any commands from an attached steering client - those that 
-   must be handled by the application itself are returned as a list (encoded 
-   as integers) in @p SteerCommands.  It is the application's responsibility 
+   @li retrieves any commands from an attached steering client - those that
+   must be handled by the application itself are returned as a list (encoded
+   as integers) in @p SteerCommands.  It is the application's responsibility
    to deal with these commands in the order in which they occur in the list;
-   @li reports the current values of all registered parameters (both 
+   @li reports the current values of all registered parameters (both
    monitored and steered) to the steering client.
 
    This routine (internally) handles attach and detach requests from
@@ -510,7 +510,7 @@ extern PREFIX int Disable_param_logging(char *ParamLabel);
    to Steering_initialize()) that it wants the steering library to
    implement the pause command for it, this routine does not block -
    if there are no waiting messages from the steerer then it returns
-   immediately. 
+   immediately.
 */
 extern PREFIX int Steering_control(int     SeqNum,
 				   int    *NumSteerParams,
@@ -536,7 +536,7 @@ extern PREFIX int Steering_control(int     SeqNum,
    disabled by calling Disable_IOType_acks().)
    @param IOType The IOType to use to emit data
    @param SeqNum Provides a measure of the application's
-   progress at this point. 
+   progress at this point.
    @param IOTypeIndex On success, holds an index to the open IOType
    @return REG_SUCCESS, REG_NOT_READY, REG_FAILURE
    @see Emit_start_blocking(), Emit_data_slice(), Register_IOTypes
@@ -553,19 +553,19 @@ extern PREFIX int Emit_start_blocking(int    IOType,
 				      int   *IOTypeIndex,
 				      float  TimeOut);
 
-/** 
+/**
    @param IOTypeIndex is the handle returned by a prior call to Emit_start()
-   @param DataType should be specified using the coding scheme given in 
+   @param DataType should be specified using the coding scheme given in
    ReG_Steer_types.h (@e e.g. @c REG_INT)
    @param Count The number of objects of type @p DataType to emit
    @param pData Pointer to the data to emit
    @return REG_SUCCESS, REG_FAILURE
 
-   Having called Emit_start(), an application should emit the various 
-   pieces of a data set by successive calls to this routine which wraps 
-   the low-level IO necessary for emitting the sample data.  It will 
-   BLOCK until either the requested amount of data has been emitted or 
-   an error occurs. 
+   Having called Emit_start(), an application should emit the various
+   pieces of a data set by successive calls to this routine which wraps
+   the low-level IO necessary for emitting the sample data.  It will
+   BLOCK until either the requested amount of data has been emitted or
+   an error occurs.
 
    The application programmer is responsible for collecting sample
    data (in portions if necessary) and passing it to this routine.
@@ -616,12 +616,12 @@ extern PREFIX int Emit_start_blocking(int    IOType,
 
 	 if(iproc != 0){
 
-	   MPI_Recv(&count, 1, MPI_INT, iproc, MPI_ANY_TAG, 
+	   MPI_Recv(&count, 1, MPI_INT, iproc, MPI_ANY_TAG,
                     MPI_COMM_WORLD, &status);
-	    
-	   // Allocate memory if required 
 
-	   MPI_Recv(pdata, count, MPI_DOUBLE, iproc, MPI_ANY_TAG, 
+	   // Allocate memory if required
+
+	   MPI_Recv(pdata, count, MPI_DOUBLE, iproc, MPI_ANY_TAG,
  		    MPI_COMM_WORLD, &status);
 	 }
 	 else{
@@ -648,13 +648,13 @@ extern PREFIX int Emit_data_slice(int	            IOTypeIndex,
 				  int               Count,
 				  const void       *pData);
 
-/** 
+/**
    Signal the end of the emission of the sample/data set referred to by
    IOHandle.   This signals the receiving end that the
    transmission is complete - @e i.e. that they have all
    of the 'slices' constituting the data set.  Close the specified
    IOType and complete the emission process.
-   @param IOTypeIndex Index of the open IOType as returned by 
+   @param IOTypeIndex Index of the open IOType as returned by
    Emit_start().  @p IOTypeIndex is not a valid handle once
    this call has completed.
    @return REG_SUCCESS, REG_FAILURE
@@ -687,18 +687,18 @@ extern PREFIX int Consume_start(int               IOType,
 /**
    @return REG_SUCCESS, REG_TIMED_OUT
    Blocking version of Consume_start().  Blocks until data is available to
-   read OR @p TimeOut (seconds) is exceeded 
+   read OR @p TimeOut (seconds) is exceeded
 */
 extern PREFIX int Consume_start_blocking(int   IOType,
 					 int  *IOTypeIndex,
 					 float TimeOut);
 
 /**
-   @param IOTypeIndex The index returned from call to Consume_start() 
+   @param IOTypeIndex The index returned from call to Consume_start()
    - identifies the IO channel to be read.
-   @param DataType On success, the type of the data that is available 
+   @param DataType On success, the type of the data that is available
    to read, as encoded in ReG_Steer_types.h.
-   @param Count On success, the number of data elements (e.g. integers) 
+   @param Count On success, the number of data elements (e.g. integers)
    forming the next slice - it is NOT the number of bytes.
    @return REG_SUCCESS, REG_FAILURE
 
@@ -708,14 +708,14 @@ extern PREFIX int Consume_start_blocking(int   IOType,
    to allocate sufficient memory for call to Consume_data_slice. This
    routine blocks until it receives a header describing the next data
    slice to be read or end-of-message.  If end-of-message is received
-   then this routine returns @c REG_FAILURE. 
+   then this routine returns @c REG_FAILURE.
 */
 extern PREFIX int Consume_data_slice_header(int  IOTypeIndex,
 			                    int *DataType,
 			                    int *Count);
 
 /**
-   @param IOTypeIndex The index returned from call to 
+   @param IOTypeIndex The index returned from call to
    Consume_start() - identifies the IO channel to be read.
    @param DataType The type of the data to read
    @param Count The number of objects of type @p DataType to read
@@ -736,7 +736,7 @@ extern PREFIX int Consume_data_slice(int     IOTypeIndex,
 
 /**
    @param IOTypeIndex Index of the open IOType channel to close.  Not
-   valid once this call has completed.  
+   valid once this call has completed.
    @return REG_SUCCESS, REG_FAILURE
 
    Should be called after a call to Consume_data_slice_header() has
@@ -750,29 +750,29 @@ extern PREFIX int Consume_data_slice(int     IOTypeIndex,
 extern PREFIX int Consume_stop(int	       *IOTypeIndex);
 
 /**
-   Called once all steering activity is complete. Close any existing 
-   connection to a steering client and clear the internal library 
-   tables of registered parameters and sample-data/checkpoint types.  
-   The steering library reverts to the state it had prior to the original 
+   Called once all steering activity is complete. Close any existing
+   connection to a steering client and clear the internal library
+   tables of registered parameters and sample-data/checkpoint types.
+   The steering library reverts to the state it had prior to the original
    call to Steering_initialize(). Removes the 'I am steerable' advertisement
-   and thus the application cannot be steered following this call (unless 
+   and thus the application cannot be steered following this call (unless
    a further call to Steering_initialize is made).
    @return REG_SUCCESS or REG_FAILURE */
 extern PREFIX int Steering_finalize();
 
-/** 
+/**
    @return REG_SUCCESS, REG_FAILURE
    Intended to be called by the application in response to a 'pause'
-   command from the steerer.  Blocks until a 'resume' or 'stop' 
+   command from the steerer.  Blocks until a 'resume' or 'stop'
    command received.  Returns all commands that immediately followed
    a 'resume' command as well as the labels of any parameters edited
    in that particular message.  (Parameters can be edited while the
    application is paused because this routine continually calls
-   Consume_control() until it receives 'resume' or 'stop'.) 
+   Consume_control() until it receives 'resume' or 'stop'.)
 
    The application programmer is free to provide their own version of
    this routine, should they need to take actions while the simulation
-   is paused (as may be the case with an experiment). Any 'pause' 
+   is paused (as may be the case with an experiment). Any 'pause'
    routine must periodically call Steering_control() in order to check
    for a 'resume' command.
    @see Steering_control()
@@ -787,9 +787,9 @@ extern PREFIX int Steering_pause(int   *NumSteerParams,
    Two utility routines to allow the user to not have to worry about
    allocating arrays of strings to be passed to Steering_control.  This
    routine allocates an array containing @p Array_len strings, each of
-   length @p String_len.  Intended to aid in the creation of the arrays 
-   needed by @e e.g. Steering_control().  The memory allocated by a call to 
-   this routine is managed and ultimately free'd by the steering library 
+   length @p String_len.  Intended to aid in the creation of the arrays
+   needed by @e e.g. Steering_control().  The memory allocated by a call to
+   this routine is managed and ultimately free'd by the steering library
    (during the call to Steering_finalize()).
    @return NULL if mallocs fail, otherwise pointer to array of char* */
 extern PREFIX char **Alloc_string_array(int String_len,
@@ -801,8 +801,8 @@ extern PREFIX char **Alloc_string_array(int String_len,
 extern PREFIX int Free_string_arrays();
 
 /**
-   For testing only, generates a buffer containing vtk data plus a 
-   suitable ASCII header.  Both header and array should point to 
+   For testing only, generates a buffer containing vtk data plus a
+   suitable ASCII header.  Both header and array should point to
    big enough chunks of memory (BUFSIZ for header and nx*ny*nz floats
    for array) */
 extern PREFIX int Make_vtk_buffer(int    nx,
@@ -835,7 +835,7 @@ extern PREFIX int Make_chunk_header(char *header,
 				    int   nx,   int ny,   int nz);
 
 /**
-   Toggle whether or not (flag = 1 or 0) the data to be emitted on the 
+   Toggle whether or not (flag = 1 or 0) the data to be emitted on the
    IOType with the given index is from Fortran */
 extern PREFIX int Set_f90_array_ordering(int IOTypeIndex,
 				         int flag);

@@ -1,7 +1,7 @@
 /*
   The RealityGrid Steering Library
 
-  Copyright (c) 2002-2009, University of Manchester, United Kingdom.
+  Copyright (c) 2002-2010, University of Manchester, United Kingdom.
   All rights reserved.
 
   This software is produced by Research Computing Services, University
@@ -70,13 +70,13 @@ extern struct msg_uid_history_struct Msg_uid_store;
 
 int Parse_xml_file(char* filename, struct msg_struct *msg,
 		   Sim_entry_type *sim)
-{ 
+{
   xmlDocPtr doc;
 
   doc = xmlParseFile(filename);
 
   if (doc == NULL){
-    fprintf(stderr, "STEER: Parse_xml_file: Hit error parsing file %s\n", 
+    fprintf(stderr, "STEER: Parse_xml_file: Hit error parsing file %s\n",
 	    filename);
     return REG_FAILURE;
   }
@@ -88,7 +88,7 @@ int Parse_xml_file(char* filename, struct msg_struct *msg,
 
 int Parse_xml_buf(char* buf, int size, struct msg_struct *msg,
 		  Sim_entry_type *sim)
-{ 
+{
   xmlDocPtr doc;
 
   if(!buf){
@@ -115,7 +115,7 @@ int Parse_xml_buf(char* buf, int size, struct msg_struct *msg,
 
 /*-----------------------------------------------------------------*/
 
-int Parse_xml(xmlDocPtr doc, struct msg_struct *msg,  
+int Parse_xml(xmlDocPtr doc, struct msg_struct *msg,
 	      Sim_entry_type *sim)
 {
   xmlNsPtr   ns;
@@ -201,7 +201,7 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg,
 /*-----------------------------------------------------------------*/
 /** Parse the supplied resource property document and pull out the
     value of the specified resource property */
-int Extract_resource_property(char *pRPDoc, 
+int Extract_resource_property(char *pRPDoc,
 			      int   size,
 			      char *name,
 			      char *resultBuf,
@@ -297,7 +297,7 @@ int parseResourceProperties(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
       child = cur->xmlChildrenNode;
       while ( child && xmlIsBlankNode ( child ) ){ child = child -> next; }
 
-      if (child && !xmlStrcmp(child->name, 
+      if (child && !xmlStrcmp(child->name,
 			      (const xmlChar *) "ReG_steer_message")) {
 #ifdef REG_DEBUG_FULL
 	fprintf(stderr, "STEER: parseResourceProperties: Calling "
@@ -345,7 +345,7 @@ int parseResourceProperties(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
     }
 #ifdef REG_DEBUG_FULL
     else{
-      fprintf(stderr, "STEER: parseResourceProperties: ignoring node: %s\n", 
+      fprintf(stderr, "STEER: parseResourceProperties: ignoring node: %s\n",
 	      (char *)(cur->name));
     }
 #endif
@@ -388,12 +388,12 @@ int parseSteerMessage(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
     fprintf(stderr, "STEER: INFO: parseSteerMessage: msg UID = %s\n",
 	    (char*)(msg->msg_uid));
 #endif /* REG_DEBUG_FULL */
-    /* Check that we haven't already seen this message 
+    /* Check that we haven't already seen this message
        before we bother to store it */
     if( Msg_already_received((char*)(msg->msg_uid), uidStorePtr) ){
 #ifdef REG_DEBUG_FULL
       fprintf(stderr, "STEER: INFO: parseSteerMessage: msg"
-	      " with UID %s has been seen before\n", 
+	      " with UID %s has been seen before\n",
 	      msg->msg_uid);
 #endif /* REG_DEBUG_FULL */
       /* We have - skip this one */
@@ -403,7 +403,7 @@ int parseSteerMessage(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 #ifdef REG_DEBUG_FULL
     else{
       fprintf(stderr, "STEER: INFO: parseSteerMessage: msg"
-	      " with UID %s has NOT been seen before\n", 
+	      " with UID %s has NOT been seen before\n",
 	      msg->msg_uid);
     }
 #endif /* REG_DEBUG_FULL */
@@ -458,7 +458,7 @@ int parseSteerMessage(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
     fprintf(stderr, "STEER: INFO: parseSteerMessage: Calling "
 	    "parseStatus...\n");
 #endif
-    /* Use code for 'status' messages because one 
+    /* Use code for 'status' messages because one
        encapsulates the other */
     msg->status = New_status_struct();
     parseStatus(doc, ns, cur, msg->status);
@@ -549,7 +549,7 @@ int parseStatus(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
     }
 
     cur = cur->next;
-  } 
+  }
   return REG_SUCCESS;
 }
 
@@ -798,7 +798,7 @@ int parseLog(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
     }
     cur = cur->next;
   }
-  
+
   return REG_SUCCESS;
 }
 
@@ -813,17 +813,17 @@ int parseLogEntry(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 
   cur = cur->xmlChildrenNode;
   while (cur != NULL) {
-  
+
     if( !xmlStrcmp(cur->name, (const xmlChar *)"Key") ){
       /*&& (cur->ns==ns)){*/
 
-      log->key = xmlNodeListGetString(doc, 
+      log->key = xmlNodeListGetString(doc,
 				      cur->xmlChildrenNode, 1);
     }
     else if( !xmlStrcmp(cur->name, (const xmlChar *)"Chk_log_entry") ){
       /*	     && (cur->ns==ns)){*/
       if(!log->first_chk_log){
-	
+
 	log->first_chk_log = New_chk_log_entry_struct();
 	log->chk_log = log->first_chk_log;
       }
@@ -874,12 +874,12 @@ int parseChkLogEntry(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
     if(!xmlStrcmp(cur->name, (const xmlChar *)"Chk_handle") ){
       /*&& (cur->ns==ns)){*/
 
-      log_entry->chk_handle = xmlNodeListGetString(doc, 
+      log_entry->chk_handle = xmlNodeListGetString(doc,
 					    cur->xmlChildrenNode, 1);
     }
     else if(!xmlStrcmp(cur->name, (const xmlChar *)"Chk_tag")){
 
-      log_entry->chk_tag = xmlNodeListGetString(doc, 
+      log_entry->chk_tag = xmlNodeListGetString(doc,
 					      cur->xmlChildrenNode, 1);
     }
     else if(!xmlStrcmp(cur->name, (const xmlChar *)"Param")){
@@ -896,7 +896,7 @@ int parseChkLogEntry(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 
       return_status = parseParam(doc, ns, cur, log_entry->param);
     }
-    
+
     cur = cur->next;
   }
 
@@ -996,7 +996,7 @@ int parseCmd(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
   }
 
   return REG_SUCCESS;
- 
+
 }
 
 /*-----------------------------------------------------------------*/
@@ -1488,7 +1488,7 @@ void Print_msg(struct msg_struct *msg)
   }
 
   if(msg->msg_type == MSG_ERROR){
-    fprintf(stderr, "STEER: Print_msg: msg is ERROR message\n");    
+    fprintf(stderr, "STEER: Print_msg: msg is ERROR message\n");
   }
   else if(msg->msg_type == MSG_NOTSET){
     fprintf(stderr, "STEER: Print_msg: msg type is unset\n");
@@ -1595,17 +1595,17 @@ void Print_param_struct(struct param_struct *param)
 
   while(ptr){
     fprintf(stderr, "STEER: Param no. %d:\n", count);
-    if(ptr->handle)     fprintf(stderr, "   Handle = %s\n", 
+    if(ptr->handle)     fprintf(stderr, "   Handle = %s\n",
 				(char *)(ptr->handle));
-    if(ptr->label)      fprintf(stderr, "   Label  = %s\n", 
+    if(ptr->label)      fprintf(stderr, "   Label  = %s\n",
 				(char *)(ptr->label));
-    if(ptr->value)      fprintf(stderr, "   Value  = %s\n", 
+    if(ptr->value)      fprintf(stderr, "   Value  = %s\n",
 				(char *)(ptr->value));
-    if(ptr->steerable)  fprintf(stderr, "   Steerable = %s\n", 
+    if(ptr->steerable)  fprintf(stderr, "   Steerable = %s\n",
 			      (char *)(ptr->steerable));
-    if(ptr->type)       fprintf(stderr, "   Type   = %s\n", 
+    if(ptr->type)       fprintf(stderr, "   Type   = %s\n",
 			    (char *)(ptr->type));
-    if(ptr->is_internal)fprintf(stderr, "   Internal = %s\n", 
+    if(ptr->is_internal)fprintf(stderr, "   Internal = %s\n",
 				(char *)(ptr->is_internal));
 
     count++;
@@ -1666,18 +1666,18 @@ void Print_io_struct(struct io_struct   *io)
 
   while(ptr){
 
-    if(ptr->label)fprintf(stderr, "Label = %s\n", 
+    if(ptr->label)fprintf(stderr, "Label = %s\n",
 			  (char *)(ptr->label));
-    if(ptr->handle)fprintf(stderr, "Handle = %s\n", 
+    if(ptr->handle)fprintf(stderr, "Handle = %s\n",
 			   (char *)(ptr->handle));
-    if(ptr->direction)fprintf(stderr, "Dirn = %s\n", 
+    if(ptr->direction)fprintf(stderr, "Dirn = %s\n",
 			      (char *)(ptr->direction));
     if(ptr->freq_handle)fprintf(stderr, "Freq_handle = %s\n",
 			       (char *)(ptr->freq_handle));
 
     ptr = ptr->next;
   }
-  
+
 }
 
 /*-----------------------------------------------------------------*/
@@ -1704,7 +1704,7 @@ void Print_log_entry_struct(struct log_entry_struct *entry)
 
     fprintf(stderr, "STEER: Log entry no. %d:\n", count);
 
-    if(ptr->key) fprintf(stderr, "  Key = %s\n", 
+    if(ptr->key) fprintf(stderr, "  Key = %s\n",
 			 (char *)ptr->key);
 
     if(ptr->first_chk_log){
@@ -1729,7 +1729,7 @@ void Print_chk_log_entry_struct(struct chk_log_entry_struct *entry)
   while(ptr){
     fprintf(stderr, "STEER: Chk log entry no. %d:\n", count);
 
-    if(ptr->chk_handle)fprintf(stderr, "  Chk handle = %s\n", 
+    if(ptr->chk_handle)fprintf(stderr, "  Chk handle = %s\n",
 			       (char *)ptr->chk_handle);
 
     if(ptr->chk_tag)   fprintf(stderr, "  Chk tag = %s\n",
@@ -1767,7 +1767,7 @@ int String_contains_xml_chars(char *string)
  */
 int Parse_registry_entries(char* buf, int size,
 			   struct registry_contents *contents)
-{ 
+{
   char                  *pChar;
   char                  *pNext;
   char                   entryDelimiter[16];
@@ -1937,7 +1937,7 @@ ogsi:entry
 			   &(myEntries[numEntries]) );
 	}
       }
-      else if( !xmlStrcmp(cur->name, 
+      else if( !xmlStrcmp(cur->name,
 			  (const xmlChar *) "serviceGroupEntryLocator") ){
 	child = cur->xmlChildrenNode;
 	while( xmlIsBlankNode ( child ) ){
@@ -1982,7 +1982,7 @@ ogsi:entry
 			   &(myEntries[numEntries]) );
 	}
       }
-      else if( !xmlStrcmp(cur->name, 
+      else if( !xmlStrcmp(cur->name,
 			  (const xmlChar *) "ServiceGroupEntryEPR") ){
 	child = cur->xmlChildrenNode;
 	while( xmlIsBlankNode ( child ) ){
@@ -2005,9 +2005,9 @@ ogsi:entry
 			   &(myEntries[numEntries]) );
 	}
       }
-      else if( !xmlStrcmp(cur->name, 
+      else if( !xmlStrcmp(cur->name,
 			  (const xmlChar *) "Content") ||
-	       !xmlStrcmp(cur->name, 
+	       !xmlStrcmp(cur->name,
 			  (const xmlChar *) "content") ){
 	child = cur->xmlChildrenNode;
 	while( xmlIsBlankNode ( child ) ){ /* Find registryEntry node */
@@ -2021,7 +2021,7 @@ ogsi:entry
 	child1 = child->xmlChildrenNode;
 	if( !child1 ){
 	  Store_xml_string(doc, cur, &(myEntries[numEntries].job_description),
-			   &(myEntries[numEntries]) );	  
+			   &(myEntries[numEntries]) );
 	}
 	child = child1;
 
@@ -2031,12 +2031,12 @@ ogsi:entry
 	  }
 	  if(!child) continue;
 
-	  if( !xmlStrcmp(child->name, 
+	  if( !xmlStrcmp(child->name,
 			 (const xmlChar *) "serviceType") ){
 	    Store_xml_string(doc, child, &(myEntries[numEntries].service_type),
 			     &(myEntries[numEntries]) );
 	  }
-	  else if( !xmlStrcmp(child->name, 
+	  else if( !xmlStrcmp(child->name,
 			 (const xmlChar *) "componentContent") ){
 
 	    child1 = child->xmlChildrenNode;
@@ -2046,33 +2046,33 @@ ogsi:entry
 	      }
 	      if(!child1)continue;
 
-	      if( !xmlStrcmp(child1->name, 
+	      if( !xmlStrcmp(child1->name,
 			     (const xmlChar *) "componentSoftwarePackage") ){
-		Store_xml_string(doc, child1, 
+		Store_xml_string(doc, child1,
 				 &(myEntries[numEntries].application),
 				 &(myEntries[numEntries]) );
 	      }
-	      else if( !xmlStrcmp(child1->name, 
+	      else if( !xmlStrcmp(child1->name,
 				  (const xmlChar *) "componentCreatorName") ){
-		Store_xml_string(doc, child1, 
+		Store_xml_string(doc, child1,
 				 &(myEntries[numEntries].user),
 				 &(myEntries[numEntries]) );
 	      }
-	      else if( !xmlStrcmp(child1->name, 
+	      else if( !xmlStrcmp(child1->name,
 				  (const xmlChar *) "componentStartDateTime") ){
-		Store_xml_string(doc, child1, 
+		Store_xml_string(doc, child1,
 				 &(myEntries[numEntries].start_date_time),
 				 &(myEntries[numEntries]) );
 	      }
-	      else if( !xmlStrcmp(child1->name, 
+	      else if( !xmlStrcmp(child1->name,
 				  (const xmlChar *) "componentTaskDescription") ){
-		Store_xml_string(doc, child1, 
+		Store_xml_string(doc, child1,
 				 &(myEntries[numEntries].job_description),
 				 &(myEntries[numEntries]) );
 	      }
-	      else if( !xmlStrcmp(child1->name, 
+	      else if( !xmlStrcmp(child1->name,
 				  (const xmlChar *) "componentCreatorGroup") ){
-		Store_xml_string(doc, child1, 
+		Store_xml_string(doc, child1,
 				 &(myEntries[numEntries].group),
 				 &(myEntries[numEntries]) );
 	      }
@@ -2117,7 +2117,7 @@ ogsi:entry
 
 /*-----------------------------------------------------------------*/
 
-int Store_xml_string(xmlDocPtr doc, xmlNodePtr cur, char **dest, 
+int Store_xml_string(xmlDocPtr doc, xmlNodePtr cur, char **dest,
 		     struct registry_entry *entry){
   int        len, newLen;
   char      *pDum;
@@ -2185,10 +2185,10 @@ int Store_xml_string(xmlDocPtr doc, xmlNodePtr cur, char **dest,
 }
 
 /*------------------------------------------------------------------*/
-/** Check to see whether or not this message has been seen within the 
-    last storeSize messages received 
+/** Check to see whether or not this message has been seen within the
+    last storeSize messages received
     @internal */
-int Msg_already_received(char *msg_uid, 
+int Msg_already_received(char *msg_uid,
 			 struct msg_uid_history_struct *hist)
 {
   int                  i;
@@ -2204,7 +2204,7 @@ int Msg_already_received(char *msg_uid,
     hist->uidStorePtr = hist->uidStore;
     hist->maxPtr = &(hist->uidStore[REG_UID_HISTORY_BUFFER_SIZE-1]);
   }
-    
+
   if(sscanf(msg_uid, "%u", &uid) != 1){
     fprintf(stderr, "STEER ERROR: Msg_already_received: failed to "
 	    "read msg UID\n");

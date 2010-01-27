@@ -1,7 +1,7 @@
 /*
   The RealityGrid Steering Library
 
-  Copyright (c) 2002-2009, University of Manchester, United Kingdom.
+  Copyright (c) 2002-2010, University of Manchester, United Kingdom.
   All rights reserved.
 
   This software is produced by Research Computing Services, University
@@ -48,7 +48,7 @@
 
 /** @internal
     @file ReG_Steer_Logging.c
-    @brief Implementation of logging functionality 
+    @brief Implementation of logging functionality
 
     This file contains routines and data structures for the construction
     of an interface to a steering component (from an application
@@ -67,7 +67,7 @@ extern Steer_lib_config_type Steer_lib_config;
 /** Log of checkpoints taken - declared in ReG_Steer_Appside.c  */
 extern Chk_log_type Chk_log;
 
-/** Log of values of parameters for which logging has 
+/** Log of values of parameters for which logging has
     been requested - declared in ReG_Steer_Appside.c */
 extern Chk_log_type Param_log;
 
@@ -177,7 +177,7 @@ int Delete_log_file(Chk_log_type *log)
     fclose(log->file_ptr);
   }
   len = strlen(log->filename) + strlen(backup_suffix) + 1;
-  
+
   pchar = (char*)malloc(len);
   if(!pchar)return REG_FAILURE;
 
@@ -238,7 +238,7 @@ int Save_log(Chk_log_type *log)
       status = Log_to_columns(log, &buf, &len, REG_FALSE);
     }
     else{
-    
+
        /* 5th argument says we want all entries - not just those that
 	  haven't already been sent to the steerer.  2nd (handle)
           argument isn't used for checkpoint logs */
@@ -272,7 +272,7 @@ int Save_log(Chk_log_type *log)
 
 /*----------------------------------------------------------------*/
 
-int Log_to_xml(Chk_log_type *log, int handle, char **pchar, 
+int Log_to_xml(Chk_log_type *log, int handle, char **pchar,
 	       int *count, const int not_sent_only)
 {
   int   size = BUFSIZ;
@@ -301,7 +301,7 @@ int Log_to_xml(Chk_log_type *log, int handle, char **pchar,
 
 /*----------------------------------------------------------------*/
 
-int Chk_log_to_xml(Chk_log_type *log, char **pchar, int *count, 
+int Chk_log_to_xml(Chk_log_type *log, char **pchar, int *count,
 		   const int not_sent_only)
 {
   int   i, j, len;
@@ -326,15 +326,15 @@ int Chk_log_to_xml(Chk_log_type *log, char **pchar, int *count,
 		      "<Key>%d</Key>\n"
 		      "<Chk_log_entry>"
 		      "<Chk_handle>%d</Chk_handle>\n"
-		      "<Chk_tag>%s</Chk_tag>\n", 
-		      log->entry[i].key, 
-		      log->entry[i].chk_handle, 
+		      "<Chk_tag>%s</Chk_tag>\n",
+		      log->entry[i].key,
+		      log->entry[i].chk_handle,
 		      log->entry[i].chk_tag);
 
 #ifdef REG_DEBUG
     /* Check for truncation of message */
     if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
-      fprintf(stderr, "STEER: Chk_log_to_xml: message size exceeds BUFSIZ (%d)\n", 
+      fprintf(stderr, "STEER: Chk_log_to_xml: message size exceeds BUFSIZ (%d)\n",
 	      BUFSIZ);
       free(*pchar);
       *pchar = NULL;
@@ -349,16 +349,16 @@ int Chk_log_to_xml(Chk_log_type *log, char **pchar, int *count,
     for(j=0; j<log->entry[i].num_param; j++){
 
       nbytes = snprintf(pentry, bytes_left, "<Param>\n"
-			"<Handle>%d</Handle>\n" 
+			"<Handle>%d</Handle>\n"
 			"<Value>%s</Value>\n"
-			"</Param>\n", 
+			"</Param>\n",
 		        log->entry[i].param[j].handle,
 		        log->entry[i].param[j].value);
 
 #ifdef REG_DEBUG
       /* Check for truncation of message */
       if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
-	fprintf(stderr, "STEER: Chk_log_to_xml: message size exceeds BUFSIZ (%d)\n", 
+	fprintf(stderr, "STEER: Chk_log_to_xml: message size exceeds BUFSIZ (%d)\n",
 		BUFSIZ);
 	free(*pchar);
 	*pchar = NULL;
@@ -368,13 +368,13 @@ int Chk_log_to_xml(Chk_log_type *log, char **pchar, int *count,
       bytes_left -= nbytes;
       pentry += nbytes;
     }
-    
+
     nbytes = snprintf(pentry, bytes_left, "</Chk_log_entry>\n"
 		                          "</Log_entry>\n");
 #ifdef REG_DEBUG
     /* Check for truncation of message */
     if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
-      fprintf(stderr, "STEER: Chk_log_to_xml: message size exceeds BUFSIZ (%d)\n", 
+      fprintf(stderr, "STEER: Chk_log_to_xml: message size exceeds BUFSIZ (%d)\n",
 	      BUFSIZ);
       free(*pchar);
       *pchar = NULL;
@@ -383,7 +383,7 @@ int Chk_log_to_xml(Chk_log_type *log, char **pchar, int *count,
 #endif
     bytes_left -= nbytes;
     pentry += nbytes;
-    
+
     len = strlen(entry);
 
     if( (size - *count) < len){
@@ -396,7 +396,7 @@ int Chk_log_to_xml(Chk_log_type *log, char **pchar, int *count,
 	*pchar = NULL;
 	return REG_FAILURE;
       }
-      
+
       *pchar = (char *)ptr;
       pbuf = &((*pchar)[*count]);
     }
@@ -416,7 +416,7 @@ int Chk_log_to_xml(Chk_log_type *log, char **pchar, int *count,
 
 /*----------------------------------------------------------------*/
 
-int Param_log_to_xml(Chk_log_type *log, int handle, char **pchar, 
+int Param_log_to_xml(Chk_log_type *log, int handle, char **pchar,
 		     int *count, const int not_sent_only)
 {
   int   i, j, len;
@@ -444,7 +444,7 @@ int Param_log_to_xml(Chk_log_type *log, int handle, char **pchar,
 #ifdef REG_DEBUG
     /* Check for truncation of message */
     if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
-      fprintf(stderr, "STEER: Param_log_to_xml: message size exceeds BUFSIZ (%d)\n", 
+      fprintf(stderr, "STEER: Param_log_to_xml: message size exceeds BUFSIZ (%d)\n",
 	      BUFSIZ);
       free(*pchar);
       *pchar = NULL;
@@ -462,7 +462,7 @@ int Param_log_to_xml(Chk_log_type *log, int handle, char **pchar,
 
 	nbytes = snprintf(pentry, bytes_left, "<Param>"
 			  "<Handle>%d</Handle><Value>%s</Value>"
-			  "</Param>\n", 
+			  "</Param>\n",
 			  log->entry[i].param[j].handle,
 			  log->entry[i].param[j].value);
 
@@ -483,7 +483,7 @@ int Param_log_to_xml(Chk_log_type *log, int handle, char **pchar,
 	break;
       }
     }
-    
+
     nbytes = snprintf(pentry, bytes_left, "</Log_entry>\n");
 #ifdef REG_DEBUG
     /* Check for truncation of message */
@@ -497,7 +497,7 @@ int Param_log_to_xml(Chk_log_type *log, int handle, char **pchar,
 #endif
     bytes_left -= nbytes;
     pentry += nbytes;
-    
+
     len = strlen(entry);
 
     if( (size - *count) < len){
@@ -510,7 +510,7 @@ int Param_log_to_xml(Chk_log_type *log, int handle, char **pchar,
 	*pchar = NULL;
 	return REG_FAILURE;
       }
-      
+
       *pchar = (char *)ptr;
       pbuf = &((*pchar)[*count]);
     }
@@ -530,7 +530,7 @@ int Param_log_to_xml(Chk_log_type *log, int handle, char **pchar,
 
 /*----------------------------------------------------------------*/
 
-int Log_to_columns(Chk_log_type *log, char **pchar, int *count, 
+int Log_to_columns(Chk_log_type *log, char **pchar, int *count,
 		   const int not_sent_only)
 {
   int   i, j, len;
@@ -562,7 +562,7 @@ int Log_to_columns(Chk_log_type *log, char **pchar, int *count,
 #ifdef REG_DEBUG
     /* Check for truncation of message */
     if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
-      fprintf(stderr, "STEER: Log_to_columns: message size exceeds BUFSIZ (%d)\n", 
+      fprintf(stderr, "STEER: Log_to_columns: message size exceeds BUFSIZ (%d)\n",
 	      BUFSIZ);
       free(*pchar);
       *pchar = NULL;
@@ -576,14 +576,14 @@ int Log_to_columns(Chk_log_type *log, char **pchar, int *count,
        loop over the no. of params that this entry has */
     for(j=0; j<log->entry[i].num_param; j++){
 
-      nbytes = snprintf(pentry, bytes_left, " %d %s", 
+      nbytes = snprintf(pentry, bytes_left, " %d %s",
 		        log->entry[i].param[j].handle,
 		        log->entry[i].param[j].value);
 
 #ifdef REG_DEBUG
       /* Check for truncation of message */
       if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
-	fprintf(stderr, "STEER: Log_to_columns: message size exceeds BUFSIZ (%d)\n", 
+	fprintf(stderr, "STEER: Log_to_columns: message size exceeds BUFSIZ (%d)\n",
 		BUFSIZ);
 	free(*pchar);
 	*pchar = NULL;
@@ -593,12 +593,12 @@ int Log_to_columns(Chk_log_type *log, char **pchar, int *count,
       bytes_left -= nbytes;
       pentry += nbytes;
     }
-    
+
     nbytes = snprintf(pentry, bytes_left, "\n");
 #ifdef REG_DEBUG
     /* Check for truncation of message */
     if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
-      fprintf(stderr, "STEER: Log_to_columns: message size exceeds BUFSIZ (%d)\n", 
+      fprintf(stderr, "STEER: Log_to_columns: message size exceeds BUFSIZ (%d)\n",
 	      BUFSIZ);
       free(*pchar);
       *pchar = NULL;
@@ -607,7 +607,7 @@ int Log_to_columns(Chk_log_type *log, char **pchar, int *count,
 #endif
     bytes_left -= nbytes;
     pentry += nbytes;
-    
+
     len = strlen(entry);
 
     if( (size - *count) < len){
@@ -620,7 +620,7 @@ int Log_to_columns(Chk_log_type *log, char **pchar, int *count,
 	*pchar = NULL;
 	return REG_FAILURE;
       }
-      
+
       *pchar = (char *)ptr;
       pbuf = &((*pchar)[*count]);
     }
@@ -683,7 +683,7 @@ int Set_log_primary_key(Chk_log_type *log)
     fprintf(stderr, "STEER: Set_log_primary_key: last chunk = >>%s<<\n", old_ptr);
 #endif
 
-    if(2 != sscanf(old_ptr, "%d %s", &(log->primary_key_value), 
+    if(2 != sscanf(old_ptr, "%d %s", &(log->primary_key_value),
 		   Steer_lib_config.scratch_buffer)){
       log->primary_key_value = 0;
       return_status = REG_FAILURE;
@@ -762,7 +762,7 @@ int Log_param_values()
     if(Params_table.param[index].type == REG_BIN)continue;
 
     /* This is one we want - store its handle and current value */
-    Param_log.entry[Param_log.num_entries].param[count].handle = 
+    Param_log.entry[Param_log.num_entries].param[count].handle =
                                            Params_table.param[index].handle;
 
     /* Update value associated with pointer */
@@ -773,13 +773,13 @@ int Log_param_values()
            Params_table.param[index].value);
 
     /* Storage for params associated with log entry is static */
-    if(++count >= REG_MAX_NUM_STR_PARAMS)break;  
+    if(++count >= REG_MAX_NUM_STR_PARAMS)break;
   }
 
   /* Store the no. of params this entry has */
   Param_log.entry[Param_log.num_entries].num_param = count;
 
-  /* Since we send status messages containing parameter values to 
+  /* Since we send status messages containing parameter values to
      attached client, we need only flag an entry as not being sent
      to steerer if no steerer is currently attached */
   Param_log.entry[Param_log.num_entries].sent_to_steerer = ReG_SteeringActive;
@@ -815,9 +815,9 @@ int Emit_log(Chk_log_type *log, int handle)
     free(log->file_content);
     log->file_content = NULL;
 
-    /* Now send the entries that we have stored in memory - 
+    /* Now send the entries that we have stored in memory -
        need to send all current log entries to the steerer */
-    if(Log_to_xml(log, handle, &(log->file_content), &size, 
+    if(Log_to_xml(log, handle, &(log->file_content), &size,
 		  REG_FALSE) != REG_SUCCESS){
 
       return REG_FAILURE;
@@ -835,11 +835,11 @@ int Emit_log(Chk_log_type *log, int handle)
     /* Read the log file and get back contents in buffer pointed
        to by pbuf.  We must free() this once we're done. */
     if(log->log_type == CHKPT){
-      return_status = Read_file(log->filename, &(log->file_content), 
+      return_status = Read_file(log->filename, &(log->file_content),
 				&size, REG_FALSE);
     }
     else if(log->log_type == PARAM){
-      return_status = Read_file(log->filename, &(log->file_content), 
+      return_status = Read_file(log->filename, &(log->file_content),
 				&size, REG_TRUE);
     }
 
@@ -871,9 +871,9 @@ int Emit_log(Chk_log_type *log, int handle)
 
     /* End of sending buffered entries */
 
-    /* Now send the entries that we have stored in memory - 
+    /* Now send the entries that we have stored in memory -
        need to send all current log entries to the steerer */
-    if(Log_to_xml(log, handle, &(log->file_content), &size, 
+    if(Log_to_xml(log, handle, &(log->file_content), &size,
 		  REG_FALSE) != REG_SUCCESS){
 
       return REG_FAILURE;
@@ -893,7 +893,7 @@ int Emit_log(Chk_log_type *log, int handle)
 #endif
     /* Fifth argument specifies that we only want those entries that haven't
        already been sent to the steerer */
-    if(Log_to_xml(log, handle, &(log->file_content), 
+    if(Log_to_xml(log, handle, &(log->file_content),
 		  &size, REG_TRUE) != REG_SUCCESS){
       return REG_FAILURE;
     }
@@ -906,7 +906,7 @@ int Emit_log(Chk_log_type *log, int handle)
   /* Pull the entries out of the buffer returned by Log_to_xml and
      send them to the steerer */
   if(size > 0){
-    if( (return_status = Emit_log_entries(log, log->file_content, 
+    if( (return_status = Emit_log_entries(log, log->file_content,
 					  handle)) == REG_UNFINISHED){
       return REG_SUCCESS;
     }
@@ -978,7 +978,7 @@ int Emit_log_entries(Chk_log_type *log, char *buf, int handle)
 	pmsg_buf = NULL;
       }
 
-      while(Pack_send_log_entries(&pXmlBuf, &(log->num_sent)) 
+      while(Pack_send_log_entries(&pXmlBuf, &(log->num_sent))
 	    == REG_UNFINISHED){
 	log->num_sent = 0;
 	usleep(500000);
@@ -1077,7 +1077,7 @@ int Pack_send_log_entries(char **pBuf, int *msg_count)
     }
     else{
       /* Complete the xml message */
-      nbytes = snprintf(pmsg_buf, (msg_buf_size-tot_len), 
+      nbytes = snprintf(pmsg_buf, (msg_buf_size-tot_len),
 			"</Steer_log>\n");
 
       rewind = (nbytes >= (msg_buf_size-tot_len-1) || (nbytes < 1));
@@ -1105,7 +1105,7 @@ int Pack_send_log_entries(char **pBuf, int *msg_count)
 	pbuf2 = pbuf1;
 	len = (int)(pbuf3 - pbuf2);
 
-	if(Write_xml_footer(&pmsg_buf, (msg_buf_size-tot_len)) 
+	if(Write_xml_footer(&pmsg_buf, (msg_buf_size-tot_len))
 	                                             != REG_SUCCESS){
 	  fprintf(stderr, "STEER: Pack_send_log_entries: error writing footer\n");
 	  free(msg_buf);
@@ -1148,7 +1148,7 @@ int Pack_send_log_entries(char **pBuf, int *msg_count)
     pmsg_buf += sprintf(pmsg_buf, "</Steer_log>\n");
     tot_len = (int)(pmsg_buf - msg_buf);
 
-    if(Write_xml_footer(&pmsg_buf, (msg_buf_size-tot_len)) 
+    if(Write_xml_footer(&pmsg_buf, (msg_buf_size-tot_len))
                                                    == REG_SUCCESS){
 
       return_status = Send_status_msg(msg_buf);
@@ -1230,7 +1230,7 @@ int Log_columns_to_xml(char **buf, char* out_buf, int out_buf_size,
 	strncpy(fields[0], ptr3, i);
 	fields[0][i] = '\0';
 	fprintf(stderr, "STEER: Log_columns_to_xml: ERROR: field "
-		">>%s<< exceeds maximum width of %d characters\n", 
+		">>%s<< exceeds maximum width of %d characters\n",
 		 fields[0], max_field_length);
 	free(fields[0]);
 	return REG_FAILURE;
@@ -1245,12 +1245,12 @@ int Log_columns_to_xml(char **buf, char* out_buf, int out_buf_size,
     (fields[count])[ptr2-ptr3] = '\0';
     count++;
 
-    nbytes = snprintf(pbuf, bytes_left, "<Log_entry><Key>%s</Key><Param>", 
+    nbytes = snprintf(pbuf, bytes_left, "<Log_entry><Key>%s</Key><Param>",
 		      fields[0]);
     if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
       *buf = ptr1;
       free(fields[0]);
-      return REG_SUCCESS;     
+      return REG_SUCCESS;
     }
     pbuf += nbytes;
     bytes_left -= nbytes;
@@ -1258,13 +1258,13 @@ int Log_columns_to_xml(char **buf, char* out_buf, int out_buf_size,
     for(i=1;i<count;i+=2){
       /* Only pull out the parameter with the requested handle */
       if(strcmp(handle_str, fields[i]) == 0){
-	nbytes = snprintf(pbuf, bytes_left, 
+	nbytes = snprintf(pbuf, bytes_left,
 			  "<Handle>%s</Handle><Value>%s</Value>",
 			  fields[i], fields[i+1]);
 	if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
 	  *buf = ptr1;
 	  free(fields[0]);
-	  return REG_SUCCESS;     
+	  return REG_SUCCESS;
 	}
 	pbuf += nbytes;
 	bytes_left -= nbytes;
@@ -1275,7 +1275,7 @@ int Log_columns_to_xml(char **buf, char* out_buf, int out_buf_size,
     if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
       *buf = ptr1;
       free(fields[0]);
-      return REG_SUCCESS;     
+      return REG_SUCCESS;
     }
     pbuf += nbytes;
     bytes_left -= nbytes;
@@ -1304,7 +1304,7 @@ int Log_control_msg(struct control_struct *control)
   /* If this is the first time we've been called then calculate
      the index of the Sequence No. in the table of parameters */
   if(seq_num_index == -1){
-    seq_num_index = Param_index_from_handle(&(Params_table), 
+    seq_num_index = Param_index_from_handle(&(Params_table),
 					    REG_SEQ_NUM_HANDLE);
     if(seq_num_index == -1){
       fprintf(stderr, "STEER: Log_control_msg: failed to find "
@@ -1366,7 +1366,7 @@ int Log_control_msg(struct control_struct *control)
         while(param){
 	   nbytes = snprintf(pbuf, bytes_free, "<Cmd_param><Handle>"
 			     "%s</Handle><Value>%s</Value></Cmd_param>",
-			     (char*)(param->handle), 
+			     (char*)(param->handle),
 			     (char*)(param->value));
 	   pbuf += nbytes;
 	   bytes_free -= nbytes;
@@ -1418,7 +1418,7 @@ int Log_control_msg(char *msg_txt)
   * If this is the first time we've been called then calculate
      the index of the Sequence No. in the table of parameters *
   if(seq_num_index == -1){
-    seq_num_index = Param_index_from_handle(&(Params_table), 
+    seq_num_index = Param_index_from_handle(&(Params_table),
 					    REG_SEQ_NUM_HANDLE);
     if(seq_num_index == -1){
       fprintf(stderr, "STEER: Log_control_msg: failed to find "
@@ -1484,7 +1484,7 @@ int Log_control_msg(char *msg_txt)
 
     * Point to next free space in buffer *
     Chk_log.pSteer_cmds_slot = pbuf;
-    
+
     return REG_SUCCESS;
   }
 

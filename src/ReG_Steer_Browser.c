@@ -1,7 +1,7 @@
 /*
   The RealityGrid Steering Library
 
-  Copyright (c) 2002-2009, University of Manchester, United Kingdom.
+  Copyright (c) 2002-2010, University of Manchester, United Kingdom.
   All rights reserved.
 
   This software is produced by Research Computing Services, University
@@ -74,7 +74,7 @@ int Get_sim_list(int   *nSims,
   *nSims = 0;
 
   /* Routine to get list of available steerable applications.
-     Assumes that simName and simGSH are arrays of 
+     Assumes that simName and simGSH are arrays of
      REG_MAX_NUM_STEERED_SIM pointers to char arrays of length
      REG_MAX_STRING_LENGTH. */
 
@@ -96,17 +96,17 @@ int Get_sim_list(int   *nSims,
 
     /* Hard limit on no. of sims we can return details on */
     if(*nSims > REG_MAX_NUM_STEERED_SIM)*nSims = REG_MAX_NUM_STEERED_SIM;
-      
+
     count = 0;
     for(i=0; i<*nSims; i++){
 
 
-      if((strlen(contents.entries[i].application) > 0) && 
-	 (!strcmp(contents.entries[i].service_type, "SWS") || 
+      if((strlen(contents.entries[i].application) > 0) &&
+	 (!strcmp(contents.entries[i].service_type, "SWS") ||
 	  !strcmp(contents.entries[i].service_type, "SGS")) ){
 
-	sprintf(simName[count], "%s %s %s", contents.entries[i].user, 
-		contents.entries[i].application, 
+	sprintf(simName[count], "%s %s %s", contents.entries[i].user,
+		contents.entries[i].application,
 		contents.entries[i].start_date_time);
 	strcpy(simGSH[count], contents.entries[i].gsh);
 	count++;
@@ -137,7 +137,7 @@ int Get_sim_list(int   *nSims,
 
 /*-------------------------------------------------------------------------*/
 
-int Get_registry_entries(const char               *registryGSH, 
+int Get_registry_entries(const char               *registryGSH,
 			 struct registry_contents *contents){
 
   struct reg_security_info sec;
@@ -158,7 +158,7 @@ int Get_registry_entries_filtered_secure(const char             *registryGSH,
   struct registry_entry *entry;
   char *pTmp;
 
-  if( (status = Get_registry_entries_secure(registryGSH, 
+  if( (status = Get_registry_entries_secure(registryGSH,
 					    sec,
 					    contents)) != REG_SUCCESS ){
     return status;
@@ -256,7 +256,7 @@ int Get_registry_entries_filtered_secure(const char             *registryGSH,
     fprintf(stderr,"Entry %d:\n", i);
     fprintf(stderr,"          GSH: %s\n", contents->entries[i].gsh);
     fprintf(stderr,"          App: %s\n", contents->entries[i].application);
-    fprintf(stderr,"         user: %s, %s\n", contents->entries[i].user, 
+    fprintf(stderr,"         user: %s, %s\n", contents->entries[i].user,
 	    contents->entries[i].group);
     fprintf(stderr,"   Start time: %s\n", contents->entries[i].start_date_time);
     fprintf(stderr,"  Description: %s\n", contents->entries[i].job_description);
@@ -268,7 +268,7 @@ int Get_registry_entries_filtered_secure(const char             *registryGSH,
 
 /*-------------------------------------------------------------------------*/
 
-int Get_registry_entries_secure(const char                     *registryGSH, 
+int Get_registry_entries_secure(const char                     *registryGSH,
 				const struct reg_security_info *sec,
 				struct registry_contents       *contents) {
 
@@ -277,7 +277,7 @@ int Get_registry_entries_secure(const char                     *registryGSH,
 
 /*-------------------------------------------------------------------------*/
 
-int Get_registry_entries_filtered(const char               *registryGSH, 
+int Get_registry_entries_filtered(const char               *registryGSH,
 				  struct registry_contents *contents,
 				  char                     *pattern){
   struct reg_security_info sec;

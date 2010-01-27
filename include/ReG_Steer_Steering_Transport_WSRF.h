@@ -1,7 +1,7 @@
 /*
   The RealityGrid Steering Library
 
-  Copyright (c) 2002-2009, University of Manchester, United Kingdom.
+  Copyright (c) 2002-2010, University of Manchester, United Kingdom.
   All rights reserved.
 
   This software is produced by Research Computing Services, University
@@ -48,7 +48,7 @@
 #ifndef __REG_STEER_STEERING_TRANSPORT_WSRF_H__
 #define __REG_STEER_STEERING_TRANSPORT_WSRF_H__
 
-/** @file ReG_Steer_Steering_Transport_WSRF.h 
+/** @file ReG_Steer_Steering_Transport_WSRF.h
  *  @brief WSRF specific routines for the steering transport module.
  *
  *  @author Robert Haines
@@ -62,7 +62,7 @@
 
 #define REG_APPSIDE_WSSE_USERNAME "application"
 
-/** @internal 
+/** @internal
     For steering via SOAP - holds info on the Grid/Web Service */
 typedef struct {
   /** whether we're steering via SOAP (1) or not (0) */
@@ -85,7 +85,7 @@ typedef struct {
   /** The last-modified time of the ResourceProperty document of our
       associated SWS when we last looked at it (WSRF) */
   long int lastModTime;
-  
+
 } SGS_info_type;
 
 typedef struct {
@@ -99,8 +99,8 @@ typedef struct {
     @param username WSSE username (if any)
     @param passwd  WSSE passphrase (if any)
     @param name The name of the RP to get
-    @param pRP If successful, ptr to array of char holding value of 
-    RP (will be free'd when soap_end called on @p soapStruct) 
+    @param pRP If successful, ptr to array of char holding value of
+    RP (will be free'd when soap_end called on @p soapStruct)
 
     Get the value of the specified resource property. Set @p username
     to NULL or an empty string to turn off use of WSSE.
@@ -116,9 +116,9 @@ int get_resource_property(struct soap *soapStruct,
     @param epr The EndPointReference of the SWS to query
     @param username  WSSE username (if any)
     @param passwd WSSE passphrase (if any)
-    @param pRPDoc   If successful, ptr to array of char holding 
+    @param pRPDoc   If successful, ptr to array of char holding
     contents of the ResourceProperty document (will be free'd when
-    soap_end called on @p soapStruct) 
+    soap_end called on @p soapStruct)
 
     Get the whole resource property document. Set @p username
     to NULL or an empty string to turn off use of WSSE.
@@ -139,7 +139,7 @@ int get_resource_property_doc(struct soap *soapStruct,
 
     Calls the SetResourceProperty method and passes the supplied buffer
     as input to call. Set @p username
-    to NULL or an empty string to turn off use of WSSE. 
+    to NULL or an empty string to turn off use of WSSE.
 */
 int set_resource_property(struct soap *soapStruct,
 			  const char  *epr,
@@ -147,7 +147,7 @@ int set_resource_property(struct soap *soapStruct,
 			  const char  *passwd,
 			  char        *input);
 
-/** @internal 
+/** @internal
     @param sim Pointer to entry in main Sim_table
     @return NULL if no stored msg otherwise ptr to next message.
 
@@ -156,7 +156,7 @@ int set_resource_property(struct soap *soapStruct,
 struct msg_struct* get_next_stored_msg(Sim_entry_type* sim);
 
 /** @internal
-    Creates a WSRF header including WS-Security elements  for gSoap 
+    Creates a WSRF header including WS-Security elements  for gSoap
     (within the supplied soap struct). If @p username is null or
     is empty then no WS-Security elements are created.
     @param aSoap Pointer to soap struct to construct header in
@@ -179,20 +179,20 @@ int create_WSRF_header(struct soap *aSoap,
 int destroy_WSRP(const char *epr,
 		 const struct reg_security_info *sec);
 
-/** @internal 
+/** @internal
     Initialize the OpenSSL random number generator for this thread */
 int init_ssl_random_seq();
 
 /** @internal
     Initialize the SSL context for the supplied gSoap structure
     @param aSoap Ptr to soap struct to be initialized
-    @param authenticateSWS Whether or not to verify the cert. presented 
+    @param authenticateSWS Whether or not to verify the cert. presented
     by the SWS.  If REG_TRUE then caCertPath must be set.
     @param certKeyPemFile Full path to file containing user's certificate
-           and key (if doing mutual authentication, NULL otherwise) 
+           and key (if doing mutual authentication, NULL otherwise)
     @param passphrase Passphrase for the user's key (can be NULL if not
            doing mutual authentication)
-    @param caCertPath Path to directory containing CA certs 
+    @param caCertPath Path to directory containing CA certs
     @return REG_SUCCESS or REG_FAILURE */
 int init_ssl_context(struct soap *aSoap,
 		     const int    authenticateSWS,

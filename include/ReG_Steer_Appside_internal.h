@@ -1,7 +1,7 @@
 /*
   The RealityGrid Steering Library
 
-  Copyright (c) 2002-2009, University of Manchester, United Kingdom.
+  Copyright (c) 2002-2010, University of Manchester, United Kingdom.
   All rights reserved.
 
   This software is produced by Research Computing Services, University
@@ -60,7 +60,7 @@
     @author Robert Haines
 
     Header file defining internal (to the steering library) utility
-    routines for use in constructing a steering interface to an 
+    routines for use in constructing a steering interface to an
     application.
   */
 
@@ -77,7 +77,7 @@ typedef struct {
 
 }IO_channel_table_type;
 
-/** @internal 
+/** @internal
     Type definition for table used to hold details on the communication
     channel between the application and the steerer */
 typedef struct {
@@ -86,11 +86,11 @@ typedef struct {
       attached */
   double                polling_interval;
 
-  /** Steerable interval (in increments of Seq. no.) controlling how 
+  /** Steerable interval (in increments of Seq. no.) controlling how
       often we perform steering activity while steerer is connected */
   int                   steer_interval;
 
-  /** String to hold 'supported commands' message 'cos we can't 
+  /** String to hold 'supported commands' message 'cos we can't
       actually send it until a steerer has connected in the case
       where we're using SOAP */
   char			supp_cmds[REG_MAX_MSG_SIZE];
@@ -106,8 +106,8 @@ typedef struct {
 
 /*--------- Prototypes of internal library functions -------------*/
 
-/** @internal 
-    Emit all of the parameters that have previously been registered 
+/** @internal
+    Emit all of the parameters that have previously been registered
     (if any). */
 int Emit_param_defs();
 
@@ -116,7 +116,7 @@ int Emit_param_defs();
     (if any). */
 int Emit_IOType_defs();
 
-/** @internal 
+/** @internal
     Emit all of the Chk types that have previously been registered
     (if any). */
 int Emit_ChkType_defs();
@@ -124,19 +124,19 @@ int Emit_ChkType_defs();
 /** @internal
    @param NumCommands The number of commands obtained from the steerer
    @param Commands Array holding the commands obtained from the steerer
-   @param CommandParams Array holding parameters associated with 
+   @param CommandParams Array holding parameters associated with
    each command
    @param NumSteerParams No. of params that have been steered
    @param SteerParamHandles Array holding handles of steered params
    @param SteerParamLabels Array holding labels of steered params
 
    Consume a control message (if any present) from the steerer. Returns
-   any commands and associated parameters (the latter as a space-separated 
-   list in a string) that the application must deal with.  @p CommandParams 
-   is an array of pointers to strings that must have already had memory 
-   allocated for them. Also returns 
+   any commands and associated parameters (the latter as a space-separated
+   list in a string) that the application must deal with.  @p CommandParams
+   is an array of pointers to strings that must have already had memory
+   allocated for them. Also returns
    the handles and labels of any (steerable) parameters whose values have
-   changed. (The values themselves are updated from within this routine.) 
+   changed. (The values themselves are updated from within this routine.)
 */
 int Consume_control(int    *NumCommands,
 		    int    *Commands,
@@ -154,7 +154,7 @@ int Consume_control(int    *NumCommands,
 
    Emit a status report to be consumed by the steerer.  @p NumParams
    and @p ParamHandles are intended to allow us to tell the steerer
-   what we just received from it but this is not currently 
+   what we just received from it but this is not currently
    implemented.  @p NumCommands and @p Commands are intended for the
    same purpose but are also used to send commands such as 'finish'
    (when sim. has finished) back to the steerer. */
@@ -166,26 +166,26 @@ int Emit_status(int   SeqNum,
 
 /** @internal
    @param SeqNum The current sequence number of the simulation
-   @param posn The point at which to start adding commands and 
+   @param posn The point at which to start adding commands and
    associated parameters to the SteerCommands and SteerCmdParams arrays.
    @param SteerCommands The array of commands to which to append any
    automatically-generated commands
    @param SteerCmdParams The array of command parameters to append to
    @param paramPosn The point at which to start adding parameter handles
    and labels to the SteerParamHandles and SteerParamLabels arrays
-   @param SteerParamHandles The array to which to add the handles of 
+   @param SteerParamHandles The array to which to add the handles of
    parameters that have been steered
-   @param SteerParamLabels The array to which to add the labels of 
+   @param SteerParamLabels The array to which to add the labels of
    parameters that have been steered
 
    Generate steering commands independently of the steerer. @e e.g. this
    implements the automatic emission/consumption of those IOTypes and
-   ChkTypes with a non-zero auto. emit/consume frequency.  Routine also 
+   ChkTypes with a non-zero auto. emit/consume frequency.  Routine also
    checks for any messages received previously that might now be valid.
  */
 int Auto_generate_steer_cmds(int    SeqNum,
-			     int   *posn, 
-			     int   *SteerCommands, 
+			     int   *posn,
+			     int   *SteerCommands,
 			     char **SteerCmdParams,
 			     int   *paramPosn,
 			     int   *SteerParamHandles,
@@ -195,7 +195,7 @@ int Auto_generate_steer_cmds(int    SeqNum,
    Take down connection with steerer and clean-up table entries */
 int Detach_from_steerer();
 
-/** @internal 
+/** @internal
    @param param Pointer to struct holding information on parameter
 
    Update the value of the variable pointed to by the pointer
@@ -230,7 +230,7 @@ int Send_status_msg(char *buf);
     Create the xml message to tell steerer what standard commands
     the application supports. */
 int Make_supp_cmds_msg(int   NumSupportedCmds,
-		       int  *SupportedCmds, 
+		       int  *SupportedCmds,
 		       char *msg,
 		       int   max_msg_size);
 
@@ -249,13 +249,13 @@ int Initialize_steering_connection(int  NumSupportedCmds,
 				   int *SupportedCmds);
 
 /** @internal
-    @return REG_SUCCESS if a steering client is connected, 
+    @return REG_SUCCESS if a steering client is connected,
     REG_FAILURE otherwise
 
     Check for a connection from a steering client */
 int Steerer_connected();
 
-/** @internal 
+/** @internal
     @return REG_SUCCESS, REG_FAILURE
 
     Take down any connection to a steering client */
@@ -272,7 +272,7 @@ int Initialize_IOType_transport(const int direction,
 /** @internal Finalize the transport mechanism for ALL IOtypes */
 void Finalize_IOType_transport();
 
-/** @internal 
+/** @internal
     @param index The index of the IOType being used
     @return REG_SUCCESS if ack has been received, REG_FAILURE otherwise
 
@@ -280,7 +280,7 @@ void Finalize_IOType_transport();
     data set emitted */
 int Consume_ack(const int index);
 
-/** @internal 
+/** @internal
     @param index The index of the IOType being used
     @return REG_SUCCESS, REG_FAILURE
 
@@ -307,19 +307,19 @@ int Consume_start_data_check(const int index);
     @return REG_SUCCESS, REG_FAILURE
 
     Read the sample data */
-int Consume_data_read(const int		index,  
+int Consume_data_read(const int		index,
 		      const int		datatype,
-		      const size_t	num_bytes_to_read, 
+		      const size_t	num_bytes_to_read,
 		      void		*pData);
 
-/** @internal 
+/** @internal
     @param index The index of the IOType being used
 
     Emit header for sample data */
 int Emit_header(const int index);
 
 
-/** @internal 
+/** @internal
     @param index The index of the IOType being used
     @param buffer Ptr to buffer holding footer to emit
 
@@ -327,7 +327,7 @@ int Emit_header(const int index);
 int Emit_footer(const int index,
 		const char * const buffer);
 
-/** @internal 
+/** @internal
   @param index Index of IOType being used
   @param datatype Type of the data to emit
   @param num_bytes_to_send The no. of bytes to emit
@@ -341,14 +341,14 @@ int Emit_data(const int		index,
 	      const size_t	num_bytes_to_send,
 	      void	       *pData);
 
-/** @internal 
+/** @internal
     @param index Index of IOType being used
     @return REG_SUCCESS if connection up, REG_FAILURE otherwise
 
     Is the communication connection up? */
 int Get_communication_status(const int index);
 
-/** @internal 
+/** @internal
     @param IOTypeIndex Index of IOType being used
     @param DataType The type of the data specified in the header
     @param Count The no. of data elements specified in the header
@@ -383,7 +383,7 @@ int Emit_iotype_msg_header(int IOTypeIndex,
 /** @internal
     @param index Index of IOType
     @param num_bytes No. of bytes to specify in realloc
-    
+
     Wrapper for call to Realloc_IOdef_entry_buffer() */
 int Realloc_iotype_buffer(int index,
 			  int num_bytes);
@@ -404,7 +404,7 @@ int Realloc_chktype_buffer(int index,
     @p num_bytes.  If this fails, the buffer is free'd and iodef's @p
     buffer_max_bytes is zeroed, otherwise @p buffer_max_bytes is set
     to @p num_bytes. */
-int Realloc_IOdef_entry_buffer(IOdef_entry *iodef, 
+int Realloc_IOdef_entry_buffer(IOdef_entry *iodef,
 			       int num_bytes);
 
 /** @internal
@@ -416,12 +416,12 @@ int Realloc_IOdef_entry_buffer(IOdef_entry *iodef,
 int Toggle_param_logging(char *ParamLabel,
 			 int   toggle);
 
-/** @internal 
+/** @internal
     @param ctrl Pointer to structure holding a control message
     @param NumCommands No. of commands contained in the message
     @param Commands Array holding the commands contained in the message
-    @param CommandParams Array holding the command parameters 
-    @param NumSteerParams No. of parameters that are given new values in 
+    @param CommandParams Array holding the command parameters
+    @param NumSteerParams No. of parameters that are given new values in
     the message
     @param SteerParamHandles Array holding the handles of parameters given
     new values in the message

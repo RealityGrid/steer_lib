@@ -1,7 +1,7 @@
 /*
   The RealityGrid Steering Library
 
-  Copyright (c) 2002-2009, University of Manchester, United Kingdom.
+  Copyright (c) 2002-2010, University of Manchester, United Kingdom.
   All rights reserved.
 
   This software is produced by Research Computing Services, University
@@ -62,13 +62,13 @@
 /* */
 extern socket_info_table_type socket_info_table;
 
-/* Need access to these tables which are actually declared in 
+/* Need access to these tables which are actually declared in
    ReG_Steer_Appside_internal.h */
 extern IOdef_table_type IOTypes_table;
 
 /*---------------------- API ------------------------*/
 
-int Consume_msg_header_impl(int index, int* datatype, int* count, 
+int Consume_msg_header_impl(int index, int* datatype, int* count,
 			       int* num_bytes, int* is_fortran_array) {
 
   int nbytes;
@@ -103,7 +103,7 @@ int Consume_msg_header_impl(int index, int* datatype, int* count,
 
   /* if we're here, we've got data */
 #ifdef REG_DEBUG_FULL
-  fprintf(stderr, "STEER: Consume_msg_header: read <%s> from socket\n", 
+  fprintf(stderr, "STEER: Consume_msg_header: read <%s> from socket\n",
 	  buffer);
 #endif
 
@@ -133,7 +133,7 @@ int Consume_msg_header_impl(int index, int* datatype, int* count,
   }
 
 #ifdef REG_DEBUG_FULL
-  fprintf(stderr, "STEER: Consume_msg_header: read <%s> from socket\n", 
+  fprintf(stderr, "STEER: Consume_msg_header: read <%s> from socket\n",
 	  buffer);
 #endif
 
@@ -159,7 +159,7 @@ int Consume_msg_header_impl(int index, int* datatype, int* count,
   }
 
 #ifdef REG_DEBUG_FULL
-  fprintf(stderr, "STEER: Consume_msg_header: read <%s> from socket\n", 
+  fprintf(stderr, "STEER: Consume_msg_header: read <%s> from socket\n",
 	  buffer);
 #endif
 
@@ -189,7 +189,7 @@ int Consume_msg_header_impl(int index, int* datatype, int* count,
   }
 
 #ifdef REG_DEBUG_FULL
-  fprintf(stderr, "STEER: Consume_msg_header: read >%s< from socket\n", 
+  fprintf(stderr, "STEER: Consume_msg_header: read >%s< from socket\n",
 	  buffer);
 #endif
 
@@ -219,7 +219,7 @@ int Consume_msg_header_impl(int index, int* datatype, int* count,
   }
 
 #ifdef REG_DEBUG_FULL
-  fprintf(stderr, "STEER: Consume_msg_header_socket: read >%s< from socket\n", 
+  fprintf(stderr, "STEER: Consume_msg_header_socket: read >%s< from socket\n",
 	  buffer);
 #endif
 
@@ -252,7 +252,7 @@ int Consume_msg_header_impl(int index, int* datatype, int* count,
   }
 
 #ifdef REG_DEBUG_FULL
-  fprintf(stderr, "STEER: Consume_msg_header: read <%s> from socket\n", 
+  fprintf(stderr, "STEER: Consume_msg_header: read <%s> from socket\n",
 	  buffer);
 #endif
 
@@ -267,7 +267,7 @@ int Consume_msg_header_impl(int index, int* datatype, int* count,
 
 /*---------------------------------------------------*/
 
-int Consume_start_data_check_impl(const int index) {  
+int Consume_start_data_check_impl(const int index) {
   char buffer[REG_PACKET_SIZE];
   char* pstart;
   int nbytes = 0;
@@ -346,13 +346,13 @@ int Consume_start_data_check_impl(const int index) {
 
       retry_connect_samples(index);
 
-      /* check if socket reconnection has been made and check for 
+      /* check if socket reconnection has been made and check for
 	 data if it has */
-      if (socket_info_table.socket_info[index].comms_status 
+      if (socket_info_table.socket_info[index].comms_status
 	  != REG_COMMS_STATUS_CONNECTED) {
 	return REG_FAILURE;
       }
-    
+
       attempt_reconnect = 0;
       memset(buffer, '\0', 1);
     }
@@ -373,13 +373,13 @@ int Consume_start_data_check_impl(const int index) {
 	    "from socket\n", buffer);
 #endif
 
-    /* Need to make sure we've read the full packet marking the 
+    /* Need to make sure we've read the full packet marking the
        beginning of the next data slice */
     nbytes1 = (int) (pstart - buffer) + (REG_PACKET_SIZE - nbytes);
 
     if(nbytes1 > 0) {
 
-      if((nbytes = recv(sock_info->connector_handle, buffer, 
+      if((nbytes = recv(sock_info->connector_handle, buffer,
 			nbytes1, 0)) <= 0) {
 	if(nbytes == 0) {
 	  /* closed connection */
@@ -418,9 +418,9 @@ int Consume_start_data_check_impl(const int index) {
 
 /*---------------------------------------------------*/
 
-int Consume_data_read_impl(const int index, 
-			      const int datatype, 
-			      const int num_bytes_to_read, 
+int Consume_data_read_impl(const int index,
+			      const int datatype,
+			      const int num_bytes_to_read,
 			      void *pData) {
   int nbytes;
 
@@ -470,7 +470,7 @@ int Consume_data_read_impl(const int index,
 	/* error */
 	perror("recv");
       }
-      
+
       /* Reset use_xdr flag set as only valid on a per-slice basis */
       IOTypes_table.io_def[index].use_xdr = REG_FALSE;
 
@@ -500,7 +500,7 @@ int Consume_ack_impl(int index){
   memset(buf, '\0', 32);
 
   /* Search for an ACK tag */
-  if((nbytes = recv_non_block(socket_info_table.socket_info[index].connector_handle, 
+  if((nbytes = recv_non_block(socket_info_table.socket_info[index].connector_handle,
 			      (void*)buf, 16, 0)) == 16) {
     pchar = strchr(buf, '<');
 
@@ -518,7 +518,7 @@ int Consume_ack_impl(int index){
 	else{
 	  /* Looks like our ack msg drops off end of buffer so get another
 	     16 bytes */
-	  if(recv_non_block(socket_info_table.socket_info[index].connector_handle, 
+	  if(recv_non_block(socket_info_table.socket_info[index].connector_handle,
 			    (void*)&(buf[16]), 16, 0) == 16) {
 
 	    if( strstr(buf, ack_msg) ) return REG_SUCCESS;
@@ -602,7 +602,7 @@ int create_listener_samples(const int index) {
   socket_info_table.socket_info[index].listener_handle = listener;
 
   /* Turn off the "Address already in use" error message */
-  if(setsockopt(listener, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == 
+  if(setsockopt(listener, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) ==
      REG_SOCKETS_ERROR) {
     perror("setsockopt");
     return REG_FAILURE;
@@ -610,7 +610,7 @@ int create_listener_samples(const int index) {
 
   /* Get the hostname of the machine we're running on (so we can publish
    * the endpoint of this connection). If REG_IO_ADDRESS is set then
-   * that's what we use.  If not, call Get_fully_qualified_hostname which 
+   * that's what we use.  If not, call Get_fully_qualified_hostname which
    * itself uses  REG_TCP_INTERFACE if set. */
   if( (pchar = getenv("REG_IO_ADDRESS")) ){
 #ifdef REG_DEBUG
@@ -631,17 +631,17 @@ int create_listener_samples(const int index) {
   }
   else{
     fprintf(stderr, "STEER: WARNING: Sockets_create_listener: failed to get hostname\n");
-    sprintf(socket_info_table.socket_info[index].listener_hostname, 
+    sprintf(socket_info_table.socket_info[index].listener_hostname,
 	    "NOT_SET");
   }
-  
+
   /* set up server address */
   myAddr.sin_family = AF_INET;
   if(strlen(socket_info_table.socket_info[index].tcp_interface) == 1) {
     myAddr.sin_addr.s_addr = INADDR_ANY;
   }
   else {
-    inet_aton(socket_info_table.socket_info[index].tcp_interface, 
+    inet_aton(socket_info_table.socket_info[index].tcp_interface,
 	      &(myAddr.sin_addr));
   }
   memset(&(myAddr.sin_zero), '\0', 8); /* zero the rest */
@@ -650,7 +650,7 @@ int create_listener_samples(const int index) {
   i = socket_info_table.socket_info[index].min_port_in;
   myAddr.sin_port = htons((short) i);
 
-  while(bind(listener, (struct sockaddr*) &myAddr, sizeof(struct sockaddr)) == 
+  while(bind(listener, (struct sockaddr*) &myAddr, sizeof(struct sockaddr)) ==
 	REG_SOCKETS_ERROR) {
     if(++i > socket_info_table.socket_info[index].max_port_in) {
       perror("bind");
@@ -686,7 +686,7 @@ void cleanup_listener_connection_samples(const int index) {
     close_listener_handle_samples(index);
   }
 
-  if(socket_info_table.socket_info[index].comms_status == REG_COMMS_STATUS_CONNECTED) { 
+  if(socket_info_table.socket_info[index].comms_status == REG_COMMS_STATUS_CONNECTED) {
     close_connector_handle_samples(index);
   }
 
@@ -761,7 +761,7 @@ void attempt_listener_connect_samples(const int index) {
 
     if (socket_info->comms_status == REG_COMMS_STATUS_FAILURE ||
 	socket_info->comms_status == REG_COMMS_STATUS_NULL ) {
-      /* connection has broken - we're still listening so see if 
+      /* connection has broken - we're still listening so see if
          anything to connect */
 #ifdef REG_DEBUG
       fprintf(stderr, "STEER: attempt_listener_connect: retry accept connect\n");
@@ -779,7 +779,7 @@ void retry_accept_connect_samples(const int index) {
 
   /* if this is called, a write has failed */
 
-  /* if we're here and  status is connected  we've lost a connection, 
+  /* if we're here and  status is connected  we've lost a connection,
      so first close socket */
   if (socket_info->comms_status==REG_COMMS_STATUS_CONNECTED) {
     close_connector_handle_samples(index);
@@ -795,13 +795,13 @@ void attempt_connector_connect_samples(const int index) {
   socket_info = &(socket_info_table.socket_info[index]);
 
   if(socket_info->comms_status == REG_COMMS_STATUS_WAITING_TO_CONNECT) {
-#ifdef REG_DEBUG    
+#ifdef REG_DEBUG
     fprintf(stderr, "STEER: attempt_connector_connect: poll_socket\n");
 #endif
     poll_socket_samples(index);
   }
 
-  if(socket_info->comms_status == REG_COMMS_STATUS_FAILURE || 
+  if(socket_info->comms_status == REG_COMMS_STATUS_FAILURE ||
      socket_info->comms_status == REG_COMMS_STATUS_NULL) {
     /* connection has broken - try to re-connect */
 #ifdef REG_DEBUG

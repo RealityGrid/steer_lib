@@ -1,7 +1,7 @@
 /*
   The RealityGrid Steering Library
 
-  Copyright (c) 2002-2009, University of Manchester, United Kingdom.
+  Copyright (c) 2002-2010, University of Manchester, United Kingdom.
   All rights reserved.
 
   This software is produced by Research Computing Services, University
@@ -51,7 +51,7 @@
 
 /** @internal
     @file ReG_Steer_Logging.h
-    @brief Header file for logging functionality 
+    @brief Header file for logging functionality
     This header file contains routines and data structures for
     logging-related activity.
     @author Andrew Porter
@@ -83,7 +83,7 @@ int Set_log_primary_key(Chk_log_type *log);
 
     Allocate memory etc. for the log structure supplied.
     @p log->filename must be set prior to call. */
-int Initialize_log(Chk_log_type *log, 
+int Initialize_log(Chk_log_type *log,
 		   log_type_type log_type);
 
 /** @internal
@@ -95,10 +95,10 @@ int Initialize_log(Chk_log_type *log,
 
     Identifies format of log supplied in *buf & converts it to xml if
     necessary.  If the log is a parameter log then it pulls out values
-    of the parameter with the specified handle. Then calls 
+    of the parameter with the specified handle. Then calls
     Pack_send_log_entries(). */
-int Emit_log_entries(Chk_log_type *log, 
-		     char         *buf, 
+int Emit_log_entries(Chk_log_type *log,
+		     char         *buf,
 		     int           handle);
 
 /** @internal
@@ -137,7 +137,7 @@ int Save_log(Chk_log_type *log);
     PARAM type
     @param pchar Pointer to buffer containing extracted log (must be
     free'd by caller)
-    @param count No. of bytes of data returned in buffer pointed 
+    @param count No. of bytes of data returned in buffer pointed
     to by @p pchar
     @param not_sent_only If set to REG_TRUE then only those entries not
     already sent to the steering client are retrieved
@@ -145,10 +145,10 @@ int Save_log(Chk_log_type *log);
     Convert current log to xml and store in buffer pointed to by
     @p pchar.  Length of buffer is returned in @p count. The memory pointed
     to by @p pchar must be free()'d by the caller once finished.*/
-int Log_to_xml(Chk_log_type *log, 
-	       int           handle, 
-	       char        **pchar, 
-	       int          *count, 
+int Log_to_xml(Chk_log_type *log,
+	       int           handle,
+	       char        **pchar,
+	       int          *count,
 	       const int     not_sent_only);
 
 /** @internal
@@ -159,9 +159,9 @@ int Log_to_xml(Chk_log_type *log,
     already sent to the steering client are retrieved
 
     Called from Log_to_xml() for Checkpoint logs */
-int Chk_log_to_xml(Chk_log_type *log, 
-		   char        **pchar, 
-		   int          *count, 
+int Chk_log_to_xml(Chk_log_type *log,
+		   char        **pchar,
+		   int          *count,
 		   const int     not_sent_only);
 
 /** @internal
@@ -171,14 +171,14 @@ int Chk_log_to_xml(Chk_log_type *log,
     @param count No. of bytes in @p pchar
     @param not_sent_only If set to REG_TRUE then only those entries not
     already sent to the steering client are retrieved
-    
+
     Called from Log_to_xml() to get xml representation of a parameter log. */
-int Param_log_to_xml(Chk_log_type *log, int handle, char **pchar, 
+int Param_log_to_xml(Chk_log_type *log, int handle, char **pchar,
 		     int *count, const int not_sent_only);
 
 /** @internal
     @param log Pointer to log structure from which to get data
-    @param pchar Pointer to buffer containing results (must be free'd 
+    @param pchar Pointer to buffer containing results (must be free'd
     by caller)
     @param count No. of bytes of data returned in @p pchar
     @param not_sent_only If set to REG_TRUE then only those entries not
@@ -186,33 +186,33 @@ int Param_log_to_xml(Chk_log_type *log, int handle, char **pchar,
 
     As for Log_to_xml() except log is stored in columnar format - for
     storing parameter histories. */
-int Log_to_columns(Chk_log_type *log, 
-		   char        **pchar, 
-		   int          *count, 
+int Log_to_columns(Chk_log_type *log,
+		   char        **pchar,
+		   int          *count,
 		   const int     not_sent_only);
 
 /** @internal Log a snapshot of the current parameter values */
 int Log_param_values();
 
 /** @internal
-    @param buf Points to the columnar data (space delimited data on 
+    @param buf Points to the columnar data (space delimited data on
     lines delimited by new-line chars)
-    @param out_buf Points to a buffer pre-allocated to receive the 
+    @param out_buf Points to a buffer pre-allocated to receive the
     new format log
     @param out_buf_size Size of @p out_buf in bytes
     @param handle Specifies which parameter to pull out
 
     Convert a columnar-format log back into XML. */
-int Log_columns_to_xml(char **buf, 
-		       char  *out_buf, 
-		       int    out_buf_size, 
+int Log_columns_to_xml(char **buf,
+		       char  *out_buf,
+		       int    out_buf_size,
 		       int    handle);
 
 /** @internal
     @param pBuf Pointer to buffer containing XML describing a log
     @param msg_count On return, holds the no. of distinct log messages
     that were sent to the steering client.
-    
+
     Takes the xml document describing a log and splits it into separate
     entries which are packed into messages and sent to client */
 int Pack_send_log_entries(char **pBuf, int *msg_count);

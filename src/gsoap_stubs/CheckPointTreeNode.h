@@ -14,13 +14,13 @@ struct cptn__destroyResponse {
 };
 
 //gsoap rgt service method-action: destroy ""
-cptn__Destroy( void *_, 
+cptn__Destroy( void *_,
 	       struct cptn__destroyResponse * out );
 
 //gsoap rgt service method-action: addNode ""
-cptn__addNode( xsd__string  in0, 
-	       xsd__string  in1, 
-	       xsd__string  in2, 
-	       xsd__string  in3, 
-	       xsd__string  in4, 
+cptn__addNode( xsd__string  in0,
+	       xsd__string  in1,
+	       xsd__string  in2,
+	       xsd__string  in3,
+	       xsd__string  in4,
 	       struct cptn__addNodeResponse * out );

@@ -8,7 +8,7 @@
 * intact.
 *
 * Enhancements by Stanley Yamane:
-*     o reverse lookup table for the decode function 
+*     o reverse lookup table for the decode function
 *     o reserve string buffer space in advance
 *
 * Converted from C++ to C by Andrew Porter
@@ -33,11 +33,11 @@ static const char   fillchar = '=';
                              0   1   2   3   4   5   6   7   8   9   012345678901234567890123456789012345678901234567890123 */
 const char Base64Table[] = {'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','0','1','2','3','4','5','6','7','8','9','+','/'};
 
-/** 
+/**
   Decode Table gives the index of any valid base64 character in the Base64 table]
   65 == A, 97 == a, 48 == 0, 43 == +, 47 == /
 */
-                                   /*   0         1         2         3         4         5         6         7         8         9 */ 
+                                   /*   0         1         2         3         4         5         6         7         8         9 */
 const unsigned int DecodeTable[] = {Base64_NP,Base64_NP,Base64_NP,Base64_NP,Base64_NP,Base64_NP,Base64_NP,Base64_NP,Base64_NP,Base64_NP,  /* 0 - 9  */
                                     Base64_NP,Base64_NP,Base64_NP,Base64_NP,Base64_NP,Base64_NP,Base64_NP,Base64_NP,Base64_NP,Base64_NP,  /* 10 -19 */
                                     Base64_NP,Base64_NP,Base64_NP,Base64_NP,Base64_NP,Base64_NP,Base64_NP,Base64_NP,Base64_NP,Base64_NP,  /* 20 -29 */
@@ -67,8 +67,8 @@ const unsigned int DecodeTable[] = {Base64_NP,Base64_NP,Base64_NP,Base64_NP,Base
 				        			  };
 
 
-int Base64_encode(const char *data, 
-		  const unsigned int len, 
+int Base64_encode(const char *data,
+		  const unsigned int len,
 		  char **out_data,
 		  unsigned int *out_len)
 {
@@ -121,8 +121,8 @@ int Base64_encode(const char *data,
   return REG_SUCCESS;
 }
 
-int Base64_decode(const char *data, 
-		  const unsigned int len, 
+int Base64_decode(const char *data,
+		  const unsigned int len,
 		  char **out_data,
 		  unsigned int *out_len)
 {

@@ -1,7 +1,7 @@
 /*
   The RealityGrid Steering Library
 
-  Copyright (c) 2002-2009, University of Manchester, United Kingdom.
+  Copyright (c) 2002-2010, University of Manchester, United Kingdom.
   All rights reserved.
 
   This software is produced by Research Computing Services, University
@@ -76,17 +76,17 @@
 #define STR_CONNECTED_FILENAME  "steering_active"
 
 /** Root of filename used by application to send data to steerer
-    Actual communication consists of two files: of the form 
-    APP_TO_STR_FILENAME_@p n and APP_TO_STR_FILENAME_@p n.lock.  The 
-    library looks for the presence of the (empty) .lock file before 
-    attempting to open the associated data file.  @p n is some integer, 
-    incremented each time a file is written and limited 
+    Actual communication consists of two files: of the form
+    APP_TO_STR_FILENAME_@p n and APP_TO_STR_FILENAME_@p n.lock.  The
+    library looks for the presence of the (empty) .lock file before
+    attempting to open the associated data file.  @p n is some integer,
+    incremented each time a file is written and limited
     to 0 \<= n \<= REG_MAX_NUM_FILES-1 */
 #define APP_TO_STR_FILENAME "status_info"
 
 /** Root of filename used by steerer to send data to application.
     Actual name will be of form STR_TO_APP_FILENAME_@p n and
-    STR_TO_APP_FILENAME_@p n.lock.  The library looks for the 
+    STR_TO_APP_FILENAME_@p n.lock.  The library looks for the
     presence of the (empty) .lock file before attempting to open
     the associated data file.  @p n is some integer, incremented each
     time a file is written and limited to 0 \<= n \<= REG_MAX_NUM_FILES-1 */
@@ -177,10 +177,10 @@
 #define REG_DATA_HEADER "<ReG_data>"
 /** The footer to use when sending data down a socket */
 #define REG_DATA_FOOTER "</ReG_data>"
-/** Marks the start of a header for an individual 'slice' of data 
+/** Marks the start of a header for an individual 'slice' of data
     being sent down a socket */
 #define BEGIN_SLICE_HEADER "<ReG_data_slice_header>"
-/** Marks the end of a header for an individual 'slice' of data 
+/** Marks the end of a header for an individual 'slice' of data
     being sent down a socket */
 #define END_SLICE_HEADER   "</ReG_data_slice_header>"
 
@@ -238,7 +238,7 @@
 #define REG_STEP_TIME_HANDLE    -99
 /** Handle for parameter holding time-stamp */
 #define REG_TIMESTAMP_HANDLE    -98
-/** Handle for the variable holding the interval between 
+/** Handle for the variable holding the interval between
    steering activity */
 #define REG_STEER_INTERVAL_HANDLE -97
 /** Handle for variable holding current simulated time of
@@ -275,7 +275,7 @@
    the moment */
 typedef int REG_IOHandleType;
 
-/** Max. line length to used in communicating with java steering 
+/** Max. line length to used in communicating with java steering
     proxy (obsolete - UNICORE) */
 #define REG_MAX_LINE_LEN 256
 /** Used to indicate whether pipe connecting us to java steering
@@ -320,9 +320,9 @@ typedef int REG_IOHandleType;
 #define REG_SGS_SUCCESS "SGS_SUCCESS"
 #define REG_SGS_TIMEOUT "SGS_TIMEOUT"
 
-/** Default minimum interval (integer no. of seconds) at which 
-   to poll for connection from steerer - overridden by 
-   REG_APP_POLL_INTERVAL environment variable if set */ 
+/** Default minimum interval (integer no. of seconds) at which
+   to poll for connection from steerer - overridden by
+   REG_APP_POLL_INTERVAL environment variable if set */
 #define REG_APP_POLL_INTERVAL_DEFAULT 5
 
 /** Size of buffer used for string handling etc - use 1MB for now */

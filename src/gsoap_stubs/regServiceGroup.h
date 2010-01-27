@@ -13,4 +13,3 @@ struct rsg__AddResponse {
 
 //gsoap rsg service method-action: Add ""
 rsg__Add(XML _in, struct rsg__AddResponse *_out);
-
