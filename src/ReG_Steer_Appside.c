@@ -61,12 +61,6 @@
 #include "soapRealityGrid.nsmap"
 
 /**
-   Buffer used for string handling etc - size set 
-   in ReG_steer_types.h 
- */
-char Global_scratch_buffer[REG_SCRATCH_BUFFER_SIZE];
-
-/**
    The table holding details of our communication channel with the
    steering client 
  */
@@ -1770,11 +1764,11 @@ int Emit_stop(int *IOTypeIndex)
   }
 
   /* Send footer */
-  sprintf(Global_scratch_buffer, REG_PACKET_FORMAT, REG_DATA_FOOTER);
+  sprintf(Steer_lib_config.scratch_buffer, REG_PACKET_FORMAT, REG_DATA_FOOTER);
   /* Include termination char WITHIN the packet */
-  Global_scratch_buffer[REG_PACKET_SIZE-1] = '\0';
+  Steer_lib_config.scratch_buffer[REG_PACKET_SIZE-1] = '\0';
 
-  return_status = Emit_footer(*IOTypeIndex, Global_scratch_buffer);
+  return_status = Emit_footer(*IOTypeIndex, Steer_lib_config.scratch_buffer);
 
   Emit_stop_impl(*IOTypeIndex);
 
@@ -3373,14 +3367,14 @@ int Emit_IOType_defs(){
       /* We don't want to actually change the label that the app
 	 has supplied to us but we don't want to publish it
 	 with trailing white space */
-      strncpy((char *)Global_scratch_buffer, 
+      strncpy((char *)Steer_lib_config.scratch_buffer,
 	      IOTypes_table.io_def[i].label,
 	      REG_SCRATCH_BUFFER_SIZE);
 
       nbytes = snprintf(pbuf, bytes_left, "<IOType>\n"
 			"<Label>%s</Label>\n"
 			"<Handle>%d</Handle>\n", 
-			trimWhiteSpace((char *)Global_scratch_buffer), 
+			trimWhiteSpace((char *)Steer_lib_config.scratch_buffer), 
 			IOTypes_table.io_def[i].handle);
 
 #ifdef REG_DEBUG

@@ -98,9 +98,6 @@ char ReG_Hostname[REG_MAX_STRING_LENGTH];
 /* Name (and version) of the application that has called us */
 extern char ReG_AppName[REG_MAX_STRING_LENGTH];
 
-/** @internal Global scratch buffer - declared in ReG_Steer_Appside.c */
-extern char Global_scratch_buffer[];
-
 /** Names of the SWS' ResourceProperties - MUST match those
     used in SWS.pm (as launched by container) */
 char *SUPPORTED_CMDS_RP = "sws:supportedCommands";
@@ -908,7 +905,7 @@ int Record_checkpoint_set_impl(int ChkType, char* ChkTag, char* Path) {
   }
 
   /* Construct checkpoint meta-data */
-  cp_data = Global_scratch_buffer;
+  cp_data = Steer_lib_config.scratch_buffer;
   pchar = cp_data;
   bytes_left = REG_SCRATCH_BUFFER_SIZE;
   nbytes = snprintf(pchar, bytes_left, "<Checkpoint_data application=\"%s\">\n"		    

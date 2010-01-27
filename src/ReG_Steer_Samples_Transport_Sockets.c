@@ -70,9 +70,6 @@ socket_info_table_type socket_info_table;
 extern IOdef_table_type IOTypes_table;
 extern Steerer_connection_table_type Steerer_connection;
 
-/** Global scratch buffer - declared in ReG_Steer_Appside.c */
-extern char Global_scratch_buffer[];
-
 /*--------------------- API -------------------------*/
 
 int Initialize_samples_transport() {

@@ -71,9 +71,6 @@ socket_info_table_type socket_info_table;
 extern IOdef_table_type IOTypes_table;
 extern Steerer_connection_table_type Steerer_connection;
 
-/** Global scratch buffer - declared in ReG_Steer_Appside.c */
-extern char Global_scratch_buffer[];
-
 /*--------------------- API -------------------------*/
 
 int Initialize_samples_transport() {
@@ -683,7 +680,7 @@ int connect_connector_samples(const int index) {
       REG_COMMS_STATUS_CONNECTED;
 
     if(IOTypes_table.io_def[index].direction == REG_IO_IN){
-      sprintf(Global_scratch_buffer, "%s\n%s\n", 
+      sprintf(Steer_lib_config.scratch_buffer, "%s\n%s\n",
 	      IOTypes_table.io_def[index].label,
 	      IOTypes_table.io_def[index].proxySourceLabel);
     }
@@ -698,17 +695,17 @@ int connect_connector_samples(const int index) {
 	tmpBuf[i] = '\0';
 	i--;
       }
-      sprintf(Global_scratch_buffer, "%s\n%s_REG_ACK\n",
+      sprintf(Steer_lib_config.scratch_buffer, "%s\n%s_REG_ACK\n",
 	      tmpBuf, tmpBuf);
 
       /* If this is an output channel then we aren't subscribing to 
 	 any data source
-      sprintf(Global_scratch_buffer, "%s\nACKS_ONLY\n",
+      sprintf(Steer_lib_config.scratch_buffer, "%s\nACKS_ONLY\n",
       IOTypes_table.io_def[index].label); */
     }
 
-    if(Emit_data_impl(index, strlen(Global_scratch_buffer), 
-		      (void*)(Global_scratch_buffer)) != REG_SUCCESS) {
+    if(Emit_data_impl(index, strlen(Steer_lib_config.scratch_buffer),
+		      (void*)(Steer_lib_config.scratch_buffer)) != REG_SUCCESS) {
       close_connector_handle_samples(index);
       fprintf(stderr, 
 	      "STEER: connect_connector: failed to send ID to proxy\n");

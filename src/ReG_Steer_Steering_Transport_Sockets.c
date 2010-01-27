@@ -76,9 +76,6 @@ extern Steerer_connection_table_type Steerer_connection;
    been requested */
 extern Chk_log_type Param_log;
 
-/** @internal Global scratch buffer - declared in ReG_Steer_Appside.c */
-extern char Global_scratch_buffer[];
-
 /*----------------- Appside methods ---------------------*/
 
 int Initialize_steering_connection_impl(int  NumSupportedCmds,

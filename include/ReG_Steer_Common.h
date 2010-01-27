@@ -81,6 +81,9 @@ typedef struct {
   /** Where to write any temporary files such as logs */
   char scratch_dir[REG_MAX_STRING_LENGTH];
 
+  /** Buffer used for string handling etc - size set in ReG_steer_types.h */
+  char scratch_buffer[REG_SCRATCH_BUFFER_SIZE];
+
 } Steer_lib_config_type;
 
 /** @internal Used to log parameter values */

@@ -70,9 +70,6 @@ extern Steerer_connection_table_type Steerer_connection;
    been requested */
 extern Chk_log_type Param_log;
 
-/** @internal Global scratch buffer - declared in ReG_Steer_Appside.c */
-extern char Global_scratch_buffer[];
-
 /** Basic library config - declared in ReG_Steer_Common */
 extern Steer_lib_config_type Steer_lib_config;
 
