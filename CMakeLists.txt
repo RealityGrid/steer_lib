@@ -174,9 +174,10 @@ set(REG_EXTERNAL_LIBS ${LIBXML2_LIBRARIES} ${REG_EXTERNAL_LIBS})
 # ReG libs to link examples against
 set(REG_LINK_LIBRARIES ReG_Steer)
 
-# build and install library and headers
+# build and install library, headers and support files
 add_subdirectory(src)
 add_subdirectory(include)
+add_subdirectory(xml_schema)
 
 # build examples?
 option(REG_BUILD_EXAMPLES "Build the example applications?" ON)
