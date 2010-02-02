@@ -132,8 +132,7 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg,
       return REG_FAILURE;
   }
 
-  ns = xmlSearchNsByHref(doc, cur,
-            (const xmlChar *) "http://www.realitygrid.org/xml/steering");
+  ns = xmlSearchNsByHref(doc, cur, (const xmlChar *) REG_STEER_NAMESPACE);
   /* Relax our conditions to generalize this parser------------
   if (ns == NULL) {
       fprintf(stderr,
@@ -383,7 +382,7 @@ int parseSteerMessage(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
   }
 
   /* Get the msg UID if present */
-  if( (msg->msg_uid = xmlGetProp(cur, (const xmlChar*) "Msg_UID")) ){
+  if((msg->msg_uid = xmlGetProp(cur, (const xmlChar*) "UID"))) {
 #ifdef REG_DEBUG_FULL
     fprintf(stderr, "STEER: INFO: parseSteerMessage: msg UID = %s\n",
 	    (char*)(msg->msg_uid));

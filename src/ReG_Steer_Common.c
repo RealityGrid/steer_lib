@@ -62,16 +62,6 @@
 #include "ReG_Steer_types.h"
 #include "ReG_Steer_Common.h"
 
-/** @internal
-   Location of file specifying the schema/namespace to which all
-   steering messages should belong.  Set in Steerer_initialize or
-   Steering_initialize (depending on whether we are steerer or
-   application side) using the REG_STEER_HOME environment variable.
-   If that is not set then we use a fake path (this info was only
-   intended for validating xml messages which we do not normally do). */
-
-char ReG_Steer_Schema_Locn[REG_MAX_STRING_LENGTH];
-
 /** Basic library config. Declared here as used by all. */
 Steer_lib_config_type Steer_lib_config;
 
@@ -404,12 +394,8 @@ int Write_xml_header(char **buf)
   int  return_status = REG_SUCCESS;
 
   if(buf){
-    *buf += sprintf(*buf, "<ReG_steer_message xmlns:xsi=\""
-		    "http://www.w3.org/2001/XMLSchema-instance\"\n"
-		    "xmlns=\"%s\"\n       xsi:SchemaLocation=\"%s %s\">\n",
-		    REG_STEER_NAMESPACE,
-		    REG_STEER_NAMESPACE,
-		    ReG_Steer_Schema_Locn);
+    *buf += sprintf(*buf, "<ReG_steer_message xmlns=\"%s\">\n",
+		    REG_STEER_NAMESPACE);
   }
   else{
     return_status = REG_FAILURE;
