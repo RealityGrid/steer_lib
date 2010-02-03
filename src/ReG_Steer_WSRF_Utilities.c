@@ -337,7 +337,6 @@ int Get_IOTypes(const char                     *address,
   struct msg_struct *msg;
   struct io_struct  *ioPtr;
   xmlDocPtr          doc;
-  xmlNsPtr           ns;
   xmlNodePtr         cur;
   char              *ioTypes;
   int                i;
@@ -375,9 +374,6 @@ int Get_IOTypes(const char                     *address,
     return REG_FAILURE;
   }
 
-  ns = xmlSearchNsByHref(doc, cur,
-            (const xmlChar *) "http://www.realitygrid.org/xml/steering");
-
   if(xmlStrcmp(cur->name, (const xmlChar *) "ioTypeDefinitions")) {
     fprintf(stderr, "ERROR: Get_IOTypes: ioTypeDefinitions not the root element\n");
     xmlFreeDoc(doc);
@@ -391,7 +387,7 @@ int Get_IOTypes(const char                     *address,
 
   msg = New_msg_struct();
   msg->io_def = New_io_def_struct();
-  parseIOTypeDef(doc, ns, cur, msg->io_def);
+  parseIOTypeDef(doc, cur, msg->io_def);
 
   if(!(ioPtr = msg->io_def->first_io)) {
     fprintf(stderr, "ERROR: Get_IOTypes: Got no IOType definitions from %s\n",
