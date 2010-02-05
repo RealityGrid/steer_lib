@@ -119,8 +119,10 @@ include_directories("${PROJECT_BINARY_DIR}")
 #
 option(REG_LOG_STEERING "Whether or not to log steering commands. Default is ON." ON)
 set(REG_SCRATCH_DEFAULT "./" CACHE PATH "Directory for library to use as general scratch space. Default is the current directory (./).")
+option(REG_VALIDATE_XML "Should the library validate every XML message it receives? Default is OFF" OFF)
 mark_as_advanced(REG_LOG_STEERING)
 mark_as_advanced(REG_SCRATCH_DEFAULT)
+mark_as_advanced(REG_VALIDATE_XML)
 
 #
 # library debug options

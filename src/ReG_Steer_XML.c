@@ -66,6 +66,12 @@ extern struct msg_store_struct *Msg_store_tail;
 /** Declared in ReG_Steer_Appside.c */
 extern struct msg_uid_history_struct Msg_uid_store;
 
+#if REG_VALIDATE_XML
+/* The schema to validate against, compiled into the library */
+extern unsigned int reg_steer_comm_xsd_len;
+extern unsigned char reg_steer_comm_xsd[];
+#endif
+
 /*-----------------------------------------------------------------*/
 
 int Parse_xml_file(char* filename, struct msg_struct *msg,
@@ -118,7 +124,9 @@ int Parse_xml_buf(char* buf, int size, struct msg_struct *msg,
 int Parse_xml(xmlDocPtr doc, struct msg_struct *msg,
 	      Sim_entry_type *sim)
 {
+#if REG_VALIDATE_XML
   xmlNsPtr   ns;
+#endif
   xmlNodePtr cur;
 #ifdef REG_DEBUG_FULL
   struct msg_store_struct *cur_msg;
@@ -132,6 +140,13 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg,
       return REG_FAILURE;
   }
 
+#if REG_VALIDATE_XML
+  if(Validate_xml(doc) != REG_SUCCESS) {
+      xmlFreeDoc(doc);
+      xmlCleanupParser();
+      return REG_FAILURE;
+  }
+
   ns = xmlSearchNsByHref(doc, cur, (const xmlChar *) REG_STEER_NAMESPACE);
   if(ns == NULL) {
     fprintf(stderr, "STEER: Parse_xml: document of the wrong type.\n       "
@@ -140,6 +155,7 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg,
     xmlCleanupParser();
     return REG_FAILURE;
   }
+#endif
 
   if (!xmlStrcmp(cur->name, (const xmlChar *) "ReG_steer_message")) {
 #ifdef REG_DEBUG_FULL
@@ -195,6 +211,34 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg,
 
   return REG_SUCCESS;
 }
+
+#if REG_VALIDATE_XML
+int Validate_xml(xmlDocPtr doc) {
+  xmlSchemaParserCtxtPtr schema_ctxt;
+  xmlSchemaValidCtxtPtr schema_valid;
+  xmlSchemaPtr schema;
+  int result = REG_SUCCESS;
+
+  /* Have to reload the schema each time. Can't simply load it
+     once then reuse it for some reason. */
+  schema_ctxt = xmlSchemaNewMemParserCtxt(reg_steer_comm_xsd,
+					  reg_steer_comm_xsd_len);
+  schema = xmlSchemaParse(schema_ctxt);
+  schema_valid = xmlSchemaNewValidCtxt(schema);
+
+  if(xmlSchemaValidateDoc(schema_valid, doc) != 0) {
+    fprintf(stderr, "STEER: Validate_xml: message could not be validated "
+	    "against its schema.");
+    result = REG_FAILURE;
+  }
+
+  xmlSchemaFreeValidCtxt(schema_valid);
+  xmlSchemaFree(schema);
+  xmlSchemaFreeParserCtxt(schema_ctxt);
+
+  return result;
+}
+#endif
 
 /*-----------------------------------------------------------------*/
 /** Parse the supplied resource property document and pull out the

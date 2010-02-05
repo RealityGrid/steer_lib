@@ -70,6 +70,13 @@
 
 #cmakedefine REG_NEED_MALLOC_H
 
+/* features to code for */
+
+#cmakedefine01 REG_HAS_MSG_NOSIGNAL
+#cmakedefine01 REG_HAS_MSG_DONTWAIT
+#cmakedefine01 REG_HAS_MSG_WAITALL
+#cmakedefine01 REG_VALIDATE_XML
+
 /* standard system headers */
 
 #include <stdio.h>
@@ -109,12 +116,9 @@
 #include <libxml/xmlmemory.h>
 #include <libxml/parser.h>
 
-/* features to code for */
-
-#cmakedefine01 REG_HAS_MSG_NOSIGNAL
-#cmakedefine01 REG_HAS_MSG_DONTWAIT
-#cmakedefine01 REG_HAS_MSG_WAITALL
-
+#if REG_VALIDATE_XML
+#include <libxml/xmlschemas.h>
+#endif
 
 /* some extra defines for windows */
 

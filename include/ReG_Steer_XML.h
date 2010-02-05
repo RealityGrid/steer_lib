@@ -331,6 +331,13 @@ int Parse_xml(xmlDocPtr          doc,
 	      struct msg_struct *msg,
 	      Sim_entry_type    *sim);
 
+#if REG_VALIDATE_XML
+/** @internal
+    Validate the DOM document against the reg_steer_comm schema
+    @param doc The DOM document to parse */
+int Validate_xml(xmlDocPtr doc);
+#endif
+
 /** @internal
     Parse a steering message (ReG_steer_message)
     @param doc The DOM document to parse
