@@ -594,4 +594,27 @@ char *trimWhiteSpace(char *pChar);
 */
 int Delete_iotype_list(struct reg_iotype_list *list);
 
+/** @internal
+    @param dir The directory to search
+    @param num_tags Number of tags to search for
+    @param tags Elements of the filenames that we are searching for
+    @param num_files Number of filenames being returned
+    @param filenames Array of char* holding names of files found
+
+    Searches for files in directory @p dir matching the tags specified.
+    If any are found, @p filenames is malloc'd to point to an array of
+    char* and each entry in this array is malloc'd and set to the
+    relevant filename. These ptrs MUST be free'd. @p num_files can be
+    zero even if the routine returns REG_SUCCESS. */
+int Get_file_list(const char* dir, int num_tags, char** tags,
+		  int* num_files, char*** filenames);
+
+/** @internal
+    @param str1 The first string to be compared
+    @param str2 The second string to be compared
+
+    A string comparison function for use with qsort
+    to sort the filenames returned by Get_file_list */
+int cmpstrs(const void* str1, const void* str2);
+
 #endif

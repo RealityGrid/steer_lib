@@ -53,6 +53,7 @@
 
 #include "ReG_Steer_Config.h"
 #include "ReG_Steer_types.h"
+#include "ReG_Steer_Common.h"
 #include "ReG_Steer_Steering_Transport_API.h"
 #include "ReG_Steer_Steering_Transport_WSRF.h"
 #include "ReG_Steer_Appside_internal.h"

@@ -507,7 +507,6 @@ int connect_connector_samples(const int index) {
   struct sockaddr_in theirAddr;
   int  connector     = socket_info_table.socket_info[index].connector_handle;
   int  return_status = REG_SUCCESS;
-  char tmpBuf[REG_MAX_STRING_LENGTH];
 
   /* get a remote address if we need to */
   if(socket_info_table.socket_info[index].connector_port == 0) {

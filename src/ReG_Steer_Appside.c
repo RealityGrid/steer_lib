@@ -174,7 +174,7 @@ int Steering_initialize(const char* AppName,
 			int*  SupportedCmds)
 {
   int   i;
-  char *pchar, *ip_addr;
+  char *pchar;
 
   /* Actually defined in ReG_Steer_Common.c because both steerer
      and steered have a variable of this name */
