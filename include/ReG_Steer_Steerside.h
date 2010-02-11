@@ -134,7 +134,7 @@ extern PREFIX char* Get_steering_transport_string(void);
    variable.  If all of these attempts fail then the routine returns
    REG_FAILURE.
 */
-extern PREFIX int Sim_attach(char *SimID,
+extern PREFIX int Sim_attach(const char *SimID,
 			     int  *SimHandle);
 
 /**

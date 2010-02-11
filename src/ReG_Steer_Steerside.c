@@ -205,7 +205,7 @@ int Steerer_finalize()
 
 /*----------------------------------------------------------------*/
 
-int Sim_attach(char *SimID,
+int Sim_attach(const char *SimID,
 	       int  *SimHandle)
 {
   struct reg_security_info sec;

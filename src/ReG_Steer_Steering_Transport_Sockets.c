@@ -78,7 +78,7 @@ extern Chk_log_type Param_log;
 
 /*----------------- Appside methods ---------------------*/
 
-int Initialize_steering_connection_impl(int  NumSupportedCmds,
+int Initialize_steering_connection_impl(const int  NumSupportedCmds,
 					int* SupportedCmds) {
 
   strncpy(Steer_lib_config.Steering_transport_string, "Sockets", 8);

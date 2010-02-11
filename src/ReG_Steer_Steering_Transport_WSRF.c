@@ -120,7 +120,7 @@ char *STATUS_MSG_RP     = "sws:statusMsg";
 
 /*----------------- Appside methods ---------------------*/
 
-int Initialize_steering_connection_impl(int  NumSupportedCmds,
+int Initialize_steering_connection_impl(const int  NumSupportedCmds,
 					int* SupportedCmds) {
   char* pchar;
   char* ip_addr;

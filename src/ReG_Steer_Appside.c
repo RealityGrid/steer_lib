@@ -169,9 +169,9 @@ void Steering_enable(const int EnableSteer)
 
 /*----------------------------------------------------------------*/
 
-int Steering_initialize(char *AppName,
-			int   NumSupportedCmds,
-			int  *SupportedCmds)
+int Steering_initialize(const char* AppName,
+			const int   NumSupportedCmds,
+			int*  SupportedCmds)
 {
   int   i;
   char *pchar, *ip_addr;
@@ -639,11 +639,11 @@ int Steering_finalize()
 
 /*----------------------------------------------------------------*/
 
-int Register_IOTypes(int    NumTypes,
-                     char* *IOLabel,
-		     int   *direction,
-		     int   *IOFrequency,
-                     int   *IOType)
+int Register_IOTypes(const int NumTypes,
+                     char** IOLabel,
+		     int*   direction,
+		     int*   IOFrequency,
+                     int*   IOType)
 {
   int          i;
   int          return_status = REG_SUCCESS;
@@ -676,10 +676,10 @@ int Register_IOTypes(int    NumTypes,
 
 /*----------------------------------------------------------------*/
 
-int Register_IOType(char* IOLabel,
-		    int   direction,
-		    int   IOFrequency,
-                    int   *IOType)
+int Register_IOType(const char* IOLabel,
+		    const int   direction,
+		    const int   IOFrequency,
+                    int*  IOType)
 {
   int          current;
   int          iparam;
@@ -1018,10 +1018,10 @@ int Called_from_f90(int flag) {
 /*----------------------------------------------------------------*/
 
 int Register_ChkTypes(int    NumTypes,
-		      char* *ChkLabel,
-		      int   *direction,
-		      int   *ChkFrequency,
-		      int   *ChkType)
+		      char** ChkLabel,
+		      int*   direction,
+		      int*   ChkFrequency,
+		      int*   ChkType)
 {
   int 	       i;
   int          return_status = REG_SUCCESS;
@@ -1053,10 +1053,10 @@ int Register_ChkTypes(int    NumTypes,
 
 /*----------------------------------------------------------------*/
 
-int Register_ChkType(char* ChkLabel,
-		     int   direction,
-		     int   ChkFrequency,
-		     int   *ChkType)
+int Register_ChkType(const char* ChkLabel,
+		     int         direction,
+		     int         ChkFrequency,
+		     int*        ChkType)
 {
   int current;
   int iparam;
@@ -2002,12 +2002,12 @@ int Emit_data_slice(int		      IOTypeIndex,
 
 /*----------------------------------------------------------------*/
 
-int Register_param(char* ParamLabel,
-                   int   ParamSteerable,
-                   void *ParamPtr,
-                   int   ParamType,
-                   char* ParamMinimum,
-                   char* ParamMaximum)
+int Register_param(const char* ParamLabel,
+                   const int   ParamSteerable,
+                   void*       ParamPtr,
+                   const int   ParamType,
+                   const char* ParamMinimum,
+                   const char* ParamMaximum)
 {
   int    current;
   int    dum_int;
@@ -2185,13 +2185,13 @@ int Register_param(char* ParamLabel,
 
 /*----------------------------------------------------------------*/
 
-int Register_params(int    NumParams,
-		    char* *ParamLabels,
-		    int   *ParamSteerable,
-		    void **ParamPtrs,
-		    int   *ParamTypes,
-		    char* *ParamMinima,
-		    char* *ParamMaxima)
+int Register_params(const int NumParams,
+		    char** ParamLabels,
+		    int*   ParamSteerable,
+		    void** ParamPtrs,
+		    int*   ParamTypes,
+		    char** ParamMinima,
+		    char** ParamMaxima)
 {
   int    i;
 
@@ -2216,8 +2216,8 @@ int Register_params(int    NumParams,
  * We currently mandate that a REG_BIN variable is for monitoring
  * only.
  */
-int Register_bin_param(char *ParamLabel, void *ParamPtr,
-		       int ParamType, int NumObjects)
+int Register_bin_param(const char* ParamLabel, void* ParamPtr,
+		       const int ParamType, const int NumObjects)
 {
   char len_buf[16];
   int  size;
@@ -2278,7 +2278,7 @@ int Enable_all_param_logging(int toggle)
 /*----------------------------------------------------------------
    Enable logging of values of the parameter identified by the
    provided label. Logging is on by default. */
-int Enable_param_logging(char *ParamLabel)
+int Enable_param_logging(const char* ParamLabel)
 {
   return Toggle_param_logging(ParamLabel, REG_TRUE);
 }
@@ -2286,7 +2286,7 @@ int Enable_param_logging(char *ParamLabel)
 /*----------------------------------------------------------------
    Disable logging of values of the parameter identified by the
    provided label. Logging is on by default. */
-int Disable_param_logging(char *ParamLabel)
+int Disable_param_logging(const char* ParamLabel)
 {
   return Toggle_param_logging(ParamLabel, REG_FALSE);
 }
@@ -2295,7 +2295,7 @@ int Disable_param_logging(char *ParamLabel)
    Toggle whether (toggle=REG_TRUE) or not (toggle=REG_FALSE) to log
    values of the parameter identified by the provided label. Logging
    is on by default. */
-int Toggle_param_logging(char *ParamLabel,
+int Toggle_param_logging(const char* ParamLabel,
 			 int   toggle)
 {
   int i, j, len1, len2;
@@ -4517,7 +4517,7 @@ struct msg_struct *Get_control_msg()
 
 /*-------------------------------------------------------------------*/
 
-int Initialize_steering_connection(int  NumSupportedCmds,
+int Initialize_steering_connection(const int  NumSupportedCmds,
 				   int *SupportedCmds)
 {
   char *pchar;

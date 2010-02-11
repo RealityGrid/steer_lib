@@ -89,8 +89,8 @@ struct msg_struct *Get_control_msg_impl();
     @param SupportedCmds Array containing the supported commands
 
     Set-up and advertise application as steerable */
-int Initialize_steering_connection_impl(int  NumSupportedCmds,
-					int *SupportedCmds);
+int Initialize_steering_connection_impl(const int  NumSupportedCmds,
+					int* SupportedCmds);
 
 /** @internal Take down any connection to a steering client */
 int Finalize_steering_connection_impl();

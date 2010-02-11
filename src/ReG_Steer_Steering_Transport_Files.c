@@ -213,7 +213,7 @@ struct msg_struct *Get_control_msg_impl() {
 
 /*-------------------------------------------------------*/
 
-int Initialize_steering_connection_impl(int  NumSupportedCmds,
+int Initialize_steering_connection_impl(const int  NumSupportedCmds,
 					int *SupportedCmds) {
   FILE *fp;
   char  buf[REG_MAX_MSG_SIZE];

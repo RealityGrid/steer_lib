@@ -245,7 +245,7 @@ struct msg_struct *Get_control_msg();
     @param SupportedCmds Array holding the commands we support
 
     Set-up stuff to receive connection from steering client */
-int Initialize_steering_connection(int  NumSupportedCmds,
+int Initialize_steering_connection(const int  NumSupportedCmds,
 				   int *SupportedCmds);
 
 /** @internal
@@ -413,7 +413,7 @@ int Realloc_IOdef_entry_buffer(IOdef_entry *iodef,
 
     Toggle whether or not to log values of the parameter identified by
     the provided label. Logging is on by default. */
-int Toggle_param_logging(char *ParamLabel,
+int Toggle_param_logging(const char* ParamLabel,
 			 int   toggle);
 
 /** @internal

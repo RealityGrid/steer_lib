@@ -1744,7 +1744,7 @@ void Print_chk_log_entry_struct(struct chk_log_entry_struct *entry)
 
 /*-----------------------------------------------------------------*/
 
-int String_contains_xml_chars(char *string)
+int String_contains_xml_chars(const char *string)
 {
   if(strchr(string, '<')){
 

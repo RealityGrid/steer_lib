@@ -603,7 +603,7 @@ void 		   Print_chk_log_entry_struct(struct chk_log_entry_struct *entry);
     Test to see whether string contains XML chars.
     @param string The string to test (NULL terminated)
     @return REG_TRUE if it does and REG_FALSE if it doesn't */
-int  String_contains_xml_chars(char *string);
+int  String_contains_xml_chars(const char *string);
 
 /** @internal
     Enumeration of the various possible states of our SAX parser

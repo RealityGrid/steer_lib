@@ -90,9 +90,9 @@ extern PREFIX void Steering_enable(const int EnableSteer);
    supported commands the application supports (e.g. REG_STR_STOP).
    @return REG_SUCCESS or REG_FAILURE
  */
-extern PREFIX int Steering_initialize(char *AppName,
-				      int   NumSupportedCmds,
-				      int  *SupportedCmds);
+extern PREFIX int Steering_initialize(const char* AppName,
+				      const int   NumSupportedCmds,
+				      int*        SupportedCmds);
 
 /**
  */
@@ -133,11 +133,11 @@ extern PREFIX char* Get_samples_transport_string(void);
    @return REG_SUCCESS, REG_FAILURE
    @see Register_IOType()
 */
-extern PREFIX int Register_IOTypes(int    NumTypes,
-				   char* *IOLabel,
-				   int   *direction,
-				   int   *IOFrequency,
-				   int   *IOType);
+extern PREFIX int Register_IOTypes(const int NumTypes,
+				   char**    IOLabel,
+				   int*      direction,
+				   int*      IOFrequency,
+				   int*      IOType);
 
 /**
    Register a single IOType. Behaves exactly as Register_IOTypes() but
@@ -151,10 +151,10 @@ extern PREFIX int Register_IOTypes(int    NumTypes,
    @return REG_SUCCESS, REG_FAILURE
    @see Register_IOTypes()
  */
-extern PREFIX int Register_IOType(char* IOLabel,
-				  int   direction,
-				  int   IOFrequency,
-				  int   *IOType);
+extern PREFIX int Register_IOType(const char* IOLabel,
+				  const int   direction,
+				  const int   IOFrequency,
+				  int*        IOType);
 
 /**
    Toggle whether (@p toggle = @c REG_TRUE) or not (@p toggle = @c
@@ -233,21 +233,21 @@ extern PREFIX int Disable_IOType_acks(int IOType);
    passed to it are appended to the internal list of any ChkTypes
    registered in previous calls.
  */
-extern PREFIX int Register_ChkTypes(int    NumTypes,
-				    char* *ChkLabel,
-				    int   *direction,
-				    int   *ChkFrequency,
-				    int   *ChkType);
+extern PREFIX int Register_ChkTypes(const int    NumTypes,
+				    char**       ChkLabel,
+				    int*         direction,
+				    int*         ChkFrequency,
+				    int*         ChkType);
 
 /**
    Identical in operation to Register_ChkTypes() with the obvious
    exception that they only register one ChkType at a time and
    therefore do not require arrays of variables as arguments.
 */
-extern PREFIX int Register_ChkType(char* ChkLabel,
-				   int   direction,
-				   int   ChkFrequency,
-				   int   *ChkType);
+extern PREFIX int Register_ChkType(const char* ChkLabel,
+				   const int   direction,
+				   const int   ChkFrequency,
+				   int*        ChkType);
 
 
 /**
@@ -280,7 +280,7 @@ extern PREFIX int Record_Chkpt(int   ChkType,
    for the creation of the next checkpoint.
 */
 extern PREFIX int Add_checkpoint_file(int   ChkType,
-				      char *filename);
+				      char* filename);
 
 /**
    @param ChkType The type of checkpoint that is being recorder (as
@@ -374,42 +374,42 @@ extern PREFIX int Record_checkpoint_set(int   ChkType,
     form of the parameter registration routine, Register_param().
     @see Register_param
 */
-extern PREFIX int Register_params(int    NumParams,
-				  char* *ParamLabels,
-				  int   *ParamSteerable,
-				  void **ParamPtrs,
-				  int   *ParamTypes,
-				  char* *ParamMinima,
-				  char* *ParamMaxima);
+extern PREFIX int Register_params(const int NumParams,
+				  char**    ParamLabels,
+				  int*      ParamSteerable,
+				  void**    ParamPtrs,
+				  int*      ParamTypes,
+				  char**    ParamMinima,
+				  char**    ParamMaxima);
 
 /**
    Singular form of Register_params(). Removes the need for
    arrays of parameter labels @e etc.
    @see Register_params */
-extern PREFIX int Register_param(char* ParamLabel,
-                                 int   ParamSteerable,
-                                 void *ParamPtr,
-                                 int   ParamType,
-                                 char* ParamMinimum,
-                                 char* ParamMaximum);
+extern PREFIX int Register_param(const char* ParamLabel,
+                                 const int   ParamSteerable,
+                                 void*       ParamPtr,
+                                 const int   ParamType,
+                                 const char* ParamMinimum,
+                                 const char* ParamMaximum);
 
 /**
    A wrapper for Register_param for variables of type
    REG_BIN.  Calculates number of bytes that ParamPtr
    points at.  Mandates that REG_BIN variables are
    monitored only. */
-extern PREFIX int Register_bin_param(char *ParamLabel,
-				     void *ParamPtr,
-				     int ParamType,
-				     int NumObjects);
+extern PREFIX int Register_bin_param(const char* ParamLabel,
+				     void*       ParamPtr,
+				     const int   ParamType,
+				     const int   NumObjects);
 
 /**
    Un-register the parameters identified by the given labels.
    NOT CURRENTLY IMPLEMENTED.
    @param NumParams Number of parameters to unregister
    @param ParamLabels Array of parameter labels */
-extern PREFIX int Unregister_params(int    NumParams,
-				    char* *ParamLabels);
+extern PREFIX int Unregister_params(const int    NumParams,
+				    char**       ParamLabels);
 /**
    Toggle whether (@p toggle = @c REG_TRUE) or not
    (@p toggle = @c REG_FALSE) to
@@ -437,7 +437,7 @@ extern PREFIX int Enable_all_param_logging(int toggle);
    type @c REG_BIN.
    @param ParamLabel The label of the parameter for which to enable logging
    @see Disable_param_logging() */
-extern PREFIX int Enable_param_logging(char *ParamLabel);
+extern PREFIX int Enable_param_logging(const char* ParamLabel);
 
 /**
    Disable logging of values of a parameter.
@@ -445,7 +445,7 @@ extern PREFIX int Enable_param_logging(char *ParamLabel);
    type @c REG_BIN.
    @param ParamLabel The label of the parameter for which to disable logging
    @see Enable_param_logging() */
-extern PREFIX int Disable_param_logging(char *ParamLabel);
+extern PREFIX int Disable_param_logging(const char* ParamLabel);
 
 /**
    @param SeqNum An indication of the calling application's progress
