@@ -1129,7 +1129,7 @@ int Sim_attach_impl(int index, char* SimID) {
   }
 
   /* That worked OK so store address of SWS */
-  sprintf(SGS_info->address, SimID);
+  sprintf(SGS_info->address, "%s", SimID);
 
   for(i=0; i<response.ReG_USCOREsteer_USCOREmessage.Supported_USCOREcommands.__size; i++) {
     sim->Cmds_table.cmd[sim->Cmds_table.num_registered].cmd_id =
@@ -1627,7 +1627,7 @@ int create_WSRF_header(struct soap *aSoap,
     return REG_FAILURE;
   }
   snprintf(aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Username,
-	   128, username);
+	   128, "%s", username);
 
   aSoap->header->wsse__Security.wsse__UsernameToken.wsu__Created =
                                        (char *)soap_malloc(aSoap, 128);
@@ -1678,7 +1678,7 @@ int create_WSRF_header(struct soap *aSoap,
 
   timePtr = Get_current_time_string(); /* Steer lib */
   snprintf(aSoap->header->wsse__Security.wsse__UsernameToken.wsu__Created,
-	   128, timePtr);
+	   128, "%s", timePtr);
   snprintf(aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.Type,
 	   128, "PasswordDigest");
 
@@ -1686,14 +1686,14 @@ int create_WSRF_header(struct soap *aSoap,
   bytesLeft = MAX_LEN;
   pBuf = buf;
   /* Nonce */
-  nbytes = snprintf(pBuf, bytesLeft,
+  nbytes = snprintf(pBuf, bytesLeft, "%s",
 		    aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Nonce);
   bytesLeft -= nbytes; pBuf += nbytes;
   /* Created */
-  nbytes = snprintf(pBuf, bytesLeft, timePtr);
+  nbytes = snprintf(pBuf, bytesLeft, "%s", timePtr);
   bytesLeft -= nbytes; pBuf += nbytes;
   /* Password */
-  nbytes = snprintf(pBuf, bytesLeft, passwd);
+  nbytes = snprintf(pBuf, bytesLeft, "%s", passwd);
   bytesLeft -= nbytes; pBuf += nbytes;
 
   SHA1((unsigned char*) buf, (MAX_LEN-bytesLeft), (unsigned char*) digest); /* openssl call */

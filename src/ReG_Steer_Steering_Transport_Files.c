@@ -343,7 +343,7 @@ int Get_data_io_address_impl(const int           dummy,
   if (pchar) {
     len = strlen(pchar);
     if (len < REG_MAX_STRING_LENGTH) {
-      sprintf(hostname, pchar);
+      sprintf(hostname, "%s", pchar);
     }
     else{
       fprintf(stderr, "STEER: Get_data_source_address_file: content of "

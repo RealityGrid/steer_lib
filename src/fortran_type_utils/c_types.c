@@ -51,13 +51,13 @@
 
 int main(void)
 {
-  printf("sizeof(short)  = %d bytes\n", sizeof(short));
-  printf("sizeof(uint)   = %d bytes\n", sizeof(unsigned int));
-  printf("sizeof(char)   = %d bytes\n", sizeof(char));
-  printf("sizeof(int)    = %d bytes\n", sizeof(int));
-  printf("sizeof(long)   = %d bytes\n", sizeof(long));
-  printf("sizeof(float)  = %d bytes\n", sizeof(float));
-  printf("sizeof(double) = %d bytes\n", sizeof(double));
+  printf("sizeof(short)  = %ld bytes\n", sizeof(short));
+  printf("sizeof(uint)   = %ld bytes\n", sizeof(unsigned int));
+  printf("sizeof(char)   = %ld bytes\n", sizeof(char));
+  printf("sizeof(int)    = %ld bytes\n", sizeof(int));
+  printf("sizeof(long)   = %ld bytes\n", sizeof(long));
+  printf("sizeof(float)  = %ld bytes\n", sizeof(float));
+  printf("sizeof(double) = %ld bytes\n", sizeof(double));
 
   return 0;
 }

@@ -265,7 +265,7 @@ int Get_data_io_address_impl(const int           dummy,
   if(pchar) {
     len = strlen(pchar);
     if(len < REG_MAX_STRING_LENGTH) {
-      sprintf(hostname, pchar);
+      sprintf(hostname, "%s", pchar);
     }
     else {
       fprintf(stderr, "Get_data_source_address: content of "
@@ -448,7 +448,7 @@ int Sim_attach_impl(int index, char* SimID) {
   }
   else {
     int addr_len = ((int) (colon - pchar)) + 1;
-    snprintf((char*) hostname, addr_len, pchar);
+    snprintf((char*) hostname, addr_len, "%s", pchar);
     hostport = atoi(&colon[1]);
 
 #ifdef REG_DEBUG
@@ -461,7 +461,7 @@ int Sim_attach_impl(int index, char* SimID) {
 
   if(return_status == REG_SUCCESS) {
     socket_info->connector_port = hostport;
-    sprintf(socket_info->connector_hostname, (char*) hostname);
+    sprintf(socket_info->connector_hostname, "%s", (char*) hostname);
     if(create_steering_connector(socket_info) != REG_SUCCESS) {
 #ifdef REG_DEBUG
       fprintf(stderr, "Sim_attach: Could not connect to application\n");
