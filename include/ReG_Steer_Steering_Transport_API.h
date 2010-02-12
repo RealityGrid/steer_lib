@@ -111,6 +111,16 @@ int Get_data_io_address_impl(const int index,
 			     char* hostname, 
 			     unsigned short int* port,
 			     char* label);
+/** @internal
+    @param ChkType The type of checkpoint that is being recorder (as
+    returned by Register_ChkTypes()).
+    @param ChkTag Specifies a unique string identifying this checkpoint instance
+    @param Path Specifies the location of the files making up the
+    checkpoint set, relative to the current working directory
+    @return REG_SUCCESS, REG_FAILURE */
+int Record_checkpoint_set_impl(int   ChkType,
+			       char *ChkTag,
+			       char *Path);
 
 /*-------- Steerside function prototypes --------*/
 

@@ -60,8 +60,8 @@
 #include "ReG_Steer_XML.h"
 #include "soapH.h"
 
-/** Global scratch buffer - declared in ReG_Steer_Appside.c */
-extern char Global_scratch_buffer[];
+/** Basic library config - declared in ReG_Steer_Common */
+extern Steer_lib_config_type Steer_lib_config;
 
 /*-----------------------------------------------------------------*/
 
@@ -245,7 +245,7 @@ char *Create_steering_service(const struct reg_job_details* job,
     /* 49 = 12 + 37 = strlen("<![CDATA[]]>") + 
                              2*strlen("<inputFileContent>") + 1 */
     if((strlen(contents) + 49) < REG_SCRATCH_BUFFER_SIZE) {
-      pchar = Global_scratch_buffer;
+      pchar = Steer_lib_config.scratch_buffer;
       /* Protect the file content from any XML parsing by wrapping
 	 in CDATA tags */
       pchar += sprintf(pchar, "<inputFileContent><![CDATA[");
@@ -265,10 +265,10 @@ char *Create_steering_service(const struct reg_job_details* job,
 #ifdef REG_DEBUG_FULL
     fprintf(stderr,
 	    "\nCreate_SWS: Calling SetResourceProperties with >>%s<<\n",
-	    Global_scratch_buffer);
+	    Steer_lib_config.scratch_buffer);
 #endif
     if(soap_call_wsrp__SetResourceProperties(&soap, epr, "", 
-					     Global_scratch_buffer,
+					     Steer_lib_config.scratch_buffer,
 					     &setRPresponse) != SOAP_OK) {
       soap_print_fault(&soap, stderr);
       return NULL;

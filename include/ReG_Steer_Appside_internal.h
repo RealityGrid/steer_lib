@@ -90,9 +90,6 @@ typedef struct {
       often we perform steering activity while steerer is connected */
   int                   steer_interval;
 
-  /** Where to write files for file-based steering */
-  char			file_root[REG_MAX_STRING_LENGTH];
-
   /** String to hold 'supported commands' message 'cos we can't 
       actually send it until a steerer has connected in the case
       where we're using SOAP */

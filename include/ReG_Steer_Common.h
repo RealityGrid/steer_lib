@@ -69,6 +69,23 @@
   #define PREFIX 
 #endif
 
+/** @internal Basic library configuration */
+typedef struct {
+  /** Markers to test for the implementation of transport code */
+  char Samples_transport_string[REG_MAX_STRING_LENGTH];
+  char Steering_transport_string[REG_MAX_STRING_LENGTH];
+
+  /** Absolute path of directory we are executing in */
+  char working_dir[REG_MAX_STRING_LENGTH];
+
+  /** Where to write any temporary files such as logs */
+  char scratch_dir[REG_MAX_STRING_LENGTH];
+
+  /** Buffer used for string handling etc - size set in ReG_steer_types.h */
+  char scratch_buffer[REG_SCRATCH_BUFFER_SIZE];
+
+} Steer_lib_config_type;
+
 /** @internal Used to log parameter values */
 typedef struct {
   /** Handle of logged parameter */
@@ -395,7 +412,7 @@ extern PREFIX int Directory_valid(char *directory);
     from REG_STEER_DIRECTORY env. variable.  Used even when steering
     is NOT file based (because some log files @e etc. are stored in that
     directory too). */
-extern PREFIX int Set_steering_directory();
+extern PREFIX int Get_scratch_directory();
 
 /** @internal
     @param table Pointer to table of registered parameters

@@ -58,8 +58,8 @@
 #include "ReG_Steer_Common.h"
 #include "ReG_Steer_Appside_internal.h"
 
-/* */
-extern char Samples_transport_string[];
+/** Basic library config - declared in ReG_Steer_Common */
+extern Steer_lib_config_type Steer_lib_config;
 
 /* */
 extern file_info_table_type file_info_table;
@@ -68,13 +68,10 @@ extern file_info_table_type file_info_table;
    ReG_Steer_Appside_internal.h */
 extern IOdef_table_type IOTypes_table;
 
-/** Global scratch buffer - declared in ReG_Steer_Appside.c */
-extern char Global_scratch_buffer[];
-
 /*---------------------------------------------------*/
 
 int Initialize_samples_transport() {
-  strncpy(Samples_transport_string, "Files", 6);
+  strncpy(Steer_lib_config.Samples_transport_string, "Files", 6);
 
   return file_info_table_init(IOTypes_table.max_entries);
 }
@@ -268,10 +265,10 @@ int Emit_ack_impl(const int index) {
      '_'s) as the filename.  'filename' is set in 
      Consume_start_data_check and contains an index so this ack
      is unique to the data set we've just read. */
-  sprintf(Global_scratch_buffer, "%s_ACK", 
+  sprintf(Steer_lib_config.scratch_buffer, "%s_ACK",
 	  file_info_table.file_info[index].filename);
   
-  if((fp = fopen(Global_scratch_buffer, "w"))) {
+  if((fp = fopen(Steer_lib_config.scratch_buffer, "w"))) {
     fclose(fp);
     return REG_SUCCESS;
   }
@@ -292,12 +289,12 @@ int Consume_ack_impl(const int index) {
      for next sample is generated so 'filename' contains the index
      of the last one we emitted. i.e. we look for an acknowledgement
      of a specific sample rather than just any sample. */
-  sprintf(Global_scratch_buffer, "%s_ACK", 
+  sprintf(Steer_lib_config.scratch_buffer, "%s_ACK",
 	  file_info_table.file_info[index].filename);
 
-  if((fp = fopen(Global_scratch_buffer, "r"))) {
+  if((fp = fopen(Steer_lib_config.scratch_buffer, "r"))) {
     fclose(fp);
-    remove(Global_scratch_buffer);
+    remove(Steer_lib_config.scratch_buffer);
 
     return REG_SUCCESS;
   }
@@ -308,14 +305,14 @@ int Consume_ack_impl(const int index) {
 /*---------------------------------------------------*/
 
 int Emit_header_impl(const int index) {
-  sprintf(Global_scratch_buffer, REG_PACKET_FORMAT, REG_DATA_HEADER);
-  Global_scratch_buffer[REG_PACKET_SIZE-1] = '\0';
+  sprintf(Steer_lib_config.scratch_buffer, REG_PACKET_FORMAT, REG_DATA_HEADER);
+  Steer_lib_config.scratch_buffer[REG_PACKET_SIZE-1] = '\0';
 #ifdef REG_DEBUG
-  fprintf(stderr, "STEER: Emit_header: Sending >>%s<<\n", Global_scratch_buffer);
+  fprintf(stderr, "STEER: Emit_header: Sending >>%s<<\n", Steer_lib_config.scratch_buffer);
 #endif
 
   return Emit_data_impl(index, REG_PACKET_SIZE,
-			(void*)Global_scratch_buffer);
+			(void*)Steer_lib_config.scratch_buffer);
 
 }
 

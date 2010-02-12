@@ -59,8 +59,8 @@
 #include "ReG_Steer_Appside_internal.h"
 #include "ReG_Steer_Steering_Transport_API.h"
 
-/* */
-extern char Samples_transport_string[];
+/** Basic library config - declared in ReG_Steer_Common */
+extern Steer_lib_config_type Steer_lib_config;
 
 /* */
 socket_info_table_type socket_info_table;
@@ -70,13 +70,10 @@ socket_info_table_type socket_info_table;
 extern IOdef_table_type IOTypes_table;
 extern Steerer_connection_table_type Steerer_connection;
 
-/** Global scratch buffer - declared in ReG_Steer_Appside.c */
-extern char Global_scratch_buffer[];
-
 /*--------------------- API -------------------------*/
 
 int Initialize_samples_transport() {
-  strncpy(Samples_transport_string, "Sockets", 8);
+  strncpy(Steer_lib_config.Samples_transport_string, "Sockets", 8);
 
 #if !REG_HAS_MSG_NOSIGNAL
   signal(SIGPIPE, signal_handler_sockets);

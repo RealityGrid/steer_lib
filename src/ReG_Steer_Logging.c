@@ -61,15 +61,15 @@
 #include "ReG_Steer_Logging.h"
 #include "ReG_Steer_Appside_internal.h"
 
+/** Basic library config - declared in ReG_Steer_Common */
+extern Steer_lib_config_type Steer_lib_config;
+
 /** Log of checkpoints taken - declared in ReG_Steer_Appside.c  */
 extern Chk_log_type Chk_log;
 
 /** Log of values of parameters for which logging has 
     been requested - declared in ReG_Steer_Appside.c */
 extern Chk_log_type Param_log;
-
-/** Global scratch buffer - declared in ReG_Steer_Appside.c */
-extern char Global_scratch_buffer[];
 
 extern Param_table_type Params_table;
 
@@ -684,7 +684,7 @@ int Set_log_primary_key(Chk_log_type *log)
 #endif
 
     if(2 != sscanf(old_ptr, "%d %s", &(log->primary_key_value), 
-		   Global_scratch_buffer)){
+		   Steer_lib_config.scratch_buffer)){
       log->primary_key_value = 0;
       return_status = REG_FAILURE;
     }
@@ -966,9 +966,9 @@ int Emit_log_entries(Chk_log_type *log, char *buf, int handle)
   if(!strstr(pmsg_buf, "<Log_entry>")){
 
     while(1){
-      pXmlBuf = Global_scratch_buffer;
+      pXmlBuf = Steer_lib_config.scratch_buffer;
 
-      status = Log_columns_to_xml(&pmsg_buf, Global_scratch_buffer, 
+      status = Log_columns_to_xml(&pmsg_buf, Steer_lib_config.scratch_buffer,
 				  REG_SCRATCH_BUFFER_SIZE, handle);
       if(status == REG_FAILURE){
 	return REG_FAILURE;

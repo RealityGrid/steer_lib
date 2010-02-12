@@ -61,10 +61,6 @@
 
 /*--------------------- Data structures -------------------*/
 
-/**
- */
-char Steering_transport_string[REG_MAX_STRING_LENGTH];
-
 /** 
    Main table used to record all simulations currently
    being steered */
@@ -79,6 +75,9 @@ Steerer_config_table_type Steer_config;
    This function's prototype is in ReG_Steer_Appside.c 'cos it's
    a utility that may be used by an application developer too */
 extern char** Alloc_string_array(int, int);
+
+/** Basic library config - declared in ReG_Steer_Common */
+extern Steer_lib_config_type Steer_lib_config;
 
 /*----- Routines to be used by the steering component ------*/
 
@@ -2939,7 +2938,7 @@ void Steerside_signal_handler(int aSignal)
 /*-------------------------------------------------------------------*/
 
 char* Get_steering_transport_string(void) {
-  return Steering_transport_string;
+  return Steer_lib_config.Steering_transport_string;
 }
 
 /*-------------------------------------------------------------------*/

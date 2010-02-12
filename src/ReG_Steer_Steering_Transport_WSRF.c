@@ -61,9 +61,6 @@
 #include "Base64.h"
 #include "soapH.h"
 
-/* */
-extern char Steering_transport_string[];
-
 /** @internal
    Flag holding whether or not the ssl random no. generator has
    been initialized. */
@@ -83,23 +80,23 @@ extern Chk_log_type Param_log;
 
 extern Param_table_type Params_table;
 
+/** Table for registered checkpoint types */
+extern IOdef_table_type ChkTypes_table;
+
 extern Chk_log_type Chk_log;
 
 /* Actual declaration is in ReG_Steer_Appside.c */
 extern struct msg_store_struct  Msg_store;
 extern struct msg_store_struct *Msg_store_tail;
 
-/* Absolute path of directory we are executing in */
-extern char ReG_CurrentDir[REG_MAX_STRING_LENGTH];
+/** Basic library config - declared in ReG_Steer_Common */
+extern Steer_lib_config_type Steer_lib_config;
 
 /* Hostname of machine we are executing on */
-extern char ReG_Hostname[REG_MAX_STRING_LENGTH];
+char ReG_Hostname[REG_MAX_STRING_LENGTH];
 
 /* Name (and version) of the application that has called us */
 extern char ReG_AppName[REG_MAX_STRING_LENGTH];
-
-/** @internal Global scratch buffer - declared in ReG_Steer_Appside.c */
-extern char Global_scratch_buffer[];
 
 /** Names of the SWS' ResourceProperties - MUST match those
     used in SWS.pm (as launched by container) */
@@ -126,10 +123,11 @@ char *STATUS_MSG_RP     = "sws:statusMsg";
 int Initialize_steering_connection_impl(int  NumSupportedCmds,
 					int* SupportedCmds) {
   char* pchar;
+  char* ip_addr;
   char  query_buf[REG_MAX_MSG_SIZE];
   struct wsrp__SetResourcePropertiesResponse out;
 
-  strncpy(Steering_transport_string, "WSRF", 5);
+  strncpy(Steer_lib_config.Steering_transport_string, "WSRF", 5);
 
   /* malloc memory for soap struct for this connection and then
      initialise it */
@@ -139,13 +137,6 @@ int Initialize_steering_connection_impl(int  NumSupportedCmds,
     fprintf(stderr, "STEER: Initialize_steering_connection: failed"
 	    " to malloc memory for soap struct\n");
     return REG_FAILURE;
-  }
-
-  /* Set location of steering scratch directory */
-  if(Set_steering_directory() != REG_SUCCESS) {
-    fprintf(stderr, "STEER: Initialize_steering_connection: "
-	    "failed to set steering scratch directory - checkpoint "
-	    "info. will be written to ./\n");
   }
 
   /* Get the address of the SWS for this application from an environment
@@ -221,6 +212,24 @@ int Initialize_steering_connection_impl(int  NumSupportedCmds,
     }
   }
 
+  /* Get the hostname of this machine - used to tell the outside
+     world how to contact us and where the (checkpoint) files we've
+     written live.  On many machines we may be running on a node
+     that cannot be seen by the outside world and therefore globus
+     connections for file transfer etc. will need an address of a
+     publicly-accessible node.  This can be passed to us via the
+     REG_MACHINE_NAME environment variable.
+  */
+  if((pchar = getenv("REG_MACHINE_NAME"))) {
+    strncpy(ReG_Hostname, pchar, REG_MAX_STRING_LENGTH);
+  }
+  else if(Get_fully_qualified_hostname(&pchar, &ip_addr) == REG_SUCCESS) {
+    strncpy(ReG_Hostname, pchar, REG_MAX_STRING_LENGTH);
+  }
+  else {
+    ReG_Hostname[0] = '\0';
+  }
+
   /* Create msg to send to SGS */
   Make_supp_cmds_msg(NumSupportedCmds, SupportedCmds, 
 		     Steerer_connection.supp_cmds, REG_MAX_MSG_SIZE);
@@ -254,7 +263,7 @@ int Initialize_steering_connection_impl(int  NumSupportedCmds,
      are set in Steering_initialize prior to calling us */
   snprintf(query_buf, REG_MAX_MSG_SIZE, 
 	   "<%s>%s</%s><%s>%s</%s><%s>%s</%s>", 
-	   WORKING_DIR_RP, ReG_CurrentDir, WORKING_DIR_RP,
+	   WORKING_DIR_RP, Steer_lib_config.working_dir, WORKING_DIR_RP,
 	   MACHINE_ADDRESS_RP, ReG_Hostname, MACHINE_ADDRESS_RP,
 	   APP_NAME_RP, ReG_AppName, APP_NAME_RP);
 
@@ -775,6 +784,265 @@ int Get_data_io_address_impl(const int           index,
   return REG_SUCCESS;
 }
 
+/*-------------------------------------------------------*/
+
+int Record_checkpoint_set_impl(int ChkType, char* ChkTag, char* Path) {
+  int    nfiles;
+  int    i, j, status, len;
+  int    count = 0;
+  int    nbytes, bytes_left;
+  char **filenames;
+  char  *cp_data;
+  char   node_data[REG_MAX_MSG_SIZE];
+  char  *pchar;
+  char  *pTag;
+  time_t time_now;
+  int    index;
+  struct sws__RecordCheckpointResponse response;
+
+  /* Get list of checkpoint files */
+
+  index = IOdef_index_from_handle(&ChkTypes_table, ChkType);
+  if(ChkTypes_table.io_def[index].buffer_bytes == 0){
+
+    /* Calc. length of string - 'ls -1' and slashes add 9 chars so
+       add a few more for safety.  Ask for 2*strlen(ChkTag) so that
+       we can use the end of this buffer to hold the trimmed version
+       of the tag. */
+    len = strlen(Path) + 2*strlen(ChkTag) +
+      strlen(Steer_lib_config.working_dir) + 20;
+
+    if( !(pchar = (char *)malloc(len)) ){
+
+      fprintf(stderr, "STEER: Record_checkpoint_set: malloc of %d bytes failed\n",
+	      len);
+      return REG_FAILURE;
+    }
+
+    /* Set our pointer to the 'spare' bit at the end of the buffer
+       we've just malloc'd */
+    pTag = &(pchar[len - strlen(ChkTag) - 1]);
+
+    /* Trim off leading space... */
+    len = strlen(ChkTag);
+    j = -1;
+    for(i=0; i<len; i++){
+
+      if(ChkTag[i] != ' '){
+	j = i;
+	break;
+      }
+    }
+
+    if(j == -1){
+      fprintf(stderr, "STEER: Record_checkpoint_set: ChkTag is blank\n");
+      return REG_FAILURE;
+    }
+
+    /* Copy tag until first blank space - i.e. tag must not contain any
+       spaces. */
+    for(i=j; i<len; i++){
+      if(ChkTag[i] == ' ')break;
+      pTag[count++] = ChkTag[i];
+    }
+    pTag[count] = '\0';
+
+    sprintf(pchar, "%s/%s", Steer_lib_config.working_dir, Path);
+
+    filenames = NULL;
+    status = Get_file_list(pchar, 1, &pTag, &nfiles, &filenames);
+    free(pchar);
+
+    if( (status != REG_SUCCESS) || !nfiles){
+
+      fprintf(stderr, "STEER: Record_checkpoint_set: failed to find checkpoint "
+	      "files with tag >%s<\n", ChkTag);
+      return REG_FAILURE;
+    }
+  }
+  else{
+
+    /* Temporarily store the path to the files in the node_data string
+       'cos we don't use that until later */
+    sprintf(node_data, "%s/%s/", Steer_lib_config.working_dir, Path);
+
+    /* Filenames have been added by calls to Add_checkpoint_file */
+    pchar = (char *)ChkTypes_table.io_def[index].buffer;
+
+    nfiles = 0;
+    while( (pchar = strchr(++pchar, ' ')) ){
+      nfiles++;
+    }
+    if(nfiles > 0){
+      filenames = (char **)malloc(nfiles * sizeof(char*));
+      if(!filenames){
+	fprintf(stderr, "STEER: Record_checkpoint_set: failed to malloc "
+		"filenames array\n");
+	return REG_FAILURE;
+      }
+
+      len = strlen(node_data); /* Get length of path */
+      pchar = (char *)ChkTypes_table.io_def[index].buffer;
+      for(i=0; i<nfiles; i++){
+	pTag = strchr(pchar, ' ');
+	filenames[i] = (char *)malloc((pTag - pchar) + 2 + len);
+	if(!filenames[i]){
+	  fprintf(stderr, "STEER: Record_checkpoint_set: malloc for filename "
+		  "%d failed\n", i);
+	  return REG_FAILURE;
+	}
+	strcpy(filenames[i], node_data); /* Put path at beginning of filename */
+	strncat(filenames[i], pchar, (pTag-pchar));
+	filenames[i][(pTag-pchar)+1+len] = '\0';
+	pchar = ++pTag;
+      }
+    } /* nfiles > 0 */
+
+    /* Reset contents of ChkType buffer ready for next checkpoint */
+    memset(ChkTypes_table.io_def[index].buffer, '\0',
+	   ChkTypes_table.io_def[index].buffer_max_bytes);
+    ChkTypes_table.io_def[index].buffer_bytes = 0;
+  }
+
+  /* Construct checkpoint meta-data */
+  cp_data = Steer_lib_config.scratch_buffer;
+  pchar = cp_data;
+  bytes_left = REG_SCRATCH_BUFFER_SIZE;
+  nbytes = snprintf(pchar, bytes_left, "<Checkpoint_data application=\"%s\">\n"		    
+		    "<Chk_type>%d</Chk_type>\n"
+		    "<Chk_UID>%s</Chk_UID>\n"
+		    "<Files location=\"%s\">\n",
+		    ReG_AppName, ChkType, ChkTag, ReG_Hostname);
+  pchar += nbytes;
+  bytes_left -= nbytes;
+
+  for(i=0; i<nfiles; i++){
+
+    nbytes = snprintf(pchar, bytes_left, "  <file type=\"gsiftp-URL\">"
+		      "gsiftp://%s%s</file>\n",
+		      ReG_Hostname, filenames[i]);
+
+    /* Check for truncation */
+    if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
+      fprintf(stderr, "STEER: Record_checkpoint_set: data exceeds %d chars\n",
+	      REG_SCRATCH_BUFFER_SIZE);
+      return REG_FAILURE;
+    }
+    pchar += nbytes;
+    bytes_left -= nbytes;
+    free(filenames[i]);
+  }
+  free(filenames);
+  filenames = NULL;
+
+  nbytes = snprintf(pchar, bytes_left, "</Files>\n</Checkpoint_data>\n");
+  pchar += nbytes;
+  bytes_left -= nbytes;
+
+  /* Store the values of all registered parameters at this point (so
+     long as they're not internal to the library) */
+  memset(node_data, '\0', REG_MAX_MSG_SIZE);
+  pchar = node_data;
+  bytes_left = REG_MAX_MSG_SIZE;
+  nbytes = snprintf(pchar, bytes_left, "<Checkpoint_node_data>\n");
+
+  pchar += nbytes;
+  bytes_left -= nbytes;
+
+  for(i = 0; i<Params_table.max_entries; i++){
+
+    if(Params_table.param[i].handle == REG_PARAM_HANDLE_NOTSET ||
+       Params_table.param[i].is_internal == REG_TRUE){
+
+      /* Time stamp is a special case - is internal but we do want
+	 it for checkpoint records */
+      if(Params_table.param[i].handle != REG_TIMESTAMP_HANDLE){
+	continue;
+      }
+
+      /* Get timestamp */
+      if( (int)(time_now = time(NULL)) != -1){
+	strcpy(Params_table.param[i].value, ctime(&time_now));
+	/* Remove new-line character */
+	Params_table.param[i].value[strlen(pchar)-1] = '\0';
+      }
+      else{
+	strcpy(Params_table.param[i].value, "");
+      }
+    }
+
+    /* Don't include raw binary parameters in the log */
+    if(Params_table.param[i].type == REG_BIN)continue;
+
+    /* Update value associated with pointer */
+    Get_ptr_value(&(Params_table.param[i]));
+
+    nbytes = snprintf(pchar, bytes_left,
+		      "<Param>\n"
+		      "<Handle>%d</Handle>\n"
+		      "<Label>%s</Label>\n"
+		      "<Value>%s</Value>\n</Param>\n",
+		      Params_table.param[i].handle,
+		      Params_table.param[i].label,
+		      Params_table.param[i].value);
+
+    /* Check for truncation */
+    if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
+      fprintf(stderr, "STEER: Record_checkpoint_set: node metadata "
+	      "exceeds %d chars\n", REG_MAX_MSG_SIZE);
+      return REG_FAILURE;
+    }
+
+    pchar += nbytes;
+    bytes_left -= nbytes;
+  }
+
+  nbytes = snprintf(pchar, bytes_left, "</Checkpoint_node_data>\n");
+  if((nbytes >= (bytes_left-1)) || (nbytes < 1)){
+    fprintf(stderr, "STEER: Record_checkpoint_set: node metadata "
+	    "exceeds %d chars\n", REG_MAX_MSG_SIZE);
+    return REG_FAILURE;
+  }
+
+#ifdef REG_DEBUG_FULL
+  fprintf(stderr, "STEER: Record_checkpoint_set: node meta data >>%s<<\n",
+	  node_data);
+  fprintf(stderr, "STEER: Record_checkpoint_set: cp_data >>%s<<\n",
+	  cp_data);
+#endif
+
+  /* Record checkpoint */
+
+  create_WSRF_header(appside_SGS_info.soap,
+                     appside_SGS_info.address,
+		     appside_SGS_info.username,
+		     appside_SGS_info.passwd);
+
+  response._RecordCheckpointReturn = NULL;
+  if(soap_call_sws__RecordCheckpoint(appside_SGS_info.soap,
+				      appside_SGS_info.address,
+				      "", cp_data, node_data,
+				      &response)){
+    fprintf(stderr, "STEER: Record_checkpoint_set_wsrf: soap call failed:\n");
+    soap_print_fault(appside_SGS_info.soap, stderr);
+    return REG_FAILURE;
+  }
+
+#ifdef REG_DEBUG
+  if(response._RecordCheckpointReturn){
+    fprintf(stderr, "STEER: Record_checkpoint_set_wsrf: "
+	    "RecordCheckpoint returned: >>%s<<\n",
+	    response._RecordCheckpointReturn);
+  }
+  else{
+    fprintf(stderr, "STEER: Record_checkpoint_set_wsrf: RecordCheckpoint "
+	    "returned null\n");
+  }
+#endif
+
+  return REG_SUCCESS;
+}
+
 /*---------------- Steerside methods --------------------*/
 
 extern Sim_table_type Sim_table;
@@ -782,7 +1050,7 @@ extern Steerer_config_table_type Steer_config;
 SGS_info_table_type steerer_SGS_info_table;
 
 int Initialize_steerside_transport() {
-  strncpy(Steering_transport_string, "WSRF", 5);
+  strncpy(Steer_lib_config.Steering_transport_string, "WSRF", 5);
   
   if(init_ssl_random_seq() == REG_SUCCESS){
     Steer_config.ossl_rand_available = REG_TRUE;
