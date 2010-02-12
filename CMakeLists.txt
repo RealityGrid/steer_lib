@@ -1,7 +1,7 @@
 #
 #  The RealityGrid Steering Library
 #
-#  Copyright (c) 2002-2009, University of Manchester, United Kingdom.
+#  Copyright (c) 2002-2010, University of Manchester, United Kingdom.
 #  All rights reserved.
 #
 #  This software is produced by Research Computing Services, University
@@ -146,6 +146,12 @@ if(REG_BUILD_FORTRAN_WRAPPERS)
   enable_language(Fortran)
   find_package(M4 REQUIRED)
   include(fortran-c-abi/Fortran-C-ABI)
+
+  # if Fortran is available we can build the MPI example
+  find_package(MPI)
+  if(MPI_FOUND)
+    option(REG_BUILD_MPI_EXAMPLE "Build Fortran MPI example application." ON)
+  endif(MPI_FOUND)
 endif(REG_BUILD_FORTRAN_WRAPPERS)
 
 #

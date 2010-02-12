@@ -1,7 +1,7 @@
 #
 #  The RealityGrid Steering Library
 #
-#  Copyright (c) 2002-2009, University of Manchester, United Kingdom.
+#  Copyright (c) 2002-2010, University of Manchester, United Kingdom.
 #  All rights reserved.
 #
 #  This software is produced by Research Computing Services, University
@@ -73,7 +73,7 @@ if(REG_BUILD_FORTRAN_WRAPPERS)
   if(DEFINED FC_NAME_MANGLE)
     configure_file(
       "${CMAKE_CURRENT_SOURCE_DIR}/ReG_Steer_f_macros.m4.in"
-      "ReG_Steer_f_macros.m4"
+      "${PROJECT_BINARY_DIR}/ReG_Steer_f_macros.m4"
       @ONLY
     )
   endif(DEFINED FC_NAME_MANGLE)
