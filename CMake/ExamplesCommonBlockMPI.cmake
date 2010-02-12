@@ -1,7 +1,7 @@
 #
 #  The RealityGrid Steering Library
 #
-#  Copyright (c) 2002-2009, University of Manchester, United Kingdom.
+#  Copyright (c) 2002-2010, University of Manchester, United Kingdom.
 #  All rights reserved.
 #
 #  This software is produced by Research Computing Services, University
@@ -69,7 +69,6 @@ endif(NOT REG_BUILD_SHARED_LIBS)
 
 target_link_libraries(
   ${EX_APP_NAME}
-  ${MPI_LIBRARY}
   ${MPI_EXTRA_LIBRARY}
   ${EXAMPLES_LINK_LINE}
   ${REG_EXTERNAL_LIBS}
