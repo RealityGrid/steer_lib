@@ -186,9 +186,15 @@ public class HybridSwitch {
 
   public static void main(String args[]) {
     try {
-      new HybridSwitch(Integer.parseInt(args[0]));
-    } catch (Exception ex) {
-      System.out.println("Syntax: HybridSwitch [portnum]");
+      int port = Integer.parseInt(args[0]);
+      System.out.println("Starting proxy. Listening on port " + port + ".");
+      new HybridSwitch(port);
+    } catch(NumberFormatException nex) {
+      System.err.println("The port number should be a valid integer.");
+      System.exit(1);
+    } catch(Exception ex) {
+      System.err.println("Syntax: HybridSwitch [portnum]");
+      System.exit(1);
     }
   }
 }
