@@ -77,8 +77,8 @@ public class HybridThread extends Thread {
 
       // The ID of this connection
       this_id = new String(buffer);
-      System.out.println("New connection --[" + this_id + "]");
       this_id = this_id.trim();
+      System.out.println("New connection [" + this_id + "]");
 
       int max = idx;
       idx = 0;
@@ -98,8 +98,8 @@ public class HybridThread extends Thread {
       // The ID of the data source it's subscribing to (or "NO_DATA"
       // if we're output only)
       src_id = new String(buffer);
-      System.out.println("subscribing to --[" + src_id + "]");
       src_id = src_id.trim();
+      System.out.println("subscribing to [" + src_id + "]");
 
       sw.register_thread(src_id, this);
 
