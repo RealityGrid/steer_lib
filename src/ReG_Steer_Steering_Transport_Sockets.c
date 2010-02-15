@@ -410,7 +410,7 @@ int Sim_attach_impl(int index, char* SimID) {
 
   int return_status;
   char* pchar;
-  char* hostname[REG_MAX_STRING_LENGTH];
+  char hostname[REG_MAX_STRING_LENGTH];
   int hostport;
   char* colon;
   socket_info_type* socket_info;
@@ -441,14 +441,15 @@ int Sim_attach_impl(int index, char* SimID) {
   colon = strstr(pchar, ":");
   if(colon == NULL) {
 #ifdef REG_DEBUG
-    fprintf(stderr, "Sim_attach: failed to parse REG_APP_ADDRESS: %s - %s:%d\n", pchar, hostname, hostport);
+    fprintf(stderr, "Sim_attach: failed to parse REG_APP_ADDRESS (%s). "
+	    "Should be <machine>:<port>\n", pchar);
 #endif
 
     return REG_FAILURE;
   }
   else {
     int addr_len = ((int) (colon - pchar)) + 1;
-    snprintf((char*) hostname, addr_len, "%s", pchar);
+    snprintf(hostname, addr_len, "%s", pchar);
     hostport = atoi(&colon[1]);
 
 #ifdef REG_DEBUG
@@ -461,7 +462,7 @@ int Sim_attach_impl(int index, char* SimID) {
 
   if(return_status == REG_SUCCESS) {
     socket_info->connector_port = hostport;
-    sprintf(socket_info->connector_hostname, "%s", (char*) hostname);
+    sprintf(socket_info->connector_hostname, "%s", hostname);
     if(create_steering_connector(socket_info) != REG_SUCCESS) {
 #ifdef REG_DEBUG
       fprintf(stderr, "Sim_attach: Could not connect to application\n");
