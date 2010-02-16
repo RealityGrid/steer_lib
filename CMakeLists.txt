@@ -137,9 +137,7 @@ else(REG_DEBUG)
   endif(REG_DEBUG_FULL)
 endif(REG_DEBUG)
 option(REG_USE_TIMING "Enable internal timing routines - not very portable!" OFF)
-option(REG_KEEP_XML_MESSAGES "Keep xml messages for debugging purposes. Default is OFF." OFF)
 mark_as_advanced(REG_USE_TIMING)
-mark_as_advanced(REG_KEEP_XML_MESSAGES)
 
 #
 # build Fortran wrappers?

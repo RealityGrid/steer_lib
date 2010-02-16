@@ -222,7 +222,7 @@ int delete_file(char* filename) {
     return_status = REG_FAILURE;
   }
 
-#ifdef NO_FILE_DELETE
+#if REG_KEEP_XML_MESSAGES
   /* If this debugging flag is set then don't remove the data file */
   return REG_SUCCESS;
 #endif
@@ -266,7 +266,7 @@ int remove_files(char* base_name) {
 #endif
     remove(lock_name);
 
-#ifdef NO_FILE_DELETE
+#if REG_KEEP_XML_MESSAGES
     /* Don't delete actual data files if this debugging flag set */
     continue;
 #endif
