@@ -1,3 +1,4 @@
+#!/bin/bash
 #
 #  The RealityGrid Steering Library
 #
@@ -44,49 +45,61 @@
 #
 #  Author: Robert Haines
 
-# Java compile stuff we have overridden to compensate for CMake bugs
-set(CMAKE_USER_MAKE_RULES_OVERRIDE "JavaCompileOverride")
+java=@CMAKE_Java_RUNTIME@
+version="@REG_STEER_LIB_VERSION@"
+prefix="@RealityGrid_INSTALL_PREFIX_CONFIG@"
+defaultport=@REG_PROXY_DEFAULT_PORT@
+declare -i port=0
 
-enable_language(Java)
+usage() {
+    cat <<EOF
+Usage: reg-proxy [OPTION] | [portnum]
 
-set(IOPROXY_SRCS
-  HybridSwitch.java
-  HybridThread.java
-)
+Where OPTION can be one of:
 
-# build library
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-add_library(ReG_Steer_ioProxy ${IOPROXY_SRCS})
+  -h, --help		display this help and exit
+  -v, --version		output version information
+EOF
 
-# update manifest so jar file can be run
-add_custom_command(TARGET ReG_Steer_ioProxy POST_BUILD
-  COMMAND jar ARGS -umf ${CMAKE_CURRENT_SOURCE_DIR}/manifest.txt ${CMAKE_BINARY_DIR}/lib/ReG_Steer_ioProxy.jar
-  COMMENT "Updating ReG_Steer_ioProxy.jar manifest"
-)
+    exit $1
+}
 
-# build runnable script in two forms
-set(REG_PROXY_DEFAULT_PORT 65000 CACHE STRING "The port that the proxy should listen on if none is provided on the command line. Default 65000.")
-mark_as_advanced(REG_PROXY_DEFAULT_PORT)
+if test $# -gt 1; then
+    usage 1
+fi
 
-# build tree version
-set(RealityGrid_INSTALL_PREFIX_CONFIG ${PROJECT_BINARY_DIR}/lib)
-configure_file(
-  ${CMAKE_CURRENT_SOURCE_DIR}/reg-proxy.in
-  ${PROJECT_BINARY_DIR}/bin/reg-proxy
-  @ONLY IMMEDIATE
-)
+while test $# -gt 0; do
+    case "$1" in
+    -v|--version)
+	echo $version
+	exit 0
+	;;
 
-# install tree version
-set(RealityGrid_INSTALL_PREFIX_CONFIG ${CMAKE_INSTALL_PREFIX}/lib/RealityGrid/java)
-configure_file(
-  ${CMAKE_CURRENT_SOURCE_DIR}/reg-proxy.in
-  ${PROJECT_BINARY_DIR}/CMakeFiles/reg-proxy
-  @ONLY IMMEDIATE
-)
+    -h|--help)
+	usage 0
+	;;
 
-#
-# install
-#
+    *)
+	port=$1
+	;;
+    esac
+    shift
+done
 
-install(TARGETS ReG_Steer_ioProxy ARCHIVE DESTINATION lib/RealityGrid/java)
-install(PROGRAMS ${PROJECT_BINARY_DIR}/CMakeFiles/reg-proxy DESTINATION bin)
+# check we have usable port number
+if test $port -le 0; then
+    port=$defaultport
+elif test $port -gt 65535; then
+    port=$defaultport
+fi
+
+# are we root if port < 1024
+if test $port -lt 1024; then
+    if test $EUID -ne 0; then
+	echo "You are not root, so cannot use a port number below 1024."
+	exit 1
+    fi
+fi
+
+# execute the proxy
+exec $java -jar $prefix/ReG_Steer_ioProxy.jar $port
