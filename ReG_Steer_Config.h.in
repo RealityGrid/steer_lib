@@ -66,9 +66,16 @@
 #cmakedefine REG_DEBUG
 #cmakedefine REG_DEBUG_FULL
 #cmakedefine REG_USE_TIMING
-#cmakedefine REG_KEEP_XML_MESSAGES
 
 #cmakedefine REG_NEED_MALLOC_H
+
+/* features to code for */
+
+#cmakedefine01 REG_HAS_MSG_NOSIGNAL
+#cmakedefine01 REG_HAS_MSG_DONTWAIT
+#cmakedefine01 REG_HAS_MSG_WAITALL
+#cmakedefine01 REG_VALIDATE_XML
+#cmakedefine01 REG_KEEP_XML_MESSAGES
 
 /* standard system headers */
 
@@ -109,12 +116,9 @@
 #include <libxml/xmlmemory.h>
 #include <libxml/parser.h>
 
-/* features to code for */
-
-#cmakedefine01 REG_HAS_MSG_NOSIGNAL
-#cmakedefine01 REG_HAS_MSG_DONTWAIT
-#cmakedefine01 REG_HAS_MSG_WAITALL
-
+#if REG_VALIDATE_XML
+#include <libxml/xmlschemas.h>
+#endif
 
 /* some extra defines for windows */
 
@@ -135,10 +139,6 @@
 
 #ifdef REG_USE_TIMING
 #define USE_REG_TIMING
-#endif
-
-#ifdef REG_KEEP_XML_MESSAGES
-#define NO_FILE_DELETE
 #endif
 
 #define __REG_STEER_CONFIG_H__

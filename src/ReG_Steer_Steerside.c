@@ -85,11 +85,6 @@ int Steerer_initialize()
 {
   int   i;
   /* int   status; */
-  char *pchar;
-
-  /* Actually defined in ReG_Steer_Common.c because both steerer
-     and steered have a variable of this name */
-  extern char ReG_Steer_Schema_Locn[REG_MAX_STRING_LENGTH];
 
 #ifdef REG_DEBUG
   /* Print out version information */
@@ -122,34 +117,6 @@ int Steerer_initialize()
   /* LSF sends us a SIGUSR2 signal when we reach our wall-clock limit */
   signal(SIGUSR2, Steerside_signal_handler);
 #endif
-
-  /* Set the location of the file containing the schema describing all
-     steering communication */
-
-  pchar = getenv("REG_STEER_HOME");
-
-  if(pchar){
-    /* Check that path ends in '/' - if not then add one */
-
-    i = strlen(pchar);
-    if( pchar[i-1] != '/' ){
-
-      sprintf(ReG_Steer_Schema_Locn, "%s/xml_schema/reg_steer_comm.xsd",
-                                     pchar);
-    }
-    else{
-
-      sprintf(ReG_Steer_Schema_Locn, "%sxml_schema/reg_steer_comm.xsd",
-                                     pchar);
-    }
-  }
-  else{
-
-    /* Instead of failing, set the schema location to some nonsense value
-       and continue */
-    fprintf(stderr, "STEER: WARNING: Steerer_initialize: failed to get schema location\n");
-    sprintf(ReG_Steer_Schema_Locn, "/tmp/xml_schema/reg_steer_comm.xsd");
-  }
 
   /* Initialize table of connected simulations */
 

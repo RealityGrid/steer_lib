@@ -98,6 +98,22 @@ if(REG_BUILD_FORTRAN_WRAPPERS)
   endif(REG_BUILD_FORTRAN_TYPE_UTILS)
 endif(REG_BUILD_FORTRAN_WRAPPERS)
 
+# add the XML schema to the build if required
+if(REG_VALIDATE_XML)
+  find_package(XXD REQUIRED)
+
+  add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/reg_steer_comm.c
+    COMMAND ${XXD}
+    ARGS -i reg_steer_comm.xsd ${CMAKE_CURRENT_BINARY_DIR}/reg_steer_comm.c
+    DEPENDS ${PROJECT_SOURCE_DIR}/xml_schema/reg_steer_comm.xsd
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/xml_schema
+    COMMENT "Compiling XML schema"
+  )
+
+  set(REG_LIB_SRCS ${REG_LIB_SRCS} ${CMAKE_CURRENT_BINARY_DIR}/reg_steer_comm.c)
+endif(REG_VALIDATE_XML)
+
 # build the modules and add the common code to the main lib
 # or add the selected module code to the main lib if monolithic
 if(REG_BUILD_MODULAR_LIBS)

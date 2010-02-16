@@ -119,8 +119,10 @@ include_directories("${PROJECT_BINARY_DIR}")
 #
 option(REG_LOG_STEERING "Whether or not to log steering commands. Default is ON." ON)
 set(REG_SCRATCH_DEFAULT "./" CACHE PATH "Directory for library to use as general scratch space. Default is the current directory (./).")
+option(REG_VALIDATE_XML "Should the library validate every XML message it receives? Default is OFF" OFF)
 mark_as_advanced(REG_LOG_STEERING)
 mark_as_advanced(REG_SCRATCH_DEFAULT)
+mark_as_advanced(REG_VALIDATE_XML)
 
 #
 # library debug options
@@ -135,9 +137,7 @@ else(REG_DEBUG)
   endif(REG_DEBUG_FULL)
 endif(REG_DEBUG)
 option(REG_USE_TIMING "Enable internal timing routines - not very portable!" OFF)
-option(REG_KEEP_XML_MESSAGES "Keep xml messages for debugging purposes. Default is OFF." OFF)
 mark_as_advanced(REG_USE_TIMING)
-mark_as_advanced(REG_KEEP_XML_MESSAGES)
 
 #
 # build Fortran wrappers?
@@ -174,9 +174,10 @@ set(REG_EXTERNAL_LIBS ${LIBXML2_LIBRARIES} ${REG_EXTERNAL_LIBS})
 # ReG libs to link examples against
 set(REG_LINK_LIBRARIES ReG_Steer)
 
-# build and install library and headers
+# build and install library, headers and support files
 add_subdirectory(src)
 add_subdirectory(include)
+add_subdirectory(xml_schema)
 
 # build examples?
 option(REG_BUILD_EXAMPLES "Build the example applications?" ON)

@@ -176,11 +176,6 @@ int Steering_initialize(const char* AppName,
   int   i;
   char *pchar;
 
-  /* Actually defined in ReG_Steer_Common.c because both steerer
-     and steered have a variable of this name */
-  extern char ReG_Steer_Schema_Locn[REG_MAX_STRING_LENGTH];
-  char       *schema_path = "xml_schema/reg_steer_comm.xsd";
-
 #ifdef REG_DEBUG
   /* Print out version information */
   fprintf(stderr, "**** RealityGrid Computational Steering Library "
@@ -197,47 +192,6 @@ int Steering_initialize(const char* AppName,
   /* Set up the basic library config data */
   if(Get_scratch_directory() != REG_SUCCESS)
     return REG_FAILURE;
-
-  /* Set the location of the file containing the schema describing all
-     steering communication */
-
-  if( (pchar = getenv("REG_STEER_HOME")) ){
-
-    /* Check that path ends in '/' - if not then add one */
-
-    i = strlen(pchar);
-
-#ifdef REG_DEBUG
-    /* Check that path of schema location fits in the string we've
-       put aside for it */
-    if((i + strlen(schema_path) + 1) > REG_MAX_STRING_LENGTH){
-
-      fprintf(stderr, "STEER: WARNING: Steering_initialize: schema path exceeds "
-	      "REG_MAX_STRING_LENGTH (%d chars) - truncating\n",
-	      REG_MAX_STRING_LENGTH);
-    }
-#endif
-
-    if( pchar[i-1] != '/' ){
-
-      snprintf(ReG_Steer_Schema_Locn, REG_MAX_STRING_LENGTH, "%s/%s",
-	       pchar, schema_path);
-    }
-    else{
-
-      snprintf(ReG_Steer_Schema_Locn, REG_MAX_STRING_LENGTH, "%s%s",
-	       pchar, schema_path);
-    }
-  }
-  else{
-
-    /* ARP - changed so that failure to get a (file) location for
-       the XML schema is no longer fatal.  We just use some made-up
-       path. */
-    fprintf(stderr, "STEER: WARNING: Steering_initialize: REG_STEER_HOME "
-	    "environment variable not set\n");
-    sprintf(ReG_Steer_Schema_Locn, "/tmp/%s", schema_path);
-  }
 
   /* Get our current working directory */
   if(!(pchar = getcwd(Steer_lib_config.working_dir, REG_MAX_STRING_LENGTH))) {

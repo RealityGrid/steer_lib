@@ -331,6 +331,13 @@ int Parse_xml(xmlDocPtr          doc,
 	      struct msg_struct *msg,
 	      Sim_entry_type    *sim);
 
+#if REG_VALIDATE_XML
+/** @internal
+    Validate the DOM document against the reg_steer_comm schema
+    @param doc The DOM document to parse */
+int Validate_xml(xmlDocPtr doc);
+#endif
+
 /** @internal
     Parse a steering message (ReG_steer_message)
     @param doc The DOM document to parse
@@ -340,7 +347,6 @@ int Parse_xml(xmlDocPtr          doc,
     @param sim Pointer to Sim_entry struct or NULL (if not called by
     a steering client) */
 int parseSteerMessage(xmlDocPtr          doc,
-		      xmlNsPtr           ns,
 		      xmlNodePtr         cur,
 		      struct msg_struct *msg,
 		      Sim_entry_type    *sim);
@@ -353,7 +359,6 @@ int parseSteerMessage(xmlDocPtr          doc,
     @param sim Pointer to Sim_entry struct or NULL (if not called by
     a steering client) */
 int parseResourceProperties(xmlDocPtr       doc,
-			    xmlNsPtr        ns,
 			    xmlNodePtr      cur,
 			    Sim_entry_type *sim);
 
@@ -364,7 +369,6 @@ int parseResourceProperties(xmlDocPtr       doc,
     @param cur Current XML node
     @param status Pointer to struct to fill with msg details */
 int parseStatus(xmlDocPtr             doc,
-		xmlNsPtr              ns,
 		xmlNodePtr            cur,
 	        struct status_struct *status);
 
@@ -375,7 +379,6 @@ int parseStatus(xmlDocPtr             doc,
     @param cur Current XML node
     @param ctrl Pointer to struct to fill with msg details */
 int parseControl(xmlDocPtr              doc,
-		 xmlNsPtr               ns,
 		 xmlNodePtr             cur,
 	         struct control_struct *ctrl);
 
@@ -386,7 +389,6 @@ int parseControl(xmlDocPtr              doc,
     @param cur Current XML node
     @param supp_cmd Pointer to struct to fill with msg details */
 int parseSuppCmd(xmlDocPtr               doc,
-		 xmlNsPtr                ns,
 		 xmlNodePtr              cur,
 		 struct supp_cmd_struct *supp_cmd);
 
@@ -397,7 +399,6 @@ int parseSuppCmd(xmlDocPtr               doc,
     @param cur Current XML node
     @param param Pointer to struct to fill with parameter details */
 int parseParam(xmlDocPtr            doc,
-	       xmlNsPtr             ns,
 	       xmlNodePtr           cur,
 	       struct param_struct *param);
 
@@ -408,7 +409,6 @@ int parseParam(xmlDocPtr            doc,
     @param cur Current XML node
     @param cmd Pointer to struct to fill with command details */
 int parseCmd(xmlDocPtr          doc,
-	     xmlNsPtr           ns,
 	     xmlNodePtr         cur,
 	     struct cmd_struct *cmd);
 
@@ -419,7 +419,6 @@ int parseCmd(xmlDocPtr          doc,
     @param cur Current XML node
     @param chk_def Pointer to struct to fill with ChkType definition */
 int parseChkTypeDef(xmlDocPtr             doc,
-		    xmlNsPtr              ns,
 		    xmlNodePtr            cur,
 		    struct io_def_struct *chk_def);
 
@@ -430,7 +429,6 @@ int parseChkTypeDef(xmlDocPtr             doc,
     @param cur Current XML node
     @param io_def Pointer to struct to fill with IOType definition */
 extern PREFIX int parseIOTypeDef(xmlDocPtr             doc,
-				 xmlNsPtr              ns,
 				 xmlNodePtr            cur,
 				 struct io_def_struct *io_def);
 
@@ -441,7 +439,6 @@ extern PREFIX int parseIOTypeDef(xmlDocPtr             doc,
     @param cur Current XML node
     @param io Pointer to struct to fill with IOType details */
 int parseIOType(xmlDocPtr         doc,
-		xmlNsPtr          ns,
 		xmlNodePtr        cur,
 		struct io_struct *io);
 
@@ -452,7 +449,6 @@ int parseIOType(xmlDocPtr         doc,
     @param cur Current XML node
     @param log Pointer to struct to fill with log details */
 int parseLog(xmlDocPtr          doc,
-	     xmlNsPtr           ns,
 	     xmlNodePtr         cur,
 	     struct log_struct *log);
 
@@ -463,7 +459,6 @@ int parseLog(xmlDocPtr          doc,
     @param cur Current XML node
     @param log_entry Pointer to struct to fill with details of a log entry */
 int parseLogEntry(xmlDocPtr                doc,
-		  xmlNsPtr                 ns,
 		  xmlNodePtr               cur,
 		  struct log_entry_struct *log_entry);
 
@@ -474,7 +469,6 @@ int parseLogEntry(xmlDocPtr                doc,
     @param cur Current XML node
     @param log_entry Ptr to struct to fill with details of a chkpoint log entry */
 int parseChkLogEntry(xmlDocPtr                    doc,
-		     xmlNsPtr                     ns,
 		     xmlNodePtr                   cur,
 		     struct chk_log_entry_struct *log_entry);
 

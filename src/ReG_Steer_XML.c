@@ -66,6 +66,12 @@ extern struct msg_store_struct *Msg_store_tail;
 /** Declared in ReG_Steer_Appside.c */
 extern struct msg_uid_history_struct Msg_uid_store;
 
+#if REG_VALIDATE_XML
+/* The schema to validate against, compiled into the library */
+extern unsigned int reg_steer_comm_xsd_len;
+extern unsigned char reg_steer_comm_xsd[];
+#endif
+
 /*-----------------------------------------------------------------*/
 
 int Parse_xml_file(char* filename, struct msg_struct *msg,
@@ -118,7 +124,9 @@ int Parse_xml_buf(char* buf, int size, struct msg_struct *msg,
 int Parse_xml(xmlDocPtr doc, struct msg_struct *msg,
 	      Sim_entry_type *sim)
 {
+#if REG_VALIDATE_XML
   xmlNsPtr   ns;
+#endif
   xmlNodePtr cur;
 #ifdef REG_DEBUG_FULL
   struct msg_store_struct *cur_msg;
@@ -132,23 +140,29 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg,
       return REG_FAILURE;
   }
 
-  ns = xmlSearchNsByHref(doc, cur,
-            (const xmlChar *) "http://www.realitygrid.org/xml/steering");
-  /* Relax our conditions to generalize this parser------------
-  if (ns == NULL) {
-      fprintf(stderr,
-              "STEER: Parse_xml: document of the wrong type, ReG namespace not found\n");
+#if REG_VALIDATE_XML
+  if(Validate_xml(doc) != REG_SUCCESS) {
       xmlFreeDoc(doc);
+      xmlCleanupParser();
       return REG_FAILURE;
   }
-  -----------------------*/
+
+  ns = xmlSearchNsByHref(doc, cur, (const xmlChar *) REG_STEER_NAMESPACE);
+  if(ns == NULL) {
+    fprintf(stderr, "STEER: Parse_xml: document of the wrong type.\n       "
+	    "Namespace '%s' not found\n", REG_STEER_NAMESPACE);
+    xmlFreeDoc(doc);
+    xmlCleanupParser();
+    return REG_FAILURE;
+  }
+#endif
 
   if (!xmlStrcmp(cur->name, (const xmlChar *) "ReG_steer_message")) {
 #ifdef REG_DEBUG_FULL
     fprintf(stderr,"STEER: Parse_xml: Have ReG_steer_message doc\n");
 #endif
 
-    if(parseSteerMessage(doc, ns, cur, msg, sim) != REG_SUCCESS){
+    if(parseSteerMessage(doc, cur, msg, sim) != REG_SUCCESS) {
       xmlFreeDoc(doc);
       xmlCleanupParser();
       return REG_FAILURE;
@@ -168,7 +182,7 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg,
     fprintf(stderr,"STEER: Parse_xml: passing %s to "
 	    "parseResourceProperties...\n", (char *)(cur->name));
 #endif
-    parseResourceProperties(doc, ns, cur, sim);
+    parseResourceProperties(doc, cur, sim);
 
     /* Print out what we've got */
 #ifdef REG_DEBUG_FULL
@@ -197,6 +211,34 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg,
 
   return REG_SUCCESS;
 }
+
+#if REG_VALIDATE_XML
+int Validate_xml(xmlDocPtr doc) {
+  xmlSchemaParserCtxtPtr schema_ctxt;
+  xmlSchemaValidCtxtPtr schema_valid;
+  xmlSchemaPtr schema;
+  int result = REG_SUCCESS;
+
+  /* Have to reload the schema each time. Can't simply load it
+     once then reuse it for some reason. */
+  schema_ctxt = xmlSchemaNewMemParserCtxt(reg_steer_comm_xsd,
+					  reg_steer_comm_xsd_len);
+  schema = xmlSchemaParse(schema_ctxt);
+  schema_valid = xmlSchemaNewValidCtxt(schema);
+
+  if(xmlSchemaValidateDoc(schema_valid, doc) != 0) {
+    fprintf(stderr, "STEER: Validate_xml: message could not be validated "
+	    "against its schema.");
+    result = REG_FAILURE;
+  }
+
+  xmlSchemaFreeValidCtxt(schema_valid);
+  xmlSchemaFree(schema);
+  xmlSchemaFreeParserCtxt(schema_ctxt);
+
+  return result;
+}
+#endif
 
 /*-----------------------------------------------------------------*/
 /** Parse the supplied resource property document and pull out the
@@ -255,9 +297,8 @@ int Extract_resource_property(char *pRPDoc,
 
 /*-----------------------------------------------------------------*/
 
-int parseResourceProperties(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
-			    Sim_entry_type *sim)
-{
+int parseResourceProperties(xmlDocPtr doc, xmlNodePtr cur,
+			    Sim_entry_type *sim) {
   xmlNodePtr child;
   xmlChar   *steerStatus;
   struct msg_store_struct *curMsg;
@@ -305,7 +346,7 @@ int parseResourceProperties(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 #endif
 	curMsg->msg = New_msg_struct();
 
-	if(parseSteerMessage(doc, ns, child, curMsg->msg, sim) !=
+	if(parseSteerMessage(doc, child, curMsg->msg, sim) !=
 	   REG_SUCCESS){
 	  Delete_msg_struct(&(curMsg->msg));
 	  curMsg->next = NULL;
@@ -365,9 +406,8 @@ int parseResourceProperties(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 
 /*-----------------------------------------------------------------*/
 
-int parseSteerMessage(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
-		      struct msg_struct *msg, Sim_entry_type *sim)
-{
+int parseSteerMessage(xmlDocPtr doc, xmlNodePtr cur,
+		      struct msg_struct *msg, Sim_entry_type *sim) {
   struct msg_uid_history_struct *uidStorePtr;
 
   /* If we've been called by a steering client then must store
@@ -383,7 +423,7 @@ int parseSteerMessage(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
   }
 
   /* Get the msg UID if present */
-  if( (msg->msg_uid = xmlGetProp(cur, (const xmlChar*) "Msg_UID")) ){
+  if((msg->msg_uid = xmlGetProp(cur, (const xmlChar*) "UID"))) {
 #ifdef REG_DEBUG_FULL
     fprintf(stderr, "STEER: INFO: parseSteerMessage: msg UID = %s\n",
 	    (char*)(msg->msg_uid));
@@ -432,7 +472,7 @@ int parseSteerMessage(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 	    "parseStatus...\n");
 #endif
     msg->status = New_status_struct();
-    parseStatus(doc, ns, cur, msg->status);
+    parseStatus(doc, cur, msg->status);
     break;
 
   case CONTROL:
@@ -441,8 +481,8 @@ int parseSteerMessage(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 	    "parseControl...\n");
 #endif
     msg->control = New_control_struct();
-    parseControl(doc, ns, cur, msg->control);
-    break;
+    parseControl(doc, cur, msg->control);
+   break;
 
   case SUPP_CMDS:
 #ifdef REG_DEBUG_FULL
@@ -450,7 +490,7 @@ int parseSteerMessage(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 	    "parseSuppCmd...\n");
 #endif
     msg->supp_cmd = New_supp_cmd_struct();
-    parseSuppCmd(doc, ns, cur, msg->supp_cmd);
+    parseSuppCmd(doc, cur, msg->supp_cmd);
     break;
 
   case PARAM_DEFS:
@@ -461,7 +501,7 @@ int parseSteerMessage(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
     /* Use code for 'status' messages because one
        encapsulates the other */
     msg->status = New_status_struct();
-    parseStatus(doc, ns, cur, msg->status);
+    parseStatus(doc, cur, msg->status);
     break;
 
   case IO_DEFS:
@@ -470,7 +510,7 @@ int parseSteerMessage(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 	    "parseIOTypeDef...\n");
 #endif
     msg->io_def = New_io_def_struct();
-    parseIOTypeDef(doc, ns, cur, msg->io_def);
+    parseIOTypeDef(doc, cur, msg->io_def);
     break;
 
   case CHK_DEFS:
@@ -479,7 +519,7 @@ int parseSteerMessage(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 	    "parseChkTypeDef...\n");
 #endif
     msg->chk_def = New_io_def_struct();
-    parseChkTypeDef(doc, ns, cur, msg->chk_def);
+    parseChkTypeDef(doc, cur, msg->chk_def);
     break;
 
   case STEER_LOG:
@@ -487,7 +527,7 @@ int parseSteerMessage(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
     fprintf(stderr, "STEER: INFO: parseSteerMessage: Calling parseLog...\n");
 #endif
     msg->log = New_log_struct();
-    parseLog(doc, ns, cur, msg->log);
+    parseLog(doc, cur, msg->log);
     break;
 
   default:
@@ -502,9 +542,7 @@ int parseSteerMessage(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 
 /*-----------------------------------------------------------------*/
 
-int parseStatus(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
-	        struct status_struct *status)
-{
+int parseStatus(xmlDocPtr doc, xmlNodePtr cur, struct status_struct *status) {
 
   if(status == NULL){
     return REG_FAILURE;
@@ -528,7 +566,7 @@ int parseStatus(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 #ifdef REG_DEBUG
       fprintf(stderr, "STEER: Calling parseParam...\n");
 #endif
-      parseParam(doc, ns, cur, status->param);
+      parseParam(doc, cur, status->param);
     }
     else if( !xmlStrcmp(cur->name, (const xmlChar *) "Command") ){
 
@@ -545,7 +583,7 @@ int parseStatus(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 #ifdef REG_DEBUG
       fprintf(stderr, "STEER: Calling parseCmd...\n");
 #endif
-      parseCmd(doc, ns, cur, status->cmd);
+      parseCmd(doc, cur, status->cmd);
     }
 
     cur = cur->next;
@@ -555,9 +593,7 @@ int parseStatus(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 
 /*-----------------------------------------------------------------*/
 
-int parseControl(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
-	         struct control_struct *ctrl)
-{
+int parseControl(xmlDocPtr doc, xmlNodePtr cur, struct control_struct *ctrl) {
   if(!ctrl){
     return REG_FAILURE;
   }
@@ -585,7 +621,7 @@ int parseControl(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 #ifdef REG_DEBUG
       fprintf(stderr, "STEER: Calling parseParam...\n");
 #endif
-      parseParam(doc, ns, cur, ctrl->param);
+      parseParam(doc, cur, ctrl->param);
     }
     else if( !xmlStrcmp(cur->name, (const xmlChar *) "Command") ){
 
@@ -602,7 +638,7 @@ int parseControl(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 #ifdef REG_DEBUG
       fprintf(stderr, "STEER: Calling parseCmd...\n");
 #endif
-      parseCmd(doc, ns, cur, ctrl->cmd);
+      parseCmd(doc, cur, ctrl->cmd);
     }
 
     cur = cur->next;
@@ -613,9 +649,8 @@ int parseControl(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 
 /*-----------------------------------------------------------------*/
 
-int parseIOTypeDef(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
-		   struct io_def_struct *io_def)
-{
+int parseIOTypeDef(xmlDocPtr doc, xmlNodePtr cur,
+		   struct io_def_struct *io_def) {
 
   if(!io_def){
 
@@ -641,7 +676,7 @@ int parseIOTypeDef(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 #ifdef REG_DEBUG
       fprintf(stderr, "STEER: parseIOTypeDef: Calling parseIOType...\n");
 #endif
-      parseIOType(doc, ns, cur, io_def->io);
+      parseIOType(doc, cur, io_def->io);
     }
 
     cur = cur->next;
@@ -652,9 +687,8 @@ int parseIOTypeDef(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 
 /*-----------------------------------------------------------------*/
 
-int parseChkTypeDef(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
-		   struct io_def_struct *chk_def)
-{
+int parseChkTypeDef(xmlDocPtr doc, xmlNodePtr cur,
+		    struct io_def_struct *chk_def) {
 
   if(!chk_def){
 
@@ -680,7 +714,7 @@ int parseChkTypeDef(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 #ifdef REG_DEBUG
       fprintf(stderr, "STEER: parseChkTypeDef: Calling parseIOType...\n");
 #endif
-      parseIOType(doc, ns, cur, chk_def->io);
+      parseIOType(doc, cur, chk_def->io);
     }
 
     cur = cur->next;
@@ -691,9 +725,7 @@ int parseChkTypeDef(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 
 /*-----------------------------------------------------------------*/
 
-int parseIOType(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
-		 struct io_struct *io)
-{
+int parseIOType(xmlDocPtr doc, xmlNodePtr cur, struct io_struct *io) {
   if(!io){
 
     return REG_FAILURE;
@@ -727,9 +759,8 @@ int parseIOType(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 
 /*-----------------------------------------------------------------*/
 
-int parseSuppCmd(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
-		 struct supp_cmd_struct *supp_cmd)
-{
+int parseSuppCmd(xmlDocPtr doc, xmlNodePtr cur,
+		 struct supp_cmd_struct *supp_cmd) {
   if(supp_cmd == NULL){
     return REG_FAILURE;
   }
@@ -738,7 +769,6 @@ int parseSuppCmd(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
   while(cur != NULL){
 
     if( !xmlStrcmp(cur->name, (const xmlChar *) "Command") ){
-      /*&& (cur->ns == ns)) {*/
 
       if( !supp_cmd->first_cmd ){
 
@@ -753,7 +783,7 @@ int parseSuppCmd(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 #ifdef REG_DEBUG_FULL
       fprintf(stderr, "STEER: parseSuppCmd: Calling parseCmd...\n");
 #endif
-      parseCmd(doc, ns, cur, supp_cmd->cmd);
+      parseCmd(doc, cur, supp_cmd->cmd);
     }
 #ifdef REG_DEBUG
     else{
@@ -769,16 +799,13 @@ int parseSuppCmd(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 
 /*-----------------------------------------------------------------*/
 
-int parseLog(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
-	          struct log_struct *log)
-{
+int parseLog(xmlDocPtr doc, xmlNodePtr cur, struct log_struct *log) {
   if (!log) return REG_FAILURE;
 
   cur = cur->xmlChildrenNode;
   while (cur != NULL) {
 
     if( !xmlStrcmp(cur->name, (const xmlChar *)"Log_entry") ){
-      /*&& (cur->ns==ns)){*/
 
       if(!log->first_entry){
 
@@ -793,7 +820,7 @@ int parseLog(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 #ifdef REG_DEBUG
       fprintf(stderr, "STEER: parseLog: calling parseLogEntry\n");
 #endif
-      parseLogEntry(doc, ns, cur, log->entry);
+      parseLogEntry(doc, cur, log->entry);
 
     }
     cur = cur->next;
@@ -804,9 +831,7 @@ int parseLog(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 
 /*-----------------------------------------------------------------*/
 
-int parseLogEntry(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
-	               struct log_entry_struct *log)
-{
+int parseLogEntry(xmlDocPtr doc, xmlNodePtr cur, struct log_entry_struct *log) {
   int return_status = REG_SUCCESS;
 
   if(!log) return REG_FAILURE;
@@ -815,13 +840,11 @@ int parseLogEntry(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
   while (cur != NULL) {
 
     if( !xmlStrcmp(cur->name, (const xmlChar *)"Key") ){
-      /*&& (cur->ns==ns)){*/
 
       log->key = xmlNodeListGetString(doc,
 				      cur->xmlChildrenNode, 1);
     }
     else if( !xmlStrcmp(cur->name, (const xmlChar *)"Chk_log_entry") ){
-      /*	     && (cur->ns==ns)){*/
       if(!log->first_chk_log){
 
 	log->first_chk_log = New_chk_log_entry_struct();
@@ -834,10 +857,9 @@ int parseLogEntry(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 #ifdef REG_DEBUG
       fprintf(stderr, "STEER: parseLogEntry: calling parseChkLogEntry\n");
 #endif
-      return_status = parseChkLogEntry(doc, ns, cur, log->chk_log);
+      return_status = parseChkLogEntry(doc, cur, log->chk_log);
     }
     else if( !xmlStrcmp(cur->name, (const xmlChar *)"Param") ){
-      /*	     && (cur->ns==ns)){*/
       if(!log->first_param_log){
 
 	log->first_param_log = New_param_struct();
@@ -851,7 +873,7 @@ int parseLogEntry(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 #ifdef REG_DEBUG
       fprintf(stderr, "STEER: parseLogEntry: calling parseParam\n");
 #endif
-      return_status = parseParam(doc, ns, cur, log->param_log);
+      return_status = parseParam(doc, cur, log->param_log);
     }
 
     cur = cur->next;
@@ -861,9 +883,8 @@ int parseLogEntry(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 
 /*-----------------------------------------------------------------*/
 
-int parseChkLogEntry(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
-		     struct chk_log_entry_struct *log_entry)
-{
+int parseChkLogEntry(xmlDocPtr doc, xmlNodePtr cur,
+		     struct chk_log_entry_struct *log_entry) {
   int return_status = REG_SUCCESS;
 
   if(!log_entry) return REG_FAILURE;
@@ -872,7 +893,6 @@ int parseChkLogEntry(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
   while (cur != NULL) {
 
     if(!xmlStrcmp(cur->name, (const xmlChar *)"Chk_handle") ){
-      /*&& (cur->ns==ns)){*/
 
       log_entry->chk_handle = xmlNodeListGetString(doc,
 					    cur->xmlChildrenNode, 1);
@@ -894,7 +914,7 @@ int parseChkLogEntry(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 	log_entry->param = log_entry->param->next;
       }
 
-      return_status = parseParam(doc, ns, cur, log_entry->param);
+      return_status = parseParam(doc, cur, log_entry->param);
     }
 
     cur = cur->next;
@@ -905,9 +925,7 @@ int parseChkLogEntry(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 
 /*-----------------------------------------------------------------*/
 
-int parseParam(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
-	       struct param_struct *param)
-{
+int parseParam(xmlDocPtr doc, xmlNodePtr cur, struct param_struct *param) {
   if(param == NULL){
 
     return REG_FAILURE;
@@ -917,7 +935,6 @@ int parseParam(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
   while (cur != NULL) {
 
     if( !xmlStrcmp(cur->name, (const xmlChar *)"Handle") ){
-      /*&& (cur->ns==ns)) {*/
 
       param->handle = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
     }
@@ -958,9 +975,7 @@ int parseParam(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 
 /*-----------------------------------------------------------------*/
 
-int parseCmd(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
-	     struct cmd_struct *cmd)
-{
+int parseCmd(xmlDocPtr doc, xmlNodePtr cur, struct cmd_struct *cmd) {
   if(!cmd){
     return REG_FAILURE;
   }
@@ -989,7 +1004,7 @@ int parseCmd(xmlDocPtr doc, xmlNsPtr ns, xmlNodePtr cur,
 	cmd->param = cmd->first_param;
       }
 
-      parseParam(doc, ns, cur, cmd->param);
+      parseParam(doc, cur, cmd->param);
     }
 
     cur = cur->next;
