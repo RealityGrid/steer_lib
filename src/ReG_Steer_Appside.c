@@ -391,8 +391,6 @@ int Steering_initialize(const char* AppName,
   }
 
   /* Initialise log of checkpoints */
-  /* Jens, 09.04.03: Moved these lines here because Open_log_file()
-   * needs Initialize_steering_connection to be called before. */
   strcpy(Chk_log.filename, Steer_lib_config.scratch_dir);
   strcat(Chk_log.filename, REG_LOG_FILENAME);
 
