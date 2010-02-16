@@ -1044,6 +1044,67 @@ int Record_checkpoint_set_impl(int ChkType, char* ChkTag, char* Path) {
   return REG_SUCCESS;
 }
 
+/*-------------------------------------------------------*/
+
+void Initialize_log_impl(Chk_log_type* log) {
+  log->send_all = REG_FALSE;
+}
+
+/*-------------------------------------------------------*/
+
+int Save_log_impl(FILE* file_ptr, char* log_data) {
+  struct sws__PutParamLogResponse out;
+  char* pmsg_buf;
+#ifdef USE_REG_TIMING
+  double time0, time1;
+#endif
+
+  /* save to log file */
+  fprintf(file_ptr, "%s", log_data);
+
+  /* now send to SWS as well */
+  if(strlen(log_data) > REG_SCRATCH_BUFFER_SIZE) {
+    fprintf(stderr, "STEER: Save_log_wsrf: log data exceeds scratch buffer "
+	    "size of %d btes.  More code needed here...\n",
+	    REG_SCRATCH_BUFFER_SIZE);
+    return REG_FAILURE;
+  }
+
+  pmsg_buf = Steer_lib_config.scratch_buffer;
+
+  /* We just send the data as it comes and therefore have to wrap it
+     with CDATA tag to stop the parser getting upset */
+  pmsg_buf += sprintf(pmsg_buf, "<Steer_log><Raw_param_log><![CDATA[");
+  strcpy(pmsg_buf, log_data);
+  pmsg_buf += strlen(log_data);
+  pmsg_buf += sprintf(pmsg_buf, "]]></Raw_param_log></Steer_log>");
+
+  create_WSRF_header(appside_SGS_info.soap,
+                     appside_SGS_info.address,
+		     appside_SGS_info.username,
+		     appside_SGS_info.passwd);
+
+#ifdef USE_REG_TIMING
+  Get_current_time_seconds(&time0);
+#endif
+
+  if(soap_call_sws__PutParamLog(appside_SGS_info.soap,
+				appside_SGS_info.address,
+				"", Steer_lib_config.scratch_buffer,
+				&out)){
+    fprintf(stderr, "STEER: Save_log_wsrf: soap call failed:\n");
+    soap_print_fault(appside_SGS_info.soap, stderr);
+    return REG_FAILURE;
+  }
+#ifdef USE_REG_TIMING
+  Get_current_time_seconds(&time1);
+  fprintf(stderr, "STEER: TIMING: soap_call_sws__PutParamLog "
+	  "took %f seconds\n", (time1-time0));
+#endif
+
+  return REG_SUCCESS;
+}
+
 /*---------------- Steerside methods --------------------*/
 
 extern Sim_table_type Sim_table;

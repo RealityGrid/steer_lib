@@ -122,6 +122,18 @@ int Record_checkpoint_set_impl(int   ChkType,
 			       char *ChkTag,
 			       char *Path);
 
+/** @internal
+    @param log Pointer to log to initialize.*/
+void Initialize_log_impl(Chk_log_type* log);
+
+/** @internal
+    @param file_ptr Log file pointer.
+    @param log_data Buffer containing logging data (columns if parameter
+    data, XML otherwise).
+
+    Save a log (parameter or checkpoint) */
+int Save_log_impl(FILE* file_ptr, char* log_data);
+
 /*-------- Steerside function prototypes --------*/
 
 int Initialize_steerside_transport();

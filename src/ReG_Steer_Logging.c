@@ -60,6 +60,7 @@
 #include "ReG_Steer_Common.h"
 #include "ReG_Steer_Logging.h"
 #include "ReG_Steer_Appside_internal.h"
+#include "ReG_Steer_Steering_Transport_API.h"
 
 /** Basic library config - declared in ReG_Steer_Common */
 extern Steer_lib_config_type Steer_lib_config;
@@ -76,9 +77,6 @@ extern Param_table_type Params_table;
 /** Whether or not a client is currently attached - declared in
     ReG_Steer_Appside.c */
 extern int ReG_SteeringActive;
-
-/** Declared in ReG_Steer_Appside_WSRF.h */
-extern int Save_log_wsrf (char *log_data);
 
 /*----------------------------------------------------------------*/
 
@@ -97,13 +95,8 @@ int Initialize_log(Chk_log_type *log, log_type_type log_type)
     for(i=0; i<REG_MAX_NUM_STR_PARAMS; i++){
       log->param_send_all[i] = REG_TRUE;
     }
-/* #ifdef REG_DIRECT_TCP_STEERING */
 
-/* #else */
-/* #ifdef REG_SOAP_STEERING */
-/*     log->send_all    	= REG_FALSE; */
-/* #endif */
-/* #endif */ /* REG_DIRECT_TCP_STEERING */
+    Initialize_log_impl(log);
 
     /* We delete any existing parameter log file rather than
        append to it */
@@ -245,19 +238,8 @@ int Save_log(Chk_log_type *log)
       status = Log_to_xml(log, 0, &buf, &len, REG_FALSE);
     }
     if(status == REG_SUCCESS){
-      fprintf(log->file_ptr, "%s", buf);
+      Save_log_impl(log->file_ptr, buf);
     }
-/* #ifdef REG_DIRECT_TCP_STEERING */
-
-/* #else */
-/* #ifdef REG_SOAP_STEERING */
-/* #ifdef REG_WSRF */
-/*     Save_log_wsrf(buf); */
-/* #else */
-/*     Save_log_soap(buf); */
-/* #endif */
-/* #endif */
-/* #endif */ /* REG_DIRECT_TCP_STEERING */
   }
 
   log->num_entries = 0;
@@ -1402,92 +1384,4 @@ int Log_control_msg(struct control_struct *control)
   return REG_SUCCESS;
 }
 
-/*----------------------------------------------------------------------*
-
-int Log_control_msg(char *msg_txt)
-{
-  char      *pbuf, *pstart, *pstop;
-  static int seq_num_index   = -1;
-  int        len;
-  int        nbytes;
-  int        bytes_free;
-  void      *pdum;
-
-  *fprintf(stderr, "STEER: Log_control_msg: got >>%s<<\n", msg_txt);*
-
-  * If this is the first time we've been called then calculate
-     the index of the Sequence No. in the table of parameters *
-  if(seq_num_index == -1){
-    seq_num_index = Param_index_from_handle(&(Params_table),
-					    REG_SEQ_NUM_HANDLE);
-    if(seq_num_index == -1){
-      fprintf(stderr, "STEER: Log_control_msg: failed to find "
-	      "index of sequence no.\n");
-      return REG_FAILURE;
-    }
-  }
-
-  pbuf = Chk_log.pSteer_cmds_slot;
-  bytes_free = Chk_log.steer_cmds_bytes - (int)(pbuf - Chk_log.pSteer_cmds);
-
-  if(  !(pstart = strstr(msg_txt, "<Steer_control>")) ){
-
-    fprintf(stderr, "STEER: Log_control_msg: failed to find <Steer_control>\n");
-    pbuf[0] = '\0';
-    return REG_FAILURE;
-  }
-
-  * 15 = strlen("<Steer_control>") *
-  pstart += 15;
-  if(*pstart == '\n')pstart++;
-
-  pstop   = strstr(msg_txt, "</Steer_control>");
-  len     = (int)(pstop - pstart);
-
-  nbytes = snprintf(pbuf, bytes_free, "<Log_entry>\n"
-		  "<Seq_num>%s</Seq_num>\n"
-		  "<Steer_log_entry>\n",
-		  Params_table.param[seq_num_index].value);
-
-  if(nbytes >= (REG_MAX_STRING_LENGTH-1) || (nbytes < 1)){
-
-    if(!(pdum = realloc(Chk_log.pSteer_cmds, 2*Chk_log.steer_cmds_bytes))){
-
-      fprintf(stderr, "STEER: Log_control_msg: failed to realloc log buffer\n");
-      * Terminate buffer at end of last complete entry *
-      *(Chk_log.pSteer_cmds_slot) = '\0';
-      return REG_FAILURE;
-    }
-    else{
-
-      Chk_log.steer_cmds_bytes *= 2;
-      bytes_free += Chk_log.steer_cmds_bytes;
-      Chk_log.pSteer_cmds = (char *)pdum;
-      pbuf = Chk_log.pSteer_cmds_slot;
-
-      nbytes = snprintf(pbuf, bytes_free, "<Log_entry>\n"
-			"<Seq_num>%s</Seq_num>\n"
-			"<Steer_log_entry>\n",
-			Params_table.param[seq_num_index].value);
-    }
-  }
-  pbuf += nbytes;
-  bytes_free -= nbytes;
-
-  * 30 = strlen("</SteerLogEntry>\n</Log_entry>\n") *
-  if(bytes_free > (len + 30)){
-    strncpy(pbuf, pstart, len);
-    pbuf += len;
-
-    pbuf += sprintf(pbuf, "</Steer_log_entry>\n"
-		    "</Log_entry>\n");
-
-    * Point to next free space in buffer *
-    Chk_log.pSteer_cmds_slot = pbuf;
-
-    return REG_SUCCESS;
-  }
-
-  return REG_FAILURE;
-}
-*/
+/*----------------------------------------------------------------------*/

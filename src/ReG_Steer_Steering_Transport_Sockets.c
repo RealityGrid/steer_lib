@@ -299,6 +299,20 @@ int Record_checkpoint_set_impl(int ChkType, char* ChkTag, char* Path) {
   return Record_Chkpt(ChkType, ChkTag);
 }
 
+/*-------------------------------------------------------*/
+
+void Initialize_log_impl(Chk_log_type* log) {
+}
+
+/*-------------------------------------------------------*/
+
+int Save_log_impl(FILE* file_ptr, char* log_data) {
+  /* save to log file */
+  fprintf(file_ptr, "%s", log_data);
+
+  return REG_SUCCESS;
+}
+
 /*--------------------- Steerside methods ---------------------*/
 
 extern Sim_table_type Sim_table;
