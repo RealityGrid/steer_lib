@@ -67,7 +67,6 @@ PROGRAM mini_app
   INTEGER (KIND=REG_INT_KIND) :: itag
   CHARACTER(LEN=5)           :: ctag
 
-  INTEGER (KIND=REG_INT_KIND) :: output_freq = 5
   INTEGER (KIND=REG_INT_KIND) :: iohandle
   INTEGER (KIND=REG_INT_KIND) :: data_type
   INTEGER (KIND=REG_INT_KIND) :: data_count
@@ -92,14 +91,13 @@ PROGRAM mini_app
   CHARACTER(LEN=REG_MAX_STRING_LENGTH), &
               DIMENSION(REG_MAX_NUM_STR_PARAMS) :: changed_param_labels
 
-  INTEGER (KIND=REG_INT_KIND) :: iloop, icmd, iparam, hdr_len, i, j, k
+  INTEGER (KIND=REG_INT_KIND) :: iloop, icmd, iparam, i, j, k
   INTEGER (KIND=REG_INT_KIND) :: finished = 0
   INTEGER (KIND=REG_INT_KIND) :: NX = 4
   INTEGER (KIND=REG_INT_KIND) :: NY = 4
   INTEGER (KIND=REG_INT_KIND) :: NZ = 4
   INTEGER (KIND=REG_INT_KIND) :: veclen = 1
   CHARACTER(LEN=4096) :: header
-  CHARACTER(LEN=128)  :: buf
   REAL (KIND=REG_DP_KIND) :: aaxis=1.5
   REAL (KIND=REG_DP_KIND) :: baxis=1.5
   REAL (KIND=REG_DP_KIND) :: caxis=1.5
@@ -449,19 +447,19 @@ PROGRAM mini_app
                  itag = NINT(100000.0*ran_no)
                  WRITE(ctag, FMT='(I5)') itag
                  chk_tag = "fake_chkpoint_"// TRIM(ADJUSTL(ctag))//".dat"
-		 OPEN(99, FILE=chk_tag, STATUS='REPLACE', ACTION='WRITE', &
+                 OPEN(99, FILE=chk_tag, STATUS='REPLACE', ACTION='WRITE', &
                       IOSTAT=status)
-		 IF(status .eq. 0)THEN
-		    WRITE(99, *) "Checkpoint data goes here"
-		    CLOSE(99)
+                 IF(status .eq. 0)THEN
+                    WRITE(99, *) "Checkpoint data goes here"
+                    CLOSE(99)
 
                     ! Add one or more files to the list of files making up
                     ! this checkpoint
                     CALL Add_checkpoint_file_f(chk_handles(1), chk_tag, status)
 
                     ! Record that we've successfully taken the checkpoint
-		    CALL Record_checkpoint_set_f(chk_handles(1), &
-					         TRIM(ADJUSTL(ctag)), &
+                    CALL Record_checkpoint_set_f(chk_handles(1), &
+                                                 TRIM(ADJUSTL(ctag)), &
                                                  ".", status)
                  END IF
                END IF

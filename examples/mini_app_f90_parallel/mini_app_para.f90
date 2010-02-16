@@ -79,11 +79,6 @@ PROGRAM para_mini_app
   CHARACTER(LEN=REG_MAX_STRING_LENGTH) :: dum_str
   INTEGER (KIND=REG_SP_KIND)           :: str_len
 
-  ! Ensure that we have enough storage for a ptr returned from C - needs
-  ! to be large enough to store a C 'long' on whatever architecture is
-  ! being used.
-  INTEGER (KIND=REG_DP_KIND) :: ptr
-
   INTEGER (KIND=REG_SP_KIND) :: num_recvd_cmds
   INTEGER (KIND=REG_SP_KIND) :: num_params_changed
   INTEGER (KIND=REG_SP_KIND), DIMENSION(REG_MAX_NUM_STR_CMDS) :: recvd_cmds
