@@ -1,7 +1,7 @@
 /*
   The RealityGrid Steering Library
 
-  Copyright (c) 2002-2009, University of Manchester, United Kingdom.
+  Copyright (c) 2002-2010, University of Manchester, United Kingdom.
   All rights reserved.
 
   This software is produced by Research Computing Services, University
@@ -77,7 +77,7 @@
     by Doxygen includes links to the documentation for each of the
     steering-library routines used by this example.
 
-    @section intro_sec Introduction 
+    @section intro_sec Introduction
 
     A number of people contributed to the initial design of the
     RealityGrid steering API and thus were authors of the document
@@ -107,7 +107,7 @@
     steering client and return status messages to it. In addition to
     interacting with the steering client, the simulation in the figure
     also uses the API to transfer (potentially large) data sets to a
-    second component.  Although this second component is labelled 
+    second component.  Although this second component is labelled
     'visualization,' it could in fact be any other type of component
     including a second form of simulation (as in a coupled-model
     scenario).
@@ -149,22 +149,22 @@
     loop at which it is feasible to insert new functionality intended
     to:
     @li accept a change to one or more of the parameters of the
-    simulation (steerable parameters); 
-    @li emit a consistent representation of the current state of 
-    both the steerable parameters and other variables (monitored 
-    quantities); 
-    @li emit a consistent representation (provisionally called 
-    outsample) of part of the system being simulated that may be 
-    required by a downstream component (@e e.g. a visualisation system or 
-    another simulation).  
+    simulation (steerable parameters);
+    @li emit a consistent representation of the current state of
+    both the steerable parameters and other variables (monitored
+    quantities);
+    @li emit a consistent representation (provisionally called
+    outsample) of part of the system being simulated that may be
+    required by a downstream component (@e e.g. a visualisation system or
+    another simulation).
 
     We also assume that it is feasible, at the same point in the control
     loop, to:
-    @li output a consistent representation of the system (checkpoint) 
-    containing sufficient information to enable a subsequent restart of 
+    @li output a consistent representation of the system (checkpoint)
+    containing sufficient information to enable a subsequent restart of
     the simulation from its current state;
-    @li (in the case that the steered component is itself downstream 
-    of another component), to accept a sample emitted by an upstream 
+    @li (in the case that the steered component is itself downstream
+    of another component), to accept a sample emitted by an upstream
     component (provisionally called insample).
 
     @section sec_f90 F90 bindings
@@ -200,10 +200,10 @@
     Included with the RealityGrid steering library are a number of
     example applications:
 
-    @li simple.c provides a very simple example of the basic 
+    @li simple.c provides a very simple example of the basic
     instrumentation required in order to make a simulation
-    steerable.  
-    @li mini_steerer.c provides a fairly simple example of a command-line 
+    steerable.
+    @li mini_steerer.c provides a fairly simple example of a command-line
     steering client.
     @li mini_app.c illustrates more of the library's functionality
     @li mini_app2.f90 similar to mini_app.c but using the F90 bindings
@@ -356,8 +356,8 @@
 
     @section sec_EnvVars Environment Variables
 
-    Some of the behaviour of the steering library, particularly on the 
-    application/simulation side can be configured using certain 
+    Some of the behaviour of the steering library, particularly on the
+    application/simulation side can be configured using certain
     environment variables.  These can be particularly important when
     using socket-based IOTypes on machines with complex network
     configurations. Each of these environment variables

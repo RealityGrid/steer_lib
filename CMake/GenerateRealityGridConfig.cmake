@@ -1,7 +1,7 @@
 #
 #  The RealityGrid Steering Library
 #
-#  Copyright (c) 2002-2009, University of Manchester, United Kingdom.
+#  Copyright (c) 2002-2010, University of Manchester, United Kingdom.
 #  All rights reserved.
 #
 #  This software is produced by Research Computing Services, University
@@ -129,7 +129,7 @@ set(RealityGrid_USE_FILE_CONFIG
   ${CMAKE_INSTALL_PREFIX}/lib/RealityGrid/UseRealityGrid.cmake
 )
 
-set(RealityGrid_DEPENDS_FILE_CONFIG 
+set(RealityGrid_DEPENDS_FILE_CONFIG
   ${CMAKE_INSTALL_PREFIX}/lib/RealityGrid/RealityGridLibraryDepends.cmake
 )
 

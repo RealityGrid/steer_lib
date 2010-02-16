@@ -1,7 +1,7 @@
 /*
   The RealityGrid Steering Library
 
-  Copyright (c) 2002-2009, University of Manchester, United Kingdom.
+  Copyright (c) 2002-2010, University of Manchester, United Kingdom.
   All rights reserved.
 
   This software is produced by Research Computing Services, University
@@ -46,7 +46,7 @@
           Robert Haines
  */
 
-/** @internal 
+/** @internal
     @file ReG_Steer_Common.c
     @brief Source file for utility routines used in both Appside and Steerside
 
@@ -81,42 +81,42 @@ int Get_message_type(const char *name)
 {
 
   if(strcmp(name, "Param_defs") == 0){
-  
+
 #ifdef REG_DEBUG_FULL
     fprintf(stderr, "STEER: Setting msg type to PARAM_DEFS\n");
 #endif
     return PARAM_DEFS;
   }
   else if(strcmp(name, "IOType_defs") == 0){
-  
+
 #ifdef REG_DEBUG_FULL
     fprintf(stderr, "STEER: Setting msg type to IO_DEFS\n");
 #endif
     return IO_DEFS;
   }
   else if(strcmp(name, "ChkType_defs") == 0){
-  
+
 #ifdef REG_DEBUG_FULL
     fprintf(stderr, "STEER: Setting msg type to CHK_DEFS\n");
 #endif
     return CHK_DEFS;
   }
   else if(strcmp(name, "Supported_commands") == 0){
-    
+
 #ifdef REG_DEBUG_FULL
     fprintf(stderr, "STEER: Setting msg type to SUPP_CMDS\n");
 #endif
     return SUPP_CMDS;
   }
   else if(strcmp(name, "Steer_control") == 0){
-  
+
 #ifdef REG_DEBUG_FULL
     fprintf(stderr, "STEER: Setting msg type to CONTROL\n");
 #endif
     return CONTROL;
   }
   else if(strcmp(name, "App_status") == 0){
-  
+
 #ifdef REG_DEBUG_FULL
     fprintf(stderr, "STEER: Setting msg type to STATUS\n");
 #endif
@@ -131,7 +131,7 @@ int Get_message_type(const char *name)
   }
   else{
 
-#ifdef REG_DEBUG  
+#ifdef REG_DEBUG
     fprintf(stderr, "STEER: Get_message_type: unrecognised message type: %s\n", name);
 #endif /* REG_DEBUG */
 
@@ -165,8 +165,8 @@ int Next_free_param_index(Param_table_type *table)
     /* No free entries - need to allocate more memory */
 
     new_size = table->max_entries + REG_INITIAL_NUM_PARAMS;
-    
-    if( (dum_ptr = (void *)realloc(table->param, 
+
+    if( (dum_ptr = (void *)realloc(table->param,
 				   new_size*sizeof(param_entry))) ){
 
       index = table->max_entries;
@@ -238,7 +238,7 @@ int Increment_param_registered(Param_table_type *table)
 
     new_size = table->max_entries + REG_INITIAL_NUM_PARAMS;
 
-    if( (dum_ptr = (void*)realloc(table->param, 
+    if( (dum_ptr = (void*)realloc(table->param,
 				  new_size*sizeof(param_entry))) ){
 
       table->param = (param_entry*)dum_ptr;
@@ -278,7 +278,7 @@ int Increment_cmd_registered(Supp_cmd_table_type *table)
 
     new_size = table->max_entries + REG_INITIAL_NUM_CMDS;
 
-    if( (dum_ptr = (void*)realloc(table->cmd, 
+    if( (dum_ptr = (void*)realloc(table->cmd,
 				  new_size*sizeof(supp_cmd_entry))) ){
 
       table->cmd = (supp_cmd_entry*)dum_ptr;
@@ -312,7 +312,7 @@ int Increment_iodef_registered(IOdef_table_type *table)
 
     new_size = table->max_entries + REG_INITIAL_NUM_IOTYPES;
 
-    if( (dum_ptr = (void*)realloc(table->io_def, 
+    if( (dum_ptr = (void*)realloc(table->io_def,
 				  new_size*sizeof(IOdef_entry))) ){
 
       table->io_def = (IOdef_entry*)dum_ptr;
@@ -342,7 +342,7 @@ int Increment_log_entry(Chk_log_type *log)
   int   new_size;
   void *dum_ptr;
   int   return_status = REG_SUCCESS;
-  
+
   if (!log) return REG_FAILURE;
 
   /* Increment count of how many entries table has and allocate
@@ -351,7 +351,7 @@ int Increment_log_entry(Chk_log_type *log)
 
     new_size = log->max_entries + REG_INITIAL_CHK_LOG_SIZE;
 
-    if( (dum_ptr = realloc(log->entry, 
+    if( (dum_ptr = realloc(log->entry,
 			   new_size*sizeof(Chk_log_entry_type))) ){
 
       log->entry = (Chk_log_entry_type *)dum_ptr;
@@ -406,7 +406,7 @@ int Write_xml_header(char **buf)
   if(buf){
     *buf += sprintf(*buf, "<ReG_steer_message xmlns:xsi=\""
 		    "http://www.w3.org/2001/XMLSchema-instance\"\n"
-		    "xmlns=\"%s\"\n       xsi:SchemaLocation=\"%s %s\">\n", 
+		    "xmlns=\"%s\"\n       xsi:SchemaLocation=\"%s %s\">\n",
 		    REG_STEER_NAMESPACE,
 		    REG_STEER_NAMESPACE,
 		    ReG_Steer_Schema_Locn);
@@ -480,7 +480,7 @@ int Get_scratch_directory() {
 
       fprintf(stderr, "STEER: Get_scratch_directory: "
 	      "REG_MAX_STRING_LENGTH (%d chars) less\nthan predicted "
-	      "string length of %d chars\n", REG_MAX_STRING_LENGTH, 
+	      "string length of %d chars\n", REG_MAX_STRING_LENGTH,
 	      (i+max_len+1));
       return REG_FAILURE;
     }
@@ -498,7 +498,7 @@ int Get_scratch_directory() {
       return REG_FAILURE;
     }
     else {
-      fprintf(stderr, "STEER: Using following dir for scratch: %s\n", 
+      fprintf(stderr, "STEER: Using following dir for scratch: %s\n",
 	     Steer_lib_config.scratch_dir);
     }
   }
@@ -539,10 +539,10 @@ int Directory_valid(char *directory)
 
 /*----------------------------------------------------------------*/
 
-int Read_file(const char *filename, 
-	      char **buf, int *size, 
+int Read_file(const char *filename,
+	      char **buf, int *size,
 	      const int retain_newlines)
-{ 
+{
   FILE *fp;
   const int maxlen = 80;
   char  bufline[80];
@@ -553,7 +553,7 @@ int Read_file(const char *filename,
 
   if( !(fp = fopen(filename, "r")) ){
 
-    fprintf(stderr, "STEER: Read_file: failed to open file: %s\n", 
+    fprintf(stderr, "STEER: Read_file: failed to open file: %s\n",
 	    filename);
     return REG_FAILURE;
   }
@@ -582,7 +582,7 @@ int Read_file(const char *filename,
       ptr = realloc(*buf, (size_t)bufsize);
       if(!ptr){
 
-	fprintf(stderr, "STEER: Read_file: realloc failed, size = %d\n", 
+	fprintf(stderr, "STEER: Read_file: realloc failed, size = %d\n",
 		bufsize);
 	free(*buf);
 	*buf = NULL;
@@ -623,7 +623,7 @@ int Get_current_time_seconds(double *now)
 /*----------------------------------------------------------------*/
 
 int Reorder_decode_array(IOdef_entry *io,
-			 int          type, 
+			 int          type,
 			 int          count,
 			 void        *pData)
 {
@@ -652,7 +652,7 @@ int Reorder_decode_array(IOdef_entry *io,
 	    type);
 #endif
 
-    xdrmem_create(&xdrs, 
+    xdrmem_create(&xdrs,
 		  io->buffer,
 		  io->num_xdr_bytes,
 		  XDR_DECODE);
@@ -664,8 +664,8 @@ int Reorder_decode_array(IOdef_entry *io,
     switch(type){
 
     case REG_INT:
-      
-      if(1 != xdr_vector(&xdrs, (char *)pData, (unsigned int)count, 
+
+      if(1 != xdr_vector(&xdrs, (char *)pData, (unsigned int)count,
 			 (unsigned int)sizeof(int), (xdrproc_t)xdr_int)){
 	fprintf(stderr, "STEER: Reorder_decode_array: xdr_vector decode "
 		"failed for REG_INT\n");
@@ -674,8 +674,8 @@ int Reorder_decode_array(IOdef_entry *io,
       break;
 
     case REG_LONG:
-      
-      if(1 != xdr_vector(&xdrs, (char *)pData, (unsigned int)count, 
+
+      if(1 != xdr_vector(&xdrs, (char *)pData, (unsigned int)count,
 			 (unsigned int)sizeof(int), (xdrproc_t)xdr_long)){
 	fprintf(stderr, "STEER: Reorder_decode_array: xdr_vector decode "
 		"failed for REG_LONG\n");
@@ -685,7 +685,7 @@ int Reorder_decode_array(IOdef_entry *io,
 
     case REG_FLOAT:
 
-      if(1 != xdr_vector(&xdrs, (char *)pData, (unsigned int)count, 
+      if(1 != xdr_vector(&xdrs, (char *)pData, (unsigned int)count,
 			 (unsigned int)sizeof(float), (xdrproc_t)xdr_float)){
 	fprintf(stderr, "STEER: Reorder_decode_array: xdr_vector decode "
 		"failed for REG_FLOAT\n");
@@ -694,8 +694,8 @@ int Reorder_decode_array(IOdef_entry *io,
       break;
 
     case REG_DBL:
-      
-      if(1 != xdr_vector(&xdrs, (char *)pData, (unsigned int)count, 
+
+      if(1 != xdr_vector(&xdrs, (char *)pData, (unsigned int)count,
 			 (unsigned int)sizeof(double), (xdrproc_t)xdr_double)){
 	fprintf(stderr, "STEER: Reorder_decode_array: xdr_vector decode "
 		"failed for REG_DBL\n");
@@ -733,7 +733,7 @@ int Reorder_decode_array(IOdef_entry *io,
 	  for(k=array->sz; k<(array->nz+array->sz); k++){
 	    for(j=array->sy; j<(array->ny+array->sy); j++){
 	      for(i=array->sx; i<(array->nx+array->sx); i++){
-		/* Calculate position of (i,j,k)'th element in a C array 
+		/* Calculate position of (i,j,k)'th element in a C array
 		   (where k varies most rapidly) and store value. This
 		   statement decodes the next value from the array we
 		   specified when we opened 'xdrs'.*/
@@ -752,7 +752,7 @@ int Reorder_decode_array(IOdef_entry *io,
 	  for(k=array->sz; k<(array->nz+array->sz); k++){
 	    for(j=array->sy; j<(array->ny+array->sy); j++){
 	      for(i=array->sx; i<(array->nx+array->sx); i++){
-		/* Calculate position of (i,j,k)'th element in a C array 
+		/* Calculate position of (i,j,k)'th element in a C array
 		   (where k varies most rapidly) and store value */
 		pi[i*nslab + j*nrow + k] = *(pi_old++);
 	      }
@@ -761,7 +761,7 @@ int Reorder_decode_array(IOdef_entry *io,
 	}
       }
       else{
-      
+
 	/* Convert C array to F90 array */
 
 	nslab = array->totx*array->toty;
@@ -774,7 +774,7 @@ int Reorder_decode_array(IOdef_entry *io,
 	  for(i=array->sx; i<(array->nx+array->sx); i++){
 	    for(j=array->sy; j<(array->ny+array->sy); j++){
 	      for(k=array->sz; k<(array->nz+array->sz); k++){
-		/* Calculate position of (i,j,k)'th element in an F90 array 
+		/* Calculate position of (i,j,k)'th element in an F90 array
 		   (where i varies most rapidly) and store value */
 		xdr_int(&xdrs, &(pi[k*nslab + j*nrow + i]));
 	      }
@@ -791,7 +791,7 @@ int Reorder_decode_array(IOdef_entry *io,
 	  for(i=array->sx; i<(array->nx+array->sx); i++){
 	    for(j=array->sy; j<(array->ny+array->sy); j++){
 	      for(k=array->sz; k<(array->nz+array->sz); k++){
-		/* Calculate position of (i,j,k)'th element in an F90 array 
+		/* Calculate position of (i,j,k)'th element in an F90 array
 		   (where i varies most rapidly) and store value */
 		pi[k*nslab + j*nrow + i] = *(pi_old++);
 	      }
@@ -822,7 +822,7 @@ int Reorder_decode_array(IOdef_entry *io,
 	  for(k=array->sz; k<(array->nz+array->sz); k++){
 	    for(j=array->sy; j<(array->ny+array->sy); j++){
 	      for(i=array->sx; i<(array->nx+array->sx); i++){
-		/* Calculate position of (i,j,k)'th element in a C array 
+		/* Calculate position of (i,j,k)'th element in a C array
 		   (where k varies most rapidly) and store value. This
 		   statement decodes the next value from the array we
 		   specified when we opened 'xdrs'.*/
@@ -841,7 +841,7 @@ int Reorder_decode_array(IOdef_entry *io,
 	  for(k=array->sz; k<(array->nz+array->sz); k++){
 	    for(j=array->sy; j<(array->ny+array->sy); j++){
 	      for(i=array->sx; i<(array->nx+array->sx); i++){
-		/* Calculate position of (i,j,k)'th element in a C array 
+		/* Calculate position of (i,j,k)'th element in a C array
 		   (where k varies most rapidly) and store value */
 		pl[i*nslab + j*nrow + k] = *(pl_old++);
 	      }
@@ -850,7 +850,7 @@ int Reorder_decode_array(IOdef_entry *io,
 	}
       }
       else{
-      
+
 	/* Convert C array to F90 array */
 
 	nslab = array->totx*array->toty;
@@ -863,7 +863,7 @@ int Reorder_decode_array(IOdef_entry *io,
 	  for(i=array->sx; i<(array->nx+array->sx); i++){
 	    for(j=array->sy; j<(array->ny+array->sy); j++){
 	      for(k=array->sz; k<(array->nz+array->sz); k++){
-		/* Calculate position of (i,j,k)'th element in an F90 array 
+		/* Calculate position of (i,j,k)'th element in an F90 array
 		   (where i varies most rapidly) and store value */
 		xdr_long(&xdrs, &(pl[k*nslab + j*nrow + i]));
 	      }
@@ -880,7 +880,7 @@ int Reorder_decode_array(IOdef_entry *io,
 	  for(i=array->sx; i<(array->nx+array->sx); i++){
 	    for(j=array->sy; j<(array->ny+array->sy); j++){
 	      for(k=array->sz; k<(array->nz+array->sz); k++){
-		/* Calculate position of (i,j,k)'th element in an F90 array 
+		/* Calculate position of (i,j,k)'th element in an F90 array
 		   (where i varies most rapidly) and store value */
 		pl[k*nslab + j*nrow + i] = *(pl_old++);
 	      }
@@ -899,7 +899,7 @@ int Reorder_decode_array(IOdef_entry *io,
       if(array->is_f90 != REG_TRUE){
 
 	/* Convert F90 array to C array */
-	
+
 	nslab = (array->totz)*(array->toty);
 	nrow  = array->totz;
 
@@ -910,7 +910,7 @@ int Reorder_decode_array(IOdef_entry *io,
 	  for(k=array->sz; k<(array->nz+array->sz); k++){
 	    for(j=array->sy; j<(array->ny+array->sy); j++){
 	      for(i=array->sx; i<(array->nx+array->sx); i++){
-		/* Calculate position of (i,j,k)'th element in a C array 
+		/* Calculate position of (i,j,k)'th element in a C array
 		   (where k varies most rapidly) and store value */
 		xdr_float(&xdrs, &(pf[i*nslab + j*nrow + k]));
 	      }
@@ -927,7 +927,7 @@ int Reorder_decode_array(IOdef_entry *io,
 	  for(k=array->sz; k<(array->nz+array->sz); k++){
 	    for(j=array->sy; j<(array->ny+array->sy); j++){
 	      for(i=array->sx; i<(array->nx+array->sx); i++){
-		/* Calculate position of (i,j,k)'th element in a C array 
+		/* Calculate position of (i,j,k)'th element in a C array
 		   (where k varies most rapidly) and store value */
 		pf[i*nslab + j*nrow + k] = *(pf_old++);
 	      }
@@ -936,9 +936,9 @@ int Reorder_decode_array(IOdef_entry *io,
 	}
       }
       else{
-	
+
 	/* Convert C array to F90 array */
-	
+
 	nslab = (array->totx)*(array->toty);
 	nrow  = array->totx;
 
@@ -949,7 +949,7 @@ int Reorder_decode_array(IOdef_entry *io,
 	  for(i=array->sx; i<(array->nx+array->sx); i++){
 	    for(j=array->sy; j<(array->ny+array->sy); j++){
 	      for(k=array->sz; k<(array->nz+array->sz); k++){
-		/* Calculate position of (i,j,k)'th element in an F90 array 
+		/* Calculate position of (i,j,k)'th element in an F90 array
 		   (where i varies most rapidly) and store value */
 		xdr_float(&xdrs, &(pf[k*nslab + j*nrow + i]));
 	      }
@@ -966,7 +966,7 @@ int Reorder_decode_array(IOdef_entry *io,
 	  for(i=array->sx; i<(array->nx+array->sx); i++){
 	    for(j=array->sy; j<(array->ny+array->sy); j++){
 	      for(k=array->sz; k<(array->nz+array->sz); k++){
-		/* Calculate position of (i,j,k)'th element in an F90 array 
+		/* Calculate position of (i,j,k)'th element in an F90 array
 		   (where i varies most rapidly) and store value */
 		pf[k*nslab + j*nrow + i] = *(pf_old++);
 	      }
@@ -977,15 +977,15 @@ int Reorder_decode_array(IOdef_entry *io,
       break;
 
     case REG_DBL:
-    
+
       pd = (double *)pData;
 
       /* In this context, array->is_f90 flags whether we want to
 	 convert _to_ an F90-style array */
       if(array->is_f90 != REG_TRUE){
-	
+
 	/* Convert F90 array to C array */
-	
+
 	nslab = (array->totz)*(array->toty);
 	nrow  = array->totz;
 
@@ -996,7 +996,7 @@ int Reorder_decode_array(IOdef_entry *io,
 	  for(k=array->sz; k<(array->nz+array->sz); k++){
 	    for(j=array->sy; j<(array->ny+array->sy); j++){
 	      for(i=array->sx; i<(array->nx+array->sx); i++){
-		/* Calculate position of (i,j,k)'th element in a C array 
+		/* Calculate position of (i,j,k)'th element in a C array
 		   (where k varies most rapidly) and store value */
 		xdr_double(&xdrs, &(pd[i*nslab + j*nrow + k]));
 	      }
@@ -1013,7 +1013,7 @@ int Reorder_decode_array(IOdef_entry *io,
 	  for(k=array->sz; k<(array->nz+array->sz); k++){
 	    for(j=array->sy; j<(array->ny+array->sy); j++){
 	      for(i=array->sx; i<(array->nx+array->sx); i++){
-		/* Calculate position of (i,j,k)'th element in a C array 
+		/* Calculate position of (i,j,k)'th element in a C array
 		   (where k varies most rapidly) and store value */
 		pd[i*nslab + j*nrow + k] = *(pd_old++);
 	      }
@@ -1022,9 +1022,9 @@ int Reorder_decode_array(IOdef_entry *io,
 	}
       }
       else{
-      
+
 	/* Convert C array to F90 array */
-	
+
 	nslab = (array->totx)*(array->toty);
 	nrow  = array->totx;
 
@@ -1035,7 +1035,7 @@ int Reorder_decode_array(IOdef_entry *io,
 	  for(i=array->sx; i<(array->nx+array->sx); i++){
 	    for(j=array->sy; j<(array->ny+array->sy); j++){
 	      for(k=array->sz; k<(array->nz+array->sz); k++){
-		/* Calculate position of (i,j,k)'th element in an F90 array 
+		/* Calculate position of (i,j,k)'th element in an F90 array
 		   (where i varies most rapidly) and store value */
 		xdr_double(&xdrs, &(pd[k*nslab + j*nrow + i]));
 	      }
@@ -1052,7 +1052,7 @@ int Reorder_decode_array(IOdef_entry *io,
 	  for(i=array->sx; i<(array->nx+array->sx); i++){
 	    for(j=array->sy; j<(array->ny+array->sy); j++){
 	      for(k=array->sz; k<(array->nz+array->sz); k++){
-		/* Calculate position of (i,j,k)'th element in an F90 array 
+		/* Calculate position of (i,j,k)'th element in an F90 array
 		   (where i varies most rapidly) and store value */
 		pd[k*nslab + j*nrow + i] = *(pd_old++);
 	      }
@@ -1061,7 +1061,7 @@ int Reorder_decode_array(IOdef_entry *io,
 	}
       }
       break;
-    
+
     default:
       break;
     }
@@ -1107,7 +1107,7 @@ int Get_fully_qualified_hostname(char **hostname, char **ip_addr_ptr)
   }
 
   if(host->h_length == 4){
-    sprintf(ip_addr, "%d.%d.%d.%d", 
+    sprintf(ip_addr, "%d.%d.%d.%d",
 	    (unsigned char)(host->h_addr_list[0][0]),
 	    (unsigned char)(host->h_addr_list[0][1]),
 	    (unsigned char)(host->h_addr_list[0][2]),
@@ -1125,7 +1125,7 @@ int Get_fully_qualified_hostname(char **hostname, char **ip_addr_ptr)
   * end of ARPDBG */
 
 #ifdef REG_DEBUG
-  fprintf(stderr, "STEER: Get_fully_qualified_hostname: hostname = %s\n", 
+  fprintf(stderr, "STEER: Get_fully_qualified_hostname: hostname = %s\n",
 	  host->h_name);
   fprintf(stderr, "                                     IP       = %s\n",
 	  ip_addr);
@@ -1145,7 +1145,7 @@ int Get_fully_qualified_hostname(char **hostname, char **ip_addr_ptr)
 
   *hostname = hostNameBuffer;
   *ip_addr_ptr = hostDetailsStruct->h_addr_list[0];
- 
+
   return REG_SUCCESS;
 #endif
 }
@@ -1165,7 +1165,7 @@ char *Get_current_time_string()
   /* 2005-08-31T14:31:51Z */
   sprintf(date_string,"%d-%02d-%02dT%02d:%02d:%02dZ",
 	  (now_details->tm_year) + 1900,
-	  (now_details->tm_mon) + 1, 
+	  (now_details->tm_mon) + 1,
 	  now_details->tm_mday,
 	  now_details->tm_hour,
 	  now_details->tm_min,
@@ -1228,7 +1228,7 @@ int Get_security_config(const char               *configFile,
 	return REG_FAILURE;
       }
       snprintf(bufline, 512, "%s%s", pChar, &configFile[replace]);
-    }    
+    }
     else{
       strncpy(bufline, configFile, 512);
     }
@@ -1282,7 +1282,7 @@ int Get_security_config(const char               *configFile,
         strncpy(sec->myKeyCertFile, (char *)attrValue, len);
         sec->myKeyCertFile[len] = '\0';
 #ifdef REG_DEBUG
-        printf("Get_security_config: myKeyCertFile >>%s<<\n", 
+        printf("Get_security_config: myKeyCertFile >>%s<<\n",
 	       sec->myKeyCertFile);
 #endif
         xmlFree(attrValue);
@@ -1296,7 +1296,7 @@ int Get_security_config(const char               *configFile,
   if(!(sec->myKeyCertFile[0]) || !(sec->caCertsPath[0])){
     xmlFreeDoc(doc);
     xmlCleanupParser();
-    return REG_FAILURE;    
+    return REG_FAILURE;
   }
 
   /* Extract user's DN from their certificate */
@@ -1336,7 +1336,7 @@ void Common_signal_handler(int aSignal){
 
   /* caught one signal - ignore all others now as going to quit and do not
      want the quit process to be interrupted and restarted... */
-  signal(SIGINT, SIG_IGN); 
+  signal(SIGINT, SIG_IGN);
   signal(SIGTERM, SIG_IGN);
   signal(SIGSEGV, SIG_IGN);
   signal(SIGILL, SIG_IGN);
@@ -1353,12 +1353,12 @@ void Common_signal_handler(int aSignal){
       fprintf(stderr, "STEER: Steering_signal_handler: Interrupt "
 	      "signal received (signal %d)\n", aSignal);
       break;
-      
+
     case SIGTERM:
       fprintf(stderr, "STEER: Steering_signal_handler: Kill signal "
 	      "received (signal %d)\n", aSignal);
       break;
-      
+
     case SIGSEGV:
       fprintf(stderr, "STEER: Steering_signal_handler: Illegal "
 	      "Access caught (signal %d)\n", aSignal);
@@ -1369,7 +1369,7 @@ void Common_signal_handler(int aSignal){
 	      "Exception caught (signal %d)\n", aSignal);
       break;
 
-      /* note: abort called if exception not caught (and hence calls 
+      /* note: abort called if exception not caught (and hence calls
 	 terminate) */
     case SIGABRT:
       fprintf(stderr, "STEER: Steering_signal_handler: Abort "
@@ -1396,7 +1396,7 @@ void Common_signal_handler(int aSignal){
 #endif
 
     default:
-      fprintf(stderr, "STEER: Steering_signal_handler: Signal caught (signal %d)\n", 
+      fprintf(stderr, "STEER: Steering_signal_handler: Signal caught (signal %d)\n",
               aSignal);
   }
 
@@ -1435,6 +1435,92 @@ int Delete_iotype_list(struct reg_iotype_list *list) {
   list->numEntries = 0;
 
   return REG_SUCCESS;
+}
+
+/*----------------------------------------------------------------*/
+
+int Get_file_list(const char* dirname, int num_tags, char** tags,
+		  int* num_files, char*** filenames) {
+
+  DIR* dir;
+  char** tmp;
+  struct dirent* entry;
+  int array_len;
+  int name_len;
+  int i, j;
+  int tag_not_found;
+
+  if((dir = opendir(dirname)) == NULL)
+    return REG_FAILURE;
+
+  /* allocate an array of 50 filenames */
+  array_len = 50;
+  *filenames = (char**) malloc(array_len * sizeof(char*));
+  if(*filenames == NULL) {
+    closedir(dir);
+    return REG_FAILURE;
+  }
+
+  i = 0;
+  while((entry = readdir(dir)) != NULL) {
+    /* search for the tags - they must all be present */
+    tag_not_found = 0;
+    for(j = 0; j < num_tags; j++) {
+      if((strstr(entry->d_name, tags[j])) == NULL) {
+	tag_not_found = 1;
+	break;
+      }
+    }
+    if(tag_not_found)
+      continue;
+
+    /* do we need more space in the filenames array? */
+    if(i == array_len) {
+      array_len += 10;
+      tmp = (char**) realloc((void*)(*filenames),
+			     array_len * sizeof(char*));
+      if(tmp == NULL) {
+	for(j = 0; j < i; j++) {
+	  free((*filenames)[j]);
+	}
+	free(*filenames);
+	closedir(dir);
+	return REG_FAILURE;
+      }
+
+      *filenames = tmp;
+    }
+
+    /* allocate the memory required to store the filename */
+    name_len = strlen(entry->d_name) + 1;
+    (*filenames)[i] = (char*) malloc(name_len * sizeof(char));
+    if((*filenames)[i] == NULL) {
+      for(j = 0; j < i; j++) {
+	free((*filenames)[j]);
+      }
+      free(*filenames);
+      closedir(dir);
+      return REG_FAILURE;
+    }
+
+    strncpy((*filenames)[i], entry->d_name, name_len);
+    i++;
+  }
+
+  closedir(dir);
+
+  if(i > 0)
+    qsort(*filenames, i, sizeof(**filenames), cmpstrs);
+
+  *num_files = i;
+
+  return REG_SUCCESS;
+}
+
+/*----------------------------------------------------------------*/
+
+int cmpstrs(const void* str1, const void* str2) {
+  return strcmp(*(char* const*) str1, *(char* const*) str2);
 }
 
 /*----------------------------------------------------------------*/

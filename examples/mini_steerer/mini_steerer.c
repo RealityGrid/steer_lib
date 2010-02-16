@@ -78,7 +78,7 @@ static int Get_all_messages(int* app_seqnum);
 */
 static int Edit_parameter(int sim_handle);
 
-/** Allows the user to choose a parameter 
+/** Allows the user to choose a parameter
     @param sim_handle Handle of the simulation being steered
     @param steerable  Whether to show user steerable or monitored params
 */
@@ -139,7 +139,7 @@ int main(int argc, char **argv){
   }
 
   /* Initialise arrays for querying iotypes */
-  
+
   for(i=0; i<REG_INITIAL_NUM_IOTYPES; i++){
 
     io_labels[i] = (char *)malloc(REG_MAX_STRING_LENGTH*sizeof(char));
@@ -195,7 +195,7 @@ int main(int argc, char **argv){
       if(strstr(argv[1], "https://")){
 	/* If using SSL then we need to read security configuration */
 	sec.use_ssl = 1;
-	
+
 	snprintf(confFile, REG_MAX_STRING_LENGTH,
 		 "%s/.realitygrid/security.conf",
 		 getenv("HOME"));
@@ -228,7 +228,7 @@ int main(int argc, char **argv){
       }
       registryAddr[j] = '\0';
       printf("\n");
-       
+
       if(strstr(registryAddr, "https") == registryAddr){
 
 	sec.use_ssl = 1;
@@ -253,7 +253,7 @@ int main(int argc, char **argv){
       }
       else{
 	/* No SSL - get the passphrase for the registry */
-	snprintf(user_str, REG_MAX_STRING_LENGTH, 
+	snprintf(user_str, REG_MAX_STRING_LENGTH,
 		 "Enter your username [%s]: ", getenv("USER"));
 	if( !(passPtr = getpass(user_str)) ){
 	  printf("Failed to get username from command line\n");
@@ -293,7 +293,7 @@ int main(int argc, char **argv){
 	  printf("\n%d steerable applications available:\n", content.numEntries);
 	  for(i=0; i<content.numEntries; i++){
 
-	    printf("    %d: %s, gsh = %s\n", i, content.entries[i].application, 
+	    printf("    %d: %s, gsh = %s\n", i, content.entries[i].application,
 		   content.entries[i].gsh);
 	  }
 
@@ -313,7 +313,7 @@ int main(int argc, char **argv){
 	  else{
 	    strncpy(sec.passphrase, passPtr, REG_MAX_STRING_LENGTH);
 	    strncpy(sec.userDN, getenv("USER"), REG_MAX_STRING_LENGTH);
-	    status = Sim_attach_secure(content.entries[i].gsh, &sec, 
+	    status = Sim_attach_secure(content.entries[i].gsh, &sec,
 				       &sim_handle);
 	  }
 	}
@@ -359,21 +359,21 @@ int main(int argc, char **argv){
       if(num_params > REG_INITIAL_NUM_PARAMS){
 	num_params = REG_INITIAL_NUM_PARAMS;
       }
-      
-      if(Get_param_values(sim_handle, 
+
+      if(Get_param_values(sim_handle,
 			  REG_FALSE,
 			  num_params,
 			  param_details) != REG_FAILURE){
 
 	for(i=0; i<num_params; i++){
 
-	  fprintf(stderr, "Handle: %d, Label: %s, Value: %s, Type: %d\n", 
-		  param_details[i].handle, param_details[i].label, 
+	  fprintf(stderr, "Handle: %d, Label: %s, Value: %s, Type: %d\n",
+		  param_details[i].handle, param_details[i].label,
 		  param_details[i].value, param_details[i].type);
 
 	  if(param_details[i].type == REG_BIN){
-	    fprintf(stderr, "        Have %d bytes of raw data at %p\n", 
-		    atoi(param_details[i].max_val), 
+	    fprintf(stderr, "        Have %d bytes of raw data at %p\n",
+		    atoi(param_details[i].max_val),
 		    param_details[i].raw_data);
 	  }
 
@@ -392,8 +392,8 @@ int main(int argc, char **argv){
       if(num_params > REG_INITIAL_NUM_PARAMS){
 	num_params = REG_INITIAL_NUM_PARAMS;
       }
-      
-      if(Get_param_values(sim_handle, 
+
+      if(Get_param_values(sim_handle,
 			  REG_TRUE,
 			  num_params,
 			  param_details) != REG_FAILURE){
@@ -401,9 +401,9 @@ int main(int argc, char **argv){
 
 	for(i=0; i<num_params; i++){
 
-	  fprintf(stderr, "Handle: %d, Label: %s, Value: %s, Type: %d\n", 
-		  param_details[i].handle, 
-		  param_details[i].label, param_details[i].value, 
+	  fprintf(stderr, "Handle: %d, Label: %s, Value: %s, Type: %d\n",
+		  param_details[i].handle,
+		  param_details[i].label, param_details[i].value,
 		  param_details[i].type);
 	}
       }
@@ -521,8 +521,8 @@ int main(int argc, char **argv){
 
 	/* Print list of available IOTypes */
 	for(i=0; i<num_types; i++){
-	  fprintf(stderr, 
-		  "Freq. of iotype %d, %s = %d\n", i, 
+	  fprintf(stderr,
+		  "Freq. of iotype %d, %s = %d\n", i,
 		  io_labels[i], io_freqs[i]);
 	}
 
@@ -550,7 +550,7 @@ int main(int argc, char **argv){
 	sscanf(user_str, "%d", &new_freq);
 	fprintf(stderr, "\nSetting frequency to %d\n", new_freq);
 
-	Set_iotype_freq(sim_handle, 1, &(io_handles[ioTypeSel]), 
+	Set_iotype_freq(sim_handle, 1, &(io_handles[ioTypeSel]),
 			&new_freq);
 
 	Emit_control(sim_handle, 0, NULL, NULL);
@@ -611,7 +611,7 @@ int main(int argc, char **argv){
 
     /*--------------------------------------------------*/
     case 'o':
-      
+
       fprintf(stderr, "\nGet log of (m)onitored or (s)teerable parameter?: ");
       while(REG_TRUE){
 	scanf("%s", user_str);
@@ -653,7 +653,7 @@ int main(int argc, char **argv){
 
     /*--------------------------------------------------*/
     case 'R':
-      /* This only works if we're steering in a Grid Service 
+      /* This only works if we're steering in a Grid Service
 	 framework - otherwise a GSH is meaningless */
       printf("Enter GSH of checkpoint to restart from: ");
       while(REG_TRUE){
@@ -667,7 +667,7 @@ int main(int argc, char **argv){
     case 's':
       fprintf(stderr, "Sending stop signal...\n");
       Emit_stop_cmd(sim_handle);
-      break;		   
+      break;
 
     /*--------------------------------------------------*/
     case 'g':
@@ -690,7 +690,7 @@ int main(int argc, char **argv){
 	  num_types = REG_INITIAL_NUM_IOTYPES;
 	}
 	/* This section only applicable to file-based checkpoint
-	   logging.  In a Grid Service framework the user would 
+	   logging.  In a Grid Service framework the user would
 	   browse the checkpoint tree to see what's available. */
 	Get_chktypes(sim_handle,
 		     num_types,
@@ -964,23 +964,23 @@ int Choose_parameter(int sim_handle, int steerable)
   char   user_str[REG_MAX_STRING_LENGTH];
 
   /* Find out what parameters there are available */
-  
+
   if(Get_param_number(sim_handle, steerable, &num_params) != REG_FAILURE){
 
     if(num_params > REG_INITIAL_NUM_PARAMS){
       num_params = REG_INITIAL_NUM_PARAMS;
     }
-    
-    if(Get_param_values(sim_handle, 
+
+    if(Get_param_values(sim_handle,
     			steerable,
     			num_params,
 			param_details) != REG_FAILURE){
-    
+
       fprintf(stderr, "Which parameter to select?\n\n");
-    
+
       for(i=0; i<num_params; i++){
-    	fprintf(stderr, "%d: %s = %s (%s,%s)\n", i, param_details[i].label, 
-		param_details[i].value, param_details[i].min_val, 
+    	fprintf(stderr, "%d: %s = %s (%s,%s)\n", i, param_details[i].label,
+		param_details[i].value, param_details[i].min_val,
 		param_details[i].max_val);
       }
 
@@ -1029,23 +1029,23 @@ int Edit_parameter(int sim_handle)
   param_val[0] = (char *)malloc(REG_MAX_STRING_LENGTH*sizeof(char));
   if (!param_val[0]) return REG_FAILURE;
 
-  /* Get the details of this parameter */  
+  /* Get the details of this parameter */
   if(Get_param_number(sim_handle, REG_TRUE, &num_params) != REG_FAILURE){
 
     if(num_params > REG_INITIAL_NUM_PARAMS){
       num_params = REG_INITIAL_NUM_PARAMS;
     }
-    
-    if(Get_param_values(sim_handle, 
+
+    if(Get_param_values(sim_handle,
     			REG_TRUE,
     			num_params,
 			param_details) != REG_FAILURE){
-    
+
       for(i=0; i<num_params; i++){
 
 	if(param_details[i].handle == handle){
-	  fprintf(stderr, "%d: %s = %s (%s,%s)\n", i, param_details[i].label, 
-		  param_details[i].value, param_details[i].min_val, 
+	  fprintf(stderr, "%d: %s = %s (%s,%s)\n", i, param_details[i].label,
+		  param_details[i].value, param_details[i].min_val,
 		  param_details[i].max_val);
 	  index = i;
 	  break;
@@ -1053,7 +1053,7 @@ int Edit_parameter(int sim_handle)
       }
 
       fprintf(stderr, "Editing parameter with handle %d, "
-	      "current value = %s...\n", 
+	      "current value = %s...\n",
 	      handle, param_details[index].value);
 
       fprintf(stderr, "New value: ");
@@ -1078,7 +1078,7 @@ int Edit_parameter(int sim_handle)
   if(param_val[0]){
     free(param_val[0]);
     param_val[0] = NULL;
-  } 
+  }
 
   return return_status;
 }

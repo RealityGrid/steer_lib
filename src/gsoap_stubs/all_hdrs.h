@@ -35,8 +35,7 @@ struct Security {
 };
 
 struct SOAP_ENV__Header
-{ 
+{
   xsd__string           wsa__To;
   struct Security wsse__Security;
 };
-

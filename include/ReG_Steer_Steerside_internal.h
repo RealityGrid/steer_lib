@@ -1,7 +1,7 @@
 /*
   The RealityGrid Steering Library
 
-  Copyright (c) 2002-2009, University of Manchester, United Kingdom.
+  Copyright (c) 2002-2010, University of Manchester, United Kingdom.
   All rights reserved.
 
   This software is produced by Research Computing Services, University
@@ -51,10 +51,10 @@
 
 /** @internal
     @file ReG_Steer_Steerside_internal.h
-    @brief Header for library-internal steering side routines 
+    @brief Header for library-internal steering side routines
 
-    Header file defining the internal (to the library) utility 
-    routines used in the construction of a steering interface for 
+    Header file defining the internal (to the library) utility
+    routines used in the construction of a steering interface for
     a steering component. Also contains the main table that stores
     information about each application being steered.
 
@@ -100,13 +100,13 @@ typedef struct {
 /** Typedef for structure holding general configuration details
     for the steerer */
 typedef struct {
-  /** Whether the OpenSSL pseudo-random no. generator is 
+  /** Whether the OpenSSL pseudo-random no. generator is
       correctly initialized */
   int             ossl_rand_available;
   /** The location of the pem file containing the user's certificate
       and private key concatenated together. */
   char            privateKeyCertFile[REG_MAX_STRING_LENGTH];
-  /** Path to the directory containing the CA certificates (for 
+  /** Path to the directory containing the CA certificates (for
       authenticating any secure containers we connect to when using
       SOAP over https) */
   char            caCertsPath[REG_MAX_STRING_LENGTH];
@@ -118,7 +118,7 @@ typedef struct {
 /** @internal
     @param SimHandle Handle of an attached simulation
 
-    A look-up function - return the index of the simulation with handle 
+    A look-up function - return the index of the simulation with handle
     @p SimHandle in the main table.  Returns REG_SIM_HANDLE_NOTSET if no
     matching handle found. */
 int Sim_index_from_handle(int SimHandle);
@@ -134,7 +134,7 @@ int Next_free_iodef_index(IOdef_table_type *table);
 /** @internal
     @param sim_id Index of attached simulation in main Sim_table
     @param cmd_id ID of command
-    @return REG_SUCCESS if simulation supports the command, 
+    @return REG_SUCCESS if simulation supports the command,
     REG_FAILURE otherwise
 
     Checks to see that the simulation of index @p sim_id supports the
@@ -144,7 +144,7 @@ int Command_supported(int sim_id, int cmd_id);
 /** @internal
     @param SimIndex Index of simulation in main Sim_table
     @param buf Buffer containing control message
-    
+
     Send the supplied control message to the simulation with the
     supplied index */
 int Send_control_msg(int SimIndex, char* buf);
@@ -157,7 +157,7 @@ int Finalize_connection(int index);
 
 /** @internal
     @param param_table Pointer to parameter table
-    
+
     free's any allocated memory held in the parameter table */
 int Delete_param_table(Param_table_type *param_table);
 
@@ -166,21 +166,21 @@ int Delete_param_table(Param_table_type *param_table);
     @param entry Pointer to beginning of linked list of chk log
     entries
 
-    Parses the last Checkpoint-log message read in for the 
+    Parses the last Checkpoint-log message read in for the
     specified simulation.  Stores results within the Chk_log field
     lf the supplied Sim_entry_type structure. */
-int Consume_chk_log(Sim_entry_type *sim, 
+int Consume_chk_log(Sim_entry_type *sim,
 		    struct chk_log_entry_struct *entry);
 
 /** @internal
     @param sim Pointer to simulation entry in Sim_table
-    @param param_ptr Pointer to beginning of linked list of 
+    @param param_ptr Pointer to beginning of linked list of
     parameter details
 
-    Parses the last parameter-log message read in for the 
+    Parses the last parameter-log message read in for the
     specified simulation and stores the details in the Params_table
     struct of the Sim_entry_type */
-int Consume_param_log(Sim_entry_type *sim, 
+int Consume_param_log(Sim_entry_type *sim,
 		      struct param_struct *param_ptr);
 
 /** @internal
@@ -189,7 +189,7 @@ int Consume_param_log(Sim_entry_type *sim,
     @param out On successful return, holds the details associated with
     the specified checkpoint log.
 
-    Obtain details associated with the supplied Chk log entry (@e 
+    Obtain details associated with the supplied Chk log entry (@e
     e.g. values of steerable parameters at that point). Necessary
     because Chk_log_entry_type only holds parameter handles and no
     other information. Parameter details are extracted from the table

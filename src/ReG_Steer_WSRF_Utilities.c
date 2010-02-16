@@ -1,7 +1,7 @@
 /*
   The RealityGrid Steering Library
 
-  Copyright (c) 2002-2009, University of Manchester, United Kingdom.
+  Copyright (c) 2002-2010, University of Manchester, United Kingdom.
   All rights reserved.
 
   This software is produced by Research Computing Services, University
@@ -99,7 +99,7 @@ char *Create_steering_service(const struct reg_job_details* job,
   fprintf(stderr," - checkpointAddress: %s\n", job->checkpointAddress);
 #endif /* REG_DEBUG_FULL */
 
-  sprintf(factoryAddr, "%sSession/SWSFactory/SWSFactory", 
+  sprintf(factoryAddr, "%sSession/SWSFactory/SWSFactory",
 	  containerAddress);
 
 #ifdef REG_DEBUG_FULL
@@ -125,7 +125,7 @@ char *Create_steering_service(const struct reg_job_details* job,
 
 #ifdef REG_DEBUG_FULL
   if(sec->passphrase[0]) {
-    printf("Create_SWS: userName for call to createSWSResource >>%s<<\n", 
+    printf("Create_SWS: userName for call to createSWSResource >>%s<<\n",
 	   sec->userDN);
   }
 #endif /* REG_DEBUG_FULL */
@@ -137,9 +137,9 @@ char *Create_steering_service(const struct reg_job_details* job,
   /* 1440 = 24hrs in minutes.  Is the default lifetime of the service
      until its associated job starts up and then the TerminationTime
      is reset using the maxRunTime RP */
-  if(soap_call_swsf__createSWSResource(&soap, factoryAddr, NULL, 
-				       1440, 
-				       (char *)job->checkpointAddress, 
+  if(soap_call_swsf__createSWSResource(&soap, factoryAddr, NULL,
+				       1440,
+				       (char *)job->checkpointAddress,
 				       (char *)job->passphrase,
 				       &response) != SOAP_OK) {
     if(soap.fault && soap.fault->detail) {
@@ -154,7 +154,7 @@ char *Create_steering_service(const struct reg_job_details* job,
 
   /* Register this SWS */
 
-  snprintf(jobDescription, 1024, 
+  snprintf(jobDescription, 1024,
 	   "<MemberEPR><wsa:Address>%s</wsa:Address></MemberEPR>"
 	   "<Content><registryEntry>\n"
 	   "<serviceType>SWS</serviceType>\n"
@@ -173,10 +173,10 @@ char *Create_steering_service(const struct reg_job_details* job,
 	   "</regSecurity>"
 	   "</registryEntry>"
 	   "</Content>",
-	   epr, Get_current_time_string(), job->userName, job->group, 
+	   epr, Get_current_time_string(), job->userName, job->group,
 	   job->software, job->purpose, job->passphrase, job->userName);
 
-  if(!ssl_initialized && 
+  if(!ssl_initialized &&
      (strstr(registryAddress, "https") == registryAddress)) {
     if(init_ssl_context(&soap,
 			REG_TRUE, /* Authenticate container */
@@ -191,7 +191,7 @@ char *Create_steering_service(const struct reg_job_details* job,
     ssl_initialized = 1;
   }
 
-  if(create_WSRF_header(&soap, registryAddress, 
+  if(create_WSRF_header(&soap, registryAddress,
 			sec->userDN, sec->passphrase) != REG_SUCCESS) {
     return NULL;
   }
@@ -208,7 +208,7 @@ char *Create_steering_service(const struct reg_job_details* job,
   /* Print out address of the ServiceGroupEntry
      that represents our SWS's entry in the registry */
 #ifdef REG_DEBUG_FULL
-  fprintf(stderr, "STEERUtils: Create_SWS: Address of SGE >>%s<<\n", 
+  fprintf(stderr, "STEERUtils: Create_SWS: Address of SGE >>%s<<\n",
 	  addResponse.wsa__EndpointReference.wsa__Address);
 #endif /* REG_DEBUG_FULL */
 
@@ -218,10 +218,10 @@ char *Create_steering_service(const struct reg_job_details* job,
   snprintf(jobDescription, 1024, "<maxRunTime>%d</maxRunTime>"
 	   "<registryEPR>%s</registryEPR>"
 	   "<ServiceGroupEntry>%s</ServiceGroupEntry>",
-	   job->lifetimeMinutes, registryAddress, 
+	   job->lifetimeMinutes, registryAddress,
 	   addResponse.wsa__EndpointReference.wsa__Address);
 
-  if(create_WSRF_header(&soap, epr, job->userName, job->passphrase) 
+  if(create_WSRF_header(&soap, epr, job->userName, job->passphrase)
      != REG_SUCCESS) {
     return NULL;
   }
@@ -240,9 +240,9 @@ char *Create_steering_service(const struct reg_job_details* job,
   /* If an input deck has been specified, grab it and store on the
      steering service */
   if(strlen(job->inputFilename) &&
-     (Read_file(job->inputFilename, &contents, &numBytes, REG_TRUE) 
+     (Read_file(job->inputFilename, &contents, &numBytes, REG_TRUE)
       == REG_SUCCESS)) {
-    /* 49 = 12 + 37 = strlen("<![CDATA[]]>") + 
+    /* 49 = 12 + 37 = strlen("<![CDATA[]]>") +
                              2*strlen("<inputFileContent>") + 1 */
     if((strlen(contents) + 49) < REG_SCRATCH_BUFFER_SIZE) {
       pchar = Steer_lib_config.scratch_buffer;
@@ -253,10 +253,10 @@ char *Create_steering_service(const struct reg_job_details* job,
       sprintf(pchar, "]]></inputFileContent>");
     }
     else {
-      
+
     }
 
-    if(create_WSRF_header(&soap, epr, job->userName, 
+    if(create_WSRF_header(&soap, epr, job->userName,
 			  job->passphrase) != REG_SUCCESS) {
       soap_end(&soap);
       soap_done(&soap);
@@ -267,7 +267,7 @@ char *Create_steering_service(const struct reg_job_details* job,
 	    "\nCreate_SWS: Calling SetResourceProperties with >>%s<<\n",
 	    Steer_lib_config.scratch_buffer);
 #endif
-    if(soap_call_wsrp__SetResourceProperties(&soap, epr, "", 
+    if(soap_call_wsrp__SetResourceProperties(&soap, epr, "",
 					     Steer_lib_config.scratch_buffer,
 					     &setRPresponse) != SOAP_OK) {
       soap_print_fault(&soap, stderr);
@@ -291,7 +291,7 @@ int Destroy_steering_service(const char                     *address,
 
 /*-----------------------------------------------------------------*/
 
-char* Create_checkpoint_tree(const char *factory, 
+char* Create_checkpoint_tree(const char *factory,
 			     const char *metadata) {
 
   struct soap                        mySoap;
@@ -301,10 +301,10 @@ char* Create_checkpoint_tree(const char *factory,
 
   soap_init(&mySoap);
 
-  if(soap_call_cpt__createNewTree(&mySoap, 
-				  factory, 
+  if(soap_call_cpt__createNewTree(&mySoap,
+				  factory,
 				  "", /* soap Action */
-				  (char *)metadata, 
+				  (char *)metadata,
 				  &out) != SOAP_OK){
     fprintf(stderr, "STEERUtils: ERROR: Create_checkpoint_tree_wsrf: Call to "
 	    "createNewTree on %s failed\n", factory);
@@ -422,7 +422,7 @@ int Get_IOTypes(const char                     *address,
   ioPtr = msg->io_def->first_io;
   i = 0;
   while(ioPtr) {
-    strncpy(list->iotype[i].label, (char *) ioPtr->label, 
+    strncpy(list->iotype[i].label, (char *) ioPtr->label,
 	    REG_MAX_STRING_LENGTH);
     if( !xmlStrcmp(ioPtr->direction, (const xmlChar *)"IN") ){
       list->iotype[i].direction = REG_IO_IN;
@@ -444,9 +444,9 @@ int Get_IOTypes(const char                     *address,
 
 /*----------------------------------------------------------------*/
 
-int Set_service_data_source(const char *EPR, 
-			    const char *sourceAddress, 
-			    const int   sourcePort, 
+int Set_service_data_source(const char *EPR,
+			    const char *sourceAddress,
+			    const int   sourcePort,
 			    const char *label,
 			    const struct reg_security_info *sec) {
   char        buf[1024];

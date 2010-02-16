@@ -12,7 +12,7 @@ struct swsf__createSWSResourceResponse {
 };
 
 //gsoap swsf service method-action: createService ""
-swsf__createSWSResource( xsd__int  timeToLive, 
+swsf__createSWSResource( xsd__int  timeToLive,
 			 xsd__string  chkpointEPR,
 			 xsd__string  passPhrase,
 			 struct swsf__createSWSResourceResponse * out );

@@ -1,7 +1,7 @@
 /*
   The RealityGrid Steering Library
 
-  Copyright (c) 2002-2009, University of Manchester, United Kingdom.
+  Copyright (c) 2002-2010, University of Manchester, United Kingdom.
   All rights reserved.
 
   This software is produced by Research Computing Services, University
@@ -53,6 +53,7 @@
 
 #include "ReG_Steer_Config.h"
 #include "ReG_Steer_types.h"
+#include "ReG_Steer_Common.h"
 #include "ReG_Steer_Steering_Transport_API.h"
 #include "ReG_Steer_Steering_Transport_WSRF.h"
 #include "ReG_Steer_Appside_internal.h"
@@ -120,7 +121,7 @@ char *STATUS_MSG_RP     = "sws:statusMsg";
 
 /*----------------- Appside methods ---------------------*/
 
-int Initialize_steering_connection_impl(int  NumSupportedCmds,
+int Initialize_steering_connection_impl(const int  NumSupportedCmds,
 					int* SupportedCmds) {
   char* pchar;
   char* ip_addr;
@@ -131,7 +132,7 @@ int Initialize_steering_connection_impl(int  NumSupportedCmds,
 
   /* malloc memory for soap struct for this connection and then
      initialise it */
-  if(!(appside_SGS_info.soap = 
+  if(!(appside_SGS_info.soap =
                 (struct soap*)malloc(sizeof(struct soap)))) {
 
     fprintf(stderr, "STEER: Initialize_steering_connection: failed"
@@ -142,7 +143,7 @@ int Initialize_steering_connection_impl(int  NumSupportedCmds,
   /* Get the address of the SWS for this application from an environment
      variable */
   if((pchar = getenv("REG_SGS_ADDRESS"))) {
-    snprintf(appside_SGS_info.address, REG_MAX_STRING_LENGTH, 
+    snprintf(appside_SGS_info.address, REG_MAX_STRING_LENGTH,
 	     "%s", pchar);
 #ifdef REG_DEBUG
     fprintf(stderr, "STEER: Initialize_steering_connection: "
@@ -158,11 +159,11 @@ int Initialize_steering_connection_impl(int  NumSupportedCmds,
   /* Initialise the soap run-time environment:
      Use this form to turn-on keep-alive for both incoming and outgoing
      http connections */
-  soap_init2(appside_SGS_info.soap, SOAP_IO_KEEPALIVE, 
+  soap_init2(appside_SGS_info.soap, SOAP_IO_KEEPALIVE,
 	     SOAP_IO_KEEPALIVE);
 
   /* If address of SWS begins with 'https' then initialize SSL context */
-  if(strstr(appside_SGS_info.address, "https") == 
+  if(strstr(appside_SGS_info.address, "https") ==
      appside_SGS_info.address) {
     if(init_ssl_context(appside_SGS_info.soap,
 			REG_FALSE, /* Don't authenticate SWS */
@@ -175,7 +176,7 @@ int Initialize_steering_connection_impl(int  NumSupportedCmds,
     }
   }
 
-  /* Initialize the OpenSSL random no. generator and, if successful, 
+  /* Initialize the OpenSSL random no. generator and, if successful,
      get the passphrase, if any, for the SWS (for use with WS-Security) */
   appside_SGS_info.passwd[0] = '\0';
   snprintf(appside_SGS_info.username, REG_MAX_STRING_LENGTH,
@@ -183,7 +184,7 @@ int Initialize_steering_connection_impl(int  NumSupportedCmds,
 
   if(init_ssl_random_seq() == REG_SUCCESS) {
     if((pchar = getenv("REG_PASSPHRASE"))) {
-      snprintf(appside_SGS_info.passwd, REG_MAX_STRING_LENGTH, 
+      snprintf(appside_SGS_info.passwd, REG_MAX_STRING_LENGTH,
 	       "%s", pchar);
 #ifdef REG_DEBUG
       fprintf(stderr, "STEER: Initialize_steering_connection: "
@@ -200,12 +201,12 @@ int Initialize_steering_connection_impl(int  NumSupportedCmds,
 	      "failed to initialize OpenSSL random no. generator\n");
   }
 
-  /* Since we are using KEEPALIVE, we can also ask gSOAP to bind the 
-     socket to a specific port on the local machine - only do this if 
+  /* Since we are using KEEPALIVE, we can also ask gSOAP to bind the
+     socket to a specific port on the local machine - only do this if
      GLOBUS_TCP_PORT_RANGE is set. */
   if((pchar = getenv("GLOBUS_TCP_PORT_RANGE"))) {
-    if(sscanf(pchar, "%d,%d", 
-	      &(appside_SGS_info.soap->client_port_min), 
+    if(sscanf(pchar, "%d,%d",
+	      &(appside_SGS_info.soap->client_port_min),
 	      &(appside_SGS_info.soap->client_port_max)) != 2) {
       appside_SGS_info.soap->client_port_min = 0;
       appside_SGS_info.soap->client_port_max = 0;
@@ -231,13 +232,13 @@ int Initialize_steering_connection_impl(int  NumSupportedCmds,
   }
 
   /* Create msg to send to SGS */
-  Make_supp_cmds_msg(NumSupportedCmds, SupportedCmds, 
+  Make_supp_cmds_msg(NumSupportedCmds, SupportedCmds,
 		     Steerer_connection.supp_cmds, REG_MAX_MSG_SIZE);
 
   /* Strip off any xml version declaration */
   pchar = strstr(Steerer_connection.supp_cmds,"<ReG_steer_message");
 
-  snprintf(query_buf, REG_MAX_MSG_SIZE, "<%s>%s</%s>", 
+  snprintf(query_buf, REG_MAX_MSG_SIZE, "<%s>%s</%s>",
 	  SUPPORTED_CMDS_RP, pchar, SUPPORTED_CMDS_RP);
 
   create_WSRF_header(appside_SGS_info.soap,
@@ -261,8 +262,8 @@ int Initialize_steering_connection_impl(int  NumSupportedCmds,
 
   /* Publish our location: machine and working directory - these
      are set in Steering_initialize prior to calling us */
-  snprintf(query_buf, REG_MAX_MSG_SIZE, 
-	   "<%s>%s</%s><%s>%s</%s><%s>%s</%s>", 
+  snprintf(query_buf, REG_MAX_MSG_SIZE,
+	   "<%s>%s</%s><%s>%s</%s><%s>%s</%s>",
 	   WORKING_DIR_RP, Steer_lib_config.working_dir, WORKING_DIR_RP,
 	   MACHINE_ADDRESS_RP, ReG_Hostname, MACHINE_ADDRESS_RP,
 	   APP_NAME_RP, ReG_AppName, APP_NAME_RP);
@@ -277,7 +278,7 @@ int Initialize_steering_connection_impl(int  NumSupportedCmds,
 	  "2nd msg:\n>>%s<<\n\n", query_buf);
 #endif
 
-  if(soap_call_wsrp__SetResourceProperties(appside_SGS_info.soap, 
+  if(soap_call_wsrp__SetResourceProperties(appside_SGS_info.soap,
 					   appside_SGS_info.address,
 					   "", query_buf, &out) != SOAP_OK) {
     fprintf(stderr, "STEER: Initialize_steering_connection: failed to "
@@ -298,7 +299,7 @@ int Finalize_steering_connection_impl() {
 
   commands[0] = REG_STR_DETACH;
   Emit_status(0,
-	      0,   
+	      0,
 	      NULL,
 	      1,
 	      commands);
@@ -308,8 +309,8 @@ int Finalize_steering_connection_impl() {
 		     appside_SGS_info.username,
 		     appside_SGS_info.passwd);
 
-  if(soap_call_wsrp__Destroy(appside_SGS_info.soap, 
-			    appside_SGS_info.address, 
+  if(soap_call_wsrp__Destroy(appside_SGS_info.soap,
+			    appside_SGS_info.address,
 			    "",  NULL, &out)) {
     fprintf(stderr, "STEER: Finalize_steering_connection_wsrf: call to Destroy"
 	    " failed:\n");
@@ -341,7 +342,7 @@ int Detach_from_steerer_impl() {
 int Steerer_connected_impl() {
   char* steer_status;
   int   status;
-  
+
   status = get_resource_property(appside_SGS_info.soap,
 				 appside_SGS_info.address,
 				 appside_SGS_info.username,
@@ -403,7 +404,7 @@ int Send_status_msg_impl(char* msg) {
 
   pbuf = NULL;
   pTmpBuf = query_buf;
-  nbytes = snprintf(query_buf, REG_MAX_MSG_SIZE, "<%s>%s</%s>", 
+  nbytes = snprintf(query_buf, REG_MAX_MSG_SIZE, "<%s>%s</%s>",
 		    sde_name, msg, sde_name);
 
   /* Check for truncation - if it occurs then malloc a bigger buffer
@@ -415,7 +416,7 @@ int Send_status_msg_impl(char* msg) {
       return REG_FAILURE;
     }
 
-    nbytes = snprintf(pbuf, new_size, "<%s>%s</%s>", 
+    nbytes = snprintf(pbuf, new_size, "<%s>%s</%s>",
 		      sde_name, msg, sde_name);
 
     if((nbytes >= (new_size-1)) || (nbytes < 1)) {
@@ -432,10 +433,10 @@ int Send_status_msg_impl(char* msg) {
   loopCount = -1;
   while(1 && (loopCount < 10)) {
     loopCount++;
-    status = set_resource_property(appside_SGS_info.soap, 
+    status = set_resource_property(appside_SGS_info.soap,
 				   appside_SGS_info.address,
 				   appside_SGS_info.username,
-				   appside_SGS_info.passwd, 
+				   appside_SGS_info.passwd,
 				   pTmpBuf);
     if(status == REG_TIMED_OUT) {
       continue;
@@ -465,7 +466,7 @@ struct msg_struct* Get_control_msg_impl() {
   char* pLast;
   char* pStart;
 
-  /* If we have a backlog of messages then return the next one 
+  /* If we have a backlog of messages then return the next one
      - we are only interested in control messages */
   while((msg = get_next_stored_msg(NULL))) {
     if(msg->control) {
@@ -489,7 +490,7 @@ struct msg_struct* Get_control_msg_impl() {
      occur in the RPDoc which is the same as the order in which they
      were received. */
   if(!(pStart = strstr(pBuf, "<sws:controlMsg"))) {
-    /* No control message found */    
+    /* No control message found */
     return NULL;
   }
 
@@ -509,7 +510,7 @@ struct msg_struct* Get_control_msg_impl() {
   }
 
   /* The results of parsing the ResourcePropertyDocument are stored
-     as a series of messages - go through these until we find a 
+     as a series of messages - go through these until we find a
      control message (if any) */
   msg = get_next_stored_msg(NULL);
   while(msg && !(msg->control)) {
@@ -541,7 +542,7 @@ int Get_data_io_address_impl(const int           index,
     char   epr[REG_MAX_STRING_LENGTH];
     char   address[REG_MAX_STRING_LENGTH];
     struct soap mySoap;
-    
+
     if(get_resource_property(appside_SGS_info.soap,
 			     appside_SGS_info.address,
 			     appside_SGS_info.username,
@@ -573,13 +574,13 @@ int Get_data_io_address_impl(const int           index,
 	     our data */
 	  pchar = strstr(pLast, "<sourceEPR>");
 	  pLabel = strstr(pLast, "<sourceLabel>");
-	  
+
 	  pchar += strlen("<sourceEPR>");
 	  pLast = strchr(pchar, '<');
 	  count = pLast - pchar;
 	  strncpy(epr, pchar, count);
 	  epr[count]='\0';
-	  
+
 	  /* Pull out the label of the IOType of that SWS that
 	     will provide our data */
 	  pchar = strstr(pLabel, "<sourceLabel>");
@@ -592,7 +593,7 @@ int Get_data_io_address_impl(const int           index,
 	}
 	pLast++;
       }
-      
+
       if(strlen(epr) == 0 || strlen(label) == 0) {
 	return REG_FAILURE;
       }
@@ -607,17 +608,17 @@ int Get_data_io_address_impl(const int           index,
       /* Initialise the soap run-time environment:
 	 Use this form to turn-on keep-alive for both incoming and outgoing
 	 http connections */
-      soap_init2(&mySoap, SOAP_IO_KEEPALIVE, 
+      soap_init2(&mySoap, SOAP_IO_KEEPALIVE,
 		 SOAP_IO_KEEPALIVE);
       /* Set the endpoint address */
-      snprintf(address, REG_MAX_STRING_LENGTH, 
+      snprintf(address, REG_MAX_STRING_LENGTH,
 	       "%s", epr);
-      /* Since we are using KEEPALIVE, we can also ask gSOAP to bind the 
-	 socket to a specific port on the local machine - only do this if 
+      /* Since we are using KEEPALIVE, we can also ask gSOAP to bind the
+	 socket to a specific port on the local machine - only do this if
 	 GLOBUS_TCP_PORT_RANGE is set. */
       mySoap.client_port_min = appside_SGS_info.soap->client_port_min;
       mySoap.client_port_max = appside_SGS_info.soap->client_port_max;
-      
+
       /* We use the same username and password for the data-source SWS as we do
 	 for 'our' SWS */
       if(get_resource_property(&mySoap, address,
@@ -626,9 +627,9 @@ int Get_data_io_address_impl(const int           index,
 			       "ioTypeDefinitions", &pBuf) != REG_SUCCESS){
 	return REG_FAILURE;
       }
-      
+
       /* Parse the IOtypes */
-      
+
       pIOType = pBuf;
       while((pIOType = strstr(pIOType, "<IOType>"))) {
 	/* According to schema, Label must occur before Address */
@@ -656,11 +657,11 @@ int Get_data_io_address_impl(const int           index,
 	*pchar = '<';
 	pIOType++;
       }
-      
+
       soap_end(&mySoap);
       /* Reset: close master/slave sockets and remove callbacks */
       soap_done(&mySoap);
-      
+
       /* Parse the Address field to pull out port and host */
       if((pchar = strchr(label, ':'))) {
 	strncpy(hostname, label, (pchar - label));
@@ -674,17 +675,17 @@ int Get_data_io_address_impl(const int           index,
 #endif
 	return REG_SUCCESS;
       }
-      
+
       fprintf(stderr, "STEER: Get_data_source_address_wsrf: failed to match "
-	      "IOType label\n");  
+	      "IOType label\n");
     }
     else { /* Using a proxy for IO */
-      
+
       count = index; /* ARPDBG - remove check for multiple sources for now
 			- we take the first we find. Effectively this means
 			that an application can only use one IOProxy for
 			input, irrespective of how many output IOTypes it has */
-      
+
       while((pLast = strstr(pLast, "<sws:dataSource"))) {
 	if(count == index){
 	  /* Pull out the hostname and port of the proxy that will
@@ -725,7 +726,7 @@ int Get_data_io_address_impl(const int           index,
 	      hostname, *port, label);
 #endif /* REG_DEBUG */
     } /* end if(strstr("sourceEPR")) */
-    
+
   }
 
   /* direction == REG_IO_OUT */
@@ -773,7 +774,7 @@ int Get_data_io_address_impl(const int           index,
 	      "                                   proxy port = %d\n",
 	      hostname, *port);
 #endif /* REG_DEBUG */
-      
+
     }
   }
 
@@ -908,7 +909,7 @@ int Record_checkpoint_set_impl(int ChkType, char* ChkTag, char* Path) {
   cp_data = Steer_lib_config.scratch_buffer;
   pchar = cp_data;
   bytes_left = REG_SCRATCH_BUFFER_SIZE;
-  nbytes = snprintf(pchar, bytes_left, "<Checkpoint_data application=\"%s\">\n"		    
+  nbytes = snprintf(pchar, bytes_left, "<Checkpoint_data application=\"%s\">\n"
 		    "<Chk_type>%d</Chk_type>\n"
 		    "<Chk_UID>%s</Chk_UID>\n"
 		    "<Files location=\"%s\">\n",
@@ -1051,7 +1052,7 @@ SGS_info_table_type steerer_SGS_info_table;
 
 int Initialize_steerside_transport() {
   strncpy(Steer_lib_config.Steering_transport_string, "WSRF", 5);
-  
+
   if(init_ssl_random_seq() == REG_SUCCESS){
     Steer_config.ossl_rand_available = REG_TRUE;
   }
@@ -1113,14 +1114,14 @@ int Sim_attach_impl(int index, char* SimID) {
     }
   }
 
-  if(create_WSRF_header(SGS_info->soap, 
+  if(create_WSRF_header(SGS_info->soap,
 			SimID,
-			SGS_info->username, 
+			SGS_info->username,
 			SGS_info->passwd) != REG_SUCCESS) {
     return REG_FAILURE;
   }
 
-  if(soap_call_sws__Attach(SGS_info->soap, SimID, "", NULL, 
+  if(soap_call_sws__Attach(SGS_info->soap, SimID, "", NULL,
 			   &response) != SOAP_OK) {
     soap_print_fault((SGS_info->soap), stderr);
     Finalize_connection_impl(index);
@@ -1128,10 +1129,10 @@ int Sim_attach_impl(int index, char* SimID) {
   }
 
   /* That worked OK so store address of SWS */
-  sprintf(SGS_info->address, SimID);
+  sprintf(SGS_info->address, "%s", SimID);
 
   for(i=0; i<response.ReG_USCOREsteer_USCOREmessage.Supported_USCOREcommands.__size; i++) {
-    sim->Cmds_table.cmd[sim->Cmds_table.num_registered].cmd_id = 
+    sim->Cmds_table.cmd[sim->Cmds_table.num_registered].cmd_id =
       response.ReG_USCOREsteer_USCOREmessage.Supported_USCOREcommands.__ptr[i].Cmd_USCOREid;
 
     /* ARPDBG - may need to add cmd parameters here too */
@@ -1160,7 +1161,7 @@ int Sim_attach_security_impl(const int index,
 	  sec->passphrase, REG_MAX_STRING_LENGTH);
 
   if(sec->caCertsPath[0]){
-    strncpy(Steer_config.caCertsPath, sec->caCertsPath, 
+    strncpy(Steer_config.caCertsPath, sec->caCertsPath,
 	    REG_MAX_STRING_LENGTH);
   }
 
@@ -1191,7 +1192,7 @@ int Finalize_connection_impl(int index) {
   free(SGS_info->soap);
   SGS_info->soap = NULL;
 
-  return REG_SUCCESS;  
+  return REG_SUCCESS;
 }
 
 /*-------------------------------------------------------*/
@@ -1212,7 +1213,7 @@ struct msg_struct* Get_status_msg_impl(int index, int ignore) {
     return msg;
   }
 
-  if(get_resource_property_doc(SGS_info->soap, 
+  if(get_resource_property_doc(SGS_info->soap,
 			       SGS_info->address,
 			       SGS_info->username,
 			       SGS_info->passwd,
@@ -1225,7 +1226,7 @@ struct msg_struct* Get_status_msg_impl(int index, int ignore) {
 
   /* Check for changes to RP first (a.k.a. notifications) */
   if(Extract_resource_property(pRPDoc, strlen(pRPDoc),
-			       "sws:lastModifiedTime", 
+			       "sws:lastModifiedTime",
 			       buf, REG_MAX_MSG_SIZE) != REG_SUCCESS){
     fprintf(stderr, "STEER: Get_status_msg_wsrf: failed to get "
 	    "lastModifiedTime from ResourceProperty document\n");
@@ -1245,13 +1246,13 @@ struct msg_struct* Get_status_msg_impl(int index, int ignore) {
   else{
     /* Just get the latest status message from the app */
     if(Extract_resource_property(pRPDoc, strlen(pRPDoc),
-				 "sws:latestStatusMsg", 
+				 "sws:latestStatusMsg",
 				 buf, REG_MAX_MSG_SIZE) == REG_SUCCESS){
 
       msg = New_msg_struct();
       if(Parse_xml_buf(buf, strlen(buf), msg, sim) != REG_SUCCESS){
 
-	Delete_msg_struct(&msg);       
+	Delete_msg_struct(&msg);
 	return NULL;
       }
     }
@@ -1291,12 +1292,12 @@ int Send_detach_msg_impl(int index) {
 
   if(create_WSRF_header(SGS_info->soap,
 			SGS_info->address,
-			SGS_info->username, 
+			SGS_info->username,
 			SGS_info->passwd) != REG_SUCCESS) {
     return REG_FAILURE;
   }
 
-  if(soap_call_sws__Detach(SGS_info->soap, SGS_info->address, 
+  if(soap_call_sws__Detach(SGS_info->soap, SGS_info->address,
 			   "", NULL, NULL )) {
 
     fprintf(stderr, "STEER: Send_detach_msg_wsrf: Detach failed:\n");
@@ -1312,7 +1313,7 @@ int Send_detach_msg_impl(int index) {
 
 int Get_param_log_impl(int sim_index, int handle) {
   struct sws__GetParamLogResponse response;
-  int    param_index; 
+  int    param_index;
   int    log_index;
   char  *ptr1;
   int    dum_int;
@@ -1347,14 +1348,14 @@ int Get_param_log_impl(int sim_index, int handle) {
   Get_current_time_seconds(&time0);
 #endif
   if(SGS_info->passwd[0]){
-    if(create_WSRF_header(SGS_info->soap, 
+    if(create_WSRF_header(SGS_info->soap,
 			  SGS_info->address,
-			  SGS_info->username, 
+			  SGS_info->username,
 			  SGS_info->passwd) != REG_SUCCESS){
       return REG_FAILURE;
     }
   }
-  if(soap_call_sws__GetParamLog(SGS_info->soap, SGS_info->address, 
+  if(soap_call_sws__GetParamLog(SGS_info->soap, SGS_info->address,
 				"", (xsd__int)handle, &response )){
 #ifdef USE_REG_TIMING
   Get_current_time_seconds(&time1);
@@ -1626,7 +1627,7 @@ int create_WSRF_header(struct soap *aSoap,
     return REG_FAILURE;
   }
   snprintf(aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Username,
-	   128, username);
+	   128, "%s", username);
 
   aSoap->header->wsse__Security.wsse__UsernameToken.wsu__Created =
                                        (char *)soap_malloc(aSoap, 128);
@@ -1677,7 +1678,7 @@ int create_WSRF_header(struct soap *aSoap,
 
   timePtr = Get_current_time_string(); /* Steer lib */
   snprintf(aSoap->header->wsse__Security.wsse__UsernameToken.wsu__Created,
-	   128, timePtr);
+	   128, "%s", timePtr);
   snprintf(aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Password.Type,
 	   128, "PasswordDigest");
 
@@ -1685,14 +1686,14 @@ int create_WSRF_header(struct soap *aSoap,
   bytesLeft = MAX_LEN;
   pBuf = buf;
   /* Nonce */
-  nbytes = snprintf(pBuf, bytesLeft,
+  nbytes = snprintf(pBuf, bytesLeft, "%s",
 		    aSoap->header->wsse__Security.wsse__UsernameToken.wsse__Nonce);
   bytesLeft -= nbytes; pBuf += nbytes;
   /* Created */
-  nbytes = snprintf(pBuf, bytesLeft, timePtr);
+  nbytes = snprintf(pBuf, bytesLeft, "%s", timePtr);
   bytesLeft -= nbytes; pBuf += nbytes;
   /* Password */
-  nbytes = snprintf(pBuf, bytesLeft, passwd);
+  nbytes = snprintf(pBuf, bytesLeft, "%s", passwd);
   bytesLeft -= nbytes; pBuf += nbytes;
 
   SHA1((unsigned char*) buf, (MAX_LEN-bytesLeft), (unsigned char*) digest); /* openssl call */
@@ -1789,7 +1790,7 @@ int get_resource_property (struct soap *soapStruct,
   Get_current_time_seconds(&time0);
 #endif
 
-  if(soap_call___wsrp__GetResourceProperty(soapStruct, epr, 
+  if(soap_call___wsrp__GetResourceProperty(soapStruct, epr,
 					 "", (char*)name,
 					 &out) != SOAP_OK) {
     soap_print_fault(soapStruct, stderr);
@@ -1803,7 +1804,7 @@ int get_resource_property (struct soap *soapStruct,
 #endif
 #endif
 #ifdef REG_DEBUG_FULL
-  fprintf(stderr, "STEER: get_resource_property for %s returned >>%s<<\n", 
+  fprintf(stderr, "STEER: get_resource_property for %s returned >>%s<<\n",
 	  name, out);
 #endif
 
@@ -1836,8 +1837,8 @@ int get_resource_property_doc(struct soap *soapStruct,
   Get_current_time_seconds(&time0);
 #endif
 
-  if(soap_call_wsrp__GetResourcePropertyDocument(soapStruct, 
-						 (char *)epr, 
+  if(soap_call_wsrp__GetResourcePropertyDocument(soapStruct,
+						 (char *)epr,
 						 "", NULL,
 						 &out) != SOAP_OK) {
     soap_print_fault(soapStruct, stderr);
@@ -1910,7 +1911,7 @@ struct msg_struct* get_next_stored_msg(Sim_entry_type* sim) {
   }
 
   if(msgStorePtr->msg) {
-    
+
     /* Take a copy of the pointer to the oldest stored message */
     msg = msgStorePtr->msg;
 
@@ -2052,7 +2053,7 @@ int init_ssl_context(struct soap *aSoap,
 	          " - authenticateSWS = %d\n"
                   " - certKeyPemFile = >>%s<<\n"
 	          " - passphrase = >>%s<<\n"
-                  " - caCertPath = >>%s<<\n", 
+                  " - caCertPath = >>%s<<\n",
 	  authenticateSWS, certKeyPemFile, passphrase, caCertPath);
 #endif
 
@@ -2109,13 +2110,13 @@ int init_ssl_context(struct soap *aSoap,
 			      certKeyPemFile,
 			      /* Password to read key file */
 			      passphrase,
-			      /* Optional CA cert. file to store trusted 
+			      /* Optional CA cert. file to store trusted
 				 certificates (to verify server) */
 			      NULL,
-			      /* Optional path to directory containing  
+			      /* Optional path to directory containing
 				 trusted CA certs (to verify server) */
 			      caCertPath,
-			      /* if randfile!=NULL: use a file with 
+			      /* if randfile!=NULL: use a file with
 				 random data to seed randomness */
 			      NULL)){
     fprintf(stderr, "STEER: init_ssl_context: failed to initialize "

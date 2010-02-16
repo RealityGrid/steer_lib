@@ -53,7 +53,7 @@ struct wsrp__GetMultipleResourcePropertiesRequest {
   int                                  __size;
 };
 
-struct wsrp__SetResourcePropertiesResponse { 
+struct wsrp__SetResourcePropertiesResponse {
   void *rubbish;
 };
 
@@ -93,7 +93,7 @@ sws__Attach( void *_, struct sws__AttachResponse *out_);
 //gsoap sws service method-action: Detach ""
 sws__Detach( void *, struct sws__DetachResponse *out );
 //gsoap sws service method-action: RecordCheckpoint ""
-sws__RecordCheckpoint( xsd__string  in0, xsd__string  in1, 
+sws__RecordCheckpoint( xsd__string  in0, xsd__string  in1,
 		       struct sws__RecordCheckpointResponse *out);
 //gsoap sws service method-action: GetParamLog ""
 sws__GetParamLog( xsd__int  in0, struct sws__GetParamLogResponse *out_);

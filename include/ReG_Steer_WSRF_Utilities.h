@@ -1,7 +1,7 @@
 /*
   The RealityGrid Steering Library
 
-  Copyright (c) 2002-2009, University of Manchester, United Kingdom.
+  Copyright (c) 2002-2010, University of Manchester, United Kingdom.
   All rights reserved.
 
   This software is produced by Research Computing Services, University
@@ -89,23 +89,23 @@ struct reg_job_details {
 /* ------------------------------------------------------------- */
 
 /** @internal
-    Create a Steering Web Service and return its address 
+    Create a Steering Web Service and return its address
     @param job Pointer to struct containing info on job associated with SWS
     @param containerAddress Address of the WSRF-Lite container to use
     @param registryAddress Endpoint of the registery to register SWS with
     @param sec Pointer to struct containing authentication information
-    @returns Pointer to static buffer containing the EPR of the new 
-    SWS or NULL on failure.  Static buffer will be overwritten on 
+    @returns Pointer to static buffer containing the EPR of the new
+    SWS or NULL on failure.  Static buffer will be overwritten on
     subsequent calls to this routine. */
 char* Create_steering_service(const struct reg_job_details* job,
 			      const char* containerAddress,
 			      const char* registryAddress,
 			      const struct reg_security_info* sec);
 
-/** 
+/**
     Destroy an SWS.
-    @param address The address of the service to destroy 
-    @param sec Pointer to struct holding details for 
+    @param address The address of the service to destroy
+    @param sec Pointer to struct holding details for
     authentication to the service (using SSL or WSSE) */
 int Destroy_steering_service(const char                     *address,
                              const struct reg_security_info *sec);
@@ -117,7 +117,7 @@ int Destroy_steering_service(const char                     *address,
     valid until this routine is called again.
     @param factory Endpoint of the checkpoint factory to call
     @param metadata Label to give new checkpoint tree
-    @returns Pointer to string containing endpoint of new checkpoint 
+    @returns Pointer to string containing endpoint of new checkpoint
     tree or NULL on failure */
 char* Create_checkpoint_tree(const char *factory, const char *metadata);
 
@@ -141,13 +141,13 @@ direct socket connection
    @param label Label of the IOType from which to get data
    @param sec Pointer to struct containing data required to authenticate to the SWS
 
-   Configures the specified service with information on a data source 
-   (either direct socket connection between source and sink or a socket 
+   Configures the specified service with information on a data source
+   (either direct socket connection between source and sink or a socket
    connection to an IOProxy).
 */
-int Set_service_data_source(const char *EPR, 
-			    const char *sourceAddress, 
-			    const int   sourcePort, 
+int Set_service_data_source(const char *EPR,
+			    const char *sourceAddress,
+			    const int   sourcePort,
 			    const char *label,
 			    const struct reg_security_info *sec);
 

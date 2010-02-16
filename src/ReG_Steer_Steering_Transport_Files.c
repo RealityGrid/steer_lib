@@ -1,7 +1,7 @@
 /*
   The RealityGrid Steering Library
 
-  Copyright (c) 2002-2009, University of Manchester, United Kingdom.
+  Copyright (c) 2002-2010, University of Manchester, United Kingdom.
   All rights reserved.
 
   This software is produced by Research Computing Services, University
@@ -81,14 +81,14 @@ int Detach_from_steerer_impl() {
   char  filename[REG_MAX_STRING_LENGTH];
 
   /* Remove lock file that indicates app is being steered */
-  nbytes = snprintf(filename, REG_MAX_STRING_LENGTH, "%s%s", 
-		    Steer_lib_config.scratch_dir, 
+  nbytes = snprintf(filename, REG_MAX_STRING_LENGTH, "%s%s",
+		    Steer_lib_config.scratch_dir,
 		    STR_CONNECTED_FILENAME);
 
   if(nbytes >= (REG_MAX_STRING_LENGTH-1) || (nbytes < 1)){
 
     fprintf(stderr, "STEER: Detach_from_steerer: name of lock-file exceeds %d"
-	    " characters - increase REG_MAX_STRING_LENGTH\n", 
+	    " characters - increase REG_MAX_STRING_LENGTH\n",
 	    REG_MAX_STRING_LENGTH);
     return REG_FAILURE;
   }
@@ -98,14 +98,14 @@ int Detach_from_steerer_impl() {
   /* Remove any files that steerer has produced that we won't
      now be consuming */
 
-  nbytes = snprintf(filename, REG_MAX_STRING_LENGTH, "%s%s", 
-		    Steer_lib_config.scratch_dir, 
+  nbytes = snprintf(filename, REG_MAX_STRING_LENGTH, "%s%s",
+		    Steer_lib_config.scratch_dir,
 		    STR_TO_APP_FILENAME);
 
   if( nbytes >= (REG_MAX_STRING_LENGTH-1) || (nbytes < 1)){
 
     fprintf(stderr, "STEER: Detach_from_steerer: name of steerer ctrl files "
-	    "exceeds %d characters - increase REG_MAX_STRING_LENGTH\n", 
+	    "exceeds %d characters - increase REG_MAX_STRING_LENGTH\n",
 	    REG_MAX_STRING_LENGTH);
     return REG_FAILURE;
   }
@@ -125,8 +125,8 @@ int Steerer_connected_impl() {
   FILE  *fp;
   int    nbytes;
 
-  nbytes = snprintf(filename, REG_MAX_STRING_LENGTH, "%s%s", 
-		    Steer_lib_config.scratch_dir, 
+  nbytes = snprintf(filename, REG_MAX_STRING_LENGTH, "%s%s",
+		    Steer_lib_config.scratch_dir,
 		    STR_CONNECTED_FILENAME);
 
   if(nbytes >= (REG_MAX_STRING_LENGTH-1) || (nbytes < 1)) {
@@ -176,14 +176,14 @@ struct msg_struct *Get_control_msg_impl() {
   char                 filename[REG_MAX_STRING_LENGTH];
   int                  nbytes;
 
-  nbytes = snprintf(filename, REG_MAX_STRING_LENGTH, "%s%s", 
-		    Steer_lib_config.scratch_dir, 
+  nbytes = snprintf(filename, REG_MAX_STRING_LENGTH, "%s%s",
+		    Steer_lib_config.scratch_dir,
 		    STR_TO_APP_FILENAME);
 
   if( nbytes >= (REG_MAX_STRING_LENGTH-1) || (nbytes < 1)){
 
     fprintf(stderr, "STEER: Get_control_msg: length of ctrl msg filename "
-	    "exceeds %d chars - increase REG_MAX_STRING_LENGTH\n", 
+	    "exceeds %d chars - increase REG_MAX_STRING_LENGTH\n",
 	    REG_MAX_STRING_LENGTH);
   }
 
@@ -213,7 +213,7 @@ struct msg_struct *Get_control_msg_impl() {
 
 /*-------------------------------------------------------*/
 
-int Initialize_steering_connection_impl(int  NumSupportedCmds,
+int Initialize_steering_connection_impl(const int  NumSupportedCmds,
 					int *SupportedCmds) {
   FILE *fp;
   char  buf[REG_MAX_MSG_SIZE];
@@ -224,8 +224,8 @@ int Initialize_steering_connection_impl(int  NumSupportedCmds,
   /* Clean up any old files... */
 
   /* ...file indicating a steerer is connected (which it can't be since we've
-     only just begun) */ 
-  sprintf(filename, "%s%s", Steer_lib_config.scratch_dir, 
+     only just begun) */
+  sprintf(filename, "%s%s", Steer_lib_config.scratch_dir,
 	  STR_CONNECTED_FILENAME);
   fp = fopen(filename, "w");
   if(fp != NULL){
@@ -245,14 +245,14 @@ int Initialize_steering_connection_impl(int  NumSupportedCmds,
   }
 
   /* ...files containing messages from a steerer */
-  sprintf(filename, "%s%s", Steer_lib_config.scratch_dir, 
+  sprintf(filename, "%s%s", Steer_lib_config.scratch_dir,
 	  STR_TO_APP_FILENAME);
 
   remove_files(filename);
 
   /* Signal that component is available to be steered */
 
-  sprintf(filename, "%s%s", Steer_lib_config.scratch_dir, 
+  sprintf(filename, "%s%s", Steer_lib_config.scratch_dir,
 	                    APP_STEERABLE_FILENAME);
   fp = fopen(filename,"w");
 
@@ -264,7 +264,7 @@ int Initialize_steering_connection_impl(int  NumSupportedCmds,
   }
 
 #ifdef REG_DEBUG
-  fprintf(stderr, "STEER: Initialize_steering_connection: writing file: %s\n", 
+  fprintf(stderr, "STEER: Initialize_steering_connection: writing file: %s\n",
 	  filename);
 #endif
 
@@ -288,7 +288,7 @@ int Finalize_steering_connection_impl() {
   max1 = strlen(STR_CONNECTED_FILENAME);
 
   if(max1 > max) max=max1;
-  
+
   max += strlen(Steer_lib_config.scratch_dir);
   if(max > REG_MAX_STRING_LENGTH ){
 
@@ -310,14 +310,14 @@ int Finalize_steering_connection_impl() {
   sprintf(sys_command, "%s%s", Steer_lib_config.scratch_dir,
 	  STR_CONNECTED_FILENAME);
   if(remove(sys_command)){
-#ifdef REG_DEBUG    
+#ifdef REG_DEBUG
     fprintf(stderr, "STEER: Finalize_steering_connection_file: failed to remove "
 	    "%s\n", sys_command);
 #endif
   }
 
   /* Delete any files we'd have consumed if we'd lived longer */
-  sprintf(sys_command, "%s%s", Steer_lib_config.scratch_dir, 
+  sprintf(sys_command, "%s%s", Steer_lib_config.scratch_dir,
 	  STR_TO_APP_FILENAME);
   remove_files(sys_command);
 
@@ -343,7 +343,7 @@ int Get_data_io_address_impl(const int           dummy,
   if (pchar) {
     len = strlen(pchar);
     if (len < REG_MAX_STRING_LENGTH) {
-      sprintf(hostname, pchar);
+      sprintf(hostname, "%s", pchar);
     }
     else{
       fprintf(stderr, "STEER: Get_data_source_address_file: content of "
@@ -353,7 +353,7 @@ int Get_data_io_address_impl(const int           dummy,
     }
   }
   else{
-    fprintf(stderr, 
+    fprintf(stderr,
 	    "STEER: Get_data_source_address_file: REG_CONNECTOR_HOSTNAME not set\n");
     return REG_FAILURE;
   }
@@ -363,7 +363,7 @@ int Get_data_io_address_impl(const int           dummy,
     *port =  (unsigned short int)atoi(pchar);
   }
   else{
-    fprintf(stderr, 
+    fprintf(stderr,
 	    "STEER: Get_data_source_address_file: REG_CONNECTOR_PORT not set\n");
     return REG_FAILURE;
   }
@@ -405,7 +405,7 @@ int Sim_attach_impl(int index, char *SimID) {
   return_status = REG_FAILURE;
   sim = &(Sim_table.sim[index]);
 
-  /* Unless SimID contains a string, get the directory to use for 
+  /* Unless SimID contains a string, get the directory to use for
      steering messages from the REG_STEER_DIRECTORY env. variable.  */
   if(strlen(SimID) != 0){
     pchar = SimID;
@@ -431,12 +431,12 @@ int Sim_attach_impl(int index, char *SimID) {
   /* If supplied ID didn't work then try using REG_STEER_DIRECTORY env.
      variable instead */
   if(return_status != REG_SUCCESS){
-    
+
     if(!(pchar = getenv("REG_STEER_DIRECTORY"))){
       fprintf(stderr, "STEER: Sim_attach: failed to get scratch directory\n");
       return REG_FAILURE;
     }
-    
+
     /* Check that path ends in '/' - if not then add one */
     if( pchar[strlen(pchar)-1] != '/' ){
 
@@ -456,7 +456,7 @@ int Sim_attach_impl(int index, char *SimID) {
   }
 
   if(return_status != REG_SUCCESS){
-    fprintf(stderr, "STEER: Sim_attach: failed to get scratch directory\n");    
+    fprintf(stderr, "STEER: Sim_attach: failed to get scratch directory\n");
     return REG_FAILURE;
   }
 #ifdef REG_DEBUG
@@ -466,17 +466,17 @@ int Sim_attach_impl(int index, char *SimID) {
   }
 #endif
 
-  /* Delete any old communication files written by an app 
+  /* Delete any old communication files written by an app
      in this location */
 
-  sprintf(filename, "%s%s", file_root, 
+  sprintf(filename, "%s%s", file_root,
 	  APP_TO_STR_FILENAME);
 
   remove_files(filename);
 
   /* Save directory used for communication */
   strcpy(sim->file_root, file_root);
- 
+
   /* Read the commands that the application supports */
   return_status = consume_supp_cmds(index);
 
@@ -519,7 +519,7 @@ struct msg_struct *Get_status_msg_impl(int index, int ignore) {
   sprintf(filename, "%s%s", sim->file_root, APP_TO_STR_FILENAME);
 
   if((fp = open_next_file(filename))) {
-	
+
     fclose(fp);
 
     /* Parse it and store it in structure pointed to by msg */
@@ -586,7 +586,7 @@ int Finalize_connection_impl(int index) {
   /* Delete any files that the app's produced that we won't now be
      consuming */
 
-  sprintf(base_name, "%s%s", Sim_table.sim[index].file_root, 
+  sprintf(base_name, "%s%s", Sim_table.sim[index].file_root,
 	  APP_TO_STR_FILENAME);
 
   remove_files(base_name);
@@ -599,13 +599,13 @@ int Finalize_connection_impl(int index) {
 int Get_param_log_impl(int index, int handle) {
   int           command[1];
   static char** command_params = NULL;
-  
+
   command[0] = REG_STR_EMIT_PARAM_LOG;
-  
+
   /* Which parameter to get the log of */
   if(!command_params) command_params = Alloc_string_array(32, 1);
   sprintf(command_params[0], "%d", handle);
-  
+
   return Emit_control(Sim_table.sim[index].handle,
 		      1,
 		      command,
@@ -629,7 +629,7 @@ int generate_status_filename(char* filename) {
   /* Generate next filename in sequence for sending data to
      steerer & increment counter */
 
-  sprintf(filename, "%s%s_%d", Steer_lib_config.scratch_dir, 
+  sprintf(filename, "%s%s_%d", Steer_lib_config.scratch_dir,
 	  APP_TO_STR_FILENAME, output_file_index++);
 
   /* Wrap counter if no. of distinct files exceeded */
@@ -695,7 +695,7 @@ int consume_supp_cmds(int index) {
 
       while(cmd){
 
-	sscanf((char *)(cmd->id), "%d", 
+	sscanf((char *)(cmd->id), "%d",
 	       &(sim->Cmds_table.cmd[sim->Cmds_table.num_registered].cmd_id));
 
 	/* ARPDBG - may need to add cmd parameters here too */

@@ -1,7 +1,7 @@
 /*
   The RealityGrid Steering Library
 
-  Copyright (c) 2002-2009, University of Manchester, United Kingdom.
+  Copyright (c) 2002-2010, University of Manchester, United Kingdom.
   All rights reserved.
 
   This software is produced by Research Computing Services, University
@@ -66,15 +66,15 @@ int *size;
     *size = sizeof(int);
   }
   else if(strcmp(ptr, "long") == 0){
-  
+
     *size = sizeof(long);
   }
   else if(strcmp(ptr, "float") == 0){
-  
+
     *size = sizeof(float);
   }
   else if(strcmp(ptr, "double") == 0){
-  
+
     *size = sizeof(double);
   }
   else{

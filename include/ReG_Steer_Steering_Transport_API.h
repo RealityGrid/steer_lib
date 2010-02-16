@@ -1,7 +1,7 @@
 /*
   The RealityGrid Steering Library
 
-  Copyright (c) 2002-2009, University of Manchester, United Kingdom.
+  Copyright (c) 2002-2010, University of Manchester, United Kingdom.
   All rights reserved.
 
   This software is produced by Research Computing Services, University
@@ -48,7 +48,7 @@
 #ifndef __REG_STEER_STEERING_TRANSPORT_API_H__
 #define __REG_STEER_STEERING_TRANSPORT_API_H__
 
-/** @file ReG_Steer_Steering_Transport_API.h 
+/** @file ReG_Steer_Steering_Transport_API.h
  *  @brief The API specification for the steering transport modules.
  *
  *  @author Robert Haines
@@ -75,7 +75,7 @@ int Steerer_connected_impl();
 /** @internal
     @param buf The status message to send
 
-    Send the contents of @p buf to the steering client by writing to 
+    Send the contents of @p buf to the steering client by writing to
     an appropriate file. */
 int Send_status_msg_impl(char *buf);
 
@@ -89,8 +89,8 @@ struct msg_struct *Get_control_msg_impl();
     @param SupportedCmds Array containing the supported commands
 
     Set-up and advertise application as steerable */
-int Initialize_steering_connection_impl(int  NumSupportedCmds,
-					int *SupportedCmds);
+int Initialize_steering_connection_impl(const int  NumSupportedCmds,
+					int* SupportedCmds);
 
 /** @internal Take down any connection to a steering client */
 int Finalize_steering_connection_impl();
@@ -108,7 +108,7 @@ int Finalize_steering_connection_impl();
     Obtain endpoint for a socket connection */
 int Get_data_io_address_impl(const int index,
 			     const int direction,
-			     char* hostname, 
+			     char* hostname,
 			     unsigned short int* port,
 			     char* label);
 /** @internal
@@ -131,7 +131,7 @@ int Finalize_steerside_transport();
     @param index Index of entry in main Sim_table
     @param SimID Address of the simulation or the SWS representing the
            simulation
-    
+
     Initialise soap-specific structures & attach to simulation via SOAP */
 int Sim_attach_impl(int index, char *SimID);
 
@@ -151,7 +151,7 @@ int Sim_attach_security_impl(const int index,
     Gets the next status message from the simulation */
 struct msg_struct *Get_status_msg_impl(int index, int no_block);
 
-/** @internal 
+/** @internal
     @param index Index of entry in main Sim_table
     @param buf The control message to send
 

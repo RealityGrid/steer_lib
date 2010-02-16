@@ -1,7 +1,7 @@
 /*
   The RealityGrid Steering Library
 
-  Copyright (c) 2002-2009, University of Manchester, United Kingdom.
+  Copyright (c) 2002-2010, University of Manchester, United Kingdom.
   All rights reserved.
 
   This software is produced by Research Computing Services, University
@@ -66,7 +66,7 @@
 #ifdef __cplusplus
   #define PREFIX "C"
 #else
-  #define PREFIX 
+  #define PREFIX
 #endif
 
 /** @internal Basic library configuration */
@@ -104,7 +104,7 @@ typedef struct {
 
 } Cmd_log_entry_type;
 
-/** @internal Used to log steering activity (both commands and 
+/** @internal Used to log steering activity (both commands and
     parameter changes) */
 typedef struct {
 
@@ -161,7 +161,7 @@ typedef struct {
   /** Name of this file */
   char                filename[REG_MAX_STRING_LENGTH];
   /** Flag to indicate whether or not all entries must be sent to
-      steerer, IRRESPECTIVE of the value of their individual 
+      steerer, IRRESPECTIVE of the value of their individual
       sent_to_steerer flags.  This used when a client detaches and
       another one attaches some time later. */
   int                 send_all;
@@ -170,7 +170,7 @@ typedef struct {
   int                 param_send_all[REG_MAX_NUM_STR_PARAMS];
   /** Flag to indicate whether a send of the log data (read in on
       a previous occasion) is still in progress.  This feature
-      prevents a deluge of log messages being emitted. 
+      prevents a deluge of log messages being emitted.
       @b OBSOLETE now? */
   int                 emit_in_progress;
   /** Count of how many log messages we've sent in this current call
@@ -317,7 +317,7 @@ typedef struct {
   int                           num_xdr_bytes;
   /** Details on incoming array (if available) */
   Array_type                    array;
-  /** Whether or not (1 or 0) we'll need to convert the ordering of 
+  /** Whether or not (1 or 0) we'll need to convert the ordering of
       the array */
   int                           convert_array_order;
   /** Whether IOType is enabled or not (for sockets - whether socket
@@ -326,7 +326,7 @@ typedef struct {
   /** Index of the input channel - used in mapping to the details
       held by the SGS/SWS (when steering via SOAP) */
   int                           input_index;
-  /** Whether or not this IOType (direction REG_IO_OUT) cares about getting 
+  /** Whether or not this IOType (direction REG_IO_OUT) cares about getting
       an acknowledgement before trying to emit the next sample */
   int                           use_ack;
   /** Whether or not we need to check for an acknowledgement before
@@ -353,9 +353,9 @@ typedef struct {
   /** The value of the handle to assign to the next IOType to be
       registered */
   int          next_handle;
-  /** Whether or not to create the socket (if using them) when an 
-      IOType is registered */  
-  int          enable_on_registration; 
+  /** Whether or not to create the socket (if using them) when an
+      IOType is registered */
+  int          enable_on_registration;
   /** Count of @e input channels registered - used to
       map to details on data sources held by SGS/SWS */
   int          num_inputs;
@@ -424,11 +424,11 @@ extern PREFIX int Next_free_param_index(Param_table_type *table);
 /** @internal
     @param table Pointer to table of registered parameters
     @param ParamHandle Handle of parameter to get index for
-    @return The index of the parameter in the table or 
+    @return The index of the parameter in the table or
     REG_PARAM_HANDLE_NOTSET if no matching handle found.
 
     A look-up function - return the index of the specified parameter */
-extern PREFIX int Param_index_from_handle(Param_table_type *table, 
+extern PREFIX int Param_index_from_handle(Param_table_type *table,
 					  int ParamHandle);
 
 /** @internal
@@ -440,12 +440,12 @@ extern PREFIX void Init_param_entry(param_entry *param);
 /** @internal
     @param table Pointer to table of registered IOTypes
     @param IOdefHandle Handle of IOType to search for
-    @return Index of the IOType in the table or 
+    @return Index of the IOType in the table or
     REG_IODEF_HANDLE_NOTSET if no matching handle found
 
-    A look-up function - return the index of the IOdef with handle 
+    A look-up function - return the index of the IOdef with handle
     IOdefHandle in the table pointed to by @p table. */
-extern PREFIX int IOdef_index_from_handle(IOdef_table_type *table, 
+extern PREFIX int IOdef_index_from_handle(IOdef_table_type *table,
 					  int IOdefHandle);
 
 /** @internal
@@ -491,7 +491,7 @@ extern PREFIX int Get_message_type(const char *name);
 
     Write ReG-specific XML header information into supplied message
     buffer  */
-extern PREFIX int Write_xml_header(char **pchar); 
+extern PREFIX int Write_xml_header(char **pchar);
 
 /** @internal
     @param pchar Pointer to buffer in which to put footer
@@ -506,14 +506,14 @@ extern PREFIX int Write_xml_footer(char **pchar,
     @param filename Name of file to read
     @param buf Buffer containing contents of file
     @param size Size of @p buf (because it is malloc'd by this routine)
-    @param retain_newlines If REG_TRUE then routine retains any newline 
+    @param retain_newlines If REG_TRUE then routine retains any newline
     ('\n') characters
 
     Read the specified ASCII file and return the contents in the
     buffer pointed to by @p buf.  It is the caller's responsibility to
     free() the memory pointed to by @p buf. */
-extern PREFIX int Read_file(const char *filename, 
-			    char **buf, int *size, 
+extern PREFIX int Read_file(const char *filename,
+			    char **buf, int *size,
 			    const int retain_newlines);
 
 /** @internal
@@ -535,12 +535,12 @@ extern PREFIX int Reorder_decode_array(IOdef_entry *io,
 				       int          count,
 				       void        *pData);
 
-/** @internal 
+/** @internal
     @param hostname On return, the fully-qualified hostname
     @param ip_addr_ptr On return, the IP address of the host
 
     Does what it says.  Uses uname and gethostbyname. */
-extern PREFIX int Get_fully_qualified_hostname(char **hostname, 
+extern PREFIX int Get_fully_qualified_hostname(char **hostname,
 					       char **ip_addr_ptr);
 
 /** @internal
@@ -553,13 +553,13 @@ extern PREFIX char *Get_current_time_string();
     @param sec Pointer to the reg_security_info structure to reset */
 extern PREFIX void Wipe_security_info(struct reg_security_info *sec);
 
-/** 
+/**
     @param configFile Location of RealityGrid security config file or NULL/emptry string to use default of ~/.realitygrid/security.conf.
     @param sec Pointer to reg_security_info struct to populate
 
     Reads the specified RealityGrid security configuration file to get
     location of the PEM file containing BOTH the user's key and certificate
-    and the path to the directory containing CA certificates. Parses 
+    and the path to the directory containing CA certificates. Parses
     user's certificate to get their DN.
     The security config. file is of the form: @n
     <tt>
@@ -571,7 +571,7 @@ extern PREFIX void Wipe_security_info(struct reg_security_info *sec);
     </Security_config>
     @endverbatim
     </tt>
- */ 
+ */
 extern PREFIX int Get_security_config(const char               *configFile,
 				      struct reg_security_info *sec);
 /** @internal
@@ -593,5 +593,28 @@ char *trimWhiteSpace(char *pChar);
    member variables.
 */
 int Delete_iotype_list(struct reg_iotype_list *list);
+
+/** @internal
+    @param dir The directory to search
+    @param num_tags Number of tags to search for
+    @param tags Elements of the filenames that we are searching for
+    @param num_files Number of filenames being returned
+    @param filenames Array of char* holding names of files found
+
+    Searches for files in directory @p dir matching the tags specified.
+    If any are found, @p filenames is malloc'd to point to an array of
+    char* and each entry in this array is malloc'd and set to the
+    relevant filename. These ptrs MUST be free'd. @p num_files can be
+    zero even if the routine returns REG_SUCCESS. */
+int Get_file_list(const char* dir, int num_tags, char** tags,
+		  int* num_files, char*** filenames);
+
+/** @internal
+    @param str1 The first string to be compared
+    @param str2 The second string to be compared
+
+    A string comparison function for use with qsort
+    to sort the filenames returned by Get_file_list */
+int cmpstrs(const void* str1, const void* str2);
 
 #endif

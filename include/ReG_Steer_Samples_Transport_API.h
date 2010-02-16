@@ -1,7 +1,7 @@
 /*
   The RealityGrid Steering Library
 
-  Copyright (c) 2002-2009, University of Manchester, United Kingdom.
+  Copyright (c) 2002-2010, University of Manchester, United Kingdom.
   All rights reserved.
 
   This software is produced by Research Computing Services, University
@@ -48,7 +48,7 @@
 #ifndef __REG_STEER_SAMPLES_TRANSPORT_API_H__
 #define __REG_STEER_SAMPLES_TRANSPORT_API_H__
 
-/** @file ReG_Steer_Samples_Transport_API.h 
+/** @file ReG_Steer_Samples_Transport_API.h
  *  @brief The API specification for the samples transport modules.
  *
  *  @author Robert Haines
@@ -77,10 +77,10 @@ int Finalize_samples_transport();
     @param index Index of the IOType to initialize
 
     Initialize the socket connection for an IOType */
-int Initialize_IOType_transport_impl(const int direction, 
+int Initialize_IOType_transport_impl(const int direction,
 				     const int index);
 
-/** @internal 
+/** @internal
     Take down the socket connections for @e all registered IOTypes */
 void Finalize_IOType_transport_impl();
 
@@ -102,23 +102,23 @@ int Disable_IOType_impl(const int index);
 
 /** @internal
     @param index Index of the IOType to query
-    @return REG_SUCCESS if socket is connected. 
+    @return REG_SUCCESS if socket is connected.
 
     Queries the status of the connection of an IOType */
 int Get_communication_status_impl(const int index);
 
 /** @internal
     A non-blocking version of Write().
-    Uses a select call to check the status of the socket 
-    before attempting to write to it. 
+    Uses a select call to check the status of the socket
+    before attempting to write to it.
     @see Emit_data() */
-int Emit_data_non_blocking_impl(const int index, const int size, 
+int Emit_data_non_blocking_impl(const int index, const int size,
 				void* buffer);
 
 /** @internal
     @param index Index of IOType to write header to
 
-    Emits a header message on the socket for the 
+    Emits a header message on the socket for the
     IOType with the supplied index. */
 int Emit_header_impl(const int index);
 
@@ -127,26 +127,26 @@ int Emit_header_impl(const int index);
     @param num_bytes_to_send No. of bytes of data to send
     @param pData Pointer to buffer containing data to send
 */
-int Emit_data_impl(const int index, const size_t num_bytes_to_send, 
+int Emit_data_impl(const int index, const size_t num_bytes_to_send,
 		   void* pData);
 
 /** @internal
     @param index Index of IOType from which to get header data
-    @param datatype On successful return, the type of the data in 
+    @param datatype On successful return, the type of the data in
     the following slice
-    @param count On successful return, the no. of data objects in 
+    @param count On successful return, the no. of data objects in
     the following slice
-    @param num_bytes On succesful return, the no. of bytes of data in 
+    @param num_bytes On succesful return, the no. of bytes of data in
     the following slice
-    @param is_fortran_array On successful return, whether the data in 
+    @param is_fortran_array On successful return, whether the data in
     the following slice is from a fortran array (changes its ordering)
 
-    Reads a message header from the socket for the 
+    Reads a message header from the socket for the
     IOType with the supplied index. */
-int Consume_msg_header_impl(int  index, 
-			    int* datatype, 
-			    int* count, 
-			    int* num_bytes, 
+int Consume_msg_header_impl(int  index,
+			    int* datatype,
+			    int* count,
+			    int* num_bytes,
 			    int* is_fortran_array);
 
 int Emit_msg_header_impl(const int    index,
@@ -169,20 +169,20 @@ int Consume_start_data_check_impl(const int index);
     Reads the specified amount of data off the socket associated with
     the IOType with the supplied index.  Calls recv to read the
     data. */
-int Consume_data_read_impl(const int index, 
-			   const int datatype, 
-			   const int num_bytes_to_read, 
+int Consume_data_read_impl(const int index,
+			   const int datatype,
+			   const int num_bytes_to_read,
 			   void* pData);
 
 /** @internal
     @param index Index of the IOType on which to send acknowledgement
 
-    Acknowledge that a data set has been received 
+    Acknowledge that a data set has been received
     and processed successfully on an IOType.*/
 int Emit_ack_impl(int index);
 
 /** @internal
-    Attempt to read an acknowledgement from the consumer of the 
+    Attempt to read an acknowledgement from the consumer of the
     IOType with the supplied index.*/
 int Consume_ack_impl(int index);
 

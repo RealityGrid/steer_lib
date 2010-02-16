@@ -24,16 +24,14 @@ struct cpt__destroyResponse {
 };
 
 //gsoap cpt service method-action: createNewTree ""
-cpt__createNewTree( xsd__string  in0, 
+cpt__createNewTree( xsd__string  in0,
 		    struct cpt__createNewTreeResponse * out );
 //gsoap cpt service method-action: findByHandle ""
-cpt__findByHandle( xsd__string  in0, xsd__string  in1, 
+cpt__findByHandle( xsd__string  in0, xsd__string  in1,
 		   struct cpt__findByHandleResponse * out );
 //gsoap cpt service method-action: destroy ""
-cpt__Destroy( void *_, 
+cpt__Destroy( void *_,
 	      struct cpt__destroyResponse * out );
 //gsoap cpt service method-action: getActiveTrees ""
-cpt__getActiveTrees( void *_, 
+cpt__getActiveTrees( void *_,
 		     struct cpt__getActiveTreesResponse * out );
-
-

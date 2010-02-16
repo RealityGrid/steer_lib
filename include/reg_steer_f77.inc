@@ -1,7 +1,7 @@
 c
 c  The RealityGrid Steering Library
 c
-c  Copyright (c) 2002-2009, University of Manchester, United Kingdom.
+c  Copyright (c) 2002-2010, University of Manchester, United Kingdom.
 c  All rights reserved.
 c
 c  This software is produced by Research Computing Services, University
@@ -67,7 +67,7 @@ c C and F90
 
 c  INTEGER, PARAMETER :: REG_SP_KIND = KIND(1)
 c  INTEGER, PARAMETER :: REG_DP_KIND = KIND(1.0D0)
-  
+
 c      INTEGER REG_SP_KIND
 c      PARAMETER(REG_SP_KIND = KIND(1))
 c      INTEGER REG_DP_KIND
@@ -79,49 +79,49 @@ c reference when passing into C routines
       PARAMETER (reg_true  = 1)
       INTEGER reg_false
       PARAMETER (reg_false = 0)
-  
-  
+
+
 c Return values
 
       INTEGER REG_SUCCESS
       PARAMETER (REG_SUCCESS = 0)
       INTEGER REG_FAILURE
-      PARAMETER (REG_FAILURE = 1)  
+      PARAMETER (REG_FAILURE = 1)
       INTEGER REG_EOD
-      PARAMETER (REG_EOD = 3)  
+      PARAMETER (REG_EOD = 3)
       INTEGER REG_MEM_FAIL
-      PARAMETER (REG_MEM_FAIL = 3)  
-  
-  
+      PARAMETER (REG_MEM_FAIL = 3)
+
+
 c Limit on number of commands steerer can send at any one time
 
       INTEGER REG_MAX_NUM_STR_CMDS
       PARAMETER (REG_MAX_NUM_STR_CMDS = 20)
-  
+
 c Limit on number of parameters steerer can modify at any one time
-  
+
       INTEGER REG_MAX_NUM_STR_PARAMS
       PARAMETER (REG_MAX_NUM_STR_PARAMS = 40)
 
-c Initial sizes for internal tables of registered IO types 
+c Initial sizes for internal tables of registered IO types
 c and parameters
 
       INTEGER  REG_INITIAL_NUM_IOTYPES
       PARAMETER (REG_INITIAL_NUM_IOTYPES = 20)
       INTEGER REG_INITIAL_NUM_PARAMS
       PARAMETER (REG_INITIAL_NUM_PARAMS = 40)
-  
+
 c Initial limit on no. of registered supported commands
 
       INTEGER  REG_INITIAL_NUM_CMDS
       PARAMETER (REG_INITIAL_NUM_CMDS = 20)
 
-  
+
 c Initial limit on no. of sims being steered at any one time
 
       INTEGER  REG_MAX_NUM_STEERED_SIM
       PARAMETER(REG_MAX_NUM_STEERED_SIM = 5)
-  
+
 
 c Limit on number of files used in communication - filenames
 c  wrap back on themselves once this limit reached
@@ -129,15 +129,15 @@ c  wrap back on themselves once this limit reached
       INTEGER  REG_MAX_NUM_FILES
       PARAMETER (REG_MAX_NUM_FILES = 500)
 
-      
+
 c Maximum length for any string
 
       INTEGER REG_MAX_STRING_LENGTH
       PARAMETER (REG_MAX_STRING_LENGTH = 256)
 
-      
+
 c Steering commands
-  
+
       INTEGER  REG_STR_STOP
       PARAMETER (REG_STR_STOP = 1)
       INTEGER  REG_STR_PAUSE
@@ -146,10 +146,10 @@ c Steering commands
       PARAMETER (REG_STR_RESUME = 3)
       INTEGER  REG_STR_DETACH
       PARAMETER (REG_STR_DETACH = 4)
-  
+
 
 c Coding scheme for data types
-  
+
       INTEGER  REG_INT
       PARAMETER (REG_INT = 0)
       INTEGER  REG_FLOAT
@@ -158,8 +158,8 @@ c Coding scheme for data types
       PARAMETER (REG_DBL = 2)
       INTEGER  REG_CHAR
       PARAMETER (REG_CHAR = 3)
-  
-      
+
+
 c Coding scheme for IOType types
 
       INTEGER  REG_IO_IN
@@ -168,7 +168,3 @@ c Coding scheme for IOType types
       PARAMETER (REG_IO_OUT = 1)
       INTEGER  REG_IO_INOUT
       PARAMETER (REG_IO_INOUT = 2)
-  
-
-
-

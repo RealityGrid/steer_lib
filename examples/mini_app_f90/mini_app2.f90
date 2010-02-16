@@ -67,7 +67,6 @@ PROGRAM mini_app
   INTEGER (KIND=REG_INT_KIND) :: itag
   CHARACTER(LEN=5)           :: ctag
 
-  INTEGER (KIND=REG_INT_KIND) :: output_freq = 5
   INTEGER (KIND=REG_INT_KIND) :: iohandle
   INTEGER (KIND=REG_INT_KIND) :: data_type
   INTEGER (KIND=REG_INT_KIND) :: data_count
@@ -92,14 +91,13 @@ PROGRAM mini_app
   CHARACTER(LEN=REG_MAX_STRING_LENGTH), &
               DIMENSION(REG_MAX_NUM_STR_PARAMS) :: changed_param_labels
 
-  INTEGER (KIND=REG_INT_KIND) :: iloop, icmd, iparam, hdr_len, i, j, k
+  INTEGER (KIND=REG_INT_KIND) :: iloop, icmd, iparam, i, j, k
   INTEGER (KIND=REG_INT_KIND) :: finished = 0
   INTEGER (KIND=REG_INT_KIND) :: NX = 4
   INTEGER (KIND=REG_INT_KIND) :: NY = 4
   INTEGER (KIND=REG_INT_KIND) :: NZ = 4
   INTEGER (KIND=REG_INT_KIND) :: veclen = 1
   CHARACTER(LEN=4096) :: header
-  CHARACTER(LEN=128)  :: buf
   REAL (KIND=REG_DP_KIND) :: aaxis=1.5
   REAL (KIND=REG_DP_KIND) :: baxis=1.5
   REAL (KIND=REG_DP_KIND) :: caxis=1.5
@@ -191,7 +189,7 @@ PROGRAM mini_app
   param_label = "test_real"
   param_type  = REG_FLOAT
   param_strbl = reg_false
-  
+
   CALL register_param_f(param_label, param_strbl, dum_real, &
                         param_type, "-80.0", "", status)
 
@@ -199,7 +197,7 @@ PROGRAM mini_app
   param_label = "2nd_test_real"
   param_type  = REG_FLOAT
   param_strbl = reg_true
-  
+
   ! This parameter has no lower bound but cannot be > 80.0
   CALL register_param_f(param_label, param_strbl, dum_real2, &
                         param_type, "", "80.0", status)
@@ -208,7 +206,7 @@ PROGRAM mini_app
   param_label = "3rd_test_real"
   param_type  = REG_FLOAT
   param_strbl = reg_true
-  
+
   CALL register_param_f(param_label, param_strbl, dum_real3, &
                          param_type, "", "", status)
 
@@ -216,11 +214,11 @@ PROGRAM mini_app
   param_label = "test_string"
   param_type  = REG_CHAR
   param_strbl = reg_true
-  
+
   ! Getting a pointer to a string from F90 is a bit tricky so use
   ! string-specific function for their registration...
   CALL register_string_param_f(param_label, param_strbl, dum_str, status)
-  
+
   dum_dbl = 123.123d0
   param_label = "test_double"
   param_type  = REG_DBL
@@ -350,7 +348,7 @@ PROGRAM mini_app
 
           CASE(REG_STR_STOP)
             WRITE (*,*) 'Received stop command from steerer'
-            finished = 1           
+            finished = 1
             EXIT
 
           CASE DEFAULT
@@ -368,7 +366,7 @@ PROGRAM mini_app
                END IF
 
                IF( status .eq. REG_SUCCESS )THEN
-	
+
                  CALL emit_char_data_slice_f(iohandle, header, status)
 
                  ! Test with int data
@@ -383,7 +381,7 @@ PROGRAM mini_app
                    END DO
                  END DO
 
-                 ! Now emit the data - we do this in chunks to mimic the case 
+                 ! Now emit the data - we do this in chunks to mimic the case
                  ! of a parallel program gathering data process by process.
 
                  ! Make chunk header to describe data
@@ -401,7 +399,7 @@ PROGRAM mini_app
                  CALL emit_data_slice_f(iohandle, data_type, data_count, &
                                         i_array(1:(NX/2),1:(NY/2),:), status)
 
-                 ! Send chunk header to describe data 
+                 ! Send chunk header to describe data
                  CALL make_chunk_header_f(header, iohandle, NZ, NY, NZ, &
                                           (NX/2), 0, 0, &
                                           NX/2, NY/2, NZ, status)
@@ -411,7 +409,7 @@ PROGRAM mini_app
                  data_count = NX*NY*NZ/4;
                  CALL emit_data_slice_f(iohandle, data_type, data_count, &
                                         i_array((1 + NX/2):NX,1:(NY/2),:), status)
-                 ! Send chunk header to describe data 
+                 ! Send chunk header to describe data
                  CALL make_chunk_header_f(header, iohandle, NZ, NY, NZ, &
                                           0, (NY/2), 0, &
                                           NX/2, NY/2, NZ, status)
@@ -421,7 +419,7 @@ PROGRAM mini_app
                  data_count = NX*NY*NZ/4;
                  CALL emit_data_slice_f(iohandle, data_type, data_count, &
                                         i_array(1:(NX/2),(1+NY/2):NY,:), status)
-                 ! Send chunk header to describe data 
+                 ! Send chunk header to describe data
                  CALL make_chunk_header_f(header, iohandle, NZ, NY, NZ, &
                                           (NX/2), (NY/2), 0, &
                                           NX/2, NY/2, NZ, status)
@@ -449,19 +447,19 @@ PROGRAM mini_app
                  itag = NINT(100000.0*ran_no)
                  WRITE(ctag, FMT='(I5)') itag
                  chk_tag = "fake_chkpoint_"// TRIM(ADJUSTL(ctag))//".dat"
-		 OPEN(99, FILE=chk_tag, STATUS='REPLACE', ACTION='WRITE', &
+                 OPEN(99, FILE=chk_tag, STATUS='REPLACE', ACTION='WRITE', &
                       IOSTAT=status)
-		 IF(status .eq. 0)THEN
-		    WRITE(99, *) "Checkpoint data goes here"
-		    CLOSE(99)
+                 IF(status .eq. 0)THEN
+                    WRITE(99, *) "Checkpoint data goes here"
+                    CLOSE(99)
 
-                    ! Add one or more files to the list of files making up 
+                    ! Add one or more files to the list of files making up
                     ! this checkpoint
                     CALL Add_checkpoint_file_f(chk_handles(1), chk_tag, status)
 
                     ! Record that we've successfully taken the checkpoint
-		    CALL Record_checkpoint_set_f(chk_handles(1), &
-					         TRIM(ADJUSTL(ctag)), &
+                    CALL Record_checkpoint_set_f(chk_handles(1), &
+                                                 TRIM(ADJUSTL(ctag)), &
                                                  ".", status)
                  END IF
                END IF

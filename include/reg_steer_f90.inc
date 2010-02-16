@@ -1,7 +1,7 @@
 !
 !  The RealityGrid Steering Library
 !
-!  Copyright (c) 2002-2009, University of Manchester, United Kingdom.
+!  Copyright (c) 2002-2010, University of Manchester, United Kingdom.
 !  All rights reserved.
 !
 !  This software is produced by Research Computing Services, University
@@ -72,7 +72,7 @@
 
   INTEGER (KIND=REG_SP_KIND), PARAMETER :: REG_MAX_NUM_STR_PARAMS = 40
 
-! Initial sizes for internal tables of registered IO types 
+! Initial sizes for internal tables of registered IO types
 ! and parameters
 
   INTEGER (KIND=REG_SP_KIND), PARAMETER :: REG_INITIAL_NUM_IOTYPES = 20
@@ -119,8 +119,3 @@
   INTEGER (KIND=REG_SP_KIND), PARAMETER :: REG_IO_IN    = 0
   INTEGER (KIND=REG_SP_KIND), PARAMETER :: REG_IO_OUT   = 1
   INTEGER (KIND=REG_SP_KIND), PARAMETER :: REG_IO_INOUT = 2
-
-
-
-
-

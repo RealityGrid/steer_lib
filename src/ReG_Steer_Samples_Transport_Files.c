@@ -1,7 +1,7 @@
 /*
   The RealityGrid Steering Library
 
-  Copyright (c) 2002-2009, University of Manchester, United Kingdom.
+  Copyright (c) 2002-2010, University of Manchester, United Kingdom.
   All rights reserved.
 
   This software is produced by Research Computing Services, University
@@ -64,7 +64,7 @@ extern Steer_lib_config_type Steer_lib_config;
 /* */
 extern file_info_table_type file_info_table;
 
-/* Need access to these tables which are actually declared in 
+/* Need access to these tables which are actually declared in
    ReG_Steer_Appside_internal.h */
 extern IOdef_table_type IOTypes_table;
 
@@ -88,7 +88,7 @@ int Emit_start_impl(int index, int seqnum) {
   char *pchar;
   int   len;
 
-  /* Currently have no way of looking up what filename to use so 
+  /* Currently have no way of looking up what filename to use so
      hardwire... */
 
   len = strlen(file_info_table.file_info[index].directory) +
@@ -103,7 +103,7 @@ int Emit_start_impl(int index, int seqnum) {
   }
 
   /* In the short term, use the label as the filename */
-  sprintf(file_info_table.file_info[index].filename, 
+  sprintf(file_info_table.file_info[index].filename,
 	  "%s%s", file_info_table.file_info[index].directory,
 	  IOTypes_table.io_def[index].label);
 
@@ -122,10 +122,10 @@ int Emit_start_impl(int index, int seqnum) {
   pchar += strlen(file_info_table.file_info[index].filename);
 
   sprintf(pchar, "_%d", seqnum);
-  if( !(file_info_table.file_info[index].fp = 
+  if( !(file_info_table.file_info[index].fp =
 	fopen(file_info_table.file_info[index].filename, "w")) ){
 
-    fprintf(stderr, "STEER: Emit_start: failed to open file %s\n", 
+    fprintf(stderr, "STEER: Emit_start: failed to open file %s\n",
 	    file_info_table.file_info[index].filename);
     return REG_FAILURE;
   }
@@ -139,7 +139,7 @@ int Emit_stop_impl(int index) {
     fclose(file_info_table.file_info[index].fp);
     file_info_table.file_info[index].fp = NULL;
   }
-  /* Create lock file for this data file to prevent race 
+  /* Create lock file for this data file to prevent race
      conditions */
   create_lock_file(file_info_table.file_info[index].filename);
 
@@ -173,7 +173,7 @@ int Initialize_IOType_transport_impl(int direction, int index) {
     if(len > REG_MAX_STRING_LENGTH) {
       fprintf(stderr, "STEER: Initialize_IOType_transport_file: content of "
 	      "REG_DATA_DIRECTORY env. variable exceeds %d\n"
-	      "characters - increase REG_MAX_STRING_LENGTH\n", 
+	      "characters - increase REG_MAX_STRING_LENGTH\n",
 	      REG_MAX_STRING_LENGTH);
       return REG_FAILURE;
     }
@@ -188,16 +188,16 @@ int Initialize_IOType_transport_impl(int direction, int index) {
     }
 #ifdef REG_DEBUG
     fprintf(stderr, "STEER: Initialize_IOType_transport_file: will use following"
-	    " directory for data files: %s\n", 
+	    " directory for data files: %s\n",
 	    file_info_table.file_info[index].directory);
-#endif    
+#endif
   }
   else {
     file_info_table.file_info[index].directory[0] = '\0';
 #ifdef REG_DEBUG
     fprintf(stderr, "STEER: Initialize_IOType_transport_file: will use current"
 	    " working directory for data files\n");
-#endif    
+#endif
   }
 
   return REG_SUCCESS;
@@ -209,10 +209,10 @@ void Finalize_IOType_transport_impl() {}
 
 /*----------------------------------------------------------------*/
 
-int Consume_data_read_impl(const int index,  
+int Consume_data_read_impl(const int index,
 			   const int datatype,
-			   const int num_bytes_to_read, 
-			   void*     pData) {  
+			   const int num_bytes_to_read,
+			   void*     pData) {
   size_t nbytes;
 
   if(!file_info_table.file_info[index].fp) {
@@ -226,13 +226,13 @@ int Consume_data_read_impl(const int index,
 
     nbytes = fread((void *)IOTypes_table.io_def[index].buffer,
 		   1,
-		   (size_t)num_bytes_to_read, 
+		   (size_t)num_bytes_to_read,
 		   file_info_table.file_info[index].fp);
   }
   else {
     nbytes = fread(pData,
 		   1,
-		   (size_t)num_bytes_to_read, 
+		   (size_t)num_bytes_to_read,
 		   file_info_table.file_info[index].fp);
   }
 #ifdef REG_DEBUG
@@ -262,12 +262,12 @@ int Emit_ack_impl(const int index) {
   FILE*  fp;
 
   /* In the short term, use the label (with spaces replaced by
-     '_'s) as the filename.  'filename' is set in 
+     '_'s) as the filename.  'filename' is set in
      Consume_start_data_check and contains an index so this ack
      is unique to the data set we've just read. */
   sprintf(Steer_lib_config.scratch_buffer, "%s_ACK",
 	  file_info_table.file_info[index].filename);
-  
+
   if((fp = fopen(Steer_lib_config.scratch_buffer, "w"))) {
     fclose(fp);
     return REG_SUCCESS;
@@ -324,7 +324,7 @@ int Emit_data_impl(const int	index,
   int n_written;
 
   if(file_info_table.file_info[index].fp) {
-    n_written = (int) fwrite(pData, (int)num_bytes_to_send, 1, 
+    n_written = (int) fwrite(pData, (int)num_bytes_to_send, 1,
 			     file_info_table.file_info[index].fp);
 
     if(n_written == 1)
@@ -371,7 +371,7 @@ int Consume_msg_header_impl(int  index,
     return REG_FAILURE;
   }
 
-  if(fread(buffer, 1, REG_PACKET_SIZE, file_info_table.file_info[index].fp) 
+  if(fread(buffer, 1, REG_PACKET_SIZE, file_info_table.file_info[index].fp)
      != (size_t)REG_PACKET_SIZE) {
 
     fprintf(stderr, "STEER: Consume_iotype_msg_header: fread failed for header\n");
@@ -402,7 +402,7 @@ int Consume_msg_header_impl(int  index,
 
   /*--- Type of objects in message ---*/
 
-  if(fread(buffer, 1, REG_PACKET_SIZE, file_info_table.file_info[index].fp) 
+  if(fread(buffer, 1, REG_PACKET_SIZE, file_info_table.file_info[index].fp)
      != (size_t)REG_PACKET_SIZE) {
 
     fprintf(stderr, "STEER: Consume_iotype_msg_header: fread failed for object type\n");
@@ -413,7 +413,7 @@ int Consume_msg_header_impl(int  index,
   }
 
 #ifdef REG_DEBUG
-  fprintf(stderr, "STEER: Consume_iotype_msg_header: read >%s< from file\n", 
+  fprintf(stderr, "STEER: Consume_iotype_msg_header: read >%s< from file\n",
 	  buffer);
 #endif
 
@@ -428,7 +428,7 @@ int Consume_msg_header_impl(int  index,
 
   /*--- No. of objects in message ---*/
 
-  if(fread(buffer, 1, REG_PACKET_SIZE, file_info_table.file_info[index].fp) 
+  if(fread(buffer, 1, REG_PACKET_SIZE, file_info_table.file_info[index].fp)
      != (size_t)REG_PACKET_SIZE) {
 
     fclose(file_info_table.file_info[index].fp);
@@ -438,7 +438,7 @@ int Consume_msg_header_impl(int  index,
   }
 
 #ifdef REG_DEBUG
-  fprintf(stderr, "STEER: Consume_iotype_msg_header: read >%s< from file\n", 
+  fprintf(stderr, "STEER: Consume_iotype_msg_header: read >%s< from file\n",
 	  buffer);
 #endif
 
@@ -459,7 +459,7 @@ int Consume_msg_header_impl(int  index,
 
   /*--- No. of bytes in message ---*/
 
-  if(fread(buffer, 1, REG_PACKET_SIZE, file_info_table.file_info[index].fp) 
+  if(fread(buffer, 1, REG_PACKET_SIZE, file_info_table.file_info[index].fp)
      != (size_t)REG_PACKET_SIZE) {
 
     fprintf(stderr, "STEER: Consume_iotype_msg_header: fread failed for num bytes\n");
@@ -470,7 +470,7 @@ int Consume_msg_header_impl(int  index,
   }
 
 #ifdef REG_DEBUG
-  fprintf(stderr, "STEER: Consume_iotype_msg_header: read >%s< from file\n", 
+  fprintf(stderr, "STEER: Consume_iotype_msg_header: read >%s< from file\n",
 	  buffer);
 #endif
 
@@ -491,7 +491,7 @@ int Consume_msg_header_impl(int  index,
 
   /*--- Array ordering in message ---*/
 
-  if(fread(buffer, 1, REG_PACKET_SIZE, file_info_table.file_info[index].fp) 
+  if(fread(buffer, 1, REG_PACKET_SIZE, file_info_table.file_info[index].fp)
      != (size_t)REG_PACKET_SIZE) {
 
     fprintf(stderr, "STEER: Consume_iotype_msg_header: fread failed for array ordering\n");
@@ -502,7 +502,7 @@ int Consume_msg_header_impl(int  index,
   }
 
 #ifdef REG_DEBUG
-  fprintf(stderr, "STEER: Consume_iotype_msg_header: read >%s< from file\n", 
+  fprintf(stderr, "STEER: Consume_iotype_msg_header: read >%s< from file\n",
 	  buffer);
 #endif
 
@@ -524,7 +524,7 @@ int Consume_msg_header_impl(int  index,
 
   /*--- End of header ---*/
 
-  if(fread(buffer, 1, REG_PACKET_SIZE, file_info_table.file_info[index].fp) 
+  if(fread(buffer, 1, REG_PACKET_SIZE, file_info_table.file_info[index].fp)
      != (size_t)REG_PACKET_SIZE) {
 
     fprintf(stderr, "STEER: Consume_iotype_msg_header: fread failed for header end\n");
@@ -535,7 +535,7 @@ int Consume_msg_header_impl(int  index,
   }
 
 #ifdef REG_DEBUG
-  fprintf(stderr, "STEER: Consume_msg_header: read >%s< from file\n", 
+  fprintf(stderr, "STEER: Consume_msg_header: read >%s< from file\n",
 	  buffer);
 #endif
 
@@ -629,7 +629,7 @@ int Consume_start_data_check_impl(int index) {
   }
 
   *pchar = '\0';
-  if(!(file_info_table.file_info[index].fp = 
+  if(!(file_info_table.file_info[index].fp =
 	fopen(file_info_table.file_info[index].filename, "r"))) {
 
     fprintf(stderr, "STEER: Consume_start_data_check_file: failed to open file: %s\n",
@@ -638,9 +638,9 @@ int Consume_start_data_check_impl(int index) {
   }
 
   /* Read header */
-  if(fread((void *)buffer, 
-	   (size_t)1, 
-	   REG_PACKET_SIZE, 
+  if(fread((void *)buffer,
+	   (size_t)1,
+	   REG_PACKET_SIZE,
 	   file_info_table.file_info[index].fp) != (size_t)REG_PACKET_SIZE) {
     fprintf(stderr, "STEER: Consume_start_data_check_file: failed to read "
 	    "header from file: %s\n",

@@ -1,7 +1,7 @@
 /*
   The RealityGrid Steering Library
 
-  Copyright (c) 2002-2009, University of Manchester, United Kingdom.
+  Copyright (c) 2002-2010, University of Manchester, United Kingdom.
   All rights reserved.
 
   This software is produced by Research Computing Services, University
@@ -48,7 +48,7 @@
 #ifndef __REG_STEER_STEERING_TRANSPORT_SOCKETS_H__
 #define __REG_STEER_STEERING_TRANSPORT_SOCKETS_H__
 
-/** @file ReG_Steer_Steering_Transport_Sockets.h 
+/** @file ReG_Steer_Steering_Transport_Sockets.h
  *  @brief Sockets specific routines for the steering transport module.
  *
  *  @author Robert Haines

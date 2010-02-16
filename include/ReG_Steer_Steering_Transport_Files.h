@@ -1,7 +1,7 @@
 /*
   The RealityGrid Steering Library
 
-  Copyright (c) 2002-2009, University of Manchester, United Kingdom.
+  Copyright (c) 2002-2010, University of Manchester, United Kingdom.
   All rights reserved.
 
   This software is produced by Research Computing Services, University
@@ -48,7 +48,7 @@
 #ifndef __REG_STEER_STEERING_TRANSPORT_FILES_H__
 #define __REG_STEER_STEERING_TRANSPORT_FILES_H__
 
-/** @file ReG_Steer_Steering_Transport_Files.h 
+/** @file ReG_Steer_Steering_Transport_Files.h
  *  @brief File specific routines for the steering transport module.
  *
  *  @author Robert Haines
@@ -61,7 +61,7 @@
 /** @internal
     @param filename Root of filename for status message
 
-    Generate a filename (for a status message) from supplied root and 
+    Generate a filename (for a status message) from supplied root and
     internally-generated index */
 int generate_status_filename(char* filename);
 
@@ -69,14 +69,14 @@ int generate_status_filename(char* filename);
     @param index Index of attached simulation in main Sim_table
     @param filename On return, filename to use for sending next control
     message to the simulation
-    
+
     Generate a filename for sending steering commands to the application.
 */
 int generate_control_filename(int index, char* filename);
 
 /** @internal
     @param index Index of simulation entry in Sim_table
-    
+
     Read an applications supported commands from disk and store them
     in the entry referenced by @p index. */
 int consume_supp_cmds(int index);

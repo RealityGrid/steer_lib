@@ -1,7 +1,7 @@
 #
 #  The RealityGrid Steering Library
 #
-#  Copyright (c) 2002-2009, University of Manchester, United Kingdom.
+#  Copyright (c) 2002-2010, University of Manchester, United Kingdom.
 #  All rights reserved.
 #
 #  This software is produced by Research Computing Services, University
@@ -50,7 +50,7 @@ find_program(M4
   m4
   ${CYGWIN_INSTALL_PATH}/bin
   /bin
-  /usr/bin 
+  /usr/bin
   /usr/local/bin
   /sbin
 )

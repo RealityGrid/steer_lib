@@ -47,7 +47,7 @@
  */
 
 /** @file mini_app.c
-    @brief An example of a steering-enabled application using most of 
+    @brief An example of a steering-enabled application using most of
     the steering lib's features.
 
     @author Andrew Porter
@@ -75,7 +75,7 @@ int main(){
   int    chktype_handle[REG_INITIAL_NUM_IOTYPES];
   char   chk_tag[REG_MAX_STRING_LENGTH];
   REG_IOHandleType iohandle;
-	 
+
   int    status;
   int    numCommands;
   int    commands[REG_INITIAL_NUM_CMDS];
@@ -131,8 +131,8 @@ int main(){
 
   /* Register the input and output IO channels */
 
-  if(Register_IOType("SOME_INPUT_DATA", 
-		     REG_IO_IN, 
+  if(Register_IOType("SOME_INPUT_DATA",
+		     REG_IO_IN,
 		     0, /* Don't do any auto consumption */
 		     &(iotype_handle[0])) != REG_SUCCESS) {
     printf("Failed to register IO type SOME_INPUT_DATA\n");
@@ -140,7 +140,7 @@ int main(){
     return REG_FAILURE;
   }
   if(Register_IOType("mini_app visualization data",
-		     REG_IO_OUT, 
+		     REG_IO_OUT,
 		     1, /* Attempt to do output every timestep */
 		     &(iotype_handle[1])) != REG_SUCCESS) {
     printf("Failed to register IO type 'mini_app visualization data'\n");
@@ -151,24 +151,24 @@ int main(){
 
   /* Register checkpoint emission */
 
-  if(Register_ChkType("MY_CHECKPOINT", 
-		      REG_IO_OUT, 
+  if(Register_ChkType("MY_CHECKPOINT",
+		      REG_IO_OUT,
 		      0, /* No auto checkpointing */
 		      &(chktype_handle[0])) != REG_SUCCESS) {
     printf("Failed to register Chk type MY_CHECKPOINT\n");
     return REG_FAILURE;
   }
 
-  if(Register_ChkType("MY_OTHER_CHECKPOINT", 
-		      REG_IO_INOUT, 
+  if(Register_ChkType("MY_OTHER_CHECKPOINT",
+		      REG_IO_INOUT,
 		      0, /* No auto checkpointing */
 		      &(chktype_handle[1])) != REG_SUCCESS) {
     printf("Failed to register Chk type MY_OTHER_CHECKPOINT\n");
     return REG_FAILURE;
   }
 
-  if(Register_ChkType("YET_ANOTHER_CHECKPOINT", 
-		      REG_IO_INOUT, 
+  if(Register_ChkType("YET_ANOTHER_CHECKPOINT",
+		      REG_IO_INOUT,
 		      0, /* No auto checkpointing */
 		      &(chktype_handle[2])) != REG_SUCCESS) {
     printf("Failed to register Chk type YET_ANOTHER_CHECKPOINT\n");
@@ -237,11 +237,11 @@ int main(){
     if(status == REG_SUCCESS) {
 
       if(num_recvd_cmds > 0) {
-  
+
     	printf("Received %d steerer cmds\n", num_recvd_cmds);
-  
+
     	for(icmd=0; icmd<num_recvd_cmds; icmd++) {
-  
+
  	  switch(recvd_cmds[icmd]) {
 	  case REG_STR_PAUSE:
 	    if(Steering_pause(&num_params_changed,
@@ -301,7 +301,7 @@ int main(){
 
 	      if(recvd_cmds[icmd] == chktype_handle[j]) {
 
-		printf("Got checkpoint command, parameters >>%s<<\n", 
+		printf("Got checkpoint command, parameters >>%s<<\n",
 		       recvd_cmd_params[icmd]);
 
 		if(strstr(recvd_cmd_params[icmd], "OUT")) {
@@ -326,7 +326,7 @@ int main(){
  	    break;
  	  }
 
-	  /* Break out if steerer told us to stop */  
+	  /* Break out if steerer told us to stop */
  	  if(finished) break;
     	}
 	if(finished) break;

@@ -1,7 +1,7 @@
 /*
   The RealityGrid Steering Library
 
-  Copyright (c) 2002-2009, University of Manchester, United Kingdom.
+  Copyright (c) 2002-2010, University of Manchester, United Kingdom.
   All rights reserved.
 
   This software is produced by Research Computing Services, University
@@ -48,7 +48,7 @@
 #ifndef __REG_STEER_FILES_COMMON_H__
 #define __REG_STEER_FILES_COMMON_H__
 
-/** @file ReG_Steer_Files_Common.h 
+/** @file ReG_Steer_Files_Common.h
  *  @brief Data structures and routines common to all file-based code.
  *
  *  @author Robert Haines
@@ -78,31 +78,6 @@ typedef struct {
 int file_info_table_init(const int max_entries);
 
 /** @internal
-    @param dir The directory to search
-    @param num_tags Number of tags to search for
-    @param tags Elements of the filenames that we are searching for
-    @param num_files Number of filenames being returned
-    @param filenames Array of char* holding names of files found
-
-    Searches for files in directory @p dir matching the tags specified.
-    If any are found, @p filenames is malloc'd to point to an array of
-    char* and each entry in this array is malloc'd and set to the
-    relevant filename. These ptrs MUST be free'd. @p num_files can be
-    zero even if the routine returns REG_SUCCESS. */
-int Get_file_list(const char* dir, int num_tags, char** tags,
-		  int* num_files, char*** filenames);
-
-/** @internal
-    @param str1 The first dtring to be compared
-    @param str2 The second string to be compared
-
-    A string comparison function for use with qsort
-    to sort the filenames returned by Get_file_list */
-static int cmpstrs(const void* str1, const void* str2) {
-  return strcmp(*(char* const*) str1, *(char* const*) str2);
-}
-
-/** @internal
     @param base_name Root of the filename to search for
 
     Searches for and opens the next file in a numbered
@@ -126,7 +101,7 @@ int delete_file(char* filename);
     @param base_name Base of the name of the messaging files to look for
 
     Called when steering finished - cleans up any files that either the app
-    or steerer hasn't got around to consuming 
+    or steerer hasn't got around to consuming
  */
 int remove_files(char* base_name);
 

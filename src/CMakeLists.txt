@@ -136,7 +136,7 @@ if(REG_BUILD_SHARED_LIBS)
 endif(REG_BUILD_SHARED_LIBS)
 
 #
-# Any other custom build steps needed? 
+# Any other custom build steps needed?
 #
 include(build/All)
 

@@ -1,7 +1,7 @@
 /*
   The RealityGrid Steering Library
 
-  Copyright (c) 2002-2009, University of Manchester, United Kingdom.
+  Copyright (c) 2002-2010, University of Manchester, United Kingdom.
   All rights reserved.
 
   This software is produced by Research Computing Services, University
@@ -46,8 +46,8 @@
           Robert Haines
  */
 
-/** @file ReG_Steer_Steerside.h 
-    @brief Header file for inclusion in steering-client code 
+/** @file ReG_Steer_Steerside.h
+    @brief Header file for inclusion in steering-client code
 
     Header file defining public routines used in the construction of
     the steering interface of a steering component.
@@ -66,7 +66,7 @@
 #ifdef __cplusplus
   #define PREFIX "C"
 #else
-  #define PREFIX 
+  #define PREFIX
 #endif
 
 /**
@@ -115,10 +115,10 @@ typedef struct {
 extern PREFIX char* Get_steering_transport_string(void);
 
 /**
-   @param SimID A string (of no more than REG_MAX_STRING_LENGTH 
+   @param SimID A string (of no more than REG_MAX_STRING_LENGTH
    characters) identifying the simulation to attach to
    (Web Service endpoint or directory on hard disk)
-   @param SimHandle On successful return, holds the 
+   @param SimHandle On successful return, holds the
    library-generated handle of the simulation
    @return REG_SUCCESS, REG_FAILURE, REG_MEM_FAIL
 
@@ -134,21 +134,21 @@ extern PREFIX char* Get_steering_transport_string(void);
    variable.  If all of these attempts fail then the routine returns
    REG_FAILURE.
 */
-extern PREFIX int Sim_attach(char *SimID,
+extern PREFIX int Sim_attach(const char *SimID,
 			     int  *SimHandle);
 
 /**
-   @param SimID Address of service or directory to attach to 
+   @param SimID Address of service or directory to attach to
    @param sec Pointer to struct holding userDN, passphrase and,
-   potentially, path to CA certs 
-   @param SimHandle On successful return holds the library-generated 
-   handle of the simulation 
+   potentially, path to CA certs
+   @param SimHandle On successful return holds the library-generated
+   handle of the simulation
    @return REG_SUCCESS, REG_FAILURE, REG_MEM_FAIL
 
    As Sim_attach() except takes a pointer to a reg_security_info struct.
-   This holds a username and passphrase for use 
+   This holds a username and passphrase for use
    with WS-Security (only supported in the WSRF implementation).  If this
-   struct also holds a valid path to the directory holding CA certs then 
+   struct also holds a valid path to the directory holding CA certs then
    this turns on authentication of the SWS via SSL (WSRF only).
 */
 extern PREFIX int Sim_attach_secure(const char *SimID,
@@ -201,8 +201,8 @@ extern PREFIX int Consume_param_defs(int SimHandle);
 */
 extern PREFIX int Consume_IOType_defs(int SimHandle);
 
-/** 
-   Consume and store the Chk type definitions that the 
+/**
+   Consume and store the Chk type definitions that the
    simulation referred to by SimHandle has emitted. */
 extern PREFIX int Consume_ChkType_defs(int SimHandle);
 
@@ -242,7 +242,7 @@ extern PREFIX int Consume_log(int   SimHandle);
 
 /**
    @param SimHandle Handle of the simulation to send control msg to
-   @param NumCommands No. of commands to send (cannot exceed 
+   @param NumCommands No. of commands to send (cannot exceed
    REG_MAX_NUM_STR_CMDS, defined in ReG_Steer_types.h)
    @param SysCommands List of commands to send
    @param SysCmdParams Parameters (if any) to go with each command
@@ -251,7 +251,7 @@ extern PREFIX int Consume_log(int   SimHandle);
    Emit a steering-control message to a simulation. Emits the
    specified commands (if any) and automatically sends any (steerable)
    parameter values that have been edited since the last call to this
-   routine. 
+   routine.
 */
 extern PREFIX int Emit_control(int    SimHandle,
 			       int    NumCommands,
@@ -268,7 +268,7 @@ extern PREFIX int Emit_stop_cmd(int SimHandle);
    @param SimHandle Handle of the simulation to send msg to
    @return REG_SUCCESS, REG_FAILURE
 
-   Wrapper for generating pause command and sending to attached 
+   Wrapper for generating pause command and sending to attached
    simulation.
  */
 extern PREFIX int Emit_pause_cmd(int SimHandle);
@@ -277,7 +277,7 @@ extern PREFIX int Emit_pause_cmd(int SimHandle);
    @param SimHandle Handle of the simulation to send msg to
    @return REG_SUCCESS, REG_FAILURE
 
-   Wrapper for generating resume command and sending it to the attached 
+   Wrapper for generating resume command and sending it to the attached
    simulation.
 */
 extern PREFIX int Emit_resume_cmd(int SimHandle);
@@ -291,10 +291,10 @@ extern PREFIX int Emit_resume_cmd(int SimHandle);
    the logged values of the specified parameter.  The log itself is
    stored internally and is accessed via Get_param_log().
  */
-extern PREFIX int Emit_retrieve_param_log_cmd(int SimHandle, 
+extern PREFIX int Emit_retrieve_param_log_cmd(int SimHandle,
 					      int ParamHandle);
 
-/** 
+/**
    @param SimHandle Handle of the simulation to send msg to
    @param chkGSH Grid Service Handle of checkpoint to restart from
    @return REG_SUCCESS, REG_FAILURE
@@ -306,23 +306,23 @@ extern PREFIX int Emit_retrieve_param_log_cmd(int SimHandle,
    checkpoint does not exist on the machine running the steered
    application.
 */
-extern PREFIX int Emit_restart_cmd(int   SimHandle, 
+extern PREFIX int Emit_restart_cmd(int   SimHandle,
 				   char *chkGSH);
 
-/** 
+/**
    @return REG_SUCCESS, REF_FAILURE
    Initialize the internal tables @e etc. used by the steering library
    on the steering application side.  Must be called before all other
    steering-library routines. */
 extern PREFIX int Steerer_initialize();
 
-/** 
+/**
    @return REG_SUCCESS
    Cleans up the internal tables @e etc. Must be called after all steering
    activity is complete. */
 extern PREFIX int Steerer_finalize();
 
-/** 
+/**
    @param SimHandle Handle of simulation for which to delete tables
    @return REG_SUCCESS, REG_FAILURE
 
@@ -335,21 +335,21 @@ extern PREFIX int Delete_sim_table_entry(int *SimHandle);
 
 /**
    A debugging routine - writes the complete contents of the internal
-   table holding information on all connected simulations to 
-   ./sim_table.txt 
+   table holding information on all connected simulations to
+   ./sim_table.txt
    @internal
 */
 extern PREFIX int Dump_sim_table();
 
-/** 
+/**
    @param sim_handle Handle of simulation for which to get no. of params
-   @param steerable Whether to get steerable (@c REG_TRUE) or monitored 
+   @param steerable Whether to get steerable (@c REG_TRUE) or monitored
    (@c REG_FALSE) parameters
    @param num_params On success, the no. of parameters currently registered
    by the attached simulation
    @return REG_SUCCESS, REG_FAILURE
 
-   Gets the number of @p steerable parameters associated with the simulation 
+   Gets the number of @p steerable parameters associated with the simulation
    with handle @p sim_handle.  */
 extern PREFIX int Get_param_number(int  sim_handle,
 				   int  steerable,
@@ -357,7 +357,7 @@ extern PREFIX int Get_param_number(int  sim_handle,
 
 /**
    @param sim_handle Handle of simulation for which to get param values
-   @param steerable Whether to get steerable (@c REG_TRUE) or monitored 
+   @param steerable Whether to get steerable (@c REG_TRUE) or monitored
    (@c REG_FALSE) parameters
    @param num_params Number of parameter values to retrieve
    @param param_details Pointer to array of Param_details_struct structs
@@ -383,7 +383,7 @@ extern PREFIX int Get_param_values(int                   sim_handle,
 
    Sets the values of the parameters with the specified handles for the
    simulation with handle @p sim_handle. Causes internal flags to be set
-   to indicate that these parameter values have changed. The new values are 
+   to indicate that these parameter values have changed. The new values are
    sent to the simulation on the next call of Emit_control().
 */
 extern PREFIX int Set_param_values(int    sim_handle,
@@ -403,7 +403,7 @@ extern PREFIX int Set_param_values(int    sim_handle,
 */
 extern PREFIX int Get_param_log(int      sim_handle,
 				int      handle,
-				double **buf, 
+				double **buf,
 				int     *num_entries);
 
 /**
@@ -422,14 +422,14 @@ extern PREFIX int Get_iotype_number(int sim_handle,
    @param num_iotypes Number of IOTypes to retrieve details on
    @param handles List of handles of retrieved IOTypes
    @param labels List of labels of retrieved IOTypes
-   @param types List of the types (REG_IO_IN or REG_IO_OUT) 
+   @param types List of the types (REG_IO_IN or REG_IO_OUT)
    of the retrieved IOTypes
-   @param io_freqs Frequency associated with each IOType (zero if no 
+   @param io_freqs Frequency associated with each IOType (zero if no
    automatic emission/consumption)
    @return REG_SUCCESS, REG_FAILURE
 
    Gets the first @p num_iotypes IOTypes associated with the simulation
-   with handle @p sim_handle. 
+   with handle @p sim_handle.
  */
 extern PREFIX int Get_iotypes(int    sim_handle,
 			      int    num_iotypes,
@@ -445,7 +445,7 @@ extern PREFIX int Get_iotypes(int    sim_handle,
    @param freqs Array of the new frequency values
 
    A utility function that allows the steerer to update the emit/consume
-   frequency associated with a given IOtype. The new values are sent to 
+   frequency associated with a given IOtype. The new values are sent to
    the simulation on the next call of Emit_control(). */
 extern PREFIX int Set_iotype_freq(int  sim_handle,
 				  int  num_iotypes,
@@ -454,7 +454,7 @@ extern PREFIX int Set_iotype_freq(int  sim_handle,
 
 /**
    @param sim_handle Handle of simulation to get details for
-   @param num_chktypes On successful return, the no of ChkTypes registered 
+   @param num_chktypes On successful return, the no of ChkTypes registered
    by the simulation
 
    Gets the number of Chk types associated with a simulation.
@@ -463,10 +463,10 @@ extern PREFIX int Set_iotype_freq(int  sim_handle,
 extern PREFIX int Get_chktype_number(int  sim_handle,
 				     int *num_chktypes);
 
-/** 
+/**
    As for Get_iotypes() with the only exception that a checkpoint type
    can be of type REG_IO_IN, REG_IO_OUT or REG_IO_INOUT.
-   @see Get_chktype_number(), Get_iotypes() 
+   @see Get_chktype_number(), Get_iotypes()
 */
 extern PREFIX int Get_chktypes(int    sim_handle,
 			       int    num_chktypes,
@@ -477,7 +477,7 @@ extern PREFIX int Get_chktypes(int    sim_handle,
 
 /**
    A utility function that allows the steerer to update the emit
-   frequency associated with a given Chktype. 
+   frequency associated with a given Chktype.
    @see Set_iotype_freq()
 */
 extern PREFIX int Set_chktype_freq(int  sim_handle,
@@ -502,8 +502,8 @@ extern PREFIX int Get_supp_cmd_number(int  sim_handle,
    point to an array large enough to hold @p num_cmds integers.
 
    Get the first @p num_cmds supported commands registered by a
-   simulation @e i.e. those that the application has undertaken to 
-   support in its call to Steering_initialize() (plus those that are 
+   simulation @e i.e. those that the application has undertaken to
+   support in its call to Steering_initialize() (plus those that are
    supported by default such as REG_STR_DETACH).
 */
 extern PREFIX int Get_supp_cmds(int  sim_handle,
@@ -530,7 +530,7 @@ extern PREFIX int Get_chk_log_number(int  sim_handle,
 
 /**
    @param sim_handle Handle of the simulation to get info. on
-   @param chk_handle Handle of ChkType to get info. on (as 
+   @param chk_handle Handle of ChkType to get info. on (as
    returned in the @p handles array by a call to Get_chktypes())
    @param num_entries No. of entries to retrieve from logs
    @param entries On successful return, holds array of @p num_entries
@@ -545,7 +545,7 @@ extern PREFIX int Get_chk_log_entries(int                sim_handle,
 
 /**
    Returns the LAST @p num_entries checkpoint entries in reverse
-   chronological order 
+   chronological order
    @see Get_chk_log_entries */
 extern PREFIX int Get_chk_log_entries_reverse(int                sim_handle,
 					      int                chk_handle,

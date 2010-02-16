@@ -1,7 +1,7 @@
 /*
   The RealityGrid Steering Library
 
-  Copyright (c) 2002-2009, University of Manchester, United Kingdom.
+  Copyright (c) 2002-2010, University of Manchester, United Kingdom.
   All rights reserved.
 
   This software is produced by Research Computing Services, University
@@ -65,7 +65,7 @@ extern Steer_lib_config_type Steer_lib_config;
 /* */
 socket_info_table_type socket_info_table;
 
-/* Need access to these tables which are actually declared in 
+/* Need access to these tables which are actually declared in
    ReG_Steer_Appside_internal.h */
 extern IOdef_table_type IOTypes_table;
 extern Steerer_connection_table_type Steerer_connection;
@@ -120,8 +120,8 @@ int Initialize_IOType_transport_impl(const int direction, const int index) {
       }
       else {
 	fprintf(stderr, "STEER: Initialize_IOType_transport: Created "
-		"listener on port %d, index %d, label %s\n", 
-		socket_info->listener_port, 
+		"listener on port %d, index %d, label %s\n",
+		socket_info->listener_port,
 		index, IOTypes_table.io_def[index].label);
       }
     }
@@ -129,7 +129,7 @@ int Initialize_IOType_transport_impl(const int direction, const int index) {
 
       /* Keep a count of how many input channels have been registered and
 	 where this channel is in that list - this is used to map to the
-	 list of data inputs held by our SGS (configured when it was 
+	 list of data inputs held by our SGS (configured when it was
 	 created) */
       IOTypes_table.io_def[index].input_index = ++(IOTypes_table.num_inputs);
 
@@ -149,13 +149,13 @@ int Initialize_IOType_transport_impl(const int direction, const int index) {
       else {
 	fprintf(stderr, "STEER: Initialize_IOType_transport: "
 		"registered connector on port %d, hostname = %s, "
-		"index %d, label %s\n", 
+		"index %d, label %s\n",
 		socket_info->connector_port,
 		socket_info->connector_hostname,
 		index, IOTypes_table.io_def[index].label );
       }
 #endif
-      
+
     }
   }
 
@@ -234,16 +234,16 @@ int Enable_IOType_impl(int index) {
 /*---------------------------------------------------*/
 
 int Get_communication_status_impl(const int index) {
-  if(socket_info_table.socket_info[index].comms_status != 
+  if(socket_info_table.socket_info[index].comms_status !=
      REG_COMMS_STATUS_CONNECTED)
     return REG_FAILURE;
-  
+
   return REG_SUCCESS;
 }
 
 /*---------------------------------------------------*/
 
-int Emit_data_non_blocking_impl(const int index, const int size, 
+int Emit_data_non_blocking_impl(const int index, const int size,
 				   void* buffer) {
 
   struct timeval timeout;
@@ -277,13 +277,13 @@ int Emit_header_impl(const int index) {
   int status;
 
   /* check if socket connection has been made */
-  if(socket_info_table.socket_info[index].comms_status != 
+  if(socket_info_table.socket_info[index].comms_status !=
      REG_COMMS_STATUS_CONNECTED) {
     attempt_listener_connect_samples(index);
   }
 
   /* now are we connected? */
-  if(socket_info_table.socket_info[index].comms_status == 
+  if(socket_info_table.socket_info[index].comms_status ==
      REG_COMMS_STATUS_CONNECTED) {
 #ifdef REG_DEBUG
     fprintf(stderr, "STEER: Emit_header: socket status is connected, index = %d\n", index );
@@ -295,7 +295,7 @@ int Emit_header_impl(const int index) {
 #ifdef REG_DEBUG
     fprintf(stderr, "STEER: Emit_header: Sending >>%s<<\n", buffer);
 #endif
-    status = Emit_data_non_blocking_impl(index, REG_PACKET_SIZE, 
+    status = Emit_data_non_blocking_impl(index, REG_PACKET_SIZE,
 					 (void*) buffer);
 
     if(status == REG_SUCCESS) {
@@ -311,12 +311,12 @@ int Emit_header_impl(const int index) {
 #endif
       retry_accept_connect_samples(index);
 
-      if(socket_info_table.socket_info[index].comms_status == 
+      if(socket_info_table.socket_info[index].comms_status ==
 	 REG_COMMS_STATUS_CONNECTED) {
 #ifdef REG_DEBUG
 	fprintf(stderr, "STEER: Emit_header: Sending >>%s<<\n", buffer);
-#endif    
-	if(Emit_data_impl(index, REG_PACKET_SIZE, 
+#endif
+	if(Emit_data_impl(index, REG_PACKET_SIZE,
 			  (void*) buffer) == REG_SUCCESS) {
 	  return REG_SUCCESS;
 	}
@@ -340,8 +340,8 @@ int Emit_header_impl(const int index) {
 }
 /*---------------------------------------------------*/
 
-int Emit_data_impl(const int    index, 
-		      const size_t num_bytes_to_send, 
+int Emit_data_impl(const int    index,
+		      const size_t num_bytes_to_send,
 		      void*        pData)
 {
   int bytes_left;
@@ -384,10 +384,10 @@ int Emit_data_impl(const int    index,
   }
 
 #ifdef REG_DEBUG
-  fprintf(stderr, "STEER: Emit_data: sent %d bytes...\n", 
+  fprintf(stderr, "STEER: Emit_data: sent %d bytes...\n",
 	  (int) num_bytes_to_send);
 #endif
-  
+
   return REG_SUCCESS;
 }
 
@@ -448,7 +448,7 @@ int create_connector_samples(const int index) {
   socket_info_table.socket_info[index].connector_handle = connector;
 
   /* ...turn off the "Address already in use" error message... */
-  if(setsockopt(connector, SOL_SOCKET, SO_REUSEADDR, &yes, 
+  if(setsockopt(connector, SOL_SOCKET, SO_REUSEADDR, &yes,
 		sizeof(int)) == REG_SOCKETS_ERROR) {
     perror("setsockopt");
     return REG_FAILURE;
@@ -460,10 +460,10 @@ int create_connector_samples(const int index) {
     myAddr.sin_addr.s_addr = INADDR_ANY;
   }
   else {
-    if( !inet_aton(socket_info_table.socket_info[index].tcp_interface, 
+    if( !inet_aton(socket_info_table.socket_info[index].tcp_interface,
 		   &(myAddr.sin_addr)) ){
       fprintf(stderr, "STEER: create_connector: inet_aton failed "
-	      "for interface >>%s<<\n", 
+	      "for interface >>%s<<\n",
 	      socket_info_table.socket_info[index].tcp_interface);
       return REG_FAILURE;
     }
@@ -478,7 +478,7 @@ int create_connector_samples(const int index) {
 	    socket_info_table.socket_info[index].min_port_out,
 	    socket_info_table.socket_info[index].max_port_out);
 
-    while(bind(connector, (struct sockaddr*) &myAddr, 
+    while(bind(connector, (struct sockaddr*) &myAddr,
 	       sizeof(struct sockaddr)) == REG_SOCKETS_ERROR) {
       if(++i > socket_info_table.socket_info[index].max_port_out) {
 	fprintf(stderr, "STEER: create_connector: failed to find free local port to "
@@ -507,7 +507,6 @@ int connect_connector_samples(const int index) {
   struct sockaddr_in theirAddr;
   int  connector     = socket_info_table.socket_info[index].connector_handle;
   int  return_status = REG_SUCCESS;
-  char tmpBuf[REG_MAX_STRING_LENGTH];
 
   /* get a remote address if we need to */
   if(socket_info_table.socket_info[index].connector_port == 0) {
@@ -519,42 +518,42 @@ int connect_connector_samples(const int index) {
 			       IOTypes_table.io_def[index].proxySourceLabel);
   }
 
-  if(return_status == REG_SUCCESS && 
+  if(return_status == REG_SUCCESS &&
      socket_info_table.socket_info[index].connector_port != 0) {
 
     /* ...look up and then build remote address struct... */
     if(dns_lookup(socket_info_table.socket_info[index].connector_hostname) == REG_FAILURE) {
-      fprintf(stderr, "STEER: connect_connector: Could not resolve hostname <%s>\n", 
+      fprintf(stderr, "STEER: connect_connector: Could not resolve hostname <%s>\n",
 	      socket_info_table.socket_info[index].connector_hostname);
       return REG_FAILURE;
     }
 
     theirAddr.sin_family = AF_INET;
-    theirAddr.sin_port = 
+    theirAddr.sin_port =
              htons(socket_info_table.socket_info[index].connector_port);
-    if( !inet_aton(socket_info_table.socket_info[index].connector_hostname, 
+    if( !inet_aton(socket_info_table.socket_info[index].connector_hostname,
 		   &(theirAddr.sin_addr)) ){
-      fprintf(stderr, 
+      fprintf(stderr,
 	      "STEER: connect_connector: inet_aton reports address is invalid\n");
       return REG_FAILURE;
     }
     memset(&(theirAddr.sin_zero), '\0', 8); /* zero the rest */
-    
+
     /* ...finally connect to the remote address! */
-    if(connect(connector, (struct sockaddr*) &theirAddr, 
+    if(connect(connector, (struct sockaddr*) &theirAddr,
 	       sizeof(struct sockaddr)) == REG_SOCKETS_ERROR) {
       perror("connect_connector: connect");
       socket_info_table.socket_info[index].connector_port = 0;
       return REG_FAILURE;
     }
-    socket_info_table.socket_info[index].comms_status = 
+    socket_info_table.socket_info[index].comms_status =
       REG_COMMS_STATUS_CONNECTED;
   }
   else {
     fprintf(stderr, "STEER: connect_connector: cannot get remote address\n");
   }
 
-  return return_status;  
+  return return_status;
 }
 
 /*--------------------------------------------------------------------*/

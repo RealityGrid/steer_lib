@@ -1,7 +1,7 @@
 /*
   The RealityGrid Steering Library
 
-  Copyright (c) 2002-2009, University of Manchester, United Kingdom.
+  Copyright (c) 2002-2010, University of Manchester, United Kingdom.
   All rights reserved.
 
   This software is produced by Research Computing Services, University
@@ -46,12 +46,12 @@
           Robert Haines
  */
 
-/** @internal 
+/** @internal
     @file ReG_Steer_XML.h
-    @brief Header file defining methods and structures for handling XML 
+    @brief Header file defining methods and structures for handling XML
     @author Andrew Porter
     @author Robert Haines
-    This header file contains defines routines and data structures for 
+    This header file contains defines routines and data structures for
     parsing the XML steering-communication messages
 */
 
@@ -64,7 +64,7 @@
 #ifdef __cplusplus
   #define PREFIX "C"
 #else
-  #define PREFIX 
+  #define PREFIX
 #endif
 
 #define REG_SUCCESS 0
@@ -72,7 +72,7 @@
 
 /*-----------------------------------------------------------------*/
 
-/** @internal 
+/** @internal
     Stucture for holding parsed elements of a parameter or param_def */
 struct param_struct{
 
@@ -138,10 +138,10 @@ struct io_struct{
   struct io_struct *next;
 };
 
-/** @internal Structure for holding parsed elements of a control msg 
+/** @internal Structure for holding parsed elements of a control msg
     @bug  is almost the same as status_struct so could re-use?? */
 struct control_struct{
-  /** The simulated time after which this message becomes valid 
+  /** The simulated time after which this message becomes valid
       (if any) */
   xmlChar             *valid_after;
   /**  Pointer to first parameter (if any) */
@@ -228,7 +228,7 @@ struct msg_struct{
   struct log_struct       *log;
 };
 
-/** @internal 
+/** @internal
     Structure for storing multiple steering messages generated
     by parsing @e e.g. a ResourceProperties document */
 struct msg_store_struct {
@@ -238,7 +238,7 @@ struct msg_store_struct {
   struct msg_store_struct *next;
 };
 
-/** @internal 
+/** @internal
     Structure for storing the UIDs of previous
     messages so we don't act upon them again */
 struct msg_uid_history_struct {
@@ -251,10 +251,10 @@ struct msg_uid_history_struct {
 };
 
 
-/** @internal 
-    Definition of entry in main table holding data for connected simulations.  
-    Contains five sub-tables - the first holding the commands that the 
-    simulation supports, the second its registered parameters (both 
+/** @internal
+    Definition of entry in main table holding data for connected simulations.
+    Contains five sub-tables - the first holding the commands that the
+    simulation supports, the second its registered parameters (both
     steerable and monitored), the third its registered IO types, the fourth
     its registered Chk types and the fifth a log of checkpoints taken. */
 typedef struct {
@@ -300,11 +300,11 @@ typedef struct {
 
     Parse the xml in the specified file.
     If @p sim is NULL then any message UIDs are stored in
-    the global Msg_uid_store.  If @p sim is not NULL (@e i.e. this 
-    routine has been called by a steering client) then they are 
+    the global Msg_uid_store.  If @p sim is not NULL (@e i.e. this
+    routine has been called by a steering client) then they are
     stored in a table within that simulation's table entry.
 */
-int Parse_xml_file(char*              filename, 
+int Parse_xml_file(char*              filename,
 		   struct msg_struct *msg,
 		   Sim_entry_type    *sim);
 
@@ -316,8 +316,8 @@ int Parse_xml_file(char*              filename,
     @param sim Pointer to Sim_entry struct or NULL (if not called by
     a steering client)
     @see Parse_xml_file() */
-extern PREFIX int Parse_xml_buf(char*              buf, 
-				int                size, 
+extern PREFIX int Parse_xml_buf(char*              buf,
+				int                size,
 				struct msg_struct *msg,
 				Sim_entry_type    *sim);
 
@@ -327,7 +327,7 @@ extern PREFIX int Parse_xml_buf(char*              buf,
     @param msg Pointer to message struct to hold results
     @param sim Pointer to Sim_entry struct or NULL (if not called by
     a steering client) */
-int Parse_xml(xmlDocPtr          doc, 
+int Parse_xml(xmlDocPtr          doc,
 	      struct msg_struct *msg,
 	      Sim_entry_type    *sim);
 
@@ -339,10 +339,10 @@ int Parse_xml(xmlDocPtr          doc,
     @param msg Struct to fill with message details
     @param sim Pointer to Sim_entry struct or NULL (if not called by
     a steering client) */
-int parseSteerMessage(xmlDocPtr          doc, 
-		      xmlNsPtr           ns, 
+int parseSteerMessage(xmlDocPtr          doc,
+		      xmlNsPtr           ns,
 		      xmlNodePtr         cur,
-		      struct msg_struct *msg, 
+		      struct msg_struct *msg,
 		      Sim_entry_type    *sim);
 
 /** @internal
@@ -352,19 +352,19 @@ int parseSteerMessage(xmlDocPtr          doc,
     @param cur Current XML node
     @param sim Pointer to Sim_entry struct or NULL (if not called by
     a steering client) */
-int parseResourceProperties(xmlDocPtr       doc, 
-			    xmlNsPtr        ns, 
+int parseResourceProperties(xmlDocPtr       doc,
+			    xmlNsPtr        ns,
 			    xmlNodePtr      cur,
 			    Sim_entry_type *sim);
 
 /** @internal
-    Parse a Status message 
+    Parse a Status message
     @param doc The DOM document to parse
     @param ns The namespace to use
     @param cur Current XML node
     @param status Pointer to struct to fill with msg details */
-int parseStatus(xmlDocPtr             doc, 
-		xmlNsPtr              ns, 
+int parseStatus(xmlDocPtr             doc,
+		xmlNsPtr              ns,
 		xmlNodePtr            cur,
 	        struct status_struct *status);
 
@@ -374,19 +374,19 @@ int parseStatus(xmlDocPtr             doc,
     @param ns The namespace to use
     @param cur Current XML node
     @param ctrl Pointer to struct to fill with msg details */
-int parseControl(xmlDocPtr              doc, 
-		 xmlNsPtr               ns, 
+int parseControl(xmlDocPtr              doc,
+		 xmlNsPtr               ns,
 		 xmlNodePtr             cur,
 	         struct control_struct *ctrl);
 
 /** @internal
-    Parse a Supported Commands message 
+    Parse a Supported Commands message
     @param doc The DOM document to parse
     @param ns The namespace to use
     @param cur Current XML node
     @param supp_cmd Pointer to struct to fill with msg details */
-int parseSuppCmd(xmlDocPtr               doc, 
-		 xmlNsPtr                ns, 
+int parseSuppCmd(xmlDocPtr               doc,
+		 xmlNsPtr                ns,
 		 xmlNodePtr              cur,
 		 struct supp_cmd_struct *supp_cmd);
 
@@ -396,30 +396,30 @@ int parseSuppCmd(xmlDocPtr               doc,
     @param ns The namespace to use
     @param cur Current XML node
     @param param Pointer to struct to fill with parameter details */
-int parseParam(xmlDocPtr            doc, 
-	       xmlNsPtr             ns, 
+int parseParam(xmlDocPtr            doc,
+	       xmlNsPtr             ns,
 	       xmlNodePtr           cur,
 	       struct param_struct *param);
 
-/** @internal 
+/** @internal
     Parse a Command element
     @param doc The DOM document to parse
     @param ns The namespace to use
     @param cur Current XML node
     @param cmd Pointer to struct to fill with command details */
-int parseCmd(xmlDocPtr          doc, 
-	     xmlNsPtr           ns, 
+int parseCmd(xmlDocPtr          doc,
+	     xmlNsPtr           ns,
 	     xmlNodePtr         cur,
 	     struct cmd_struct *cmd);
 
-/** @internal 
+/** @internal
     Parse a Checkpoint Type definition element
     @param doc The DOM document to parse
     @param ns The namespace to use
     @param cur Current XML node
     @param chk_def Pointer to struct to fill with ChkType definition */
-int parseChkTypeDef(xmlDocPtr             doc, 
-		    xmlNsPtr              ns, 
+int parseChkTypeDef(xmlDocPtr             doc,
+		    xmlNsPtr              ns,
 		    xmlNodePtr            cur,
 		    struct io_def_struct *chk_def);
 
@@ -429,8 +429,8 @@ int parseChkTypeDef(xmlDocPtr             doc,
     @param ns The namespace to use
     @param cur Current XML node
     @param io_def Pointer to struct to fill with IOType definition */
-extern PREFIX int parseIOTypeDef(xmlDocPtr             doc, 
-				 xmlNsPtr              ns, 
+extern PREFIX int parseIOTypeDef(xmlDocPtr             doc,
+				 xmlNsPtr              ns,
 				 xmlNodePtr            cur,
 				 struct io_def_struct *io_def);
 
@@ -440,8 +440,8 @@ extern PREFIX int parseIOTypeDef(xmlDocPtr             doc,
     @param ns The namespace to use
     @param cur Current XML node
     @param io Pointer to struct to fill with IOType details */
-int parseIOType(xmlDocPtr         doc, 
-		xmlNsPtr          ns, 
+int parseIOType(xmlDocPtr         doc,
+		xmlNsPtr          ns,
 		xmlNodePtr        cur,
 		struct io_struct *io);
 
@@ -451,8 +451,8 @@ int parseIOType(xmlDocPtr         doc,
     @param ns The namespace to use
     @param cur Current XML node
     @param log Pointer to struct to fill with log details */
-int parseLog(xmlDocPtr          doc, 
-	     xmlNsPtr           ns, 
+int parseLog(xmlDocPtr          doc,
+	     xmlNsPtr           ns,
 	     xmlNodePtr         cur,
 	     struct log_struct *log);
 
@@ -462,8 +462,8 @@ int parseLog(xmlDocPtr          doc,
     @param ns The namespace to use
     @param cur Current XML node
     @param log_entry Pointer to struct to fill with details of a log entry */
-int parseLogEntry(xmlDocPtr                doc, 
-		  xmlNsPtr                 ns, 
+int parseLogEntry(xmlDocPtr                doc,
+		  xmlNsPtr                 ns,
 		  xmlNodePtr               cur,
 		  struct log_entry_struct *log_entry);
 
@@ -473,8 +473,8 @@ int parseLogEntry(xmlDocPtr                doc,
     @param ns The namespace to use
     @param cur Current XML node
     @param log_entry Ptr to struct to fill with details of a chkpoint log entry */
-int parseChkLogEntry(xmlDocPtr                    doc, 
-		     xmlNsPtr                     ns, 
+int parseChkLogEntry(xmlDocPtr                    doc,
+		     xmlNsPtr                     ns,
 		     xmlNodePtr                   cur,
 		     struct chk_log_entry_struct *log_entry);
 
@@ -532,8 +532,8 @@ void 		   Delete_supp_cmd_struct(struct supp_cmd_struct *supp_cmd);
     Delete a param_struct and all its constituents
     @param param Pointer to param_struct to delete */
 void 		   Delete_param_struct(struct param_struct *param);
-/** @internal 
-    Delete a cmd_struct and all its constituents 
+/** @internal
+    Delete a cmd_struct and all its constituents
     @param cmd Pointer to cmd_struct to delete */
 void 		   Delete_cmd_struct(struct cmd_struct *cmd);
 /** @internal
@@ -556,7 +556,7 @@ void 		   Delete_log_entry_struct(struct log_entry_struct *log);
     Delete a log_struct and all its constituents
     @param log Pointer to log_struct to delete */
 void 		   Delete_log_struct(struct log_struct *log);
-/** Print out a message to stderr 
+/** Print out a message to stderr
     @param msg Pointer to msg to print */
 extern PREFIX void Print_msg(struct msg_struct *msg);
 /** @internal
@@ -584,7 +584,7 @@ void 		   Print_supp_cmd_struct(struct supp_cmd_struct *supp_cmd);
     @param io_def Pointer to the io_def_struct to print */
 void 		   Print_io_def_struct(struct io_def_struct *io_def);
 /** @internal
-    Print out the contents of an io_struct to stderr 
+    Print out the contents of an io_struct to stderr
     @param io Pointer to the io_struct to print */
 void 		   Print_io_struct(struct io_struct *io);
 /** @internal
@@ -603,19 +603,19 @@ void 		   Print_chk_log_entry_struct(struct chk_log_entry_struct *entry);
     Test to see whether string contains XML chars.
     @param string The string to test (NULL terminated)
     @return REG_TRUE if it does and REG_FALSE if it doesn't */
-int  String_contains_xml_chars(char *string);
+int  String_contains_xml_chars(const char *string);
 
 /** @internal
     Enumeration of the various possible states of our SAX parser
-    for the results of an OGSI findServiceData or WSRF 
-    GetResourceProperty("entry") - corresponds to the elements of 
+    for the results of an OGSI findServiceData or WSRF
+    GetResourceProperty("entry") - corresponds to the elements of
     the doc we're interested in */
-enum doc_state {UNKNOWN, STARTING, 
-		OGSI_ENTRY, MEMBER_SERVICE_LOCATOR, 
-		GS_HANDLE, CONTENT, SERVICE_TYPE, COMPONENT_CONTENT, 
+enum doc_state {UNKNOWN, STARTING,
+		OGSI_ENTRY, MEMBER_SERVICE_LOCATOR,
+		GS_HANDLE, CONTENT, SERVICE_TYPE, COMPONENT_CONTENT,
 		COMPONENT_START_DATE_TIME,
-		COMPONENT_CREATOR_NAME, COMPONENT_CREATOR_GROUP, 
-		COMPONENT_SOFTWARE_PACKAGE, COMPONENT_TASK_DESCRIPTION, 
+		COMPONENT_CREATOR_NAME, COMPONENT_CREATOR_GROUP,
+		COMPONENT_SOFTWARE_PACKAGE, COMPONENT_TASK_DESCRIPTION,
 		/* The next line has those that are WSRF-specifc states */
 		WSRF_ENTRY, MEMBER_SERVICE_EPR, SERVICEGROUP_ENTRY_EPR,
 		EPR, WSADDRESS, SERVICEGROUP_EPR, SERVICEGROUP_WSADDRESS,
@@ -629,28 +629,28 @@ enum doc_state {UNKNOWN, STARTING,
     @param size Length of @p buf in bytes
     @param contents On return, table of details of registry entries
  */
-int Parse_registry_entries(char*                     buf, 
-			   int                       size, 
+int Parse_registry_entries(char*                     buf,
+			   int                       size,
 			   struct registry_contents *contents);
 
-/** @internal 
+/** @internal
     Parse the supplied resource property document and pull out the
-    value of the specified resource property 
-    @param pRPDoc Buffer containing the ResourceProperty document 
+    value of the specified resource property
+    @param pRPDoc Buffer containing the ResourceProperty document
     @param size Size of the ResourceProperty doc (bytes)
     @param name Name of the ResourceProperty to extract
     @param resultBuf Buffer to put extracted RP into
-    @param resultBufLen Max. length of results buffer (bytes) 
+    @param resultBufLen Max. length of results buffer (bytes)
     @return REG_SUCCESS, REG_FAILURE */
-int Extract_resource_property(char *pRPDoc, 
+int Extract_resource_property(char *pRPDoc,
 			      int   size,
 			      char *name,
 			      char *resultBuf,
 			      int   resultBufLen);
 
-/** @internal 
-    Check to see whether or not this message has been seen within the 
-    last REG_UID_HISTORY_BUFFER_SIZE messages received 
+/** @internal
+    Check to see whether or not this message has been seen within the
+    last REG_UID_HISTORY_BUFFER_SIZE messages received
     @param msg_uid The UID to check for
     @param hist Pointer to the UID history table to search
 */
@@ -670,14 +670,14 @@ int Delete_msg_uid_store(struct msg_uid_history_struct *uidHist);
 
 /** @internal
     Store the value of the specified node in the string pointed
-    to by @p dest, which is a member of the specified @p entry struct 
+    to by @p dest, which is a member of the specified @p entry struct
     @param doc The XML document being parsed
     @param cur Pointer to the current node in the DOM tree
     @param dest Pointer to the char* to put string into
     @param entry Pointer to the entry struct that @p dest belongs to */
-int Store_xml_string(xmlDocPtr doc, 
-		     xmlNodePtr cur, 
-		     char **dest, 
+int Store_xml_string(xmlDocPtr doc,
+		     xmlNodePtr cur,
+		     char **dest,
 		     struct registry_entry *entry);
 
 #endif
