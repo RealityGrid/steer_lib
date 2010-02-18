@@ -150,10 +150,10 @@ if(REG_BUILD_FORTRAN_WRAPPERS)
   include(fortran-c-abi/Fortran-C-ABI)
 
   # if Fortran is available we can build the MPI example
-  find_package(MPI)
-  if(MPI_FOUND)
+  find_package(MPIF)
+  if(MPIF_FOUND)
     option(REG_BUILD_MPI_EXAMPLE "Build Fortran MPI example application." ON)
-  endif(MPI_FOUND)
+  endif(MPIF_FOUND)
 endif(REG_BUILD_FORTRAN_WRAPPERS)
 
 #

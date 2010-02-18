@@ -44,21 +44,21 @@
 #
 #  Author: Robert Haines
 
-include_directories(${PROJECT_SOURCE_DIR}/include ${MPI_INCLUDE_PATH})
+include_directories(${PROJECT_SOURCE_DIR}/include ${MPIF_INCLUDE_PATH})
 string(REGEX MATCH "^[^\\.]+" EX_APP_NAME ${EX_SRC_NAME})
 add_executable(${EX_APP_NAME} ${EX_SRC_NAME})
 
 # Set MPI flags for the source file and target while building
-if(${MPI_COMPILE_FLAGS})
+if(${MPIF_COMPILE_FLAGS})
   set_source_files_properties(
-    ${EX_SRC_NAME} PROPERTIES COMPILE_FLAGS ${MPI_COMPILE_FLAGS}
+    ${EX_SRC_NAME} PROPERTIES COMPILE_FLAGS ${MPIF_COMPILE_FLAGS}
   )
-endif(${MPI_COMPILE_FLAGS})
-if(${MPI_LINK_FLAGS})
+endif(${MPIF_COMPILE_FLAGS})
+if(${MPIF_LINK_FLAGS})
   set_target_properties(
-    ${EX_APP_NAME} PROPERTIES LINK_FLAGS ${MPI_LINK_FLAGS}
+    ${EX_APP_NAME} PROPERTIES LINK_FLAGS ${MPIF_LINK_FLAGS}
   )
-endif(${MPI_LINK_FLAGS})
+endif(${MPIF_LINK_FLAGS})
 
 # if building static libraries the link order needs
 # to be repeated to resolve circular dependencies
@@ -69,7 +69,8 @@ endif(NOT REG_BUILD_SHARED_LIBS)
 
 target_link_libraries(
   ${EX_APP_NAME}
-  ${MPI_EXTRA_LIBRARY}
+  ${MPIF_LIBRARY}
+  ${MPIF_EXTRA_LIBRARY}
   ${EXAMPLES_LINK_LINE}
   ${REG_EXTERNAL_LIBS}
 )
