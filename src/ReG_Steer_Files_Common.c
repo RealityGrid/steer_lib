@@ -57,26 +57,25 @@
 #include "ReG_Steer_Common.h"
 #include "ReG_Steer_Appside_internal.h"
 
-file_info_table_type file_info_table;
-
 /*--------------------------------------------------------------------*/
 
-int file_info_table_init(const int max_entries) {
+int file_info_table_init(file_info_table_type* table,
+			 const int max_entries) {
   int i;
 
-  file_info_table.max_entries = max_entries;
-  file_info_table.num_used = 0;
-  file_info_table.file_info = (file_info_type*)
+  table->max_entries = max_entries;
+  table->num_used = 0;
+  table->file_info = (file_info_type*)
     malloc(max_entries * sizeof(file_info_type));
 
-  if(file_info_table.file_info == NULL) {
+  if(table->file_info == NULL) {
     fprintf(stderr, "STEER: file_info_table_init: failed to allocate memory "
 	    "for file info table\n");
     return REG_FAILURE;
   }
 
   for(i = 0; i < max_entries; i++) {
-    file_info_table.file_info[i].fp = NULL;
+    table->file_info[i].fp = NULL;
   }
 
   return REG_SUCCESS;

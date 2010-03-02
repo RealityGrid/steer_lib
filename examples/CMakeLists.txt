@@ -44,11 +44,13 @@
 #
 #  Author: Robert Haines
 
-if(REG_BUILD_MODULAR_LIBS)
-  foreach(type ${REG_MODULES_TYPES})
-    set(REG_EXAMPLES_MODULES_LINK ${REG_EXAMPLES_MODULES_LINK} "ReG_Steer_${type}_${REG_USE_MODULE_${type}}")
-  endforeach(type ${REG_MODULES_TYPES})
-endif(REG_BUILD_MODULAR_LIBS)
+if(NOT REG_DYNAMIC_MOD_LOADING)
+  if(REG_BUILD_MODULAR_LIBS)
+    foreach(type ${REG_MODULES_TYPES})
+      set(REG_EXAMPLES_MODULES_LINK ${REG_EXAMPLES_MODULES_LINK} "ReG_Steer_${type}_${REG_USE_MODULE_${type}}")
+    endforeach(type ${REG_MODULES_TYPES})
+  endif(REG_BUILD_MODULAR_LIBS)
+endif(NOT REG_DYNAMIC_MOD_LOADING)
 
 add_subdirectory(mini_app)
 add_subdirectory(mini_steerer)

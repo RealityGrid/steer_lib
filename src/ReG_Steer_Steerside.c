@@ -59,6 +59,10 @@
 #include "Base64.h"
 #include "ReG_Steer_Steering_Transport_API.h"
 
+#if REG_DYNAMIC_MOD_LOADING
+#include "ReG_Steer_Dynamic_Loader.h"
+#endif
+
 /*--------------------- Data structures -------------------*/
 
 /**
@@ -120,6 +124,17 @@ int Steerer_initialize()
   signal(SIGUSR2, Steerside_signal_handler);
 #endif
 
+  /* Load the dynamic modules if needed */
+#if REG_DYNAMIC_MOD_LOADING
+  if(Load_steering_transport_api() != REG_SUCCESS) {
+    fprintf(stderr, "STEER: Errors while loading Steering Transport module - "
+	    "Exiting.\n");
+    return REG_FAILURE;
+  }
+#else
+  Steering_transport_function_map();
+#endif
+
   /* Initialize table of connected simulations */
 
   Sim_table.sim = (Sim_entry_type *)malloc(REG_MAX_NUM_STEERED_SIM*
@@ -146,7 +161,7 @@ int Steerer_initialize()
   }
 
   /* init the steering transport module */
-  return Initialize_steerside_transport();
+  return Initialize_steerside_transport_impl();
 }
 
 /*----------------------------------------------------------*/

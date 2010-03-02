@@ -60,6 +60,10 @@
 #include "Base64.h"
 #include "soapRealityGrid.nsmap"
 
+#if REG_DYNAMIC_MOD_LOADING
+#include "ReG_Steer_Dynamic_Loader.h"
+#endif
+
 /**
    The table holding details of our communication channel with the
    steering client
@@ -188,6 +192,24 @@ int Steering_initialize(const char* AppName,
 	    "not enabled - no steering will be possible\n");
     return REG_SUCCESS;
   }
+
+  /* Load the dynamic modules if needed */
+#if REG_DYNAMIC_MOD_LOADING
+  if(Load_steering_transport_api() != REG_SUCCESS) {
+    fprintf(stderr, "STEER: Errors while loading Steering Transport module - "
+	    "Exiting.\n");
+    return REG_FAILURE;
+  }
+
+  if(Load_samples_transport_api() != REG_SUCCESS) {
+    fprintf(stderr, "STEER: Errors while loading Samples Transport module - "
+	    "Exiting.\n");
+    return REG_FAILURE;
+  }
+#else
+  Steering_transport_function_map();
+  Samples_transport_function_map();
+#endif
 
   /* Set up the basic library config data */
   if(Get_scratch_directory() != REG_SUCCESS)
@@ -432,7 +454,7 @@ int Steering_initialize(const char* AppName,
   Steer_log.num_params = 0;
 
   /* Initialize Samples Transport */
-  Initialize_samples_transport();
+  Initialize_samples_transport_impl();
 
   /* Set up signal handler so can clean up if application
      exits in a hurry */
@@ -497,7 +519,7 @@ int Steering_finalize()
   Finalize_steering_connection();
 
   /* Clean-up samples transport */
-  Finalize_samples_transport();
+  Finalize_samples_transport_impl();
 
   /* Clean-up IOTypes table */
 

@@ -59,6 +59,12 @@
 #include "ReG_Steer_Browser.h"
 #include "ReG_Steer_XML.h"
 
+#if !REG_DYNAMIC_MOD_LOADING || DOXYGEN
+int Steering_transport_function_map();
+#endif
+
+#ifdef DOXYGEN
+
 /*-------- Appside function prototypes --------*/
 
 /** @internal
@@ -136,8 +142,8 @@ int Save_log_impl(FILE* file_ptr, char* log_data);
 
 /*-------- Steerside function prototypes --------*/
 
-int Initialize_steerside_transport();
-int Finalize_steerside_transport();
+int Initialize_steerside_transport_impl();
+int Finalize_steerside_transport_impl();
 
 /** @internal
     @param index Index of entry in main Sim_table
@@ -200,5 +206,32 @@ int Get_param_log_impl(int index, int handle);
 int Get_registry_entries_impl(const char* registryEPR,
 			      const struct reg_security_info* sec,
 			      struct registry_contents* contents);
+
+#else /* DOXYGEN */
+
+REG_DECLARE_FUNC(int, Detach_from_steerer, ());
+REG_DECLARE_FUNC(int, Steerer_connected, ());
+REG_DECLARE_FUNC(int, Send_status_msg, (char *));
+REG_DECLARE_FUNC(struct msg_struct*, Get_control_msg, ());
+REG_DECLARE_FUNC(int, Initialize_steering_connection, (const int, int*));
+REG_DECLARE_FUNC(int, Finalize_steering_connection, ());
+REG_DECLARE_FUNC(int, Get_data_io_address, (const int, const int, char*, unsigned short int*, char*));
+REG_DECLARE_FUNC(int, Record_checkpoint_set, (int, char*, char*));
+REG_DECLARE_FUNC(void, Initialize_log, (Chk_log_type*));
+REG_DECLARE_FUNC(int, Save_log, (FILE*, char*));
+REG_DECLARE_FUNC(int, Initialize_steerside_transport, ());
+REG_DECLARE_FUNC(int, Finalize_steerside_transport, ());
+REG_DECLARE_FUNC(int, Sim_attach, (int, char*));
+REG_DECLARE_FUNC(int, Sim_attach_security, (const int, const struct reg_security_info*));
+REG_DECLARE_FUNC(struct msg_struct*, Get_status_msg, (int, int));
+REG_DECLARE_FUNC(int, Send_control_msg, (int, char*));
+REG_DECLARE_FUNC(int, Send_detach_msg, (int));
+REG_DECLARE_FUNC(int, Finalize_connection, (int));
+REG_DECLARE_FUNC(int, Get_param_log, (int, int));
+REG_DECLARE_FUNC(int, Get_registry_entries, (const char*, const struct reg_security_info*, struct registry_contents*));
+
+#undef REG_MODULE
+
+#endif /* DOXYGEN */
 
 #endif /* __REG_STEER_STEERING_TRANSPORT_API_H__ */

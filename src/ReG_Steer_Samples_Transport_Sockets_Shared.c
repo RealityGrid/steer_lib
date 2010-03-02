@@ -52,24 +52,16 @@
     @author Robert Haines
   */
 
-#include "ReG_Steer_Config.h"
-#include "ReG_Steer_Samples_Transport_API.h"
-#include "ReG_Steer_Samples_Transport_Sockets.h"
-#include "ReG_Steer_Common.h"
-#include "ReG_Steer_Sockets_Common.h"
-#include "ReG_Steer_Appside_internal.h"
-
-/* */
-extern socket_info_table_type socket_info_table;
-
-/* Need access to these tables which are actually declared in
-   ReG_Steer_Appside_internal.h */
-extern IOdef_table_type IOTypes_table;
+/* This file should only ever be included at the bottom of other .c
+   files that need these functions. It is not to be compiled as a
+   "first class" citizen of the source tree! Currently it is included
+   by the samples sockets and samples proxy code. REG_MODULE must be
+   set appropriately before inclusion. */
 
 /*---------------------- API ------------------------*/
 
-int Consume_msg_header_impl(int index, int* datatype, int* count,
-			       int* num_bytes, int* is_fortran_array) {
+REG_DEFINE_FUNC(int, Consume_msg_header, (int index, int* datatype, int* count, int* num_bytes, int* is_fortran_array))
+{
 
   int nbytes;
   char buffer[REG_PACKET_SIZE];
@@ -267,7 +259,8 @@ int Consume_msg_header_impl(int index, int* datatype, int* count,
 
 /*---------------------------------------------------*/
 
-int Consume_start_data_check_impl(const int index) {
+REG_DEFINE_FUNC(int, Consume_start_data_check, (const int index))
+{
   char buffer[REG_PACKET_SIZE];
   char* pstart;
   int nbytes = 0;
@@ -418,10 +411,8 @@ int Consume_start_data_check_impl(const int index) {
 
 /*---------------------------------------------------*/
 
-int Consume_data_read_impl(const int index,
-			      const int datatype,
-			      const int num_bytes_to_read,
-			      void *pData) {
+REG_DEFINE_FUNC(int, Consume_data_read, (const int index, const int datatype, const int num_bytes_to_read, void *pData))
+{
   int nbytes;
 
   socket_info_type  *sock_info;
@@ -482,7 +473,8 @@ int Consume_data_read_impl(const int index,
 
 /*---------------------------------------------------*/
 
-int Consume_ack_impl(const int index){
+REG_DEFINE_FUNC(int, Consume_ack, (const int index))
+{
 
   char *ack_msg = "<ACK/>";
   char  buf[32];
@@ -556,29 +548,26 @@ int Consume_ack_impl(const int index){
 
 /*---------------------------------------------------*/
 
-int Emit_msg_header_impl(const int    index,
-			 const size_t num_bytes_to_send,
-			 void*        pData) {
-  return Emit_data_impl(index, num_bytes_to_send, pData);
-}
-
-/*---------------------------------------------------*/
-
-int Emit_start_impl(int index, int seqnum) {
+REG_DEFINE_FUNC(int, Emit_start, (int index, int seqnum))
+{
   return REG_SUCCESS;
 }
 
 /*---------------------------------------------------*/
 
-int Emit_stop_impl(int index) {
+REG_DEFINE_FUNC(int, Emit_stop, (int index))
+{
   return REG_SUCCESS;
 }
 
 /*---------------------------------------------------*/
 
-int Consume_stop_impl(int index) {
+REG_DEFINE_FUNC(int, Consume_stop, (int index))
+{
   return REG_SUCCESS;
 }
+
+#undef REG_MODULE
 
 /*--------------------- Others ----------------------*/
 

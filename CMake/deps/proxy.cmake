@@ -45,14 +45,14 @@
 #  Author: Robert Haines
 
 # Proxy uses sockets too!
-include(deps/Sockets)
+include(deps/sockets)
 
 # Must use WSRF steering at the moment with a Proxy...
-if(REG_USE_MODULE_Samples STREQUAL "Proxy")
-  if(NOT REG_USE_MODULE_Steering STREQUAL "WSRF")
+if(REG_USE_MODULE_Samples STREQUAL "proxy")
+  if(NOT REG_USE_MODULE_Steering STREQUAL "wsrf")
     message(SEND_ERROR
       "At present you must use WSRF steering to use a proxy for "
       "samples output. Please enable WSRF steering or disable Proxy samples."
     )
-  endif(NOT REG_USE_MODULE_Steering STREQUAL "WSRF")
-endif(REG_USE_MODULE_Samples STREQUAL "Proxy")
+  endif(NOT REG_USE_MODULE_Steering STREQUAL "wsrf")
+endif(REG_USE_MODULE_Samples STREQUAL "proxy")

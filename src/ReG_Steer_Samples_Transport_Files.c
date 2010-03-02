@@ -51,6 +51,8 @@
     @author Robert Haines
   */
 
+#define  REG_MODULE files
+
 #include "ReG_Steer_Config.h"
 #include "ReG_Steer_types.h"
 #include "ReG_Steer_Samples_Transport_API.h"
@@ -62,7 +64,7 @@
 extern Steer_lib_config_type Steer_lib_config;
 
 /* */
-extern file_info_table_type file_info_table;
+file_info_table_type file_info_table;
 
 /* Need access to these tables which are actually declared in
    ReG_Steer_Appside_internal.h */
@@ -70,21 +72,50 @@ extern IOdef_table_type IOTypes_table;
 
 /*---------------------------------------------------*/
 
-int Initialize_samples_transport() {
+#if !REG_DYNAMIC_MOD_LOADING
+int Samples_transport_function_map() {
+  Initialize_samples_transport_impl = Initialize_samples_transport_files;
+  Finalize_samples_transport_impl = Finalize_samples_transport_files;
+  Initialize_IOType_transport_impl = Initialize_IOType_transport_files;
+  Finalize_IOType_transport_impl = Finalize_IOType_transport_files;
+  Enable_IOType_impl = Enable_IOType_files;
+  Disable_IOType_impl = Disable_IOType_files;
+  Get_communication_status_impl = Get_communication_status_files;
+  Emit_data_non_blocking_impl = Emit_data_non_blocking_files;
+  Emit_header_impl = Emit_header_files;
+  Emit_data_impl = Emit_data_files;
+  Consume_msg_header_impl = Consume_msg_header_files;
+  Emit_msg_header_impl = Emit_msg_header_files;
+  Consume_start_data_check_impl = Consume_start_data_check_files;
+  Consume_data_read_impl = Consume_data_read_files;
+  Emit_ack_impl = Emit_ack_files;
+  Consume_ack_impl = Consume_ack_files;
+  Get_IOType_address_impl = Get_IOType_address_files;
+  Emit_start_impl = Emit_start_files;
+  Emit_stop_impl = Emit_stop_files;
+  Consume_stop_impl = Consume_stop_files;
+
+  return REG_SUCCESS;
+}
+#endif
+
+/*---------------------------------------------------*/
+
+int Initialize_samples_transport_files() {
   strncpy(Steer_lib_config.Samples_transport_string, "Files", 6);
 
-  return file_info_table_init(IOTypes_table.max_entries);
+  return file_info_table_init(&file_info_table, IOTypes_table.max_entries);
 }
 
 /*---------------------------------------------------*/
 
-int Finalize_samples_transport() {
+int Finalize_samples_transport_files() {
   return REG_SUCCESS;
 }
 
 /*---------------------------------------------------*/
 
-int Emit_start_impl(int index, int seqnum) {
+int Emit_start_files(int index, int seqnum) {
   char *pchar;
   int   len;
 
@@ -134,7 +165,7 @@ int Emit_start_impl(int index, int seqnum) {
 
 /*---------------------------------------------------*/
 
-int Emit_stop_impl(int index) {
+int Emit_stop_files(int index) {
   if(file_info_table.file_info[index].fp){
     fclose(file_info_table.file_info[index].fp);
     file_info_table.file_info[index].fp = NULL;
@@ -148,7 +179,7 @@ int Emit_stop_impl(int index) {
 
 /*---------------------------------------------------*/
 
-int Consume_stop_impl(int index) {
+int Consume_stop_files(int index) {
   /* Close any file associated with this channel */
   if(file_info_table.file_info[index].fp){
     fclose(file_info_table.file_info[index].fp);
@@ -161,7 +192,7 @@ int Consume_stop_impl(int index) {
 
 /*---------------------------------------------------*/
 
-int Initialize_IOType_transport_impl(const int direction, const int index) {
+int Initialize_IOType_transport_files(const int direction, const int index) {
   char *pchar;
   int   len;
 
@@ -206,14 +237,14 @@ int Initialize_IOType_transport_impl(const int direction, const int index) {
 
 /*---------------------------------------------------*/
 
-void Finalize_IOType_transport_impl() {}
+void Finalize_IOType_transport_files() {}
 
 /*----------------------------------------------------------------*/
 
-int Consume_data_read_impl(const int index,
-			   const int datatype,
-			   const int num_bytes_to_read,
-			   void*     pData) {
+int Consume_data_read_files(const int index,
+			    const int datatype,
+			    const int num_bytes_to_read,
+			    void*     pData) {
   size_t nbytes;
 
   if(!file_info_table.file_info[index].fp) {
@@ -259,7 +290,7 @@ int Consume_data_read_impl(const int index,
 
 /*----------------------------------------------------------------*/
 
-int Emit_ack_impl(const int index) {
+int Emit_ack_files(const int index) {
   FILE*  fp;
 
   /* In the short term, use the label (with spaces replaced by
@@ -279,7 +310,7 @@ int Emit_ack_impl(const int index) {
 
 /*----------------------------------------------------------------*/
 
-int Consume_ack_impl(const int index) {
+int Consume_ack_files(const int index) {
   FILE*  fp;
 
   if(IOTypes_table.io_def[index].ack_needed == REG_FALSE)
@@ -305,7 +336,7 @@ int Consume_ack_impl(const int index) {
 
 /*---------------------------------------------------*/
 
-int Emit_header_impl(const int index) {
+int Emit_header_files(const int index) {
   char buffer[REG_PACKET_SIZE];
 
   snprintf(buffer, REG_PACKET_SIZE, REG_PACKET_FORMAT, REG_DATA_HEADER);
@@ -314,7 +345,7 @@ int Emit_header_impl(const int index) {
   fprintf(stderr, "STEER: Emit_header: Sending >>%s<<\n", buffer);
 #endif
 
-  if(Emit_data_impl(index, REG_PACKET_SIZE,
+  if(Emit_data_files(index, REG_PACKET_SIZE,
 		    (void*) buffer) == REG_SUCCESS) {
     return REG_SUCCESS;
   }
@@ -324,9 +355,15 @@ int Emit_header_impl(const int index) {
 
 /*---------------------------------------------------*/
 
-int Emit_data_impl(const int	index,
-		   const size_t	num_bytes_to_send,
-		   void*        pData) {
+int Emit_data_non_blocking_files(const int index, const int size,
+				 void* buffer) {
+}
+
+/*---------------------------------------------------*/
+
+int Emit_data_files(const int	index,
+		    const size_t	num_bytes_to_send,
+		    void*        pData) {
   int n_written;
 
   if(file_info_table.file_info[index].fp) {
@@ -341,7 +378,7 @@ int Emit_data_impl(const int	index,
 
 /*---------------------------------------------------*/
 
-int Get_communication_status_impl(const int index) {
+int Get_communication_status_files(const int index) {
   if(file_info_table.file_info[index].fp) {
     return REG_SUCCESS;
   }
@@ -352,9 +389,9 @@ int Get_communication_status_impl(const int index) {
 
 /*----------------------------------------------------------------*/
 
-int Emit_msg_header_impl(const int    index,
-			 const size_t num_bytes_to_send,
-			 void*        pData) {
+int Emit_msg_header_files(const int    index,
+			  const size_t num_bytes_to_send,
+			  void*        pData) {
 
   if(fwrite(pData, sizeof(char), num_bytes_to_send,
 	    file_info_table.file_info[index].fp) == num_bytes_to_send) {
@@ -365,11 +402,11 @@ int Emit_msg_header_impl(const int    index,
 
 /*----------------------------------------------------------------*/
 
-int Consume_msg_header_impl(int  index,
-			    int* DataType,
-			    int* Count,
-			    int* NumBytes,
-			    int* IsFortranArray) {
+int Consume_msg_header_files(int  index,
+			     int* DataType,
+			     int* Count,
+			     int* NumBytes,
+			     int* IsFortranArray) {
   char buffer[REG_PACKET_SIZE];
 
   if(!file_info_table.file_info[index].fp) {
@@ -559,25 +596,25 @@ int Consume_msg_header_impl(int  index,
 
 /*---------------------------------------------------*/
 
-int Enable_IOType_impl(const int index) {
+int Enable_IOType_files(const int index) {
   return REG_SUCCESS;
 }
 
 /*---------------------------------------------------*/
 
-int Disable_IOType_impl(const int index) {
+int Disable_IOType_files(const int index) {
   return REG_SUCCESS;
 }
 
 /*---------------------------------------------------*/
 
-int Get_IOType_address_impl(int index, char** pbuf, int* bytes_left) {
+int Get_IOType_address_files(int index, char** pbuf, int* bytes_left) {
   return REG_SUCCESS;
 }
 
 /*---------------------------------------------------*/
 
-int Consume_start_data_check_impl(const int index) {
+int Consume_start_data_check_files(const int index) {
 
   int    i;
   int    nfiles;

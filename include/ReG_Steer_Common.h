@@ -84,6 +84,10 @@ typedef struct {
   /** Buffer used for string handling etc - size set in ReG_steer_types.h */
   char scratch_buffer[REG_SCRATCH_BUFFER_SIZE];
 
+#if REG_DYNAMIC_MOD_LOADING
+  void* samples_mod_handle;
+  void* steering_mod_handle;
+#endif
 } Steer_lib_config_type;
 
 /** @internal Used to log parameter values */

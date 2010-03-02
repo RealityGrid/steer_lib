@@ -59,42 +59,42 @@
 
 register_module(
   Samples
-  Sockets
-  "ReG_Steer_Samples_Transport_Sockets_Shared.c;ReG_Steer_Samples_Transport_Sockets.c"
+  sockets
+  "ReG_Steer_Samples_Transport_Sockets.c"
   "ReG_Steer_Sockets_Common.c"
 )
 
 register_module(
   Samples
-  Files
+  files
   "ReG_Steer_Samples_Transport_Files.c"
   "ReG_Steer_Files_Common.c"
 )
 
 register_module(
   Samples
-  Proxy
-  "ReG_Steer_Samples_Transport_Sockets_Shared.c;ReG_Steer_Samples_Transport_Proxy.c"
+  proxy
+  "ReG_Steer_Samples_Transport_Proxy.c"
   "ReG_Steer_Sockets_Common.c"
 )
 
 register_module(
   Steering
-  Sockets
+  sockets
   "ReG_Steer_Steering_Transport_Sockets.c"
   "ReG_Steer_Sockets_Common.c"
 )
 
 register_module(
   Steering
-  WSRF
+  wsrf
   "stdsoap2.c;soapC.c;soapClient.c;ReG_Steer_WSRF_Utilities.c;ReG_Steer_Steering_Transport_WSRF.c"
   "ReG_Steer_Sockets_Common.c"
 )
 
 register_module(
   Steering
-  Files
+  files
   "ReG_Steer_Steering_Transport_Files.c"
   "ReG_Steer_Files_Common.c"
 )

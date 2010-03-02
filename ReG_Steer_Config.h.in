@@ -69,6 +69,7 @@
 
 /* library options */
 
+#cmakedefine01 REG_DYNAMIC_MOD_LOADING
 #cmakedefine01 REG_LOG_STEERING
 #cmakedefine01 REG_VALIDATE_XML
 #cmakedefine01 REG_KEEP_XML_MESSAGES
@@ -86,6 +87,7 @@
 
 /* standard system headers */
 
+#cmakedefine01 REG_NEED_OPENSSL_H
 #cmakedefine01 REG_NEED_MALLOC_H
 #cmakedefine01 REG_HAS_RPC_H
 #cmakedefine01 REG_HAS_XDR_H
@@ -111,6 +113,9 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <dirent.h>
+#if REG_DYNAMIC_MOD_LOADING
+#include <dlfcn.h>
+#endif /* REG_DYNAMIC_MOD_LOADING */
 #else /* _MSC_VER */
 #include <Winsock2.h>
 #include <Ws2tcpip.h>
@@ -134,6 +139,10 @@
    some systems define malloc in stdlib.h */
 #if REG_NEED_MALLOC_H
 #include <malloc.h>
+#endif
+
+#if REG_NEED_OPENSSL_H
+#include <openssl/sha.h>
 #endif
 
 #include <libxml/xmlmemory.h>

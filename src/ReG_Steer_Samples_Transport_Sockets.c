@@ -51,13 +51,15 @@
     @author Robert Haines
   */
 
+#define  REG_MODULE sockets
+
 #include "ReG_Steer_Config.h"
+#include "ReG_Steer_types.h"
+#include "ReG_Steer_Sockets_Common.h"
 #include "ReG_Steer_Samples_Transport_API.h"
 #include "ReG_Steer_Samples_Transport_Sockets.h"
-#include "ReG_Steer_Sockets_Common.h"
 #include "ReG_Steer_Common.h"
 #include "ReG_Steer_Appside_internal.h"
-#include "ReG_Steer_Steering_Transport_API.h"
 
 /** Basic library config - declared in ReG_Steer_Common */
 extern Steer_lib_config_type Steer_lib_config;
@@ -72,7 +74,40 @@ extern Steerer_connection_table_type Steerer_connection;
 
 /*--------------------- API -------------------------*/
 
-int Initialize_samples_transport() {
+#if REG_DYNAMIC_MOD_LOADING
+/* This extern is required to pass through the address of the
+   Get_data_io_address_impl function from the steering transport
+   module. In Linux this is probably not required, but it is for
+   Darwin/BSD and might be for Solaris. */
+extern int (*Get_data_io_address_impl)();
+#else
+int Samples_transport_function_map() {
+  Initialize_samples_transport_impl = Initialize_samples_transport_sockets;
+  Finalize_samples_transport_impl = Finalize_samples_transport_sockets;
+  Initialize_IOType_transport_impl = Initialize_IOType_transport_sockets;
+  Finalize_IOType_transport_impl = Finalize_IOType_transport_sockets;
+  Enable_IOType_impl = Enable_IOType_sockets;
+  Disable_IOType_impl = Disable_IOType_sockets;
+  Get_communication_status_impl = Get_communication_status_sockets;
+  Emit_data_non_blocking_impl = Emit_data_non_blocking_sockets;
+  Emit_header_impl = Emit_header_sockets;
+  Emit_data_impl = Emit_data_sockets;
+  Consume_msg_header_impl = Consume_msg_header_sockets;
+  Emit_msg_header_impl = Emit_msg_header_sockets;
+  Consume_start_data_check_impl = Consume_start_data_check_sockets;
+  Consume_data_read_impl = Consume_data_read_sockets;
+  Emit_ack_impl = Emit_ack_sockets;
+  Consume_ack_impl = Consume_ack_sockets;
+  Get_IOType_address_impl = Get_IOType_address_sockets;
+  Emit_start_impl = Emit_start_sockets;
+  Emit_stop_impl = Emit_stop_sockets;
+  Consume_stop_impl = Consume_stop_sockets;
+
+  return REG_SUCCESS;
+}
+#endif
+
+int Initialize_samples_transport_sockets() {
   strncpy(Steer_lib_config.Samples_transport_string, "Sockets", 8);
 
 #if !REG_HAS_MSG_NOSIGNAL && !defined(_MSC_VER)
@@ -91,7 +126,7 @@ int Initialize_samples_transport() {
 
 /*---------------------------------------------------*/
 
-int Finalize_samples_transport() {
+int Finalize_samples_transport_sockets() {
 #ifdef _MSC_VER
   WSACleanup();
 #endif
@@ -101,7 +136,7 @@ int Finalize_samples_transport() {
 
 /*---------------------------------------------------*/
 
-int Initialize_IOType_transport_impl(const int direction, const int index) {
+int Initialize_IOType_transport_sockets(const int direction, const int index) {
 
   int return_status = REG_SUCCESS;
   socket_info_type* socket_info = &(socket_info_table.socket_info[index]);
@@ -175,7 +210,7 @@ int Initialize_IOType_transport_impl(const int direction, const int index) {
 
 /*---------------------------------------------------*/
 
-void Finalize_IOType_transport_impl() {
+void Finalize_IOType_transport_sockets() {
   int index;
 
   for(index = 0; index < IOTypes_table.num_registered; index++) {
@@ -194,7 +229,7 @@ void Finalize_IOType_transport_impl() {
 
 /*---------------------------------------------------*/
 
-int Disable_IOType_impl(const int index) {
+int Disable_IOType_sockets(const int index) {
   /* check index is valid */
   if(index < 0 || index >= IOTypes_table.num_registered) {
     fprintf(stderr, "STEER: Disable_IOType: index out of range\n");
@@ -215,7 +250,7 @@ int Disable_IOType_impl(const int index) {
 
 /*---------------------------------------------------*/
 
-int Enable_IOType_impl(const int index) {
+int Enable_IOType_sockets(const int index) {
   /* check index is valid */
   if(index < 0 || index >= IOTypes_table.num_registered) return REG_FAILURE;
 
@@ -244,7 +279,7 @@ int Enable_IOType_impl(const int index) {
 
 /*---------------------------------------------------*/
 
-int Get_communication_status_impl(const int index) {
+int Get_communication_status_sockets(const int index) {
   if(socket_info_table.socket_info[index].comms_status !=
      REG_COMMS_STATUS_CONNECTED)
     return REG_FAILURE;
@@ -254,7 +289,7 @@ int Get_communication_status_impl(const int index) {
 
 /*---------------------------------------------------*/
 
-int Emit_data_non_blocking_impl(const int index, const int size,
+int Emit_data_non_blocking_sockets(const int index, const int size,
 				   void* buffer) {
 
   struct timeval timeout;
@@ -274,7 +309,7 @@ int Emit_data_non_blocking_impl(const int index, const int size,
 
   /* are we free to write? */
   if(FD_ISSET(connector, &sock)) {
-    return Emit_data_impl(index, size, buffer);
+    return Emit_data_sockets(index, size, buffer);
   }
 
   return REG_FAILURE;
@@ -282,7 +317,7 @@ int Emit_data_non_blocking_impl(const int index, const int size,
 
 /*---------------------------------------------------*/
 
-int Emit_header_impl(const int index) {
+int Emit_header_sockets(const int index) {
 
   char buffer[REG_PACKET_SIZE];
   int status;
@@ -306,7 +341,7 @@ int Emit_header_impl(const int index) {
 #ifdef REG_DEBUG
     fprintf(stderr, "STEER: Emit_header: Sending >>%s<<\n", buffer);
 #endif
-    status = Emit_data_non_blocking_impl(index, REG_PACKET_SIZE,
+    status = Emit_data_non_blocking_sockets(index, REG_PACKET_SIZE,
 					 (void*) buffer);
 
     if(status == REG_SUCCESS) {
@@ -327,7 +362,7 @@ int Emit_header_impl(const int index) {
 #ifdef REG_DEBUG
 	fprintf(stderr, "STEER: Emit_header: Sending >>%s<<\n", buffer);
 #endif
-	if(Emit_data_impl(index, REG_PACKET_SIZE,
+	if(Emit_data_sockets(index, REG_PACKET_SIZE,
 			  (void*) buffer) == REG_SUCCESS) {
 	  return REG_SUCCESS;
 	}
@@ -351,7 +386,7 @@ int Emit_header_impl(const int index) {
 }
 /*---------------------------------------------------*/
 
-int Emit_data_impl(const int    index,
+int Emit_data_sockets(const int    index,
 		      const size_t num_bytes_to_send,
 		      void*        pData)
 {
@@ -404,16 +439,16 @@ int Emit_data_impl(const int    index,
 
 /*---------------------------------------------------*/
 
-int Emit_ack_impl(const int index){
+int Emit_ack_sockets(const int index){
 
   /* Send a 16-byte acknowledgement message */
   char *ack_msg = "<ACK/>          ";
-  return Emit_data_impl(index, strlen(ack_msg), (void*)ack_msg);
+  return Emit_data_sockets(index, strlen(ack_msg), (void*)ack_msg);
 }
 
 /*---------------------------------------------------*/
 
-int Get_IOType_address_impl(int i, char** pbuf, int* bytes_left) {
+int Get_IOType_address_sockets(int i, char** pbuf, int* bytes_left) {
   int nbytes;
 
   if(IOTypes_table.io_def[i].direction == REG_IO_OUT){
@@ -436,6 +471,13 @@ int Get_IOType_address_impl(int i, char** pbuf, int* bytes_left) {
   }
 
   return REG_SUCCESS;
+}
+
+/*---------------------------------------------------*/
+
+int Emit_msg_header_sockets(const int index,
+			    const size_t num_bytes_to_send, void* pData) {
+  return Emit_data_sockets(index, num_bytes_to_send, pData);
 }
 
 /*--------------------- Others ----------------------*/
@@ -576,3 +618,6 @@ int connect_connector_samples(const int index) {
 }
 
 /*--------------------------------------------------------------------*/
+
+#define  REG_MODULE sockets
+#include "ReG_Steer_Samples_Transport_Sockets_Shared.c"

@@ -51,6 +51,8 @@
     @author Robert Haines
   */
 
+#define  REG_MODULE files
+
 #include "ReG_Steer_Config.h"
 #include "ReG_Steer_types.h"
 #include "ReG_Steer_Steering_Transport_API.h"
@@ -73,9 +75,38 @@ extern Chk_log_type Param_log;
 /** Basic library config - declared in ReG_Steer_Common */
 extern Steer_lib_config_type Steer_lib_config;
 
+/*-------------------------------------------------------*/
+
+#if !REG_DYNAMIC_MOD_LOADING
+int Steering_transport_function_map() {
+  Detach_from_steerer_impl = Detach_from_steerer_files;
+  Steerer_connected_impl = Steerer_connected_files;
+  Send_status_msg_impl = Send_status_msg_files;
+  Initialize_steering_connection_impl = Initialize_steering_connection_files;
+  Finalize_steering_connection_impl = Finalize_steering_connection_files;
+  Get_data_io_address_impl = Get_data_io_address_files;
+  Record_checkpoint_set_impl = Record_checkpoint_set_files;
+  Save_log_impl = Save_log_files;
+  Initialize_steerside_transport_impl = Initialize_steerside_transport_files;
+  Finalize_steerside_transport_impl = Finalize_steerside_transport_files;
+  Sim_attach_impl = Sim_attach_files;
+  Sim_attach_security_impl = Sim_attach_security_files;
+  Send_control_msg_impl = Send_control_msg_files;
+  Send_detach_msg_impl = Send_detach_msg_files;
+  Finalize_connection_impl = Finalize_connection_files;
+  Get_param_log_impl = Get_param_log_files;
+  Get_registry_entries_impl = Get_registry_entries_files;
+  Initialize_log_impl = Initialize_log_files;
+  Get_control_msg_impl = Get_control_msg_files;
+  Get_status_msg_impl = Get_status_msg_files;
+
+  return REG_SUCCESS;
+}
+#endif
+
 /*----------------- Appside methods ---------------------*/
 
-int Detach_from_steerer_impl() {
+int Detach_from_steerer_files() {
 
   int   nbytes;
   char  filename[REG_MAX_STRING_LENGTH];
@@ -120,7 +151,7 @@ int Detach_from_steerer_impl() {
 
 /*-------------------------------------------------------*/
 
-int Steerer_connected_impl() {
+int Steerer_connected_files() {
   char   filename[REG_MAX_STRING_LENGTH];
   FILE  *fp;
   int    nbytes;
@@ -147,7 +178,7 @@ int Steerer_connected_impl() {
 
 /*-------------------------------------------------------*/
 
-int Send_status_msg_impl(char *buf) {
+int Send_status_msg_files(char *buf) {
   FILE *fp;
   char  filename[REG_MAX_STRING_LENGTH];
 
@@ -170,7 +201,7 @@ int Send_status_msg_impl(char *buf) {
 
 /*-------------------------------------------------------*/
 
-struct msg_struct *Get_control_msg_impl() {
+struct msg_struct *Get_control_msg_files() {
   struct msg_struct   *msg = NULL;
   FILE                *fp;
   char                 filename[REG_MAX_STRING_LENGTH];
@@ -213,8 +244,8 @@ struct msg_struct *Get_control_msg_impl() {
 
 /*-------------------------------------------------------*/
 
-int Initialize_steering_connection_impl(const int  NumSupportedCmds,
-					int *SupportedCmds) {
+int Initialize_steering_connection_files(const int  NumSupportedCmds,
+					 int *SupportedCmds) {
   FILE *fp;
   char  buf[REG_MAX_MSG_SIZE];
   char  filename[REG_MAX_STRING_LENGTH];
@@ -278,7 +309,7 @@ int Initialize_steering_connection_impl(const int  NumSupportedCmds,
 
 /*-------------------------------------------------------*/
 
-int Finalize_steering_connection_impl() {
+int Finalize_steering_connection_files() {
   char sys_command[REG_MAX_STRING_LENGTH];
 
 #ifdef REG_DEBUG
@@ -326,11 +357,11 @@ int Finalize_steering_connection_impl() {
 
 /*-------------------------------------------------------*/
 
-int Get_data_io_address_impl(const int           dummy,
-			     const int           direction,
-			     char*               hostname,
-			     unsigned short int* port,
-			     char*               label) {
+int Get_data_io_address_files(const int           dummy,
+			      const int           direction,
+			      char*               hostname,
+			      unsigned short int* port,
+			      char*               label) {
   char *pchar;
   int   len;
 
@@ -373,18 +404,18 @@ int Get_data_io_address_impl(const int           dummy,
 
 /*-------------------------------------------------------*/
 
-int Record_checkpoint_set_impl(int ChkType, char* ChkTag, char* Path) {
+int Record_checkpoint_set_files(int ChkType, char* ChkTag, char* Path) {
   return Record_Chkpt(ChkType, ChkTag);
 }
 
 /*-------------------------------------------------------*/
 
-void Initialize_log_impl(Chk_log_type* log) {
+void Initialize_log_files(Chk_log_type* log) {
 }
 
 /*-------------------------------------------------------*/
 
-int Save_log_impl(FILE* file_ptr, char* log_data) {
+int Save_log_files(FILE* file_ptr, char* log_data) {
   /* save to log file */
   fprintf(file_ptr, "%s", log_data);
 
@@ -395,7 +426,7 @@ int Save_log_impl(FILE* file_ptr, char* log_data) {
 
 extern Sim_table_type Sim_table;
 
-int Initialize_steerside_transport() {
+int Initialize_steerside_transport_files() {
   strncpy(Steer_lib_config.Steering_transport_string, "Files", 6);
 
   return REG_SUCCESS;
@@ -403,13 +434,13 @@ int Initialize_steerside_transport() {
 
 /*-------------------------------------------------------*/
 
-int Finalize_steerside_transport() {
+int Finalize_steerside_transport_files() {
   return REG_SUCCESS;
 }
 
 /*-------------------------------------------------------*/
 
-int Sim_attach_impl(int index, char *SimID) {
+int Sim_attach_files(int index, char *SimID) {
   char *pchar;
   char  file_root[REG_MAX_STRING_LENGTH];
   char  filename[REG_MAX_STRING_LENGTH];
@@ -513,14 +544,14 @@ int Sim_attach_impl(int index, char *SimID) {
 
 /*-------------------------------------------------------*/
 
-int Sim_attach_security_impl(const int index,
-			     const struct reg_security_info* sec) {
+int Sim_attach_security_files(const int index,
+			      const struct reg_security_info* sec) {
   return REG_SUCCESS;
 }
 
 /*-------------------------------------------------------*/
 
-struct msg_struct *Get_status_msg_impl(int index, int ignore) {
+struct msg_struct *Get_status_msg_files(int index, int ignore) {
   struct msg_struct *msg = NULL;
   char  filename[REG_MAX_STRING_LENGTH];
   FILE *fp;
@@ -555,7 +586,7 @@ struct msg_struct *Get_status_msg_impl(int index, int ignore) {
 
 /*-------------------------------------------------------*/
 
-int Send_control_msg_impl(int index, char* buf) {
+int Send_control_msg_files(int index, char* buf) {
   FILE *fp;
   char  filename[REG_MAX_STRING_LENGTH];
 
@@ -581,7 +612,7 @@ int Send_control_msg_impl(int index, char* buf) {
 
 /*-------------------------------------------------------*/
 
-int Send_detach_msg_impl(int index) {
+int Send_detach_msg_files(int index) {
   int command[1];
   Sim_entry_type *sim;
 
@@ -593,7 +624,7 @@ int Send_detach_msg_impl(int index) {
 
 /*-------------------------------------------------------*/
 
-int Finalize_connection_impl(int index) {
+int Finalize_connection_files(int index) {
   char base_name[REG_MAX_STRING_LENGTH];
 
   /* Delete any files that the app's produced that we won't now be
@@ -609,7 +640,7 @@ int Finalize_connection_impl(int index) {
 
 /*-------------------------------------------------------*/
 
-int Get_param_log_impl(int index, int handle) {
+int Get_param_log_files(int index, int handle) {
   int           command[1];
   static char** command_params = NULL;
 
@@ -627,9 +658,9 @@ int Get_param_log_impl(int index, int handle) {
 
 /*-------------------------------------------------------*/
 
-int Get_registry_entries_impl(const char* registryEPR,
-			      const struct reg_security_info* sec,
-			      struct registry_contents* contents) {
+int Get_registry_entries_files(const char* registryEPR,
+			       const struct reg_security_info* sec,
+			       struct registry_contents* contents) {
   return REG_SUCCESS;
 }
 

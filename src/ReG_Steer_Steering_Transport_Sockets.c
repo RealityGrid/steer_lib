@@ -51,6 +51,8 @@
     @author Robert Haines
   */
 
+#define  REG_MODULE sockets
+
 #include "ReG_Steer_Config.h"
 #include "ReG_Steer_types.h"
 #include "ReG_Steer_Steering_Transport_API.h"
@@ -76,10 +78,39 @@ extern Steerer_connection_table_type Steerer_connection;
    been requested */
 extern Chk_log_type Param_log;
 
+/*-------------------------------------------------------*/
+
+#if !REG_DYNAMIC_MOD_LOADING
+int Steering_transport_function_map() {
+  Detach_from_steerer_impl = Detach_from_steerer_sockets;
+  Steerer_connected_impl = Steerer_connected_sockets;
+  Send_status_msg_impl = Send_status_msg_sockets;
+  Initialize_steering_connection_impl = Initialize_steering_connection_sockets;
+  Finalize_steering_connection_impl = Finalize_steering_connection_sockets;
+  Get_data_io_address_impl = Get_data_io_address_sockets;
+  Record_checkpoint_set_impl = Record_checkpoint_set_sockets;
+  Save_log_impl = Save_log_sockets;
+  Initialize_steerside_transport_impl = Initialize_steerside_transport_sockets;
+  Finalize_steerside_transport_impl = Finalize_steerside_transport_sockets;
+  Sim_attach_impl = Sim_attach_sockets;
+  Sim_attach_security_impl = Sim_attach_security_sockets;
+  Send_control_msg_impl = Send_control_msg_sockets;
+  Send_detach_msg_impl = Send_detach_msg_sockets;
+  Finalize_connection_impl = Finalize_connection_sockets;
+  Get_param_log_impl = Get_param_log_sockets;
+  Get_registry_entries_impl = Get_registry_entries_sockets;
+  Initialize_log_impl = Initialize_log_sockets;
+  Get_control_msg_impl = Get_control_msg_sockets;
+  Get_status_msg_impl = Get_status_msg_sockets;
+
+  return REG_SUCCESS;
+}
+#endif
+
 /*----------------- Appside methods ---------------------*/
 
-int Initialize_steering_connection_impl(const int  NumSupportedCmds,
-					int* SupportedCmds) {
+int Initialize_steering_connection_sockets(const int  NumSupportedCmds,
+					   int* SupportedCmds) {
 
   strncpy(Steer_lib_config.Steering_transport_string, "Sockets", 8);
 
@@ -123,9 +154,7 @@ int Initialize_steering_connection_impl(const int  NumSupportedCmds,
 
 /*-------------------------------------------------------*/
 
-int Finalize_steering_connection_impl() {
-
-/*   Direct_info_type* socket_info = &(Steerer_connection.socket_info); */
+int Finalize_steering_connection_sockets() {
 
   if(appside_socket_info.listener_status == REG_COMMS_STATUS_LISTENING) {
     close_steering_listener(&appside_socket_info);
@@ -144,9 +173,7 @@ int Finalize_steering_connection_impl() {
 
 /*-------------------------------------------------------*/
 
-int Steerer_connected_impl() {
-
-/*   Direct_info_type* socket_info = &(Steerer_connection.socket_info); */
+int Steerer_connected_sockets() {
 
   /* If already connected then just return a "yes" */
   if(appside_socket_info.comms_status == REG_COMMS_STATUS_CONNECTED) {
@@ -193,9 +220,7 @@ int Steerer_connected_impl() {
 
 /*-------------------------------------------------------*/
 
-int Detach_from_steerer_impl() {
-
-/*   Direct_info_type* socket_info = &(Steerer_connection.socket_info); */
+int Detach_from_steerer_sockets() {
 
   /* steerer will detatch FROM us so need to clean up socket, etc here */
 
@@ -215,7 +240,7 @@ int Detach_from_steerer_impl() {
 
 /*-------------------------------------------------------*/
 
-int Send_status_msg_impl(char *buf) {
+int Send_status_msg_sockets(char *buf) {
 
   int buf_len;
 
@@ -230,7 +255,7 @@ int Send_status_msg_impl(char *buf) {
 
 /*-------------------------------------------------------*/
 
-struct msg_struct *Get_control_msg_impl() {
+struct msg_struct *Get_control_msg_sockets() {
 
   struct msg_struct* msg = NULL;
   int return_status;
@@ -259,11 +284,11 @@ struct msg_struct *Get_control_msg_impl() {
 
 /*-------------------------------------------------------*/
 
-int Get_data_io_address_impl(const int           dummy,
-			     const int           direction,
-			     char*               hostname,
-			     unsigned short int* port,
-			     char*               label) {
+int Get_data_io_address_sockets(const int           dummy,
+				const int           direction,
+				char*               hostname,
+				unsigned short int* port,
+				char*               label) {
   char* pchar;
   int   len;
 
@@ -306,18 +331,18 @@ int Get_data_io_address_impl(const int           dummy,
 
 /*-------------------------------------------------------*/
 
-int Record_checkpoint_set_impl(int ChkType, char* ChkTag, char* Path) {
+int Record_checkpoint_set_sockets(int ChkType, char* ChkTag, char* Path) {
   return Record_Chkpt(ChkType, ChkTag);
 }
 
 /*-------------------------------------------------------*/
 
-void Initialize_log_impl(Chk_log_type* log) {
+void Initialize_log_sockets(Chk_log_type* log) {
 }
 
 /*-------------------------------------------------------*/
 
-int Save_log_impl(FILE* file_ptr, char* log_data) {
+int Save_log_sockets(FILE* file_ptr, char* log_data) {
   /* save to log file */
   fprintf(file_ptr, "%s", log_data);
 
@@ -329,7 +354,7 @@ int Save_log_impl(FILE* file_ptr, char* log_data) {
 extern Sim_table_type Sim_table;
 socket_info_table_type steerer_socket_info_table;
 
-int Initialize_steerside_transport() {
+int Initialize_steerside_transport_sockets() {
   strncpy(Steer_lib_config.Steering_transport_string, "Sockets", 8);
 
 #ifdef _MSC_VER
@@ -345,7 +370,7 @@ int Initialize_steerside_transport() {
 
 /*-------------------------------------------------------*/
 
-int Finalize_steerside_transport() {
+int Finalize_steerside_transport_sockets() {
 #ifdef _MSC_VER
   WSACleanup();
 #endif
@@ -355,7 +380,7 @@ int Finalize_steerside_transport() {
 
 /*-------------------------------------------------------*/
 
-struct msg_struct *Get_status_msg_impl(int index, int no_block) {
+struct msg_struct *Get_status_msg_sockets(int index, int no_block) {
 
   struct msg_struct* msg = NULL;
   int return_status;
@@ -387,7 +412,7 @@ struct msg_struct *Get_status_msg_impl(int index, int no_block) {
 
 /*-------------------------------------------------------*/
 
-int Send_control_msg_impl(int index, char* buf) {
+int Send_control_msg_sockets(int index, char* buf) {
 
   int buf_len;
   socket_info_type* socket_info;
@@ -405,7 +430,7 @@ int Send_control_msg_impl(int index, char* buf) {
 
 /*-------------------------------------------------------*/
 
-int Send_detach_msg_impl(int index) {
+int Send_detach_msg_sockets(int index) {
   int command[1];
   Sim_entry_type *sim;
 
@@ -417,7 +442,7 @@ int Send_detach_msg_impl(int index) {
 
 /*-------------------------------------------------------*/
 
-int Finalize_connection_impl(int index) {
+int Finalize_connection_sockets(int index) {
 
   socket_info_type* socket_info;
   Sim_entry_type *sim;
@@ -442,7 +467,7 @@ int Finalize_connection_impl(int index) {
 
 /*-------------------------------------------------------*/
 
-int Sim_attach_impl(int index, char* SimID) {
+int Sim_attach_sockets(int index, char* SimID) {
 
   int return_status;
   char* pchar;
@@ -516,14 +541,14 @@ int Sim_attach_impl(int index, char* SimID) {
 
 /*-------------------------------------------------------*/
 
-int Sim_attach_security_impl(const int index,
-			     const struct reg_security_info* sec) {
+int Sim_attach_security_sockets(const int index,
+				const struct reg_security_info* sec) {
   return REG_SUCCESS;
 }
 
 /*-------------------------------------------------------*/
 
-int Get_param_log_impl(int index, int handle) {
+int Get_param_log_sockets(int index, int handle) {
   int           command[1];
   static char** command_params = NULL;
 
@@ -541,9 +566,9 @@ int Get_param_log_impl(int index, int handle) {
 
 /*-------------------------------------------------------*/
 
-int Get_registry_entries_impl(const char* registryEPR,
-			      const struct reg_security_info* sec,
-			      struct registry_contents* contents) {
+int Get_registry_entries_sockets(const char* registryEPR,
+				 const struct reg_security_info* sec,
+				 struct registry_contents* contents) {
   return REG_SUCCESS;
 }
 
@@ -567,7 +592,7 @@ int consume_supp_cmds(int index) {
     return REG_FAILURE;
   }
 
-  msg = Get_status_msg_impl(index, REG_FALSE);
+  msg = Get_status_msg_sockets(index, REG_FALSE);
   if(msg) {
     cmd = msg->supp_cmd->first_cmd;
 
@@ -858,11 +883,6 @@ int send_steering_msg(socket_info_type* socket_info,
   fprintf(stderr, "send_steering_msg: sending header...\n");
 #endif
   result = send_no_signal(connector, (void*)&num_bytes_to_send, sizeof(int), 0);
-/* #ifndef __linux */
-/*   result = send(connector, (void*) &num_bytes_to_send, sizeof(int), 0); */
-/* #else */
-/*   result = send(connector, (void*) &num_bytes_to_send, sizeof(int), MSG_NOSIGNAL); */
-/* #endif */
   if(result != sizeof(int)) {
     perror("send");
     return REG_FAILURE;
@@ -875,11 +895,6 @@ int send_steering_msg(socket_info_type* socket_info,
 #endif
   while(bytes_left > 0) {
     result = send_no_signal(connector, pchar, bytes_left, 0);
-/* #ifndef __linux */
-/*     result = send(connector, pchar, bytes_left, 0); */
-/* #else */
-/*     result = send(connector, pchar, bytes_left, MSG_NOSIGNAL); */
-/* #endif */
     if(result == REG_SOCKETS_ERROR) {
       perror("send");
       return REG_FAILURE;

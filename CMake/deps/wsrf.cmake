@@ -44,23 +44,7 @@
 #
 #  Author: Robert Haines
 
-if(REG_BUILD_MODULAR_LIBS)
-  set(wsrf_srcs ${Steering_WSRF_SRCS})
-else(REG_BUILD_MODULAR_LIBS)
-  set(wsrf_srcs ${SRCS_Steering_WSRF})
-endif(REG_BUILD_MODULAR_LIBS)
-
-get_source_file_property(
-  flags
-  ReG_Steer_Steering_Transport_WSRF.c
-  COMPILE_FLAGS
-)
-
-if(NOT ${flags})
-  set(flags "")
-endif(NOT ${flags})
-
-set_source_files_properties(
-  ${wsrf_srcs}
-  PROPERTIES COMPILE_FLAGS "${flags} -DWITH_CDATA -DWITH_OPENSSL"
-)
+find_package(OpenSSL REQUIRED)
+include_directories("${OPENSSL_INCLUDE_DIR}")
+set(REG_EXTERNAL_LIBS ${OPENSSL_LIBRARIES} ${REG_EXTERNAL_LIBS})
+set(REG_NEED_OPENSSL_H 1)

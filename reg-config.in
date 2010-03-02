@@ -110,6 +110,7 @@ while test $# -gt 0; do
 	echo "  REG_BUILD_EXAMPLES:          @REG_BUILD_EXAMPLES@"
 	echo "  REG_BUILD_FORTRAN_WRAPPERS:  @REG_BUILD_FORTRAN_WRAPPERS@"
 	echo "  REG_BUILD_DOCUMENTATION:     @REG_BUILD_DOCUMENTATION@"
+	echo "  REG_DYNAMIC_MOD_LOADING:     @REG_DYNAMIC_MOD_LOADING@"
 	echo "Advanced options:"
 	echo "  REG_DEBUG_FULL:              @REG_DEBUG_FULL@"
 	echo "  REG_LOG_STEERING:            @REG_LOG_STEERING@"

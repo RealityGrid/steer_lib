@@ -45,73 +45,46 @@
   Author: Robert Haines
  */
 
-#ifndef __REG_STEER_FILES_COMMON_H__
-#define __REG_STEER_FILES_COMMON_H__
+/** @internal
+    @file ReG_Steer_Dynamic_Loader.h
+    @brief Header file defining methods for working with dynamically
+    loaded libraries.
+    @author Robert Haines
+    This header file contains routines for loading dynamic libraries
+    and mapping symbols for use by the core library.
+*/
 
-/** @file ReG_Steer_Files_Common.h
- *  @brief Data structures and routines common to all file-based code.
- *
- *  @author Robert Haines
- */
+#ifndef __REG_STEER_DYNAMIC_LOADER_H__
+#define __REG_STEER_DYNAMIC_LOADER_H__
 
 #include "ReG_Steer_Config.h"
 
-#include "ReG_Steer_types.h"
-
-typedef struct {
-  /** Base filename - for file-based IO */
-  char	filename[REG_MAX_STRING_LENGTH];
-  /** Directory to write to - for file-based IO */
-  char  directory[REG_MAX_STRING_LENGTH];
-  /** Pointer to open file - for file-based IO */
-  FILE* fp;
-} file_info_type;
-
-typedef struct {
-  int max_entries;
-  int num_used;
-  file_info_type* file_info;
-} file_info_table_type;
-
-#ifdef _MSC_VER
-#define REG_LOCK_FLAGS (_O_CREAT|_O_WRONLY|_O_TRUNC)
-#define REG_LOCK_PERMS (_S_IREAD|_S_IWRITE)
-#else
-#define REG_LOCK_FLAGS (O_CREAT|O_WRONLY|O_TRUNC)
-#define REG_LOCK_PERMS (S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH)
-#endif
-
-/* Function Prototypes */
-
-int file_info_table_init(file_info_table_type* table,
-			 const int max_entries);
-
 /** @internal
-    @param base_name Root of the filename to search for
-
-    Searches for and opens the next file in a numbered
-    sequence with the specified root name */
-FILE* open_next_file(char* base_name);
-
-/** @internal
-    @param filename Base name of lock file
-
-    Creates a lock file with name consisting of ".lock"
-    appended to supplied name */
-int create_lock_file(char* filename);
-
-/** @internal
-    @param filename Full path to file to delete
-
-    Delete the specified file (must have full path) */
-int delete_file(char* filename);
-
-/** @internal
-    @param base_name Base of the name of the messaging files to look for
-
-    Called when steering finished - cleans up any files that either the app
-    or steerer hasn't got around to consuming
+    Load the samples transport module specified by the
+    REG_SAMPLES_TRANSPORT environment variable and map the symbols
+    contained within to the core library function pointers.
  */
-int remove_files(char* base_name);
+int Load_samples_transport_api();
 
-#endif /* __REG_STEER_FILES_COMMON_H__ */
+/** @internal
+    Load the steering transport module specified by the
+    REG_STEERING_TRANSPORT environment variable and map the symbols
+    contained within to the core library function pointers.
+ */
+int Load_steering_transport_api();
+
+/** @internal
+    @param name The name of the symbol to load.
+    @param suffix The suffix to be added to the symbol name before loading.
+    @param module The pointer to the dynamically loaded library from which
+    the symbol is to be loaded.
+    @param func_ptr The function pointer to which the loaded symbol is to
+    be mapped.
+
+    Load the named symbol from the provided module and map it to the
+    function pointer indicated.
+ */
+int Load_symbol(const char* name, const char* suffix,
+		void* module, void (**func_ptr)());
+
+#endif /* __REG_STEER_DYNAMIC_LOADER_H__ */

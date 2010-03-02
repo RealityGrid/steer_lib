@@ -119,12 +119,24 @@ if(REG_VALIDATE_XML)
   set(REG_LIB_SRCS ${REG_LIB_SRCS} ${CMAKE_CURRENT_BINARY_DIR}/reg_steer_comm.c)
 endif(REG_VALIDATE_XML)
 
+# Add the dynamic loader code if required
+if(REG_DYNAMIC_MOD_LOADING)
+  set(REG_LIB_SRCS ${REG_LIB_SRCS} ReG_Steer_Dynamic_Loader.c)
+endif(REG_DYNAMIC_MOD_LOADING)
+
 # build the modules and add the common code to the main lib
 # or add the selected module code to the main lib if monolithic
 if(REG_BUILD_MODULAR_LIBS)
   foreach(target ${REG_MODULES})
-    add_library(ReG_Steer_${target} ${REG_MOD_TYPE} ${${target}_SRCS})
-    list(APPEND ReG_Steer_INSTALL_TARGETS ReG_Steer_${target})
+    set(TARGET "ReG_Steer_${target}")
+    add_library(${TARGET} ${REG_MOD_TYPE} ${${target}_SRCS})
+    list(APPEND ReG_Steer_INSTALL_TARGETS ${TARGET})
+
+    # no lib prefix needed for dynamic loading
+    if(REG_DYNAMIC_MOD_LOADING)
+      set_target_properties(${TARGET} PROPERTIES PREFIX "")
+      target_link_libraries(${TARGET} ReG_Steer)
+    endif(REG_DYNAMIC_MOD_LOADING)
   endforeach(target ${REG_MODULES})
   set(REG_LIB_SRCS ${REG_LIB_SRCS} ${REG_MODULE_COMMON_SRCS})
 else(REG_BUILD_MODULAR_LIBS)
@@ -150,16 +162,22 @@ list(APPEND ReG_Steer_INSTALL_TARGETS ReG_Steer)
 target_link_libraries(ReG_Steer ${REG_EXTERNAL_LIBS})
 
 # set shared library version numbers
-if(REG_BUILD_SHARED_LIBS)
-  set_target_properties(${ReG_Steer_INSTALL_TARGETS}
-    PROPERTIES ${REG_LIBRARY_VERSION}
-  )
-endif(REG_BUILD_SHARED_LIBS)
+if(REG_DYNAMIC_MOD_LOADING)
+  set_target_properties(ReG_Steer
+      PROPERTIES ${REG_LIBRARY_VERSION}
+    )
+else(REG_DYNAMIC_MOD_LOADING)
+  if(REG_BUILD_SHARED_LIBS)
+    set_target_properties(${ReG_Steer_INSTALL_TARGETS}
+      PROPERTIES ${REG_LIBRARY_VERSION}
+    )
+  endif(REG_BUILD_SHARED_LIBS)
+endif(REG_DYNAMIC_MOD_LOADING)
 
 #
 # Any other custom build steps needed?
 #
-include(build/All)
+include(build/all)
 
 #
 # install libs and modules

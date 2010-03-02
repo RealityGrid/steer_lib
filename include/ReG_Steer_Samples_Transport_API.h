@@ -55,22 +55,27 @@
  */
 
 #include "ReG_Steer_Config.h"
-
 #include "ReG_Steer_types.h"
 
 /*-------- Function prototypes --------*/
+
+#if !REG_DYNAMIC_MOD_LOADING || DOXYGEN
+int Samples_transport_function_map();
+#endif
+
+#ifdef DOXYGEN
 
 /** @internal
 
     Do whatever is necessary to set up this particular transport module.
  */
-int Initialize_samples_transport();
+int Initialize_samples_transport_impl();
 
 /** @internal
 
     Do whatever is necessary to clean up this particular transport module.
  */
-int Finalize_samples_transport();
+int Finalize_samples_transport_impl();
 
 /** @internal
     @param direction Whether connecting (REG_IO_OUT) or listening (REG_IO_IN)
@@ -196,5 +201,32 @@ int Emit_start_impl(int index, int seqnum);
 int Emit_stop_impl(int index);
 
 int Consume_stop_impl(int index);
+
+#else /* DOXYGEN */
+
+REG_DECLARE_FUNC(int, Initialize_samples_transport, ());
+REG_DECLARE_FUNC(int, Finalize_samples_transport, ());
+REG_DECLARE_FUNC(int, Initialize_IOType_transport, (const int, const int));
+REG_DECLARE_FUNC(void, Finalize_IOType_transport, ());
+REG_DECLARE_FUNC(int, Enable_IOType, (const int));
+REG_DECLARE_FUNC(int, Disable_IOType, (const int));
+REG_DECLARE_FUNC(int, Get_communication_status, (const int));
+REG_DECLARE_FUNC(int, Emit_data_non_blocking, (const int, const int, void*));
+REG_DECLARE_FUNC(int, Emit_header, (const int));
+REG_DECLARE_FUNC(int, Emit_data, (const int, const size_t, void*));
+REG_DECLARE_FUNC(int, Consume_msg_header, (int, int*, int*, int*, int*));
+REG_DECLARE_FUNC(int, Emit_msg_header, (const int, const size_t, void*));
+REG_DECLARE_FUNC(int, Consume_start_data_check, (const int));
+REG_DECLARE_FUNC(int, Consume_data_read, (const int, const int, const int, void*));
+REG_DECLARE_FUNC(int, Emit_ack, (int));
+REG_DECLARE_FUNC(int, Consume_ack, (int));
+REG_DECLARE_FUNC(int, Get_IOType_address, (int, char**, int*));
+REG_DECLARE_FUNC(int, Emit_start, (int, int));
+REG_DECLARE_FUNC(int, Emit_stop, (int));
+REG_DECLARE_FUNC(int, Consume_stop, (int));
+
+#undef REG_MODULE
+
+#endif /* DOXYGEN */
 
 #endif /* __REG_STEER_SAMPLES_TRANSPORT_API_H__ */

@@ -89,8 +89,11 @@ option(REG_BUILD_MODULAR_LIBS "Turn on to build a set of modular libs rather tha
 if(REG_BUILD_MODULAR_LIBS)
   set(REG_MOD_TYPE STATIC)
   if(REG_BUILD_SHARED_LIBS)
-    # THE BELOW SHOULD BE CHANGED TO "MODULE" WHEN LD STUFF IS COMPLETE
     set(REG_MOD_TYPE SHARED)
+    option(REG_DYNAMIC_MOD_LOADING "Turn on to build dynamically loadable modules that are linked at run time instead of build time. OFF by default." OFF)
+    if(REG_DYNAMIC_MOD_LOADING)
+      set(REG_MOD_TYPE MODULE)
+    endif(REG_DYNAMIC_MOD_LOADING)
   endif(REG_BUILD_SHARED_LIBS)
 endif(REG_BUILD_MODULAR_LIBS)
 
@@ -99,10 +102,10 @@ include(ModulesMacro)
 include(Modules)
 
 # do dependency checks
-include(deps/All)
+include(deps/all)
 
 # do platform compatibility checks
-include(platform/All)
+include(platform/all)
 
 # set up configure header file
 configure_file(
@@ -173,6 +176,12 @@ set(REG_EXTERNAL_LIBS ${ZLIB_LIBRARY} ${REG_EXTERNAL_LIBS})
 find_package(LibXml2 REQUIRED)
 include_directories("${LIBXML2_INCLUDE_DIR}")
 set(REG_EXTERNAL_LIBS ${LIBXML2_LIBRARIES} ${REG_EXTERNAL_LIBS})
+
+if(REG_DYNAMIC_MOD_LOADING)
+  find_library(LIBDL_LIB dl)
+  mark_as_advanced(LIBDL_LIB)
+  set(REG_EXTERNAL_LIBS ${REG_EXTERNAL_LIBS} ${LIBDL_LIB})
+endif(REG_DYNAMIC_MOD_LOADING)
 
 # ReG libs to link examples against
 set(REG_LINK_LIBRARIES ReG_Steer)

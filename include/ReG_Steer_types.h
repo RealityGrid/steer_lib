@@ -332,4 +332,33 @@ typedef int REG_IOHandleType;
     to check whether we've seen a message before */
 #define REG_UID_HISTORY_BUFFER_SIZE 64
 
+/** A macro to declare a function with a different suffix depending on
+    which module it is in. It actually declares two things: A pointer
+    to a function with the suffix _impl that is referenced in the rest
+    of the code, and an actual function declaration with a suffix
+    determined by the current value of REG_MODULE that is used
+    internally to the module. */
+#define REG_DECLARE_FUNC(_type, _name, _params) \
+  _DECLARE_FUNC(_type, _name, _params, REG_MODULE)
+
+#define _DECLARE_FUNC(_type, _name, _params, _mod) \
+  __DECLARE_FUNC(_type, _name, _params, _mod)
+
+#define __DECLARE_FUNC(_type, _name, _params, _mod) \
+  _type (*_name##_impl)(); \
+  _type _name##_##_mod _params
+
+/** A macro to define a function with a different suffix depending on
+    the current value of REG_MODULE. This is used to share code
+    between two modules that need the functions to be named uniquely
+    for each module. */
+#define REG_DEFINE_FUNC(_type, _name, _params) \
+  _DEFINE_FUNC(_type, _name, _params, REG_MODULE)
+
+#define _DEFINE_FUNC(_type, _name, _params, _mod) \
+  __DEFINE_FUNC(_type, _name, _params, _mod)
+
+#define __DEFINE_FUNC(_type, _name, _params, _mod) \
+  _type _name##_##_mod _params
+
 #endif /* __REG_TYPES_INCLUDED defined */

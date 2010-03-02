@@ -51,11 +51,13 @@
     @author Robert Haines
   */
 
+#define  REG_MODULE wsrf
+
 #include "ReG_Steer_Config.h"
 #include "ReG_Steer_types.h"
-#include "ReG_Steer_Common.h"
 #include "ReG_Steer_Steering_Transport_API.h"
 #include "ReG_Steer_Steering_Transport_WSRF.h"
+#include "ReG_Steer_Common.h"
 #include "ReG_Steer_Appside_internal.h"
 #include "ReG_Steer_Steerside.h"
 #include "ReG_Steer_Steerside_internal.h"
@@ -120,9 +122,38 @@ char *APP_NAME_RP       = "sws:applicationName";
 /** @see SUPPORTED_CMDS_SDE */
 char *STATUS_MSG_RP     = "sws:statusMsg";
 
+/*-------------------------------------------------------*/
+
+#if !REG_DYNAMIC_MOD_LOADING
+int Steering_transport_function_map() {
+  Detach_from_steerer_impl = Detach_from_steerer_wsrf;
+  Steerer_connected_impl = Steerer_connected_wsrf;
+  Send_status_msg_impl = Send_status_msg_wsrf;
+  Initialize_steering_connection_impl = Initialize_steering_connection_wsrf;
+  Finalize_steering_connection_impl = Finalize_steering_connection_wsrf;
+  Get_data_io_address_impl = Get_data_io_address_wsrf;
+  Record_checkpoint_set_impl = Record_checkpoint_set_wsrf;
+  Save_log_impl = Save_log_wsrf;
+  Initialize_steerside_transport_impl = Initialize_steerside_transport_wsrf;
+  Finalize_steerside_transport_impl = Finalize_steerside_transport_wsrf;
+  Sim_attach_impl = Sim_attach_wsrf;
+  Sim_attach_security_impl = Sim_attach_security_wsrf;
+  Send_control_msg_impl = Send_control_msg_wsrf;
+  Send_detach_msg_impl = Send_detach_msg_wsrf;
+  Finalize_connection_impl = Finalize_connection_wsrf;
+  Get_param_log_impl = Get_param_log_wsrf;
+  Get_registry_entries_impl = Get_registry_entries_wsrf;
+  Initialize_log_impl = Initialize_log_wsrf;
+  Get_control_msg_impl = Get_control_msg_wsrf;
+  Get_status_msg_impl = Get_status_msg_wsrf;
+
+  return REG_SUCCESS;
+}
+#endif
+
 /*----------------- Appside methods ---------------------*/
 
-int Initialize_steering_connection_impl(const int  NumSupportedCmds,
+int Initialize_steering_connection_wsrf(const int  NumSupportedCmds,
 					int* SupportedCmds) {
   char* pchar;
   char  ip_addr[REG_MAX_STRING_LENGTH];
@@ -290,7 +321,7 @@ int Initialize_steering_connection_impl(const int  NumSupportedCmds,
 
 /*-------------------------------------------------------*/
 
-int Finalize_steering_connection_impl() {
+int Finalize_steering_connection_wsrf() {
   int return_status = REG_SUCCESS;
   struct wsrp__DestroyResponse out;
   int  commands[1];
@@ -328,7 +359,7 @@ int Finalize_steering_connection_impl() {
 
 /*-------------------------------------------------------*/
 
-int Detach_from_steerer_impl() {
+int Detach_from_steerer_wsrf() {
   /* Don't send out param logs as they are cached on the SWS */
   Param_log.send_all         = REG_FALSE;
 
@@ -337,7 +368,7 @@ int Detach_from_steerer_impl() {
 
 /*-------------------------------------------------------*/
 
-int Steerer_connected_impl() {
+int Steerer_connected_wsrf() {
   char* steer_status;
   int   status;
 
@@ -367,7 +398,7 @@ int Steerer_connected_impl() {
 
 /*-------------------------------------------------------*/
 
-int Send_status_msg_impl(char* msg) {
+int Send_status_msg_wsrf(char* msg) {
   char*  sde_name;
   char   query_buf[REG_MAX_MSG_SIZE];
   int    nbytes;
@@ -458,7 +489,7 @@ int Send_status_msg_impl(char* msg) {
 
 /*-------------------------------------------------------*/
 
-struct msg_struct* Get_control_msg_impl() {
+struct msg_struct* Get_control_msg_wsrf() {
   struct msg_struct* msg = NULL;
   char* pBuf;
   char* pLast;
@@ -521,7 +552,7 @@ struct msg_struct* Get_control_msg_impl() {
 
 /*-------------------------------------------------------*/
 
-int Get_data_io_address_impl(const int           index,
+int Get_data_io_address_wsrf(const int           index,
 			     const int           direction,
 			     char*               hostname,
 			     unsigned short int* port,
@@ -785,7 +816,7 @@ int Get_data_io_address_impl(const int           index,
 
 /*-------------------------------------------------------*/
 
-int Record_checkpoint_set_impl(int ChkType, char* ChkTag, char* Path) {
+int Record_checkpoint_set_wsrf(int ChkType, char* ChkTag, char* Path) {
   int    nfiles;
   int    i, j, status, len;
   int    count = 0;
@@ -1044,13 +1075,14 @@ int Record_checkpoint_set_impl(int ChkType, char* ChkTag, char* Path) {
 
 /*-------------------------------------------------------*/
 
-void Initialize_log_impl(Chk_log_type* log) {
+void Initialize_log_wsrf(Chk_log_type* log) {
   log->send_all = REG_FALSE;
+  printf("in\n");
 }
 
 /*-------------------------------------------------------*/
 
-int Save_log_impl(FILE* file_ptr, char* log_data) {
+int Save_log_wsrf(FILE* file_ptr, char* log_data) {
   struct sws__PutParamLogResponse out;
   char* pmsg_buf;
 #if REG_USE_TIMING
@@ -1109,7 +1141,7 @@ extern Sim_table_type Sim_table;
 extern Steerer_config_table_type Steer_config;
 SGS_info_table_type steerer_SGS_info_table;
 
-int Initialize_steerside_transport() {
+int Initialize_steerside_transport_wsrf() {
   strncpy(Steer_lib_config.Steering_transport_string, "WSRF", 5);
 
   if(init_ssl_random_seq() == REG_SUCCESS){
@@ -1125,13 +1157,13 @@ int Initialize_steerside_transport() {
 
 /*-------------------------------------------------------*/
 
-int Finalize_steerside_transport() {
+int Finalize_steerside_transport_wsrf() {
   return REG_SUCCESS;
 }
 
 /*-------------------------------------------------------*/
 
-int Sim_attach_impl(int index, char* SimID) {
+int Sim_attach_wsrf(int index, char* SimID) {
   struct sws__AttachResponse response;
   Sim_entry_type* sim;
   SGS_info_type* SGS_info;
@@ -1183,7 +1215,7 @@ int Sim_attach_impl(int index, char* SimID) {
   if(soap_call_sws__Attach(SGS_info->soap, SimID, "", NULL,
 			   &response) != SOAP_OK) {
     soap_print_fault((SGS_info->soap), stderr);
-    Finalize_connection_impl(index);
+    Finalize_connection_wsrf(index);
     return REG_FAILURE;
   }
 
@@ -1202,7 +1234,7 @@ int Sim_attach_impl(int index, char* SimID) {
     /* Cannot have no supported commands - detach must be supported so this
        is an error */
     fprintf(stderr, "STEER: ERROR: Attach: no supported commands returned\n");
-    Finalize_connection_impl(index);
+    Finalize_connection_wsrf(index);
     return REG_FAILURE;
   }
 
@@ -1211,7 +1243,7 @@ int Sim_attach_impl(int index, char* SimID) {
 
 /*-------------------------------------------------------*/
 
-int Sim_attach_security_impl(const int index,
+int Sim_attach_security_wsrf(const int index,
 			     const struct reg_security_info* sec) {
 
   strncpy(steerer_SGS_info_table.SGS_info[index].username,
@@ -1229,7 +1261,7 @@ int Sim_attach_security_impl(const int index,
 
 /*-------------------------------------------------------*/
 
-int Finalize_connection_impl(int index) {
+int Finalize_connection_wsrf(int index) {
   Sim_entry_type *sim;
   SGS_info_type* SGS_info;
 
@@ -1237,7 +1269,7 @@ int Finalize_connection_impl(int index) {
   SGS_info = &(steerer_SGS_info_table.SGS_info[index]);
 
   if(sim->detached == REG_FALSE) {
-    if(Send_detach_msg_impl(index) == REG_SUCCESS) {
+    if(Send_detach_msg_wsrf(index) == REG_SUCCESS) {
       sim->detached = REG_TRUE;
     }
   }
@@ -1256,7 +1288,7 @@ int Finalize_connection_impl(int index) {
 
 /*-------------------------------------------------------*/
 
-struct msg_struct* Get_status_msg_impl(int index, int ignore) {
+struct msg_struct* Get_status_msg_wsrf(int index, int ignore) {
   char *pRPDoc;
   char buf[REG_MAX_MSG_SIZE];
   long int modTime;
@@ -1322,7 +1354,7 @@ struct msg_struct* Get_status_msg_impl(int index, int ignore) {
 
 /*-------------------------------------------------------*/
 
-int Send_control_msg_impl(int index, char *buf) {
+int Send_control_msg_wsrf(int index, char *buf) {
   char   inputBuf[REG_MAX_MSG_SIZE + 32];
   SGS_info_type* SGS_info;
 
@@ -1340,7 +1372,7 @@ int Send_control_msg_impl(int index, char *buf) {
 
 /*-------------------------------------------------------*/
 
-int Send_detach_msg_impl(int index) {
+int Send_detach_msg_wsrf(int index) {
   SGS_info_type* SGS_info;
 
   SGS_info = &(steerer_SGS_info_table.SGS_info[index]);
@@ -1370,7 +1402,7 @@ int Send_detach_msg_impl(int index) {
 
 /*-------------------------------------------------------*/
 
-int Get_param_log_impl(int sim_index, int handle) {
+int Get_param_log_wsrf(int sim_index, int handle) {
   struct sws__GetParamLogResponse response;
   int    param_index;
   int    log_index;
@@ -1530,7 +1562,7 @@ int Get_param_log_impl(int sim_index, int handle) {
 
 /*-------------------------------------------------------*/
 
-int Get_registry_entries_impl(const char* registryEPR,
+int Get_registry_entries_wsrf(const char* registryEPR,
 			      const struct reg_security_info* sec,
 			      struct registry_contents* contents) {
 

@@ -51,14 +51,16 @@
     @author Robert Haines
   */
 
+#define  REG_MODULE proxy
+
 #include "ReG_Steer_Config.h"
+#include "ReG_Steer_types.h"
 #include "ReG_Steer_Samples_Transport_API.h"
 #include "ReG_Steer_Samples_Transport_Proxy.h"
 #include "ReG_Steer_Samples_Transport_Sockets.h"
 #include "ReG_Steer_Common.h"
 #include "ReG_Steer_Sockets_Common.h"
 #include "ReG_Steer_Appside_internal.h"
-#include "ReG_Steer_Steering_Transport_API.h"
 
 /** Basic library config - declared in ReG_Steer_Common */
 extern Steer_lib_config_type Steer_lib_config;
@@ -71,9 +73,44 @@ socket_info_table_type socket_info_table;
 extern IOdef_table_type IOTypes_table;
 extern Steerer_connection_table_type Steerer_connection;
 
+/*---------------------------------------------------*/
+
+#if REG_DYNAMIC_MOD_LOADING
+/* This extern is required to pass through the address of the
+   Get_data_io_address_impl function from the steering transport
+   module. In Linux this is probably not required, but it is for
+   Darwin/BSD and might be for Solaris. */
+extern int (*Get_data_io_address_impl)();
+#else
+int Samples_transport_function_map() {
+  Initialize_samples_transport_impl = Initialize_samples_transport_proxy;
+  Finalize_samples_transport_impl = Finalize_samples_transport_proxy;
+  Initialize_IOType_transport_impl = Initialize_IOType_transport_proxy;
+  Finalize_IOType_transport_impl = Finalize_IOType_transport_proxy;
+  Enable_IOType_impl = Enable_IOType_proxy;
+  Disable_IOType_impl = Disable_IOType_proxy;
+  Get_communication_status_impl = Get_communication_status_proxy;
+  Emit_data_non_blocking_impl = Emit_data_non_blocking_proxy;
+  Emit_header_impl = Emit_header_proxy;
+  Emit_data_impl = Emit_data_proxy;
+  Consume_msg_header_impl = Consume_msg_header_proxy;
+  Emit_msg_header_impl = Emit_msg_header_proxy;
+  Consume_start_data_check_impl = Consume_start_data_check_proxy;
+  Consume_data_read_impl = Consume_data_read_proxy;
+  Emit_ack_impl = Emit_ack_proxy;
+  Consume_ack_impl = Consume_ack_proxy;
+  Get_IOType_address_impl = Get_IOType_address_proxy;
+  Emit_start_impl = Emit_start_proxy;
+  Emit_stop_impl = Emit_stop_proxy;
+  Consume_stop_impl = Consume_stop_proxy;
+
+  return REG_SUCCESS;
+}
+#endif
+
 /*--------------------- API -------------------------*/
 
-int Initialize_samples_transport() {
+int Initialize_samples_transport_proxy() {
   strncpy(Steer_lib_config.Samples_transport_string, "Proxy", 6);
 
 #if !REG_HAS_MSG_NOSIGNAL && !defined(_MSC_VER)
@@ -92,7 +129,7 @@ int Initialize_samples_transport() {
 
 /*---------------------------------------------------*/
 
-int Finalize_samples_transport() {
+int Finalize_samples_transport_proxy() {
 #ifdef _MSC_VER
   WSACleanup();
 #endif
@@ -102,7 +139,7 @@ int Finalize_samples_transport() {
 
 /*--------------------------------------------------------------------*/
 
-int Initialize_IOType_transport_impl(const int direction,
+int Initialize_IOType_transport_proxy(const int direction,
 				      const int index) {
 
   int return_status = REG_SUCCESS;
@@ -180,7 +217,7 @@ int Initialize_IOType_transport_impl(const int direction,
 
 /*-----------------------------------------------------------*/
 
-void Finalize_IOType_transport_impl() {
+void Finalize_IOType_transport_proxy() {
   int index;
   fprintf(stderr, "ARPDBG: Finalize_IOType_transport...\n");
 
@@ -194,7 +231,7 @@ void Finalize_IOType_transport_impl() {
       /* Signal that we have read this data and are ready for
 	 the next set */
       fprintf(stderr, "ARPDBG: emitting ack for index %d\n", index);
-      Emit_ack_impl(index);
+      Emit_ack_proxy(index);
       IOTypes_table.io_def[index].ack_needed = REG_FALSE;
     }
 
@@ -206,7 +243,7 @@ void Finalize_IOType_transport_impl() {
 
 /*-----------------------------------------------------------*/
 
-int Disable_IOType_impl(const int index) {
+int Disable_IOType_proxy(const int index) {
   /* check index is valid */
   if(index < 0 || index >= IOTypes_table.num_registered) {
     fprintf(stderr, "STEER: Disable_IOType_sockets: index out of range\n");
@@ -221,7 +258,7 @@ int Disable_IOType_impl(const int index) {
 
 /*---------------------------------------------------*/
 
-int Enable_IOType_impl(const int index) {
+int Enable_IOType_proxy(const int index) {
   /* check index is valid */
   if(index < 0 || index >= IOTypes_table.num_registered) return REG_FAILURE;
 
@@ -238,7 +275,7 @@ int Enable_IOType_impl(const int index) {
 
 /*---------------------------------------------------*/
 
-int Get_communication_status_impl(const int index) {
+int Get_communication_status_proxy(const int index) {
   if(socket_info_table.socket_info[index].comms_status !=
      REG_COMMS_STATUS_CONNECTED)
     return REG_FAILURE;
@@ -248,7 +285,7 @@ int Get_communication_status_impl(const int index) {
 
 /*---------------------------------------------------*/
 
-int Emit_data_impl(const int index, const size_t size, void* buffer) {
+int Emit_data_proxy(const int index, const size_t size, void* buffer) {
 
   int   bytes_left;
   int   result;
@@ -323,7 +360,7 @@ int Emit_data_impl(const int index, const size_t size, void* buffer) {
 
 /*---------------------------------------------------*/
 
-int Emit_data_non_blocking_impl(const int index, const int size,
+int Emit_data_non_blocking_proxy(const int index, const int size,
 				 void* buffer) {
 
   struct timeval timeout;
@@ -343,7 +380,7 @@ int Emit_data_non_blocking_impl(const int index, const int size,
 
   /* are we free to write? */
   if(FD_ISSET(connector, &sock)) {
-    return Emit_data_impl(index, size, buffer);
+    return Emit_data_proxy(index, size, buffer);
   }
 
   return REG_FAILURE;
@@ -379,7 +416,7 @@ int Consume_proxy_destination_ack(const int index) {
 
 /*---------------------------------------------------*/
 
-int Emit_header_impl(const int index) {
+int Emit_header_proxy(const int index) {
 
   char buffer[REG_PACKET_SIZE];
   socket_info_type* socket_info = &(socket_info_table.socket_info[index]);
@@ -405,7 +442,7 @@ int Emit_header_impl(const int index) {
 #ifdef REG_DEBUG
     fprintf(stderr, "STEER: Emit_header: Sending >>%s<<\n", buffer);
 #endif
-    status = Emit_data_non_blocking_impl(index, REG_PACKET_SIZE,
+    status = Emit_data_non_blocking_proxy(index, REG_PACKET_SIZE,
 					  (void*) buffer);
 
     if(status == REG_SUCCESS) {
@@ -426,7 +463,7 @@ int Emit_header_impl(const int index) {
 #ifdef REG_DEBUG
 	fprintf(stderr, "STEER: Emit_header: Sending >>%s<<\n", buffer);
 #endif
-	return Emit_data_impl(index, REG_PACKET_SIZE, (void*) buffer);
+	return Emit_data_proxy(index, REG_PACKET_SIZE, (void*) buffer);
       }
     }
 #ifdef REG_DEBUG
@@ -450,7 +487,7 @@ int Emit_header_impl(const int index) {
 
 /*---------------------------------------------------*/
 
-int Emit_ack_impl(const int index){
+int Emit_ack_proxy(const int index){
 
   /* Send a 16-byte acknowledgement message */
   char *ack_msg = "<ACK/>          ";
@@ -512,12 +549,19 @@ int Emit_ack_impl(const int index){
 
 /*---------------------------------------------------*/
 
-int Get_IOType_address_impl(int i, char** pbuf, int* bytes_left) {
+int Get_IOType_address_proxy(int i, char** pbuf, int* bytes_left) {
   /* This is just a stub because we set the address of the proxy
      in Get_data_io_address_impl(). But only for WSRF steering
      for now...
   */
   return REG_SUCCESS;
+}
+
+/*---------------------------------------------------*/
+
+int Emit_msg_header_proxy(const int index,
+			  const size_t num_bytes_to_send, void* pData) {
+  return Emit_data_proxy(index, num_bytes_to_send, pData);
 }
 
 /*--------------------- Others ----------------------*/
@@ -687,7 +731,7 @@ int connect_connector_samples(const int index) {
       IOTypes_table.io_def[index].label); */
     }
 
-    if(Emit_data_impl(index, strlen(Steer_lib_config.scratch_buffer),
+    if(Emit_data_proxy(index, strlen(Steer_lib_config.scratch_buffer),
 		      (void*)(Steer_lib_config.scratch_buffer)) != REG_SUCCESS) {
       close_connector_handle_samples(index);
       fprintf(stderr,
@@ -704,3 +748,6 @@ int connect_connector_samples(const int index) {
 }
 
 /*---------------------------------------------------*/
+
+#define  REG_MODULE proxy
+#include "ReG_Steer_Samples_Transport_Sockets_Shared.c"
