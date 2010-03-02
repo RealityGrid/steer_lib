@@ -115,6 +115,8 @@ while test $# -gt 0; do
 	echo "  REG_LOG_STEERING:            @REG_LOG_STEERING@"
 	echo "  REG_USE_TIMING:              @REG_USE_TIMING@"
 	echo "  REG_KEEP_XML_MESSAGES:       @REG_KEEP_XML_MESSAGES@"
+	echo "  REG_VALIDATE_XML:            @REG_VALIDATE_XML@"
+	echo "  REG_SCRATCH_DEFAULT:         @REG_SCRATCH_DEFAULT@"
 	;;
 
     *)
