@@ -193,7 +193,8 @@ int Initialize_IOType_transport_impl(int direction, int index) {
 #endif
   }
   else {
-    file_info_table.file_info[index].directory[0] = '\0';
+    snprintf(file_info_table.file_info[index].directory, REG_MAX_STRING_LENGTH,
+	     "%s/", Steer_lib_config.working_dir);
 #ifdef REG_DEBUG
     fprintf(stderr, "STEER: Initialize_IOType_transport_file: will use current"
 	    " working directory for data files\n");
