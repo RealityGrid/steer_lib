@@ -62,7 +62,6 @@
 /* The default directory to use for scratch space */
 #define REG_SCRATCH_DEFAULT "@REG_SCRATCH_DEFAULT@/"
 
-#cmakedefine REG_LOG_STEERING
 #cmakedefine REG_DEBUG
 #cmakedefine REG_DEBUG_FULL
 
@@ -71,6 +70,7 @@
 #cmakedefine01 REG_HAS_MSG_NOSIGNAL
 #cmakedefine01 REG_HAS_MSG_DONTWAIT
 #cmakedefine01 REG_HAS_MSG_WAITALL
+#cmakedefine01 REG_LOG_STEERING
 #cmakedefine01 REG_VALIDATE_XML
 #cmakedefine01 REG_KEEP_XML_MESSAGES
 #cmakedefine01 REG_USE_TIMING

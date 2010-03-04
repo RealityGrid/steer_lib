@@ -2863,7 +2863,7 @@ int Auto_generate_steer_cmds(int    SeqNum,
 
       if(Control_msg_now_valid(storedMsg->msg)){
 
-#ifdef REG_LOG_STEERING
+#if REG_LOG_STEERING
 	Log_control_msg(storedMsg->msg->control);
 #endif
 	Unpack_control_msg(storedMsg->msg->control,
@@ -3558,7 +3558,7 @@ int Consume_control(int    *NumCommands,
 	return REG_SUCCESS;
       }
 
-#ifdef REG_LOG_STEERING
+#if REG_LOG_STEERING
       Log_control_msg(msg->control);
 #endif
       Unpack_control_msg(msg->control,
