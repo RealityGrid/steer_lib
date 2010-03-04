@@ -428,13 +428,13 @@ int Consume_data_read_impl(const int index,
 
 #ifdef REG_DEBUG
 
-#ifdef USE_REG_TIMING
+#if REG_USE_TIMING
   double time0, time1;
 #endif
 
   fprintf(stderr, "STEER: Consume_data_read: calling recv for %d bytes\n", (int) num_bytes_to_read);
 
-#ifdef USE_REG_TIMING
+#if REG_USE_TIMING
   Get_current_time_seconds(&time0);
 #endif
 
@@ -455,7 +455,7 @@ int Consume_data_read_impl(const int index,
 #ifdef REG_DEBUG
   fprintf(stderr, "STEER: Consume_data_read: recv read %d bytes\n", (int) nbytes);
 
-#ifdef USE_REG_TIMING
+#if REG_USE_TIMING
   Get_current_time_seconds(&time1);
   fprintf(stderr, "                                  in %.3f seconds\n", (float) (time1-time0));
 #endif

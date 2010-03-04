@@ -116,7 +116,7 @@ static double ReG_TotalSimTimeSecs = 0.0;
 static double ReG_SimTimeStepSecs = 0.0;
 /** Name (and version) of the application that has called us */
 char ReG_AppName[REG_MAX_STRING_LENGTH];
-#ifdef USE_REG_TIMING
+#if REG_USE_TIMING
 /** For monitoring wall-clock time per step */
 static float ReG_WallClockPerStep = 0.0;
 #endif
@@ -456,7 +456,7 @@ int Steering_initialize(const char* AppName,
 
   /* Only once lib is flagged as initialized can we call this
      routine...*/
-#ifdef USE_REG_TIMING
+#if REG_USE_TIMING
   Register_param("WALL CLOCK PER STEP (S)", REG_FALSE,
 		 (void*)(&ReG_WallClockPerStep),
 		 REG_FLOAT,
@@ -2336,7 +2336,7 @@ int Steering_control(int     SeqNum,
   /* For throttling the polling rate */
   static time_t this_wc_time = (time_t)0, last_wc_time = (time_t)0;
 
-#ifdef USE_REG_TIMING
+#if REG_USE_TIMING
   /* More accurate timing but less portable so only used
      for analysis */
   static float  steer_time;
@@ -2355,7 +2355,7 @@ int Steering_control(int     SeqNum,
     }
 #endif
   }
-#endif /* USE_REG_TIMING */
+#endif /* REG_USE_TIMING */
 
   *NumSteerParams   = 0;
   *NumSteerCommands = 0;
@@ -2758,7 +2758,7 @@ int Steering_control(int     SeqNum,
     }
   }
 
-#ifdef USE_REG_TIMING
+#if REG_USE_TIMING
   Get_current_time_seconds(&time1);
   steer_time = (float)(time1 - time0);
 #ifdef REG_DEBUG
