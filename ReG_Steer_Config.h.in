@@ -66,8 +66,6 @@
 #cmakedefine REG_DEBUG
 #cmakedefine REG_DEBUG_FULL
 
-#cmakedefine REG_NEED_MALLOC_H
-
 /* features to code for */
 
 #cmakedefine01 REG_HAS_MSG_NOSIGNAL
@@ -76,6 +74,8 @@
 #cmakedefine01 REG_VALIDATE_XML
 #cmakedefine01 REG_KEEP_XML_MESSAGES
 #cmakedefine01 REG_USE_TIMING
+
+#cmakedefine01 REG_NEED_MALLOC_H
 
 /* standard system headers */
 
@@ -109,7 +109,7 @@
 
 /* only include malloc.h if we need it.
    some systems define malloc in stdlib.h */
-#ifdef REG_NEED_MALLOC_H
+#if REG_NEED_MALLOC_H
 #include <malloc.h>
 #endif
 
