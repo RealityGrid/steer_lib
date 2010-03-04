@@ -202,6 +202,12 @@ REG_LOG_STEERING - default ON
 
 Keep a log of steering operations performed during a run.
 
+REG_VALIDATE_XML - default OFF
+
+Validate every message passed between the steering client and steered
+application in both directions. This is really just a debugging aid
+and should not generally be used due to large speed overheads.
+
 ----------------------------------------------------------------------
 
 Other software and documentation

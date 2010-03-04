@@ -1,6 +1,28 @@
 Release Notes for the RealityGrid Steering Library
 --------------------------------------------------
 
+Version 3.0.2
+-------------
+
+ * Fixed behaviour when REG_STEER_DIRECTORY is not set, or set incorrectly.
+ * Change the build rules to allow the MPI example to be ignored.
+ * Add a wrapper script to launch the ioProxy.
+ * Validate received XML messages against the schema.
+ * Improve the way that XML debugging is selected at build time.
+ * Reduce the amount of output from sink example.
+ * Fixed file-based samples transport when REG_DATA_DIRECTORY is not set.
+ * Fix REG_USE_TIMING build time option.
+
+ Internal changes
+ ----------------
+
+ * Minor build system updates for CMake 2.8
+ * Fix HybridThread output messages.
+ * Improve error handling on start-up of the proxy.
+ * Fix the parts of logging that were missed during modularization.
+ * Fix invalid XML schema and invalid XML messages.
+ * Streamline XML parsing method signatures.
+
 Version 3.0.1
 -------------
 
