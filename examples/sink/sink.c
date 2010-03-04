@@ -201,8 +201,7 @@ int main(){
 
 	      while(status == REG_SUCCESS){
 
-		printf("\nGot data: type = %d, count = %d\n", data_type,
-		       data_count);
+		printf("\nGot data - ");
 
 		/* Read the data itself */
 		switch(data_type){
@@ -215,14 +214,7 @@ int main(){
 		    status = Consume_data_slice(iohandle, data_type,
 						data_count, c_array);
 
-		    /* Print data but allow for fact that this is just an
-		       array of characters and may not have a terminating
-		       '\0' character */
-		    printf("Got char data:\n>>");
-		    for(j=0; j<data_count; j++){
-		      printf("%c", c_array[j]);
-		    }
-		    printf("<<\n");
+		    printf("type: char, number: %d\n", data_count);
 
 		    bytes_read += data_count*sizeof(char);
 		    free(c_array);
@@ -237,11 +229,7 @@ int main(){
 		    status = Consume_data_slice(iohandle, data_type,
 						data_count, i_array);
 
-		    printf("Got int data:\n");
-		    for(j=0; j<data_count; j++){
-		      printf("%d ", i_array[j]);
-		    }
-		    printf("\n------------\n");
+		    printf("type: int, number: %d\n", data_count);
 
 		    bytes_read += data_count*sizeof(int);
 		    free(i_array);
@@ -256,11 +244,7 @@ int main(){
 		    status = Consume_data_slice(iohandle, data_type,
 						data_count, l_array);
 
-		    printf("Got long data:\n");
-		    for(j=0; j<data_count; j++){
-		      printf("%ld ", l_array[j]);
-		    }
-		    printf("\n------------------------\n");
+		    printf("type: long, number: %d\n", data_count);
 
 		    bytes_read += data_count*sizeof(int);
 		    free(i_array);
@@ -274,11 +258,8 @@ int main(){
 		  if(f_array){
 		    status = Consume_data_slice(iohandle, data_type,
 						data_count, f_array);
-		    printf("Got float data\n");
-		    for(j=0; j<data_count; j++){
-		      printf("%f ", f_array[j]);
-		    }
-		    printf("\n------------\n");
+
+		    printf("type: float, number: %d\n", data_count);
 
 		    bytes_read += data_count*sizeof(float);
 		    free(f_array);
@@ -292,11 +273,8 @@ int main(){
 		  if(d_array){
 		    status = Consume_data_slice(iohandle, data_type,
 						data_count, d_array);
-		    printf("Got double data\n");
-		    for(j=0; j<data_count; j++){
-		      printf("%f ", d_array[j]);
-		    }
-		    printf("\n------------\n");
+
+		    printf("type: double, number: %d\n", data_count);
 
 		    bytes_read += data_count*sizeof(double);
 		    free(d_array);

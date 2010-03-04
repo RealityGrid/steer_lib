@@ -62,20 +62,20 @@
 /* The default directory to use for scratch space */
 #define REG_SCRATCH_DEFAULT "@REG_SCRATCH_DEFAULT@/"
 
-#cmakedefine REG_LOG_STEERING
 #cmakedefine REG_DEBUG
 #cmakedefine REG_DEBUG_FULL
-#cmakedefine REG_USE_TIMING
-
-#cmakedefine REG_NEED_MALLOC_H
 
 /* features to code for */
 
 #cmakedefine01 REG_HAS_MSG_NOSIGNAL
 #cmakedefine01 REG_HAS_MSG_DONTWAIT
 #cmakedefine01 REG_HAS_MSG_WAITALL
+#cmakedefine01 REG_LOG_STEERING
 #cmakedefine01 REG_VALIDATE_XML
 #cmakedefine01 REG_KEEP_XML_MESSAGES
+#cmakedefine01 REG_USE_TIMING
+
+#cmakedefine01 REG_NEED_MALLOC_H
 
 /* standard system headers */
 
@@ -109,7 +109,7 @@
 
 /* only include malloc.h if we need it.
    some systems define malloc in stdlib.h */
-#ifdef REG_NEED_MALLOC_H
+#if REG_NEED_MALLOC_H
 #include <malloc.h>
 #endif
 
@@ -128,17 +128,6 @@
 #define usleep(microseconds) (Sleep(microseconds/1000))
 #define getcwd _getcwd
 #define read _read
-#endif
-
-/* ---------------------------------------------------- */
-
-/* Adjust some defines to match what is in the legacy code.
- *
- * These could be changed in source code at some point.
- */
-
-#ifdef REG_USE_TIMING
-#define USE_REG_TIMING
 #endif
 
 #define __REG_STEER_CONFIG_H__

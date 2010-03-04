@@ -1055,7 +1055,7 @@ void Initialize_log_impl(Chk_log_type* log) {
 int Save_log_impl(FILE* file_ptr, char* log_data) {
   struct sws__PutParamLogResponse out;
   char* pmsg_buf;
-#ifdef USE_REG_TIMING
+#if REG_USE_TIMING
   double time0, time1;
 #endif
 
@@ -1084,7 +1084,7 @@ int Save_log_impl(FILE* file_ptr, char* log_data) {
 		     appside_SGS_info.username,
 		     appside_SGS_info.passwd);
 
-#ifdef USE_REG_TIMING
+#if REG_USE_TIMING
   Get_current_time_seconds(&time0);
 #endif
 
@@ -1096,7 +1096,7 @@ int Save_log_impl(FILE* file_ptr, char* log_data) {
     soap_print_fault(appside_SGS_info.soap, stderr);
     return REG_FAILURE;
   }
-#ifdef USE_REG_TIMING
+#if REG_USE_TIMING
   Get_current_time_seconds(&time1);
   fprintf(stderr, "STEER: TIMING: soap_call_sws__PutParamLog "
 	  "took %f seconds\n", (time1-time0));
@@ -1380,7 +1380,7 @@ int Get_param_log_impl(int sim_index, int handle) {
   int    dum_int;
   long   dum_long;
   float  dum_float;
-#ifdef USE_REG_TIMING
+#if REG_USE_TIMING
   double time0, time1;
 #endif
   Sim_entry_type *sim;
@@ -1405,7 +1405,7 @@ int Get_param_log_impl(int sim_index, int handle) {
     }
   }
 
-#ifdef USE_REG_TIMING
+#if REG_USE_TIMING
   Get_current_time_seconds(&time0);
 #endif
   if(SGS_info->passwd[0]){
@@ -1418,7 +1418,7 @@ int Get_param_log_impl(int sim_index, int handle) {
   }
   if(soap_call_sws__GetParamLog(SGS_info->soap, SGS_info->address,
 				"", (xsd__int)handle, &response )){
-#ifdef USE_REG_TIMING
+#if REG_USE_TIMING
   Get_current_time_seconds(&time1);
   fprintf(stderr, "STEER: TIMING: soap_call_sws__GetParamLog "
 	  "took %f seconds\n", (time1-time0));
@@ -1541,7 +1541,7 @@ int Get_registry_entries_impl(const char* registryEPR,
   int    status = REG_SUCCESS;
   char  *out;
   int    i;
-#ifdef USE_REG_TIMING
+#if REG_USE_TIMING
   double time0, time1;
 #endif
   contents->numEntries = 0;
@@ -1589,7 +1589,7 @@ int Get_registry_entries_impl(const char* registryEPR,
   /* Entries in a ServiceGroup are held in the 'Entry' ResourceProperty */
   sprintf(in.__ptr[0].ResourceProperty, "Entry");
 
-#ifdef USE_REG_TIMING
+#if REG_USE_TIMING
   Get_current_time_seconds(&time0);
 #endif
 
@@ -1607,7 +1607,7 @@ int Get_registry_entries_impl(const char* registryEPR,
   free(in.__ptr[0].ResourceProperty);
   free(in.__ptr);
 
-#ifdef USE_REG_TIMING
+#if REG_USE_TIMING
   Get_current_time_seconds(&time1);
   fprintf(stderr, "STEERUtils: TIMING: soap_call_wsrp__GetMultipleResourceProperties "
 	  "took %f seconds\n", (time1-time0));
@@ -1838,7 +1838,7 @@ int get_resource_property (struct soap *soapStruct,
 			   const char  *name,
 			   char       **pRP) {
   char  *out;
-#ifdef USE_REG_TIMING
+#if REG_USE_TIMING
   double time0, time1;
 #endif
 
@@ -1847,7 +1847,7 @@ int get_resource_property (struct soap *soapStruct,
     return REG_FAILURE;
   }
 
-#ifdef USE_REG_TIMING
+#if REG_USE_TIMING
   Get_current_time_seconds(&time0);
 #endif
 
@@ -1857,7 +1857,7 @@ int get_resource_property (struct soap *soapStruct,
     soap_print_fault(soapStruct, stderr);
     return REG_FAILURE;
   }
-#ifdef USE_REG_TIMING
+#if REG_USE_TIMING
   Get_current_time_seconds(&time1);
 #ifdef REG_DEBUG
   fprintf(stderr, "STEER: TIMING: soap_call___wsrp__GetResourceProperty"
@@ -1881,7 +1881,7 @@ int get_resource_property_doc(struct soap *soapStruct,
 			      const char  *passwd,
 			      char       **pDoc) {
   char *out;
-#ifdef USE_REG_TIMING
+#if REG_USE_TIMING
   double time0, time1;
 #endif
 
@@ -1894,7 +1894,7 @@ int get_resource_property_doc(struct soap *soapStruct,
 
   *pDoc = NULL;
 
-#ifdef USE_REG_TIMING
+#if REG_USE_TIMING
   Get_current_time_seconds(&time0);
 #endif
 
@@ -1906,7 +1906,7 @@ int get_resource_property_doc(struct soap *soapStruct,
     return REG_FAILURE;
   }
 
-#ifdef USE_REG_TIMING
+#if REG_USE_TIMING
   Get_current_time_seconds(&time1);
 #ifdef REG_DEBUG
   fprintf(stderr, "STEER: TIMING: soap_call_wsrp__GetResourcePropertyDocument "

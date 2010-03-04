@@ -48,6 +48,8 @@
 set(CMAKE_USER_MAKE_RULES_OVERRIDE "JavaCompileOverride")
 
 enable_language(Java)
+mark_as_advanced(CMAKE_Java_ARCHIVE)
+mark_as_advanced(CMAKE_Java_RUNTIME)
 
 set(IOPROXY_SRCS
   HybridSwitch.java

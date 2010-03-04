@@ -590,7 +590,7 @@ int Read_file(const char *filename,
 
 int Get_current_time_seconds(double *now)
 {
-#ifdef USE_REG_TIMING
+#if REG_USE_TIMING
   struct timeval tv;
   struct timezone tz;
 
@@ -601,7 +601,7 @@ int Get_current_time_seconds(double *now)
   *now = (double)(tv.tv_sec) + 1.0e-6*(double)(tv.tv_usec);
 #else
   *now = 0.0;
-#endif /* defined USE_REG_TIMING */
+#endif /* REG_USE_TIMING */
 
   return REG_SUCCESS;
 }
