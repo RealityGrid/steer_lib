@@ -341,7 +341,6 @@ int Validate_xml(xmlDocPtr doc);
 /** @internal
     Parse a steering message (ReG_steer_message)
     @param doc The DOM document to parse
-    @param ns The namespace to use
     @param cur Current XML node
     @param msg Struct to fill with message details
     @param sim Pointer to Sim_entry struct or NULL (if not called by
@@ -354,7 +353,6 @@ int parseSteerMessage(xmlDocPtr          doc,
 /** @internal
     Parse a Resource Properties document from a WSRF service
     @param doc The DOM document to parse
-    @param ns The namespace to use
     @param cur Current XML node
     @param sim Pointer to Sim_entry struct or NULL (if not called by
     a steering client) */
@@ -365,7 +363,6 @@ int parseResourceProperties(xmlDocPtr       doc,
 /** @internal
     Parse a Status message
     @param doc The DOM document to parse
-    @param ns The namespace to use
     @param cur Current XML node
     @param status Pointer to struct to fill with msg details */
 int parseStatus(xmlDocPtr             doc,
@@ -375,7 +372,6 @@ int parseStatus(xmlDocPtr             doc,
 /** @internal
     Parse a Control message.
     @param doc The DOM document to parse
-    @param ns The namespace to use
     @param cur Current XML node
     @param ctrl Pointer to struct to fill with msg details */
 int parseControl(xmlDocPtr              doc,
@@ -385,7 +381,6 @@ int parseControl(xmlDocPtr              doc,
 /** @internal
     Parse a Supported Commands message
     @param doc The DOM document to parse
-    @param ns The namespace to use
     @param cur Current XML node
     @param supp_cmd Pointer to struct to fill with msg details */
 int parseSuppCmd(xmlDocPtr               doc,
@@ -395,7 +390,6 @@ int parseSuppCmd(xmlDocPtr               doc,
 /** @internal
     Parse a Parameter element
     @param doc The DOM document to parse
-    @param ns The namespace to use
     @param cur Current XML node
     @param param Pointer to struct to fill with parameter details */
 int parseParam(xmlDocPtr            doc,
@@ -405,7 +399,6 @@ int parseParam(xmlDocPtr            doc,
 /** @internal
     Parse a Command element
     @param doc The DOM document to parse
-    @param ns The namespace to use
     @param cur Current XML node
     @param cmd Pointer to struct to fill with command details */
 int parseCmd(xmlDocPtr          doc,
@@ -415,7 +408,6 @@ int parseCmd(xmlDocPtr          doc,
 /** @internal
     Parse a Checkpoint Type definition element
     @param doc The DOM document to parse
-    @param ns The namespace to use
     @param cur Current XML node
     @param chk_def Pointer to struct to fill with ChkType definition */
 int parseChkTypeDef(xmlDocPtr             doc,
@@ -425,7 +417,6 @@ int parseChkTypeDef(xmlDocPtr             doc,
 /** @internal
     Parse an IOType definition element
     @param doc The DOM document to parse
-    @param ns The namespace to use
     @param cur Current XML node
     @param io_def Pointer to struct to fill with IOType definition */
 extern PREFIX int parseIOTypeDef(xmlDocPtr             doc,
@@ -435,7 +426,6 @@ extern PREFIX int parseIOTypeDef(xmlDocPtr             doc,
 /** @internal
     Parse an IOType/ChkType element
     @param doc The DOM document to parse
-    @param ns The namespace to use
     @param cur Current XML node
     @param io Pointer to struct to fill with IOType details */
 int parseIOType(xmlDocPtr         doc,
@@ -445,7 +435,6 @@ int parseIOType(xmlDocPtr         doc,
 /** @internal
     Parse a Logging message
     @param doc The DOM document to parse
-    @param ns The namespace to use
     @param cur Current XML node
     @param log Pointer to struct to fill with log details */
 int parseLog(xmlDocPtr          doc,
@@ -455,7 +444,6 @@ int parseLog(xmlDocPtr          doc,
 /** @internal
     Parse a Logging entry
     @param doc The DOM document to parse
-    @param ns The namespace to use
     @param cur Current XML node
     @param log_entry Pointer to struct to fill with details of a log entry */
 int parseLogEntry(xmlDocPtr                doc,
@@ -465,7 +453,6 @@ int parseLogEntry(xmlDocPtr                doc,
 /** @internal
     Parse a Checkpoint Log entry
     @param doc The DOM document to parse
-    @param ns The namespace to use
     @param cur Current XML node
     @param log_entry Ptr to struct to fill with details of a chkpoint log entry */
 int parseChkLogEntry(xmlDocPtr                    doc,
