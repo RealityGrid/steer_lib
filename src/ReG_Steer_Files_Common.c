@@ -193,9 +193,7 @@ int create_lock_file(char* filename) {
 
   sprintf(lock_file, "%s.lock", filename);
 
-  if((fd = creat(lock_file,
-		 (S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH))) < 0) {
-
+  if((fd = open(lock_file, REG_LOCK_FLAGS, REG_LOCK_PERMS)) < 0) {
     return REG_FAILURE;
   }
 

@@ -45,72 +45,26 @@
   Author: Robert Haines
  */
 
-#ifndef __REG_STEER_FILES_COMMON_H__
-#define __REG_STEER_FILES_COMMON_H__
-
-/** @file ReG_Steer_Files_Common.h
- *  @brief Data structures and routines common to all file-based code.
- *
- *  @author Robert Haines
- */
-
-#include "ReG_Steer_Config.h"
-
-#include "ReG_Steer_types.h"
-
-typedef struct {
-  /** Base filename - for file-based IO */
-  char	filename[REG_MAX_STRING_LENGTH];
-  /** Directory to write to - for file-based IO */
-  char  directory[REG_MAX_STRING_LENGTH];
-  /** Pointer to open file - for file-based IO */
-  FILE* fp;
-} file_info_type;
-
-typedef struct {
-  int max_entries;
-  int num_used;
-  file_info_type* file_info;
-} file_info_table_type;
-
-#ifdef WIN32
-#define REG_LOCK_FLAGS (_O_CREAT|_O_WRONLY|_O_TRUNC)
-#define REG_LOCK_PERMS (_S_IREAD|_S_IWRITE)
-#else
-#define REG_LOCK_FLAGS (O_CREAT|O_WRONLY|O_TRUNC)
-#define REG_LOCK_PERMS (S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH)
-#endif
-
-/* Function Prototypes */
-
-int file_info_table_init(const int max_entries);
-
 /** @internal
-    @param base_name Root of the filename to search for
+    @file ReG_Steer_Win32.h
+    @brief Support for Win32 platforms
 
-    Searches for and opens the next file in a numbered
-    sequence with the specified root name */
-FILE* open_next_file(char* base_name);
+	This file is included by ReG_Steer_Config.h on Win32 platforms.
+    @author Robert Haines
+*/
 
-/** @internal
-    @param filename Base name of lock file
+#ifndef __REG_STEER_WIN32_H__
 
-    Creates a lock file with name consisting of ".lock"
-    appended to supplied name */
-int create_lock_file(char* filename);
+/* Add a couple of calls that we expect to be there */
+#define sleep(seconds) (Sleep(seconds*1000))
+#define usleep(microseconds) (Sleep(microseconds/1000))
 
-/** @internal
-    @param filename Full path to file to delete
+/* Use standard C library calls without braindead warnings */
+#define close    _close
+#define getcwd   _getcwd
+#define open     _open
+#define read     _read
+#define snprintf _snprintf
 
-    Delete the specified file (must have full path) */
-int delete_file(char* filename);
-
-/** @internal
-    @param base_name Base of the name of the messaging files to look for
-
-    Called when steering finished - cleans up any files that either the app
-    or steerer hasn't got around to consuming
- */
-int remove_files(char* base_name);
-
-#endif /* __REG_STEER_FILES_COMMON_H__ */
+#define __REG_STEER_WIN32_H__
+#endif /* __REG_STEER_WIN32_H__ */

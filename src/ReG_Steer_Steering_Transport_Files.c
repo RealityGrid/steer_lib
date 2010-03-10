@@ -501,8 +501,7 @@ int Sim_attach_impl(int index, char *SimID) {
     char lock_file[REG_MAX_STRING_LENGTH];
 
     sprintf(lock_file, "%s%s", sim->file_root, STR_CONNECTED_FILENAME);
-    if((fd = creat(lock_file,
-		   (S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH))) < 0) {
+    if((fd = open(lock_file, REG_LOCK_FLAGS, REG_LOCK_PERMS)) < 0) {
       return REG_FAILURE;
     }
 

@@ -969,7 +969,7 @@ int Called_from_f90(int flag) {
 
 /*----------------------------------------------------------------*/
 
-int Register_ChkTypes(int    NumTypes,
+int Register_ChkTypes(const int    NumTypes,
 		      char** ChkLabel,
 		      int*   direction,
 		      int*   ChkFrequency,
@@ -1006,8 +1006,8 @@ int Register_ChkTypes(int    NumTypes,
 /*----------------------------------------------------------------*/
 
 int Register_ChkType(const char* ChkLabel,
-		     int         direction,
-		     int         ChkFrequency,
+		     const int         direction,
+		     const int         ChkFrequency,
 		     int*        ChkType)
 {
   int current;
@@ -2461,7 +2461,7 @@ int Steering_control(int     SeqNum,
 					      REG_STEP_TIME_HANDLE);
     if(step_time_index == -1)step_time_index = NOT_FOUND;
 
-    inv_clocks_per_sec = 1.0/(float)(CLOCKS_PER_SEC);
+    inv_clocks_per_sec = 1.0f/(float)(CLOCKS_PER_SEC);
     previous_time = clock();
     first_time = REG_FALSE;
   }
@@ -4195,7 +4195,7 @@ int Make_vtk_buffer(int    nx,
       for(j=-ny/2; j<ny/2; j++){
 	for(k=-nz/2; k<nz/2; k++){
 
-	  mag = 2.0/(1.0 + (float)sqrt((double)(i*i*a2 + j*j*b2 + k*k*c2)));
+	  mag = 2.0f/(1.0f + (float)sqrt((double)(i*i*a2 + j*j*b2 + k*k*c2)));
 	  *fptr = mag*(float)(i*k);
 	  sum += *(fptr++);
 	  *fptr = mag*(float)(j*k);
@@ -4208,7 +4208,7 @@ int Make_vtk_buffer(int    nx,
   }
   else if(veclen == 3){
 
-    mag = 10.0/(float)(nx*ny*nz);
+    mag = 10.0f/(float)(nx*ny*nz);
 
     for(i=-nx/2; i<nx/2; i++){
       for(j=-ny/2; j<ny/2; j++){

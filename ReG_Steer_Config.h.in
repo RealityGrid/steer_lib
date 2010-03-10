@@ -86,25 +86,27 @@
 #include <signal.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <arpa/inet.h>
 #include <fcntl.h>
-#include <rpc/rpc.h>
+#include <rpc/xdr.h>
 #include <errno.h>
-#include <dirent.h>
+#include <time.h>
 
 #ifndef WIN32
 #include <unistd.h>
-#include <time.h>
 #include <sys/time.h>
 #include <sys/utsname.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
+#include <arpa/inet.h>
 #include <netdb.h>
+#include <dirent.h>
 #else /* WIN32 */
 #include <windows.h>
 #include <direct.h>
 #include <io.h>
+#include "ReG_Steer_Win32.h"
+#include "dirent.h"
 #endif /* WIN32 */
 
 /* only include malloc.h if we need it.
@@ -118,16 +120,6 @@
 
 #if REG_VALIDATE_XML
 #include <libxml/xmlschemas.h>
-#endif
-
-/* some extra defines for windows */
-
-#ifdef WIN32
-#define snprintf _snprintf
-#define sleep(seconds) (Sleep(seconds*1000))
-#define usleep(microseconds) (Sleep(microseconds/1000))
-#define getcwd _getcwd
-#define read _read
 #endif
 
 #define __REG_STEER_CONFIG_H__

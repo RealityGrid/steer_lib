@@ -179,12 +179,12 @@ int Consume_data_read_impl(const int index,
 
     Acknowledge that a data set has been received
     and processed successfully on an IOType.*/
-int Emit_ack_impl(int index);
+int Emit_ack_impl(const int index);
 
 /** @internal
     Attempt to read an acknowledgement from the consumer of the
     IOType with the supplied index.*/
-int Consume_ack_impl(int index);
+int Consume_ack_impl(const int index);
 
 /** @internal
     This is quite possibly a massive hack...
