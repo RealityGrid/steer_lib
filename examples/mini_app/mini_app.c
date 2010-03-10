@@ -55,9 +55,6 @@
 
 #include "ReG_Steer_Config.h"
 #include "ReG_Steer_Appside.h"
-#include <string.h>
-#include <unistd.h>
-#include <math.h>
 
 /*-------------------------------------------------------------------------*/
 
@@ -346,16 +343,16 @@ int main(){
 
 void update_data(int amp, double multi, int size, float** data) {
   float q, x, y, s, t;
-  float start = -M_PI;
+  float start = (float) -M_PI;
   float incr = (-2.0f * start) / size;
   int i, j, index;
 
   for(i = 0; i < size; i++) {
     x = start + (incr * i);
-    s = amp * multi * cosf(x * 5);
+    s = amp * (float) multi * cosf(x * 5);
     for(j = 0; j < size; j++) {
       y = start + (incr * j);
-      t = amp * multi * cosf(y * 4);
+      t = amp * (float) multi * cosf(y * 4);
       index = (i * size) + j;
       q = (x * x) + (y * y);
       (*data)[index] = expf(q * -0.5f) * (s + t);

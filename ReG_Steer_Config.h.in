@@ -103,6 +103,7 @@
 #include <dirent.h>
 #else /* WIN32 */
 #include <windows.h>
+#include <winsock2.h>
 #include <direct.h>
 #include <io.h>
 #include "ReG_Steer_Win32.h"

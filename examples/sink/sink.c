@@ -55,8 +55,6 @@
 
 #include "ReG_Steer_Config.h"
 #include "ReG_Steer_Appside.h"
-#include <string.h>
-#include <unistd.h>
 
 /*-------------------------------------------------------------------------*/
 
@@ -94,7 +92,7 @@ int main(){
   int   numCommands;
   int   commands[REG_INITIAL_NUM_CMDS];
   int   sleep_time         = 1;
-  int   i, j;
+  int   i;
   /* Monitored parameter */
   int   bytes_read = 0;
 

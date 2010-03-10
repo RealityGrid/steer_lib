@@ -52,11 +52,18 @@ endif(LIB_RPC STREQUAL "LIB_RPC-NOTFOUND")
 mark_as_advanced(LIB_RPC)
 
 if(NOT LIB_RPC STREQUAL "LIB_RPC-NOTFOUND")
-  set(REG_EXTERNAL_LIBS ${REG_EXTERNAL_LIBS} ${LIB_RPC})
+  set(REG_EXTERNAL_LIBS ${LIB_RPC} ${REG_EXTERNAL_LIBS})
 endif(NOT LIB_RPC STREQUAL "LIB_RPC-NOTFOUND")
+
+# this needs to be thought about... should we get this every time
+# or just when using sockets? XDR needs it!
+set(REG_EXTERNAL_LIBS Ws2_32 ${REG_EXTERNAL_LIBS})
 
 # supress braindead warnings
 add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_DEPRECATE)
+
+# we want the math.h constants
+add_definitions(-D_USE_MATH_DEFINES)
 
 # add the Win32 support includes directory
 include_directories(${PROJECT_SOURCE_DIR}/include/win32)
