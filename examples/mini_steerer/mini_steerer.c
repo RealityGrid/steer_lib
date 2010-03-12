@@ -54,8 +54,6 @@
 #include "ReG_Steer_Config.h"
 #include "ReG_Steer_Steerside.h"
 #include "ReG_Steer_Browser.h"
-#include <string.h>
-#include <unistd.h>
 
 /** Get the next message from the steering library and
     perform any required actions
@@ -83,6 +81,10 @@ static int Edit_parameter(int sim_handle);
     @param steerable  Whether to show user steerable or monitored params
 */
 static int Choose_parameter(int sim_handle, int steerable);
+
+#if !REG_HAS_GETPASS
+char* getpass(const char* prompt);
+#endif
 
 /*-------------------------------------------------------------------------*/
 
@@ -1082,3 +1084,21 @@ int Edit_parameter(int sim_handle)
 
   return return_status;
 }
+
+#if !REG_HAS_GETPASS
+char* getpass(const char* prompt) {
+	static char buf[128];
+	size_t i;
+
+	fputs(prompt, stderr);
+	fflush(stderr);
+	for(i = 0; i < sizeof(buf) - 1; i++) {
+		buf[i] = getch();
+		if (buf[i] == '\r')
+			break;
+	}
+	buf[i] = 0;
+	fputs("\n", stderr);
+	return buf;
+}
+#endif

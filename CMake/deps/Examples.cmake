@@ -44,38 +44,10 @@
 #
 #  Author: Robert Haines
 
-include(CheckIncludeFiles)
-include(CheckSymbolExists)
-include(CheckFunctionExists)
-include(CheckLibraryExists)
-
-# check where malloc and friends are defined
-CHECK_SYMBOL_EXISTS(malloc stdlib.h MALLOC_IN_STDLIB)
-if(NOT MALLOC_IN_STDLIB)
-  CHECK_INCLUDE_FILES(malloc.h REG_NEED_MALLOC_H)
-endif(NOT MALLOC_IN_STDLIB)
-
-# Do specific checks for the example applications
-include(deps/Examples)
-
-#
-# Go through the various "types" of module
-# and do any specific checks for them.
-#
-# Files should be in the deps directory and named "Service.cmake"
-# where Service is what the module provides, eg Sockets, Files
-#
-if(REG_BUILD_MODULAR_LIBS)
-  foreach(service ${REG_MODULES_PROVIDES})
-    if(EXISTS ${CMAKE_SOURCE_DIR}/CMake/deps/${service}.cmake)
-      include(deps/${service})
-    endif(EXISTS ${CMAKE_SOURCE_DIR}/CMake/deps/${service}.cmake)
-  endforeach(service ${REG_MODULES_PROVIDES})
-else(REG_BUILD_MODULAR_LIBS)
-  foreach(type ${REG_MODULES_TYPES})
-    set(default_mod ${REG_USE_MODULE_${type}})
-    if(EXISTS ${CMAKE_SOURCE_DIR}/CMake/deps/${default_mod}.cmake)
-      include(deps/${default_mod})
-    endif(EXISTS ${CMAKE_SOURCE_DIR}/CMake/deps/${default_mod}.cmake)
-  endforeach(type ${REG_MODULES_TYPES})
-endif(REG_BUILD_MODULAR_LIBS)
+# check for getpass needed in mini_steerer
+CHECK_INCLUDE_FILES(unistd.h REG_HAS_UNISTD_H)
+if(REG_HAS_UNISTD_H)
+  CHECK_SYMBOL_EXISTS(getpass unistd.h REG_HAS_GETPASS)
+else(REG_HAS_UNISTD_H)
+  set(REG_HAS_GETPASS 0)
+endif(REG_HAS_UNISTD_H)

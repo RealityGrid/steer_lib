@@ -61,6 +61,7 @@
 
 /* Use standard C library calls without braindead warnings */
 #define close    _close
+#define getch    _getch
 #define getcwd   _getcwd
 #define open     _open
 #define read     _read

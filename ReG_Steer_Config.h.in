@@ -70,6 +70,7 @@
 #cmakedefine01 REG_HAS_MSG_NOSIGNAL
 #cmakedefine01 REG_HAS_MSG_DONTWAIT
 #cmakedefine01 REG_HAS_MSG_WAITALL
+#cmakedefine01 REG_HAS_GETPASS
 #cmakedefine01 REG_LOG_STEERING
 #cmakedefine01 REG_VALIDATE_XML
 #cmakedefine01 REG_KEEP_XML_MESSAGES
@@ -106,6 +107,7 @@
 #include <winsock2.h>
 #include <direct.h>
 #include <io.h>
+#include <conio.h>
 #include "ReG_Steer_Win32.h"
 #include "dirent.h"
 #endif /* WIN32 */
