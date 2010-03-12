@@ -55,6 +55,21 @@ if(NOT MALLOC_IN_STDLIB)
   CHECK_INCLUDE_FILES(malloc.h REG_NEED_MALLOC_H)
 endif(NOT MALLOC_IN_STDLIB)
 
+# sockets library always needed due to xdr
+find_package(Sockets)
+if(LIBSOCKET_FOUND)
+  set(REG_EXTERNAL_LIBS ${LIBSOCKET_LIBRARIES} ${REG_EXTERNAL_LIBS})
+endif(LIBSOCKET_FOUND)
+
+# we always need the xdr component of the Sun rpc tools
+find_package(XDR REQUIRED)
+if(XDR_FOUND)
+  include_directories(${XDR_INCLUDE_DIR})
+  if(NOT XDR_LIBRARY STREQUAL "XDR_LIBRARY-NOTFOUND")
+    set(REG_EXTERNAL_LIBS ${XDR_LIBRARY} ${REG_EXTERNAL_LIBS})
+  endif(NOT XDR_LIBRARY STREQUAL "XDR_LIBRARY-NOTFOUND")
+endif(XDR_FOUND)
+
 # Do specific checks for the example applications
 include(deps/Examples)
 

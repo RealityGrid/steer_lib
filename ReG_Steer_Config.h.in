@@ -77,6 +77,8 @@
 #cmakedefine01 REG_USE_TIMING
 
 #cmakedefine01 REG_NEED_MALLOC_H
+#cmakedefine01 REG_HAS_RPC_H
+#cmakedefine01 REG_HAS_XDR_H
 
 /* standard system headers */
 
@@ -88,7 +90,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <rpc/xdr.h>
 #include <errno.h>
 #include <time.h>
 
@@ -103,14 +104,22 @@
 #include <netdb.h>
 #include <dirent.h>
 #else /* WIN32 */
-#include <windows.h>
 #include <winsock2.h>
+#include <windows.h>
 #include <direct.h>
 #include <io.h>
 #include <conio.h>
 #include "ReG_Steer_Win32.h"
 #include "dirent.h"
 #endif /* WIN32 */
+
+/* load the correct xdr header file */
+#if REG_HAS_RPC_H
+#include <rpc/rpc.h>
+#endif
+#if REG_HAS_XDR_H
+#include <rpc/xdr.h>
+#endif
 
 /* only include malloc.h if we need it.
    some systems define malloc in stdlib.h */

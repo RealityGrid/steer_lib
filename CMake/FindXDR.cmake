@@ -44,20 +44,39 @@
 #
 #  Author: Robert Haines
 
-# work out which sockets header we have
-CHECK_INCLUDE_FILES("sys/socket.h" REG_HAS_SYS_SOCKET_H)
-CHECK_INCLUDE_FILES("winsock2.h" REG_HAS_WINSOCK2_H)
+if(XDR_INCLUDE_DIR)
+  # already in cache so be quiet
+  set(XDR_FIND_QUIETLY TRUE)
+endif(XDR_INCLUDE_DIR)
 
-if(REG_HAS_SYS_SOCKET_H)
-  set(REG_TEST_SOCKETS_H "sys/socket.h")
-endif(REG_HAS_SYS_SOCKET_H)
-if(REG_HAS_WINSOCK2_H)
-  set(REG_TEST_SOCKETS_H "winsock2.h")
-endif(REG_HAS_WINSOCK2_H)
+# if we have rpc.h then we may *need* it for xdr.h
+# so don't only look for xdr.h
+find_path(RPC_INCLUDE_DIR "rpc/rpc.h")
 
-# test sockets features
-if(REG_TEST_SOCKETS_H)
-  CHECK_SYMBOL_EXISTS(MSG_NOSIGNAL ${REG_TEST_SOCKETS_H} REG_HAS_MSG_NOSIGNAL)
-  CHECK_SYMBOL_EXISTS(MSG_DONTWAIT ${REG_TEST_SOCKETS_H} REG_HAS_MSG_DONTWAIT)
-  CHECK_SYMBOL_EXISTS(MSG_WAITALL ${REG_TEST_SOCKETS_H}  REG_HAS_MSG_WAITALL)
-endif(REG_TEST_SOCKETS_H)
+# might only have xdr.h
+if(RPC_INCLUDE_DIR STREQUAL "RPC_INCLUDE_DIR-NOTFOUND")
+  find_path(XDR_INCLUDE_DIR "rpc/xdr.h")
+  if(NOT XDR_INCLUDE_DIR STREQUAL "XDR_INCLUDE_DIR-NOTFOUND")
+    set(REG_HAS_XDR_H 1)
+  endif(NOT XDR_INCLUDE_DIR STREQUAL "XDR_INCLUDE_DIR-NOTFOUND")
+else(RPC_INCLUDE_DIR STREQUAL "RPC_INCLUDE_DIR-NOTFOUND")
+  set(REG_HAS_RPC_H 1)
+  set(XDR_INCLUDE_DIR ${RPC_INCLUDE_DIR})
+endif(RPC_INCLUDE_DIR STREQUAL "RPC_INCLUDE_DIR-NOTFOUND")
+
+# find the lib and add it if found
+find_library(XDR_LIBRARY NAMES rpc xdr_s xdr)
+if(NOT XDR_LIBRARY STREQUAL "XDR_LIBRARY-NOTFOUND")
+  set(REG_EXTERNAL_LIBS ${REG_EXTERNAL_LIBS} ${XDR_LIBRARY})
+endif(NOT XDR_LIBRARY STREQUAL "XDR_LIBRARY-NOTFOUND")
+
+mark_as_advanced(RPC_INCLUDE_DIR XDR_INCLUDE_DIR XDR_LIBRARY)
+
+# tend not to need a separate lib on Unix systems
+# do need one for Windows and Cygwin
+include(FindPackageHandleStandardArgs)
+if(WIN32)
+  FIND_PACKAGE_HANDLE_STANDARD_ARGS(XDR DEFAULT_MSG XDR_INCLUDE_DIR XDR_LIBRARY)
+else(WIN32)
+  FIND_PACKAGE_HANDLE_STANDARD_ARGS(XDR DEFAULT_MSG XDR_INCLUDE_DIR)
+endif(WIN32)

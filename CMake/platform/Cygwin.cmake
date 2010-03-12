@@ -44,14 +44,6 @@
 #
 #  Author: Robert Haines
 
-# need to link the rpc lib for xdr stuff
-find_library(LIB_RPC rpc)
-mark_as_advanced(LIB_RPC)
-
-if(NOT LIB_RPC STREQUAL "LIB_RPC-NOTFOUND")
-  set(REG_EXTERNAL_LIBS ${REG_EXTERNAL_LIBS} ${LIB_RPC})
-endif(NOT LIB_RPC STREQUAL "LIB_RPC-NOTFOUND")
-
 # this could be done more properly using the more windowsy
 # __declspec(dllexport) and __declspec(dllimport) stuff but
 # this will suffice until a full windows port is attempted
