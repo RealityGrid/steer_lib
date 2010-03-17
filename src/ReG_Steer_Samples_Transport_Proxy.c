@@ -514,7 +514,6 @@ int Get_IOType_address_impl(int i, char** pbuf, int* bytes_left) {
 int create_connector_samples(const int index) {
 
   int i;
-  int yes = 1;
   int connector;
   struct sockaddr_in myAddr;
 
@@ -530,8 +529,7 @@ int create_connector_samples(const int index) {
   socket_info_table.socket_info[index].connector_handle = connector;
 
   /* ...turn off the "Address already in use" error message... */
-  if(setsockopt(connector, SOL_SOCKET, SO_REUSEADDR, &yes,
-		sizeof(int)) == REG_SOCKETS_ERROR) {
+  if(set_reuseaddr(connector) == REG_SOCKETS_ERROR) {
     perror("setsockopt");
     return REG_FAILURE;
   }
@@ -540,9 +538,7 @@ int create_connector_samples(const int index) {
      acknowledgement messages get sent immediately instead of being buffered
      - helps to ensure ack is received before socket is shutdown when consumer
      is shutdown */
-  yes = 1;
-  if(setsockopt(connector, IPPROTO_TCP, TCP_NODELAY, &yes,
-		sizeof(int)) == REG_SOCKETS_ERROR) {
+  if(set_tcpnodelay(connector) == REG_SOCKETS_ERROR) {
     perror("setsockopt");
     return REG_FAILURE;
   }

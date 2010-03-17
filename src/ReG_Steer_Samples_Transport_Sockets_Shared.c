@@ -588,7 +588,6 @@ int create_listener_samples(const int index) {
   char* ip_addr;
 
   int listener;
-  int yes = 1;
   int i;
   struct sockaddr_in myAddr;
 
@@ -602,8 +601,7 @@ int create_listener_samples(const int index) {
   socket_info_table.socket_info[index].listener_handle = listener;
 
   /* Turn off the "Address already in use" error message */
-  if(setsockopt(listener, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) ==
-     REG_SOCKETS_ERROR) {
+  if(set_reuseaddr(listener) == REG_SOCKETS_ERROR) {
     perror("setsockopt");
     return REG_FAILURE;
   }

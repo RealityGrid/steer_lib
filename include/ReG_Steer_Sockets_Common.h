@@ -169,4 +169,18 @@ ssize_t send_no_signal(int s, const void *buf, size_t len, int flags);
     See recv(2). */
 ssize_t recv_wait_all(int s, void *buf, size_t len, int flags);
 
+/** @internal
+    @param s File descriptor of the socket to set.
+
+    A wrapper around the setsockopt() call to set SO_REUSEADDR in a
+    cross-platform (ie MSVC) manner. See setsockopt(2). */
+int set_reuseaddr(int s);
+
+/** @internal
+    @param s File descriptor of the socket to set.
+
+    A wrapper around the setsockopt() call to set TCP_NODELAY in a
+    cross-platform (ie MSVC) manner. See setsockopt(2). */
+int set_tcpnodelay(int s);
+
 #endif /* __REG_STEER_SOCKETS_COMMON_H__ */

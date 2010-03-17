@@ -578,7 +578,6 @@ int consume_supp_cmds(int index) {
 int create_steering_connector(socket_info_type* socket_info) {
 
   int i;
-  int yes = 1;
   int connector;
   struct sockaddr_in myAddr;
   struct sockaddr_in theirAddr;
@@ -595,8 +594,7 @@ int create_steering_connector(socket_info_type* socket_info) {
   socket_info->connector_handle = connector;
 
   /* ...turn off the "Address already in use" error message... */
-  if(setsockopt(connector, SOL_SOCKET, SO_REUSEADDR, &yes,
-		sizeof(int)) == REG_SOCKETS_ERROR) {
+  if(set_reuseaddr(connector) == REG_SOCKETS_ERROR) {
     perror("setsockopt");
     return REG_FAILURE;
   }
@@ -677,7 +675,6 @@ int create_steering_listener(socket_info_type* socket_info) {
 
   int i;
   int listener;
-  int yes = 1;
   struct sockaddr_in myAddr;
 
   /* create and register listener */
@@ -690,8 +687,7 @@ int create_steering_listener(socket_info_type* socket_info) {
   socket_info->listener_handle = listener;
 
   /* Turn off the "Address already in use" error message */
-  if(setsockopt(listener, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) ==
-     REG_SOCKETS_ERROR) {
+  if(set_reuseaddr(listener) == REG_SOCKETS_ERROR) {
     perror("setsockopt");
     return REG_FAILURE;
   }
