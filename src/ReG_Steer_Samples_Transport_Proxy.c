@@ -515,73 +515,84 @@ int create_connector_samples(const int index) {
 
   int i;
   int connector;
-  struct sockaddr_in myAddr;
+  socket_info_type* socket_info = &(socket_info_table.socket_info[index]);
+  struct addrinfo hints;
+  struct addrinfo* result;
+  struct addrinfo* rp;
+  char port[8];
+  int status;
 
-  /* create connector*/
-  connector = socket(AF_INET, SOCK_STREAM, 0);
-  if(connector == REG_SOCKETS_ERROR) {
-    /* problem! */
-    perror("socket");
-    socket_info_table.socket_info[index].comms_status=REG_COMMS_STATUS_FAILURE;
-    return REG_FAILURE;
-  }
-  /* all okay, so save connector handle */
-  socket_info_table.socket_info[index].connector_handle = connector;
+  memset(&hints, 0, sizeof(struct addrinfo));
+  hints.ai_family = AF_INET;
+  hints.ai_socktype = SOCK_STREAM;
+  hints.ai_flags = AI_NUMERICHOST;
+  hints.ai_protocol = IPPROTO_TCP;
 
-  /* ...turn off the "Address already in use" error message... */
-  if(set_reuseaddr(connector) == REG_SOCKETS_ERROR) {
-    perror("setsockopt");
-    return REG_FAILURE;
-  }
+  /* we need to try and bind even though we are connecting out
+     so that we can punch out of firewalls. This means we need
+     to try different ports until we find one free to use. */
+  for(i = socket_info->min_port_out; i <= socket_info->max_port_out; i++) {
+#ifdef REG_DEBUG
+    fprintf(stderr, "Trying to connect out from %s:%d\n",
+	    socket_info->tcp_interface, i);
+#endif
 
-  /* Turn off NAGLE's algorithm if using an ioProxy so that the (small)
-     acknowledgement messages get sent immediately instead of being buffered
-     - helps to ensure ack is received before socket is shutdown when consumer
-     is shutdown */
-  if(set_tcpnodelay(connector) == REG_SOCKETS_ERROR) {
-    perror("setsockopt");
-    return REG_FAILURE;
-  }
-
-  /* ...build local address struct... */
-  myAddr.sin_family = AF_INET;
-  if(strlen(socket_info_table.socket_info[index].tcp_interface) == 1) {
-    myAddr.sin_addr.s_addr = INADDR_ANY;
-  }
-  else {
-    if( !inet_aton(socket_info_table.socket_info[index].tcp_interface,
-		   &(myAddr.sin_addr)) ){
-      fprintf(stderr, "STEER: create_connector: inet_aton failed "
-	      "for interface >>%s<<\n",
-	      socket_info_table.socket_info[index].tcp_interface);
+    sprintf(port, "%d", i);
+    status = getaddrinfo(socket_info->tcp_interface, port, &hints, &result);
+    if(status != 0) {
+      fprintf(stderr, "STEER: getaddrinfo: %s\n", gai_strerror(status));
       return REG_FAILURE;
     }
-  }
-  memset(&(myAddr.sin_zero), '\0', 8); /* zero the rest */
 
-  /* ...and bind connector so we can punch out of firewalls (if necessary)... */
-  if((i = socket_info_table.socket_info[index].min_port_out)) {
-    myAddr.sin_port = htons((short) i);
+    for(rp = result; rp != NULL; rp = rp->ai_next) {
+      connector = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
+      if(connector == REG_SOCKETS_ERROR)
+	continue;
 
-    fprintf(stderr, "STEER: create_connector: using range %d -- %d for bind\n",
-	    socket_info_table.socket_info[index].min_port_out,
-	    socket_info_table.socket_info[index].max_port_out);
-
-    while(bind(connector, (struct sockaddr*) &myAddr,
-	       sizeof(struct sockaddr)) == REG_SOCKETS_ERROR) {
-      if(++i > socket_info_table.socket_info[index].max_port_out) {
-	fprintf(stderr, "STEER: create_connector: failed to find free local port to "
-		"bind to in range %d -- %d\n",
-		socket_info_table.socket_info[index].min_port_out,
-		socket_info_table.socket_info[index].max_port_out);
+      /* ...turn off the "Address already in use" error message... */
+      if(set_reuseaddr(connector) == REG_SOCKETS_ERROR) {
+	perror("setsockopt");
 	close(connector);
-	socket_info_table.socket_info[index].comms_status=REG_COMMS_STATUS_FAILURE;
+	freeaddrinfo(result);
 	return REG_FAILURE;
       }
-      myAddr.sin_port = htons((short) i);
+
+      /* Turn off NAGLE's algorithm if using an ioProxy so that the
+	 (small) acknowledgement messages get sent immediately instead
+	 of being buffered - helps to ensure ack is received before
+	 socket is shutdown when consumer is shutdown */
+      if(set_tcpnodelay(connector) == REG_SOCKETS_ERROR) {
+	perror("setsockopt");
+	close(connector);
+	freeaddrinfo(result);
+	return REG_FAILURE;
+      }
+
+      if(bind(connector, rp->ai_addr, rp->ai_addrlen) == 0) {
+	socket_info->comms_status=REG_COMMS_STATUS_WAITING_TO_CONNECT;
+	socket_info->connector_handle = connector;
+#ifdef REG_DEBUG
+	fprintf(stderr, "bound connector to port %d\n", i);
+#endif
+	break; /* success */
+      }
+
+      /* couldn't bind to that port, close connector and start again */
+      close(connector);
+    }
+
+    freeaddrinfo(result);
+
+    if(socket_info->comms_status == REG_COMMS_STATUS_WAITING_TO_CONNECT) {
+      break;
     }
   }
-  socket_info_table.socket_info[index].comms_status=REG_COMMS_STATUS_WAITING_TO_CONNECT;
+
+  if(socket_info->comms_status != REG_COMMS_STATUS_WAITING_TO_CONNECT) {
+    /* couldn't create connector */
+    socket_info->comms_status=REG_COMMS_STATUS_FAILURE;
+    return REG_FAILURE;
+  }
 
   /* might as well try to connect now... */
   connect_connector_samples(index);
@@ -593,10 +604,15 @@ int create_connector_samples(const int index) {
 
 int connect_connector_samples(const int index) {
 
-  struct sockaddr_in theirAddr;
-  int  connector     = socket_info_table.socket_info[index].connector_handle;
+  socket_info_type* socket_info = &(socket_info_table.socket_info[index]);
+  int  connector     = socket_info->connector_handle;
   int  return_status = REG_SUCCESS;
   char tmpBuf[REG_MAX_STRING_LENGTH];
+  struct addrinfo hints;
+  struct addrinfo* result;
+  struct addrinfo* rp;
+  char port[8];
+  int status;
   int i;
 
   /* get a remote address if we need to */
@@ -604,90 +620,58 @@ int connect_connector_samples(const int index) {
     return_status =
       Get_data_io_address_impl(IOTypes_table.io_def[index].input_index,
 			       IOTypes_table.io_def[index].direction,
-			       socket_info_table.socket_info[index].connector_hostname,
-			       &(socket_info_table.socket_info[index].connector_port),
+			       socket_info->connector_hostname,
+			       &(socket_info->connector_port),
 			       IOTypes_table.io_def[index].proxySourceLabel);
-
-/* #ifdef REG_DIRECT_TCP_STEERING */
-/*     return_status = Get_data_source_address_direct(IOTypes_table.io_def[index].input_index,  */
-/* 						   socket_info_table.socket_info[index].connector_hostname, */
-/* 						   &(socket_info_table.socket_info[index].connector_port)); */
-/* #else */
-/* #ifdef REG_SOAP_STEERING	   */
-/*     /\* Go out into the world of grid/web services... *\/ */
-/* #ifdef REG_WSRF /\* use WSRF *\/ */
-/*     if(IOTypes_table.io_def[index].direction == REG_IO_IN){ */
-/*       return_status = Get_data_source_address_wsrf(IOTypes_table.io_def[index].input_index,  */
-/* 						   socket_info_table.socket_info[index].connector_hostname, */
-/* 						   &(socket_info_table.socket_info[index].connector_port), */
-/* 						   IOTypes_table.io_def[index].proxySourceLabel); */
-/*     } */
-/*     else{ */
-/*       /\* (We'll only be attempting to connect a connector for an IOType of  */
-/* 	 direction REG_IO_OUT when using an IOProxy.) *\/ */
-/*       return_status = Get_data_sink_address_wsrf(IOTypes_table.io_def[index].input_index,  */
-/* 						 socket_info_table.socket_info[index].connector_hostname, */
-/* 						 &(socket_info_table.socket_info[index].connector_port)); */
-/*     } */
-/* #else /\* use OGSI *\/ */
-/*     return_status = Get_data_source_address_soap(IOTypes_table.io_def[index].input_index,  */
-/* 						 socket_info_table.socket_info[index].connector_hostname, */
-/* 						 &(socket_info_table.socket_info[index].connector_port)); */
-/* #endif /\* REG_WSRF *\/ */
-
-/* #else /\* File-based steering *\/ */
-/*     /\* get hostname and port from environment variables *\/ */
-/*     return_status = Get_data_source_address_file(IOTypes_table.io_def[index].input_index,  */
-/* 						 socket_info_table.socket_info[index].connector_hostname, */
-/* 						 &(socket_info_table.socket_info[index].connector_port)); */
-/* #endif /\* !REG_SOAP_STEERING *\/ */
-/* #endif */ /* REG_DIRECT_TCP_STEERING */
   }
 
-  if(return_status == REG_SUCCESS &&
-     socket_info_table.socket_info[index].connector_port != 0) {
+  if(return_status == REG_SUCCESS && socket_info->connector_port != 0) {
 
-    /* ...look up and then build remote address struct... */
-    if(dns_lookup(socket_info_table.socket_info[index].connector_hostname) == REG_FAILURE) {
-      fprintf(stderr, "STEER: connect_connector: Could not resolve hostname <%s>\n",
-	      socket_info_table.socket_info[index].connector_hostname);
+    memset(&hints, 0, sizeof(struct addrinfo));
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = 0;
+    hints.ai_protocol = IPPROTO_TCP;
+
+    sprintf(port, "%d", socket_info->connector_port);
+    status = getaddrinfo(socket_info->connector_hostname, port,
+			 &hints, &result);
+    if(status != 0) {
+      fprintf(stderr, "STEER: getaddrinfo: %s\n", gai_strerror(status));
       return REG_FAILURE;
     }
 
-    theirAddr.sin_family = AF_INET;
-    theirAddr.sin_port =
-             htons(socket_info_table.socket_info[index].connector_port);
-    if( !inet_aton(socket_info_table.socket_info[index].connector_hostname,
-		   &(theirAddr.sin_addr)) ){
-      fprintf(stderr,
-	      "STEER: connect_connector: inet_aton reports address is invalid\n");
+    for(rp = result; rp != NULL; rp = rp->ai_next) {
+      if(connect(connector, rp->ai_addr, rp->ai_addrlen) != REG_SOCKETS_ERROR)
+	break; /* connected - success */
+    }
+
+    /* if rp == NULL then we didn't connect above */
+    if(rp == NULL) {
+    fprintf(stderr, "Could not connect to %s:%d\n",
+	    socket_info->connector_hostname, socket_info->connector_port);
+      socket_info->connector_port = 0;
+      freeaddrinfo(result);
       return REG_FAILURE;
     }
-    memset(&(theirAddr.sin_zero), '\0', 8); /* zero the rest */
 
-    /* ...finally connect to the remote address! */
-    if(connect(connector, (struct sockaddr*) &theirAddr,
-	       sizeof(struct sockaddr)) == REG_SOCKETS_ERROR) {
-      perror("connect_connector: connect");
-      socket_info_table.socket_info[index].connector_port = 0;
-      return REG_FAILURE;
-    }
-    socket_info_table.socket_info[index].comms_status =
-      REG_COMMS_STATUS_CONNECTED;
+    freeaddrinfo(result);
 
-    if(IOTypes_table.io_def[index].direction == REG_IO_IN){
+    socket_info->comms_status = REG_COMMS_STATUS_CONNECTED;
+
+    if(IOTypes_table.io_def[index].direction == REG_IO_IN) {
       sprintf(Steer_lib_config.scratch_buffer, "%s\n%s\n",
 	      IOTypes_table.io_def[index].label,
 	      IOTypes_table.io_def[index].proxySourceLabel);
     }
-    else{
+    else {
       /* If this is an output channel then we subscribe to
 	 acknowledgements but first trim off any trailing
          white space. */
       strncpy(tmpBuf, IOTypes_table.io_def[index].label,
 	      REG_MAX_STRING_LENGTH);
       i = strlen(tmpBuf) - 1;
-      while(tmpBuf[i] == ' ' && (i > -1) ){
+      while(tmpBuf[i] == ' ' && (i > -1)) {
 	tmpBuf[i] = '\0';
 	i--;
       }
