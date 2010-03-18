@@ -121,12 +121,16 @@ int socket_info_init(socket_info_type* socket_info);
 void socket_info_cleanup(socket_info_type* socket_info);
 
 /** @internal
-    @param hostname Fully qualified name of machine to look-up.  On
-    successful return holds the IP address of the machine.
+    @param hostname Fully qualified name of machine to look-up.
+    @param ipaddr On successful return holds the IP address of
+    the machine.
+    @param canon If true (non-zero), on successful return
+    @p hostname will have been modified to hold the canonical
+    name of the machine.
     @return REG_SUCCESS, REG_FAILURE
 
     Looks up the IP of the specified @p hostname */
-int dns_lookup(char* hostname);
+int dns_lookup(char* hostname, char* ipaddr, int canon);
 
 /** @internal
     @param s File descriptor of the receiving socket

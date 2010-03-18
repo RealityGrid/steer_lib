@@ -148,24 +148,42 @@ void socket_info_cleanup(socket_info_type* socket_info) {
 
 /*--------------------------------------------------------------------*/
 
-int dns_lookup(char* hostname) {
-  struct hostent* host;
+int dns_lookup(char* hostname, char* ipaddr, int canon) {
+  struct addrinfo hints;
+  struct addrinfo* result;
+  struct addrinfo* rp;
+  int status;
 
-  if((host = gethostbyname(hostname)) == NULL) {
-    herror("gethostbyname");
+  memset(&hints, 0, sizeof(struct addrinfo));
+  hints.ai_family = AF_UNSPEC;
+  hints.ai_flags = AI_CANONNAME;
+
+  status = getaddrinfo(hostname, NULL, &hints, &result);
+  if(status != 0) {
+    fprintf(stderr, "STEER: getaddrinfo: %s\n", gai_strerror(status));
     return REG_FAILURE;
   }
 
-#ifdef REG_DEBUG
-  fprintf(stderr, "STEER: DNS lookup: host: %s\n", host->h_name);
-  fprintf(stderr, "               IP:   %s\n",
-	  inet_ntoa(*((struct in_addr*) host->h_addr)));
-#endif
+  for(rp = result; rp != NULL; rp = rp->ai_next) {
+    if(rp->ai_canonname != NULL) {
+      status = getnameinfo(rp->ai_addr, rp->ai_addrlen, ipaddr,
+			   REG_MAX_STRING_LENGTH, NULL, 0, NI_NUMERICHOST);
+      if(status != 0) {
+	fprintf(stderr, "STEER: getnameinfo: %s\n", gai_strerror(status));
+	return REG_FAILURE;
+      }
 
-  /* This next bit must be done with a sprintf for AIX...
-   * It can be done with a strcpy on Linux or IRIX...      */
-  sprintf(hostname, "%s",
-	  inet_ntoa(*((struct in_addr*) host->h_addr_list[0])));
+      if(canon)
+	strncpy(hostname, rp->ai_canonname, REG_MAX_STRING_LENGTH);
+
+#ifdef REG_DEBUG
+      fprintf(stderr, "DNS lookup: host: %s\n", hostname);
+      fprintf(stderr, "              IP: %s\n", ipaddr);
+#endif
+    }
+  }
+
+  freeaddrinfo(result);
 
   return REG_SUCCESS;
 }
