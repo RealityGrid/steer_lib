@@ -59,7 +59,6 @@
 
 int socket_info_table_init(socket_info_table_type* table,
 			   const int max_entries) {
-  int i;
 
   table->max_entries = max_entries;
   table->num_used = 0;
@@ -70,11 +69,6 @@ int socket_info_table_init(socket_info_table_type* table,
     fprintf(stderr, "STEER: socket_info_table_init: failed to allocate memory "
 	    "for socket info table\n");
     return REG_FAILURE;
-  }
-
-  for(i = 0; i < max_entries; i++) {
-    sprintf(table->socket_info[i].listener_hostname,
-	    "%s", "NOT_SET");
   }
 
   return REG_SUCCESS;
@@ -111,9 +105,11 @@ int socket_info_init(socket_info_type* socket_info) {
   }
 
   /* set local TCP interface to use */
+  socket_info->tcp_interface = (char*) malloc(NI_MAXHOST * sizeof(char));
   if(get_fully_qualified_hostname(host, socket_info->tcp_interface)
      != REG_SUCCESS) {
-    sprintf(socket_info->tcp_interface, " ");
+    free(socket_info->tcp_interface);
+    socket_info->tcp_interface = NULL;
   }
 
 #ifdef REG_DEBUG
@@ -130,10 +126,14 @@ int socket_info_init(socket_info_type* socket_info) {
   socket_info->listener_port = 0;
   socket_info->listener_handle = -1;
   socket_info->listener_status = REG_COMMS_STATUS_NULL;
-  socket_info->comms_status = REG_COMMS_STATUS_NULL;
+  socket_info->listener_hostname = (char*) malloc(NI_MAXHOST * sizeof(char));
+  sprintf(socket_info->listener_hostname, "NOT_SET");
+
   socket_info->connector_port = 0;
   socket_info->connector_handle = -1;
-  sprintf(socket_info->connector_hostname, " ");
+  socket_info->connector_hostname = (char*) malloc(NI_MAXHOST * sizeof(char));
+
+  socket_info->comms_status = REG_COMMS_STATUS_NULL;
 
   return REG_SUCCESS;
 }
@@ -141,7 +141,14 @@ int socket_info_init(socket_info_type* socket_info) {
 /*--------------------------------------------------------------------*/
 
 void socket_info_cleanup(socket_info_type* socket_info) {
+  if(socket_info->tcp_interface)
+    free(socket_info->tcp_interface);
 
+  if(socket_info->listener_hostname)
+    free(socket_info->listener_hostname);
+
+  if(socket_info->connector_hostname)
+    free(socket_info->connector_hostname);
 }
 
 /*--------------------------------------------------------------------*/

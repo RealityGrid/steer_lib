@@ -71,17 +71,17 @@ typedef struct {
   /** Maximum port number we can use to connect out of (zero if any) */
   int                   max_port_out;
   /** Default outbound tcp interface */
-  char			tcp_interface[REG_MAX_STRING_LENGTH];
+  char*                 tcp_interface;
   /** Handle of listener socket - info for socket connection ("server" end) */
   int			listener_handle;
   /** Hostname on which to listen -  info for socket connection ("server" end) */
-  char			listener_hostname[REG_MAX_STRING_LENGTH];
+  char*                 listener_hostname;
   /** Port on which to listen -  info for socket connection ("server" end) */
   unsigned short int	listener_port;
   /** Handle of connecting socket - info for socket connection ("client" end) */
   int			connector_handle;
   /** Hostname to connect to - info for socket connection ("client" end) */
-  char			connector_hostname[REG_MAX_STRING_LENGTH];
+  char*                 connector_hostname;
   /** Port to connect to - info for socket connection ("client" end) */
   unsigned short int	connector_port;
   /** status indicator for listening socket */
