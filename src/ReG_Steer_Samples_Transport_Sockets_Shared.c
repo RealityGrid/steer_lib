@@ -621,7 +621,7 @@ int create_listener_samples(const int index) {
   }
 
   memset(&hints, 0, sizeof(struct addrinfo));
-  hints.ai_family = AF_INET;
+  hints.ai_family = AF_UNSPEC;
   hints.ai_socktype = SOCK_STREAM;
   hints.ai_flags = AI_NUMERICHOST;
   hints.ai_protocol = IPPROTO_TCP;

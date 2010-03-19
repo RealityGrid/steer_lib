@@ -586,7 +586,7 @@ int create_steering_connector(socket_info_type* socket_info) {
   int status;
 
   memset(&hints, 0, sizeof(struct addrinfo));
-  hints.ai_family = AF_INET;
+  hints.ai_family = AF_UNSPEC;
   hints.ai_socktype = SOCK_STREAM;
   hints.ai_flags = AI_NUMERICHOST;
   hints.ai_protocol = IPPROTO_TCP;
@@ -649,7 +649,7 @@ int create_steering_connector(socket_info_type* socket_info) {
   /* try to connect now */
 
   memset(&hints, 0, sizeof(struct addrinfo));
-  hints.ai_family = AF_INET;
+  hints.ai_family = AF_UNSPEC;
   hints.ai_socktype = SOCK_STREAM;
   hints.ai_flags = 0;
   hints.ai_protocol = IPPROTO_TCP;
@@ -696,7 +696,7 @@ int create_steering_listener(socket_info_type* socket_info) {
   int i;
 
   memset(&hints, 0, sizeof(struct addrinfo));
-  hints.ai_family = AF_INET;
+  hints.ai_family = AF_UNSPEC;
   hints.ai_socktype = SOCK_STREAM;
   hints.ai_flags = AI_NUMERICHOST;
   hints.ai_protocol = IPPROTO_TCP;

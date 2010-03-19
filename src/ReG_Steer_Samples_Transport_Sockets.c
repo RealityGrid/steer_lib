@@ -441,7 +441,7 @@ int create_connector_samples(const int index) {
   int status;
 
   memset(&hints, 0, sizeof(struct addrinfo));
-  hints.ai_family = AF_INET;
+  hints.ai_family = AF_UNSPEC;
   hints.ai_socktype = SOCK_STREAM;
   hints.ai_flags = AI_NUMERICHOST;
   hints.ai_protocol = IPPROTO_TCP;
@@ -534,7 +534,7 @@ int connect_connector_samples(const int index) {
   if(return_status == REG_SUCCESS && socket_info->connector_port != 0) {
 
     memset(&hints, 0, sizeof(struct addrinfo));
-    hints.ai_family = AF_INET;
+    hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = 0;
     hints.ai_protocol = IPPROTO_TCP;
