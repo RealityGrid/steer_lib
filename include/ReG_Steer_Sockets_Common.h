@@ -121,6 +121,13 @@ int socket_info_init(socket_info_type* socket_info);
 void socket_info_cleanup(socket_info_type* socket_info);
 
 /** @internal
+    @param hostname On return, the fully-qualified hostname
+    @param ipaddr On return, the IP address of the host
+
+    Return the canonical name and IP address of the host. */
+int get_fully_qualified_hostname(char* hostname, char* ipaddr);
+
+/** @internal
     @param hostname Fully qualified name of machine to look-up.
     @param ipaddr On successful return holds the IP address of
     the machine.

@@ -536,14 +536,6 @@ extern PREFIX int Reorder_decode_array(IOdef_entry *io,
 				       void        *pData);
 
 /** @internal
-    @param hostname On return, the fully-qualified hostname
-    @param ip_addr_ptr On return, the IP address of the host
-
-    Does what it says.  Uses uname and gethostbyname. */
-extern PREFIX int Get_fully_qualified_hostname(char **hostname,
-					       char **ip_addr_ptr);
-
-/** @internal
     Return the current (GMT) date and time as a string in the format
     YYYY-MM-DDTHH:MM:SSZ suitable for inclusion in XML documents */
 extern PREFIX char *Get_current_time_string();

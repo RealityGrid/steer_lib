@@ -85,8 +85,8 @@ int socket_info_table_init(socket_info_table_type* table,
 int socket_info_init(socket_info_type* socket_info) {
 
   char* pchar = NULL;
-  char* ip_addr;
   int   min, max;
+  char host[REG_MAX_STRING_LENGTH];
 
   /* lazy initial port ranges, but they do for now */
   socket_info->min_port_in = 21370;
@@ -111,10 +111,8 @@ int socket_info_init(socket_info_type* socket_info) {
   }
 
   /* set local TCP interface to use */
-  if(Get_fully_qualified_hostname(&pchar, &ip_addr) == REG_SUCCESS) {
-    strcpy(socket_info->tcp_interface, ip_addr);
-  }
-  else {
+  if(get_fully_qualified_hostname(host, socket_info->tcp_interface)
+     != REG_SUCCESS) {
     sprintf(socket_info->tcp_interface, " ");
   }
 
@@ -144,6 +142,27 @@ int socket_info_init(socket_info_type* socket_info) {
 
 void socket_info_cleanup(socket_info_type* socket_info) {
 
+}
+
+/*--------------------------------------------------------------------*/
+
+int get_fully_qualified_hostname(char* hostname, char* ipaddr) {
+  int status;
+  char* pchar;
+
+  /* First check to see if we're using an interface other than the default */
+  if((pchar = getenv("REG_TCP_INTERFACE"))) {
+    strncpy(hostname, pchar, REG_MAX_STRING_LENGTH);
+  }
+  else {
+    status = gethostname(hostname, REG_MAX_STRING_LENGTH);
+    if(status != 0) {
+      fprintf(stderr, "gethostname failed\n");
+      return REG_FAILURE;
+    }
+  }
+
+  return dns_lookup(hostname, ipaddr, 1);
 }
 
 /*--------------------------------------------------------------------*/

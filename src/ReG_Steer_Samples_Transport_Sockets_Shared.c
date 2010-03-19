@@ -585,7 +585,7 @@ int Consume_stop_impl(int index) {
 int create_listener_samples(const int index) {
 
   char* pchar;
-  char* ip_addr;
+  char ip_addr[REG_MAX_STRING_LENGTH];
   socket_info_type* socket_info = &(socket_info_table.socket_info[index]);
   int listener;
   struct addrinfo hints;
@@ -597,7 +597,7 @@ int create_listener_samples(const int index) {
 
   /* Get the hostname of the machine we're running on (so we can publish
    * the endpoint of this connection). If REG_IO_ADDRESS is set then
-   * that's what we use.  If not, call Get_fully_qualified_hostname which
+   * that's what we use.  If not, call get_fully_qualified_hostname which
    * itself uses  REG_TCP_INTERFACE if set. */
   if((pchar = getenv("REG_IO_ADDRESS"))) {
 #ifdef REG_DEBUG
@@ -613,10 +613,8 @@ int create_listener_samples(const int index) {
 #endif
     strcpy(socket_info->listener_hostname, pchar);
   }
-  else if(Get_fully_qualified_hostname(&pchar, &ip_addr) == REG_SUCCESS){
-    strcpy(socket_info->listener_hostname, pchar);
-  }
-  else{
+  else if(get_fully_qualified_hostname(socket_info->listener_hostname,
+				       ip_addr) != REG_SUCCESS) {
     fprintf(stderr, "STEER: WARNING: Sockets_create_listener: "
 	    "failed to get hostname\n");
     sprintf(socket_info->listener_hostname, "NOT_SET");
