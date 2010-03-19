@@ -59,6 +59,7 @@
 #include "ReG_Steer_Appside_internal.h"
 #include "ReG_Steer_Steerside.h"
 #include "ReG_Steer_Steerside_internal.h"
+#include "ReG_Steer_Sockets_Common.h"
 #include "Base64.h"
 #include "soapH.h"
 
@@ -124,7 +125,7 @@ char *STATUS_MSG_RP     = "sws:statusMsg";
 int Initialize_steering_connection_impl(const int  NumSupportedCmds,
 					int* SupportedCmds) {
   char* pchar;
-  char* ip_addr;
+  char  ip_addr[REG_MAX_STRING_LENGTH];
   char  query_buf[REG_MAX_MSG_SIZE];
   struct wsrp__SetResourcePropertiesResponse out;
 
@@ -224,10 +225,7 @@ int Initialize_steering_connection_impl(const int  NumSupportedCmds,
   if((pchar = getenv("REG_MACHINE_NAME"))) {
     strncpy(ReG_Hostname, pchar, REG_MAX_STRING_LENGTH);
   }
-  else if(Get_fully_qualified_hostname(&pchar, &ip_addr) == REG_SUCCESS) {
-    strncpy(ReG_Hostname, pchar, REG_MAX_STRING_LENGTH);
-  }
-  else {
+  else if(get_fully_qualified_hostname(ReG_Hostname, ip_addr) != REG_SUCCESS) {
     ReG_Hostname[0] = '\0';
   }
 

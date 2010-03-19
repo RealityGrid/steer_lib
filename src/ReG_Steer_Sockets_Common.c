@@ -59,7 +59,6 @@
 
 int socket_info_table_init(socket_info_table_type* table,
 			   const int max_entries) {
-  int i;
 
   table->max_entries = max_entries;
   table->num_used = 0;
@@ -72,11 +71,6 @@ int socket_info_table_init(socket_info_table_type* table,
     return REG_FAILURE;
   }
 
-  for(i = 0; i < max_entries; i++) {
-    sprintf(table->socket_info[i].listener_hostname,
-	    "%s", "NOT_SET");
-  }
-
   return REG_SUCCESS;
 }
 
@@ -85,8 +79,8 @@ int socket_info_table_init(socket_info_table_type* table,
 int socket_info_init(socket_info_type* socket_info) {
 
   char* pchar = NULL;
-  char* ip_addr;
   int   min, max;
+  char host[REG_MAX_STRING_LENGTH];
 
   /* lazy initial port ranges, but they do for now */
   socket_info->min_port_in = 21370;
@@ -111,11 +105,11 @@ int socket_info_init(socket_info_type* socket_info) {
   }
 
   /* set local TCP interface to use */
-  if(Get_fully_qualified_hostname(&pchar, &ip_addr) == REG_SUCCESS) {
-    strcpy(socket_info->tcp_interface, ip_addr);
-  }
-  else {
-    sprintf(socket_info->tcp_interface, " ");
+  socket_info->tcp_interface = (char*) malloc(NI_MAXHOST * sizeof(char));
+  if(get_fully_qualified_hostname(host, socket_info->tcp_interface)
+     != REG_SUCCESS) {
+    free(socket_info->tcp_interface);
+    socket_info->tcp_interface = NULL;
   }
 
 #ifdef REG_DEBUG
@@ -132,10 +126,14 @@ int socket_info_init(socket_info_type* socket_info) {
   socket_info->listener_port = 0;
   socket_info->listener_handle = -1;
   socket_info->listener_status = REG_COMMS_STATUS_NULL;
-  socket_info->comms_status = REG_COMMS_STATUS_NULL;
+  socket_info->listener_hostname = (char*) malloc(NI_MAXHOST * sizeof(char));
+  sprintf(socket_info->listener_hostname, "NOT_SET");
+
   socket_info->connector_port = 0;
   socket_info->connector_handle = -1;
-  sprintf(socket_info->connector_hostname, " ");
+  socket_info->connector_hostname = (char*) malloc(NI_MAXHOST * sizeof(char));
+
+  socket_info->comms_status = REG_COMMS_STATUS_NULL;
 
   return REG_SUCCESS;
 }
@@ -143,29 +141,75 @@ int socket_info_init(socket_info_type* socket_info) {
 /*--------------------------------------------------------------------*/
 
 void socket_info_cleanup(socket_info_type* socket_info) {
+  if(socket_info->tcp_interface)
+    free(socket_info->tcp_interface);
 
+  if(socket_info->listener_hostname)
+    free(socket_info->listener_hostname);
+
+  if(socket_info->connector_hostname)
+    free(socket_info->connector_hostname);
 }
 
 /*--------------------------------------------------------------------*/
 
-int dns_lookup(char* hostname) {
-  struct hostent* host;
+int get_fully_qualified_hostname(char* hostname, char* ipaddr) {
+  int status;
+  char* pchar;
 
-  if((host = gethostbyname(hostname)) == NULL) {
-    herror("gethostbyname");
+  /* First check to see if we're using an interface other than the default */
+  if((pchar = getenv("REG_TCP_INTERFACE"))) {
+    strncpy(hostname, pchar, REG_MAX_STRING_LENGTH);
+  }
+  else {
+    status = gethostname(hostname, REG_MAX_STRING_LENGTH);
+    if(status != 0) {
+      fprintf(stderr, "gethostname failed\n");
+      return REG_FAILURE;
+    }
+  }
+
+  return dns_lookup(hostname, ipaddr, 1);
+}
+
+/*--------------------------------------------------------------------*/
+
+int dns_lookup(char* hostname, char* ipaddr, int canon) {
+  struct addrinfo hints;
+  struct addrinfo* result;
+  struct addrinfo* rp;
+  int status;
+
+  memset(&hints, 0, sizeof(struct addrinfo));
+  hints.ai_family = AF_UNSPEC;
+  hints.ai_flags = AI_CANONNAME;
+
+  status = getaddrinfo(hostname, NULL, &hints, &result);
+  if(status != 0) {
+    fprintf(stderr, "STEER: getaddrinfo: %s\n", gai_strerror(status));
     return REG_FAILURE;
   }
 
-#ifdef REG_DEBUG
-  fprintf(stderr, "STEER: DNS lookup: host: %s\n", host->h_name);
-  fprintf(stderr, "               IP:   %s\n",
-	  inet_ntoa(*((struct in_addr*) host->h_addr)));
-#endif
+  for(rp = result; rp != NULL; rp = rp->ai_next) {
+    if(rp->ai_canonname != NULL) {
+      status = getnameinfo(rp->ai_addr, rp->ai_addrlen, ipaddr,
+			   REG_MAX_STRING_LENGTH, NULL, 0, NI_NUMERICHOST);
+      if(status != 0) {
+	fprintf(stderr, "STEER: getnameinfo: %s\n", gai_strerror(status));
+	return REG_FAILURE;
+      }
 
-  /* This next bit must be done with a sprintf for AIX...
-   * It can be done with a strcpy on Linux or IRIX...      */
-  sprintf(hostname, "%s",
-	  inet_ntoa(*((struct in_addr*) host->h_addr_list[0])));
+      if(canon)
+	strncpy(hostname, rp->ai_canonname, REG_MAX_STRING_LENGTH);
+
+#ifdef REG_DEBUG
+      fprintf(stderr, "DNS lookup: host: %s\n", hostname);
+      fprintf(stderr, "              IP: %s\n", ipaddr);
+#endif
+    }
+  }
+
+  freeaddrinfo(result);
 
   return REG_SUCCESS;
 }
@@ -232,6 +276,34 @@ ssize_t recv_wait_all(int s, void *buf, size_t len, int flags) {
   }
 
   return result < 0 ? result : got;
+#endif
+}
+
+/*--------------------------------------------------------------------*/
+
+int set_reuseaddr(int s) {
+#ifdef _MSC_VER
+  BOOL yes = TRUE;
+
+  return setsockopt(s, SOL_SOCKET, SO_REUSEADDR, (char*) &yes, sizeof(BOOL));
+#else
+  int yes = 1;
+
+  return setsockopt(s, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int));
+#endif
+}
+
+/*--------------------------------------------------------------------*/
+
+int set_tcpnodelay(int s) {
+#ifdef _MSC_VER
+  BOOL yes = TRUE;
+
+  return setsockopt(s, IPPROTO_TCP, TCP_NODELAY, (char*) &yes, sizeof(BOOL));
+#else
+  int yes = 1;
+
+  return setsockopt(s, IPPROTO_TCP, TCP_NODELAY, &yes, sizeof(int));
 #endif
 }
 

@@ -585,96 +585,110 @@ int Consume_stop_impl(int index) {
 int create_listener_samples(const int index) {
 
   char* pchar;
-  char* ip_addr;
-
+  char ip_addr[REG_MAX_STRING_LENGTH];
+  socket_info_type* socket_info = &(socket_info_table.socket_info[index]);
   int listener;
-  int yes = 1;
+  struct addrinfo hints;
+  struct addrinfo* result;
+  struct addrinfo* rp;
+  char port[8];
+  int status;
   int i;
-  struct sockaddr_in myAddr;
-
-  /* create and register listener */
-  listener = socket(AF_INET, SOCK_STREAM, 0);
-  if(listener == REG_SOCKETS_ERROR) {
-    perror("socket");
-    socket_info_table.socket_info[index].comms_status=REG_COMMS_STATUS_FAILURE;
-    return REG_FAILURE;
-  }
-  socket_info_table.socket_info[index].listener_handle = listener;
-
-  /* Turn off the "Address already in use" error message */
-  if(setsockopt(listener, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) ==
-     REG_SOCKETS_ERROR) {
-    perror("setsockopt");
-    return REG_FAILURE;
-  }
 
   /* Get the hostname of the machine we're running on (so we can publish
    * the endpoint of this connection). If REG_IO_ADDRESS is set then
-   * that's what we use.  If not, call Get_fully_qualified_hostname which
+   * that's what we use.  If not, call get_fully_qualified_hostname which
    * itself uses  REG_TCP_INTERFACE if set. */
-  if( (pchar = getenv("REG_IO_ADDRESS")) ){
+  if((pchar = getenv("REG_IO_ADDRESS"))) {
 #ifdef REG_DEBUG
     fprintf(stderr, "STEER: create_listener: Taking hostname from "
 	    "REG_IO_ADDRESS variable\n");
 #endif
-    strcpy(socket_info_table.socket_info[index].listener_hostname, pchar);
+    strcpy(socket_info->listener_hostname, pchar);
   }
   else if( (pchar = getenv("GLOBUS_HOSTNAME")) ){
 #ifdef REG_DEBUG
     fprintf(stderr, "STEER: create_listener: Taking hostname from "
 	    "GLOBUS_HOSTNAME variable\n");
 #endif
-    strcpy(socket_info_table.socket_info[index].listener_hostname, pchar);
+    strcpy(socket_info->listener_hostname, pchar);
   }
-  else if(Get_fully_qualified_hostname(&pchar, &ip_addr) == REG_SUCCESS){
-    strcpy(socket_info_table.socket_info[index].listener_hostname, pchar);
-  }
-  else{
-    fprintf(stderr, "STEER: WARNING: Sockets_create_listener: failed to get hostname\n");
-    sprintf(socket_info_table.socket_info[index].listener_hostname,
-	    "NOT_SET");
+  else if(get_fully_qualified_hostname(socket_info->listener_hostname,
+				       ip_addr) != REG_SUCCESS) {
+    fprintf(stderr, "STEER: WARNING: Sockets_create_listener: "
+	    "failed to get hostname\n");
+    sprintf(socket_info->listener_hostname, "NOT_SET");
   }
 
-  /* set up server address */
-  myAddr.sin_family = AF_INET;
-  if(strlen(socket_info_table.socket_info[index].tcp_interface) == 1) {
-    myAddr.sin_addr.s_addr = INADDR_ANY;
-  }
-  else {
-    inet_aton(socket_info_table.socket_info[index].tcp_interface,
-	      &(myAddr.sin_addr));
-  }
-  memset(&(myAddr.sin_zero), '\0', 8); /* zero the rest */
+  memset(&hints, 0, sizeof(struct addrinfo));
+  hints.ai_family = AF_UNSPEC;
+  hints.ai_socktype = SOCK_STREAM;
+  hints.ai_flags = AI_NUMERICHOST;
+  hints.ai_protocol = IPPROTO_TCP;
 
-  /* Now bind listener so we can accept connections when they happen */
-  i = socket_info_table.socket_info[index].min_port_in;
-  myAddr.sin_port = htons((short) i);
+  for(i = socket_info->min_port_in; i <= socket_info->max_port_in; i++) {
+#ifdef REG_DEBUG
+    fprintf(stderr, "Trying to bind listner to %s:%d\n",
+	    socket_info->tcp_interface, i);
+#endif
 
-  while(bind(listener, (struct sockaddr*) &myAddr, sizeof(struct sockaddr)) ==
-	REG_SOCKETS_ERROR) {
-    if(++i > socket_info_table.socket_info[index].max_port_in) {
-      perror("bind");
-      close(listener);
-      socket_info_table.socket_info[index].comms_status=REG_COMMS_STATUS_FAILURE;
+    sprintf(port, "%d", i);
+    status = getaddrinfo(socket_info->tcp_interface, port, &hints, &result);
+    if(status != 0) {
+      fprintf(stderr, "STEER: getaddrinfo: %s\n", gai_strerror(status));
       return REG_FAILURE;
     }
-    myAddr.sin_port = htons((short) i);
-  }
-  /* we're bound, so save the port number we're using */
-  socket_info_table.socket_info[index].listener_port = i;
 
-  /* now we need to actually listen */
-  if(listen(listener, 10) == REG_SOCKETS_ERROR) {
-    perror("listen");
-    close(listener);
-    socket_info_table.socket_info[index].comms_status = REG_COMMS_STATUS_FAILURE;
-    socket_info_table.socket_info[index].listener_status = REG_COMMS_STATUS_FAILURE;
+    for(rp = result; rp != NULL; rp = rp->ai_next) {
+      listener = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
+      if(listener == REG_SOCKETS_ERROR)
+	continue;
+
+      /* Turn off the "Address already in use" error message */
+      if(set_reuseaddr(listener) == REG_SOCKETS_ERROR) {
+	perror("setsockopt");
+	close(listener);
+	freeaddrinfo(result);
+	return REG_FAILURE;
+      }
+
+      if(bind(listener, rp->ai_addr, rp->ai_addrlen) == 0) {
+#ifdef REG_DEBUG
+	fprintf(stderr, "bound listener to port %d\n", i);
+#endif
+	socket_info->listener_port = i;
+
+	/* now actually listen */
+	if(listen(listener, 10) == REG_SOCKETS_ERROR) {
+	  perror("listen");
+	  close(listener);
+	  socket_info->comms_status = REG_COMMS_STATUS_FAILURE;
+	  socket_info->listener_status = REG_COMMS_STATUS_FAILURE;
+	  freeaddrinfo(result);
+	  return REG_FAILURE;
+	}
+
+	/* we are listening! */
+	socket_info->listener_handle = listener;
+	socket_info->listener_status = REG_COMMS_STATUS_LISTENING;
+	socket_info->comms_status = REG_COMMS_STATUS_LISTENING;
+	break;
+      }
+
+      /* couldn't bind to that port, close connector and start again */
+      close(listener);
+    }
+
+    freeaddrinfo(result);
+
+    if(socket_info->comms_status == REG_COMMS_STATUS_LISTENING) {
+      break;
+    }
+  }
+
+  if(socket_info->comms_status != REG_COMMS_STATUS_LISTENING) {
     return REG_FAILURE;
   }
-
-  /* we are listening! */
-  socket_info_table.socket_info[index].listener_status = REG_COMMS_STATUS_LISTENING;
-  socket_info_table.socket_info[index].comms_status = REG_COMMS_STATUS_LISTENING;
 
   return REG_SUCCESS;
 }

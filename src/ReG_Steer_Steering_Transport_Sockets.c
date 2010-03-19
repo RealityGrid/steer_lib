@@ -578,95 +578,107 @@ int consume_supp_cmds(int index) {
 int create_steering_connector(socket_info_type* socket_info) {
 
   int i;
-  int yes = 1;
   int connector;
-  struct sockaddr_in myAddr;
-  struct sockaddr_in theirAddr;
+  struct addrinfo hints;
+  struct addrinfo* result;
+  struct addrinfo* rp;
+  char port[8];
+  int status;
 
-  /* create_connector */
-  connector = socket(AF_INET, SOCK_STREAM, 0);
-  if(connector == REG_SOCKETS_ERROR) {
-    perror("socket");
-    socket_info->comms_status = REG_COMMS_STATUS_FAILURE;
-    return REG_FAILURE;
-  }
+  memset(&hints, 0, sizeof(struct addrinfo));
+  hints.ai_family = AF_UNSPEC;
+  hints.ai_socktype = SOCK_STREAM;
+  hints.ai_flags = AI_NUMERICHOST;
+  hints.ai_protocol = IPPROTO_TCP;
 
-  /* ok so save connector handle */
-  socket_info->connector_handle = connector;
-
-  /* ...turn off the "Address already in use" error message... */
-  if(setsockopt(connector, SOL_SOCKET, SO_REUSEADDR, &yes,
-		sizeof(int)) == REG_SOCKETS_ERROR) {
-    perror("setsockopt");
-    return REG_FAILURE;
-  }
-
-  /* ...build local address struct... */
-  myAddr.sin_family = AF_INET;
-  if(strlen(socket_info->tcp_interface) == 1) {
-    myAddr.sin_addr.s_addr = INADDR_ANY;
-  }
-  else {
-    if(!inet_aton(socket_info->tcp_interface, &(myAddr.sin_addr)) ){
-      fprintf(stderr, "create_steering_connector: inet_aton failed "
-	      "for interface >>%s<<\n",
-	      socket_info->tcp_interface);
-      return REG_FAILURE;
-    }
-  }
-  memset(&(myAddr.sin_zero), '\0', 8); /* zero the rest */
-
-  /* ...and bind connector so we can punch out of firewalls (if necessary)... */
-  if( (i = socket_info->min_port_out) ) {
-    myAddr.sin_port = htons((short) i);
-
+  /* we need to try and bind even though we are connecting out
+     so that we can punch out of firewalls. This means we need
+     to try different ports until we find one free to use. */
+  for(i = socket_info->min_port_out; i <= socket_info->max_port_out; i++) {
 #ifdef REG_DEBUG
-    fprintf(stderr, "create_steering_connector: using range %d-%d for bind\n",
-	    socket_info->min_port_out, socket_info->max_port_out);
+    fprintf(stderr, "Trying to connect out from %s:%d\n",
+	    socket_info->tcp_interface, i);
 #endif
 
-    while(bind(connector, (struct sockaddr*) &myAddr,
-	       sizeof(struct sockaddr)) == REG_SOCKETS_ERROR) {
-      if(++i > socket_info->max_port_out) {
-	fprintf(stderr, "create_steering_connector: failed to find free local "
-		"port to bind to in range %d-%d\n",
-		socket_info->min_port_out, socket_info->max_port_out);
+    sprintf(port, "%d", i);
+    status = getaddrinfo(socket_info->tcp_interface, port, &hints, &result);
+    if(status != 0) {
+      fprintf(stderr, "STEER: getaddrinfo: %s\n", gai_strerror(status));
+      return REG_FAILURE;
+    }
+
+    for(rp = result; rp != NULL; rp = rp->ai_next) {
+      connector = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
+      if(connector == REG_SOCKETS_ERROR)
+	continue;
+
+      /* ...turn off the "Address already in use" error message... */
+      if(set_reuseaddr(connector) == REG_SOCKETS_ERROR) {
+	perror("setsockopt");
 	close(connector);
-	socket_info->comms_status=REG_COMMS_STATUS_FAILURE;
 	return REG_FAILURE;
       }
-      myAddr.sin_port = htons((short) i);
+
+      if(bind(connector, rp->ai_addr, rp->ai_addrlen) == 0) {
+	socket_info->comms_status=REG_COMMS_STATUS_WAITING_TO_CONNECT;
+	socket_info->connector_handle = connector;
+#ifdef REG_DEBUG
+	fprintf(stderr, "bound connector to port %d\n", i);
+#endif
+	break; /* success */
+      }
+
+      /* couldn't bind to that port, close connector and start again */
+      close(connector);
+    }
+
+    freeaddrinfo(result);
+
+    if(socket_info->comms_status == REG_COMMS_STATUS_WAITING_TO_CONNECT) {
+      break;
     }
   }
-  socket_info->comms_status=REG_COMMS_STATUS_WAITING_TO_CONNECT;
+
+  if(socket_info->comms_status != REG_COMMS_STATUS_WAITING_TO_CONNECT) {
+    /* couldn't create connector */
+    socket_info->comms_status=REG_COMMS_STATUS_FAILURE;
+    return REG_FAILURE;
+  }
+
 
   /* try to connect now */
 
-  /* Get an address to bind to first! */
+  memset(&hints, 0, sizeof(struct addrinfo));
+  hints.ai_family = AF_UNSPEC;
+  hints.ai_socktype = SOCK_STREAM;
+  hints.ai_flags = 0;
+  hints.ai_protocol = IPPROTO_TCP;
 
-  if(dns_lookup(socket_info->connector_hostname) == REG_FAILURE) {
-    fprintf(stderr, "Could not resolve hostname: %s\n",
-	    socket_info->connector_hostname);
+  sprintf(port, "%d", socket_info->connector_port);
+  status = getaddrinfo(socket_info->connector_hostname, port,
+		       &hints, &result);
+  if(status != 0) {
+    fprintf(stderr, "STEER: getaddrinfo: %s\n", gai_strerror(status));
     return REG_FAILURE;
   }
 
-  theirAddr.sin_family = AF_INET;
-  theirAddr.sin_port = htons(socket_info->connector_port);
-  if(!inet_aton(socket_info->connector_hostname, &(theirAddr.sin_addr))) {
-    fprintf(stderr,
-	      "create_steering_connector: inet_aton reports address is invalid\n");
-      return REG_FAILURE;
-    }
-    memset(&(theirAddr.sin_zero), '\0', 8); /* zero the rest */
+  for(rp = result; rp != NULL; rp = rp->ai_next) {
+    if(connect(connector, rp->ai_addr, rp->ai_addrlen) != REG_SOCKETS_ERROR)
+      break; /* connected - success */
+  }
 
-    /* ...finally connect to the remote address! */
-    if(connect(connector, (struct sockaddr*) &theirAddr,
-	       sizeof(struct sockaddr)) == REG_SOCKETS_ERROR) {
-      perror("create_steering_connector: connect");
-      socket_info->connector_port = 0;
-      return REG_FAILURE;
-    }
-    socket_info->comms_status = REG_COMMS_STATUS_CONNECTED;
+  /* if rp == NULL then we didn't connect above */
+  if(rp == NULL) {
+    fprintf(stderr, "Could not connect to %s:%d\n",
+	    socket_info->connector_hostname, socket_info->connector_port);
+    socket_info->connector_port = 0;
+    freeaddrinfo(result);
+    return REG_FAILURE;
+  }
+
+  freeaddrinfo(result);
+
+  socket_info->comms_status = REG_COMMS_STATUS_CONNECTED;
 
   return REG_SUCCESS;
 }
@@ -675,66 +687,84 @@ int create_steering_connector(socket_info_type* socket_info) {
 
 int create_steering_listener(socket_info_type* socket_info) {
 
-  int i;
   int listener;
-  int yes = 1;
-  struct sockaddr_in myAddr;
+  struct addrinfo hints;
+  struct addrinfo* result;
+  struct addrinfo* rp;
+  char port[8];
+  int status;
+  int i;
 
-  /* create and register listener */
-  listener = socket(AF_INET, SOCK_STREAM, 0);
-  if(listener == REG_SOCKETS_ERROR) {
-    perror("socket");
-    socket_info->comms_status = REG_COMMS_STATUS_FAILURE;
-    return REG_FAILURE;
-  }
-  socket_info->listener_handle = listener;
+  memset(&hints, 0, sizeof(struct addrinfo));
+  hints.ai_family = AF_UNSPEC;
+  hints.ai_socktype = SOCK_STREAM;
+  hints.ai_flags = AI_NUMERICHOST;
+  hints.ai_protocol = IPPROTO_TCP;
 
-  /* Turn off the "Address already in use" error message */
-  if(setsockopt(listener, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) ==
-     REG_SOCKETS_ERROR) {
-    perror("setsockopt");
-    return REG_FAILURE;
-  }
+  for(i = socket_info->min_port_in; i <= socket_info->max_port_in; i++) {
+#ifdef REG_DEBUG
+    fprintf(stderr, "Trying to bind listner to %s:%d\n",
+	    socket_info->tcp_interface, i);
+#endif
 
-  /* set up server address */
-  myAddr.sin_family = AF_INET;
-  if(strlen(socket_info->tcp_interface) == 1) {
-    myAddr.sin_addr.s_addr = INADDR_ANY;
-  }
-  else {
-    inet_aton(socket_info->tcp_interface, &(myAddr.sin_addr));
-  }
-  memset(&(myAddr.sin_zero), '\0', 8); /* zero the rest */
-
-  /* Now bind listener so we can accept connections when they happen */
-  i = socket_info->min_port_in;
-  myAddr.sin_port = htons((short) i);
-
-  while(bind(listener, (struct sockaddr*) &myAddr, sizeof(struct sockaddr)) ==
-	REG_SOCKETS_ERROR) {
-    if(++i > socket_info->max_port_in) {
-      perror("bind");
-      close(listener);
-      socket_info->comms_status=REG_COMMS_STATUS_FAILURE;
+    sprintf(port, "%d", i);
+    status = getaddrinfo(socket_info->tcp_interface, port, &hints, &result);
+    if(status != 0) {
+      fprintf(stderr, "STEER: getaddrinfo: %s\n", gai_strerror(status));
       return REG_FAILURE;
     }
-    myAddr.sin_port = htons((short) i);
-  }
-  /* we're bound, so save the port number we're using */
-  socket_info->listener_port = i;
 
-  /* now we need to actually listen */
-  if(listen(listener, 10) == REG_SOCKETS_ERROR) {
-    perror("listen");
-    close(listener);
-    socket_info->comms_status = REG_COMMS_STATUS_FAILURE;
-    socket_info->listener_status = REG_COMMS_STATUS_FAILURE;
+    for(rp = result; rp != NULL; rp = rp->ai_next) {
+      listener = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
+      if(listener == REG_SOCKETS_ERROR)
+	continue;
+
+      /* Turn off the "Address already in use" error message */
+      if(set_reuseaddr(listener) == REG_SOCKETS_ERROR) {
+	perror("setsockopt");
+	close(listener);
+	freeaddrinfo(result);
+	return REG_FAILURE;
+      }
+
+      if(bind(listener, rp->ai_addr, rp->ai_addrlen) == 0) {
+#ifdef REG_DEBUG
+	fprintf(stderr, "bound listener to port %d\n", i);
+#endif
+	socket_info->listener_port = i;
+
+	/* now actually listen */
+	if(listen(listener, 10) == REG_SOCKETS_ERROR) {
+	  perror("listen");
+	  close(listener);
+	  socket_info->comms_status = REG_COMMS_STATUS_FAILURE;
+	  socket_info->listener_status = REG_COMMS_STATUS_FAILURE;
+	  freeaddrinfo(result);
+	  return REG_FAILURE;
+	}
+
+	/* we are listening! */
+	socket_info->listener_handle = listener;
+	socket_info->listener_status = REG_COMMS_STATUS_LISTENING;
+	socket_info->comms_status = REG_COMMS_STATUS_LISTENING;
+
+	break;
+      }
+
+      /* couldn't bind to that port, close connector and start again */
+      close(listener);
+    }
+
+    freeaddrinfo(result);
+
+    if(socket_info->comms_status == REG_COMMS_STATUS_LISTENING) {
+      break;
+    }
+  }
+
+  if(socket_info->comms_status != REG_COMMS_STATUS_LISTENING) {
     return REG_FAILURE;
   }
-
-  /* we are listening! */
-  socket_info->listener_status = REG_COMMS_STATUS_LISTENING;
-  socket_info->comms_status = REG_COMMS_STATUS_LISTENING;
 
   return REG_SUCCESS;
 }

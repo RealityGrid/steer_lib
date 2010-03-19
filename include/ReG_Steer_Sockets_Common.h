@@ -71,17 +71,17 @@ typedef struct {
   /** Maximum port number we can use to connect out of (zero if any) */
   int                   max_port_out;
   /** Default outbound tcp interface */
-  char			tcp_interface[REG_MAX_STRING_LENGTH];
+  char*                 tcp_interface;
   /** Handle of listener socket - info for socket connection ("server" end) */
   int			listener_handle;
   /** Hostname on which to listen -  info for socket connection ("server" end) */
-  char			listener_hostname[REG_MAX_STRING_LENGTH];
+  char*                 listener_hostname;
   /** Port on which to listen -  info for socket connection ("server" end) */
   unsigned short int	listener_port;
   /** Handle of connecting socket - info for socket connection ("client" end) */
   int			connector_handle;
   /** Hostname to connect to - info for socket connection ("client" end) */
-  char			connector_hostname[REG_MAX_STRING_LENGTH];
+  char*                 connector_hostname;
   /** Port to connect to - info for socket connection ("client" end) */
   unsigned short int	connector_port;
   /** status indicator for listening socket */
@@ -121,12 +121,23 @@ int socket_info_init(socket_info_type* socket_info);
 void socket_info_cleanup(socket_info_type* socket_info);
 
 /** @internal
-    @param hostname Fully qualified name of machine to look-up.  On
-    successful return holds the IP address of the machine.
+    @param hostname On return, the fully-qualified hostname
+    @param ipaddr On return, the IP address of the host
+
+    Return the canonical name and IP address of the host. */
+int get_fully_qualified_hostname(char* hostname, char* ipaddr);
+
+/** @internal
+    @param hostname Fully qualified name of machine to look-up.
+    @param ipaddr On successful return holds the IP address of
+    the machine.
+    @param canon If true (non-zero), on successful return
+    @p hostname will have been modified to hold the canonical
+    name of the machine.
     @return REG_SUCCESS, REG_FAILURE
 
     Looks up the IP of the specified @p hostname */
-int dns_lookup(char* hostname);
+int dns_lookup(char* hostname, char* ipaddr, int canon);
 
 /** @internal
     @param s File descriptor of the receiving socket
@@ -168,5 +179,19 @@ ssize_t send_no_signal(int s, const void *buf, size_t len, int flags);
     A wrapper around the recv() call to do a blocking receive.
     See recv(2). */
 ssize_t recv_wait_all(int s, void *buf, size_t len, int flags);
+
+/** @internal
+    @param s File descriptor of the socket to set.
+
+    A wrapper around the setsockopt() call to set SO_REUSEADDR in a
+    cross-platform (ie MSVC) manner. See setsockopt(2). */
+int set_reuseaddr(int s);
+
+/** @internal
+    @param s File descriptor of the socket to set.
+
+    A wrapper around the setsockopt() call to set TCP_NODELAY in a
+    cross-platform (ie MSVC) manner. See setsockopt(2). */
+int set_tcpnodelay(int s);
 
 #endif /* __REG_STEER_SOCKETS_COMMON_H__ */
