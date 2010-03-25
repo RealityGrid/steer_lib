@@ -1390,6 +1390,7 @@ int Emit_control(int    SimHandle,
   char *param_ptr;
   char  buf[REG_MAX_MSG_SIZE];
   char *pbuf;
+  int   bytes_left = REG_MAX_MSG_SIZE;
 
   /* Find the simulation referred to */
 
@@ -1401,7 +1402,7 @@ int Emit_control(int    SimHandle,
 
   /* Create control message in buffer */
   pbuf = buf;
-  Write_xml_header(&pbuf);
+  Write_xml_header(&pbuf, &bytes_left);
 
   pbuf += sprintf(pbuf, "<Steer_control>\n");
 

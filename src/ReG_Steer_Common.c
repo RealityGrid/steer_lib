@@ -389,15 +389,26 @@ int IOdef_index_from_handle(IOdef_table_type *table, int IOdefHandle)
 }
 
 /*--------------------------------------------------------------------*/
-int Write_xml_header(char **buf)
+int Write_xml_header(char** buf, int* bytes_free)
 {
-  int  return_status = REG_SUCCESS;
+  int return_status = REG_SUCCESS;
+  int written;
 
-  if(buf){
-    *buf += sprintf(*buf, "<ReG_steer_message xmlns=\"%s\">\n",
-		    REG_STEER_NAMESPACE);
+  if(buf) {
+    written = snprintf(*buf, *bytes_free,
+		       "<ReG_steer_message xmlns=\"%s\">\n",
+		       REG_STEER_NAMESPACE);
+
+    if(written >= *bytes_free) {
+      /* truncated */
+      return_status = REG_FAILURE;
+    }
+    else {
+      *buf += written;
+      *bytes_free -= written;
+    }
   }
-  else{
+  else {
     return_status = REG_FAILURE;
   }
 
