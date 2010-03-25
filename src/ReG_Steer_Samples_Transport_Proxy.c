@@ -389,8 +389,8 @@ int Emit_header_impl(const int index) {
 #endif
 
     /* send header */
-    sprintf(buffer, REG_PACKET_FORMAT, REG_DATA_HEADER);
-    buffer[REG_PACKET_SIZE - 1] = '\0';
+    snprintf(buffer, REG_PACKET_SIZE, REG_PACKET_FORMAT, REG_DATA_HEADER);
+
 #ifdef REG_DEBUG
     fprintf(stderr, "STEER: Emit_header: Sending >>%s<<\n", buffer);
 #endif
