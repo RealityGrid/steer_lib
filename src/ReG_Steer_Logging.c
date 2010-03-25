@@ -302,7 +302,7 @@ int Chk_log_to_xml(Chk_log_type *log, char **pchar, int *count,
     /* Check to see whether steerer already has this entry */
     if (not_sent_only && (log->entry[i].sent_to_steerer == REG_TRUE)) continue;
 
-    bytes_left = size;
+    bytes_left = BUFSIZ;
     pentry = entry;
     nbytes = snprintf(pentry, bytes_left, "<Log_entry>\n"
 		      "<Key>%d</Key>\n"
@@ -417,7 +417,7 @@ int Param_log_to_xml(Chk_log_type *log, int handle, char **pchar,
     /* Check to see whether steerer already has this entry */
     if (not_sent_only && (log->entry[i].sent_to_steerer == REG_TRUE)) continue;
 
-    bytes_left = size;
+    bytes_left = BUFSIZ;
     pentry = entry;
     nbytes = snprintf(pentry, bytes_left, "<Log_entry>\n"
 		      "<Key>%d</Key>\n",
@@ -537,7 +537,7 @@ int Log_to_columns(Chk_log_type *log, char **pchar, int *count,
 
     /* Check to see whether steerer already has this entry */
     if (not_sent_only && (log->entry[i].sent_to_steerer == REG_TRUE)) continue;
-    bytes_left = size;
+    bytes_left = BUFSIZ;
     pentry = entry;
     nbytes = snprintf(pentry, bytes_left, "%d", log->entry[i].key);
 
