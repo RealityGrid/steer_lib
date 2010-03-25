@@ -1487,10 +1487,11 @@ int Emit_control(int    SimHandle,
   }
 
   pbuf += sprintf(pbuf, "</Steer_control>\n");
-  /* ARPDBG - have to use REG_MAX_MSG_SIZE here because this
-     routine doesn't count how many bytes it's written into
-     the buffer */
-  Write_xml_footer(&pbuf, REG_MAX_MSG_SIZE);
+
+  /* how much space is left in the buffer?
+     might as well add the \0 here too. */
+  i = REG_MAX_MSG_SIZE - (strlen(buf) + 1);
+  Write_xml_footer(&pbuf, i);
 
 #ifdef REG_DEBUG
   fprintf(stderr, "STEER: Emit_control: sending:\n>>%s<<\n", buf);
