@@ -281,20 +281,6 @@ ssize_t recv_wait_all(int s, void *buf, size_t len, int flags) {
 
 /*--------------------------------------------------------------------*/
 
-int set_reuseaddr(int s) {
-#ifdef _MSC_VER
-  BOOL yes = TRUE;
-
-  return setsockopt(s, SOL_SOCKET, SO_REUSEADDR, (char*) &yes, sizeof(BOOL));
-#else
-  int yes = 1;
-
-  return setsockopt(s, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int));
-#endif
-}
-
-/*--------------------------------------------------------------------*/
-
 int set_tcpnodelay(int s) {
 #ifdef _MSC_VER
   BOOL yes = TRUE;

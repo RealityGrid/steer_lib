@@ -549,14 +549,6 @@ int create_connector_samples(const int index) {
       if(connector == REG_SOCKETS_ERROR)
 	continue;
 
-      /* ...turn off the "Address already in use" error message... */
-      if(set_reuseaddr(connector) == REG_SOCKETS_ERROR) {
-	perror("setsockopt");
-	close(connector);
-	freeaddrinfo(result);
-	return REG_FAILURE;
-      }
-
       /* Turn off NAGLE's algorithm if using an ioProxy so that the
 	 (small) acknowledgement messages get sent immediately instead
 	 of being buffered - helps to ensure ack is received before

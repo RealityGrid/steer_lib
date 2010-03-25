@@ -467,14 +467,6 @@ int create_connector_samples(const int index) {
       if(connector == REG_SOCKETS_ERROR)
 	continue;
 
-      /* ...turn off the "Address already in use" error message... */
-      if(set_reuseaddr(connector) == REG_SOCKETS_ERROR) {
-	perror("setsockopt");
-	close(connector);
-	freeaddrinfo(result);
-	return REG_FAILURE;
-      }
-
       if(bind(connector, rp->ai_addr, rp->ai_addrlen) == 0) {
 	socket_info->comms_status=REG_COMMS_STATUS_WAITING_TO_CONNECT;
 	socket_info->connector_handle = connector;

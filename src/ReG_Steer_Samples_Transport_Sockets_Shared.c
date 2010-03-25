@@ -644,14 +644,6 @@ int create_listener_samples(const int index) {
       if(listener == REG_SOCKETS_ERROR)
 	continue;
 
-      /* Turn off the "Address already in use" error message */
-      if(set_reuseaddr(listener) == REG_SOCKETS_ERROR) {
-	perror("setsockopt");
-	close(listener);
-	freeaddrinfo(result);
-	return REG_FAILURE;
-      }
-
       if(bind(listener, rp->ai_addr, rp->ai_addrlen) == 0) {
 #ifdef REG_DEBUG
 	fprintf(stderr, "bound listener to port %d\n", i);
