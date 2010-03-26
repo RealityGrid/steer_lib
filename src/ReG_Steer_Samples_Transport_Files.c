@@ -306,15 +306,20 @@ int Consume_ack_impl(const int index) {
 /*---------------------------------------------------*/
 
 int Emit_header_impl(const int index) {
-  sprintf(Steer_lib_config.scratch_buffer, REG_PACKET_FORMAT, REG_DATA_HEADER);
-  Steer_lib_config.scratch_buffer[REG_PACKET_SIZE-1] = '\0';
+  char buffer[REG_PACKET_SIZE];
+
+  snprintf(buffer, REG_PACKET_SIZE, REG_PACKET_FORMAT, REG_DATA_HEADER);
+
 #ifdef REG_DEBUG
-  fprintf(stderr, "STEER: Emit_header: Sending >>%s<<\n", Steer_lib_config.scratch_buffer);
+  fprintf(stderr, "STEER: Emit_header: Sending >>%s<<\n", buffer);
 #endif
 
-  return Emit_data_impl(index, REG_PACKET_SIZE,
-			(void*)Steer_lib_config.scratch_buffer);
+  if(Emit_data_impl(index, REG_PACKET_SIZE,
+		    (void*) buffer) == REG_SUCCESS) {
+    return REG_SUCCESS;
+  }
 
+  return REG_FAILURE;
 }
 
 /*---------------------------------------------------*/

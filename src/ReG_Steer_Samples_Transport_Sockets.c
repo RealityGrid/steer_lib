@@ -290,8 +290,8 @@ int Emit_header_impl(const int index) {
 #endif
 
     /* send header */
-    sprintf(buffer, REG_PACKET_FORMAT, REG_DATA_HEADER);
-    buffer[REG_PACKET_SIZE - 1] = '\0';
+    snprintf(buffer, REG_PACKET_SIZE, REG_PACKET_FORMAT, REG_DATA_HEADER);
+
 #ifdef REG_DEBUG
     fprintf(stderr, "STEER: Emit_header: Sending >>%s<<\n", buffer);
 #endif
@@ -466,14 +466,6 @@ int create_connector_samples(const int index) {
       connector = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
       if(connector == REG_SOCKETS_ERROR)
 	continue;
-
-      /* ...turn off the "Address already in use" error message... */
-      if(set_reuseaddr(connector) == REG_SOCKETS_ERROR) {
-	perror("setsockopt");
-	close(connector);
-	freeaddrinfo(result);
-	return REG_FAILURE;
-      }
 
       if(bind(connector, rp->ai_addr, rp->ai_addrlen) == 0) {
 	socket_info->comms_status=REG_COMMS_STATUS_WAITING_TO_CONNECT;

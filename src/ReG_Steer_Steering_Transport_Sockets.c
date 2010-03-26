@@ -612,13 +612,6 @@ int create_steering_connector(socket_info_type* socket_info) {
       if(connector == REG_SOCKETS_ERROR)
 	continue;
 
-      /* ...turn off the "Address already in use" error message... */
-      if(set_reuseaddr(connector) == REG_SOCKETS_ERROR) {
-	perror("setsockopt");
-	close(connector);
-	return REG_FAILURE;
-      }
-
       if(bind(connector, rp->ai_addr, rp->ai_addrlen) == 0) {
 	socket_info->comms_status=REG_COMMS_STATUS_WAITING_TO_CONNECT;
 	socket_info->connector_handle = connector;
@@ -718,14 +711,6 @@ int create_steering_listener(socket_info_type* socket_info) {
       listener = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
       if(listener == REG_SOCKETS_ERROR)
 	continue;
-
-      /* Turn off the "Address already in use" error message */
-      if(set_reuseaddr(listener) == REG_SOCKETS_ERROR) {
-	perror("setsockopt");
-	close(listener);
-	freeaddrinfo(result);
-	return REG_FAILURE;
-      }
 
       if(bind(listener, rp->ai_addr, rp->ai_addrlen) == 0) {
 #ifdef REG_DEBUG

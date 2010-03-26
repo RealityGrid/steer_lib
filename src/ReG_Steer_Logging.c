@@ -302,7 +302,7 @@ int Chk_log_to_xml(Chk_log_type *log, char **pchar, int *count,
     /* Check to see whether steerer already has this entry */
     if (not_sent_only && (log->entry[i].sent_to_steerer == REG_TRUE)) continue;
 
-    bytes_left = size;
+    bytes_left = BUFSIZ;
     pentry = entry;
     nbytes = snprintf(pentry, bytes_left, "<Log_entry>\n"
 		      "<Key>%d</Key>\n"
@@ -417,7 +417,7 @@ int Param_log_to_xml(Chk_log_type *log, int handle, char **pchar,
     /* Check to see whether steerer already has this entry */
     if (not_sent_only && (log->entry[i].sent_to_steerer == REG_TRUE)) continue;
 
-    bytes_left = size;
+    bytes_left = BUFSIZ;
     pentry = entry;
     nbytes = snprintf(pentry, bytes_left, "<Log_entry>\n"
 		      "<Key>%d</Key>\n",
@@ -537,7 +537,7 @@ int Log_to_columns(Chk_log_type *log, char **pchar, int *count,
 
     /* Check to see whether steerer already has this entry */
     if (not_sent_only && (log->entry[i].sent_to_steerer == REG_TRUE)) continue;
-    bytes_left = size;
+    bytes_left = BUFSIZ;
     pentry = entry;
     nbytes = snprintf(pentry, bytes_left, "%d", log->entry[i].key);
 
@@ -993,6 +993,7 @@ int Pack_send_log_entries(char **pBuf, int *msg_count)
   int   nbytes;
   int   rewind;
   int   return_status = REG_SUCCESS;
+  int   bytes_left;
 
   msg_buf_size = REG_MAX_MSG_SIZE;
   if(!(msg_buf = (char *)malloc(msg_buf_size))){
@@ -1023,8 +1024,9 @@ int Pack_send_log_entries(char **pBuf, int *msg_count)
 
     if(tot_len == 0){
       /* Begin the first message */
+      bytes_left = msg_buf_size;
       pmsg_buf = msg_buf;
-      Write_xml_header(&pmsg_buf);
+      Write_xml_header(&pmsg_buf, &bytes_left);
       pmsg_buf += sprintf(pmsg_buf, "<Steer_log>\n");
       tot_len = (int)(pmsg_buf - msg_buf);
     }
@@ -1107,7 +1109,8 @@ int Pack_send_log_entries(char **pBuf, int *msg_count)
       /* Begin the next message */
       plast = NULL;
       pmsg_buf = msg_buf;
-      Write_xml_header(&pmsg_buf);
+      bytes_left = msg_buf_size;
+      Write_xml_header(&pmsg_buf, &bytes_left);
       pmsg_buf += sprintf(pmsg_buf, "<Steer_log>\n");
 
       strncpy(pmsg_buf, pbuf2, len);

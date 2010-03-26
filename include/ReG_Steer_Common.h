@@ -487,11 +487,13 @@ extern PREFIX int Get_message_type(const char *name);
 
 /** @internal
     @param pchar Pointer to buffer in which to put header
-    @bug We should specify how long the supplied buffer is
+    @param bytes_free How long the supplied buffer is. This is
+    modified with the number of bytes_free after the header
+    has been written.
 
     Write ReG-specific XML header information into supplied message
     buffer  */
-extern PREFIX int Write_xml_header(char **pchar);
+extern PREFIX int Write_xml_header(char** pchar, int* bytes_free);
 
 /** @internal
     @param pchar Pointer to buffer in which to put footer
