@@ -45,30 +45,16 @@
   Author: Robert Haines
  */
 
-/** @internal
-    @file ReG_Steer_Win32.h
-    @brief Support for Win32 platforms
+#include "ReG_Steer_Config.h"
 
-	This file is included by ReG_Steer_Config.h on Win32 platforms.
-    @author Robert Haines
-*/
+int snprintf(char* str, size_t size, const char* format, ...) {
+  size_t count;
+  va_list ap;
 
-#ifndef __REG_STEER_WIN32_H__
+  va_start(ap, format);
+  count = _vscprintf(format, ap);
+  _vsnprintf_s(str, size, _TRUNCATE, format, ap);
+  va_end(ap);
 
-/* Add a couple of calls that we expect to be there */
-#define sleep(seconds) (Sleep(seconds*1000))
-#define usleep(microseconds) (Sleep(microseconds/1000))
-
-/* Use standard C library calls without braindead warnings */
-#define close    _close
-#define getch    _getch
-#define getcwd   _getcwd
-#define open     _open
-#define read     _read
-
-/* If Microsoft won't implement a c99 compliant snprintf
-   I suppose I'll have to do it for them. Bastards. */
-int snprintf(char* str, size_t size, const char* format, ...);
-
-#define __REG_STEER_WIN32_H__
-#endif /* __REG_STEER_WIN32_H__ */
+  return count;
+}
