@@ -83,6 +83,13 @@ int Initialize_steering_connection_impl(const int  NumSupportedCmds,
 
   strncpy(Steer_lib_config.Steering_transport_string, "Sockets", 8);
 
+#if _MSC_VER
+  /* initialize windows sockets library */
+  if(initialize_winsock2() != REG_SUCCESS) {
+    return REG_FAILURE;
+  }
+#endif
+
   /* set up socket_info struct */
   if(socket_info_init(&appside_socket_info) != REG_SUCCESS) {
 #ifdef REG_DEBUG
@@ -127,6 +134,10 @@ int Finalize_steering_connection_impl() {
   if(appside_socket_info.comms_status == REG_COMMS_STATUS_CONNECTED) {
     close_steering_connector(&appside_socket_info);
   }
+
+#if _MSC_VER
+  WSACleanup();
+#endif
 
   return REG_SUCCESS;
 }
@@ -321,6 +332,13 @@ socket_info_table_type steerer_socket_info_table;
 int Initialize_steerside_transport() {
   strncpy(Steer_lib_config.Steering_transport_string, "Sockets", 8);
 
+#if _MSC_VER
+  /* initialize windows sockets library */
+  if(initialize_winsock2() != REG_SUCCESS) {
+    return REG_FAILURE;
+  }
+#endif
+
   return socket_info_table_init(&steerer_socket_info_table,
 				REG_MAX_NUM_STEERED_SIM);
 }
@@ -328,6 +346,10 @@ int Initialize_steerside_transport() {
 /*-------------------------------------------------------*/
 
 int Finalize_steerside_transport() {
+#if _MSC_VER
+  WSACleanup();
+#endif
+
   return REG_SUCCESS;
 }
 
@@ -622,7 +644,7 @@ int create_steering_connector(socket_info_type* socket_info) {
       }
 
       /* couldn't bind to that port, close connector and start again */
-      close(connector);
+      closesocket(connector);
     }
 
     freeaddrinfo(result);
@@ -721,7 +743,7 @@ int create_steering_listener(socket_info_type* socket_info) {
 	/* now actually listen */
 	if(listen(listener, 10) == REG_SOCKETS_ERROR) {
 	  perror("listen");
-	  close(listener);
+	  closesocket(listener);
 	  socket_info->comms_status = REG_COMMS_STATUS_FAILURE;
 	  socket_info->listener_status = REG_COMMS_STATUS_FAILURE;
 	  freeaddrinfo(result);
@@ -737,7 +759,7 @@ int create_steering_listener(socket_info_type* socket_info) {
       }
 
       /* couldn't bind to that port, close connector and start again */
-      close(listener);
+      closesocket(listener);
     }
 
     freeaddrinfo(result);
@@ -964,7 +986,7 @@ int poll_steering_msg(socket_info_type* socket_info, int handle) {
 /*-------------------------------------------------------*/
 
 void close_steering_listener(socket_info_type* socket_info) {
-  if(close(socket_info->listener_handle) == REG_SOCKETS_ERROR) {
+  if(closesocket(socket_info->listener_handle) == REG_SOCKETS_ERROR) {
     perror("close");
     socket_info->listener_status = REG_COMMS_STATUS_FAILURE;
   }
@@ -979,7 +1001,7 @@ void close_steering_listener(socket_info_type* socket_info) {
 /*-------------------------------------------------------*/
 
 void close_steering_connector(socket_info_type* socket_info) {
-  if(close(socket_info->connector_handle) == REG_SOCKETS_ERROR) {
+  if(closesocket(socket_info->connector_handle) == REG_SOCKETS_ERROR) {
     perror("close");
     socket_info->comms_status = REG_COMMS_STATUS_FAILURE;
   }

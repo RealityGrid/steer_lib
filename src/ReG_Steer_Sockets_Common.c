@@ -132,6 +132,7 @@ int socket_info_init(socket_info_type* socket_info) {
   socket_info->connector_port = 0;
   socket_info->connector_handle = -1;
   socket_info->connector_hostname = (char*) malloc(NI_MAXHOST * sizeof(char));
+  socket_info->connector_hostname[0] = '\0';
 
   socket_info->comms_status = REG_COMMS_STATUS_NULL;
 
@@ -164,7 +165,7 @@ int get_fully_qualified_hostname(char* hostname, char* ipaddr) {
   else {
     status = gethostname(hostname, REG_MAX_STRING_LENGTH);
     if(status != 0) {
-      fprintf(stderr, "gethostname failed\n");
+      fprintf(stderr, "gethostname failed: %s\n", strerror(status));
       return REG_FAILURE;
     }
   }
@@ -221,6 +222,23 @@ ssize_t recv_non_block(int s, void *buf, size_t len, int flags) {
   /* non-blocking can be achieved with a flag to recv() */
   return recv(s, buf, len, flags | MSG_DONTWAIT);
 #else
+#ifdef _MSC_VER
+  /* don't have fcntl() in MSVC */
+  ssize_t result;
+  int mode;
+  
+  /* turn off blocking, do the recv, then turn it on again */
+  mode = 1;
+  ioctlsocket(s, FIONBIO, &mode);
+
+  result = recv(s, buf, len, flags);
+
+  mode = 0;
+  ioctlsocket(s, FIONBIO, &mode);
+
+  return result;
+#else
+  /* use fcntl() on general unix */
   ssize_t result;
   int save_flags = fcntl(s, F_GETFL);
 
@@ -231,11 +249,12 @@ ssize_t recv_non_block(int s, void *buf, size_t len, int flags) {
 
   return result;
 #endif
+#endif
 }
 
 /*--------------------------------------------------------------------*/
 
-#if !REG_HAS_MSG_NOSIGNAL
+#if !REG_HAS_MSG_NOSIGNAL && !defined(_MSC_VER)
 void signal_handler_sockets(int a_signal) {
 
 #ifdef REG_DEBUG
@@ -264,13 +283,13 @@ ssize_t send_no_signal(int s, const void* buf, size_t len, int flags) {
 /*--------------------------------------------------------------------*/
 
 ssize_t recv_wait_all(int s, void *buf, size_t len, int flags) {
-#if REG_HAS_MSG_WAITALL
+#if REG_HAS_MSG_WAITALL && !defined(_MSC_VER)
   return recv(s, buf, len, flags | MSG_WAITALL);
 #else
   ssize_t result;
   ssize_t got = 0;
 
-  while(len > 0 && (result = recv(s, buf + got, len, flags)) > 0) {
+  while(len > 0 && (result = recv(s, ((char*) buf) + got, len, flags)) > 0) {
     len -= result;
     got += result;
   }
@@ -292,5 +311,39 @@ int set_tcpnodelay(int s) {
   return setsockopt(s, IPPROTO_TCP, TCP_NODELAY, &yes, sizeof(int));
 #endif
 }
+
+/*--------------------------------------------------------------------*/
+
+#if _MSC_VER
+int initialize_winsock2() {
+  WORD version;
+  WSADATA wsaData;
+  int err;
+ 
+  version = MAKEWORD(2, 2);
+
+  err = WSAStartup(version, &wsaData);
+  if(err != 0) {
+#ifdef REG_DEBUG
+    fprintf(stderr, "Could not initialize Windows socket library.\n");
+#endif
+    return REG_FAILURE;
+  }
+ 
+  if(LOBYTE(wsaData.wVersion) != 2 || HIBYTE(wsaData.wVersion) != 2) {
+    WSACleanup( );
+#ifdef REG_DEBUG
+    fprintf(stderr, "Could not get version 2.2 of the Winsock API.\n");
+#endif
+    return REG_FAILURE;
+  }
+
+#ifdef REG_DEBUG
+  fprintf(stderr, "Winsock API version 2.2 initialized.\n");
+#endif
+
+  return REG_SUCCESS;
+}
+#endif
 
 /*--------------------------------------------------------------------*/

@@ -70,6 +70,7 @@
 #cmakedefine01 REG_HAS_MSG_NOSIGNAL
 #cmakedefine01 REG_HAS_MSG_DONTWAIT
 #cmakedefine01 REG_HAS_MSG_WAITALL
+#cmakedefine01 REG_HAS_CLOSESOCKET
 #cmakedefine01 REG_HAS_GETPASS
 #cmakedefine01 REG_LOG_STEERING
 #cmakedefine01 REG_VALIDATE_XML
@@ -93,7 +94,7 @@
 #include <errno.h>
 #include <time.h>
 
-#ifndef WIN32
+#ifndef _MSC_VER
 #include <unistd.h>
 #include <sys/time.h>
 #include <sys/utsname.h>
@@ -103,15 +104,16 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <dirent.h>
-#else /* WIN32 */
-#include <winsock2.h>
-#include <windows.h>
+#else /* _MSC_VER */
+#include <Winsock2.h>
+#include <Ws2tcpip.h>
+#include <Windows.h>
 #include <direct.h>
 #include <io.h>
 #include <conio.h>
 #include "ReG_Steer_Win32.h"
 #include "dirent.h"
-#endif /* WIN32 */
+#endif /* _MSC_VER */
 
 /* load the correct xdr header file */
 #if REG_HAS_RPC_H
@@ -132,6 +134,10 @@
 
 #if REG_VALIDATE_XML
 #include <libxml/xmlschemas.h>
+#endif
+
+#if !REG_HAS_CLOSESOCKET
+#define closesocket close
 #endif
 
 #define __REG_STEER_CONFIG_H__

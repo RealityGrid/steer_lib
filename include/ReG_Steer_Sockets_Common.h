@@ -150,7 +150,7 @@ int dns_lookup(char* hostname, char* ipaddr, int canon);
     See recv(2) and fcntl(2). */
 ssize_t recv_non_block(int s, void *buf, size_t len, int flags);
 
-#if !REG_HAS_MSG_NOSIGNAL
+#if !REG_HAS_MSG_NOSIGNAL && !defined(_MSC_VER)
 /** @internal
     Handler for SIGPIPE generated when connection goes down.
     Only defined for systems without MSG_NOSIGNAL.  Necessary because
@@ -186,5 +186,13 @@ ssize_t recv_wait_all(int s, void *buf, size_t len, int flags);
     A wrapper around the setsockopt() call to set TCP_NODELAY in a
     cross-platform (ie MSVC) manner. See setsockopt(2). */
 int set_tcpnodelay(int s);
+
+#if _MSC_VER || DOXYGEN
+/** @internal
+
+    Initialize the Winsock2 library in native Windows installations.
+    <b>Windows/MSVC only.</b> */
+int initialize_winsock2();
+#endif
 
 #endif /* __REG_STEER_SOCKETS_COMMON_H__ */
