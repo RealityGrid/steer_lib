@@ -2133,6 +2133,7 @@ int init_ssl_context(struct soap *aSoap,
     if(errno == ENOENT){
       fprintf(stderr, "    Error from stat = ENOENT\n");
     }
+#if !defined(_MSC_VER)
     else if(errno == ENOTDIR){
       fprintf(stderr, "    Error from stat = ENOTDIR\n");
     }
@@ -2151,6 +2152,7 @@ int init_ssl_context(struct soap *aSoap,
     else if(errno == ENAMETOOLONG){
       fprintf(stderr, "    Error from stat = ENAMETOOLONG\n");
     }
+#endif
     else{
       fprintf(stderr, "    Error from stat = UNKNOWN!\n");
     }

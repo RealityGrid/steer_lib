@@ -65,6 +65,7 @@
 #define getcwd   _getcwd
 #define open     _open
 #define read     _read
+#define stat     _stat
 
 /* If Microsoft won't implement a c99 compliant snprintf
    I suppose I'll have to do it for them. Bastards. */
