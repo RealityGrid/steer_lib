@@ -62,7 +62,8 @@ add_library(ReG_Steer_ioProxy ${IOPROXY_SRCS})
 
 # update manifest so jar file can be run
 add_custom_command(TARGET ReG_Steer_ioProxy POST_BUILD
-  COMMAND jar ARGS -umf ${CMAKE_CURRENT_SOURCE_DIR}/manifest.txt ${CMAKE_BINARY_DIR}/lib/ReG_Steer_ioProxy.jar
+  COMMAND ${CMAKE_Java_ARCHIVE}
+  ARGS -umf ${CMAKE_CURRENT_SOURCE_DIR}/manifest.txt ${CMAKE_BINARY_DIR}/lib/ReG_Steer_ioProxy.jar
   COMMENT "Updating ReG_Steer_ioProxy.jar manifest"
 )
 
