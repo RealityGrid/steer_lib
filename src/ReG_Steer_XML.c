@@ -1888,10 +1888,10 @@ ogsi:entry
     */
     numEntries++;
     if(numEntries >= maxEntries){
-      pDum = realloc(myEntries, 1.5*maxEntries*sizeof(struct registry_entry));
+      pDum = realloc(myEntries, 2*maxEntries*sizeof(struct registry_entry));
       if(pDum){
 	myEntries = (struct registry_entry *)pDum;
-	maxEntries = (int)(1.5*maxEntries);
+	maxEntries = maxEntries * 2;
       }
       else{
 	fprintf(stderr, "STEER: ERROR: Parse_registry_entries - realloc "

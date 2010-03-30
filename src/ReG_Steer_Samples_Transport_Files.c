@@ -161,7 +161,7 @@ int Consume_stop_impl(int index) {
 
 /*---------------------------------------------------*/
 
-int Initialize_IOType_transport_impl(int direction, int index) {
+int Initialize_IOType_transport_impl(const int direction, const int index) {
   char *pchar;
   int   len;
 
@@ -577,7 +577,7 @@ int Get_IOType_address_impl(int index, char** pbuf, int* bytes_left) {
 
 /*---------------------------------------------------*/
 
-int Consume_start_data_check_impl(int index) {
+int Consume_start_data_check_impl(const int index) {
 
   int    i;
   int    nfiles;

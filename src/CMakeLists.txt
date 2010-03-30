@@ -58,6 +58,11 @@ set(REG_LIB_SRCS
 # header files and definitions
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
+# MSVC support files
+if(WIN32 AND NOT CYGWIN)
+  set(REG_LIB_SRCS ${REG_LIB_SRCS} win32/dirent.c win32/snprintf.c)
+endif(WIN32 AND NOT CYGWIN)
+
 #
 # Build the Fortran bits and include them in the main library
 #

@@ -161,11 +161,14 @@ endif(REG_BUILD_FORTRAN_WRAPPERS)
 # keep a track of them to help with configuring
 # other projects that link against this one
 #
-find_library(LIBM_LIB m)
-mark_as_advanced(LIBM_LIB)
+if(UNIX)
+  find_library(LIBM_LIB m)
+  mark_as_advanced(LIBM_LIB)
+  set(REG_EXTERNAL_LIBS ${REG_EXTERNAL_LIBS} ${LIBM_LIB})
+endif(UNIX)
 find_package(ZLIB REQUIRED)
 include_directories(${ZLIB_INCLUDE_DIR})
-set(REG_EXTERNAL_LIBS ${REG_EXTERNAL_LIBS} ${ZLIB_LIBRARY} ${LIBM_LIB})
+set(REG_EXTERNAL_LIBS ${ZLIB_LIBRARY} ${REG_EXTERNAL_LIBS})
 
 find_package(LibXml2 REQUIRED)
 include_directories("${LIBXML2_INCLUDE_DIR}")

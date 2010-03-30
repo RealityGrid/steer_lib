@@ -482,7 +482,7 @@ int Consume_data_read_impl(const int index,
 
 /*---------------------------------------------------*/
 
-int Consume_ack_impl(int index){
+int Consume_ack_impl(const int index){
 
   char *ack_msg = "<ACK/>";
   char  buf[32];
@@ -653,7 +653,7 @@ int create_listener_samples(const int index) {
 	/* now actually listen */
 	if(listen(listener, 10) == REG_SOCKETS_ERROR) {
 	  perror("listen");
-	  close(listener);
+	  closesocket(listener);
 	  socket_info->comms_status = REG_COMMS_STATUS_FAILURE;
 	  socket_info->listener_status = REG_COMMS_STATUS_FAILURE;
 	  freeaddrinfo(result);
@@ -668,7 +668,7 @@ int create_listener_samples(const int index) {
       }
 
       /* couldn't bind to that port, close connector and start again */
-      close(listener);
+      closesocket(listener);
     }
 
     freeaddrinfo(result);
@@ -713,7 +713,7 @@ void cleanup_connector_connection_samples(const int index) {
 /*---------------------------------------------------*/
 
 void close_listener_handle_samples(const int index) {
-  if(close(socket_info_table.socket_info[index].listener_handle) == REG_SOCKETS_ERROR) {
+  if(closesocket(socket_info_table.socket_info[index].listener_handle) == REG_SOCKETS_ERROR) {
     perror("close");
     socket_info_table.socket_info[index].listener_status = REG_COMMS_STATUS_FAILURE;
   }
@@ -728,7 +728,7 @@ void close_listener_handle_samples(const int index) {
 /*---------------------------------------------------*/
 
 void close_connector_handle_samples(const int index) {
-  if(close(socket_info_table.socket_info[index].connector_handle) == REG_SOCKETS_ERROR) {
+  if(closesocket(socket_info_table.socket_info[index].connector_handle) == REG_SOCKETS_ERROR) {
     perror("close");
     socket_info_table.socket_info[index].comms_status = REG_COMMS_STATUS_FAILURE;
   }

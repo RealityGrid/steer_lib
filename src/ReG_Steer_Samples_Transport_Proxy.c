@@ -76,8 +76,15 @@ extern Steerer_connection_table_type Steerer_connection;
 int Initialize_samples_transport() {
   strncpy(Steer_lib_config.Samples_transport_string, "Proxy", 6);
 
-#if !REG_HAS_MSG_NOSIGNAL
+#if !REG_HAS_MSG_NOSIGNAL && !defined(_MSC_VER)
   signal(SIGPIPE, signal_handler_sockets);
+#endif
+
+#if _MSC_VER
+  /* initialize windows sockets library */
+  if(initialize_winsock2() != REG_SUCCESS) {
+    return REG_FAILURE;
+  }
 #endif
 
   return socket_info_table_init(&socket_info_table, IOTypes_table.max_entries);
@@ -86,6 +93,10 @@ int Initialize_samples_transport() {
 /*---------------------------------------------------*/
 
 int Finalize_samples_transport() {
+#if _MSC_VER
+  WSACleanup();
+#endif
+
   return REG_SUCCESS;
 }
 
@@ -210,7 +221,7 @@ int Disable_IOType_impl(const int index) {
 
 /*---------------------------------------------------*/
 
-int Enable_IOType_impl(int index) {
+int Enable_IOType_impl(const int index) {
   /* check index is valid */
   if(index < 0 || index >= IOTypes_table.num_registered) return REG_FAILURE;
 
@@ -439,7 +450,7 @@ int Emit_header_impl(const int index) {
 
 /*---------------------------------------------------*/
 
-int Emit_ack_impl(int index){
+int Emit_ack_impl(const int index){
 
   /* Send a 16-byte acknowledgement message */
   char *ack_msg = "<ACK/>          ";
@@ -555,7 +566,7 @@ int create_connector_samples(const int index) {
 	 socket is shutdown when consumer is shutdown */
       if(set_tcpnodelay(connector) == REG_SOCKETS_ERROR) {
 	perror("setsockopt");
-	close(connector);
+	closesocket(connector);
 	freeaddrinfo(result);
 	return REG_FAILURE;
       }
@@ -570,7 +581,7 @@ int create_connector_samples(const int index) {
       }
 
       /* couldn't bind to that port, close connector and start again */
-      close(connector);
+      closesocket(connector);
     }
 
     freeaddrinfo(result);

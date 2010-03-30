@@ -1075,14 +1075,13 @@ int Reorder_decode_array(IOdef_entry *io,
 
 char *Get_current_time_string()
 {
-  struct timeval tv;
-  struct timezone tz;
+  time_t current_time;
   struct tm *now_details;
   static char date_string[128];
 
-  gettimeofday(&tv, &tz);
+  current_time = time(NULL);
 
-  now_details = gmtime(&(tv.tv_sec));
+  now_details = gmtime(&current_time);
   /* 2005-08-31T14:31:51Z */
   sprintf(date_string,"%d-%02d-%02dT%02d:%02d:%02dZ",
 	  (now_details->tm_year) + 1900,

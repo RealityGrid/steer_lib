@@ -55,7 +55,6 @@
 
 #include "ReG_Steer_Config.h"
 #include "ReG_Steer_Appside.h"
-#include <unistd.h> /* for 'sleep' */
 
 int main(){
 
@@ -72,7 +71,7 @@ int main(){
   int    num_params_changed;
   char** changed_param_labels;
 
-  float temp     = 55.6;
+  float temp     = 55.6f;
   int   finished = REG_FALSE;
   int   i, icmd;
   float float_array[50];
@@ -112,7 +111,7 @@ int main(){
   }
 
   /* Register a binary blob */
-  for(i=0;i<50;i++){float_array[i] = i;}
+  for(i=0;i<50;i++){float_array[i] = (float) i;}
   status = Register_bin_param("blob", (void *)(&float_array),
 			      REG_FLOAT, 50);
   if(status != REG_SUCCESS){

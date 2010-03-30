@@ -3,8 +3,12 @@ RealityGrid project.
 
 Research Computing Services, IT Services, University of Manchester.
 
-It uses a Base64 codec by Bob Withers, and gSoap, an implementation of
-the Simple Object Access Protocol from Florida State University.
+It uses:
+ * A Base64 codec by Bob Withers.
+ * gSoap, an implementation of the Simple Object Access Protocol
+   from Florida State University.
+ * A Win32 port of the POSIX directory browsing functions by
+   Kevlin Henney.
 
 ----------------------------------------------------------------------
 
