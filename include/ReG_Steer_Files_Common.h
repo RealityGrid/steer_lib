@@ -73,7 +73,7 @@ typedef struct {
   file_info_type* file_info;
 } file_info_table_type;
 
-#ifdef WIN32
+#ifdef _MSC_VER
 #define REG_LOCK_FLAGS (_O_CREAT|_O_WRONLY|_O_TRUNC)
 #define REG_LOCK_PERMS (_S_IREAD|_S_IWRITE)
 #else
