@@ -226,7 +226,7 @@ ssize_t recv_non_block(int s, void *buf, size_t len, int flags) {
   /* don't have fcntl() in MSVC */
   ssize_t result;
   int mode;
-  
+
   /* turn off blocking, do the recv, then turn it on again */
   mode = 1;
   ioctlsocket(s, FIONBIO, &mode);
@@ -314,12 +314,12 @@ int set_tcpnodelay(int s) {
 
 /*--------------------------------------------------------------------*/
 
-#if _MSC_VER
+#ifdef _MSC_VER
 int initialize_winsock2() {
   WORD version;
   WSADATA wsaData;
   int err;
- 
+
   version = MAKEWORD(2, 2);
 
   err = WSAStartup(version, &wsaData);
@@ -329,7 +329,7 @@ int initialize_winsock2() {
 #endif
     return REG_FAILURE;
   }
- 
+
   if(LOBYTE(wsaData.wVersion) != 2 || HIBYTE(wsaData.wVersion) != 2) {
     WSACleanup( );
 #ifdef REG_DEBUG

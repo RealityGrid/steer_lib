@@ -79,7 +79,7 @@ int Initialize_samples_transport() {
   signal(SIGPIPE, signal_handler_sockets);
 #endif
 
-#if _MSC_VER
+#ifdef _MSC_VER
   /* initialize windows sockets library */
   if(initialize_winsock2() != REG_SUCCESS) {
     return REG_FAILURE;
@@ -92,7 +92,7 @@ int Initialize_samples_transport() {
 /*---------------------------------------------------*/
 
 int Finalize_samples_transport() {
-#if _MSC_VER
+#ifdef _MSC_VER
   WSACleanup();
 #endif
 

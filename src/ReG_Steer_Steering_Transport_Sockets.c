@@ -83,7 +83,7 @@ int Initialize_steering_connection_impl(const int  NumSupportedCmds,
 
   strncpy(Steer_lib_config.Steering_transport_string, "Sockets", 8);
 
-#if _MSC_VER
+#ifdef _MSC_VER
   /* initialize windows sockets library */
   if(initialize_winsock2() != REG_SUCCESS) {
     return REG_FAILURE;
@@ -135,7 +135,7 @@ int Finalize_steering_connection_impl() {
     close_steering_connector(&appside_socket_info);
   }
 
-#if _MSC_VER
+#ifdef _MSC_VER
   WSACleanup();
 #endif
 
@@ -332,7 +332,7 @@ socket_info_table_type steerer_socket_info_table;
 int Initialize_steerside_transport() {
   strncpy(Steer_lib_config.Steering_transport_string, "Sockets", 8);
 
-#if _MSC_VER
+#ifdef _MSC_VER
   /* initialize windows sockets library */
   if(initialize_winsock2() != REG_SUCCESS) {
     return REG_FAILURE;
@@ -346,7 +346,7 @@ int Initialize_steerside_transport() {
 /*-------------------------------------------------------*/
 
 int Finalize_steerside_transport() {
-#if _MSC_VER
+#ifdef _MSC_VER
   WSACleanup();
 #endif
 

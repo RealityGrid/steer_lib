@@ -187,7 +187,7 @@ ssize_t recv_wait_all(int s, void *buf, size_t len, int flags);
     cross-platform (ie MSVC) manner. See setsockopt(2). */
 int set_tcpnodelay(int s);
 
-#if _MSC_VER || DOXYGEN
+#if defined(_MSC_VER) || defined(DOXYGEN)
 /** @internal
 
     Initialize the Winsock2 library in native Windows installations.
