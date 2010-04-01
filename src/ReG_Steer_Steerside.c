@@ -111,9 +111,11 @@ int Steerer_initialize()
   signal(SIGILL, Steerside_signal_handler);
   signal(SIGABRT, Steerside_signal_handler);
   signal(SIGFPE, Steerside_signal_handler);
-#ifndef WIN32
+#if REG_HAS_SIGXCPU
   /* For CPU-limit exceeded */
   signal(SIGXCPU, Steerside_signal_handler);
+#endif
+#if REG_HAS_SIGUSR2
   /* LSF sends us a SIGUSR2 signal when we reach our wall-clock limit */
   signal(SIGUSR2, Steerside_signal_handler);
 #endif

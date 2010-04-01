@@ -1262,8 +1262,10 @@ void Common_signal_handler(int aSignal){
   signal(SIGILL, SIG_IGN);
   signal(SIGABRT, SIG_IGN);
   signal(SIGFPE, SIG_IGN);
-#ifndef WIN32
+#if REG_HAS_SIGXCPU
   signal(SIGXCPU, SIG_IGN);
+#endif
+#if REG_HAS_SIGUSR2
   signal(SIGUSR2, SIG_IGN);
 #endif
 
@@ -1301,12 +1303,14 @@ void Common_signal_handler(int aSignal){
 	      "Exception caught (signal %d)\n", aSignal);
       break;
 
-#ifndef WIN32
+#if REG_HAS_SIGXCPU
     case SIGXCPU:
       fprintf(stderr, "STEER: Steering_signal_handler: CPU usuage "
 	      "exceeded (signal %d)\n", aSignal);
       break;
+#endif
 
+#if REG_HAS_SIGUSR2
     case SIGUSR2:
       /* This is for the benefit of LSF - it sends us this when we hit
          our wall-clock limit */

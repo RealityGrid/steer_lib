@@ -444,9 +444,11 @@ int Steering_initialize(const char* AppName,
   signal(SIGILL, Steering_signal_handler);
   signal(SIGABRT, Steering_signal_handler);
   signal(SIGFPE, Steering_signal_handler);
-#ifndef WIN32
+#if REG_HAS_SIGXCPU
   /* For CPU-limit exceeded */
   signal(SIGXCPU, Steering_signal_handler);
+#endif
+#if REG_HAS_SIGUSR2
   /* LSF sends us a SIGUSR2 signal when we reach our wall-clock limit */
   signal(SIGUSR2, Steering_signal_handler);
 #endif

@@ -55,6 +55,10 @@ if(NOT MALLOC_IN_STDLIB)
   CHECK_INCLUDE_FILES(malloc.h REG_NEED_MALLOC_H)
 endif(NOT MALLOC_IN_STDLIB)
 
+# check for supported signals
+CHECK_SYMBOL_EXISTS(SIGXCPU signal.h REG_HAS_SIGXCPU)
+CHECK_SYMBOL_EXISTS(SIGUSR2 signal.h REG_HAS_SIGUSR2)
+
 # sockets library always needed due to xdr
 find_package(Sockets)
 if(LIBSOCKET_FOUND)

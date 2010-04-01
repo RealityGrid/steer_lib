@@ -62,26 +62,33 @@
 /* The default directory to use for scratch space */
 #define REG_SCRATCH_DEFAULT "@REG_SCRATCH_DEFAULT@/"
 
+/* debug message options */
+
 #cmakedefine REG_DEBUG
 #cmakedefine REG_DEBUG_FULL
 
-/* features to code for */
+/* library options */
+
+#cmakedefine01 REG_LOG_STEERING
+#cmakedefine01 REG_VALIDATE_XML
+#cmakedefine01 REG_KEEP_XML_MESSAGES
+#cmakedefine01 REG_USE_TIMING
+
+/* platform features to code for */
 
 #cmakedefine01 REG_HAS_MSG_NOSIGNAL
 #cmakedefine01 REG_HAS_MSG_DONTWAIT
 #cmakedefine01 REG_HAS_MSG_WAITALL
 #cmakedefine01 REG_HAS_CLOSESOCKET
 #cmakedefine01 REG_HAS_GETPASS
-#cmakedefine01 REG_LOG_STEERING
-#cmakedefine01 REG_VALIDATE_XML
-#cmakedefine01 REG_KEEP_XML_MESSAGES
-#cmakedefine01 REG_USE_TIMING
+#cmakedefine01 REG_HAS_SIGUSR2
+#cmakedefine01 REG_HAS_SIGXCPU
+
+/* standard system headers */
 
 #cmakedefine01 REG_NEED_MALLOC_H
 #cmakedefine01 REG_HAS_RPC_H
 #cmakedefine01 REG_HAS_XDR_H
-
-/* standard system headers */
 
 #include <stdio.h>
 #include <stdlib.h>
