@@ -1,54 +1,61 @@
-This document describes the environment variables that the
-RealityGrid steering software requires to be set at 
-run-time. (SGS = Steering Grid Service [OGSI]; SWS = Steering
-Web Service [WSRF]; only used when
-steering via SOAP.)  Angle brackets indicate that a given
-variable does not have to be set but may be used to 
-configure the behaviour of the library.
+This document describes the environment variables that the RealityGrid
+steering software requires to be set at run-time. (SWS = Steering Web
+Service [WSRF]; only used when steering via SOAP.)  Angle brackets
+indicate that a given variable does not have to be set but may be used
+to configure the behaviour of the library.
 
 Initial version: A R Porter, 13th October 2003.
+Updated:         R Haines,   11th May 2010.
 
 -------------------------------
-REG_STEER_HOME 
+<REG_STEER_HOME>
 
 Root directory for library installation
 
 -------------------------------
-REG_STEER_DIRECTORY 
+REG_STEER_DIRECTORY
 
 Directory location to use for steering communication
 
 -------------------------------
 <REG_APP_POLL_INTERVAL>
 
-Minimum time interval (integer no. of seconds) between checks on 
-whether a steering client has connected.  If set to zero then a 
-check is performed on every call to Steering_control (which is
-likely to have a detrimental impact on performance).  If unset
-then a default value (set in ReG_Steer_types.h) is used.
+Minimum time interval (integer no. of seconds) between checks on
+whether a steering client has connected.  If set to zero then a check
+is performed on every call to Steering_control (which is likely to
+have a detrimental impact on performance).  If unset then a default
+value (set in ReG_Steer_types.h) is used.
 
 -------------------------------
 <REG_CONNECTOR_HOSTNAME>
 
-Hostname of machine to connect to (using sockets) to get data
-from.
-Note that this is published in the SGS/SWS if steering via SOAP &
+Hostname of machine to connect to (using sockets) to get data from.
+
+Note that this is published in the SGS/SWS if steering via SOAP and
 thus this variable need not be set.
 
 -------------------------------
-<REG_CONNECTOR_PORT> 
+<REG_CONNECTOR_PORT>
 
 Port on machine REG_CONNECTOR_HOSTNAME to connect to (using sockets)
-Note that this is published in the SGS/SWS if steering via SOAP & 
-thus this variable need not be set.
+Note that this is published in the SGS/SWS if steering via SOAP & thus
+this variable need not be set.
 
 -------------------------------
-<GLOBUS_TCP_PORT_RANGE   2566,2686>
+<GLOBUS_TCP_PORT_RANGE   min,max>
 
-Used by both sockets and gSOAP - specifies a range of ports
-that may be opened on the client machine.  Port chosen at random if
-not set. For use on machines that have a firewall that limits which 
-ports may be used.
+Used by both sockets and gSOAP - specifies a range of ports that may
+be opened on the client machine.  Port chosen at random if not
+set. For use on machines that have a firewall that limits which ports
+may be used.
+
+-------------------------------
+<GLOBUS_TCP_SOURCE_RANGE   min,max>
+
+Used by both sockets and gSOAP - specifies a range of ports that may
+be used to connect out of.  Port chosen at random if not set. For use
+on machines that have a firewall that limits which ports may be used
+for connecting out to the Internet.
 
 -------------------------------
 <REG_DATA_DIRECTORY>
@@ -58,30 +65,36 @@ file-based IO (as opposed to sockets).  Uses current working directory
 if not set.  Applies to all IOTypes registered by a program.
 
 -------------------------------
-REG_SGS_ADDRESS
+<REG_SGS_ADDRESS>
 
-Location of steering grid/web service that provides public interface for
-steering simulation and discovering address of remote data sources.
-Required only if the steering library has been built to use SOAP
-(see Makefile.include) for remote steering.
+Location of steering grid/web service that provides public interface
+for steering simulation and discovering address of remote data
+sources.  Required only if the steering library has been built to use
+SOAP (see Makefile.include) for remote steering.
 
 -------------------------------
-REG_PASSPHRASE
+<REG_APP_ADDRESS   machine:port>
+
+When using sockets for the steering transport this points the steerer
+at the location of the application to be steered.
+
+-------------------------------
+<REG_PASSPHRASE>
 
 The passphrase that is required to access the SWS, as specified when
-it was created.  Only applicable when the library has been built 
-to use SOAP and WSRF (the default for versions >= 2.0.)
+it was created.  Only applicable when the library has been built to
+use SOAP and WSRF.
 
 -------------------------------
 <REG_TCP_INTERFACE>
 
-For use when machine hosting simulation/visualisation has more than
+For use when machine hosting simulation/visualization has more than
 one TCP interface.  Set to IP address of desired interface to use for
-globus_io/sockets.  Uses default if not set (i.e. probably INADDR_ANY).
-If you're running a data sink (e.g. a visualization) on a machine
-with no externally accessible IP address then it may be necessary to
-set this to " " in order to prevent the connecting socket from 
-being bound to the localhost interface.
+globus_io/sockets.  Uses default if not set (i.e. probably
+INADDR_ANY).  If you're running a data sink (e.g. a visualization) on
+a machine with no externally accessible IP address then it may be
+necessary to set this to " " in order to prevent the connecting socket
+from being bound to the localhost interface.
 
 -------------------------------
 <REG_MACHINE_NAME>
@@ -91,13 +104,13 @@ executing on.  On many machines, we may be running on a node that
 cannot be seen by the outside world and therefore globus connections
 for file transfer etc. will need the address of a publicly-accessible
 node.
-  If this isn't set then REG_TCP_INTERFACE is used.  If that isn't
-set then uname and gethostbyname are used to get the fully-qualified
-domain name of the node we're executing on.  
-  This variable only affects what address the SGS (and checkpoint 
-data) publishes to the outside world - it does not alter which local 
-interface is used by socket connections (use REG_TCP_INTERFACE to
-do that).
+
+If this isn't set then REG_TCP_INTERFACE is used.  If that isn't set
+then uname and gethostbyname are used to get the fully-qualified
+domain name of the node we're executing on.  This variable only
+affects what address the SGS (and checkpoint data) publishes to the
+outside world - it does not alter which local interface is used by
+socket connections (use REG_TCP_INTERFACE to do that).
 
 -------------------------------
 <REG_IO_ADDRESS>
@@ -106,18 +119,17 @@ The address to use when publishing details of listening sockets -
 useful when using port forwarding (and thus the address we need to
 publish is not the interface we're binding the socket to).  Takes
 precedence over all other settings (including the hostname of the
-local machine).  Setting this variable only affects the _published_
-address - does not control which TCP interface the listener binds to
-(use REG_TCP_INTERFACE for that).  If this isn't set then the
+local machine).  Setting this variable only affects the published
+address - it does not control which TCP interface the listener binds
+to (use REG_TCP_INTERFACE for that).  If this isn't set then the
 published address is the address to which the socket is bound.
 
 ------------------------------
 <REG_REGISTRY_ADDRESS>
+
 This has been superceded by the move to routines that allow the
 address of the registry to be specified.  The calling code then
-normally gets the address from some configuration file.
-Was originally used to set the address of the top-level registry 
-for use in the steering-client-side routines.  If this variable 
-is unset then the default of http://yaffel.blah.blah:50000/blah 
-is used.
-
+normally gets the address from some configuration file.  Was
+originally used to set the address of the top-level registry for use
+in the steering-client-side routines.  If this variable is unset then
+the default of http://example.com:50000/dir is used.

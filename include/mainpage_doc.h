@@ -70,7 +70,7 @@
     @section starting_sec Getting Started
 
     If you are impatient to actually use the steering library rather
-    than just read about it then I recommend that you read at least
+    than just read about it then we recommend that you read at least
     the @ref intro_sec and @ref sec_background sections. After that,
     take a look at the source code of the simple.c example or one of
     the others from the @ref sec_example section.  The code generated
@@ -82,9 +82,9 @@
     A number of people contributed to the initial design of the
     RealityGrid steering API and thus were authors of the document
     that this Doxygen-generated documentation replaces.  They are:
-    Stephen Pickles, Robin Pinning, Andrew Porter, Graham Riley,
-    Rupert Ford, Ken Mayes, David Snelling, Jim Stanton, Steven Kenny
-    and Shantenu Jha.
+    Robert Haines, Stephen Pickles, Robin Pinning, Andrew Porter,
+    Graham Riley, Rupert Ford, Ken Mayes, David Snelling, Jim Stanton,
+    Steven Kenny and Shantenu Jha.
 
     @latexonly
     \begin{figure}
