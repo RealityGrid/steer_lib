@@ -75,10 +75,12 @@ endif(NOT EXECUTABLE_OUTPUT_PATH)
 # build shared or static libs
 #
 set(REG_LIB_TYPE STATIC)
-option(REG_BUILD_SHARED_LIBS "Turn on to build shared libraries. Build static libraries by default." OFF)
-if(REG_BUILD_SHARED_LIBS)
-  set(REG_LIB_TYPE SHARED)
-endif(REG_BUILD_SHARED_LIBS)
+if(UNIX)
+  option(REG_BUILD_SHARED_LIBS "Turn on to build shared libraries. Build static libraries by default." OFF)
+  if(REG_BUILD_SHARED_LIBS)
+    set(REG_LIB_TYPE SHARED)
+  endif(REG_BUILD_SHARED_LIBS)
+endif(UNIX)
 
 #
 # build a monolithic or modular library

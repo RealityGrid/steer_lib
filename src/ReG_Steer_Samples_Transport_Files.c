@@ -357,6 +357,7 @@ int Emit_header_files(const int index) {
 
 int Emit_data_non_blocking_files(const int index, const int size,
 				 void* buffer) {
+  return REG_SUCCESS;
 }
 
 /*---------------------------------------------------*/

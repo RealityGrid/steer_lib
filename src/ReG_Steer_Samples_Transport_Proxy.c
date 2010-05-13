@@ -61,6 +61,7 @@
 #include "ReG_Steer_Common.h"
 #include "ReG_Steer_Sockets_Common.h"
 #include "ReG_Steer_Appside_internal.h"
+#include "ReG_Steer_Steering_Transport_API.h"
 
 /** Basic library config - declared in ReG_Steer_Common */
 extern Steer_lib_config_type Steer_lib_config;

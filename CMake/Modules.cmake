@@ -85,12 +85,16 @@ register_module(
   "ReG_Steer_Sockets_Common.c"
 )
 
+# The gsoap generated code doesn't compile on MSVC so we can only
+# build this module on Unix derived platforms (including Cygwin).
+if(UNIX)
 register_module(
   Steering
   wsrf
   "stdsoap2.c;soapC.c;soapClient.c;ReG_Steer_WSRF_Utilities.c;ReG_Steer_Steering_Transport_WSRF.c"
   "ReG_Steer_Sockets_Common.c"
 )
+endif(UNIX)
 
 register_module(
   Steering
