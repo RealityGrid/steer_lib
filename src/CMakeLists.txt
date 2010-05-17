@@ -148,12 +148,13 @@ endif(REG_BUILD_MODULAR_LIBS)
 
 # need to make sure everything is built with PIC in case
 # the static libs are to be embedded in a shared object
-if(NOT REG_BUILD_SHARED_LIBS)
+# but not for Cygwin or MSVC
+if(NOT REG_BUILD_SHARED_LIBS AND NOT WIN32)
   set_source_files_properties(
     ${REG_LIB_SRCS}
     PROPERTIES COMPILE_FLAGS -fPIC
   )
-endif(NOT REG_BUILD_SHARED_LIBS)
+endif(NOT REG_BUILD_SHARED_LIBS AND NOT WIN32)
 
 add_library(ReG_Steer ${REG_LIB_TYPE} ${REG_LIB_SRCS})
 list(APPEND ReG_Steer_INSTALL_TARGETS ReG_Steer)

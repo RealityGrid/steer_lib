@@ -46,7 +46,8 @@
 
 # need to make sure everything is built with PIC in case
 # the static libs are to be embedded in a shared object
-if(NOT REG_BUILD_SHARED_LIBS)
+# but not for Cygwin or MSVC
+if(NOT REG_BUILD_SHARED_LIBS AND NOT WIN32)
   foreach(type ${REG_MODULES_TYPES})
     foreach(service ${REG_MODULES_PROVIDES})
       if(REG_BUILD_MODULAR_LIBS)
@@ -63,7 +64,7 @@ if(NOT REG_BUILD_SHARED_LIBS)
       endif(REG_BUILD_MODULAR_LIBS)
     endforeach(service ${REG_MODULES_PROVIDES})
   endforeach(type ${REG_MODULES_TYPES})
-endif(NOT REG_BUILD_SHARED_LIBS)
+endif(NOT REG_BUILD_SHARED_LIBS AND NOT WIN32)
 
 #
 # Go through the various "types" of module
