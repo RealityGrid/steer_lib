@@ -46,15 +46,16 @@
 
 # work out which sockets header we have
 CHECK_INCLUDE_FILES("sys/socket.h" REG_HAS_SYS_SOCKET_H)
-CHECK_INCLUDE_FILES("Winsock2.h" REG_HAS_WINSOCK2_H)
 
 if(REG_HAS_SYS_SOCKET_H)
   set(REG_TEST_SOCKETS_H "sys/socket.h")
+else(REG_HAS_SYS_SOCKET_H)
+  CHECK_INCLUDE_FILES("Winsock2.h" REG_HAS_WINSOCK2_H)
+  if(REG_HAS_WINSOCK2_H)
+    set(REG_TEST_SOCKETS_H "Winsock2.h")
+    set(REG_HAS_CLOSESOCKET 1)
+  endif(REG_HAS_WINSOCK2_H)
 endif(REG_HAS_SYS_SOCKET_H)
-if(REG_HAS_WINSOCK2_H)
-  set(REG_TEST_SOCKETS_H "Winsock2.h")
-  set(REG_HAS_CLOSESOCKET 1)
-endif(REG_HAS_WINSOCK2_H)
 
 # test sockets features
 if(REG_TEST_SOCKETS_H)
