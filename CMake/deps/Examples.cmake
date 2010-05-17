@@ -47,7 +47,6 @@
 # check for getpass needed in mini_steerer
 CHECK_INCLUDE_FILES(unistd.h REG_HAS_UNISTD_H)
 if(REG_HAS_UNISTD_H)
-  CHECK_SYMBOL_EXISTS(getpass unistd.h REG_HAS_GETPASS)
-else(REG_HAS_UNISTD_H)
-  set(REG_HAS_GETPASS 0)
+  set(CMAKE_REQUIRED_INCLUDES unistd.h)
+  CHECK_FUNCTION_EXISTS(getpass REG_HAS_GETPASS)
 endif(REG_HAS_UNISTD_H)
