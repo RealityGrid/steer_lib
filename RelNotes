@@ -1,6 +1,56 @@
 Release Notes for the RealityGrid Steering Library
 --------------------------------------------------
 
+Version 3.5.0
+-------------
+
+ * Implement cross-platform access to socket options via setsockopt.
+ * Update the samples sockets code to use modern API calls.
+ * Update the steering sockets code to use modern API calls.
+ * Update the dns_lookup function to use modern sockets API calls.
+ * Updated get_fully_qualified_hostname to use the updated dns_lookup.
+ * Convert the sockets code to be IPv4/6 agnostic.
+ * Start port to native Windows/MSVC - static, monolithic, files-based transport
+ * Port mini_app, sink and simple to native Windows.
+ * Port mini_steerer to native Windows.
+ * Port sockets code to native Windows.
+ * Minor updates to the documentation.
+ * Enabled dynamic loading of samples and steering transport modules.
+ * Update the figure in the doxygen docs.
+ * Add a switch to turn on/off the documentation of internal methods.
+ * Adjust includes/excludes for the documentation process.
+ * Complete the generation of LaTeX documentation.
+ * Made the build instructions clearer in the README.
+ * Add a setting to choose the paper size of the latex manual.
+ * Create a set of macros to ease building components against the Steering
+   Library.
+ * README: Fix minor issue of module names no longer capitalized.
+
+ Internal changes
+ ----------------
+
+ * Minor edits to a few comments in header files for documentation purposes.
+ * Remove the statically allocated char arrays from the socket info structs.
+ * Use snprintf instead of sprintf when creating the packet headers.
+ * Properly keep track of how much space is used when building steering messages
+ * Logging: Entry lines had a potential overrun while being built.
+ * Sockets: Remove the calls to set SO_REUSEADDR on each socket.
+ * Write_xml_header now takes buffer size argument.
+ * Updates to the tests for xdr (rpc) and sockets.
+ * Add a C99 compatible snprintf function for Windows/MSVC.
+ * ioProxy: Call 'jar' with full pathname in case it is not on PATH.
+ * Files: Check for MSVC rather than WIN32 for file flags.
+ * Check that a signal is defined before trying to catch it!
+ * More carefully check _MSC_VER for Windows code sections.
+ * Minor updates to ensure that the latest code-base works on MSVC.
+ * Minor change to detection of getpass for Solaris compatibility.
+ * FindXDR.cmake: Minor changes for updated Cygwin.
+ * Sockets: Avoid looking for Winsock2.h if sys/socket.h is found.
+ * Remove -fPIC compile warnings on MSVC and Cygwin.
+ * Clean up whitespace in doxyfile.in
+ * Copy the image to the build tree for both HTML and LaTeX generation.
+ * Fix image width in LaTeX generated documentation.
+
 Version 3.0.2
 -------------
 
