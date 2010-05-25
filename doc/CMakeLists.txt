@@ -84,6 +84,16 @@ else(DOXYGEN_QUIET)
   set(DOXYGEN_QUIET NO)
 endif(DOXYGEN_QUIET)
 
+# document internal methods
+option(DOXYGEN_INTERNAL_METHODS
+  "Document internal methods that are not part of the API?" OFF)
+mark_as_advanced(DOXYGEN_INTERNAL_METHODS)
+if(DOXYGEN_INTERNAL_METHODS)
+  set(DOXYGEN_INTERNAL_METHODS YES)
+else(DOXYGEN_INTERNAL_METHODS)
+  set(DOXYGEN_INTERNAL_METHODS NO)
+endif(DOXYGEN_INTERNAL_METHODS)
+
 # was dot found as well?
 set(DOXYGEN_HAVE_DOT YES)
 if(DOXYGEN_DOT_EXECUTABLE MATCHES "NOTFOUND$")
