@@ -508,8 +508,7 @@ WARN_LOGFILE           =
 
 INPUT                  = "@REG_SOURCE_DIR@/src" \
                          "@REG_SOURCE_DIR@/include" \
-                         "@REG_BINARY_DIR@/ReG_Steer_Config.h" \
-                         "@REG_SOURCE_DIR@/examples"
+                         "@REG_BINARY_DIR@/ReG_Steer_Config.h"
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding, which is
@@ -546,9 +545,7 @@ FILE_PATTERNS          = *.c \
                          *.odl \
                          *.cs \
                          *.php \
-                         *.php3 \
-                         *.inc \
-                         *.nsmap
+                         *.php3
 
 # The RECURSIVE tag can be used to turn specify whether or not subdirectories
 # should be searched for input files as well. Possible values are YES and NO.
@@ -567,7 +564,9 @@ EXCLUDE                = "@REG_SOURCE_DIR@/src/soapC.c" \
                          "@REG_SOURCE_DIR@/src/stdsoap2.c" \
                          "@REG_SOURCE_DIR@/include/stdsoap2.h" \
                          "@REG_SOURCE_DIR@/src/gsoap_stubs" \
-                         "@REG_SOURCE_DIR@/src/fortran_type_utils"
+                         "@REG_SOURCE_DIR@/src/fortran_type_utils" \
+                         "@REG_SOURCE_DIR@/include/win32" \
+                         "@REG_SOURCE_DIR@/src/win32"
 
 # The EXCLUDE_SYMLINKS tag can be used select whether or not files or
 # directories that are symbolic links (a Unix filesystem feature) are excluded
