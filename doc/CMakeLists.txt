@@ -110,7 +110,16 @@ configure_file(
 add_custom_target(Documentation ALL
   ${DOXYGEN_EXECUTABLE}
   "${CMAKE_CURRENT_BINARY_DIR}/doxyfile"
+  COMMENT "Generating documentation"
 )
+
+if(REG_BUILD_LATEX_DOCS)
+  add_custom_command(TARGET Documentation POST_BUILD
+    COMMAND ${CMAKE_MAKE_PROGRAM}
+    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/latex"
+    COMMENT "Processing LaTeX sources"
+  )
+endif(REG_BUILD_LATEX_DOCS)
 
 # copy the required images to the build dirs
 if(REG_BUILD_HTML_DOCS)
@@ -137,7 +146,8 @@ if(REG_BUILD_HTML_DOCS)
 endif(REG_BUILD_HTML_DOCS)
 
 if(REG_BUILD_LATEX_DOCS)
-  install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/latex/
-    DESTINATION share/doc/RealityGrid/latex
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/latex/refman.pdf
+    DESTINATION share/doc/RealityGrid
+    RENAME SteerLib-API-${REG_STEER_LIB_VERSION}.pdf
   )
 endif(REG_BUILD_LATEX_DOCS)
