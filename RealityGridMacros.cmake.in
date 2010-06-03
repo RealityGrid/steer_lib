@@ -1,0 +1,159 @@
+#
+#  The RealityGrid Steering Library
+#
+#  Copyright (c) 2002-2010, University of Manchester, United Kingdom.
+#  All rights reserved.
+#
+#  This software is produced by Research Computing Services, University
+#  of Manchester as part of the RealityGrid project and associated
+#  follow on projects, funded by the EPSRC under grants GR/R67699/01,
+#  GR/R67699/02, GR/T27488/01, EP/C536452/1, EP/D500028/1,
+#  EP/F00561X/1.
+#
+#  LICENCE TERMS
+#
+#  Redistribution and use in source and binary forms, with or without
+#  modification, are permitted provided that the following conditions
+#  are met:
+#
+#    * Redistributions of source code must retain the above copyright
+#       notice, this list of conditions and the following disclaimer.
+#
+#    * Redistributions in binary form must reproduce the above
+#      copyright notice, this list of conditions and the following
+#      disclaimer in the documentation and/or other materials provided
+#      with the distribution.
+#
+#    * Neither the name of The University of Manchester nor the names
+#      of its contributors may be used to endorse or promote products
+#      derived from this software without specific prior written
+#      permission.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+#  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+#  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+#  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+#  COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+#  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+#  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+#  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+#  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+#  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+#  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+#  POSSIBILITY OF SUCH DAMAGE.
+#
+#  Author: Robert Haines
+
+# reg_check_version
+#
+# A macro to warn the user if major versions of two Realitygrid
+# components differ.
+#
+# Pass in the name and major version of the component you want to
+# check.
+macro(reg_check_version _name _version_maj)
+  if(NOT ${_version_maj} EQUAL @REG_LIB_VERSION_MAJ@)
+    message("Steering Library version mismatch.")
+    message("You may not be able to use the ${_name} (version ${_version_maj}.x) with the selected Steering Library (version @REG_LIB_VERSION_MAJ@.x).")
+    message("It will, in all probability, work, but if it does not then please try using matching versions before submitting bug reports.")
+  endif(NOT ${_version_maj} EQUAL @REG_LIB_VERSION_MAJ@)
+endmacro(reg_check_version)
+
+# reg_setup_install_dirs
+#
+# A macro to install a component to the same location as the
+# RealityGrid library if it is being built against an installed
+# library rather than one that is still in its build tree.
+#
+# Pass in the name of the component.
+macro(reg_setup_install_dirs _name)
+  string(TOUPPER ${_name} _comp)
+  if(${RealityGrid_INSTALL_TYPE} MATCHES "install")
+    option(${_comp}_INSTALL_TO_REG_DIR
+      "Install the ${_name} to the same location as the RealityGrid installation?"
+      OFF
+    )
+  endif(${RealityGrid_INSTALL_TYPE} MATCHES "install")
+
+  if(${_comp}_INSTALL_TO_REG_DIR)
+    set(CMAKE_INSTALL_PREFIX ${RealityGrid_INSTALL_PREFIX}
+      CACHE PATH
+      "Install path prefix, prepended onto install directories. The default setting is to install the ${_name} to the same location as the RealityGrid installation."
+      FORCE
+    )
+
+    # ensure we get the right directory when there are more than one
+    list(GET RealityGrid_INCLUDE_DIRS 0 RealityGrid_INCLUDE_DIR)
+    list(GET RealityGrid_LIBRARY_DIRS 0 RealityGrid_LIBRARY_DIR)
+
+    string(
+      REPLACE "${RealityGrid_INSTALL_PREFIX}/" "" ${_comp}_BIN_INSTALL
+      ${RealityGrid_BIN_DIR}
+    )
+    string(
+      REPLACE "${RealityGrid_INSTALL_PREFIX}/" "" ${_comp}_LIB_INSTALL
+      ${RealityGrid_LIBRARY_DIR}
+    )
+    string(
+      REPLACE "${RealityGrid_INSTALL_PREFIX}/" "" ${_comp}_INC_INSTALL
+      ${RealityGrid_INCLUDE_DIR}
+    )
+    string(
+      REPLACE "${RealityGrid_INSTALL_PREFIX}/" "" ${_comp}_DOC_INSTALL
+      ${RealityGrid_DOCS_DIR}
+    )
+  else(${_comp}_INSTALL_TO_REG_DIR)
+    set(${_comp}_BIN_INSTALL "bin")
+    set(${_comp}_LIB_INSTALL "lib/RealityGrid")
+    set(${_comp}_INC_INSTALL "include/RealityGrid")
+    set(${_comp}_DOC_INSTALL "share/doc/RealityGrid")
+  endif(${_comp}_INSTALL_TO_REG_DIR)
+endmacro(reg_setup_install_dirs)
+
+# reg_link_module
+#
+# A macro to set up the linking of the Steering Library
+# correctly when modular libs have been built. Does
+# nothing if dynamic loading is being used.
+#
+# Pass in the transport you want to link.
+macro(reg_link_module _transport)
+  if(REG_USE_MODULAR_LIBS AND NOT REG_USE_DYNAMIC_LOADING)
+    include(${RealityGrid_MODULES_LIST})
+
+    # init doc string
+    set(doc "The module you would like to link with to provide the ${_transport} transport. Available modules:")
+
+    # complete doc string with list of available modules
+    foreach(mod ${REG_MODULES_${_transport}})
+      set(doc "${doc} ${mod}")
+    endforeach(mod ${REG_MODULES_${_transport}})
+
+    # default to link is the first in the list
+    list(GET REG_MODULES_${_transport} 0 default)
+
+    # present options to the user with default already applied
+    set(REG_USE_MODULE_${_transport} "${default}" CACHE STRING ${doc})
+
+    # add selected transport to the link line
+    set(REG_LINK_LIBRARIES
+      ${REG_LINK_LIBRARIES}
+      ReG_Steer_${_transport}_${REG_USE_MODULE_${_transport}}
+    )
+  endif(REG_USE_MODULAR_LIBS AND NOT REG_USE_DYNAMIC_LOADING)
+endmacro(reg_link_module)
+
+# reg_link_modules
+#
+# Uses the above macro to link in both transports in
+# one go. If using static modules it repeats the link
+# line to resolve circular dependencies.
+macro(reg_link_modules)
+  reg_link_module(Steering)
+  reg_link_module(Samples)
+
+  # static libraries need this to resolve circular dependencies
+  if(REG_USE_MODULAR_LIBS AND NOT REG_USE_SHARED_LIBS)
+    set(REG_LINK_LIBRARIES ${REG_LINK_LIBRARIES} ${REG_LINK_LIBRARIES})
+  endif(REG_USE_MODULAR_LIBS AND NOT REG_USE_SHARED_LIBS)
+endmacro(reg_link_modules)

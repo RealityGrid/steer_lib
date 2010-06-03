@@ -82,6 +82,10 @@ set(RealityGrid_DEPENDS_FILE_CONFIG
   ${PROJECT_BINARY_DIR}/RealityGridLibraryDepends.cmake
 )
 
+set(RealityGrid_MACROS_FILE_CONFIG
+  ${PROJECT_BINARY_DIR}/RealityGridMacros.cmake
+)
+
 set(RealityGrid_MODULES_LIST_CONFIG
   ${PROJECT_BINARY_DIR}/RealityGridModulesList.cmake
 )
@@ -131,6 +135,10 @@ set(RealityGrid_USE_FILE_CONFIG
 
 set(RealityGrid_DEPENDS_FILE_CONFIG
   ${CMAKE_INSTALL_PREFIX}/lib/RealityGrid/RealityGridLibraryDepends.cmake
+)
+
+set(RealityGrid_MACROS_FILE_CONFIG
+  ${CMAKE_INSTALL_PREFIX}/lib/RealityGrid/RealityGridMacros.cmake
 )
 
 set(RealityGrid_MODULES_LIST_CONFIG

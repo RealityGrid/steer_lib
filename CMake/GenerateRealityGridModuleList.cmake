@@ -67,12 +67,12 @@ file(WRITE ${PROJECT_BINARY_DIR}/RealityGridModulesList.cmake
 
 # populate rest of file with a line for each module
 foreach(type ${REG_MODULES_TYPES})
-  foreach(mod ${REG_MODULES_${type}})
-    if(REG_BUILD_MODULAR_LIBS)
-      file(APPEND ${PROJECT_BINARY_DIR}/RealityGridModulesList.cmake
-	"set(REG_MODULE_${type}_${mod} ReG_Steer_${type}_${mod})\n"
-      )
-    else(REG_BUILD_MODULAR_LIBS)
+  if(REG_BUILD_MODULAR_LIBS)
+    file(APPEND ${PROJECT_BINARY_DIR}/RealityGridModulesList.cmake
+      "set(REG_MODULES_${type} ${REG_MODULES_${type}})\n"
+    )
+  else(REG_BUILD_MODULAR_LIBS)
+    foreach(mod ${REG_MODULES_${type}})
       list(FIND REG_MODULES "${type}_${mod}" found)
       if(${found} EQUAL -1)
 	set(found OFF)
@@ -82,6 +82,6 @@ foreach(type ${REG_MODULES_TYPES})
       file(APPEND ${PROJECT_BINARY_DIR}/RealityGridModulesList.cmake
 	"set(REG_MODULE_${type}_${mod} ${found})\n"
       )
-    endif(REG_BUILD_MODULAR_LIBS)
-  endforeach(mod ${REG_MODULES_${type}})
+    endforeach(mod ${REG_MODULES_${type}})
+  endif(REG_BUILD_MODULAR_LIBS)
 endforeach(type ${REG_MODULES_TYPES})

@@ -58,6 +58,9 @@ if(NOT REG_USE_FILE_LOADED)
   # tell the linker where the libs are
   link_directories(${RealityGrid_LIBRARY_DIRS})
 
+  # load in the macros
+  include(${RealityGrid_MACROS_FILE})
+
   # load in the modules
   include(${RealityGrid_MODULES_LIST})
 

@@ -53,21 +53,23 @@ set(REG_LIB_VERSION_PAT @REG_LIB_VERSION_PAT@)
 set(RealityGrid_INSTALL_TYPE "@RealityGrid_INSTALL_TYPE_CONFIG@")
 
 # header, library and documentation locations
-set(RealityGrid_INSTALL_PREFIX "@RealityGrid_INSTALL_PREFIX_CONFIG@")
-set(RealityGrid_INCLUDE_DIRS "@RealityGrid_INCLUDE_DIRS_CONFIG@")
-set(RealityGrid_LIBRARY_DIRS "@RealityGrid_LIBRARY_DIRS_CONFIG@")
-set(RealityGrid_BIN_DIR "@RealityGrid_BIN_DIR_CONFIG@")
-set(RealityGrid_DOCS_DIR "@RealityGrid_DOCS_DIR_CONFIG@")
+set(RealityGrid_INSTALL_PREFIX @RealityGrid_INSTALL_PREFIX_CONFIG@)
+set(RealityGrid_INCLUDE_DIRS @RealityGrid_INCLUDE_DIRS_CONFIG@)
+set(RealityGrid_LIBRARY_DIRS @RealityGrid_LIBRARY_DIRS_CONFIG@)
+set(RealityGrid_BIN_DIR @RealityGrid_BIN_DIR_CONFIG@)
+set(RealityGrid_DOCS_DIR @RealityGrid_DOCS_DIR_CONFIG@)
 
 # RealityGrid config options
 set(REG_USE_SHARED_LIBS @REG_BUILD_SHARED_LIBS@)
 set(REG_USE_MODULAR_LIBS @REG_BUILD_MODULAR_LIBS@)
+set(REG_USE_DYNAMIC_LOADING @REG_DYNAMIC_MOD_LOADING@)
 set(REG_DEBUG @REG_DEBUG@)
 set(REG_BUILD_FORTRAN_WRAPPERS @REG_BUILD_FORTRAN_WRAPPERS@)
 
 # build settings, use file and modules list locations
 set(RealityGrid_BUILD_SETTINGS_FILE "@RealityGrid_BUILD_SETTINGS_FILE_CONFIG@")
 set(RealityGrid_USE_FILE "@RealityGrid_USE_FILE_CONFIG@")
+set(RealityGrid_MACROS_FILE "@RealityGrid_MACROS_FILE_CONFIG@")
 set(RealityGrid_MODULES_LIST "@RealityGrid_MODULES_LIST_CONFIG@")
 
 # library dependencies

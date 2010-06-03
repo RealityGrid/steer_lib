@@ -96,6 +96,8 @@ if(REG_BUILD_MODULAR_LIBS)
     if(REG_DYNAMIC_MOD_LOADING)
       set(REG_MOD_TYPE MODULE)
     endif(REG_DYNAMIC_MOD_LOADING)
+  else(REG_BUILD_SHARED_LIBS)
+    set(REG_DYNAMIC_MOD_LOADING OFF)
   endif(REG_BUILD_SHARED_LIBS)
 endif(REG_BUILD_MODULAR_LIBS)
 
@@ -221,6 +223,12 @@ configure_file(
   COPYONLY IMMEDIATE
 )
 
+configure_file(
+  ${PROJECT_SOURCE_DIR}/RealityGridMacros.cmake.in
+  ${PROJECT_BINARY_DIR}/RealityGridMacros.cmake
+  @ONLY
+)
+
 # create module list file
 include(GenerateRealityGridModuleList)
 
@@ -234,6 +242,7 @@ install(FILES
   "${PROJECT_BINARY_DIR}/CMakeFiles/RealityGridConfig.cmake"
   "${PROJECT_BINARY_DIR}/RealityGridBuildSettings.cmake"
   "${PROJECT_BINARY_DIR}/RealityGridLibraryDepends.cmake"
+  "${PROJECT_BINARY_DIR}/RealityGridMacros.cmake"
   "${PROJECT_BINARY_DIR}/RealityGridModulesList.cmake"
   DESTINATION lib/RealityGrid
 )
