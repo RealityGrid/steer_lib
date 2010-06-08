@@ -61,6 +61,9 @@ mark_as_advanced(REG_BUILD_LATEX_DOCS)
 if(REG_BUILD_LATEX_DOCS)
   set(REG_BUILD_LATEX_DOCS YES)
   find_package(LATEX REQUIRED)
+
+  set(DOXYGEN_PAPER_TYPE "a4wide" CACHE STRING "The type of paper to use for the user manual output. Can be a4, a4wide, letter, legal or executive. Default: a4wide.")
+  mark_as_advanced(DOXYGEN_PAPER_TYPE)
 else(REG_BUILD_LATEX_DOCS)
   set(REG_BUILD_LATEX_DOCS NO)
 endif(REG_BUILD_LATEX_DOCS)
@@ -84,6 +87,16 @@ else(DOXYGEN_QUIET)
   set(DOXYGEN_QUIET NO)
 endif(DOXYGEN_QUIET)
 
+# document internal methods
+option(DOXYGEN_INTERNAL_METHODS
+  "Document internal methods that are not part of the API?" OFF)
+mark_as_advanced(DOXYGEN_INTERNAL_METHODS)
+if(DOXYGEN_INTERNAL_METHODS)
+  set(DOXYGEN_INTERNAL_METHODS YES)
+else(DOXYGEN_INTERNAL_METHODS)
+  set(DOXYGEN_INTERNAL_METHODS NO)
+endif(DOXYGEN_INTERNAL_METHODS)
+
 # was dot found as well?
 set(DOXYGEN_HAVE_DOT YES)
 if(DOXYGEN_DOT_EXECUTABLE MATCHES "NOTFOUND$")
@@ -100,14 +113,33 @@ configure_file(
 add_custom_target(Documentation ALL
   ${DOXYGEN_EXECUTABLE}
   "${CMAKE_CURRENT_BINARY_DIR}/doxyfile"
+  COMMENT "Generating documentation"
 )
 
-# copy the required images to the build dir
-configure_file(
-  "${CMAKE_CURRENT_SOURCE_DIR}/steer_arch_symm.png"
-  "${CMAKE_CURRENT_BINARY_DIR}/html/steer_arch_symm.png"
-  COPYONLY
-)
+if(REG_BUILD_LATEX_DOCS)
+  add_custom_command(TARGET Documentation POST_BUILD
+    COMMAND ${CMAKE_MAKE_PROGRAM}
+    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/latex"
+    COMMENT "Processing LaTeX sources"
+  )
+endif(REG_BUILD_LATEX_DOCS)
+
+# copy the required images to the build dirs
+if(REG_BUILD_HTML_DOCS)
+  configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/steer_arch_symm.png"
+    "${CMAKE_CURRENT_BINARY_DIR}/html/steer_arch_symm.png"
+    COPYONLY
+  )
+endif(REG_BUILD_HTML_DOCS)
+
+if(REG_BUILD_LATEX_DOCS)
+  configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/steer_arch_symm.png"
+    "${CMAKE_CURRENT_BINARY_DIR}/latex/steer_arch_symm.png"
+    COPYONLY
+  )
+endif(REG_BUILD_LATEX_DOCS)
 
 # install the documentation
 if(REG_BUILD_HTML_DOCS)
@@ -117,7 +149,8 @@ if(REG_BUILD_HTML_DOCS)
 endif(REG_BUILD_HTML_DOCS)
 
 if(REG_BUILD_LATEX_DOCS)
-  install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/latex/
-    DESTINATION share/doc/RealityGrid/latex
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/latex/refman.pdf
+    DESTINATION share/doc/RealityGrid
+    RENAME SteerLib-API-${REG_STEER_LIB_VERSION}.pdf
   )
 endif(REG_BUILD_LATEX_DOCS)

@@ -88,7 +88,7 @@
 
     @latexonly
     \begin{figure}
-    \centerline{\includegraphics{steer_arch_symm.png}}
+    \centerline{\includegraphics[width=\textwidth]{steer_arch_symm.png}}
     \caption{Basic architecture for RealityGrid steering.  Each ellipse
     represents a distinct application, the location of which is not
     constrained.  The client can dynamically attach to the running
