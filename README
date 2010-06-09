@@ -203,15 +203,15 @@ REG_DEBUG - default OFF
 
 Add debug messages to Steering library output for debugging purposes?
 
-REG_USE_MODULE_Samples - default Sockets
+REG_USE_MODULE_Samples - default sockets
 
 Choose the transport over which sample data is moved. Current choices
-are Sockets, Files or Proxy.
+are sockets, files or proxy.
 
-REG_USE_MODULE_Steering - default Sockets
+REG_USE_MODULE_Steering - default sockets
 
 Choose the transport which is used to pass steering messages. Current
-choices are Sockets, WSRF or Files.
+choices are sockets, wsrf or files.
 
 REG_SCRATCH_DEFAULT - default .
 
