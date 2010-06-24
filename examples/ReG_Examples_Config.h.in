@@ -46,93 +46,40 @@
  */
 
 /** @internal
-    @file ReG_Steer_Config.h
-    @brief Configuration file for passing build time options to source code
+    @file ReG_Examples_Config.h
+    @brief Configuration file for passing build time options to the examples
 
-    All internal library source code files should include
-    ReG_Steer_Config.h before any other code or includes.
+    All examples source code should include ReG_Examples_Config.h before
+    any other code or includes.
     @author Robert Haines
 */
 
-#ifndef __REG_STEER_CONFIG_H__
-
-/* ReG version */
-#define REG_STEER_LIB_VERSION "@REG_STEER_LIB_VERSION@"
-
-/* The default directory to use for scratch space */
-#define REG_SCRATCH_DEFAULT "@REG_SCRATCH_DEFAULT@/"
+#ifndef __REG_EXAMPLES_CONFIG_H__
 
 /* debug message options */
 
 #cmakedefine REG_DEBUG
-#cmakedefine REG_DEBUG_FULL
-
-/* library options */
-
-#cmakedefine01 REG_DYNAMIC_MOD_LOADING
-#cmakedefine01 REG_LOG_STEERING
-#cmakedefine01 REG_VALIDATE_XML
-#cmakedefine01 REG_KEEP_XML_MESSAGES
-#cmakedefine01 REG_USE_TIMING
 
 /* platform features to code for */
 
-#cmakedefine01 REG_HAS_MSG_NOSIGNAL
-#cmakedefine01 REG_HAS_MSG_DONTWAIT
-#cmakedefine01 REG_HAS_MSG_WAITALL
-#cmakedefine01 REG_HAS_CLOSESOCKET
-#cmakedefine01 REG_HAS_SIGUSR2
-#cmakedefine01 REG_HAS_SIGXCPU
+#cmakedefine01 REG_HAS_GETPASS
 
 /* standard system headers */
 
-#cmakedefine01 REG_NEED_OPENSSL_H
 #cmakedefine01 REG_NEED_MALLOC_H
-#cmakedefine01 REG_HAS_RPC_H
-#cmakedefine01 REG_HAS_XDR_H
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
-#include <signal.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <errno.h>
-#include <time.h>
 
 #ifndef _MSC_VER
 #include <unistd.h>
-#include <sys/time.h>
-#include <sys/utsname.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netinet/tcp.h>
-#include <arpa/inet.h>
-#include <netdb.h>
-#include <dirent.h>
-#if REG_DYNAMIC_MOD_LOADING
-#include <dlfcn.h>
-#endif /* REG_DYNAMIC_MOD_LOADING */
-#else /* _MSC_VER */
-#include <Winsock2.h>
-#include <Ws2tcpip.h>
+#else
 #include <Windows.h>
-#include <direct.h>
-#include <io.h>
 #include <conio.h>
 #include "ReG_Steer_Win32.h"
-#include "dirent.h"
 #endif /* _MSC_VER */
-
-/* load the correct xdr header file */
-#if REG_HAS_RPC_H
-#include <rpc/rpc.h>
-#endif
-#if REG_HAS_XDR_H
-#include <rpc/xdr.h>
-#endif
 
 /* only include malloc.h if we need it.
    some systems define malloc in stdlib.h */
@@ -140,20 +87,5 @@
 #include <malloc.h>
 #endif
 
-#if REG_NEED_OPENSSL_H
-#include <openssl/sha.h>
-#endif
-
-#include <libxml/xmlmemory.h>
-#include <libxml/parser.h>
-
-#if REG_VALIDATE_XML
-#include <libxml/xmlschemas.h>
-#endif
-
-#if !REG_HAS_CLOSESOCKET
-#define closesocket close
-#endif
-
-#define __REG_STEER_CONFIG_H__
-#endif /* __REG_STEER_CONFIG_H__ */
+#define __REG_EXAMPLES_CONFIG_H__
+#endif /* __REG_EXAMPLES_CONFIG_H__ */
