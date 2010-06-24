@@ -57,8 +57,6 @@
 #ifndef __REG_STEER_DYNAMIC_LOADER_H__
 #define __REG_STEER_DYNAMIC_LOADER_H__
 
-#include "ReG_Steer_Config.h"
-
 /** @internal
     Load the samples transport module specified by the
     REG_SAMPLES_TRANSPORT environment variable and map the symbols

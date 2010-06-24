@@ -59,7 +59,6 @@
 #ifndef __REG_STEER_STEERSIDE_H__
 #define __REG_STEER_STEERSIDE_H__
 
-#include "ReG_Steer_Config.h"
 #include "ReG_Steer_types.h"
 #include "ReG_Steer_Common.h"
 

@@ -59,8 +59,6 @@
     @author Robert Haines
 */
 
-#include "ReG_Steer_Config.h"
-
 /** Comment out the below if yours is a pre-2.6 version of libxml2 that
     doesn't have XML_PARSE_NOERROR defined (to go with the xmlReadMemory
     in Parse_xml) */

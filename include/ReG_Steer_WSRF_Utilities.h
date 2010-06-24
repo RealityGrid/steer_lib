@@ -49,7 +49,6 @@
 #ifndef __REG_STEER_WSRF_UTILITIES_H__
 #define __REG_STEER_WSRF_UTILITIES_H__
 
-#include "ReG_Steer_Config.h"
 #include "ReG_Steer_Common.h"
 #include "ReG_Steer_Browser.h"
 #include "soapH.h"
