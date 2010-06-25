@@ -294,6 +294,21 @@ typedef struct {
 /*-----------------------------------------------------------------*/
 
 /** @internal
+
+    Initialize libXML2 properly. This is only required when
+    calling libXML2 functions from different threads but
+    this might happen so we must be prepared.
+ */
+void Init_xml_parser();
+
+/** @internal
+
+    Cleanup libXML2. This isn't strictly needed but shuts
+    things like valgrind up.
+ */
+void Cleanup_xml_parser();
+
+/** @internal
     @param filename Name of the file to read and parse
     @param msg Pointer to message struct to hold results
     @param sim Pointer to Sim_entry struct or NULL

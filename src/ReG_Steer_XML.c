@@ -74,6 +74,19 @@ extern unsigned char reg_steer_comm_xsd[];
 
 /*-----------------------------------------------------------------*/
 
+void Init_xml_parser() {
+  xmlInitParser();
+  xmlInitThreads();
+}
+
+/*-----------------------------------------------------------------*/
+
+void Cleanup_xml_parser() {
+  xmlCleanupParser();
+}
+
+/*-----------------------------------------------------------------*/
+
 int Parse_xml_file(char* filename, struct msg_struct *msg,
 		   Sim_entry_type *sim)
 {
@@ -136,14 +149,12 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg,
   if (cur == NULL) {
       fprintf(stderr,"STEER: Parse_xml: empty document\n");
       xmlFreeDoc(doc);
-      xmlCleanupParser();
       return REG_FAILURE;
   }
 
 #if REG_VALIDATE_XML
   if(Validate_xml(doc) != REG_SUCCESS) {
       xmlFreeDoc(doc);
-      xmlCleanupParser();
       return REG_FAILURE;
   }
 
@@ -152,7 +163,6 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg,
     fprintf(stderr, "STEER: Parse_xml: document of the wrong type.\n       "
 	    "Namespace '%s' not found\n", REG_STEER_NAMESPACE);
     xmlFreeDoc(doc);
-    xmlCleanupParser();
     return REG_FAILURE;
   }
 #endif
@@ -164,7 +174,6 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg,
 
     if(parseSteerMessage(doc, cur, msg, sim) != REG_SUCCESS) {
       xmlFreeDoc(doc);
-      xmlCleanupParser();
       return REG_FAILURE;
     }
 
@@ -201,13 +210,11 @@ int Parse_xml(xmlDocPtr doc, struct msg_struct *msg,
 	    "= >%s< != ReG_steer_message or ResourceProperties or "
 	    "controlMsg\n", (char *)(cur->name));
     xmlFreeDoc(doc);
-    xmlCleanupParser();
     return REG_FAILURE;
   }
 
   /* Clean up everything else before quitting. */
   xmlFreeDoc(doc);
-  xmlCleanupParser();
 
   return REG_SUCCESS;
 }
@@ -457,7 +464,6 @@ int parseSteerMessage(xmlDocPtr doc, xmlNodePtr cur,
   }
   if ( cur == 0 ){
     xmlFreeDoc(doc);
-    xmlCleanupParser();
     return REG_FAILURE;
   }
 
@@ -1841,7 +1847,6 @@ int Parse_registry_entries(char* buf, int size,
     if( !(cur = xmlDocGetRootElement(doc)) ){
       fprintf(stderr,"STEER: Parse_registry_entries: empty document\n");
       xmlFreeDoc(doc);
-      xmlCleanupParser();
       return REG_FAILURE;
     }
 
@@ -1851,7 +1856,6 @@ int Parse_registry_entries(char* buf, int size,
       fprintf(stderr, "STEER: Parse_registry_entries: root node is not "
 	      "an entry\n");
       xmlFreeDoc(doc);
-      xmlCleanupParser();
       return REG_FAILURE;
     }
 
@@ -1897,7 +1901,6 @@ ogsi:entry
 	fprintf(stderr, "STEER: ERROR: Parse_registry_entries - realloc "
 		"failed for entries array\n");
 	xmlFreeDoc(doc);
-	xmlCleanupParser();
 	return REG_FAILURE;
       }
     }
@@ -1906,7 +1909,6 @@ ogsi:entry
       fprintf(stderr, "STEER: ERROR: Parse_registry_entries - "
 	      "malloc failed\n");
       xmlFreeDoc(doc);
-      xmlCleanupParser();
       return REG_FAILURE;
     }
     myEntries[numEntries].bufLen = BUFFER_SIZE;
@@ -2107,9 +2109,6 @@ ogsi:entry
 
   contents->numEntries = numEntries;
   contents->entries = myEntries;
-
-  /* Clean-up */
-  xmlCleanupParser();
 
 #ifdef REG_DEBUG_FULL
   fprintf(stderr, "STEER: Parse_registry_entries: got %d entries "
