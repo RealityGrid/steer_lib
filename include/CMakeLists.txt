@@ -46,9 +46,6 @@
 
 set(install_dir include/RealityGrid)
 
-install(FILES ${PROJECT_BINARY_DIR}/ReG_Steer_Config.h
-  DESTINATION ${install_dir})
-
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
   DESTINATION ${install_dir}
   FILES_MATCHING PATTERN "*.h"
