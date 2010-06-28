@@ -163,30 +163,6 @@ if(REG_BUILD_FORTRAN_WRAPPERS)
   endif(MPIF_FOUND)
 endif(REG_BUILD_FORTRAN_WRAPPERS)
 
-#
-# find the required external libraries and
-# keep a track of them to help with configuring
-# other projects that link against this one
-#
-if(UNIX)
-  find_library(LIBM_LIB m)
-  mark_as_advanced(LIBM_LIB)
-  set(REG_EXTERNAL_LIBS ${REG_EXTERNAL_LIBS} ${LIBM_LIB})
-endif(UNIX)
-find_package(ZLIB REQUIRED)
-include_directories(${ZLIB_INCLUDE_DIR})
-set(REG_EXTERNAL_LIBS ${ZLIB_LIBRARY} ${REG_EXTERNAL_LIBS})
-
-find_package(LibXml2 REQUIRED)
-include_directories("${LIBXML2_INCLUDE_DIR}")
-set(REG_EXTERNAL_LIBS ${LIBXML2_LIBRARIES} ${REG_EXTERNAL_LIBS})
-
-if(REG_DYNAMIC_MOD_LOADING)
-  find_library(LIBDL_LIB dl)
-  mark_as_advanced(LIBDL_LIB)
-  set(REG_EXTERNAL_LIBS ${REG_EXTERNAL_LIBS} ${LIBDL_LIB})
-endif(REG_DYNAMIC_MOD_LOADING)
-
 # ReG libs to link examples against
 set(REG_LINK_LIBRARIES ReG_Steer)
 
