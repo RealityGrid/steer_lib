@@ -58,7 +58,6 @@
 #ifndef __REG_STEER_XML_H__
 #define __REG_STEER_XML_H__
 
-#include "ReG_Steer_Config.h"
 #include "ReG_Steer_Browser.h"
 
 #ifdef __cplusplus

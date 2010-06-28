@@ -44,6 +44,13 @@
 #
 #  Author: Robert Haines
 
+# configure the header file
+configure_file(
+  "${CMAKE_CURRENT_SOURCE_DIR}/ReG_Examples_Config.h.in"
+  "${PROJECT_BINARY_DIR}/ReG_Examples_Config.h"
+  @ONLY
+)
+
 if(NOT REG_DYNAMIC_MOD_LOADING)
   if(REG_BUILD_MODULAR_LIBS)
     foreach(type ${REG_MODULES_TYPES})

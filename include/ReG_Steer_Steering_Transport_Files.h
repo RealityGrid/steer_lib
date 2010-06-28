@@ -54,7 +54,6 @@
  *  @author Robert Haines
  */
 
-#include "ReG_Steer_Config.h"
 #include "ReG_Steer_types.h"
 #include "ReG_Steer_Steering_Transport_API.h"
 

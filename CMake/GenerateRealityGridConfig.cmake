@@ -59,9 +59,8 @@ set(RealityGrid_INSTALL_TYPE_CONFIG "build")
 set(RealityGrid_INSTALL_PREFIX_CONFIG ${PROJECT_BINARY_DIR})
 
 # header, library and documentation locations
-set(RealityGrid_INCLUDE_DIRS_CONFIG
-  ${PROJECT_BINARY_DIR}
-  ${PROJECT_SOURCE_DIR}/include
+set(RealityGrid_INCLUDE_DIRS_CONFIG ${PROJECT_SOURCE_DIR}/include)
+set(RealityGrid_EXT_INCLUDE_DIRS_CONFIG
   ${ZLIB_INCLUDE_DIR}
   ${LIBXML2_INCLUDE_DIR}
 )
@@ -115,8 +114,8 @@ set(RealityGrid_INSTALL_TYPE_CONFIG "install")
 set(RealityGrid_INSTALL_PREFIX_CONFIG ${CMAKE_INSTALL_PREFIX})
 
 # header, library and documentation locations
-set(RealityGrid_INCLUDE_DIRS_CONFIG
-  ${CMAKE_INSTALL_PREFIX}/include/RealityGrid
+set(RealityGrid_INCLUDE_DIRS_CONFIG ${CMAKE_INSTALL_PREFIX}/include/RealityGrid)
+set(RealityGrid_EXT_INCLUDE_DIRS_CONFIG
   ${ZLIB_INCLUDE_DIR}
   ${LIBXML2_INCLUDE_DIR}
 )

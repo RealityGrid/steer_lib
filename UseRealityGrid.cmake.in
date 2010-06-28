@@ -54,6 +54,7 @@ if(NOT REG_USE_FILE_LOADED)
 
   # tell the compiler where the headers are
   include_directories(${RealityGrid_INCLUDE_DIRS})
+  include_directories(${RealityGrid_EXT_INCLUDE_DIRS})
 
   # tell the linker where the libs are
   link_directories(${RealityGrid_LIBRARY_DIRS})

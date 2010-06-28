@@ -49,7 +49,7 @@
     @file ReG_Steer_Config.h
     @brief Configuration file for passing build time options to source code
 
-    All internal library source code and header files should include
+    All internal library source code files should include
     ReG_Steer_Config.h before any other code or includes.
     @author Robert Haines
 */
@@ -81,7 +81,6 @@
 #cmakedefine01 REG_HAS_MSG_DONTWAIT
 #cmakedefine01 REG_HAS_MSG_WAITALL
 #cmakedefine01 REG_HAS_CLOSESOCKET
-#cmakedefine01 REG_HAS_GETPASS
 #cmakedefine01 REG_HAS_SIGUSR2
 #cmakedefine01 REG_HAS_SIGXCPU
 #cmakedefine01 REG_HAS_XMLREADMEMORY

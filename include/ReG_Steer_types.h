@@ -59,8 +59,6 @@
     @author Robert Haines
 */
 
-#include "ReG_Steer_Config.h"
-
 /** The namespace used for steering messages (which are in xml) */
 #define REG_STEER_NAMESPACE "http://www.realitygrid.org/xml/steering"
 

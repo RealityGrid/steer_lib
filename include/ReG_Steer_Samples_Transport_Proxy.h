@@ -54,8 +54,6 @@
  *  @author Robert Haines
  */
 
-#include "ReG_Steer_Config.h"
-
 int Consume_proxy_destination_ack(const int index);
 
 #endif /* __REG_STEER_SAMPLES_TRANSPORT_PROXY_H__ */

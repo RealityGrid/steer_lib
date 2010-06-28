@@ -46,15 +46,8 @@
           Robert Haines
  */
 
+#include "ReG_Steer_Config.h"
 #include "ReG_Steer_Appside.h"
-#include <unistd.h>
-#include <string.h>
-
-/*
-#ifndef REG_DEBUG
-#define REG_DEBUG 1
-#endif
-*/
 
 /** @file ReG_Steer_Appside_f.c
     @brief Generated from ReG_Steer_Appside_f.m4

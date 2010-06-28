@@ -46,43 +46,46 @@
  */
 
 /** @internal
-    @file ReG_Steer_Dynamic_Loader.h
-    @brief Header file defining methods for working with dynamically
-    loaded libraries.
+    @file ReG_Examples_Config.h
+    @brief Configuration file for passing build time options to the examples
+
+    All examples source code should include ReG_Examples_Config.h before
+    any other code or includes.
     @author Robert Haines
-    This header file contains routines for loading dynamic libraries
-    and mapping symbols for use by the core library.
 */
 
-#ifndef __REG_STEER_DYNAMIC_LOADER_H__
-#define __REG_STEER_DYNAMIC_LOADER_H__
+#ifndef __REG_EXAMPLES_CONFIG_H__
 
-/** @internal
-    Load the samples transport module specified by the
-    REG_SAMPLES_TRANSPORT environment variable and map the symbols
-    contained within to the core library function pointers.
- */
-int Load_samples_transport_api();
+/* debug message options */
 
-/** @internal
-    Load the steering transport module specified by the
-    REG_STEERING_TRANSPORT environment variable and map the symbols
-    contained within to the core library function pointers.
- */
-int Load_steering_transport_api();
+#cmakedefine REG_DEBUG
 
-/** @internal
-    @param name The name of the symbol to load.
-    @param suffix The suffix to be added to the symbol name before loading.
-    @param module The pointer to the dynamically loaded library from which
-    the symbol is to be loaded.
-    @param func_ptr The function pointer to which the loaded symbol is to
-    be mapped.
+/* platform features to code for */
 
-    Load the named symbol from the provided module and map it to the
-    function pointer indicated.
- */
-int Load_symbol(const char* name, const char* suffix,
-		void* module, void (**func_ptr)());
+#cmakedefine01 REG_HAS_GETPASS
 
-#endif /* __REG_STEER_DYNAMIC_LOADER_H__ */
+/* standard system headers */
+
+#cmakedefine01 REG_NEED_MALLOC_H
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <string.h>
+
+#ifndef _MSC_VER
+#include <unistd.h>
+#else
+#include <Windows.h>
+#include <conio.h>
+#include "ReG_Steer_Win32.h"
+#endif /* _MSC_VER */
+
+/* only include malloc.h if we need it.
+   some systems define malloc in stdlib.h */
+#if REG_NEED_MALLOC_H
+#include <malloc.h>
+#endif
+
+#define __REG_EXAMPLES_CONFIG_H__
+#endif /* __REG_EXAMPLES_CONFIG_H__ */

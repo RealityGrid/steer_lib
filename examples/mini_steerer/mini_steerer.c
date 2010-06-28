@@ -1,7 +1,7 @@
 /*
   The RealityGrid Steering Library
 
-  Copyright (c) 2002-2009, University of Manchester, United Kingdom.
+  Copyright (c) 2002-2010, University of Manchester, United Kingdom.
   All rights reserved.
 
   This software is produced by Research Computing Services, University
@@ -51,7 +51,7 @@
     @author Andrew Porter
     @author Robert Haines */
 
-#include "ReG_Steer_Config.h"
+#include "ReG_Examples_Config.h"
 #include "ReG_Steer_Steerside.h"
 #include "ReG_Steer_Browser.h"
 
