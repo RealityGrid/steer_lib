@@ -84,6 +84,7 @@
 #cmakedefine01 REG_HAS_GETPASS
 #cmakedefine01 REG_HAS_SIGUSR2
 #cmakedefine01 REG_HAS_SIGXCPU
+#cmakedefine01 REG_HAS_XMLREADMEMORY
 
 /* standard system headers */
 

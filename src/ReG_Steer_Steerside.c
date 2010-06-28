@@ -56,6 +56,7 @@
 #include "ReG_Steer_Steerside.h"
 #include "ReG_Steer_Steerside_internal.h"
 #include "ReG_Steer_Browser.h"
+#include "ReG_Steer_XML.h"
 #include "Base64.h"
 #include "ReG_Steer_Steering_Transport_API.h"
 
@@ -160,6 +161,9 @@ int Steerer_initialize()
     Sim_table.sim[i].Msg_store.next  = NULL;
   }
 
+  /* initialize the XML parser */
+  Init_xml_parser();
+
   /* init the steering transport module */
   return Initialize_steerside_transport_impl();
 }
@@ -183,6 +187,8 @@ int Steerer_finalize()
 
   Sim_table.num_registered = 0;
   Sim_table.max_entries    = 0;
+
+  Cleanup_xml_parser();
 
   return REG_SUCCESS;
 }

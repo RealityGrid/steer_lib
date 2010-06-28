@@ -57,6 +57,7 @@
 #include "ReG_Steer_Samples_Transport_API.h"
 #include "ReG_Steer_Steering_Transport_API.h"
 #include "ReG_Steer_Logging.h"
+#include "ReG_Steer_XML.h"
 #include "Base64.h"
 #include "soapRealityGrid.nsmap"
 
@@ -487,6 +488,9 @@ int Steering_initialize(const char* AppName,
 		 "", "");
 #endif
 
+  /* initialize the XML parser */
+  Init_xml_parser();
+
   return REG_SUCCESS;
 }
 
@@ -603,6 +607,8 @@ int Steering_finalize()
 
   /* Flag that library no-longer initialised */
   ReG_SteeringInit    = REG_FALSE;
+
+  Cleanup_xml_parser();
 
 #ifdef REG_DEBUG
   /* Print out version information */

@@ -59,6 +59,34 @@ endif(NOT MALLOC_IN_STDLIB)
 CHECK_SYMBOL_EXISTS(SIGXCPU signal.h REG_HAS_SIGXCPU)
 CHECK_SYMBOL_EXISTS(SIGUSR2 signal.h REG_HAS_SIGUSR2)
 
+#
+# find the required external libraries and
+# keep a track of them to help with configuring
+# other projects that link against this one
+#
+if(UNIX)
+  find_library(LIBM_LIB m)
+  mark_as_advanced(LIBM_LIB)
+  set(REG_EXTERNAL_LIBS ${REG_EXTERNAL_LIBS} ${LIBM_LIB})
+endif(UNIX)
+
+find_package(ZLIB REQUIRED)
+include_directories(${ZLIB_INCLUDE_DIR})
+set(REG_EXTERNAL_LIBS ${ZLIB_LIBRARY} ${REG_EXTERNAL_LIBS})
+
+find_package(LibXml2 REQUIRED)
+include_directories("${LIBXML2_INCLUDE_DIR}")
+set(REG_EXTERNAL_LIBS ${LIBXML2_LIBRARIES} ${REG_EXTERNAL_LIBS})
+set(CMAKE_REQUIRED_INCLUDES ${LIBXML2_INCLUDE_DIR})
+set(CMAKE_REQUIRED_LIBRARIES ${LIBXML2_LIBRARIES})
+CHECK_FUNCTION_EXISTS(xmlReadMemory REG_HAS_XMLREADMEMORY)
+
+if(REG_DYNAMIC_MOD_LOADING)
+  find_library(LIBDL_LIB dl)
+  mark_as_advanced(LIBDL_LIB)
+  set(REG_EXTERNAL_LIBS ${REG_EXTERNAL_LIBS} ${LIBDL_LIB})
+endif(REG_DYNAMIC_MOD_LOADING)
+
 # sockets library always needed due to xdr
 find_package(Sockets)
 if(LIBSOCKET_FOUND)

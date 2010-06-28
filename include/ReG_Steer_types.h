@@ -61,11 +61,6 @@
 
 #include "ReG_Steer_Config.h"
 
-/** Comment out the below if yours is a pre-2.6 version of libxml2 that
-    doesn't have XML_PARSE_NOERROR defined (to go with the xmlReadMemory
-    in Parse_xml) */
-#define REG_HAVE_XMLREADMEMORY
-
 /** The namespace used for steering messages (which are in xml) */
 #define REG_STEER_NAMESPACE "http://www.realitygrid.org/xml/steering"
 
