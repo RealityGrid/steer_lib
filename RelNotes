@@ -1,6 +1,20 @@
 Release Notes for the RealityGrid Steering Library
 --------------------------------------------------
 
+Version 3.5.1
+-------------
+
+ * Initialize and cleanup libxml2 properly for thread safety.
+
+ Internal changes
+ ----------------
+
+ * Remove all references to ReG_Steer_Config.h from header files.
+ * Create a new, separate, config header for the examples.
+ * Update the handling of include files for projects built against this one.
+ * Check for xmlReadMemory properly.
+ * Fortran wrappers: Tiny fix to mangling CMake rules.
+
 Version 3.5.0
 -------------
 

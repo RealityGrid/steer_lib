@@ -18,8 +18,9 @@ Compilers
 
 You will need a C compiler to build the library. If you wish to use
 the Steering library from a Fortran code you will also need a Fortran
-compiler. The library has been tested with GCC and Intel compilers but
-hopefully should compile using any standards compliant compiler.
+compiler. The library has been tested with GCC, Intel, SunPro and MSVC
+compilers but hopefully should compile using any standards compliant
+compiler.
 
 libXML2
 
@@ -28,7 +29,17 @@ library from the GNOME project to facilitate this. To build the
 library you will need to have the development files available, that is
 the header files as well as the runtime libraries themselves. libXML2
 can be downloaded from http://www.xmlsoft.org/ if it is not available
-as part of your OS.
+as part of your OS. For Windows (MSVC) users there are binaries
+available for libXML2 and its prerequisites from
+http://www.zlatkovic.com/libxml.en.html
+
+SunRPC XDR
+
+The Steering Library uses SunRPC eXternal Data Representation to
+ensure correct transfer of data between different architectures. This
+is available by default on most systems, including Cygwin, but is
+missing from Windows MSVC. You can get a compatible implementation for
+Windows from http://code.google.com/p/bsd-xdr/
 
 OpenSSL
 
@@ -240,14 +251,14 @@ and should not generally be used due to large speed overheads.
 Other software and documentation
 
 All documentation included with the library is also available from
-http://www.rcs.manchester.ac.uk/research/realitygrid
+http://code.google.com/p/computational-steering/
 
 The doc directory contains information on the environment variables
 used by the steering library (doc/Environment_variables.txt) and its
 dependencies on other software (doc/Dependencies.txt).  The library
 code has been annotated with comments for use with Doxygen.  The
 resulting HTML documentation is available at
-http://www.kato.mvc.mcc.ac.uk/doc/RealityGrid/reg_steer_lib/
+http://code.google.com/p/computational-steering/wiki/Documentation
 
 You can generate this documentation locally via the CMake build tool
 described above.
@@ -264,15 +275,13 @@ xml_schema/reg_steer_comm.xsd.
 A Qt-based steering client written in C++ and built with the
 RealityGrid steering library is also available for Linux and Windows
 from the same site as the steering library:
-http://www.rcs.manchester.ac.uk/research/realitygrid
+http://code.google.com/p/computational-steering/
 
 The steering library is able to make use of a Web-Services framework
-for remote steering and checkpoint control (this is determined at
-build time via the REG_SOAP_STEERING option).  To use this you will
-need the WSRF-Lite package
-(http://www.rcs.manchester.ac.uk/research/wsrflite) and the Steering
-Web Service code, available from
-http://www.rcs.manchester.ac.uk/research/realitygrid.  The use of this
+for remote steering and checkpoint control. To use this you will need
+the WSRF-Lite package (http://code.google.com/p/wsrflite/) and the
+Steering Web Service code, available from
+http://code.google.com/p/computational-steering/. The use of this
 framework is described in doc/ReG_Steering_Web_Service.tex.
 
 (Versions of the library prior to 2.0 used the OGSI-Lite package
