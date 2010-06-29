@@ -94,7 +94,7 @@ if(NOT DEFINED FC_NAME_MANGLE)
 	  set(FC_NAME_MANGLE "translit(ifelse(`-1',index($1, `_'),`$1_',`$1__'),abcdefghijklmnopqrstuvwxyz,ABCDEFGHIJKLMNOPQRSTUVWXYZ)"
 	    CACHE STRING ${mangle_doc} FORCE)
 	  set(FC_STRING_FUNC "SF_")
-	endif(${under} EQUAL 0)
+	endif(${under} EQUAL 10)
       endif(${under} LESS 10)
     endforeach(under ${MANGLE_OUTPUT})
 
